@@ -5,13 +5,14 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 /*
@@ -78,18 +79,23 @@ Loopia available API return (object) types:
 
 */
 
+// DefaultBaseNOURL and others are RPC end-points.
 const (
 	DefaultBaseNOURL = "https://api.loopia.no/RPCSERV"
 	DefaultBaseRSURL = "https://api.loopia.rs/RPCSERV"
 	DefaultBaseSEURL = "https://api.loopia.se/RPCSERV"
-	defaultNS1       = "ns1.loopia.se."
-	defaultNS2       = "ns2.loopia.se."
+)
+
+// defaultNS1      and defaultNS2 are default NS records.
+const (
+	defaultNS1 = "ns1.loopia.se."
+	defaultNS2 = "ns2.loopia.se."
 )
 
 // Section 2: Define the API client.
 
-// LoopiaClient is the LoopiaClient handle used to store any client-related state.
-type LoopiaClient struct {
+// APIClient is the APIClient handle used to store any client-related state.
+type APIClient struct {
 	APIUser            string
 	APIPassword        string
 	BaseURL            string
@@ -101,7 +107,7 @@ type LoopiaClient struct {
 }
 
 // NewClient creates a new LoopiaClient.
-func NewClient(apiUser, apiPassword string, region string, modifyns bool, fetchns bool, debug bool) *LoopiaClient {
+func NewClient(apiUser, apiPassword string, region string, modifyns bool, fetchns bool, debug bool) *APIClient {
 	// DefaultBaseURL is url to the XML-RPC api.
 	var DefaultBaseURL string
 	switch region {
@@ -114,7 +120,7 @@ func NewClient(apiUser, apiPassword string, region string, modifyns bool, fetchn
 	default:
 		DefaultBaseURL = DefaultBaseSEURL
 	}
-	return &LoopiaClient{
+	return &APIClient{
 		APIUser:           apiUser,
 		APIPassword:       apiPassword,
 		BaseURL:           DefaultBaseURL,
@@ -129,7 +135,7 @@ func NewClient(apiUser, apiPassword string, region string, modifyns bool, fetchn
 //Create
 
 // CreateRecordSimulate only prints info about a record addition. Used for debugging.
-func (c *LoopiaClient) CreateRecordSimulate(domain string, subdomain string, record paramStruct) error {
+func (c *APIClient) CreateRecordSimulate(domain string, subdomain string, record paramStruct) error {
 	if c.Debug {
 		fmt.Printf("create: domain: %s; subdomain: %s; record: %+v\n", domain, subdomain, record)
 	}
@@ -137,7 +143,7 @@ func (c *LoopiaClient) CreateRecordSimulate(domain string, subdomain string, rec
 }
 
 // CreateRecord adds a record.
-func (c *LoopiaClient) CreateRecord(domain string, subdomain string, record paramStruct) error {
+func (c *APIClient) CreateRecord(domain string, subdomain string, record paramStruct) error {
 	call := &methodCall{
 		MethodName: "addZoneRecord",
 		Params: []param{
@@ -161,8 +167,8 @@ func (c *LoopiaClient) CreateRecord(domain string, subdomain string, record para
 //CRUD: Create, Read, Update, Delete
 //Read
 
-// GetDomains lists all domains.
-func (c *LoopiaClient) GetDomains() ([]domainObject, error) {
+// getDomains lists all domains.
+func (c *APIClient) getDomains() ([]domainObject, error) {
 	call := &methodCall{
 		MethodName: "getDomains",
 		Params: []param{
@@ -178,8 +184,8 @@ func (c *LoopiaClient) GetDomains() ([]domainObject, error) {
 	return resp.Domains, err
 }
 
-// GetDomainRecords gets all records for a subdomain
-func (c *LoopiaClient) GetDomainRecords(domain string, subdomain string) ([]zoneRecord, error) {
+// getDomainRecords gets all records for a subdomain
+func (c *APIClient) getDomainRecords(domain string, subdomain string) ([]zoneRecord, error) {
 	call := &methodCall{
 		MethodName: "getZoneRecords",
 		Params: []param{
@@ -198,7 +204,7 @@ func (c *LoopiaClient) GetDomainRecords(domain string, subdomain string) ([]zone
 }
 
 // GetSubDomains gets all the subdomains within a domain, no records
-func (c *LoopiaClient) GetSubDomains(domain string) ([]string, error) {
+func (c *APIClient) GetSubDomains(domain string) ([]string, error) {
 	call := &methodCall{
 		MethodName: "getSubdomains",
 		Params: []param{
@@ -216,58 +222,59 @@ func (c *LoopiaClient) GetSubDomains(domain string) ([]string, error) {
 }
 
 // GetDomainNS gets all NS records for a subdomain, in this case, the apex "@"
-func (c *LoopiaClient) GetDomainNS(domain string) ([]string, error) {
-	if !c.ModifyNameServers {
-		if c.FetchNSEntries {
-			return []string{defaultNS1, defaultNS2}, nil
-		} else {
-			//fetch from the domain - an extra API call.
-			call := &methodCall{
-				MethodName: "getZoneRecords",
-				Params: []param{
-					paramString{Value: c.APIUser},
-					paramString{Value: c.APIPassword},
-					paramString{Value: domain},
-					paramString{Value: "@"},
-				},
-			}
+func (c *APIClient) GetDomainNS(domain string) ([]string, error) {
+	if c.ModifyNameServers {
+		return nil, nil
+	}
 
-			resp := &zoneRecordsResponse{}
-			apexNSRecords := []string{}
-			err := c.rpcCall(call, resp)
-			if err != nil {
-				return nil, err
-			}
+	if c.FetchNSEntries {
+		return []string{defaultNS1, defaultNS2}, nil
+	}
 
+	//fetch from the domain - an extra API call.
+	call := &methodCall{
+		MethodName: "getZoneRecords",
+		Params: []param{
+			paramString{Value: c.APIUser},
+			paramString{Value: c.APIPassword},
+			paramString{Value: domain},
+			paramString{Value: "@"},
+		},
+	}
+
+	resp := &zoneRecordsResponse{}
+	apexNSRecords := []string{}
+	err := c.rpcCall(call, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Debug {
+		fmt.Printf("DEBUG: getZoneRecords(@) START\n")
+	}
+	for i, rec := range resp.ZoneRecords {
+		ns := rec.GetZR()
+		if ns.Type == "NS" {
+			apexNSRecords = append(apexNSRecords, ns.Rdata)
 			if c.Debug {
-				fmt.Printf("DEBUG: getZoneRecords(@) START\n")
+				fmt.Printf("DEBUG: HERE %d: %v\n", i, ns)
 			}
-			for i, rec := range resp.ZoneRecords {
-				ns := rec.GetZR()
-				if ns.Type == "NS" {
-					apexNSRecords = append(apexNSRecords, ns.Rdata)
-					if c.Debug {
-						fmt.Printf("DEBUG: HERE %d: %v\n", i, ns)
-					}
-				}
-			}
-			return apexNSRecords, err
 		}
 	}
-	return nil, nil
+	return apexNSRecords, err
 }
 
 //CRUD: Create, Read, Update, Delete
 //Update
 
 // UpdateRecordSimulate only prints info about a record update. Used for debugging.
-func (c *LoopiaClient) UpdateRecordSimulate(domain string, subdomain string, rec paramStruct) error {
+func (c *APIClient) UpdateRecordSimulate(domain string, subdomain string, rec paramStruct) error {
 	fmt.Printf("got update: domain: %s; subdomain: %s; record: %v\n", domain, subdomain, rec)
 	return nil
 }
 
 // UpdateRecord updates a record.
-func (c *LoopiaClient) UpdateRecord(domain string, subdomain string, rec paramStruct) error {
+func (c *APIClient) UpdateRecord(domain string, subdomain string, rec paramStruct) error {
 	call := &methodCall{
 		MethodName: "updateZoneRecord",
 		Params: []param{
@@ -302,13 +309,13 @@ func (c *LoopiaClient) UpdateRecord(domain string, subdomain string, rec paramSt
 //Delete
 
 // DeleteRecordSimulate only prints info about a record deletion. Used for debugging.
-func (c *LoopiaClient) DeleteRecordSimulate(domain string, subdomain string, recordID uint32) error {
+func (c *APIClient) DeleteRecordSimulate(domain string, subdomain string, recordID uint32) error {
 	fmt.Printf("delete: domain: %s; subdomain: %s; recordID: %d\n", domain, subdomain, recordID)
 	return nil
 }
 
 // DeleteRecord deletes a record.
-func (c *LoopiaClient) DeleteRecord(domain string, subdomain string, recordID uint32) error {
+func (c *APIClient) DeleteRecord(domain string, subdomain string, recordID uint32) error {
 	call := &methodCall{
 		MethodName: "removeZoneRecord",
 		Params: []param{
@@ -330,7 +337,7 @@ func (c *LoopiaClient) DeleteRecord(domain string, subdomain string, recordID ui
 }
 
 // DeleteSubdomain deletes a sub-domain and its child records.
-func (c *LoopiaClient) DeleteSubdomain(domain, subdomain string) error {
+func (c *APIClient) DeleteSubdomain(domain, subdomain string) error {
 	call := &methodCall{
 		MethodName: "removeSubdomain",
 		Params: []param{
@@ -353,7 +360,7 @@ func (c *LoopiaClient) DeleteSubdomain(domain, subdomain string) error {
 // rpcCall makes an XML-RPC call to Loopia's RPC endpoint
 // by marshaling the data given in the call argument to XML and sending that via HTTP Post to Loopia.
 // The response is then unmarshalled into the resp argument.
-func (c *LoopiaClient) rpcCall(call *methodCall, resp response) error {
+func (c *APIClient) rpcCall(call *methodCall, resp response) error {
 	callBody, err := xml.MarshalIndent(call, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshalling the API request XML callBody: %w", err)
@@ -396,7 +403,7 @@ func (c *LoopiaClient) rpcCall(call *methodCall, resp response) error {
 	return nil
 }
 
-func (c *LoopiaClient) httpPost(url string, bodyType string, body io.Reader) ([]byte, error) {
+func (c *APIClient) httpPost(url string, bodyType string, body io.Reader) ([]byte, error) {
 	c.requestRateLimiter.beforeRequest()
 	resp, err := c.HTTPClient.Post(url, bodyType, body)
 	c.requestRateLimiter.afterRequest()

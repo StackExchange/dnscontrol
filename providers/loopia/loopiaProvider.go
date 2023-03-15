@@ -79,7 +79,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 // newHelper generates a handle.
-func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, error) {
+func newHelper(m map[string]string, metadata json.RawMessage) (*APIClient, error) {
 	if m["username"] == "" {
 		return nil, fmt.Errorf("missing Loopia API username")
 	}
@@ -127,9 +127,9 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 // Section 3: Domain Service Provider (DSP) related functions
 
 // ListZones lists the zones on this account.
-func (c *LoopiaClient) ListZones() ([]string, error) {
+func (c *APIClient) ListZones() ([]string, error) {
 
-	listResp, err := c.GetDomains()
+	listResp, err := c.getDomains()
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (c *LoopiaClient) ListZones() ([]string, error) {
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (c *LoopiaClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *APIClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	existing, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (c *LoopiaClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (c *LoopiaClient) GetZoneRecords(domain string) (models.Records, error) {
+func (c *APIClient) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Two approaches. One: get all SubDomains, and get their respective records
 	// simultaneously, or first get subdomains then fill each subdomain with its
@@ -207,7 +207,7 @@ func (c *LoopiaClient) GetZoneRecords(domain string) (models.Records, error) {
 		}
 		//step 2: records for subdomains
 		// Get subdomain records:
-		subdomainrecords, err := c.GetDomainRecords(domain, subdomain)
+		subdomainrecords, err := c.getDomainRecords(domain, subdomain)
 		if err != nil {
 			return nil, err
 		}
@@ -297,7 +297,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *LoopiaClient) GenerateZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *APIClient) GenerateZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
 	}
@@ -409,20 +409,19 @@ func debugRecords(note string, recs []*models.RecordConfig) {
 // Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.
-func (c *LoopiaClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *APIClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.ModifyNameServers {
 		return nil, nil
-	} else {
-		nameservers, err := c.GetDomainNS(domain)
-		if err != nil {
-			return nil, err
-		}
-		return models.ToNameserversStripTD(nameservers)
 	}
+	nameservers, err := c.GetDomainNS(domain)
+	if err != nil {
+		return nil, err
+	}
+	return models.ToNameserversStripTD(nameservers)
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
-func (c *LoopiaClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *APIClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	existingNs, err := c.GetDomainNS(dc.Name)
 	if err != nil {

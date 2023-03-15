@@ -110,17 +110,20 @@ type zoneRecord struct {
 	// Properties map[string]interface{}
 }
 
+// zoneRecordsResponse decodes the API zoneRecords call.
 type zoneRecordsResponse struct {
 	responseFault
 	XMLName     xml.Name     `xml:"methodResponse"`
 	ZoneRecords []zoneRecord `xml:"params>param>value>array>data>value>struct"`
 }
 
+// Property is an XML Key/value.
 type Property struct {
 	Key   string `xml:"name"`
 	Value Value  `xml:"value"`
 }
 
+// Value is a xml any
 type Value struct {
 	// String string `xml:",any"`
 	String string `xml:"string"`
@@ -128,10 +131,17 @@ type Value struct {
 	Bool   bool   `xml:"bool"`
 }
 
-func (p Property) Name() string   { return p.Key }
+// Name is an accessor to the Property's name.
+func (p Property) Name() string { return p.Key }
+
+// String is an accessor to the Property's value when it is a string.
 func (p Property) String() string { return p.Value.String }
-func (p Property) Int() int       { return p.Value.Int }
-func (p Property) Bool() bool     { return p.Value.Bool }
+
+// Int is an accessor to the Property's value when it is a integer.
+func (p Property) Int() int { return p.Value.Int }
+
+// Bool is an accessor to the Property's value when it is a boolean.
+func (p Property) Bool() bool { return p.Value.Bool }
 
 func (zr *zoneRecord) GetZR() zRec {
 	record := zRec{}
