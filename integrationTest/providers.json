@@ -134,6 +134,11 @@
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
   },
+  "LOOPIA": {
+    "username": "$LOOPIA_USERNAME",
+    "password": "$LOOPIA_PASSWORD",
+    "domain": "$LOOPIA_DOMAIN"
+  },
   "LUADNS": {
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL",

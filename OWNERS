@@ -24,6 +24,7 @@ providers/hostingde @juliusrickert
 providers/internetbs @pragmaton
 providers/inwx @patschi
 providers/linode @koesie10
+providers/loopia @systemcrash
 providers/luadns @riku22
 providers/msdns @tlimoncelli
 providers/namecheap @willpower232
