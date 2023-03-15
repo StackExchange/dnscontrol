@@ -18,19 +18,18 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
 
-- AWS Route 53
-- AXFR+DDNS
-- Active Directory (Deprecated, see Microsoft DNS)
 - Akamai Edge DNS
 - AutoDNS
+- AWS Route 53
+- AXFR+DDNS
 - Azure DNS
 - BIND
-- ClouDNS
 - Cloudflare
+- ClouDNS
 - deSEC
+- DigitalOcean
 - DNS Made Easy
 - DNSimple
-- DigitalOcean
 - Domainnameshop (Domeneshop)
 - Exoscale
 - Gandi
@@ -45,13 +44,13 @@ Currently supported DNS providers:
 - Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
-- NS1
-- Name.com
 - Namecheap
+- Name.com
 - Netcup
 - Netlify
-- OVH
+- NS1
 - Oracle Cloud
+- OVH
 - Packetframe
 - Porkbun
 - PowerDNS
@@ -71,10 +70,10 @@ Currently supported Domain Registrars:
 - hosting.de
 - Internet.bs
 - INWX
-- Name.com
 - Namecheap
-- OVH
+- Name.com
 - OpenSRS
+- OVH
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
