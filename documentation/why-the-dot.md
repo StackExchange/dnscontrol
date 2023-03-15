@@ -29,12 +29,15 @@ add the domain to it.
 
 Here are four examples:
 
+{% code title="dnsconfig.js" %}
 ```javascript
     CNAME("foo", "bar")       // Permitted. (expands to bar.$DOMAIN)
     CNAME("foo", "bar.com.")  // Permitted. (we are certain what the user wants)
     CNAME("foo", "bar.com")   // ERROR (ambiguous)
     CNAME("foo", "meta.xyz")  // ERROR (ambiguous)
 ```
+{% endcode %}
+
 
 The first 2 examples are permitted.  The last 2 examples are
 ambiguous and are therefore are considered errors.

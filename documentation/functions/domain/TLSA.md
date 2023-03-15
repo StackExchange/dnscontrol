@@ -16,7 +16,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-TLSA adds a TLSA record to a domain. The name should be the relative label for the record.
+`TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
 
 Usage, selector, and type are ints.
 
