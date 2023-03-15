@@ -76,8 +76,11 @@ Providers in this category and their maintainers are:
 |---|---|
 |`AZURE_DNS`|@vatsalyagoel|
 |`BIND`|@tlimoncelli|
+|`CLOUDFLAREAPI`|@tresni|
+|`CSCGLOBAL`|@mikenz|
 |`GCLOUD`|@riyadhalnur|
-|`NAMEDOTCOM`|@tlimoncelli|
+|`MSDNS`|@tlimoncelli|
+|`ROUTE53`|@tresni|
 
 ### Providers with "contributor support"
 
@@ -100,16 +103,16 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
-|`AXFRDDNS`|@hnrgrgr|
 |`AKAMAIEDGEDNS`|@svernick|
-|`CLOUDNS`|@pragmaton|
+|`AXFRDDNS`|@hnrgrgr|
 |`CLOUDFLAREAPI`|@tresni|
+|`CLOUDNS`|@pragmaton|
 |`CSCGLOBAL`|@Air-New-Zealand|
 |`DESEC`|@D3luxee|
 |`DIGITALOCEAN`|@Deraen|
-|`DNSOVERHTTPS`|@mikenz|
 |`DNSIMPLE`|@onlyhavecans|
 |`DNSMADEEASY`|@vojtad|
+|`DNSOVERHTTPS`|@mikenz|
 |`DOMAINNAMESHOP`|@SimenBai|
 |`EASYNAME`|@tresni|
 |`EXOSCALE`|@pierre-emmanuelJ|
@@ -132,8 +135,8 @@ Providers in this category and their maintainers are:
 |`OVH`|@masterzen|
 |`PACKETFRAME`|@hamptonmoore|
 |`POWERDNS`|@jpbede|
-|`RWTH`|@MisterErwin|
 |`ROUTE53`|@tresni|
+|`RWTH`|@MisterErwin|
 |`SOFTLAYER`|@jamielennox|
 |`TRANSIP`|@blackshadev|
 |`VULTR`|@pgaskin|
