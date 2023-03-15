@@ -13,8 +13,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+// Verb indicates the Change's type (create, delete, etc.)
 type Verb int
 
+// CREATE and other verbs.
 const (
 	_      Verb = iota // Skip the first value of 0
 	CREATE             // Create a record/recordset/label where none existed before.
@@ -23,8 +25,11 @@ const (
 	REPORT             // No change, but I have something to say!
 )
 
+// ChangeList is a list of Change
 type ChangeList []Change
 
+// Change is an instruction to the provider. Generally if one properly executes
+// all the changes, an "existing" zone will turn into the "desired" zone.
 type Change struct {
 	Type Verb // Add, Change, Delete
 
