@@ -796,6 +796,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  * ```
  * 
  * Use `NAMESERVER_TTL('3600'),` or `NAMESERVER_TTL('1h'),` for a 1h default TTL for all subsequent `NS` entries:
+ * 
  * ```javascript
  * D('example.com', REGISTRAR, DnsProvider('xyz'),
  *   DefaultTTL("4h"),
@@ -1133,11 +1134,15 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  *   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
  *   PTR('1.2.3.10', 'ten.example.com.'),    // '10'
  * );
+ * ```
  * 
+ * ```javascript
  * D(REV('9.9.9.128/25'), REGISTRAR, DnsProvider(BIND),
  *   PTR('9.9.9.129', 'first.example.com.'),
  * );
+ * ```
  * 
+ * ```javascript
  * D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
  *   PTR('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0', 'foo.example.com.'),  // 2001:db8:302::1
  *   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
@@ -2068,8 +2073,10 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  *   ],
  *   failureOptions: '1',
  *   reportInterval: '1h',
- * }),
+ * });
+ * ```
  * 
+ * ```javascript
  * DMARC_BUILDER({
  *   label: 'insecure',
  *   policy: 'none',
@@ -2080,7 +2087,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  *       SPF: false,
  *       DKIM: true,
  *   },
- * })
+ * });
  * ```
  * 
  * This yields the following records:
