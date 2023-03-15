@@ -23,6 +23,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),

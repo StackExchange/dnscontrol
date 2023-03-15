@@ -55,6 +55,8 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return rc.SetTargetCAAString(contents)
 	case "DS":
 		return rc.SetTargetDSString(contents)
+	case "LOC":
+		return rc.SetTargetLOCString(origin, contents)
 	case "MX":
 		return rc.SetTargetMXString(contents)
 	case "NAPTR":

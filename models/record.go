@@ -22,6 +22,7 @@ import (
 //	  ANAME  // Technically not an official rtype yet.
 //	  CAA
 //	  CNAME
+//	  LOC
 //	  MX
 //	  NAPTR
 //	  NS
@@ -103,6 +104,13 @@ type RecordConfig struct {
 	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 	DsDigest         string            `json:"dsdigest,omitempty"`
+	LocVersion       uint8             `json:"locversion,omitempty"`
+	LocSize          uint8             `json:"locsize,omitempty"`
+	LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
+	LocVertPre       uint8             `json:"locvertpre,omitempty"`
+	LocLatitude      uint32            `json:"loclatitude,omitempty"`
+	LocLongitude     uint32            `json:"loclongitude,omitempty"`
+	LocAltitude      uint32            `json:"localtitude,omitempty"`
 	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 	NaptrFlags       string            `json:"naptrflags,omitempty"`
@@ -164,6 +172,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 		DsDigest         string            `json:"dsdigest,omitempty"`
+		LocVersion       uint8             `json:"locversion,omitempty"`
+		LocSize          uint8             `json:"locsize,omitempty"`
+		LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
+		LocVertPre       uint8             `json:"locvertpre,omitempty"`
+		LocLatitude      int               `json:"loclatitude,omitempty"`
+		LocLongitude     int               `json:"loclongitude,omitempty"`
+		LocAltitude      uint32            `json:"localtitude,omitempty"`
 		NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 		NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 		NaptrFlags       string            `json:"naptrflags,omitempty"`
@@ -376,6 +391,17 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DS).DigestType = rc.DsDigestType
 		rr.(*dns.DS).Digest = rc.DsDigest
 		rr.(*dns.DS).KeyTag = rc.DsKeyTag
+	case dns.TypeLOC:
+		//this is for records from .js files and read from API
+		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
+		// fmt.Printf("ToRR rc: %+v\n", *rc)
+		rr.(*dns.LOC).Version = rc.LocVersion
+		rr.(*dns.LOC).Longitude = rc.LocLongitude
+		rr.(*dns.LOC).Latitude = rc.LocLatitude
+		rr.(*dns.LOC).Altitude = rc.LocAltitude
+		rr.(*dns.LOC).Size = rc.LocSize
+		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
+		rr.(*dns.LOC).VertPre = rc.LocVertPre
 	case dns.TypePTR:
 		rr.(*dns.PTR).Ptr = rc.GetTargetField()
 	case dns.TypeNAPTR:
@@ -542,6 +568,8 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.target = strings.ToLower(r.target)
+		case "LOC":
+			// Do nothing to affect case of letters.
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.

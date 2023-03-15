@@ -47,6 +47,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can("G-Core doesn't support SRV records with empty targets"),

@@ -88,6 +88,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }

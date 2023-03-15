@@ -24,6 +24,7 @@ type softlayerProvider struct {
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones: providers.Unimplemented(),
+	providers.CanUseLOC:   providers.Cannot(),
 	providers.CanUseSRV:   providers.Can(),
 }
 
