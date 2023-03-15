@@ -9,13 +9,13 @@ parameter_types:
 ---
 
 `D_EXTEND` adds records (and metadata) to a domain previously defined
-by `D()`. It can also be used to add subdomain records (and metadata)
+by [`D()`](D.md). It can also be used to add subdomain records (and metadata)
 to a previously defined domain.
 
 The first argument is a domain name. If it exactly matches a
-previously defined domain, `D_EXTEND()` behaves the same as `D()`,
+previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md),
 simply adding records as if they had been specified in the original
-`D()`.
+[`D()`](D.md).
 
 If the domain name does not match an existing domain, but could be a
 (non-delegated) subdomain of an existing domain, the new records (and
@@ -24,12 +24,12 @@ names (labels), and targets (as appropriate). See the examples below.
 
 Matching the domain name to previously-defined domains is done using a
 `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
-defined as separate domains via separate `D()` statements, then
+defined as separate domains via separate [`D()`](D.md) statements, then
 `D_EXTEND('sub.sub.domain.tld', ...)` would match `sub.domain.tld`,
 not `domain.tld`.
 
 Some operators only act on an apex domain (e.g.
-`CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
+[`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
 {% code title="dnsconfig.js" %}
@@ -83,7 +83,7 @@ ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next
 person that edits the file, who may not be as expert as yourself.
 Enhance readability by putting any `D_EXTEND()` statements immediately
-after the original `D()`, like in above example.  Avoid the temptation
+after the original [`D()`](D.md), like in above example.  Avoid the temptation
 to obscure the addition of records to existing domains with randomly
 placed `D_EXTEND()` statements. Don't build up a domain using loops of
 `D_EXTEND()` statements. You'll be glad you didn't.

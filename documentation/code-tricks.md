@@ -20,6 +20,7 @@ Domains that use Google G-Suite require a specific list of MX
 records, plus there are some CNAMEs that are useful (but we only
 want the CNAMEs on a subset of domains).
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var GOOGLE_APPS_DOMAIN_MX = [
   MX("@", 1, "aspmx.l.google.com."),
@@ -51,6 +52,8 @@ D("aliasdomain.tld", DnsProvider(...),
    CNAME(...)
 }
 ```
+{% endcode %}
+
 
 # Many domains with the exact same records
 
@@ -59,6 +62,7 @@ records.
 
 Solution: Use a loop. (Note: See caveats below.)
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // The domains are parked. Use the exact same records for each.
 _.each(
@@ -75,6 +79,8 @@ _.each(
   }
 );
 ```
+{% endcode %}
+
 
 # Caveats about getting too fancy
 
