@@ -175,7 +175,7 @@ func (c *LoopiaClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return c.GenerateZoneRecordsCorrections(dc, clean)
+	return c.GetZoneRecordsCorrections(dc, clean)
 }
 
 // GetZoneRecords gathers the DNS records and converts them to
@@ -297,7 +297,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *LoopiaClient) GenerateZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *LoopiaClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
 	}
