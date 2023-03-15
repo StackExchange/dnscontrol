@@ -42,6 +42,7 @@ Currently supported DNS providers:
 - Hurricane Electric DNS
 - INWX
 - Linode
+- Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
 - NS1
