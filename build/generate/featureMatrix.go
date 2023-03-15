@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/providers"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
-	"github.com/fbiville/markdown-table-formatter/pkg/markdown"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/fbiville/markdown-table-formatter/pkg/markdown"
 )
 
 func generateFeatureMatrix() error {
@@ -72,7 +73,7 @@ func featureEmoji(
 
 func matrixData() *FeatureMatrix {
 	const (
-		OfficialSupport      = "Official Support"
+		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
 		DomainModifierAlias  = "ALIAS"
