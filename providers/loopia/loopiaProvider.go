@@ -87,22 +87,22 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 		return nil, fmt.Errorf("missing Loopia API password")
 	}
 
-	const boolean_string_warn = " setting as a 'string': 't', 'true', 'True' etc"
+	const booleanStringWarn = " setting as a 'string': 't', 'true', 'True' etc"
 	var err error
 
-	modify_name_servers := false
+	modifyNameServers := false
 	if m["modify_name_servers"] != "" { // optional
-		modify_name_servers, err = strconv.ParseBool(m["modify_name_servers"])
+		modifyNameServers, err = strconv.ParseBool(m["modify_name_servers"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the modify_name_servers" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the modify_name_servers" + booleanStringWarn)
 		}
 	}
 
-	fetch_apex_ns_entries := false
+	fetchApexNSEntries := false
 	if m["fetch_apex_ns_entries"] != "" { // optional
-		fetch_apex_ns_entries, err = strconv.ParseBool(m["fetch_apex_ns_entries"])
+		fetchApexNSEntries, err = strconv.ParseBool(m["fetch_apex_ns_entries"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the fetch_apex_ns_entries" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the fetch_apex_ns_entries" + booleanStringWarn)
 		}
 	}
 
@@ -110,11 +110,11 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 	if m["debug"] != "" { //debug is optional
 		dbg, err = strconv.ParseBool(m["debug"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the debug" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the debug" + booleanStringWarn)
 		}
 	}
 
-	api := NewClient(m["username"], m["password"], strings.ToLower(m["region"]), modify_name_servers, fetch_apex_ns_entries, dbg)
+	api := NewClient(m["username"], m["password"], strings.ToLower(m["region"]), modifyNameServers, fetchApexNSEntries, dbg)
 
 	quota := m["rate_limit_per"]
 	err = api.requestRateLimiter.setRateLimitPer(quota)

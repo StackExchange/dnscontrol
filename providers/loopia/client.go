@@ -217,9 +217,7 @@ func (c *LoopiaClient) GetSubDomains(domain string) ([]string, error) {
 
 // GetDomainNS gets all NS records for a subdomain, in this case, the apex "@"
 func (c *LoopiaClient) GetDomainNS(domain string) ([]string, error) {
-	if c.ModifyNameServers {
-		return []string{}, nil
-	} else {
+	if !c.ModifyNameServers {
 		if c.FetchNSEntries {
 			return []string{defaultNS1, defaultNS2}, nil
 		} else {

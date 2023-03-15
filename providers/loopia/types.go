@@ -157,11 +157,11 @@ func (zrec *zRec) SetZR() zoneRecord {
 	return zoneRecord{
 		XMLName: xml.Name{Local: "struct"},
 		Properties: []Property{
-			Property{Key: "type", Value: Value{String: zrec.Type}},
-			Property{Key: "ttl", Value: Value{Int: int(zrec.TTL)}},
-			Property{Key: "priority", Value: Value{Int: int(zrec.Priority)}},
-			Property{Key: "rdata", Value: Value{String: zrec.Rdata}},
-			Property{Key: "record_id", Value: Value{Int: int(zrec.RecordID)}},
+			{Key: "type", Value: Value{String: zrec.Type}},
+			{Key: "ttl", Value: Value{Int: int(zrec.TTL)}},
+			{Key: "priority", Value: Value{Int: int(zrec.Priority)}},
+			{Key: "rdata", Value: Value{String: zrec.Rdata}},
+			{Key: "record_id", Value: Value{Int: int(zrec.RecordID)}},
 		},
 	}
 }
