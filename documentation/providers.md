@@ -154,7 +154,6 @@ code to support this provider, we'd be glad to help in any way.
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
-* [Knot DNS](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
 * [RRPPRoxy](https://github.com/StackExchange/dnscontrol/issues/1656) (#1656)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
