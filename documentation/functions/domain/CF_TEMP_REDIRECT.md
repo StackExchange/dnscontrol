@@ -14,7 +14,7 @@ parameter_types:
 `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
 Rules) to generate a HTTP 302 temporary redirect.
 
-If _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then
+If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
 `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
 Page Rule types other than "Forwarding URL” will be left alone.
 

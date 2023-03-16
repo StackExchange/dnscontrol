@@ -43,8 +43,11 @@ differencing engine, such as maps of which labels and RecordKeys
 exist.
 */
 
+// ComparableFunc is a signature for functions used to generate a comparable
+// blob for custom records and records with metadata.
 type ComparableFunc func(*models.RecordConfig) string
 
+// CompareConfig stores a zone's records in a structure that makes comparing two zones convenient.
 type CompareConfig struct {
 	// The primary data. Each record stored once, grouped by label then
 	// by rType:
@@ -88,6 +91,7 @@ type targetConfig struct {
 	rec *models.RecordConfig // The RecordConfig itself.
 }
 
+// NewCompareConfig creates a CompareConfig from a set of records and other data.
 func NewCompareConfig(origin string, existing, desired models.Records, compFn ComparableFunc) *CompareConfig {
 	cc := &CompareConfig{
 		existing: existing,
@@ -101,14 +105,15 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	}
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
 	cc.addRecords(desired, false)
-	cc.VerifyCNAMEAssertions()
+	cc.verifyCNAMEAssertions()
 	sort.Slice(cc.ldata, func(i, j int) bool {
 		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
 	})
 	return cc
 }
 
-func (cc *CompareConfig) VerifyCNAMEAssertions() {
+// verifyCNAMEAssertions verifies assertions about CNAME updates ordering.
+func (cc *CompareConfig) verifyCNAMEAssertions() {
 
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be

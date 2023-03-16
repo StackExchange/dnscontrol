@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-TXT adds an TXT record To a domain. The name should be the relative
+`TXT` adds an `TXT` record To a domain. The name should be the relative
 label for the record. Use `@` for the domain apex.
 
 The contents is either a single or multiple strings.  To
@@ -49,7 +49,7 @@ if it does not handle multiple strings.
 
 ### TXT record edge cases
 
-Most providers do not support the full possibilities of what a TXT
+Most providers do not support the full possibilities of what a `TXT`
 record can store.  DNSControl can not handle all the edge cases
 and incompatibles that providers have introduced.  Instead, it
 stores the string(s) that you provide and passes them to the provider
@@ -57,14 +57,14 @@ verbatim. The provider may opt to accept the data, fix it, or
 reject it. This happens early in the processing, long before
 the DNSControl talks to the provider's API.
 
-The RFCs specify that a TXT record stores one or more strings,
+The RFCs specify that a `TXT` record stores one or more strings,
 each is up to 255 octets (bytes) long. We call these individual
 strings *chunks*.  Each chunk may be zero to 255 octets long.
-There is no limit to the number of chunks in a TXT record,
+There is no limit to the number of chunks in a `TXT` record,
 other than IP packet length restrictions.  The contents of each chunk
 may be octets of value from 0x00 to 0xff.
 
-In reality DNS Service Providers (DSPs) place many restrictions on TXT
+In reality DNS Service Providers (DSPs) place many restrictions on `TXT`
 records.
 
 Some DSPs only support a single string of 255 octets or fewer.
@@ -87,7 +87,7 @@ double quotes, back-ticks, or other chars.
 
 #### How can you tell if a provider will support a particular `TXT()` record?
 
-Include the `TXT()` record in a `D()` as usual, along
+Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
 with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
 see if any errors are produced.  The check command does not talk to
 the provider's API, thus permitting you to do this without having an

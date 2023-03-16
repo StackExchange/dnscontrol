@@ -10,7 +10,7 @@ ts_return: string
 `REV` returns the reverse lookup domain for an IP network. For
 example `REV('1.2.3.0/24')` returns `3.2.1.in-addr.arpa.` and
 `REV('2001:db8:302::/48)` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
-This is used in `D()` functions to create reverse DNS lookup zones.
+This is used in [`D()`](D.md) functions to create reverse DNS lookup zones.
 
 This is a convenience function. You could specify `D('3.2.1.in-addr.arpa',
 ...` if you like to do things manually but why would you risk making
@@ -51,6 +51,6 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
 ```
 {% endcode %}
 
-In the future we plan on adding a flag to `A()` which will insert
-the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been
+In the future we plan on adding a flag to [`A()`](../domain/A.md)which will insert
+the correct PTR() record in the appropriate `D(REV())` domain (i.e. `.arpa` domain) has been
 defined.
