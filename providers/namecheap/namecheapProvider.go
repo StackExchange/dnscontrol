@@ -30,6 +30,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -99,7 +100,7 @@ func doWithRetry(f func() error) {
 		if err == nil {
 			return
 		}
-		if strings.Contains(err.Error(), "Error 500000: Too many requests") {
+		if strings.Contains(err.Error(), "unexpected status code from api: 405") {
 			currentRetry++
 			if currentRetry >= maxRetries {
 				return
@@ -191,48 +192,46 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(actual)
-		if err != nil {
-			return nil, err
-		}
-
-		// // because namecheap doesn't have selective create, delete, modify,
-		// // we bundle them all up to send at once.  We *do* want to see the
-		// // changes though
-
-		var desc []string
-		for _, i := range create {
-			desc = append(desc, "\n"+i.String())
-		}
-		for _, i := range delete {
-			desc = append(desc, "\n"+i.String())
-		}
-		for _, i := range modify {
-			desc = append(desc, "\n"+i.String())
-		}
-
-		msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
-		corrections := []*models.Correction{}
-
-		// only create corrections if there are changes
-		if len(desc) > 0 {
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: msg,
-					F: func() error {
-						return n.generateRecords(dc)
-					},
-				})
-		}
-
-		return corrections, nil
+	var create, delete, modify diff.Changeset
+	var differ diff.Differ
+	if !diff2.EnableDiff2 {
+		differ = diff.New(dc)
+	} else {
+		differ = diff.NewCompat(dc)
+	}
+	_, create, delete, modify, err = differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	// because namecheap doesn't have selective create, delete, modify,
+	// we bundle them all up to send at once.  We *do* want to see the
+	// changes though
+
+	var desc []string
+	for _, i := range create {
+		desc = append(desc, "\n"+i.String())
+	}
+	for _, i := range delete {
+		desc = append(desc, "\n"+i.String())
+	}
+	for _, i := range modify {
+		desc = append(desc, "\n"+i.String())
+	}
+
+	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
+	var corrections []*models.Correction
+
+	// only create corrections if there are changes
+	if len(desc) > 0 {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					return n.generateRecords(dc)
+				},
+			})
+	}
 
 	return corrections, nil
 }

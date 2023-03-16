@@ -33,7 +33,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 				// NB(tlim): In v4.0 this "if" can be removed.
 				fmt.Fprintf(os.Stderr, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
 					arg1, "-",
-					"https://stackexchange.github.io/dnscontrol/get-zones.html",
+					"https://docs.dnscontrol.org/commands/get-zones",
 				)
 			}
 
@@ -172,7 +172,7 @@ func GetZone(args GetZoneArgs) error {
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
-			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
+			return fmt.Errorf("provider type %s:%s cannot list zones to use the 'all' feature", args.CredName, args.ProviderName)
 		}
 		zones, err = lister.ListZones()
 		if err != nil {

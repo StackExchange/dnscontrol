@@ -48,6 +48,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
@@ -244,13 +245,13 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -399,8 +400,8 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 	return nil
 }
 
-// EnsureDomainExists returns an error if domain does not exist.
-func (api *inwxAPI) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *inwxAPI) EnsureZoneExists(domain string) error {
 	if api.domainIndex == nil { // only pull the data once.
 		if err := api.fetchNameserverDomains(); err != nil {
 			return err
@@ -408,10 +409,10 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	}
 
 	if _, ok := api.domainIndex[domain]; ok {
-		return nil // domain exists.
+		return nil // zone exists.
 	}
 
-	// creating the domain.
+	// creating the zone.
 	request := &goinwx.NameserverCreateRequest{
 		Domain:      domain,
 		Type:        "MASTER",

@@ -2,7 +2,6 @@ package normalize
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -199,6 +198,28 @@ func TestNSAtRoot(t *testing.T) {
 	}
 }
 
+func TestURLFWDValid(t *testing.T) {
+	rec := &models.RecordConfig{Type: "URLFWD"}
+	rec.SetLabel("test1", "foo.com")
+	rec.SetTarget("/ http://example.com 302 2 0")
+
+	errs := checkTargets(rec, "foo.com")
+	if len(errs) > 0 {
+		t.Error("Expect no error with valid URLFWD target")
+	}
+}
+
+func TestURLFWDInvalid(t *testing.T) {
+	rec := &models.RecordConfig{Type: "URLFWD"}
+	rec.SetLabel("test2", "foo.com")
+	rec.SetTarget("/ http://example.com 302 2")
+
+	errs := checkTargets(rec, "foo.com")
+	if len(errs) == 0 {
+		t.Error("Expect error with invalid URLFWD target")
+	}
+}
+
 func TestTransforms(t *testing.T) {
 	var tests = []struct {
 		givenIP         string
@@ -330,16 +351,6 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	errs := checkDuplicates(records)
 	if len(errs) == 0 {
 		t.Error("Expect duplicate found but found none")
-	}
-}
-
-func TestUniq(t *testing.T) {
-	a := []uint32{1, 2, 2, 3, 4, 5, 5, 6}
-	expected := []uint32{1, 2, 3, 4, 5, 6}
-
-	r := uniq(a)
-	if !reflect.DeepEqual(r, expected) {
-		t.Error("Deduplicated slice is different than expected")
 	}
 }
 

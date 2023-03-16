@@ -37,6 +37,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSOA:              providers.Can(),
@@ -75,7 +76,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 		// If it contains a ".", it must end in a ".".
 		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
-			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://docs.dnscontrol.org/language-reference/why-the-dot]", ns)
 		}
 		// This is one of the (increasingly rare) cases where we store a
 		// name without the trailing dot to indicate a FQDN.
@@ -153,7 +154,6 @@ func (c *bindProvider) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
-	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
@@ -177,10 +177,18 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	c.zoneFileFound = true
 
-	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
+	zonefileName := c.zonefile
 
+	return ParseZoneContents(string(content), domain, zonefileName)
+}
+
+// ParseZoneContents parses a string as a BIND zone and returns the records.
+func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
+	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+
+	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRC(rr, domain)
+		rec, err := models.RRtoRC(rr, zoneName)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +196,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	if err := zp.Err(); err != nil {
-		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
+		return nil, fmt.Errorf("error while parsing '%v': %w", zonefileName, err)
 	}
 	return foundRecords, nil
 }

@@ -17,10 +17,11 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
-	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -61,8 +62,8 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (api *hetznerProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 	domains, err := api.ListZones()
 	if err != nil {
 		return err
@@ -104,13 +105,13 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 	var corrections []*models.Correction
 	var create, del, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

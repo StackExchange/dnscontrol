@@ -74,6 +74,7 @@ retry:
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -87,8 +88,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *digitaloceanProvider) EnsureZoneExists(domain string) error {
 retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
@@ -147,20 +148,19 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var create, delete, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deletes first so changing type works etc.
-	for _, m := range delete {
+	for _, m := range toDelete {
 		id := m.Existing.Original.(*godo.DomainRecord).ID
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
@@ -177,7 +177,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		}
 		corrections = append(corrections, corr)
 	}
-	for _, m := range create {
+	for _, m := range toCreate {
 		req := toReq(dc, m.Desired)
 		corr := &models.Correction{
 			Msg: m.String(),
@@ -194,7 +194,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		}
 		corrections = append(corrections, corr)
 	}
-	for _, m := range modify {
+	for _, m := range toModify {
 		id := m.Existing.Original.(*godo.DomainRecord).ID
 		req := toReq(dc, m.Desired)
 		corr := &models.Correction{
@@ -278,12 +278,11 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 		CaaFlag:      uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, domain)
-	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXTString(target)
+		t.SetTargetTXT(target)
 	default:
-		// nothing additional required
+		t.SetTarget(target)
 	}
 	return t
 }
@@ -305,7 +304,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetField()
+		target = rc.GetTargetTXTJoined()
 	default:
 		// no action required
 	}

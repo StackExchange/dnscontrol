@@ -118,41 +118,17 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var creates, dels, modifications diff.Changeset
 	var err error
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
-
-	// How to generate corrections?
-
-	// (1) Most providers take individual deletes, creates, and
-	// modifications:
-
-	// // Generate changes.
-	//	corrections := []*models.Correction{}
-	//	for _, del := range dels {
-	//		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-	//	}
-	//	for _, cre := range creates {
-	//		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-	//	}
-	//	for _, m := range modifications {
-	//		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-	//	}
-	//	return corrections, nil
-
-	// (2) Some providers upload the entire zone every time.  Look at
-	// GetDomainCorrections for BIND and NAMECHEAP for inspiration.
-
-	// (3) Others do something entirely different. Like CSCGlobal:
 
 	// CSCGlobal has a unique API.  A list of edits is sent in one API
 	// call. Edits aren't permitted if an existing edit is being

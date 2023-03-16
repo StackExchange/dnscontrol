@@ -11,11 +11,12 @@ func _() {
 	_ = x[CREATE-1]
 	_ = x[CHANGE-2]
 	_ = x[DELETE-3]
+	_ = x[REPORT-4]
 }
 
-const _Verb_name = "CREATECHANGEDELETE"
+const _Verb_name = "CREATECHANGEDELETEREPORT"
 
-var _Verb_index = [...]uint8{0, 6, 12, 18}
+var _Verb_index = [...]uint8{0, 6, 12, 18, 24}
 
 func (i Verb) String() string {
 	i -= 1

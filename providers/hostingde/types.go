@@ -16,23 +16,29 @@ var (
 )
 
 type request struct {
-	AuthToken      string `json:"authToken"`
-	OwnerAccountID string `json:"ownerAccountId,omitempty"`
-	Filter         filter `json:"filter,omitempty"`
-	Limit          uint   `json:"limit,omitempty"`
-	Page           uint   `json:"page,omitempty"`
+	AuthToken      string  `json:"authToken"`
+	OwnerAccountID string  `json:"ownerAccountId,omitempty"`
+	Filter         *filter `json:"filter,omitempty"`
+	Limit          uint    `json:"limit,omitempty"`
+	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
-	ZoneConfig      *zoneConfig `json:"zoneConfig"`
-	RecordsToAdd    []*record   `json:"recordsToAdd"`
-	RecordsToModify []*record   `json:"recordsToModify"`
-	RecordsToDelete []*record   `json:"recordsToDelete"`
+	ZoneConfig      *zoneConfig `json:"zoneConfig,omitempty"`
+	RecordsToAdd    []*record   `json:"recordsToAdd,omitempty"`
+	RecordsToModify []*record   `json:"recordsToModify,omitempty"`
+	RecordsToDelete []*record   `json:"recordsToDelete,omitempty"`
 
 	// Create Zone
-	Records []*record `json:"records"`
+	Records []*record `json:"records,omitempty"`
+
+	DomainName string        `json:"domainName,omitempty"`
+	Add        []dnsSecEntry `json:"add,omitempty"`
+	Remove     []dnsSecEntry `json:"remove,omitempty"`
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
+
+	DNSSECOptions *dnsSecOptions `json:"dnsSecOptions,omitempty"`
 }
 
 type filter struct {
@@ -50,25 +56,54 @@ type domainConfig struct {
 	Name                string          `json:"name"`
 	Contacts            json.RawMessage `json:"contacts"`
 	Nameservers         []nameserver    `json:"nameservers"`
+	DNSSecEntries       []dnsSecEntry   `json:"dnsSecEntries"`
 	TransferLockEnabled bool            `json:"transferLockEnabled"`
 }
 
+type dnsSecEntry struct {
+	KeyData dnsSecKey `json:"keyData"`
+	Comment string    `json:"comment"`
+	KeyTag  uint32    `json:"keyTag"`
+}
+
 type zoneConfig struct {
-	ID           string `json:"id"`
-	DNSSECMode   string `json:"dnsSecMode"`
-	EmailAddress string `json:"emailAddress,omitempty"`
-	MasterIP     string `json:"masterIp"`
-	Name         string `json:"name"` // Not required per docs, but required IRL
-	NameUnicode  string `json:"nameUnicode"`
-	// SOAValues    struct {
-	// 	Refresh     uint32 `json:"refresh"`
-	// 	Retry       uint32 `json:"retry"`
-	// 	Expire      uint32 `json:"expire"`
-	// 	TTL         uint32 `json:"ttl"`
-	// 	NegativeTTL uint32 `json:"negativeTtl"`
-	// } `json:"soaValues,omitempty"`
-	Type                  string   `json:"type"`
-	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+	ID                    string          `json:"id"`
+	DNSSECMode            string          `json:"dnsSecMode"`
+	EmailAddress          string          `json:"emailAddress,omitempty"`
+	MasterIP              string          `json:"masterIp"`
+	Name                  string          `json:"name"` // Not required per docs, but required IRL
+	NameUnicode           string          `json:"nameUnicode"`
+	SOAValues             soaValues       `json:"soaValues,omitempty"`
+	Type                  string          `json:"type"`
+	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
+	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
+}
+
+type soaValues struct {
+	Refresh     uint32 `json:"refresh"`
+	Retry       uint32 `json:"retry"`
+	Expire      uint32 `json:"expire"`
+	NegativeTTL uint32 `json:"negativeTtl"`
+	TTL         uint32 `json:"ttl"`
+}
+
+type zone struct {
+	ZoneConfig zoneConfig `json:"zoneConfig"`
+	Records    []record   `json:"records"`
+}
+
+type dnsSecOptions struct {
+	Keys       []dnsSecEntry `json:"keys,omitempty"`
+	Algorithms []string      `json:"algorithms,omitempty"`
+	NSECMode   string        `json:"nsecMode"`
+	PublishKSK bool          `json:"publishKsk"`
+}
+
+type dnsSecKey struct {
+	Flags     uint32 `json:"flags"`
+	Protocol  uint32 `json:"protocol"`
+	Algorithm uint32 `json:"algorithm"`
+	PublicKey string `json:"publicKey"`
 }
 
 type record struct {
@@ -103,7 +138,7 @@ type responseData struct {
 	TotalPages uint `json:"totalPages"`
 }
 
-func (r *record) nativeToRecord(domain string) *models.RecordConfig {
+func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if r.Type == "ALIAS" || r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		if r.Content != "." {

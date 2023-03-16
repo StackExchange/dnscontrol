@@ -22,6 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(), // should be supported, but getting 500s in tests
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -84,8 +85,8 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (o *oracleProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -241,13 +242,13 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 
 	var create, dels, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

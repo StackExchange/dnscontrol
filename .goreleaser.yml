@@ -10,7 +10,7 @@ builds:
       - darwin
       - freebsd
     ldflags:
-      - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
+      - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
   hooks:
   - go mod tidy
@@ -49,7 +49,7 @@ universal_binaries:
 nfpms:
   - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
     id: packages_rpm
-    homepage:  https://stackexchange.github.io/dnscontrol/
+    homepage:  https://docs.dnscontrol.org/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT
@@ -60,7 +60,7 @@ nfpms:
       amd64: x86_64
   - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
     id: packages_deb
-    homepage:  https://stackexchange.github.io/dnscontrol/
+    homepage:  https://docs.dnscontrol.org/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT

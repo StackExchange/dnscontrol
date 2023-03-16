@@ -17,7 +17,7 @@ import (
 //
 //		  var err error
 //		  switch rType {
-//	   case "MX":
+//		  case "MX":
 //	       // MX priority in a separate field.
 //	       if err := rc.SetTargetMX(cr.Priority, target); err != nil {
 //	         return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
@@ -55,6 +55,8 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return rc.SetTargetCAAString(contents)
 	case "DS":
 		return rc.SetTargetDSString(contents)
+	case "LOC":
+		return rc.SetTargetLOCString(origin, contents)
 	case "MX":
 		return rc.SetTargetMXString(contents)
 	case "NAPTR":

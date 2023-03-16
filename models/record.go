@@ -22,6 +22,7 @@ import (
 //	  ANAME  // Technically not an official rtype yet.
 //	  CAA
 //	  CNAME
+//	  LOC
 //	  MX
 //	  NAPTR
 //	  NS
@@ -52,33 +53,32 @@ import (
 //
 // Name:
 //
-//	This is the shortname i.e. the NameFQDN without the origin suffix.
-//	It should never have a trailing "."
-//	It should never be null. The apex (naked domain) is stored as "@".
-//	If the origin is "foo.com." and Name is "foo.com", this literally means
-//	    the intended FQDN is "foo.com.foo.com." (which may look odd)
+// This is the shortname i.e. the NameFQDN without the origin suffix. It should
+// never have a trailing "." It should never be null. The apex (naked domain) is
+// stored as "@". If the origin is "foo.com." and Name is "foo.com", this means
+// the intended FQDN is "foo.com.foo.com." (which may look odd)
 //
 // NameFQDN:
 //
-//	This is the FQDN version of Name.
-//	It should never have a trailing ".".
-//	NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//	  the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
-//	  as they will always work.
+// This is the FQDN version of Name. It should never have a trailing ".".
+//
+// NOTE: Eventually we will unexport Name/NameFQDN. Please start using
+// the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
+// as they will always work.
 //
 // target:
 //
-//	This is the host or IP address of the record, with
-//	  the other related parameters (weight, priority, etc.) stored in individual
-//	  fields.
-//	NOTE: Eventually we will unexport Target. Please start using the
-//	  setters (SetTarget*) and getters (GetTarget*) as they will always work.
+// This is the host or IP address of the record, with the other related
+// parameters (weight, priority, etc.) stored in individual fields.
+//
+// NOTE: Eventually we will unexport Target. Please start using the
+// setters (SetTarget*) and getters (GetTarget*) as they will always work.
 //
 // SubDomain:
 //
-//	This is the subdomain path, if any, imported from the configuration. If
-//	    present at the time of canonicalization it is inserted between the
-//	    Name and origin when constructing a canonical (FQDN) target.
+// This is the subdomain path, if any, imported from the configuration. If
+// present at the time of canonicalization it is inserted between the
+// Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
 //
@@ -104,6 +104,13 @@ type RecordConfig struct {
 	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 	DsDigest         string            `json:"dsdigest,omitempty"`
+	LocVersion       uint8             `json:"locversion,omitempty"`
+	LocSize          uint8             `json:"locsize,omitempty"`
+	LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
+	LocVertPre       uint8             `json:"locvertpre,omitempty"`
+	LocLatitude      uint32            `json:"loclatitude,omitempty"`
+	LocLongitude     uint32            `json:"loclongitude,omitempty"`
+	LocAltitude      uint32            `json:"localtitude,omitempty"`
 	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 	NaptrFlags       string            `json:"naptrflags,omitempty"`
@@ -165,6 +172,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 		DsDigest         string            `json:"dsdigest,omitempty"`
+		LocVersion       uint8             `json:"locversion,omitempty"`
+		LocSize          uint8             `json:"locsize,omitempty"`
+		LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
+		LocVertPre       uint8             `json:"locvertpre,omitempty"`
+		LocLatitude      int               `json:"loclatitude,omitempty"`
+		LocLongitude     int               `json:"loclongitude,omitempty"`
+		LocAltitude      uint32            `json:"localtitude,omitempty"`
 		NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 		NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 		NaptrFlags       string            `json:"naptrflags,omitempty"`
@@ -184,6 +198,9 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+
+		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
+
 		// NB(tlim): If anyone can figure out how to do this without listing all
 		// the fields, please let us know!
 	}{}
@@ -221,14 +238,11 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 }
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
-// origin must not have a trailing dot: The entire code base
+// origin must not have a trailing dot: The entire code base maintains dc.Name
+// without the trailig dot. Finding a dot here means something is very wrong.
 //
-//	maintains dc.Name without the trailig dot. Finding a dot here means
-//	something is very wrong.
-//
-// short must not have a training dot: That would mean you have
-//
-//	a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
+// short must not have a training dot: That would mean you have a FQDN, and
+// shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
@@ -286,12 +300,9 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
-// It will never end with "."
-// It does not need further shortening (i.e. if it returns "foo.com" and the
-//
-//	domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
-//
-// It will never be "" (the apex is returned as "@").
+// It will never end with ".". It does not need further shortening (i.e. if it
+// returns "foo.com" and the domain is "foo.com" then the FQDN is actually
+// "foo.com.foo.com"). It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
 	return rc.Name
 }
@@ -304,6 +315,8 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 
 // ToDiffable returns a string that is comparable by a differ.
 // extraMaps: a list of maps that should be included in the comparison.
+// NB(tlim): This will be deprecated when pkg/diff is replaced by pkg/diff2.
+// Use // ToComparableNoTTL() instead.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	var content string
 	switch rc.Type {
@@ -334,6 +347,16 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	return content
 }
 
+// ToComparableNoTTL returns a comparison string. If you need to compare two
+// RecordConfigs, you can simply compare the string returned by this function.
+// The comparison includes all fields except TTL and any provider-specific
+// metafields.  Provider-specific metafields like CF_PROXY are not the same as
+// pseudo-records like ANAME or R53_ALIAS
+// This replaces ToDiff()
+func (rc *RecordConfig) ToComparableNoTTL() string {
+	return rc.GetTargetCombined()
+}
+
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
 
@@ -343,7 +366,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
-	// Magicallly create an RR of the correct type.
+	// Magically create an RR of the correct type.
 	rr := dns.TypeToRR[rdtype]()
 
 	// Fill in the header.
@@ -368,6 +391,17 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DS).DigestType = rc.DsDigestType
 		rr.(*dns.DS).Digest = rc.DsDigest
 		rr.(*dns.DS).KeyTag = rc.DsKeyTag
+	case dns.TypeLOC:
+		//this is for records from .js files and read from API
+		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
+		// fmt.Printf("ToRR rc: %+v\n", *rc)
+		rr.(*dns.LOC).Version = rc.LocVersion
+		rr.(*dns.LOC).Longitude = rc.LocLongitude
+		rr.(*dns.LOC).Latitude = rc.LocLatitude
+		rr.(*dns.LOC).Altitude = rc.LocAltitude
+		rr.(*dns.LOC).Size = rc.LocSize
+		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
+		rr.(*dns.LOC).VertPre = rc.LocVertPre
 	case dns.TypePTR:
 		rr.(*dns.PTR).Ptr = rc.GetTargetField()
 	case dns.TypeNAPTR:
@@ -534,6 +568,8 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.target = strings.ToLower(r.target)
+		case "LOC":
+			// Do nothing to affect case of letters.
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.

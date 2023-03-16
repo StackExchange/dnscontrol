@@ -28,7 +28,7 @@ type gcoreRRSetExtended struct {
 	Filters []dnssdk.RecordFilter   `json:"filters"`
 }
 
-func dnssdkDo(c *dnssdk.Client, apiKey string, ctx context.Context, method, uri string, bodyParams interface{}, dest interface{}) error {
+func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri string, bodyParams interface{}, dest interface{}) error {
 	// Adapted from https://github.com/G-Core/gcore-dns-sdk-go/blob/main/client.go#L289
 	// No way to reflect a private method in Golang
 
@@ -96,7 +96,7 @@ func (c *gcoreProvider) dnssdkRRSets(domain string) (gcoreRRSets, error) {
 	var result gcoreRRSets
 	url := fmt.Sprintf("/v2/zones/%s/rrsets?all=true", domain)
 
-	err := dnssdkDo(c.provider, c.apiKey, c.ctx, http.MethodGet, url, nil, &result)
+	err := dnssdkDo(c.ctx, c.provider, c.apiKey, http.MethodGet, url, nil, &result)
 	if err != nil {
 		return gcoreRRSets{}, err
 	}

@@ -19,6 +19,13 @@ type psHandle struct {
 	shell ps.Shell
 }
 
+// func eLog(s string) {
+// 	f, _ := os.OpenFile("powershell.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+// 	f.WriteString(s)
+// 	f.WriteString("\n")
+// 	f.Close()
+// }
+
 func newPowerShell(config map[string]string) (*psHandle, error) {
 
 	back := &backend.Local{}
@@ -200,12 +207,15 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 		c = generatePSDelete(dnsserver, domain, rec)
 	}
 
+	//eLog(c)
 	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return err
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return fmt.Errorf("unexpected stderr from PSDelete: %q", stderr)
 	}
 	return nil
@@ -214,7 +224,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
 
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "..."`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "[target]"`, rec.Type, rec.Name)
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
@@ -228,18 +238,18 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
 	}
 	fmt.Fprintf(&b, ` -Force`)
-	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
-	fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
+	fmt.Fprintf(&b, ` -ZoneName %q`, domain)
+	fmt.Fprintf(&b, ` -Name %q`, rec.Name)
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
 	if rec.Type == "MX" {
-		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -RecordData %d,%q`, rec.MxPreference, rec.GetTargetField())
 	} else if rec.Type == "TXT" {
-		fmt.Fprintf(&b, ` -RecordData %s`, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -RecordData %q`, rec.GetTargetTXTJoined())
 	} else if rec.Type == "SRV" {
 		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
 		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
 	} else {
-		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -RecordData %q`, rec.GetTargetField())
 	}
 	//printer.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()
@@ -256,13 +266,16 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 		//printer.Printf("DEBUG: PScreate\n")
 	}
 
+	//eLog(c)
 	stdout, stderr, err := psh.shell.Execute(c)
 	if err != nil {
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return err
 	}
 	if stderr != "" {
 		printer.Printf("STDOUT RecordCreate = %s\n", stdout)
 		printer.Printf("STDERROR RecordCreate = %q\n", stderr)
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return fmt.Errorf("unexpected stderr from PSCreate: %q", stderr)
 	}
 	return nil
@@ -270,7 +283,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "..."`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "[target]"`, rec.Type, rec.Name)
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
@@ -304,7 +317,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	case "TXT":
 		//printer.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
 		//printer.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
-		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -Txt -DescriptiveText %q`, rec.GetTargetTXTJoined())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
 	//case "RP":
@@ -331,17 +344,21 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	//printer.Printf("DEBUG PSCreate CMD = (\n%s\n)\n", b.String())
+	//printer.Printf("DEBUG PSCreate CMD = (DEBUG-START\n%s\nDEBUG-END)\n", b.String())
 	return b.String()
 }
 
 func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSModify(dnsserver, domain, old, rec))
+	c := generatePSModify(dnsserver, domain, old, rec)
+	//eLog(c)
+	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return err
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
 		return fmt.Errorf("unexpected stderr from PSModify: %q", stderr)
 	}
 	return nil

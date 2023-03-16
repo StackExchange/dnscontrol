@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -35,6 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -77,6 +79,19 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("TRANSIP", fns, features)
+}
+
+func (n *transipProvider) ListZones() ([]string, error) {
+	var domains []string
+
+	domainsMap, _ := n.domains.GetAll()
+	for _, domainname := range domainsMap {
+		domains = append(domains, domainname.Name)
+	}
+
+	sort.Strings(domains)
+
+	return domains, nil
 }
 
 func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -241,7 +256,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
-		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
 		return models.StripQuotes(rc.GetTargetCombined())
 	}

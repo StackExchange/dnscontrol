@@ -58,6 +58,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -74,9 +75,9 @@ func init() {
 	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (c *exoscaleProvider) EnsureDomainExists(domainName string) error {
-	_, err := c.findDomainByName(domainName)
+// EnsureZoneExists creates a zone if it does not exist
+func (c *exoscaleProvider) EnsureZoneExists(domain string) error {
+	_, err := c.findDomainByName(domain)
 
 	return err
 }
@@ -192,13 +193,13 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	var corrections []*models.Correction
 	var create, delete, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

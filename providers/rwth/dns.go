@@ -53,49 +53,48 @@ func (api *rwthProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, d := range create {
-			des := d.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.createRecord(dc.Name, des) },
-			})
-		}
-		for _, d := range del {
-			existingRecord := d.Existing.Original.(RecordReply)
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.destroyRecord(existingRecord) },
-			})
-		}
-		for _, d := range modify {
-			rec := d.Desired
-			existingID := d.Existing.Original.(RecordReply).ID
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.updateRecord(existingID, *rec) },
-			})
-		}
-
-		// And deploy if any corrections were applied
-		if len(corrections) > 0 {
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("Deploy zone %s", domain),
-				F:   func() error { return api.deployZone(domain) },
-			})
-		}
-
-		return corrections, nil
+	var create, del, modify diff.Changeset
+	var differ diff.Differ
+	if !diff2.EnableDiff2 {
+		differ = diff.New(dc)
+	} else {
+		differ = diff.NewCompat(dc)
+	}
+	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	for _, d := range create {
+		des := d.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.createRecord(dc.Name, des) },
+		})
+	}
+	for _, d := range del {
+		existingRecord := d.Existing.Original.(RecordReply)
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.destroyRecord(existingRecord) },
+		})
+	}
+	for _, d := range modify {
+		rec := d.Desired
+		existingID := d.Existing.Original.(RecordReply).ID
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.updateRecord(existingID, *rec) },
+		})
+	}
+
+	// And deploy if any corrections were applied
+	if len(corrections) > 0 {
+		corrections = append(corrections, &models.Correction{
+			Msg: fmt.Sprintf("Deploy zone %s", domain),
+			F:   func() error { return api.deployZone(domain) },
+		})
+	}
 
 	return corrections, nil
 }

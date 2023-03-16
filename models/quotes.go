@@ -31,10 +31,12 @@ func StripQuotes(s string) string {
 }
 
 // ParseQuotedTxt returns the individual strings of a combined quoted string.
-// `foo`  -> []string{"foo"}
-// `"foo"` -> []string{"foo"}
-// `"foo" "bar"` -> []string{"foo", "bar"}
-// `"f"oo" "bar"` -> []string{`f"oo`, "bar"}
+//
+//	`foo`  -> []string{"foo"}
+//	`"foo"` -> []string{"foo"}
+//	`"foo" "bar"` -> []string{"foo", "bar"}
+//	`"f"oo" "bar"` -> []string{`f"oo`, "bar"}
+//
 // NOTE: It is assumed there is exactly one space between the quotes.
 // NOTE: This doesn't handle escaped quotes.
 // NOTE: You probably want to use ParseQuotedFields() for RFC 1035-compliant quoting.

@@ -2,10 +2,10 @@ package hexonet
 
 import "fmt"
 
-// EnsureDomainExists returns an error
+// EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
-func (n *HXClient) EnsureDomainExists(domain string) error {
+func (n *HXClient) EnsureZoneExists(domain string) error {
 	r := n.client.Request(map[string]interface{}{
 		"COMMAND": "StatusDNSZone",
 		"DNSZONE": domain + ".",
@@ -17,7 +17,7 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 			"DNSZONE": domain + ".",
 		})
 		if !r.IsSuccess() {
-			return n.GetHXApiError("Failed to create not existing zone for domain", domain, r)
+			return n.GetHXApiError("Failed to create not existing zone ", domain, r)
 		}
 	} else if code == 531 {
 		return n.GetHXApiError("Not authorized to manage dnszone", domain, r)

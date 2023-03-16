@@ -34,6 +34,9 @@ var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
 
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
+	if len(delimiterIndices) < 1 {
+		return nil, "", fmt.Errorf("failed to parse file. Remove it and try again")
+	}
 	startIndex := delimiterIndices[0][0]
 	endIndex := delimiterIndices[1][0]
 	yamlString := content[startIndex+4 : endIndex]
@@ -54,7 +57,7 @@ var returnTypes = map[string]string{
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
-	srcRoot := join("docs", "_functions")
+	srcRoot := join("documentation", "functions")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return "", err
@@ -81,21 +84,24 @@ func generateFunctionTypes() (string, error) {
 			}
 			frontMatter, body, err := parseFrontMatter(string(content))
 			if err != nil {
-				println("Error parsing front matter in", fPath)
-				return "", err
+				println("Error parsing front matter in", fPath, "error: ", err.Error())
+				continue
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue
 			}
 
-			body = body + "\n"
-			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
-			body = strings.ReplaceAll(body, "{% capture example %}", "")
-			body = strings.ReplaceAll(body, "{% capture example2 %}", "")
-			body = strings.ReplaceAll(body, "{% endcapture %}", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example %}", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}", "")
-			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
+			lines := strings.Split(body, "\n")
+			body = ""
+			for _, line := range lines {
+				if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
+					continue
+				}
+				body += line + "\n"
+			}
+
+			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
+			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
 			body = fixRuns(body)
 
 			paramNames := []string{}
@@ -155,6 +161,7 @@ func generateFunctionTypes() (string, error) {
 	return content, nil
 }
 
+// Function is a struct the stores information about functions.
 type Function struct {
 	Name        string
 	Params      []Param
@@ -164,6 +171,7 @@ type Function struct {
 	Description string
 }
 
+// Param is a struct that stores a parameter.
 type Param struct {
 	Name string
 	Type string
@@ -193,9 +201,8 @@ func (f Function) formatParams() string {
 	}
 	if f.ObjectParam {
 		return "opts: { " + strings.Join(params, "; ") + " }"
-	} else {
-		return strings.Join(params, ", ")
 	}
+	return strings.Join(params, ", ")
 }
 
 func (f Function) docs() string {

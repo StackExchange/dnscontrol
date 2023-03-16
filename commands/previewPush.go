@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/net/idna"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -147,13 +149,18 @@ DomainLoop:
 					if err != nil {
 						return err
 					}
-					if !slices.Contains(zones, domain.Name) {
-						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+					aceZoneName, _ := idna.ToASCII(domain.Name)
+
+					if !slices.Contains(zones, aceZoneName) {
+						out.Warnf("DEBUG: zones: %v\n", zones)
+						out.Warnf("DEBUG: Name: %v\n", domain.Name)
+
+						out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
 						continue // continue with next provider, as we can not determine corrections without an existing zone
 					}
-				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
+				} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
 					// this is the actual push, ensure domain exists at DSP
-					if err := creator.EnsureDomainExists(domain.Name); err != nil {
+					if err := creator.EnsureZoneExists(domain.Name); err != nil {
 						out.Warnf("Error creating domain: %s\n", err)
 						continue // continue with next provider, as we couldn't create this one
 					}
@@ -183,7 +190,7 @@ DomainLoop:
 			/// This is where we should audit?
 
 			corrections, err := provider.Driver.GetDomainCorrections(dc)
-			out.EndProvider(len(corrections), err)
+			out.EndProvider(provider.Name, len(corrections), err)
 			if err != nil {
 				anyErrors = true
 				continue DomainLoop
@@ -205,7 +212,7 @@ DomainLoop:
 			log.Fatal(err)
 		}
 		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
-		out.EndProvider(len(corrections), err)
+		out.EndProvider(domain.RegistrarName, len(corrections), err)
 		if err != nil {
 			anyErrors = true
 			continue
@@ -287,7 +294,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 const providerTypeFieldName = "TYPE"
 
 // url is the documentation URL to list in the warnings related to missing provider type ids.
-const url = "https://stackexchange.github.io/dnscontrol/creds-json"
+const url = "https://docs.dnscontrol.org/commands/creds-json"
 
 // populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
 // That is, if the provider type is "-" or "", we take that as an flag
@@ -489,10 +496,12 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			if interactive && !out.PromptToRun() {
 				continue
 			}
-			err = correction.F()
-			out.EndCorrection(err)
-			if err != nil {
-				anyErrors = true
+			if correction.F != nil {
+				err = correction.F()
+				out.EndCorrection(err)
+				if err != nil {
+					anyErrors = true
+				}
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)

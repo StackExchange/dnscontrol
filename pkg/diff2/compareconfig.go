@@ -43,8 +43,11 @@ differencing engine, such as maps of which labels and RecordKeys
 exist.
 */
 
+// ComparableFunc is a signature for functions used to generate a comparable
+// blob for custom records and records with metadata.
 type ComparableFunc func(*models.RecordConfig) string
 
+// CompareConfig stores a zone's records in a structure that makes comparing two zones convenient.
 type CompareConfig struct {
 	// The primary data. Each record stored once, grouped by label then
 	// by rType:
@@ -82,10 +85,13 @@ type rTypeConfig struct {
 }
 
 type targetConfig struct {
-	compareable string               // A string that can be used to compare two rec's for equality.
-	rec         *models.RecordConfig // The RecordConfig itself.
+	comparableFull  string // A string that can be used to compare two rec's for exact equality.
+	comparableNoTTL string // A string that can be used to compare two rec's for equality, ignoring the TTL
+
+	rec *models.RecordConfig // The RecordConfig itself.
 }
 
+// NewCompareConfig creates a CompareConfig from a set of records and other data.
 func NewCompareConfig(origin string, existing, desired models.Records, compFn ComparableFunc) *CompareConfig {
 	cc := &CompareConfig{
 		existing: existing,
@@ -99,20 +105,15 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	}
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
 	cc.addRecords(desired, false)
-	cc.VerifyCNAMEAssertions()
+	cc.verifyCNAMEAssertions()
 	sort.Slice(cc.ldata, func(i, j int) bool {
 		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
 	})
 	return cc
 }
 
-func (cc *CompareConfig) VerifyCNAMEAssertions() {
-
-	// In theory these assertions do not need to be tested as they test
-	// something that can not happen. In my head I've proved this to be
-	// true.  That said, a little paranoia is healthy.  Those familiar
-	// with the Therac-25 accident will agree:
-	// https://hackaday.com/2015/10/26/killed-by-a-machine-the-therac-25/
+// verifyCNAMEAssertions verifies assertions about CNAME updates ordering.
+func (cc *CompareConfig) verifyCNAMEAssertions() {
 
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
@@ -131,7 +132,7 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 	//   there is already an A record at that label.
 	//
 	// To assure that DNS providers don't have to think about this, we order
-	// the tdata items so that we generate the instructions in the best order.
+	// the tdata items so that we generate the instructions in the correct order.
 	// In other words:
 	//     If there is a CNAME in existing, it should be in front.
 	//     If there is a CNAME in desired, it should be at the end.
@@ -141,15 +142,25 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
+
 			if td.rType == "CNAME" {
+
+				// This assertion doesn't hold for a site that permits a
+				// recordset with both CNAMEs and other records, such as
+				// Cloudflare.
+				// Therefore, we skip the test if we aren't deleting
+				// everything at the recordset or creating it from scratch.
+				if len(td.existingTargets) != 0 && len(td.desiredTargets) != 0 {
+					continue
+				}
+
 				if len(td.existingTargets) != 0 {
-					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
 					if j != 0 {
 						panic("should not happen: (CNAME not in first position)")
 					}
 				}
+
 				if len(td.desiredTargets) != 0 {
-					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}
@@ -191,11 +202,23 @@ func (cc *CompareConfig) String() string {
 
 // Generate a string that can be used to compare this record to others
 // for equality.
-func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
-	if f == nil {
-		return rc.ToDiffable()
+func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string) (string, string) {
+
+	// Start with the comparable string
+	comp := rc.ToComparableNoTTL()
+
+	// If the custom function exists, add its output
+	if f != nil {
+		addOn := f(rc)
+		if addOn != "" {
+			comp += " " + f(rc)
+		}
 	}
-	return rc.ToDiffable() + " " + f(rc)
+
+	lenWithoutTTL := len(comp)
+	compFull := comp + fmt.Sprintf(" ttl=%d", rc.TTL)
+
+	return compFull[:lenWithoutTTL], compFull
 }
 
 func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
@@ -211,19 +234,18 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 	for _, rec := range z.Records {
 
-		label := rec.NameFQDN
-		rtype := rec.Type
-		comp := comparable(rec, cc.compareableFunc)
+		key := rec.Key()
+		label := key.NameFQDN
+		rtype := key.Type
+		compNoTTL, compFull := mkCompareBlobs(rec, cc.compareableFunc)
 
 		// Are we seeing this label for the first time?
 		var labelIdx int
 		if _, ok := cc.labelMap[label]; !ok {
-			//fmt.Printf("DEBUG: I haven't see label=%v before. Adding.\n", label)
 			cc.labelMap[label] = true
 			cc.ldata = append(cc.ldata, &labelConfig{label: label})
 			labelIdx = highest(cc.ldata)
 		} else {
-			// find label in cc.ldata:
 			for k, v := range cc.ldata {
 				if v.label == label {
 					labelIdx = k
@@ -233,12 +255,9 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		}
 
 		// Are we seeing this label+rtype for the first time?
-		key := rec.Key()
 		if _, ok := cc.keyMap[key]; !ok {
-			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
 			x := cc.ldata[labelIdx]
-			//fmt.Printf("DEBUG: appending rtype=%v\n", rtype)
 			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
 		var rtIdx int
@@ -249,22 +268,17 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 				break
 			}
 		}
-		//fmt.Printf("DEBUG: found rtype=%v at index %d\n", rtype, rtIdx)
 
 		// Now it is safe to add/modify the records.
 
-		//fmt.Printf("BEFORE E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
 		if storeInExisting {
 			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
-				targetConfig{compareable: comp, rec: rec})
+				targetConfig{comparableNoTTL: compNoTTL, comparableFull: compFull, rec: rec})
 		} else {
 			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(cc.ldata[labelIdx].tdata[rtIdx].desiredRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
-				targetConfig{compareable: comp, rec: rec})
+				targetConfig{comparableNoTTL: compNoTTL, comparableFull: compFull, rec: rec})
 		}
-		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
-		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
-		//fmt.Printf("\n")
 	}
 }

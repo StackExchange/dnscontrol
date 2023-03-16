@@ -19,6 +19,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
@@ -102,84 +103,83 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		var deleteRecordIds []int
-		deleteDescription := []string{"Batch deletion of records:"}
-		for _, m := range del {
-			originalRecordID := m.Existing.Original.(*recordResponseDataEntry).ID
-			deleteRecordIds = append(deleteRecordIds, originalRecordID)
-			deleteDescription = append(deleteDescription, m.String())
-		}
-
-		if len(deleteRecordIds) > 0 {
-			corr := &models.Correction{
-				Msg: strings.Join(deleteDescription, "\n\t"),
-				F: func() error {
-					return api.deleteRecords(domain.ID, deleteRecordIds)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		var createRecords []recordRequestData
-		createDescription := []string{"Batch creation of records:"}
-		for _, m := range create {
-			record := fromRecordConfig(m.Desired)
-			createRecords = append(createRecords, *record)
-			createDescription = append(createDescription, m.String())
-		}
-
-		if len(createRecords) > 0 {
-			corr := &models.Correction{
-				Msg: strings.Join(createDescription, "\n\t"),
-				F: func() error {
-					return api.createRecords(domain.ID, createRecords)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		var modifyRecords []recordRequestData
-		modifyDescription := []string{"Batch modification of records:"}
-		for _, m := range modify {
-			originalRecord := m.Existing.Original.(*recordResponseDataEntry)
-
-			record := fromRecordConfig(m.Desired)
-			record.ID = originalRecord.ID
-			record.GtdLocation = originalRecord.GtdLocation
-
-			modifyRecords = append(modifyRecords, *record)
-			modifyDescription = append(modifyDescription, m.String())
-		}
-
-		if len(modifyRecords) > 0 {
-			corr := &models.Correction{
-				Msg: strings.Join(modifyDescription, "\n\t"),
-				F: func() error {
-					return api.updateRecords(domain.ID, modifyRecords)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		return corrections, nil
+	var create, del, modify diff.Changeset
+	var differ diff.Differ
+	if !diff2.EnableDiff2 {
+		differ = diff.New(dc)
+	} else {
+		differ = diff.NewCompat(dc)
+	}
+	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	var deleteRecordIds []int
+	deleteDescription := []string{"Batch deletion of records:"}
+	for _, m := range del {
+		originalRecordID := m.Existing.Original.(*recordResponseDataEntry).ID
+		deleteRecordIds = append(deleteRecordIds, originalRecordID)
+		deleteDescription = append(deleteDescription, m.String())
+	}
+
+	if len(deleteRecordIds) > 0 {
+		corr := &models.Correction{
+			Msg: strings.Join(deleteDescription, "\n\t"),
+			F: func() error {
+				return api.deleteRecords(domain.ID, deleteRecordIds)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	var createRecords []recordRequestData
+	createDescription := []string{"Batch creation of records:"}
+	for _, m := range create {
+		record := fromRecordConfig(m.Desired)
+		createRecords = append(createRecords, *record)
+		createDescription = append(createDescription, m.String())
+	}
+
+	if len(createRecords) > 0 {
+		corr := &models.Correction{
+			Msg: strings.Join(createDescription, "\n\t"),
+			F: func() error {
+				return api.createRecords(domain.ID, createRecords)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	var modifyRecords []recordRequestData
+	modifyDescription := []string{"Batch modification of records:"}
+	for _, m := range modify {
+		originalRecord := m.Existing.Original.(*recordResponseDataEntry)
+
+		record := fromRecordConfig(m.Desired)
+		record.ID = originalRecord.ID
+		record.GtdLocation = originalRecord.GtdLocation
+
+		modifyRecords = append(modifyRecords, *record)
+		modifyDescription = append(modifyDescription, m.String())
+	}
+
+	if len(modifyRecords) > 0 {
+		corr := &models.Correction{
+			Msg: strings.Join(modifyDescription, "\n\t"),
+			F: func() error {
+				return api.updateRecords(domain.ID, modifyRecords)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
 
 	return corrections, nil
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (api *dnsMadeEasyProvider) EnsureDomainExists(domainName string) error {
-	exists, err := api.domainExists(domainName)
+// EnsureZoneExists creates a zone if it does not exist
+func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string) error {
+	exists, err := api.domainExists(domain)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (api *dnsMadeEasyProvider) EnsureDomainExists(domainName string) error {
 		return nil
 	}
 
-	return api.createDomain(domainName)
+	return api.createDomain(domain)
 }
 
 // GetNameservers returns the nameservers for a domain.

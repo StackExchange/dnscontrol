@@ -42,6 +42,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CanGetZones:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -250,7 +251,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 			if err == "dns: bad xfr rcode: 9" {
 				err = "NOT AUTH (9)"
 			}
-			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", err)
+			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone %s: %s", domain, err)
 		}
 		rawRecords = append(rawRecords, msg.RR...)
 	}
@@ -352,13 +353,13 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}

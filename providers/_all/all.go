@@ -29,6 +29,8 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/inwx"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/linode"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/loopia"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/luadns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/msdns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/namedotcom"

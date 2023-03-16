@@ -19,5 +19,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtHasMultipleSegments)
 
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2023-01-19
+
 	return a.Audit(records)
 }

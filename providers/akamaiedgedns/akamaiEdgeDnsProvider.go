@@ -32,6 +32,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSOA:              providers.Cannot(),
@@ -95,8 +96,8 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 	return api, nil
 }
 
-// EnsureDomainExists configures a new zone if the zone does not already exist.
-func (a *edgeDNSProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	if zoneDoesExist(domain) {
 		printer.Debugf("Zone %s already exists\n", domain)
 		return nil
@@ -123,107 +124,105 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	txtutil.SplitSingleLongTxt(dc.Records)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		keysToUpdate, err := (diff.New(dc)).ChangedGroups(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		existingRecordsMap := make(map[models.RecordKey][]*models.RecordConfig)
-		for _, r := range existingRecords {
-			key := models.RecordKey{NameFQDN: r.NameFQDN, Type: r.Type}
-			existingRecordsMap[key] = append(existingRecordsMap[key], r)
-		}
-
-		desiredRecordsMap := dc.Records.GroupedByKey()
-
-		// Deletes must occur first. For example, if replacing a existing CNAME with an A of the same name:
-		//    DELETE CNAME foo.example.net
-		// must occur before
-		//    CREATE A foo.example.net
-		// because both an A and a CNAME for the same name is not allowed.
-
-		lastCorrections := []*models.Correction{} // creates and replaces last
-
-		for key, msg := range keysToUpdate {
-			existing, okExisting := existingRecordsMap[key]
-			desired, okDesired := desiredRecordsMap[key]
-
-			if okExisting && !okDesired {
-				// In the existing map but not in the desired map: Delete
-				corrections = append(corrections, &models.Correction{
-					Msg: strings.Join(msg, "\n   "),
-					F: func() error {
-						return deleteRecordset(existing, dc.Name)
-					},
-				})
-				printer.Debugf("deleteRecordset: %s %s\n", key.NameFQDN, key.Type)
-				for _, rdata := range existing {
-					printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-				}
-			} else if !okExisting && okDesired {
-				// Not in the existing map but in the desired map: Create
-				lastCorrections = append(lastCorrections, &models.Correction{
-					Msg: strings.Join(msg, "\n   "),
-					F: func() error {
-						return createRecordset(desired, dc.Name)
-					},
-				})
-				printer.Debugf("createRecordset: %s %s\n", key.NameFQDN, key.Type)
-				for _, rdata := range desired {
-					printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-				}
-			} else if okExisting && okDesired {
-				// In the existing map and in the desired map: Replace
-				lastCorrections = append(lastCorrections, &models.Correction{
-					Msg: strings.Join(msg, "\n   "),
-					F: func() error {
-						return replaceRecordset(desired, dc.Name)
-					},
-				})
-				printer.Debugf("replaceRecordset: %s %s\n", key.NameFQDN, key.Type)
-				for _, rdata := range desired {
-					printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-				}
-			}
-		}
-
-		// Deletes first, then creates and replaces
-		corrections = append(corrections, lastCorrections...)
-
-		// AutoDnsSec correction
-		existingAutoDNSSecEnabled, err := isAutoDNSSecEnabled(dc.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
-
-		if !existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
-			// Existing false (disabled), Desired true (enabled)
-			corrections = append(corrections, &models.Correction{
-				Msg: "Enable AutoDnsSec\n",
-				F: func() error {
-					return autoDNSSecEnable(true, dc.Name)
-				},
-			})
-			printer.Debugf("autoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
-		} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
-			// Existing true (enabled), Desired false (disabled)
-			corrections = append(corrections, &models.Correction{
-				Msg: "Disable AutoDnsSec\n",
-				F: func() error {
-					return autoDNSSecEnable(false, dc.Name)
-				},
-			})
-			printer.Debugf("autoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
-		}
-
-		return corrections, nil
+	var keysToUpdate map[models.RecordKey][]string
+	if !diff2.EnableDiff2 {
+		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
+	} else {
+		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(existingRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	existingRecordsMap := make(map[models.RecordKey][]*models.RecordConfig)
+	for _, r := range existingRecords {
+		key := models.RecordKey{NameFQDN: r.NameFQDN, Type: r.Type}
+		existingRecordsMap[key] = append(existingRecordsMap[key], r)
+	}
+
+	desiredRecordsMap := dc.Records.GroupedByKey()
+
+	// Deletes must occur first. For example, if replacing a existing CNAME with an A of the same name:
+	//    DELETE CNAME foo.example.net
+	// must occur before
+	//    CREATE A foo.example.net
+	// because both an A and a CNAME for the same name is not allowed.
+
+	lastCorrections := []*models.Correction{} // creates and replaces last
+
+	for key, msg := range keysToUpdate {
+		existing, okExisting := existingRecordsMap[key]
+		desired, okDesired := desiredRecordsMap[key]
+
+		if okExisting && !okDesired {
+			// In the existing map but not in the desired map: Delete
+			corrections = append(corrections, &models.Correction{
+				Msg: strings.Join(msg, "\n   "),
+				F: func() error {
+					return deleteRecordset(existing, dc.Name)
+				},
+			})
+			printer.Debugf("deleteRecordset: %s %s\n", key.NameFQDN, key.Type)
+			for _, rdata := range existing {
+				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+			}
+		} else if !okExisting && okDesired {
+			// Not in the existing map but in the desired map: Create
+			lastCorrections = append(lastCorrections, &models.Correction{
+				Msg: strings.Join(msg, "\n   "),
+				F: func() error {
+					return createRecordset(desired, dc.Name)
+				},
+			})
+			printer.Debugf("createRecordset: %s %s\n", key.NameFQDN, key.Type)
+			for _, rdata := range desired {
+				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+			}
+		} else if okExisting && okDesired {
+			// In the existing map and in the desired map: Replace
+			lastCorrections = append(lastCorrections, &models.Correction{
+				Msg: strings.Join(msg, "\n   "),
+				F: func() error {
+					return replaceRecordset(desired, dc.Name)
+				},
+			})
+			printer.Debugf("replaceRecordset: %s %s\n", key.NameFQDN, key.Type)
+			for _, rdata := range desired {
+				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+			}
+		}
+	}
+
+	// Deletes first, then creates and replaces
+	corrections = append(corrections, lastCorrections...)
+
+	// AutoDnsSec correction
+	existingAutoDNSSecEnabled, err := isAutoDNSSecEnabled(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
+
+	if !existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
+		// Existing false (disabled), Desired true (enabled)
+		corrections = append(corrections, &models.Correction{
+			Msg: "Enable AutoDnsSec\n",
+			F: func() error {
+				return autoDNSSecEnable(true, dc.Name)
+			},
+		})
+		printer.Debugf("autoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
+	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
+		// Existing true (enabled), Desired false (disabled)
+		corrections = append(corrections, &models.Correction{
+			Msg: "Disable AutoDnsSec\n",
+			F: func() error {
+				return autoDNSSecEnable(false, dc.Name)
+			},
+		})
+		printer.Debugf("autoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
+	}
 
 	return corrections, nil
 }

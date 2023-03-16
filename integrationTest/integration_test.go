@@ -22,8 +22,8 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
-var startIdx = flag.Int("start", 0, "Test number to begin with")
-var endIdx = flag.Int("end", 0, "Test index to stop after")
+var startIdx = flag.Int("start", -1, "Test number to begin with")
+var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
@@ -256,8 +256,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	testGroups := makeTests(t)
 
 	firstGroup := *startIdx
+	if firstGroup == -1 {
+		firstGroup = 0
+	}
 	lastGroup := *endIdx
-	if lastGroup == 0 {
+	if lastGroup == -1 {
 		lastGroup = len(testGroups)
 	}
 
@@ -293,7 +296,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
@@ -325,7 +328,7 @@ func TestDualProviders(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
+			t.Logf("#%d:\n%s", i+1, c.Msg)
 			if err = c.F(); err != nil {
 				t.Fatal(err)
 			}
@@ -436,6 +439,13 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
+	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) *models.RecordConfig {
+	r := makeRec(name, "", "LOC")
+	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	return r
+}
+
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
@@ -496,6 +506,10 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	r := makeRec(name, target, "TLSA")
 	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
+}
+
+func urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URLFWD")
 }
 
 func ignoreName(name string) *models.RecordConfig {
@@ -690,20 +704,56 @@ func makeTests(t *testing.T) []*TestGroup {
 		// These are tested on "@" and "www".
 		// When these tests pass, you've implemented the basics correctly.
 
-		testgroup("Protocol-Plain",
-			tc("Create an A record", a("@", "1.1.1.1")),
-			tc("Change it", a("@", "1.2.3.4")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
-			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
+		testgroup("A",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
-		testgroup("add to existing label",
-			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
-			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
+		testgroup("Attl",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		),
+
+		testgroup("MX",
+			tc("Create MX", mx("testmx", 5, "foo.com.")),
+			tc("Change MX target", mx("testmx", 5, "bar.com.")),
+			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("testcname", "www.google.com.")),
+			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		),
+
+		testgroup("ManyAtOne",
+			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+		),
+
+		testgroup("manyAtOneTypes",
+			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+		),
+
+		// Make sure changes at the apex (the bare domain) work.
+		testgroup("Apex",
+			tc("Create A", a("@", "1.1.1.1")),
+			tc("Change A target", a("@", "1.2.3.4")),
+		),
+
+		// Exercise TTL operations.
+		testgroup("TTL",
+			not("NETCUP"), // NETCUP does not support TTLs.
+			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
@@ -802,19 +852,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
 
-			tc("TXT with 0-octel string", txt("foo1", "")),
+			// NB(tlim) 2023-03-07: Removing this test. Nobody does this.
+			//tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
 			//clear(),
-
-			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			//tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			//clear(),
-			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			//tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
 			//clear(),
-
-			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			//tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
 			//clear(),
-			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			//tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
 			//clear(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
@@ -872,11 +921,14 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"DIGITALOCEAN",  // No paging. Why bother?
 				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				"LOOPIA",        // Their API is so damn slow. Plus, no paging.
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"ROUTE53",       // Batches up changes in pages.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -892,7 +944,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -908,10 +960,16 @@ func makeTests(t *testing.T) []*TestGroup {
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+		),
+
+		testgroup("NS1_URLFWD tests",
+			only("NS1"),
+			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//
@@ -972,6 +1030,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			clear(),
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
+		),
+
+		// https://github.com/StackExchange/dnscontrol/issues/2066
+		testgroup("SRV", requires(providers.CanUseSRV),
+			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
+			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
 		),
 
 		testgroup("SSHFP",
@@ -1097,7 +1161,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// AZURE features
 
-		testgroup("AZURE_ALIAS",
+		testgroup("AZURE_ALIAS_A",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
 				a("foo.a", "1.2.3.4"),
@@ -1108,11 +1172,20 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
 			),
-			tc("change it",
+			tc("change aliasA",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
+			tc("change backA",
+				a("foo.a", "1.2.3.4"),
+				a("quux.a", "2.3.4.5"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+			),
+		),
+
+		testgroup("AZURE_ALIAS_CNAME",
+			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
@@ -1120,12 +1193,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to CNAME record in same zone",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
-				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
-			tc("change it",
+			tc("change aliasCNAME",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
+			),
+			tc("change backCNAME",
+				cname("foo.cname", "google.com"),
+				cname("quux.cname", "google2.com"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
 		),
 
@@ -1177,15 +1255,23 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("remove cnames",
 				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
 			),
-			clear(),
-			tc("create cname+alias in one step",
-				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
-			),
-			clear(),
+		),
+
+		testgroup("R53_ALIAS_CNAME",
+			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+
+		testgroup("R53_ALIAS_Loop",
+			// This will always be skipped because rejectifTargetEqualsLabel
+			// will always flag it as not permitted.
+			// See https://github.com/StackExchange/dnscontrol/issues/2107
+			requires(providers.CanUseRoute53Alias),
+			tc("loop should fail",
+				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**"),
 			),
 		),
 
@@ -1262,10 +1348,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
 			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
-			tc("proxychangeproxy", cfProxyA("proxyme", "1.2.3.5", "off")),
+			tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
+			tc("proxychangeoffon", cfProxyA("proxyme", "1.2.3.5", "on")),
 			clear(),
 			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
 			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
+			tc("proxycnameoffon", cfProxyCNAME("anewproxy", "example.com.", "on")),
+			tc("proxycnameonoff", cfProxyCNAME("anewproxy", "example.com.", "off")),
 			clear(),
 		),
 
@@ -1358,6 +1447,25 @@ func makeTests(t *testing.T) []*TestGroup {
 		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
 		// types of records, we should add a test at the apex.
 
+		// LOCation records. // No.47
+		testgroup("LOC",
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 10, 0)),
+			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
+				//42 21 54     N  71 06  18     W -24m 30m
+				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
+				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
+				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24, 1, 200, 10),
+				//52 14 05     N  00 08  50     E 10m
+				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10, 0, 0, 0),
+				//32  7 19     S 116  2  25     E 10m
+				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
+				//42 21 28.764 N  71 00  51.617 W -44m 2000m
+				loc("d", 42, 21, 28.764, "N", 71, 0, 51.617, "W", -44, 2000, 0, 0),
+			),
+		),
 	}
 
 	return tests

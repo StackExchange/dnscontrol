@@ -51,6 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot("Only supports DS records at the apex"),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -100,25 +101,31 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 
 // Section 3: Domain Service Provider (DSP) related functions
 
-// ListZones lists the zones on this account.
-func (client *gandiv5Provider) ListZones() ([]string, error) {
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+// // ListZones lists the zones on this account.
+// This no longer works. Until we can figure out why, we're removing this
+// feature for Gandi.
+// func (client *gandiv5Provider) ListZones() ([]string, error) {
+// 	g := gandi.NewLiveDNSClient(config.Config{
+// 		APIKey:    client.apikey,
+// 		SharingID: client.sharingid,
+// 		Debug:     client.debug,
+// 	})
 
-	listResp, err := g.ListDomains()
-	if err != nil {
-		return nil, err
-	}
+// 	listResp, err := g.ListDomains()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	zones := make([]string, len(listResp))
-	for i, zone := range listResp {
-		zones[i] = zone.FQDN
-	}
-	return zones, nil
-}
+// 	zones := make([]string, len(listResp))
+// 	fmt.Printf("DEBUG: HERE START\n")
+// 	for i, zone := range listResp {
+// 	fmt.Printf("DEBUG: HERE %d: %v\n", i, zone.FQDN)
+// 		zone := zone
+// 		zones[i] = zone.FQDN
+// 	}
+// 	fmt.Printf("DEBUG: HERE END\n")
+// 	return zones, nil
+// }
 
 // NB(tal): To future-proof your code, all new providers should
 // implement GetDomainCorrections exactly as you see here
@@ -355,8 +362,13 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 	for _, inst := range instructions {
 		switch inst.Type {
 
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+
 		case diff2.CREATE:
 			// We have to create the label one rtype at a time.
+			// In other words, this is a ByRecordSet API for creation, even though
+			// this is a ByLabel() API for everything else.
 			natives := recordsToNative(inst.New, dc.Name)
 			for _, n := range natives {
 				label := inst.Key.NameFQDN
@@ -414,6 +426,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 						return nil
 					},
 				})
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 
 	}

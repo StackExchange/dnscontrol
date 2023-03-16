@@ -44,6 +44,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -105,89 +106,87 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	var differ diff.Differ
+	if !diff2.EnableDiff2 {
+		differ = diff.New(dc)
+	} else {
+		differ = diff.NewCompat(dc)
+	}
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	// Deletes first so changing type works etc.
+	for _, m := range del {
+		id := m.Existing.Original.(*domainRecord).ID
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
+			F: func() error {
+				return c.deleteRecord(domainID, id)
+			},
+		}
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
+		if m.Existing.Type == "DS" {
+			// type DS is prepended - so executed first
+			corrections = append([]*models.Correction{corr}, corrections...)
+		} else {
+			corrections = append(corrections, corr)
+		}
+	}
+
+	var createCorrections []*models.Correction
+	for _, m := range create {
+		req, err := toReq(m.Desired)
 		if err != nil {
 			return nil, err
 		}
 
-		// Deletes first so changing type works etc.
-		for _, m := range del {
-			id := m.Existing.Original.(*domainRecord).ID
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
-				F: func() error {
-					return c.deleteRecord(domainID, id)
-				},
-			}
-			// at ClouDNS, we MUST have a NS for a DS
-			// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
-			if m.Existing.Type == "DS" {
-				// type DS is prepended - so executed first
-				corrections = append([]*models.Correction{corr}, corrections...)
-			} else {
-				corrections = append(corrections, corr)
-			}
+		// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
 		}
 
-		var createCorrections []*models.Correction
-		for _, m := range create {
-			req, err := toReq(m.Desired)
-			if err != nil {
-				return nil, err
-			}
-
-			// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
-			// So, modify it to remove the trailing period.
-			if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
-				req["record"] = strings.TrimSuffix(req["record"], ".")
-			}
-
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-					return c.createRecord(domainID, req)
-				},
-			}
-			// at ClouDNS, we MUST have a NS for a DS
-			// So, when creating, we must create the NS first, otherwise creating the DS throws an error
-			if m.Desired.Type == "NS" {
-				// type NS is prepended - so executed first
-				createCorrections = append([]*models.Correction{corr}, createCorrections...)
-			} else {
-				createCorrections = append(createCorrections, corr)
-			}
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+				return c.createRecord(domainID, req)
+			},
 		}
-		corrections = append(corrections, createCorrections...)
-
-		for _, m := range modify {
-			id := m.Existing.Original.(*domainRecord).ID
-			req, err := toReq(m.Desired)
-			if err != nil {
-				return nil, err
-			}
-
-			// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
-			// So, modify it to remove the trailing period.
-			if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
-				req["record"] = strings.TrimSuffix(req["record"], ".")
-			}
-
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
-				F: func() error {
-					return c.modifyRecord(domainID, id, req)
-				},
-			}
-			corrections = append(corrections, corr)
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
+		if m.Desired.Type == "NS" {
+			// type NS is prepended - so executed first
+			createCorrections = append([]*models.Correction{corr}, createCorrections...)
+		} else {
+			createCorrections = append(createCorrections, corr)
 		}
-
-		return corrections, nil
 	}
+	corrections = append(corrections, createCorrections...)
 
-	// Insert Future diff2 version here.
+	for _, m := range modify {
+		id := m.Existing.Original.(*domainRecord).ID
+		req, err := toReq(m.Desired)
+		if err != nil {
+			return nil, err
+		}
+
+		// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
+		}
+
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
+			F: func() error {
+				return c.modifyRecord(domainID, id, req)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
 
 	return corrections, nil
 
@@ -206,12 +205,12 @@ func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) 
 	return existingRecords, nil
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}
-	// domain already exists
+	// zone already exists
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

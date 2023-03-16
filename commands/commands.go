@@ -294,8 +294,15 @@ func (args *FilterArgs) shouldRunDomain(d string) bool {
 	if args.Domains == "" {
 		return true
 	}
-	for _, dom := range strings.Split(args.Domains, ",") {
-		if dom == d {
+	return domainInList(d, strings.Split(args.Domains, ","))
+}
+
+func domainInList(domain string, list []string) bool {
+	for _, item := range list {
+		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
+			return true
+		}
+		if item == domain {
 			return true
 		}
 	}

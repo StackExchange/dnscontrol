@@ -7,7 +7,7 @@ title: DNSControl
     <div class="col-md-12">
         <div>
             <h1 class="hometitle">DNSControl</h1>
-            <p class="lead">DNSControl is an <strong><a href="opinions">opinionated</a></strong> platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</p>
+            <p class="lead">DNSControl is an <strong><a href="https://docs.dnscontrol.org/developer-info/opinions">opinionated</a></strong> platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</p>
         </div>
     </div>
 </div>
@@ -16,11 +16,11 @@ title: DNSControl
     <div class="col-md-4">
         <h3>Try It</h3>
         <p>Want to jump right in? Follow our
-         <strong><a href="getting-started">quick start tutorial</a></strong>
+         <strong><a href="https://docs.dnscontrol.org/getting-started/getting-started">quick start tutorial</a></strong>
          on a new domain or
-         <strong><a href="migrating">migrate</a></strong>
+         <strong><a href="https://docs.dnscontrol.org/getting-started/migrating">migrate</a></strong>
          an existing one. Read the
-         <strong><a href="js">language spec</a></strong>
+         <strong><a href="https://docs.dnscontrol.org/language-reference/js">language spec</a></strong>
          for more info. You can also <strong><a href="#getting-started">view a list of all topics</a></strong>.
     </p>
     </div>
@@ -32,7 +32,7 @@ title: DNSControl
          Use macros and variables for easier updates.
          <!-- Optimize your SPF records. -->
          Upload your zones to
-         <strong><a href="provider-list">multiple DNS providers</a></strong>.
+         <strong><a href="https://docs.dnscontrol.org/service-providers/providers">multiple DNS providers</a></strong>.
     </p>
     </div>
 
@@ -82,19 +82,19 @@ title: DNSControl
 
             <ul>
                 <li>
-                      <a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
+                      <a href="https://docs.dnscontrol.org/getting-started/getting-started">Getting Started</a>: A walk-through of the basics
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/provider-list">Providers</a>: Which DNS providers are supported
+                    <a href="https://docs.dnscontrol.org/service-providers/providers">Providers</a>: Which DNS providers are supported
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/examples">Examples</a>: The DNSControl language by example
+                    <a href="https://docs.dnscontrol.org/getting-started/examples">Examples</a>: The DNSControl language by example
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
+                    <a href="https://docs.dnscontrol.org/getting-started/migrating">Migrating</a>: Migrating zones to DNSControl
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/typescript">TypeScript</a> (optional): Improve autocomplete and add type checking
+                    <a href="https://docs.dnscontrol.org/getting-started/typescript">TypeScript</a> (optional): Improve autocomplete and add type checking
                 </li>
             </ul>
 
@@ -107,16 +107,16 @@ title: DNSControl
 
             <ul>
                 <li>
-                     <a href="creds-json.html">creds.json</a>: creds.json file format
+                     <a href="https://docs.dnscontrol.org/commands/creds-json">creds.json</a>: creds.json file format
                 </li>
                 <li>
-                     <a href="check-creds.html">check-creds</a>: Verify credentials
+                     <a href="https://docs.dnscontrol.org/commands/check-creds">check-creds</a>: Verify credentials
                 </li>
                 <li>
-                     <a href="get-zones.html">get-zones</a>: Query a provider for zone info
+                     <a href="https://docs.dnscontrol.org/commands/get-zones">get-zones</a>: Query a provider for zone info
                 </li>
                 <li>
-                    <a href="get-certs.html">get-certs</a>: Renew SSL/TLS certs (DEPRECATED)
+                    <a href="https://docs.dnscontrol.org/commands/get-certs">get-certs</a>: Renew SSL/TLS certs (DEPRECATED)
                 </li>
             </ul>
 
@@ -131,16 +131,16 @@ title: DNSControl
 
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/js">Language Reference</a>: Description of the DNSControl language (DSL)
+                    <a href="https://docs.dnscontrol.org/language-reference/js">Language Reference</a>: Description of the DNSControl language (DSL)
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
+                    <a href="https://docs.dnscontrol.org/developer-info/alias">Aliases</a>: ALIAS/ANAME records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/js#SPF_BUILDER">SPF Optimizer</a>: Optimize your SPF records
+                    <a href="https://docs.dnscontrol.org/language-reference/record-modifiers/spf_builder">SPF Optimizer</a>: Optimize your SPF records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/js#CAA_BUILDER">CAA Builder</a>: Build CAA records the easy way
+                    <a href="https://docs.dnscontrol.org/language-reference/record-modifiers/caa_builder">CAA Builder</a>: Build CAA records the easy way
                 </li>
             </ul>
         </div>
@@ -153,25 +153,25 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a trailing "dot"</a>
+                    <a href="https://docs.dnscontrol.org/language-reference/why-the-dot">Why CNAME/MX/NS targets require a trailing "dot"</a>
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
+                    <a href="https://docs.dnscontrol.org/developer-info/unittests">Testing</a>: Unit Testing for you DNS Data
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/notifications">Notifications</a>: Web-hook for changes
+                    <a href="https://docs.dnscontrol.org/advanced-features/notifications">Notifications</a>: Web-hook for changes
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/code-tricks">Code Tricks</a>: Safely use macros and loops.
+                    <a href="https://docs.dnscontrol.org/advanced-features/code-tricks">Code Tricks</a>: Safely use macros and loops.
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
+                    <a href="https://docs.dnscontrol.org/advanced-features/cli-variables">CLI variables</a>: Passing variables from CLI to JS
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/nameservers">Nameservers &amp; Delegation</a>: Many examples.
+                    <a href="https://docs.dnscontrol.org/advanced-features/nameservers">Nameservers &amp; Delegation</a>: Many examples.
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/ci-cd-gitlab">Gitlab CI/CD example</a>.
+                    <a href="https://docs.dnscontrol.org/advanced-features/ci-cd-gitlab">Gitlab CI/CD example</a>.
                 </li>
             </ul>
         </div>
@@ -192,22 +192,19 @@ title: DNSControl
                     Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/bug-triage">Bug Triage</a>: How bugs are triaged
+                    <a href="https://docs.dnscontrol.org/developer-info/bug-triage">Bug Triage</a>: How bugs are triaged
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/release-engineering">Release Engineering</a>: How to build and ship a release
+                    <a href="https://docs.dnscontrol.org/release/release-engineering">Release Engineering</a>: How to build and ship a release
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/documentation">Edit Documentation</a>: How to edit these docs
+                    <a href="https://docs.dnscontrol.org/developer-info/byo-secrets">Bring-Your-Own-Secrets</a>: Automate tests
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/byo-secrets">Bring-Your-Own-Secrets</a>: Automate tests
+                    <a href="https://docs.dnscontrol.org/developer-info/writing-providers">Step-by-Step Guide: Writing Providers</a>: How to write a DNS or Registrar Provider
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/writing-providers">Step-by-Step Guide: Writing Providers</a>: How to write a DNS or Registrar Provider
-                </li>
-                <li>
-                    <a href="{{site.github.url}}/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
+                    <a href="https://docs.dnscontrol.org/developer-info/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
                 </li>
             </ul>
         </div>

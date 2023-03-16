@@ -46,41 +46,33 @@
       "unmanaged": [
         {
           "label_pattern": "testignore",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "rType_pattern": "*"
         },
         {
           "label_pattern": "testignore2",
-          "rType_pattern": "A",
-          "target_pattern": "*"
+          "rType_pattern": "A"
         },
         {
           "label_pattern": "testignore3",
-          "rType_pattern": "A, CNAME, TXT",
-          "target_pattern": "*"
+          "rType_pattern": "A, CNAME, TXT"
         },
         {
           "label_pattern": "testignore4",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "rType_pattern": "*"
         },
         {
-          "label_pattern": "*",
           "rType_pattern": "CNAME",
           "target_pattern": "testtarget"
         },
         {
           "label_pattern": "legacyignore",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "rType_pattern": "*"
         },
         {
           "label_pattern": "@",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "rType_pattern": "*"
         },
         {
-          "label_pattern": "*",
           "rType_pattern": "CNAME",
           "target_pattern": "@"
         }

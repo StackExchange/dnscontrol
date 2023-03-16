@@ -55,14 +55,13 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	models.PostProcessRecords(actual)
 
 	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(actual)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(actual)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, mod, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
@@ -105,10 +104,11 @@ func checkNSModifications(dc *models.DomainConfig) {
 }
 
 func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
+	heapr := r // NB(tlim): Unsure if this is actually needed.
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
-		Original: r,
+		Original: heapr,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
 		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
