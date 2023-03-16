@@ -72,12 +72,59 @@ go generate
 popd
 ```
 
--   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCapability()` statement.
+-   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
+    
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    func matrixData() *FeatureMatrix {
+        const (
+            ...
+            DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](functions/domain/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
+            ...
+        )
+        matrix := &FeatureMatrix{
+            Providers: map[string]FeatureMap{},
+            Features: []string{
+                ...
+                DomainModifierCaa,
+    +           DomainModifierFoo,
+                DomainModifierLoc,
+                ...
+            },
+        }
+    ```
+    {% endcode %}
+
+    then add it later in the file with a `setCapability()` statement, which should look like this:
+    
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    ...
+    +       setCapability(
+    +           DomainModifierFoo,
+    +           providers.CanUseFOO,
+    +       )
+    ...
+    ```
+    {% endcode %}
+
 -   Add the capability to the list of features that zones are validated
     against (i.e. if you want DNSControl to report an error if this
     feature is used with a DNS provider that doesn't support it). That's
     in the `checkProviderCapabilities` function in
-    `pkg/normalize/validate.go`.
+    `pkg/normalize/validate.go`. It should look like this:
+
+    {% code title="pkg/normalize/validate.go" %}
+    ```diff
+    var providerCapabilityChecks = []pairTypeCapability{
+    ...
+    +   capabilityCheck("FOO", providers.CanUseFOO),
+    ...
+    ```
+    {% endcode %}
+
 -   Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
 
 DNSControl will warn/error if this new record is used with a
