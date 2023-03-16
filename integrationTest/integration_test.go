@@ -439,6 +439,13 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
+	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) *models.RecordConfig {
+	r := makeRec(name, "", "LOC")
+	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	return r
+}
+
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
@@ -1440,6 +1447,25 @@ func makeTests(t *testing.T) []*TestGroup {
 		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
 		// types of records, we should add a test at the apex.
 
+		// LOCation records. // No.47
+		testgroup("LOC",
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 10, 0)),
+			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
+				//42 21 54     N  71 06  18     W -24m 30m
+				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
+				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
+				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24, 1, 200, 10),
+				//52 14 05     N  00 08  50     E 10m
+				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10, 0, 0, 0),
+				//32  7 19     S 116  2  25     E 10m
+				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
+				//42 21 28.764 N  71 00  51.617 W -44m 2000m
+				loc("d", 42, 21, 28.764, "N", 71, 0, 51.617, "W", -44, 2000, 0, 0),
+			),
+		),
 	}
 
 	return tests

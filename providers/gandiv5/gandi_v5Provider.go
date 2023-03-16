@@ -51,6 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot("Only supports DS records at the apex"),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),

@@ -37,6 +37,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSOA:              providers.Can(),

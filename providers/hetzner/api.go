@@ -33,19 +33,24 @@ func checkIsLockedSystemRecord(record record) error {
 }
 
 func getHomogenousDelay(headers http.Header, quotaName string) (time.Duration, error) {
-	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+strings.Title(quotaName))
-	if err != nil {
-		return 0, err
-	}
 
 	var unit time.Duration
+	var unitHeader string
 	switch quotaName {
 	case "hour":
 		unit = time.Hour
+		unitHeader = "Hour"
 	case "minute":
 		unit = time.Minute
+		unitHeader = "Minute"
 	case "second":
 		unit = time.Second
+		unitHeader = "Second"
+	}
+
+	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+unitHeader)
+	if err != nil {
+		return 0, err
 	}
 
 	delay := time.Duration(int64(unit) / quota)

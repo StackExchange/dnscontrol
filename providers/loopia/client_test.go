@@ -201,7 +201,7 @@ func TestClient_GetDomainRecords(t *testing.T) {
 	client := NewClient("apiuser", "goodpassword", "", false, true, false)
 	client.BaseURL = serverURL + "/"
 
-	recordObjs, err := client.GetDomainRecords(exampleDomain, exampleSubDomain)
+	recordObjs, err := client.getDomainRecords(exampleDomain, exampleSubDomain)
 	require.NoError(t, err)
 
 	zr := zRec{

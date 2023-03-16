@@ -53,6 +53,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot("Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end."),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot("💩"),
@@ -79,7 +80,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 // newHelper generates a handle.
-func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, error) {
+func newHelper(m map[string]string, metadata json.RawMessage) (*APIClient, error) {
 	if m["username"] == "" {
 		return nil, fmt.Errorf("missing Loopia API username")
 	}
@@ -87,22 +88,22 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 		return nil, fmt.Errorf("missing Loopia API password")
 	}
 
-	const boolean_string_warn = " setting as a 'string': 't', 'true', 'True' etc"
+	const booleanStringWarn = " setting as a 'string': 't', 'true', 'True' etc"
 	var err error
 
-	modify_name_servers := false
+	modifyNameServers := false
 	if m["modify_name_servers"] != "" { // optional
-		modify_name_servers, err = strconv.ParseBool(m["modify_name_servers"])
+		modifyNameServers, err = strconv.ParseBool(m["modify_name_servers"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the modify_name_servers" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the modify_name_servers" + booleanStringWarn)
 		}
 	}
 
-	fetch_apex_ns_entries := false
+	fetchApexNSEntries := false
 	if m["fetch_apex_ns_entries"] != "" { // optional
-		fetch_apex_ns_entries, err = strconv.ParseBool(m["fetch_apex_ns_entries"])
+		fetchApexNSEntries, err = strconv.ParseBool(m["fetch_apex_ns_entries"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the fetch_apex_ns_entries" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the fetch_apex_ns_entries" + booleanStringWarn)
 		}
 	}
 
@@ -110,11 +111,11 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 	if m["debug"] != "" { //debug is optional
 		dbg, err = strconv.ParseBool(m["debug"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the debug" + boolean_string_warn)
+			return nil, fmt.Errorf("creds.json requires the debug" + booleanStringWarn)
 		}
 	}
 
-	api := NewClient(m["username"], m["password"], strings.ToLower(m["region"]), modify_name_servers, fetch_apex_ns_entries, dbg)
+	api := NewClient(m["username"], m["password"], strings.ToLower(m["region"]), modifyNameServers, fetchApexNSEntries, dbg)
 
 	quota := m["rate_limit_per"]
 	err = api.requestRateLimiter.setRateLimitPer(quota)
@@ -127,9 +128,9 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*LoopiaClient, er
 // Section 3: Domain Service Provider (DSP) related functions
 
 // ListZones lists the zones on this account.
-func (c *LoopiaClient) ListZones() ([]string, error) {
+func (c *APIClient) ListZones() ([]string, error) {
 
-	listResp, err := c.GetDomains()
+	listResp, err := c.getDomains()
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +168,7 @@ func (c *LoopiaClient) ListZones() ([]string, error) {
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (c *LoopiaClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *APIClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	existing, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -180,7 +181,7 @@ func (c *LoopiaClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (c *LoopiaClient) GetZoneRecords(domain string) (models.Records, error) {
+func (c *APIClient) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Two approaches. One: get all SubDomains, and get their respective records
 	// simultaneously, or first get subdomains then fill each subdomain with its
@@ -207,7 +208,7 @@ func (c *LoopiaClient) GetZoneRecords(domain string) (models.Records, error) {
 		}
 		//step 2: records for subdomains
 		// Get subdomain records:
-		subdomainrecords, err := c.GetDomainRecords(domain, subdomain)
+		subdomainrecords, err := c.getDomainRecords(domain, subdomain)
 		if err != nil {
 			return nil, err
 		}
@@ -297,7 +298,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *LoopiaClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
 	}
@@ -409,20 +410,19 @@ func debugRecords(note string, recs []*models.RecordConfig) {
 // Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.
-func (c *LoopiaClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *APIClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.ModifyNameServers {
 		return nil, nil
-	} else {
-		nameservers, err := c.GetDomainNS(domain)
-		if err != nil {
-			return nil, err
-		}
-		return models.ToNameserversStripTD(nameservers)
 	}
+	nameservers, err := c.GetDomainNS(domain)
+	if err != nil {
+		return nil, err
+	}
+	return models.ToNameserversStripTD(nameservers)
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
-func (c *LoopiaClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *APIClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	existingNs, err := c.GetDomainNS(dc.Name)
 	if err != nil {

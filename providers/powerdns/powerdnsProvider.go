@@ -15,6 +15,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),

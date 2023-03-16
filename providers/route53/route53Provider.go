@@ -79,6 +79,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead."),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseRoute53Alias:     providers.Can(),
 	providers.CanUseSRV:              providers.Can(),

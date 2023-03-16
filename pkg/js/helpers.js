@@ -532,6 +532,216 @@ var TXT = recordBuilder('TXT', {
     },
 });
 
+// Parses coordinates of the form 41°24'12.2"N 2°10'26.5"E
+function parseDMSCoordinatesString(inputString) {
+    var lat = inputString.match(/(-?\d+).(\d+).([\d\.]+).?\ ?([NS])/);
+    var lon = inputString.match(/(-?\d+).(\d+).([\d\.]+).?\ ?([EW])/);
+
+    if (!lat || !lon) {
+        return null;
+    }
+
+    return {
+        lati: {
+            dg: parseInt(lat[1]),
+            mn: parseInt(lat[2]),
+            sc: parseFloat(lat[3]),
+            hemi: lat[4],
+        },
+        long: {
+            dg: parseInt(lon[1]),
+            mn: parseInt(lon[2]),
+            sc: parseFloat(lon[3]),
+            hemi: lon[4],
+        },
+    };
+}
+
+// // Parses coordinates of the form 25.24°S 153.15°E
+function parseDMMCoordinatesString(inputString) {
+    var lat = inputString.match(/(-?\d+(\.\d+)?)°?\s*([NS])/i);
+    var lon = inputString.match(/(-?\d+(\.\d+)?)°?\s*([EW])/i);
+
+    if (!lat || !lon) {
+        return null;
+    }
+
+    var latDeg = Math.floor(parseFloat(lat[1]));
+    var latMin = Math.floor((parseFloat(lat[1]) - latDeg) * 60);
+    var latSec = Math.round(((parseFloat(lat[1]) - latDeg) * 60 - latMin) * 60);
+    var lonDeg = Math.floor(parseFloat(lon[1]));
+    var lonMin = Math.floor((parseFloat(lon[1]) - lonDeg) * 60);
+    var lonSec = Math.round(((parseFloat(lon[1]) - lonDeg) * 60 - lonMin) * 60);
+
+    var lati = {
+        dg: latDeg,
+        mn: latMin,
+        sc: latSec,
+        hemi: lat[3],
+    };
+    var long = {
+        dg: lonDeg,
+        mn: lonMin,
+        sc: lonSec,
+        hemi: lon[3],
+    };
+
+    return {
+        lati: lati,
+        long: long,
+    };
+}
+
+// builds a uint8 with 4 bit mantissa, 4 bit exponent from a float.
+function getENotationInt(x) {
+    /*
+       9000000000cm = 9e9 == 153 (9^4 + 9) or 9<<4 + 9
+       800000000cm = 8e8 == 136 (8^4 + 8) or 8<<4 + 8
+       70000000cm = 7e7 == 119 (7^4 + 7) or 7<<4 + 7
+       6000000cm = 6e6 == 102 (6^4 + 6) or 6<<4 + 6
+       1000000cm = 1e6 == 22 (1^4 + 6) or 1<<4 + 6
+       500000cm = 5e5 == 85 (5^4 + 5) or 5<<4 + 5
+       40000cm = 4e4 == 68 (4^4 + 4) or 4<<4 + 4
+       3000cm = 3e3 == 51 (3^4 + 3) or 3<<4 + 3
+       1000cm = 1e3 == 19 (1^4 + 3) or 1<<4 + 1
+       200cm = 2e2 == 34 (2^4 + 2) or 2<<4 + 2
+       10cm = 1e1 == 17 (1^4 + 1) or 1<<4 + 1
+       1cm = 1e0 == 16 (1^4 + 0) or 0<<4 + 0
+       0cm = 0e0 == 0
+    */
+    size = x * 100; // get cm value
+    // get the m^e version of size
+    array = size.toExponential(0).split('e+').map(Number);
+    // convert it to 4bit:4bit uint8
+    m_e = (array[0] << 4) | array[1];
+    return m_e;
+}
+
+// Checks LOC parameters and if all is well, renders them into a 'target' string.
+// The LOC record has no target string parameter. It only renders one via String().
+function locStringBuilder(record, args) {
+    record.name = args.name;
+
+    // technically, we don't need this part to build the text target, but
+    // it is a good sanity check to compare with later on down the chain
+    // when you're in the weeds with maths.
+    // Tests depend on it being present. Changes here must reflect in tests.
+    nsstring = '';
+    ewstring = '';
+    precisionbuffer = '';
+    ns = args.ns.toUpperCase();
+    ew = args.ew.toUpperCase();
+
+    // Handle N/S coords - can use also s1.toFixed(3)
+    nsstring =
+        args.d1.toString() +
+        ' ' +
+        args.m1.toString() +
+        ' ' +
+        args.s1.toString() +
+        ' ';
+    var nsmatches = args.ns.match(/^([NnSs])$/);
+    if (nsmatches == null) {
+        throw v + ' is not a valid latitude modifier';
+    } else {
+        nsstring += ns + ' ';
+    }
+    // Handle E/W coords - can use also s2.toFixed(3)
+    ewstring =
+        args.d2.toString() +
+        ' ' +
+        args.m2.toString() +
+        ' ' +
+        args.s2.toString() +
+        ' ';
+    var nsmatches = args.ew.match(/^([EeWw])$/);
+    if (nsmatches == null) {
+        throw v + ' is not a valid longitude modifier';
+    } else {
+        ewstring += ew + ' ';
+    }
+
+    // handle altitude, size, horizontal precision, vertical precision
+    precisionbuffer = args.alt.toString() + 'm';
+    precisionbuffer += ' ' + args.siz.toString() + 'm';
+    precisionbuffer += ' ' + args.hp.toString() + 'm';
+    precisionbuffer += ' ' + args.vp.toString() + 'm';
+
+    record.target = nsstring + ewstring + precisionbuffer;
+
+    return record;
+}
+
+// Renders LOC type internal properties from D˚M'S" parameters.
+// Change anything here at your peril.
+function locDMSBuilder(record, args) {
+    LOCEquator = 1 << 31; // RFC 1876, Section 2.
+    LOCPrimeMeridian = 1 << 31; // RFC 1876, Section 2.
+    LOCHours = 60 * 1000;
+    LOCDegrees = 60 * LOCHours;
+    LOCAltitudeBase = 100000;
+
+    lat = args.d1 * LOCDegrees + args.m1 * LOCHours + args.s1 * 1000;
+    lon = args.d2 * LOCDegrees + args.m2 * LOCHours + args.s2 * 1000;
+    if (ns == 'N') record.loclatitude = LOCEquator + lat;
+    // S
+    else record.loclatitude = LOCEquator - lat;
+    if (ew == 'E') record.loclongitude = LOCPrimeMeridian + lon;
+    // W
+    else record.loclongitude = LOCPrimeMeridian - lon;
+    // Altitude
+    record.localtitude = (args.alt + LOCAltitudeBase) * 100;
+    // Size
+    record.locsize = getENotationInt(args.siz);
+    // Horizontal Precision
+    m_e = args.hp;
+    record.lochorizpre = getENotationInt(args.hp);
+    // if (m_e != 0) {
+    // } else {
+    //     record.lochorizpre = 22; // 10,000m default
+    // }
+    // Vertical Precision
+    m_e = args.vp;
+    record.locvertpre = getENotationInt(args.vp);
+    // if (m_e != 0) {
+    // } else {
+    //     record.lochorizpre = 19; // 10m default
+    // }
+}
+
+// LOC(name,d1,m1,s1,ns,d2,m2,s2,ew,alt,siz,hp,vp, recordModifiers...)
+var LOC = recordBuilder('LOC', {
+    args: [
+        ['name', _.isString], //i.e. subdomain
+        ['d1', _.isNumber], // N/S degrees
+        ['m1', _.isNumber], // N/S minutes
+        ['s1', _.isNumber], // N/S seconds
+        ['ns', _.isString], // N/S
+        ['d2', _.isNumber], // E/W degrees
+        ['m2', _.isNumber], // E/W minutes
+        ['s2', _.isNumber], // E/W seconds
+        ['ew', _.isString], // E/W
+        ['alt', _.isNumber], // altitude
+        ['siz', _.isNumber], // size/precision
+        ['hp', _.isNumber], // horizontal precision
+        ['vp', _.isNumber], // vertical precision
+    ],
+    transform: function (record, args, modifiers) {
+        record = locStringBuilder(record, args);
+        record = locDMSBuilder(record, args);
+    },
+});
+
+function ConvertDDToDMS(D, longitude) {
+    //stackoverflow, baby. do not re-order the rows.
+    return {
+        hemi: D < 0 ? (longitude ? 'W' : 'S') : longitude ? 'E' : 'N',
+        dg: 0 | (D < 0 ? (D = -D) : D),
+        mn: 0 | (((D += 1e-9) % 1) * 60),
+        sc: (0 | (((D * 60) % 1) * 60000)) / 1000,
+    };
+}
+
 // MX(name,priority,target, recordModifiers...)
 var MX = recordBuilder('MX', {
     args: [
@@ -986,6 +1196,182 @@ var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
+
+// LOC_BUILDER_DD takes an object:
+// label: The DNS label for the LOC record. (default: '@')
+// x: Decimal X coordinate.
+// y: Decimal Y coordinate.
+// alt: Altitude in m. You imperial measurement system people are suckers for punishment.
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+
+function LOC_BUILDER_DD(value) {
+    if (!value.x && !value.y) {
+        throw 'LOC_BUILDER_DD requires x and y elements';
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var lati = ConvertDDToDMS(value.x, false);
+    var long = ConvertDDToDMS(value.y, true);
+
+    dms = { lati: lati, long: long };
+
+    return LOC_builder_push(value, dms);
+}
+
+// LOC_BUILDER_DMM_STR takes an object:
+// label: The DNS label for the LOC record. (default: '@')
+// str: Input string of Degrees and decimal minutes (DMM) coordinates in the form: 25.24°S 153.15°E
+// alt: Altitude in m. You imperial measurement system people are suckers for punishment.
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+
+function LOC_BUILDER_DMM_STR(value) {
+    if (!value.str) {
+        throw 'LOC_BUILDER_DMM_STR requires a string of the form 25.24°S 153.15°E';
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var dms = parseDMMCoordinatesString(value.str);
+
+    return LOC_builder_push(value, dms);
+}
+
+// LOC_BUILDER_DMS_STR takes an object:
+// label: The DNS label for the LOC record. (default: '@')
+// str: Input string of degrees, minutes, and seconds (DMS) coordinates in the form: 41°24'12.2"N 2°10'26.5"E
+// alt: Altitude in m. You imperial measurement system people are suckers for punishment.
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+
+function LOC_BUILDER_DMS_STR(value) {
+    if (!value.str) {
+        throw 'LOC_BUILDER_DMS_STR requires a string of the form 33°51′31″S 151°12′51″Es (or 33°51\'31"S 151°12\'51"Es)';
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var dms = parseDMSCoordinatesString(value.str);
+
+    return LOC_builder_push(value, dms);
+}
+
+// LOC_BUILDER_STR takes an object:
+// label: The DNS label for the LOC record. (default: '@')
+// str: Input string of degrees, minutes, and seconds (DMS) coordinates in the form: 41°24'12.2"N 2°10'26.5"E
+// alt: Altitude in m. You imperial measurement system people are suckers for punishment.
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+
+function LOC_BUILDER_STR(value) {
+    if (!value.str) {
+        throw 'LOC_BUILDER_STR requires a string';
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var dms = parseDMMCoordinatesString(value.str);
+    if (!dms) dms = parseDMSCoordinatesString(value.str);
+
+    return LOC_builder_push(value, dms);
+}
+
+function LOC_builder_push(value, dms) {
+    r = []; // The list of records to return.
+    p = {}; // The metaparameters to set on the LOC record.
+    // rawloc = "";
+
+    // Generate a LOC record with the metaparameters.
+    if (value.ttl) {
+        if (value.alt)
+            r.push(
+                LOC(
+                    value.label,
+                    dms.lati.dg,
+                    dms.lati.mn,
+                    dms.lati.sc,
+                    dms.lati.hemi,
+                    dms.long.dg,
+                    dms.long.mn,
+                    dms.long.sc,
+                    dms.long.hemi,
+                    value.alt,
+                    0,
+                    0,
+                    0,
+                    p,
+                    TTL(value.ttl)
+                )
+            );
+        else
+            r.push(
+                LOC(
+                    value.label,
+                    dms.lati.dg,
+                    dms.lati.mn,
+                    dms.lati.sc,
+                    dms.lati.hemi,
+                    dms.long.dg,
+                    dms.long.mn,
+                    dms.long.sc,
+                    dms.long.hemi,
+                    0,
+                    0,
+                    0,
+                    0,
+                    p,
+                    TTL(value.ttl)
+                )
+            );
+    } else {
+        if (value.alt)
+            r.push(
+                LOC(
+                    value.label,
+                    dms.lati.dg,
+                    dms.lati.mn,
+                    dms.lati.sc,
+                    dms.lati.hemi,
+                    dms.long.dg,
+                    dms.long.mn,
+                    dms.long.sc,
+                    dms.long.hemi,
+                    value.alt,
+                    0,
+                    0,
+                    0,
+                    p
+                )
+            );
+        else
+            r.push(
+                LOC(
+                    value.label,
+                    dms.lati.dg,
+                    dms.lati.mn,
+                    dms.lati.sc,
+                    dms.lati.hemi,
+                    dms.long.dg,
+                    dms.long.mn,
+                    dms.long.sc,
+                    dms.long.hemi,
+                    0,
+                    0,
+                    0,
+                    0,
+                    p
+                )
+            );
+    }
+
+    return r;
+}
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').

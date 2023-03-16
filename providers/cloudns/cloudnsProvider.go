@@ -44,6 +44,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),

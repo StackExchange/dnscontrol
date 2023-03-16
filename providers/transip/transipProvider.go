@@ -36,6 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),

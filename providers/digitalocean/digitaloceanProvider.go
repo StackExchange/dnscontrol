@@ -74,6 +74,7 @@ retry:
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
