@@ -1,8 +1,9 @@
 <!--
 Before you submit a pull request, please make sure you've run the following commands from the root directory.
 
+go vet ./...
 go fmt ./...
-go generate
+go generate ./...
 go mod tidy
 !-->
 

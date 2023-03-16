@@ -689,7 +689,28 @@ declare function INCLUDE(domain: string): DomainModifier;
  * 
  * Strictly follows [RFC 1876](https://datatracker.ietf.org/doc/html/rfc1876).
  * 
- * Fairly intuitive.
+ * A LOC record holds a geographical position. In the zone file, it may look like:
+ * 
+ * ```text
+ * ;
+ * pipex.net.                    LOC   52 14 05 N 00 08 50 E 10m
+ * ```
+ * 
+ * On the wire, it is in a binary format.
+ * 
+ * A use case for LOC is suggested in the RFC:
+ * 
+ * > Some uses for the LOC RR have already been suggested, including the
+ *    USENET backbone flow maps, a "visual traceroute" application showing
+ *    the geographical path of an IP packet, and network management
+ *    applications that could use LOC RRs to generate a map of hosts and
+ *    routers being managed.
+ * 
+ * There is the UK based [https://find.me.uk](https://find.me.uk/) whereby you can do:
+ * 
+ * ```sh
+ * dig loc <uk-postcode>.find.me.uk
+ * ```
  * 
  * There are some behaviours that you should be aware of, however:
  * 
