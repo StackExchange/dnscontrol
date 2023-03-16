@@ -22,6 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Can(),
