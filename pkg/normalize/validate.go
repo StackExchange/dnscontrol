@@ -61,6 +61,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"CNAME":            true,
 		"DS":               true,
 		"IMPORT_TRANSFORM": false,
+		"LOC":              true,
 		"MX":               true,
 		"NAPTR":            true,
 		"NS":               true,
@@ -192,6 +193,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if labelFQDN == targetFQDN {
 			check(fmt.Errorf("CNAME loop (target points at itself)"))
 		}
+	case "LOC":
 	case "MX":
 		check(checkTarget(target))
 	case "NAPTR":
@@ -276,6 +278,8 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			dstDomain.Records = append(dstDomain.Records, r)
 		case "AKAMAICDN", "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
+			continue
+		case "LOC":
 			continue
 		default:
 			return fmt.Errorf("import_transform: Unimplemented record type %v (%v)",
@@ -721,6 +725,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
+	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),

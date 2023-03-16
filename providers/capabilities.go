@@ -40,6 +40,9 @@ const (
 	// only for children records, not at the root of the zone.
 	CanUseDSForChildren
 
+	// CanUseLOC indicates whether service provider handles LOC records
+	CanUseLOC
+
 	// CanUseNAPTR indicates the provider can handle NAPTR records
 	CanUseNAPTR
 

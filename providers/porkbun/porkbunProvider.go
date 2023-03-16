@@ -50,6 +50,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Unimplemented(), // CAA record for base domain is pinning to a fixed set once configure
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot(),

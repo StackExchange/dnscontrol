@@ -27,8 +27,9 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Unimplemented(),                              //
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Unimplemented(),                                                             // Seems to support but needs to be implemented
-	providers.CanUseDSForChildren:    providers.Unimplemented(),                                                             // Seems to support but needs to be implemented
+	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseDSForChildren:    providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot("According to Domainnameshop this will probably never be supported"), // Does not seem to support it
 	providers.CanUsePTR:              providers.Cannot("According to Domainnameshop this will probably never be supported"), // Seems to support but needs to be implemented
 	providers.CanUseSOA:              providers.Cannot(),                                                                    // Does not seem to support it
