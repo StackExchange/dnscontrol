@@ -1447,6 +1447,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// LOCation records. // No.47
 		testgroup("LOC",
+			requires(providers.CanUseLOC),
 			//42 21 54     N  71 06  18     W -24m 30m
 			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
 			//42 21 54     N  71 06  18     W -24m 30m
