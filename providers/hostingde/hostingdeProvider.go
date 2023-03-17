@@ -362,6 +362,28 @@ func (hp *hostingdeProvider) EnsureZoneExists(domain string) error {
 	return nil
 }
 
+func (hp *hostingdeProvider) EnsureDomainAbsent(domain string) error {
+	dc, _ := hp.getDomainConfig(domain)
+	if dc == nil {
+		return nil
+	}
+	if err := hp.deleteDomain(domain); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (hp *hostingdeProvider) EnsureZoneAbsent(domain string) error {
+	_, err := hp.getZoneConfig(domain)
+	if err == errZoneNotFound {
+		return nil
+	}
+	if err := hp.deleteZone(domain); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (hp *hostingdeProvider) ListZones() ([]string, error) {
 	zcs, err := hp.getAllZoneConfigs()
 	if err != nil {
@@ -372,5 +394,16 @@ func (hp *hostingdeProvider) ListZones() ([]string, error) {
 		zones = append(zones, zoneConfig.Name)
 	}
 	return zones, nil
+}
 
+func (hp *hostingdeProvider) ListDomains() ([]string, error) {
+	domainConfigs, err := hp.getAllDomainConfigs()
+	if err != nil {
+		return nil, err
+	}
+	zones := make([]string, 0, len(domainConfigs))
+	for _, config := range domainConfigs {
+		zones = append(zones, config.Name)
+	}
+	return zones, nil
 }

@@ -1,5 +1,19 @@
 {
-    "bind": {
-        "directory": "test_data"
-    }
+  "bind": {
+    "directory": "test_data"
+  },
+  "dsp1": {
+    "TYPE": "BIND"
+  },
+  "dsp2": {
+    "TYPE": "BIND"
+  },
+  "registrar1": {
+    "TYPE": "HOSTINGDE",
+    "authToken": "empty"
+  },
+  "registrar2": {
+    "TYPE": "HOSTINGDE",
+    "authToken": "empty"
+  }
 }

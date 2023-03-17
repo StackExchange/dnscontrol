@@ -36,10 +36,13 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify      bool
-	WarnChanges bool
-	NoPopulate  bool
-	Full        bool
+	Notify                 bool
+	WarnChanges            bool
+	NoPopulate             bool
+	Full                   bool
+	DeleteUnmanaged        bool
+	DeleteUnmanagedDomains bool
+	DeleteUnmanagedZones   bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -60,6 +63,22 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
 		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "delete-unmanaged-domains",
+		Destination: &args.DeleteUnmanagedDomains,
+		Usage:       `Use this flag to delete unmanaged domains`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "delete-unmanaged",
+		Destination: &args.DeleteUnmanaged,
+		Usage:       `Use this flag to delete unmanaged domains and zones`,
+	})
+
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "delete-unmanaged-zones",
+		Destination: &args.DeleteUnmanagedZones,
+		Usage:       `Use this flag to delete unmanaged zones`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "full",
@@ -122,7 +141,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
-	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
+	providerState, err := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -133,6 +152,23 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	anyErrors := false
 	totalCorrections := 0
+
+	if args.DeleteUnmanaged || args.DeleteUnmanagedDomains {
+		domainDeleteCount, err := DeleteUnmanagedDomains(cfg, providerState.createdRegistrars, push, out)
+		if err != nil {
+			return err
+		}
+		totalCorrections += domainDeleteCount
+	}
+
+	if args.DeleteUnmanaged || args.DeleteUnmanagedZones {
+		zoneDeleteCount, err := DeleteUnmanagedZones(cfg, providerState.createdDnsProviders, push, out)
+		if err != nil {
+			return err
+		}
+		totalCorrections += zoneDeleteCount
+	}
+
 DomainLoop:
 	for _, domain := range cfg.Domains {
 		if !args.shouldRunDomain(domain.UniqueName) {
@@ -196,7 +232,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, providerState.notifier) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.RegistrarName, domain)
 		out.StartRegistrar(domain.RegistrarName, !run)
@@ -218,12 +254,13 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, providerState.notifier) || anyErrors
 	}
+
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
-	notifier.Done()
+	providerState.notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("completed with errors")
@@ -234,12 +271,120 @@ DomainLoop:
 	return nil
 }
 
+// DeleteUnmanagedDomains iterates over all registrars and their respective existing domains, and removes those which
+// are not configured within dnscontrol
+func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]providers.Registrar, push bool, out printer.CLI) (deleteCount int, err error) {
+	deleteCount = 0
+	for registrarName, registrar := range createdRegistrars {
+		out.StartUnmanagedDomainCheck(registrarName)
+		domainLister, ok := registrar.(providers.DomainLister)
+		if !ok {
+			out.Warnf("--purge-unmanaged-domains not implemented: provider %s\n", registrarName)
+			continue
+		}
+		existingDomains, err := domainLister.ListDomains()
+		if err != nil {
+			return 0, fmt.Errorf("failed ListDomains for provider %s: %w\n", registrarName, err)
+		}
+		for _, domain := range existingDomains {
+			if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
+
+				fmt.Printf("Removing domain from provider %s: %s\n", registrarName, domain)
+				deleteCount += 1
+				if domainRemover, ok := registrar.(providers.DomainRemover); ok && push {
+					err := domainRemover.EnsureDomainAbsent(domain)
+					if err != nil {
+						out.Errorf("Error deleting domain: %s\n", err)
+					}
+				}
+			}
+		}
+	}
+	return deleteCount, nil
+}
+
+// DeleteUnmanagedZones iterates over all providers and their respective existing zones, and removes those which
+// are not configured within dnscontrol
+func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]providers.DNSServiceProvider, push bool, out printer.CLI) (deleteCount int, err error) {
+	deleteCount = 0
+	for providerName, provider := range createdProviders {
+		out.StartUnmanagedZonesCheck(providerName)
+		zoneLister, ok := provider.(providers.ZoneLister)
+		if !ok {
+			out.Warnf("--purge-unmanaged-zones not implemented: provider %s\n", providerName)
+			continue
+		}
+		existingZones, err := zoneLister.ListZones()
+		if err != nil {
+			return 0, fmt.Errorf("failed ListZones for provider %s: %w\n", providerName, err)
+		}
+		for _, zone := range existingZones {
+			if !IsZoneManagedByProvider(cfg, zone, providerName) {
+				fmt.Printf("Removing zone from provider %s: %s\n", providerName, zone)
+				deleteCount += 1
+				if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
+					err := zoneRemover.EnsureZoneAbsent(zone)
+					if err != nil {
+						out.Errorf("Error deleting zone: %s\n", err)
+					}
+				}
+			}
+		}
+	}
+	return deleteCount, nil
+}
+
+// GetDomainCfg returns the configuration defined for a domain within dnscontrol, or nil if the domain is not configured
+func GetDomainCfg(cfg *models.DNSConfig, domain string) *models.DomainConfig {
+	for _, domainCfg := range cfg.Domains {
+		if domainCfg.Name == domain {
+			return domainCfg
+		}
+	}
+	return nil
+}
+
+// IsDomainManagedByRegistrar checks whether `domain` is configured to be managed by `registrarName`
+func IsDomainManagedByRegistrar(cfg *models.DNSConfig, domain string, registrarName string) bool {
+	domainCfg := GetDomainCfg(cfg, domain)
+
+	// domain is not configured in dnscontrol at all
+	if domainCfg == nil {
+		return false
+	}
+	// domain is configured within dnscontrol, but with a different registrar
+	if domainCfg.RegistrarName != registrarName {
+		return false
+	}
+	return true
+}
+
+// IsZoneManagedByProvider checks whether `zone` is configured to be managed by `dnsProviderName
+func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName string) bool {
+	domainCfg := GetDomainCfg(cfg, zone)
+
+	// domain is not configured in dnscontrol at all
+	if domainCfg == nil {
+		return false
+	}
+	_, ok := domainCfg.DNSProviderNames[dnsProviderName]
+	// domain is configured within dnscontrol, but not for this dns provider
+	if !ok {
+		return false
+	}
+	return true
+}
+
+type ProviderState struct {
+	createdRegistrars   map[string]providers.Registrar
+	createdDnsProviders map[string]providers.DNSServiceProvider
+	notifier            notifications.Notifier
+}
+
 // InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
-func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (notify notifications.Notifier, err error) {
+func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (ProviderState, error) {
 	var notificationCfg map[string]string
-	defer func() {
-		notify = notifications.Init(notificationCfg)
-	}()
+	result := ProviderState{}
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
@@ -258,7 +403,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
 	}
 	if err != nil {
-		return
+		return result, err
 	}
 
 	registrars := map[string]providers.Registrar{}
@@ -268,7 +413,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			rCfg := cfg.RegistrarsByName[d.RegistrarName]
 			r, err := providers.CreateRegistrar(rCfg.Type, providerConfigs[d.RegistrarName])
 			if err != nil {
-				return nil, err
+				return result, err
 			}
 			registrars[d.RegistrarName] = r
 		}
@@ -279,7 +424,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 				dCfg := cfg.DNSProvidersByName[pInst.Name]
 				prov, err := providers.CreateDNSProvider(dCfg.Type, providerConfigs[dCfg.Name], dCfg.Metadata)
 				if err != nil {
-					return nil, err
+					return result, err
 				}
 				dnsProviders[pInst.Name] = prov
 			}
@@ -287,7 +432,10 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
-	return
+	result.createdRegistrars = registrars
+	result.createdDnsProviders = dnsProviders
+	result.notifier = notifications.Init(notificationCfg)
+	return result, nil
 }
 
 // providerTypeFieldName is the name of the field in creds.json that specifies the provider type id.

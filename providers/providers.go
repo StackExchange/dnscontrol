@@ -24,11 +24,35 @@ type ZoneCreator interface {
 	EnsureZoneExists(domain string) error
 }
 
+// ZoneRemover should be implemented by providers that have the ability to add domains to an account. the create-domains command
+// can be run to ensure all domains are present before running preview/push.  Implement this only if the provider supoprts the `dnscontrol create-domain` command.
+type ZoneRemover interface {
+	EnsureZoneAbsent(domain string) error
+}
+
+// DomainCreator should be implemented by providers that have the ability to add domains to an account.
+// Used by `--delete-unmanaged-domains`
+type DomainCreator interface {
+	EnsureDomainExists(domain string) error
+}
+
+// DomainRemover should be implemented by providers that have the ability to add domains to an account.
+// Used by `--delete-unmanaged-domains`
+type DomainRemover interface {
+	EnsureDomainAbsent(domain string) error
+}
+
 // ZoneLister should be implemented by providers that have the
 // ability to list the zones they manage. This facilitates using the
 // "get-zones" command for "all" zones.
 type ZoneLister interface {
 	ListZones() ([]string, error)
+}
+
+// DomainLister should be implemented by providers supporting
+// `--delete-unmanaged-domains`
+type DomainLister interface {
+	ListDomains() ([]string, error)
 }
 
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
