@@ -556,6 +556,9 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 //}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
+	if strings.ToLower(dc.RegistrarName) == "none" {
+		return
+	}
 	if dc.AutoDNSSEC == "on" {
 		for providerName := range dc.DNSProviderNames {
 			if dc.RegistrarName != providerName {
