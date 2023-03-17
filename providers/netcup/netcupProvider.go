@@ -68,25 +68,25 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	})
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-	dc.Punycode()
+// // GetDomainCorrections returns the corrections for a domain.
+// func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	dc.Punycode()
 
-	// Check existing set
-	existingRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	// Check existing set
+// 	existingRecords, err := api.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return api.GetDomainCorrections(dc)
-}
+// 	return api.GetDomainCorrections(dc)
+// }
 
 func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name

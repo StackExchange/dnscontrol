@@ -25,15 +25,32 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records
 	return existingRecords, nil
 }
 
-func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	existingRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
+// 	existingRecords, err := api.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
+
+// 	// Merge TXT strings to one string
+// 	for _, rc := range dc.Records {
+// 		if rc.HasFormatIdenticalToTXT() {
+// 			rc.SetTargetTXT(strings.Join(rc.TxtStrings, ""))
+// 		}
+// 	}
+
+// 	// Domainnameshop doesn't allow arbitrary TTLs they must be a multiple of 60.
+// 	for _, record := range dc.Records {
+// 		record.TTL = fixTTL(record.TTL)
+// 	}
+
+// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
+// }
+
+func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	// Merge TXT strings to one string
 	for _, rc := range dc.Records {
@@ -46,11 +63,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
 	}
-
-	return api.GetZoneRecordsCorrections(dc, existingRecords)
-}
-
-func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
 	//var create, delete, modify diff.Changeset

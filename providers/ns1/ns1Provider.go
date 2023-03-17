@@ -139,23 +139,23 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 	return nil
 }
 
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
+// func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
+// 	//dc.CombineMXs()
 
-	domain := dc.Name
+// 	domain := dc.Name
 
-	// Get existing records
-	existingRecords, err := n.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
+// 	// Get existing records
+// 	existingRecords, err := n.GetZoneRecords(domain)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+// 	//  Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return n.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return n.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}

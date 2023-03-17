@@ -202,28 +202,28 @@ func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
 	return records, nil
 }
 
-func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-	domain := dc.Name
+// 	err = dc.Punycode()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	domain := dc.Name
 
-	existingRecords, err := o.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
+// 	existingRecords, err := o.GetZoneRecords(domain)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+// 	//  Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return o.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return o.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	var err error

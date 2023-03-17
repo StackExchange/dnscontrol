@@ -303,58 +303,79 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 		// The SOA is sent two times: as the first and the last record
 		// See section 2.2 of RFC5936
 		foundRecords = foundRecords[:len(foundRecords)-1]
+		// Ignoring the SOA, others providers  don't manage it either.
 	}
 
 	if foundDNSSecRecords != nil {
 		foundRecords = append(foundRecords, foundDNSSecRecords)
 	}
 
-	return foundRecords, nil
-
-}
-
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-
-	foundRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
-		// Ignoring the SOA, others providers  don't manage it either.
-		foundRecords = foundRecords[1:]
-	}
-
-	hasDnssecRecords := false
+	//hasDnssecRecords := false
 	if len(foundRecords) >= 1 {
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
 			last.Name == dnssecDummyLabel &&
 			len(last.TxtStrings) == 1 &&
 			last.TxtStrings[0] == dnssecDummyTxt {
-			hasDnssecRecords = true
+			//hasDnssecRecords = true
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}
 	}
 
-	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
-	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
-	}
-	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
-	}
+	return foundRecords, nil
 
-	// Normalize
-	models.PostProcessRecords(foundRecords)
-
-	return c.GetZoneRecordsCorrections(dc, foundRecords)
 }
+
+// // GetDomainCorrections returns a list of corrections to update a domain.
+// func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
+
+// 	foundRecords, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
+// 		// Ignoring the SOA, others providers  don't manage it either.
+// 		foundRecords = foundRecords[1:]
+// 	}
+
+// 	hasDnssecRecords := false
+// 	if len(foundRecords) >= 1 {
+// 		last := foundRecords[len(foundRecords)-1]
+// 		if last.Type == "TXT" &&
+// 			last.Name == dnssecDummyLabel &&
+// 			len(last.TxtStrings) == 1 &&
+// 			last.TxtStrings[0] == dnssecDummyTxt {
+// 			hasDnssecRecords = true
+// 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
+// 		}
+// 	}
+
+// 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
+// 	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
+// 		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+// 	}
+// 	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
+// 		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+// 	}
+
+// 	// Normalize
+// 	models.PostProcessRecords(foundRecords)
+
+// 	return c.GetZoneRecordsCorrections(dc, foundRecords)
+// }
 
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
+
+	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
+	// if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
+	// 	printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+	// }
+	// if dc.AutoDNSSEC == "off" && hasDnssecRecords {
+	// 	printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+	// }
 
 	var corrections []*models.Correction
 

@@ -94,22 +94,22 @@ func (l *luadnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-	records, err := l.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns a list of corrections to update a domain.
+// func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	err := dc.Punycode()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	records, err := l.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(records)
+// 	// Normalize
+// 	models.PostProcessRecords(records)
 
-	return l.GetZoneRecordsCorrections(dc, records)
-}
+// 	return l.GetZoneRecordsCorrections(dc, records)
+// }
 
 func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 

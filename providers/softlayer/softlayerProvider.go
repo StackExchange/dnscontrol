@@ -67,24 +67,24 @@ func (s *softlayerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 // 	// a single function.  For most providers this should be relatively easy.
 // }
 
-// GetDomainCorrections returns corrections to update a domain.
-func (s *softlayerProvider) xGetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// // GetDomainCorrections returns corrections to update a domain.
+// func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
-	domain, err := s.getDomain(&dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	domain, err := s.getDomain(&dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	actual, err := s.getExistingRecords(domain)
-	if err != nil {
-		return nil, err
-	}
+// 	actual, err := s.getExistingRecords(domain)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(actual)
+// 	// Normalize
+// 	models.PostProcessRecords(actual)
 
-	return s.GetZoneRecordsCorrections(dc, actual)
-}
+// 	return s.GetZoneRecordsCorrections(dc, actual)
+// }
 
 func (s *softlayerProvider) GetZoneRecords(domainName string) (models.Records, error) {
 	domain, err := s.getDomain(&domainName)

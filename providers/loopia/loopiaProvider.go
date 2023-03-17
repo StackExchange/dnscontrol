@@ -156,28 +156,28 @@ func (c *APIClient) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// NB(tal): To future-proof your code, all new providers should
-// implement GetDomainCorrections exactly as you see here
-// (byte-for-byte the same). In 3.0
-// we plan on using just the individual calls to GetZoneRecords,
-// PostProcessRecords, and so on.
-//
-// Currently every provider does things differently, which prevents
-// us from doing things like using GetZoneRecords() of a provider
-// to make convertzone work with all providers.
+// // NB(tal): To future-proof your code, all new providers should
+// // implement GetDomainCorrections exactly as you see here
+// // (byte-for-byte the same). In 3.0
+// // we plan on using just the individual calls to GetZoneRecords,
+// // PostProcessRecords, and so on.
+// //
+// // Currently every provider does things differently, which prevents
+// // us from doing things like using GetZoneRecords() of a provider
+// // to make convertzone work with all providers.
 
-// GetDomainCorrections get the current and existing records,
-// post-process them, and generate corrections.
-func (c *APIClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
-	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
-	return c.GetZoneRecordsCorrections(dc, clean)
-}
+// // GetDomainCorrections get the current and existing records,
+// // post-process them, and generate corrections.
+// func (c *APIClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	existing, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	models.PostProcessRecords(existing)
+// 	clean := PrepFoundRecords(existing)
+// 	PrepDesiredRecords(dc)
+// 	return c.GetZoneRecordsCorrections(dc, clean)
+// }
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.

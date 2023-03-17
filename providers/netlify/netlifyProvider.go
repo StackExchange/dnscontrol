@@ -176,24 +176,24 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+// 	err := dc.Punycode()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	records, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	records, err := n.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(records)
-	removeOtherApexNS(dc)
+// 	// Normalize
+// 	models.PostProcessRecords(records)
+// 	removeOtherApexNS(dc)
 
-	return n.GetZoneRecordsCorrections(dc, records)
-}
+// 	return n.GetZoneRecordsCorrections(dc, records)
+// }
 
 func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 

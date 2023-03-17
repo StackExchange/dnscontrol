@@ -6,7 +6,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -80,20 +79,20 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 // us from doing things like using GetZoneRecords() of a provider
 // to make convertzone work with all providers.
 
-// GetDomainCorrections get the current and existing records,
-// post-process them, and generate corrections.
-func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := client.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+// // GetDomainCorrections get the current and existing records,
+// // post-process them, and generate corrections.
+// func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	existing, err := client.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	models.PostProcessRecords(existing)
+// 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
-	return client.GetZoneRecordsCorrections(dc, clean)
-}
+// 	clean := PrepFoundRecords(existing)
+// 	PrepDesiredRecords(dc)
+// 	return client.GetZoneRecordsCorrections(dc, clean)
+// }
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.

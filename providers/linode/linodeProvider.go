@@ -122,35 +122,35 @@ func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error)
 	return api.getRecordsForDomain(domainID, domain)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for a domain.
+// func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	dc.Punycode()
+// 	dc.Punycode()
 
-	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
-			return nil, err
-		}
-	}
-	domainID, ok := api.domainIndex[dc.Name]
-	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
-	}
+// 	if api.domainIndex == nil {
+// 		if err := api.fetchDomainList(); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// 	domainID, ok := api.domainIndex[dc.Name]
+// 	if !ok {
+// 		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
+// 	}
 
-	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return api.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values

@@ -94,21 +94,21 @@ func (n *transipProvider) ListZones() ([]string, error) {
 	return domains, nil
 }
 
-func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
-	curRecords, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	curRecords, err := n.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
+// 	if err := dc.Punycode(); err != nil {
+// 		return nil, err
+// 	}
 
-	models.PostProcessRecords(curRecords)
+// 	models.PostProcessRecords(curRecords)
 
-	return n.GetZoneRecordsCorrections(dc, curRecords)
-}
+// 	return n.GetZoneRecordsCorrections(dc, curRecords)
+// }
 
 func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 

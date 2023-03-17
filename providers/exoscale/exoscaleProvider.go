@@ -181,18 +181,18 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string) (models.Records, er
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns a list of corretions for the  domain.
-func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existingRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns a list of corretions for the  domain.
+// func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	existingRecords, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return c.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return c.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 

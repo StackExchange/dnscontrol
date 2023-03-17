@@ -34,20 +34,20 @@ func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, erro
 	return actual, nil
 }
 
-// GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// // GetDomainCorrections gathers correctios that would bring n to match dc.
+// func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
 
-	actual, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	actual, err := n.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(actual)
+// 	// Normalize
+// 	models.PostProcessRecords(actual)
 
-	return n.GetZoneRecordsCorrections(dc, actual)
-}
+// 	return n.GetZoneRecordsCorrections(dc, actual)
+// }
 
 func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 

@@ -75,25 +75,25 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for a domain.
+// func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	dc.Punycode()
+// 	dc.Punycode()
 
-	existingRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	existingRecords, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return c.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return c.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 

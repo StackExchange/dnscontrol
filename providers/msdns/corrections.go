@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
-// GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
+// GetZoneRecordsCorrections gets existing records, diffs them against existing, and returns corrections.
 func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	// Normalize

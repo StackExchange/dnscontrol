@@ -100,36 +100,36 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for a domain.
+// func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	dc.Punycode()
+// 	dc.Punycode()
 
-	zone, err := api.getZone(dc.Name)
-	if err != nil {
-		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
-	}
+// 	zone, err := api.getZone(dc.Name)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
+// 	}
 
-	records, err := api.getRecords(zone.ID)
-	if err != nil {
-		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
-	}
+// 	records, err := api.getRecords(zone.ID)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
+// 	}
 
-	existingRecords := make([]*models.RecordConfig, len(records))
+// 	existingRecords := make([]*models.RecordConfig, len(records))
 
-	for i := range records {
-		existingRecords[i] = toRc(dc, &records[i])
-	}
+// 	for i := range records {
+// 		existingRecords[i] = toRc(dc, &records[i])
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
 
-	return api.GetZoneRecordsCorrections(dc, existingRecords)
-}
+// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
+// }
 
 func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	zone, err := api.getZone(dc.Name)

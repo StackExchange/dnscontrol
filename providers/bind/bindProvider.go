@@ -27,7 +27,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 )
@@ -201,24 +200,24 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// // GetDomainCorrections returns a list of corrections to update a domain.
+// func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
 
-	c.zonefile = filepath.Join(c.directory,
-		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
+// 	c.zonefile = filepath.Join(c.directory,
+// 		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
 
-	foundRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// 	foundRecords, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Normalize
-	models.PostProcessRecords(foundRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+// 	// Normalize
+// 	models.PostProcessRecords(foundRecords)
+// 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	return c.GetZoneRecordsCorrections(dc, foundRecords)
-}
+// 	return c.GetZoneRecordsCorrections(dc, foundRecords)
+// }
 
 func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 

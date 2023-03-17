@@ -178,22 +178,22 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
-// GetDomainCorrections returns a list of corrections for the  domain.
-func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// // GetDomainCorrections returns a list of corrections for the  domain.
+// func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+// 	err := dc.Punycode()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	records, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(records)
+// 	records, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	models.PostProcessRecords(records)
 
-	return c.GetZoneRecordsCorrections(dc, records)
-}
+// 	return c.GetZoneRecordsCorrections(dc, records)
+// }
 
 func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
