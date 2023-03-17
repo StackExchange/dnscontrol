@@ -1,10 +1,10 @@
 package bind
 
 import (
-	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/soautil"
-	"strings"
 )
 
 func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
@@ -27,9 +27,6 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 	soaMail := firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET.")
 	if strings.Contains(soaMail, "@") {
 		soaMail = soautil.RFC5322MailToBind(soaMail)
-	} else {
-		fmt.Println("WARNING: SOA hostmaster address must be in the format hostmaster@example.com")
-		fmt.Println("WARNING: hostmaster.example.com is deprecated and will be dropped in a future version")
 	}
 
 	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
