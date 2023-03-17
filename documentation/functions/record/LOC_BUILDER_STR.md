@@ -1,64 +1,51 @@
 ---
-name: LOC_BUILDER_DD
+name: LOC_BUILDER_STR
 parameters:
   - label
-  - x
-  - y
+  - str
   - alt
   - ttl
 parameter_types:
   label: string
-  x: float32
-  y: float32
+  str: string
   alt: float32
   ttl: int
 ---
 
-`LOC_BUILDER_DD({})` actually takes an object with the following properties:
+`LOC_BUILDER_STR({})` actually takes an object with the following: properties.
 
   - label (optional, defaults to `@`)
-  - x
-  - y
+  - str
   - alt
   - ttl (optional)
 
-A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
+A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
 
 Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
 
 
-The cartesian coordinates are decimal degrees, like you typically find in e.g. Google Maps.
-
-Examples.
-
-Big Ben:
-`51.50084265331501, -0.12462541415599787`
-
-The White House:
-`38.89775977858357, -77.03655125982903`
+Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
+ * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
 
 
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com","none"
-  , LOC_BUILDER_DD({
-    label: "big-ben",
-    x: 51.50084265331501,
-    y: -0.12462541415599787,
-    alt: 6,
+  , LOC_BUILDER_STR({
+    label: "old-faithful",
+    str: '44.46046°N 110.82815°W',
+    alt: 2240,
   })
-  , LOC_BUILDER_DD({
-    label: "white-house",
-    x: 38.89775977858357,
-    y: -77.03655125982903,
-    alt: 19,
+  , LOC_BUILDER_STR({
+    label: "ribblehead-viaduct",
+    str: '54.210436°N 2.370231°W',
+    alt: 300,
   })
-  , LOC_BUILDER_DD({
-    label: "white-house-ttl",
-    x: 38.89775977858357,
-    y: -77.03655125982903,
-    alt: 19,
-    ttl: "5m",
+  , LOC_BUILDER_STR({
+    label: "guinness-brewery",
+    str: '53°20′40″N 6°17′20″W',
+    alt: 300,
   })
 );
 
