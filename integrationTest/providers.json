@@ -119,6 +119,7 @@
   },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
+    "TYPE": "HEXONET",
     "apilogin": "$HEXONET_UID",
     "apipassword": "$HEXONET_PW",
     "debugmode": "$HEXONET_DEBUGMODE",

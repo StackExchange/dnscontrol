@@ -18,9 +18,6 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Cannot(),
@@ -29,6 +26,9 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocDualHost:            providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 type autoDNSProvider struct {
