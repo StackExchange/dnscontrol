@@ -65,7 +65,6 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	}
 
 	var corrections []*models.Correction
-	//var create, delete, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)

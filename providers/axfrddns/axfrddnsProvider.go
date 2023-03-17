@@ -56,13 +56,14 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand         *rand.Rand
-	master       string
-	updateMode   string
-	transferMode string
-	nameservers  []*models.Nameserver
-	transferKey  *Key
-	updateKey    *Key
+	rand             *rand.Rand
+	master           string
+	updateMode       string
+	transferMode     string
+	nameservers      []*models.Nameserver
+	transferKey      *Key
+	updateKey        *Key
+	hasDnssecRecords bool
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -310,14 +311,14 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 		foundRecords = append(foundRecords, foundDNSSecRecords)
 	}
 
-	//hasDnssecRecords := false
+	c.hasDnssecRecords = false
 	if len(foundRecords) >= 1 {
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
 			last.Name == dnssecDummyLabel &&
 			len(last.TxtStrings) == 1 &&
 			last.TxtStrings[0] == dnssecDummyTxt {
-			//hasDnssecRecords = true
+			c.hasDnssecRecords = true
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}
 	}
@@ -369,13 +370,12 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
 
-	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
-	// if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
-	// 	printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
-	// }
-	// if dc.AutoDNSSEC == "off" && hasDnssecRecords {
-	// 	printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
-	// }
+	if dc.AutoDNSSEC == "on" && !c.hasDnssecRecords {
+		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+	}
+	if dc.AutoDNSSEC == "off" && c.hasDnssecRecords {
+		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+	}
 
 	var corrections []*models.Correction
 

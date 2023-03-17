@@ -179,11 +179,11 @@ func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, er
 
 // PrepFoundRecords munges any records to make them compatible with
 // this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
+//func PrepFoundRecords(recs models.Records) models.Records {
+// If there are records that need to be modified, removed, etc. we
+// do it here.  Usually this is a no-op.
+//return recs
+//}
 
 // PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig) {
@@ -192,7 +192,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	// provider.  We try to do minimal changes otherwise it gets
 	// confusing.
 
-	dc.Punycode()
+	//dc.Punycode()
 
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {

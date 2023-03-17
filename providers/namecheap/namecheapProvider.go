@@ -126,6 +126,42 @@ func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error
 		return nil, err
 	}
 
+	// namecheap has this really annoying feature where they add some parking records if you have no records.
+	// This causes a few problems for our purposes, specifically the integration tests.
+	// lets detect that one case and pretend it is a no-op.
+	if len(records.Hosts) == 2 {
+		if records.Hosts[0].Type == "CNAME" &&
+			strings.Contains(records.Hosts[0].Address, "parkingpage") &&
+			records.Hosts[1].Type == "URL" {
+			// return an empty zone
+			return nil, nil
+		}
+	}
+
+	// Copying this from GetDomainCorrections.  This seems redundent
+	// with what toRecords() does.  Leaving it out.
+	// 	for _, r := range records.Hosts {
+	// 		if r.Type == "SOA" {
+	// 			continue
+	// 		}
+	// 		rec := &models.RecordConfig{
+	// 			Type:         r.Type,
+	// 			TTL:          uint32(r.TTL),
+	// 			MxPreference: uint16(r.MXPref),
+	// 			Original:     r,
+	// 		}
+	// 		rec.SetLabel(r.Name, dc.Name)
+	// 		switch rtype := r.Type; rtype { // #rtype_variations
+	// 		case "TXT":
+	// 			rec.SetTargetTXT(r.Address)
+	// 		case "CAA":
+	// 			rec.SetTargetCAAString(r.Address)
+	// 		default:
+	// 			rec.SetTarget(r.Address)
+	// 		}
+	// 		actual = append(actual, rec)
+	// 	}
+
 	return toRecords(records, domain)
 }
 
@@ -196,6 +232,17 @@ func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error
 // }
 
 func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
+	// namecheap does not allow setting @ NS with basic DNS
+	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type == "NS" && r.GetLabel() == "@" {
+			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
+				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+			}
+			return false
+		}
+		return true
+	})
 
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {

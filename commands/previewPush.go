@@ -213,6 +213,11 @@ DomainLoop:
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = domain.Punycode()
+		if err != nil {
+			return err
+		}
 		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
 		out.EndProvider(domain.RegistrarName, len(corrections), err)
 		if err != nil {

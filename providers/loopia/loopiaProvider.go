@@ -235,11 +235,11 @@ func (c *APIClient) GetZoneRecords(domain string) (models.Records, error) {
 
 // PrepFoundRecords munges any records to make them compatible with
 // this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
+//func PrepFoundRecords(recs models.Records) models.Records {
+// If there are records that need to be modified, removed, etc. we
+// do it here.  Usually this is a no-op.
+//return recs
+//}
 
 // PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig) {
@@ -248,7 +248,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	// provider.  We try to do minimal changes otherwise it gets
 	// confusing.
 
-	dc.Punycode()
+	//dc.Punycode()
 
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
@@ -293,7 +293,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 	return labels, msgs
 }
 
-// GenerateZoneRecordsCorrections takes the desired and existing records
+// GetZoneRecordsCorrections takes the desired and existing records
 // and produces a Correction list.  The correction list is simply
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
@@ -305,6 +305,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 
 	// Normalize
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	PrepDesiredRecords(dc)
 
 	var corrections []*models.Correction
 	var keysToUpdate map[models.RecordKey][]string

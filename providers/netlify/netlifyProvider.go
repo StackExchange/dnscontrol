@@ -197,6 +197,8 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 
 func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
+	removeOtherApexNS(dc)
+
 	var corrections []*models.Correction
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {

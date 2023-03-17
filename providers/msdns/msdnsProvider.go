@@ -120,21 +120,21 @@ func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 
 // PrepFoundRecords munges any records to make them compatible with
 // this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
+//func PrepFoundRecords(recs models.Records) models.Records {
+// If there are records that need to be modified, removed, etc. we
+// do it here.  Usually this is a no-op.
+//return recs
+//}
 
-// PrepDesiredRecords munges any records to best suit this provider.
-func PrepDesiredRecords(dc *models.DomainConfig) {
-	// Sort through the dc.Records, eliminate any that can't be
-	// supported; modify any that need adjustments to work with the
-	// provider.  We try to do minimal changes otherwise it gets
-	// confusing.
+// // PrepDesiredRecords munges any records to best suit this provider.
+// func PrepDesiredRecords(dc *models.DomainConfig) {
+// 	// Sort through the dc.Records, eliminate any that can't be
+// 	// supported; modify any that need adjustments to work with the
+// 	// provider.  We try to do minimal changes otherwise it gets
+// 	// confusing.
 
-	dc.Punycode()
-}
+// 	dc.Punycode()
+// }
 
 // NB(tlim): If we want to implement a registrar, refer to
 // http://go.microsoft.com/fwlink/?LinkId=288158
