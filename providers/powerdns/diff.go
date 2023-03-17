@@ -74,9 +74,6 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		return nil, err
 	}
 
-	// reorder so that DELETE actions come first
-	changes = reorderChanges(changes)
-
 	var corrections []*models.Correction
 
 	for _, change := range changes {
@@ -115,19 +112,6 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 	}
 
 	return corrections, nil
-}
-
-// reorderChanges returns changes reordered so that DELETE changes run first
-func reorderChanges(changes diff2.ChangeList) diff2.ChangeList {
-	var main, pre diff2.ChangeList
-	for _, change := range changes {
-		if change.Type == diff2.DELETE {
-			pre = append(pre, change)
-		} else {
-			main = append(main, change)
-		}
-	}
-	return append(pre, main...)
 }
 
 // buildRecordList returns a list of records for the PowerDNS resource record set from a change
