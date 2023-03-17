@@ -44,6 +44,7 @@
     * [IGNORE_TARGET](functions/domain/IGNORE_TARGET.md)
     * [IMPORT_TRANSFORM](functions/domain/IMPORT_TRANSFORM.md)
     * [INCLUDE](functions/domain/INCLUDE.md)
+    * [LOC](functions/domain/LOC.md)
     * [MX](functions/domain/MX.md)
     * [NAMESERVER](functions/domain/NAMESERVER.md)
     * [NAMESERVER_TTL](functions/domain/NAMESERVER_TTL.md)
@@ -77,6 +78,10 @@
 * Record Modifiers
     * [CAA_BUILDER](functions/record/CAA_BUILDER.md)
     * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
+    * [LOC_BUILDER_DD](functions/record/LOC_BUILDER_DD.md)
+    * [LOC_BUILDER_DMM_STR](functions/record/LOC_BUILDER_DMM_STR.md)
+    * [LOC_BUILDER_DMS_STR](functions/record/LOC_BUILDER_DMS_STR.md)
+    * [LOC_BUILDER_STRING](functions/record/LOC_BUILDER_STRING.md)
     * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
     * [TTL](functions/record/TTL.md)
     * Service Provider specific

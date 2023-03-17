@@ -14,15 +14,15 @@ If a feature is definitively not supported for whatever reason, we would also li
 <!-- provider-matrix-start -->
 | Provider name | Official Support | DNS Provider | Registrar | ALIAS | AUTODNSSEC | CAA | LOC | PTR | NAPTR | SOA | SRV | SSHFP | TLSA | DS | dual host | create-domains | NO_PURGE | get-zones |
 | ------------- | ---------------- | ------------ | --------- | ----- | ---------- | --- | --- | --- | ----- | --- | --- | ----- | ---- | -- | --------- | -------------- | -------- | --------- |
-| `AKAMAIEDGEDNS` | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| `AKAMAIEDGEDNS` | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
 | `AUTODNS` | ❌ | ✅ | ❌ | ✅ | ❔ | ❌ | ❔ | ❌ | ❔ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `AXFRDDNS` | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ |
+| `AXFRDDNS` | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ |
 | `AZURE_DNS` | ✅ | ✅ | ❌ | ❌ | ❔ | ✅ | ❌ | ✅ | ❌ | ❔ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `BIND` | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | `CLOUDFLAREAPI` | ✅ | ✅ | ❌ | ✅ | ❔ | ✅ | ❌ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ✅ |
-| `CLOUDNS` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| `CLOUDNS` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❌ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | `CSCGLOBAL` | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ✅ |
-| `DESEC` | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
+| `DESEC` | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
 | `DIGITALOCEAN` | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | `DNSIMPLE` | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `DNSMADEEASY` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❌ | ✅ | ❔ | ❔ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -38,7 +38,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | `HEXONET` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ |
 | `HOSTINGDE` | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `INTERNETBS` | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
-| `INWX` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
+| `INWX` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `LINODE` | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | `LOOPIA` | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ |
 | `LUADNS` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❌ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
@@ -49,11 +49,11 @@ If a feature is definitively not supported for whatever reason, we would also li
 | `NETLIFY` | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `NS1` | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `OPENSRS` | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
-| `ORACLE` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| `OVH` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ |
+| `ORACLE` | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| `OVH` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ |
 | `PACKETFRAME` | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ |
 | `PORKBUN` | ❌ | ✅ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `POWERDNS` | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `POWERDNS` | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `ROUTE53` | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ❌ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `RWTH` | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | `SOFTLAYER` | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
@@ -154,7 +154,6 @@ code to support this provider, we'd be glad to help in any way.
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
-* [Knot DNS](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
 * [RRPPRoxy](https://github.com/StackExchange/dnscontrol/issues/1656) (#1656)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)

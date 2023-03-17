@@ -48,7 +48,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
-	providers.CanUseLOC:              providers.Can(),
+	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
