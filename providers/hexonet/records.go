@@ -76,6 +76,7 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 // 	return n.GetZoneRecordsCorrections(dc, actual)
 // }
 
+// GetZoneRecordsCorrections gathers correctios that would bring actual to match dc.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records)
 
