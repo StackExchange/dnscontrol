@@ -725,10 +725,10 @@ declare function INCLUDE(domain: string): DomainModifier;
  * One must supply the `LOC()` js helper all parameters. If that seems like too
  * much work, see also helper functions:
  * 
- * * [`LOC_BUILDER_DD()`](../record/LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
- * * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- * * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- * * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries LOC_BUILDER_DM*STR()
+ *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * ## Format ##
  * 
@@ -2198,7 +2198,13 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
 declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): RecordModifier;
 
 /**
- * `LOC_BUILDER_DD({})` actually takes an object with the mentioned properties.
+ * `LOC_BUILDER_DD({})` actually takes an object with the following properties:
+ * 
+ *   - label (optional, defaults to `@`)
+ *   - x
+ *   - y
+ *   - alt
+ *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
  * 
@@ -2240,18 +2246,23 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
  *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries LOC_BUILDER_DM*STR()
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DD
  */
-declare function LOC_BUILDER_DD(subdomain: string, decimal_degrees_x: float32, decimal_degrees_y: float32, altitude: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DD(label: string, x: float32, y: float32, alt: float32, ttl: int): RecordModifier;
 
 /**
- * `LOC_BUILDER_DMM({})` actually takes an object with the mentioned properties.
+ * `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
+ * 
+ *   - label (optional, defaults to `@`)
+ *   - str
+ *   - alt
+ *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
  * 
@@ -2277,18 +2288,23 @@ declare function LOC_BUILDER_DD(subdomain: string, decimal_degrees_x: float32, d
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
  *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries LOC_BUILDER_DM*STR()
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
- * @see https://dnscontrol.org/js#LOC_BUILDER_DMM
+ * @see https://dnscontrol.org/js#LOC_BUILDER_DMM_STR
  */
-declare function LOC_BUILDER_DMM(subdomain: string, input_string: string, altitude: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DMM_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
 
 /**
- * `LOC_BUILDER_DMS_STR({})` actually takes an object with the mentioned properties.
+ * `LOC_BUILDER_DMS_STR({})` actually takes an object with the following properties:
+ * 
+ *   - label (optional, defaults to `@`)
+ *   - str
+ *   - alt
+ *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
  * 
@@ -2315,26 +2331,31 @@ declare function LOC_BUILDER_DMM(subdomain: string, input_string: string, altitu
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
  *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries LOC_BUILDER_DM*STR()
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DMS_STR
  */
-declare function LOC_BUILDER_DMS_STR(subdomain: string, input_string: string, altitude: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DMS_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
 
 /**
- * `LOC_BUILDER_STR({})` actually takes an object with the mentioned properties.
+ * `LOC_BUILDER_STR({})` actually takes an object with the following: properties.
+ * 
+ *   - label (optional, defaults to `@`)
+ *   - str
+ *   - alt
+ *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
  * 
  * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
  * 
  * Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
- * * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- * * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  * 
  * ```javascript
  * D("example.com","none"
@@ -2358,15 +2379,15 @@ declare function LOC_BUILDER_DMS_STR(subdomain: string, input_string: string, al
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
  *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries LOC_BUILDER_DM*STR()
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_STR
  */
-declare function LOC_BUILDER_STR(subdomain: string, input_string: string, altitude: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
 
 /**
  * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.

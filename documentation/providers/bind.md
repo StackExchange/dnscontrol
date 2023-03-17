@@ -42,7 +42,7 @@ In this example we set the default SOA settings and NS records.
 var DSP_BIND = NewDnsProvider("bind", {
     "default_soa": {
         "master": "ns1.example.tld.",
-        "mbox": "sysadmin.example.tld.",
+        "mbox": "spamtrap.example.tld.",
         "refresh": 3600,
         "retry": 600,
         "expire": 604800,
@@ -67,9 +67,7 @@ Because BIND is unique, BIND's SOA support is kind of a hack.  It leaves the SOA
 1. The serial number: If something in the zone changes, the serial number is incremented (see below).
 2. Missing SOAs: If there is no SOA record in a zone (or the zone is being created for the first time), the SOA is created.  The initial values are taken from the `default_soa` settings.
 
-The `default_soa` values are only used when creating an SOA for the first time. The values are not used to update an SOA.  *Therefore, the only way to change an existing SOA is to edit the zone file.*
-
-There is an effort to make SOA records handled like A, CNAME, and other records.  See https://github.com/StackExchange/dnscontrol/issues/1131
+The `default_soa` values are only used when creating an SOA for the first time. The values are not used to update an SOA.  Most people edit the SOA values by manually editing the zonefile or using the `SOA()` function.
 
 
 # FYI: SOA serial numbers
