@@ -38,7 +38,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 		featureMap := matrix.Providers[providerName]
 
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "`"+providerName+"`")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`](providers/"+strings.ToLower(providerName)+".md)")
 		for _, featureName := range matrix.Features {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
@@ -76,20 +76,20 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
-		DomainModifierAlias  = "ALIAS"
-		DomainModifierDnssec = "AUTODNSSEC"
-		DomainModifierCaa    = "CAA"
-		DomainModifierLoc    = "LOC"
-		DomainModifierPtr    = "PTR"
-		DomainModifierNaptr  = "NAPTR"
-		DomainModifierSoa    = "SOA"
-		DomainModifierSrv    = "SRV"
-		DomainModifierSshfp  = "SSHFP"
-		DomainModifierTlsa   = "TLSA"
-		DomainModifierDs     = "DS"
+		DomainModifierAlias  = "[`ALIAS`](functions/domain/ALIAS.md)"
+		DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
+		DomainModifierDnssec = "[`AUTODNSSEC`](functions/domain/AUTODNSSEC_ON.md)"
+		DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
+		DomainModifierNaptr  = "[`NAPTR`](functions/domain/NAPTR.md)"
+		DomainModifierPtr    = "[`PTR`](functions/domain/PTR.md)"
+		DomainModifierSoa    = "[`SOA`](functions/domain/SOA.md)"
+		DomainModifierSrv    = "[`SRV`](functions/domain/SRV.md)"
+		DomainModifierSshfp  = "[`SSHFP`](functions/domain/SSHFP.md)"
+		DomainModifierTlsa   = "[`TLSA`](functions/domain/TLSA.md)"
+		DomainModifierDs     = "[`DS`](functions/domain/DS.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
-		NoPurge              = "NO_PURGE"
+		NoPurge              = "[`NO_PURGE`](functions/domain/NO_PURGE.md)"
 		GetZones             = "get-zones"
 	)
 
@@ -100,11 +100,11 @@ func matrixData() *FeatureMatrix {
 			ProviderDNSProvider,
 			ProviderRegistrar,
 			DomainModifierAlias,
-			DomainModifierDnssec,
 			DomainModifierCaa,
+			DomainModifierDnssec,
 			DomainModifierLoc,
-			DomainModifierPtr,
 			DomainModifierNaptr,
+			DomainModifierPtr,
 			DomainModifierSoa,
 			DomainModifierSrv,
 			DomainModifierSshfp,

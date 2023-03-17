@@ -72,12 +72,59 @@ go generate
 popd
 ```
 
--   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCapability()` statement.
+-   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
+    
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    func matrixData() *FeatureMatrix {
+        const (
+            ...
+            DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](functions/domain/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
+            ...
+        )
+        matrix := &FeatureMatrix{
+            Providers: map[string]FeatureMap{},
+            Features: []string{
+                ...
+                DomainModifierCaa,
+    +           DomainModifierFoo,
+                DomainModifierLoc,
+                ...
+            },
+        }
+    ```
+    {% endcode %}
+
+    then add it later in the file with a `setCapability()` statement, which should look like this:
+    
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    ...
+    +       setCapability(
+    +           DomainModifierFoo,
+    +           providers.CanUseFOO,
+    +       )
+    ...
+    ```
+    {% endcode %}
+
 -   Add the capability to the list of features that zones are validated
     against (i.e. if you want DNSControl to report an error if this
     feature is used with a DNS provider that doesn't support it). That's
     in the `checkProviderCapabilities` function in
-    `pkg/normalize/validate.go`.
+    `pkg/normalize/validate.go`. It should look like this:
+
+    {% code title="pkg/normalize/validate.go" %}
+    ```diff
+    var providerCapabilityChecks = []pairTypeCapability{
+    ...
+    +   capabilityCheck("FOO", providers.CanUseFOO),
+    ...
+    ```
+    {% endcode %}
+
 -   Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
 
 DNSControl will warn/error if this new record is used with a
@@ -251,3 +298,32 @@ Add a new Markdown file to `documentation/functions/domain`. Copy an existing fi
 -   `parameter_types`: an object with parameter names as keys and TypeScript type names as values. Check out existing record documentation if you’re not sure to put for a parameter. Note that this isn’t displayed on the website, it’s only used to generate the `.d.ts` file.
 
 The rest of the file is the documentation. You can use Markdown syntax to format the text.
+
+Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
+
+{% code title="documentation/SUMMARY.md" %}
+```diff
+...
+* Domain Modifiers
+...
+    * [DnsProvider](functions/domain/DnsProvider.md)
++   * [FOO](functions/domain/FOO.md)
+    * [FRAME](functions/domain/FRAME.md)
+...
+    * Service Provider specific
+...
+        * ClouDNS
+            * [CLOUDNS_WR](functions/domain/CLOUDNS_WR.md)
++       * ASDF
++           * [NINJA_RECORD](function/domain/FOO_NINJA.md)
+        * NS1
+            * [NS1_URLFWD](functions/domain/NS1_URLFWD.md)
+...
+* Record Modifiers
+...
+    * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
++   * [FOO_HELPER](functions/record/FOO_HELPER.md)
+    * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
+...
+```
+{% endcode %}
