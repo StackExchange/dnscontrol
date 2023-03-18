@@ -354,27 +354,77 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	}
 }
 
-func TestCheckLabelHasMultipleTTLs(t *testing.T) {
+func TestCheckRecordSetHasMultipleTTLs_err_1type_2ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different ttl per record
 		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
 		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 222}),
 	}
-	errs := checkLabelHasMultipleTTLs(records)
+	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) == 0 {
 		t.Error("Expected error on multiple TTLs under the same label, but got none")
 	}
 }
 
-func TestCheckLabelHasNoMultipleTTLs(t *testing.T) {
+func TestCheckRecordSetHasMultipleTTLs_noerr_1type_1ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different ttl per record
 		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
 		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 111}),
 	}
-	errs := checkLabelHasMultipleTTLs(records)
+	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
-		t.Errorf("Expected 0 errors on records having the same TTL under the same label, but got %d", len(errs))
+		t.Errorf("Expected 0 errors (same type, same TTL), but got %d", len(errs))
+	}
+}
+
+func TestCheckRecordSetHasMultipleTTLs_noerr_2type_2ttl(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different record types, different TTLs
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 333}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 444}),
+	}
+	errs := checkRecordSetHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors (different types, different TTLs), but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckRecordSetHasMultipleTTLs_noerr_2type_1ttl(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different record types, different TTLs
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 333}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 333}),
+	}
+	errs := checkRecordSetHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors (different types, same TTLs) but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckRecordSetHasMultipleTTLs_err_3type_2ttl(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different record types, different TTLs
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 555}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 555}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 666}),
+	}
+	errs := checkRecordSetHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors (differnt types, no errors), but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckRecordSetHasMultipleTTLs_err_3type_3ttl(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different record types, different TTLs
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 777}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 888}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 999}),
+	}
+	errs := checkRecordSetHasMultipleTTLs(records)
+	if len(errs) != 1 {
+		t.Errorf("Expected 0 errors (differnt types, 1 error), but got %d: %v", len(errs), errs)
 	}
 }
 
