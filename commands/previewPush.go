@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/idna"
 
@@ -134,99 +135,114 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	anyErrors := false
 	totalCorrections := 0
-DomainLoop:
+
+	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
+	var wg sync.WaitGroup
+	wg.Add(len(cfg.Domains))
+
 	for _, domain := range cfg.Domains {
-		if !args.shouldRunDomain(domain.UniqueName) {
-			continue
-		}
-		out.StartDomain(domain.UniqueName)
-		var providersWithExistingZone []*models.DNSProviderInstance
-		for _, provider := range domain.DNSProviderInstances {
+		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
+		// For now running this code is still sequential.
+		// Please note that at the end of this anonymous function there is a } (domain) which executes this function actually
+		func(domain *models.DomainConfig) {
+			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
-			if !args.NoPopulate {
-				// preview run: check if zone is already there, if not print a warning
-				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
-					zones, err := lister.ListZones()
-					if err != nil {
-						return err
-					}
-					aceZoneName, _ := idna.ToASCII(domain.Name)
+			if !args.shouldRunDomain(domain.UniqueName) {
+				return
+			}
 
-					if !slices.Contains(zones, aceZoneName) {
-						out.Warnf("DEBUG: zones: %v\n", zones)
-						out.Warnf("DEBUG: Name: %v\n", domain.Name)
+			out.StartDomain(domain.UniqueName)
+			var providersWithExistingZone []*models.DNSProviderInstance
+			for _, provider := range domain.DNSProviderInstances {
+				if !args.NoPopulate {
+					// preview run: check if zone is already there, if not print a warning
+					if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+						zones, err := lister.ListZones()
+						if err != nil {
+							out.Errorf("ERROR: %s", err.Error())
+							return
+						}
+						aceZoneName, _ := idna.ToASCII(domain.Name)
 
-						out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-						continue // continue with next provider, as we can not determine corrections without an existing zone
-					}
-				} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
-					// this is the actual push, ensure domain exists at DSP
-					if err := creator.EnsureZoneExists(domain.Name); err != nil {
-						out.Warnf("Error creating domain: %s\n", err)
-						continue // continue with next provider, as we couldn't create this one
+						if !slices.Contains(zones, aceZoneName) {
+							out.Warnf("DEBUG: zones: %v\n", zones)
+							out.Warnf("DEBUG: Name: %v\n", domain.Name)
+
+							out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+							continue // continue with next provider, as we can not determine corrections without an existing zone
+						}
+					} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
+						// this is the actual push, ensure domain exists at DSP
+						if err := creator.EnsureZoneExists(domain.Name); err != nil {
+							out.Warnf("Error creating domain: %s\n", err)
+							continue // continue with next provider, as we couldn't create this one
+						}
 					}
 				}
+				providersWithExistingZone = append(providersWithExistingZone, provider)
 			}
-			providersWithExistingZone = append(providersWithExistingZone, provider)
-		}
 
-		nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
-		if err != nil {
-			return err
-		}
-		domain.Nameservers = nsList
-		nameservers.AddNSRecords(domain)
+			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
+			if err != nil {
+				out.Errorf("ERROR: %s", err.Error())
+				return
+			}
+			domain.Nameservers = nsList
+			nameservers.AddNSRecords(domain)
 
-		for _, provider := range providersWithExistingZone {
-			// FIXME(tlim): Test this without the copying.  Just dc := domain
+			for _, provider := range providersWithExistingZone {
+				dc, err := domain.Copy()
+				if err != nil {
+					out.Errorf("ERROR: %s", err.Error())
+					return
+				}
+				shouldrun := args.shouldRunProvider(provider.Name, dc)
+				out.StartDNSProvider(provider.Name, !shouldrun)
+				if !shouldrun {
+					continue
+				}
+
+				/// This is where we should audit?
+
+				corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, dc)
+				out.EndProvider(provider.Name, len(corrections), err)
+				if err != nil {
+					anyErrors = true
+					return
+				}
+				totalCorrections += len(corrections)
+				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
+			}
+			run := args.shouldRunProvider(domain.RegistrarName, domain)
+			out.StartRegistrar(domain.RegistrarName, !run)
+			if !run {
+				return
+			}
+			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+				out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+				return
+			}
 			dc, err := domain.Copy()
 			if err != nil {
-				return err
+				log.Fatal(err)
 			}
-			shouldrun := args.shouldRunProvider(provider.Name, dc)
-			out.StartDNSProvider(provider.Name, !shouldrun)
-			if !shouldrun {
-				continue
+			err = domain.Punycode()
+			if err != nil {
+				return
 			}
 
-			/// This is where we should audit?
-
-			corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, dc)
-			out.EndProvider(provider.Name, len(corrections), err)
+			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
+			out.EndProvider(domain.RegistrarName, len(corrections), err)
 			if err != nil {
 				anyErrors = true
-				continue DomainLoop
+				return
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
-		}
-		run := args.shouldRunProvider(domain.RegistrarName, domain)
-		out.StartRegistrar(domain.RegistrarName, !run)
-		if !run {
-			continue
-		}
-		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-			continue
-		}
-		dc, err := domain.Copy()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = domain.Punycode()
-		if err != nil {
-			return err
-		}
-		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
-		out.EndProvider(domain.RegistrarName, len(corrections), err)
-		if err != nil {
-			anyErrors = true
-			continue
-		}
-		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+		}(domain)
 	}
+	wg.Wait() // wait for all anonymous functions to finish
+
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
