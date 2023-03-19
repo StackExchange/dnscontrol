@@ -27,8 +27,6 @@ jobs:
 
     - name: Build binaries
       run: go run build/build.go
-      env:
-        CGO_ENABLED: 0
 
     - name: Get release from tag
       run: echo ::set-output name=RELEASE_VERSION::$(echo ${GITHUB_REF:11})
