@@ -135,12 +135,16 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	anyErrors := false
 	totalCorrections := 0
 
+	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
 	var wg sync.WaitGroup
 	wg.Add(len(cfg.Domains))
 
 	for _, domain := range cfg.Domains {
+		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
+		// For now running this code is still sequential.
+		// Please note that at the end of this anonymous function there is a } (domain) which executes this function actually
 		func(domain *models.DomainConfig) {
-			defer wg.Done()
+			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
 			if !args.shouldRunDomain(domain.UniqueName) {
 				return
@@ -231,7 +235,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 			anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
 		}(domain)
 	}
-	wg.Wait()
+	wg.Wait() // wait for all anonymous functions to finish
 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
