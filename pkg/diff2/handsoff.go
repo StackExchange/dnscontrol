@@ -120,29 +120,12 @@ func handsoff(
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
-		if printer.SkinnyReport && len(foreign) > maxReport {
-			for _, r := range foreign[:maxReport] {
-				msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-			}
-			msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to see them)", len(foreign)-maxReport))
-		} else {
-			for _, r := range foreign {
-				msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-			}
-		}
+		fmt.Printf("DEBUG: len: %d\n", len(foreign))
+		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
-		if printer.SkinnyReport && len(ignorable) > maxReport {
-			for _, r := range ignorable[:maxReport] {
-				msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-			}
-			msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to see them)", len(ignorable)-maxReport))
-		} else {
-			for _, r := range ignorable {
-				msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-			}
-		}
+		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
@@ -162,6 +145,26 @@ func handsoff(
 	desired = append(desired, ignorable...)
 	desired = append(desired, foreign...)
 	return desired, msgs, nil
+}
+
+// reportSkips reports records being skipped, if !full only the first maxReport are output.
+func reportSkips(recs models.Records, full bool) []string {
+	var msgs []string
+
+	shorten := (!full) && (len(recs) > maxReport)
+	last := len(recs)
+	if shorten {
+		last = maxReport
+	}
+
+	for _, r := range recs[:last] {
+		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+	}
+	if shorten {
+		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
+	}
+
+	return msgs
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*()/UNMANAGED() and NO_PURGE/ENSURE_ABSENT_REC() features.
