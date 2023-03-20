@@ -119,10 +119,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Content)
 		case "SRV":
-			parts := strings.Fields(r.Content)
-			if len(parts) == 3 {
-				r.Content += "."
-			}
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
 			err = rec.SetTargetTXT(r.Content)
