@@ -477,7 +477,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Check for duplicates
 		errs = append(errs, checkDuplicates(d.Records)...)
 		// Check for different TTLs under the same label
-		errs = append(errs, checkLabelHasMultipleTTLs(d.Records)...)
+		errs = append(errs, checkRecordSetHasMultipleTTLs(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -556,10 +556,13 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 //}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
+	if strings.ToLower(dc.RegistrarName) == "none" {
+		return
+	}
 	if dc.AutoDNSSEC == "on" {
 		for providerName := range dc.DNSProviderNames {
 			if dc.RegistrarName != providerName {
-				errs = append(errs, fmt.Errorf("AutoDNSSEC is enabled, but DNS provider %s does not match registrar %s", providerName, dc.RegistrarName))
+				errs = append(errs, Warning{fmt.Errorf("AutoDNSSEC is enabled, but DNS provider %s does not match registrar %s", providerName, dc.RegistrarName)})
 			}
 		}
 	}
@@ -611,8 +614,8 @@ func uniq(s []string) []string {
 	return result
 }
 
-func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
-	// The RFCs say that all records at a particular label should have
+func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
+	// The RFCs say that all records at a particular recordset should have
 	// the same TTL.  Most providers don't care, and if they do the
 	// dnscontrol provider code usually picks the lowest TTL for all of them.
 
@@ -647,26 +650,6 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	sort.Strings(labels)
 	slices.Compact(labels)
 
-	// Less clear error message:
-	// for _, label := range labels {
-	// 	if len(m[label]) > 1 {
-	// 		result := ""
-	// 		for ttl, v := range m[label] {
-	// 			result += fmt.Sprintf(" %d:", ttl)
-
-	// 			rtypes := make([]string, len(v))
-	// 			i := 0
-	// 			for k := range v {
-	// 				rtypes[i] = k
-	// 				i++
-	// 			}
-
-	// 			result += strings.Join(rtypes, "/")
-	// 		}
-	// 		errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q:%v", label, result)})
-	// 	}
-	// }
-
 	// Invert for a more clear error message:
 	for _, label := range labels {
 		if len(m[label]) > 1 {
@@ -679,8 +662,14 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 					r[rtype][ttl] = true
 				}
 			}
-			result := formatInconsistency(r)
-			errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
+
+			// Report any cases where a RecordSet has > 1 different TTLs
+			for rtype := range r {
+				if len(r[rtype]) > 1 {
+					result := formatInconsistency(r)
+					errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
+				}
+			}
 		}
 	}
 
