@@ -120,7 +120,6 @@ func handsoff(
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
-		fmt.Printf("DEBUG: len: %d\n", len(foreign))
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
