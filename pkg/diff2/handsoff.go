@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/gobwas/glob"
 )
 
@@ -97,6 +98,8 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
+const maxReport = 5
+
 // handsoff processes the IGNORE_*/UNMANAGED/NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
@@ -117,14 +120,28 @@ func handsoff(
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
-		for _, r := range foreign {
-			msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+		if printer.SkinnyReport && len(foreign) > maxReport {
+			for _, r := range foreign[:maxReport] {
+				msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			}
+			msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to see them)", len(foreign)-maxReport))
+		} else {
+			for _, r := range foreign {
+				msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			}
 		}
 	}
 	if len(ignorable) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
-		for _, r := range ignorable {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+		if printer.SkinnyReport && len(ignorable) > maxReport {
+			for _, r := range ignorable[:maxReport] {
+				msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			}
+			msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to see them)", len(ignorable)-maxReport))
+		} else {
+			for _, r := range ignorable {
+				msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			}
 		}
 	}
 
