@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/gobwas/glob"
 )
 
@@ -97,6 +98,8 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
+const maxReport = 5
+
 // handsoff processes the IGNORE_*/UNMANAGED/NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
@@ -117,15 +120,11 @@ func handsoff(
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
-		for _, r := range foreign {
-			msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-		}
+		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
-		for _, r := range ignorable {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-		}
+		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
@@ -145,6 +144,26 @@ func handsoff(
 	desired = append(desired, ignorable...)
 	desired = append(desired, foreign...)
 	return desired, msgs, nil
+}
+
+// reportSkips reports records being skipped, if !full only the first maxReport are output.
+func reportSkips(recs models.Records, full bool) []string {
+	var msgs []string
+
+	shorten := (!full) && (len(recs) > maxReport)
+	last := len(recs)
+	if shorten {
+		last = maxReport
+	}
+
+	for _, r := range recs[:last] {
+		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+	}
+	if shorten {
+		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
+	}
+
+	return msgs
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*()/UNMANAGED() and NO_PURGE/ENSURE_ABSENT_REC() features.

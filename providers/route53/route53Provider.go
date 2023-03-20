@@ -492,7 +492,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	changes := []r53Types.Change{}
-	changeDesc := []string{}
+	changeDesc := []string{} // TODO(tlim): This should be a [][]string so that we aren't joining strings until the last moment.
 
 	// Amazon Route53 is a "ByRecordSet" API.
 	// At each label:rtype pair, we either delete all records or UPSERT the desired records.
@@ -559,7 +559,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		}
 
 		changes = append(changes, chg)
-		changeDesc = append(changeDesc, inst.Msgs...)
+		changeDesc = append(changeDesc, inst.MsgsJoined)
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
