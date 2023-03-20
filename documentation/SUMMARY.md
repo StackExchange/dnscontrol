@@ -81,7 +81,7 @@
     * [LOC_BUILDER_DD](functions/record/LOC_BUILDER_DD.md)
     * [LOC_BUILDER_DMM_STR](functions/record/LOC_BUILDER_DMM_STR.md)
     * [LOC_BUILDER_DMS_STR](functions/record/LOC_BUILDER_DMS_STR.md)
-    * [LOC_BUILDER_STRING](functions/record/LOC_BUILDER_STRING.md)
+    * [LOC_BUILDER_STR](functions/record/LOC_BUILDER_STR.md)
     * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
     * [TTL](functions/record/TTL.md)
     * Service Provider specific
