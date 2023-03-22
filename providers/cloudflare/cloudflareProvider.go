@@ -187,77 +187,7 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 	return id, nil
 }
 
-// // GetDomainCorrections returns a list of corrections to update a domain.
-// func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	err := dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	domainID, err := c.getDomainID(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	records, err := c.getRecordsForDomain(domainID, dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if err := c.preprocessConfig(dc); err != nil {
-// 		return nil, err
-// 	}
-// 	for i := len(records) - 1; i >= 0; i-- {
-// 		rec := records[i]
-// 		// Delete ignore labels
-// 		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-// 			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-// 			records = append(records[:i], records[i+1:]...)
-// 		}
-// 	}
-
-// 	if c.manageRedirects {
-// 		prs, err := c.getPageRules(domainID, dc.Name)
-// 		//printer.Printf("GET PAGE RULES:\n")
-// 		//for i, p := range prs {
-// 		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
-// 		//}
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		records = append(records, prs...)
-// 	}
-
-// 	if c.manageWorkers {
-// 		wrs, err := c.getWorkerRoutes(domainID, dc.Name)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		records = append(records, wrs...)
-// 	}
-
-// 	for _, rec := range dc.Records {
-// 		if rec.Type == "ALIAS" {
-// 			rec.Type = "CNAME"
-// 		}
-// 		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
-// 		// When not forcing this property change here, dnscontrol tries each time to update
-// 		// the TTL of a record which simply cannot be changed anyway.
-// 		if rec.Metadata[metaProxy] != "off" {
-// 			rec.TTL = 1
-// 		}
-// 		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-// 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-// 		}
-// 	}
-
-// 	checkNSModifications(dc)
-
-// 	// Normalize
-// 	models.PostProcessRecords(records)
-
-// 	return c.GetZoneRecordsCorrections(dc, records)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
 	if err := c.preprocessConfig(dc); err != nil {

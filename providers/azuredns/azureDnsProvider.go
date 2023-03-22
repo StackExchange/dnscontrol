@@ -192,23 +192,7 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 	return existingRecords, rawRecords, zoneName, nil
 }
 
-// func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	err := dc.Punycode()
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	existingRecords, _, _, err := a.getExistingRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return a.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
 

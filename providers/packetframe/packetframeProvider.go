@@ -100,37 +100,7 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	return existingRecords, nil
 }
 
-// // GetDomainCorrections returns the corrections for a domain.
-// func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	dc.Punycode()
-
-// 	zone, err := api.getZone(dc.Name)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
-// 	}
-
-// 	records, err := api.getRecords(zone.ID)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
-// 	}
-
-// 	existingRecords := make([]*models.RecordConfig, len(records))
-
-// 	for i := range records {
-// 		existingRecords[i] = toRc(dc, &records[i])
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	zone, err := api.getZone(dc.Name)
 	if err != nil {

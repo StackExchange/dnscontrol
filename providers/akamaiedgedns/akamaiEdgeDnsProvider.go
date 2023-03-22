@@ -105,6 +105,7 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	return createZone(domain, a.contractID, a.groupID)
 }
 
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(existingRecords)
 

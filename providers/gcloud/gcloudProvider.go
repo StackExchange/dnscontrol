@@ -202,23 +202,7 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 	return existingRecords, err
 }
 
-// func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	if err := dc.Punycode(); err != nil {
-// 		return nil, fmt.Errorf("punycode error: %w", err)
-// 	}
-// 	existingRecords, err := g.getZoneSets(dc.Name)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("getzonesets error: %w", err)
-// 	}
-// 	//g.oldRRsMap[dc.Name] = oldRRs
-// 	//g.zoneNameMap[dc.Name] = zoneName
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return g.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records

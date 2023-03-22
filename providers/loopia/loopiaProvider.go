@@ -248,8 +248,6 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	// provider.  We try to do minimal changes otherwise it gets
 	// confusing.
 
-	//dc.Punycode()
-
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -293,11 +291,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 	return labels, msgs
 }
 
-// GetZoneRecordsCorrections takes the desired and existing records
-// and produces a Correction list.  The correction list is simply
-// a list of functions to call to actually make the desired
-// correction, and a message to output to the user when the change is
-// made.
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)

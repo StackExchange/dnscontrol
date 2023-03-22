@@ -124,14 +124,6 @@ func (c *desecProvider) EnsureZoneExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-//// PrepFoundRecords munges any records to make them compatible with
-//// this provider. Usually this is a no-op.
-//func PrepFoundRecords(recs models.Records) models.Records {
-//	// If there are records that need to be modified, removed, etc. we
-//	// do it here.  Usually this is a no-op.
-//	return recs
-//}
-
 // PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// Sort through the dc.Records, eliminate any that can't be
@@ -158,11 +150,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	dc.Records = recordsToKeep
 }
 
-// GenerateDomainCorrections takes the desired and existing records
-// and produces a Correction list.  The correction list is simply
-// a list of functions to call to actually make the desired
-// correction, and a message to output to the user when the change is
-// made.
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records)
 

@@ -93,6 +93,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 // 	return api.GetZoneRecordsCorrections(dc, existingRecords)
 // }
 
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records

@@ -119,23 +119,7 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return actual, nil
 }
 
-// func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	err := dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	actual, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(actual)
-
-// 	return c.GetZoneRecordsCorrections(dc, actual)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction

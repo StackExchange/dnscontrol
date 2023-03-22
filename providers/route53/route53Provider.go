@@ -264,25 +264,7 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 	return existingRecords, nil
 }
 
-// func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc.Punycode()
-
-// 	zone, err := r.getZone(dc)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	existingRecords, err := r.getZoneRecords(zone)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return r.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 

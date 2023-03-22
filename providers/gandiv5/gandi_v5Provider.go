@@ -127,28 +127,6 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 // 	return zones, nil
 // }
 
-// // NB(tal): To future-proof your code, all new providers should
-// // implement GetDomainCorrections exactly as you see here
-// // (byte-for-byte the same). In 3.0
-// // we plan on using just the individual calls to GetZoneRecords,
-// // PostProcessRecords, and so on.
-// //
-// // Currently every provider does things differently, which prevents
-// // us from doing things like using GetZoneRecords() of a provider
-// // to make convertzone work with all providers.
-
-// // GetDomainCorrections get the current and existing records,
-// // post-process them, and generate corrections.
-// func (client *gandiv5Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	existing, err := client.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	models.PostProcessRecords(existing)
-// 	clean := PrepFoundRecords(existing)
-// 	return client.GetZoneRecordsCorrections(dc, clean)
-// }
-
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, error) {
@@ -176,14 +154,6 @@ func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, er
 
 	return existingRecords, nil
 }
-
-// PrepFoundRecords munges any records to make them compatible with
-// this provider. Usually this is a no-op.
-//func PrepFoundRecords(recs models.Records) models.Records {
-// If there are records that need to be modified, removed, etc. we
-// do it here.  Usually this is a no-op.
-//return recs
-//}
 
 // PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig) {
@@ -223,11 +193,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	dc.Records = recordsToKeep
 }
 
-// GenerateDomainCorrections takes the desired and existing records
-// and produces a Correction list.  The correction list is simply
-// a list of functions to call to actually make the desired
-// correction, and a message to output to the user when the change is
-// made.
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	if client.debug {
 		debugRecords("GenDC input", existing)

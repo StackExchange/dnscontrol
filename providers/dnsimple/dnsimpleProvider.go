@@ -139,26 +139,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 	return cleanedRecords, nil
 }
 
-// // GetDomainCorrections returns corrections that update a domain.
-// func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	err := dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	records, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// Apex NS are immutable via API
-// 	actual := removeApexNS(records)
-// 	removeOtherApexNS(dc)
-
-// 	// Normalize
-// 	models.PostProcessRecords(actual)
-// 	return c.GetZoneRecordsCorrections(dc, actual)
-// }
-
 func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 

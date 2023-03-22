@@ -45,24 +45,7 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 	return curRecords, nil
 }
 
-// // GetDomainCorrections returns a list of corrections to update a domain.
-// func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
-// 	// get current zone records
-// 	curRecords, err := dsp.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// post-process records
-// 	if err := dc.Punycode(); err != nil {
-// 		return nil, err
-// 	}
-// 	models.PostProcessRecords(curRecords)
-
-// 	return dsp.GetZoneRecordsCorrections(dc, curRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	// create record diff by group
 	//var keysToUpdate map[models.RecordKey][]string

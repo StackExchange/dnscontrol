@@ -231,6 +231,7 @@ func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error
 // 	return n.GetZoneRecordsCorrections(dc, actual)
 // }
 
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
 	// namecheap does not allow setting @ NS with basic DNS

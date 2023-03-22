@@ -108,6 +108,7 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 // 	return c.GetZoneRecordsCorrections(dc, existingRecords)
 // }
 
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	if c.domainIndex == nil {

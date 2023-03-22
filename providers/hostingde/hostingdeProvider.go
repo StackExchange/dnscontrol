@@ -117,31 +117,7 @@ func soaToString(s soaValues) string {
 	return fmt.Sprintf("refresh=%d retry=%d expire=%d negativettl=%d ttl=%d", s.Refresh, s.Retry, s.Expire, s.NegativeTTL, s.TTL)
 }
 
-// func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	err := dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
-// 	for _, r := range dc.Records {
-// 		if r.TTL < 60 {
-// 			r.TTL = 60
-// 		}
-// 		if r.TTL > 31556926 {
-// 			r.TTL = 31556926
-// 		}
-// 	}
-// 	zone, err := hp.getZone(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	records := hp.APIRecordsToStandardRecordsModel(dc.Name, zone.Records)
-
-// 	return hp.GetZoneRecordsCorrections(dc, records)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 	var err error
 

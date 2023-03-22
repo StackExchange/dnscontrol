@@ -367,6 +367,7 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 // 	return c.GetZoneRecordsCorrections(dc, foundRecords)
 // }
 
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
 

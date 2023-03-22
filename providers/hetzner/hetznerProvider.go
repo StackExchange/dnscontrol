@@ -80,31 +80,7 @@ func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 	return api.createZone(domain)
 }
 
-// // GetDomainCorrections returns the corrections for a domain.
-// func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	err = dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	domain := dc.Name
-
-// 	// Get existing records
-// 	existingRecords, err := api.GetZoneRecords(domain)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
 

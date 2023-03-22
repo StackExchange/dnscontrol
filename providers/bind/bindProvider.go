@@ -200,25 +200,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-// // GetDomainCorrections returns a list of corrections to update a domain.
-// func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc.Punycode()
-
-// 	c.zonefile = filepath.Join(c.directory,
-// 		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
-
-// 	foundRecords, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(foundRecords)
-// 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
-// 	return c.GetZoneRecordsCorrections(dc, foundRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	changes := false

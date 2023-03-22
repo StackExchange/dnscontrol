@@ -59,24 +59,7 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 
 }
 
-// // GetDomainCorrections gathers correctios that would bring n to match dc.
-// func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc.Punycode()
-
-// 	actual, err := n.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	//checkNSModifications(dc)
-
-// 	// Normalize
-// 	models.PostProcessRecords(actual)
-
-// 	return n.GetZoneRecordsCorrections(dc, actual)
-// }
-
-// GetZoneRecordsCorrections gathers correctios that would bring actual to match dc.
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records)
 

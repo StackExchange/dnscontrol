@@ -76,17 +76,6 @@ func (c *gcoreProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-// func (c *gcoreProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	existing, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	models.PostProcessRecords(existing)
-// 	clean := PrepFoundRecords(existing)
-// 	PrepDesiredRecords(dc)
-// 	return c.GetZoneRecordsCorrections(dc, clean)
-// }
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *gcoreProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zone, err := c.provider.Zone(c.ctx, domain)

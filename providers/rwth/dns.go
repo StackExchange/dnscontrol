@@ -30,30 +30,7 @@ func (api *rwthProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(RWTHDefaultNs)
 }
 
-// // GetDomainCorrections returns a list of corretions to execute.
-// func (api *rwthProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	err = dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	domain := dc.Name
-
-// 	// Get existing records
-// 	existingRecords, err := api.GetZoneRecords(domain)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *rwthProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	domain := dc.Name

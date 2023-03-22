@@ -109,20 +109,7 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 	return curRecords, nil
 }
 
-// // GetDomainCorrections gets the corrections for a DomainConfig.
-// func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	curRecords, err := api.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	models.PostProcessRecords(curRecords)
-
-// 	dc.Punycode()
-
-// 	return api.GetZoneRecordsCorrections(dc, curRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 
 	for _, rec := range dc.Records {

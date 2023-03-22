@@ -226,20 +226,7 @@ func checkRecords(records models.Records) error {
 	return nil
 }
 
-// // GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
-// func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc.Punycode()
-
-// 	foundRecords, err := api.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	models.PostProcessRecords(foundRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, foundRecords)
-// }
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
