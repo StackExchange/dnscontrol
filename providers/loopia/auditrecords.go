@@ -17,6 +17,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	//Loopias TXT length limit appears to be 450 octets
 	a.Add("TXT", TxtHasSegmentLen450orLonger)
 
+	a.Add("MX", rejectif.MxNull) // Last verified 2023-03-23
+
 	return a.Audit(records)
 }
 
