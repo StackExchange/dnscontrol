@@ -125,6 +125,69 @@ jobs:
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
 
+  integration-tests-diff2:
+    docker:
+      - image: cimg/go:<< pipeline.parameters.gover >>
+
+    environment: # environment variables for the build itself
+      TEST_RESULTS: /tmp/test-results
+      GOTESTSUM_FORMAT: testname
+
+      BIND_DOMAIN: example.com
+
+      # FYI: Hexonet provides these credentials for use for public testing. They give access to a test area, not a real system. It is not a security issue to expose them.
+      #
+      # FYI: The domain name name was selected at random. If it stops working, this command will list domains to choose from:
+      # echo '{ "hexo": { "apientity": "OTE", "apilogin": "test.user", "apipassword": "test.passw0rd" } }' > hexo-creds.json ; dnscontrol  get-zones --creds hexo-creds.json --format=nameonly hexo HEXONET all
+      HEXONET_DOMAIN: a-b-c-music.com
+      HEXONET_ENTITY: OTE
+      HEXONET_PW: test.passw0rd
+      HEXONET_UID: test.user
+
+      AZURE_DNS_RESOURCE_GROUP: DNSControl
+
+      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+      GCLOUD_PROJECT: dnscontrol-dev
+      GCLOUD_TYPE: service_account
+
+      NAMEDOTCOM_URL: api.name.com
+      NAMEDOTCOM_USER: dnscontroltest
+
+    parameters:
+      provider:
+        type: string
+
+    steps:
+      - run:
+          name: Test << parameters.provider >> set
+          command: |
+            if [ -z "$<< parameters.provider >>_DOMAIN" ] ; then
+              echo "Skip test for << parameters.provider >> provider"
+              circleci-agent step halt
+            fi
+
+      - checkout
+
+      - run: mkdir -p "$TEST_RESULTS"
+
+      - restore_cache: # restores saved cache if no changes are detected since last run
+          keys:
+            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+
+      - run:
+          name: Run integration tests for << parameters.provider >> provider
+          working_directory: integrationTest
+          no_output_timeout: 32m
+          command: |
+            if [ -n "$<< parameters.provider >>_DOMAIN" ] ; then
+              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false -diff2
+            else
+              echo "Skip test for << parameters.provider >> provider"
+            fi
+
+      - store_test_results: # upload test results for display in Test Summary
+          path: /tmp/test-results
+
   release:
     docker:
       - image: cimg/go:<< pipeline.parameters.gover >>
@@ -200,6 +263,32 @@ workflows:
 
       - integration-tests:
           requires: [build]
+          context: DNSProviders
+          matrix:
+            parameters:
+              provider:
+                # Providers that don't require secrets: (alphabetical)
+                - BIND
+                - HEXONET
+                # Providers designated "officially supported": (alphabetical)
+                - AZURE_DNS
+                - CLOUDFLAREAPI
+                - GCLOUD
+                - NAMEDOTCOM
+                - ROUTE53
+                # All others: (alphabetical)
+                - CLOUDNS
+                - DIGITALOCEAN
+                - GANDI_V5
+                - HEDNS
+                - INWX
+                - POWERDNS
+          filters:
+            branches:
+              ignore: [master, main]
+
+      - integration-tests-diff2:
+          requires: [integration-tests]
           context: DNSProviders
           matrix:
             parameters:
