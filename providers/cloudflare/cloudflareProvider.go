@@ -3,7 +3,6 @@ package cloudflare
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
-	"github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -148,10 +146,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(domainID, domain)
-		//printer.Printf("GET PAGE RULES:\n")
-		//for i, p := range prs {
-		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
-		//}
 		if err != nil {
 			return nil, err
 		}
@@ -269,40 +263,20 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
-	for i := len(records) - 1; i >= 0; i-- {
-		rec := records[i]
-		// Delete ignore labels
-		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-			records = append(records[:i], records[i+1:]...)
-		}
-	}
+	//	for i := len(records) - 1; i >= 0; i-- {
+	//		rec := records[i]
+	//		// Delete ignore labels
+	//		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
+	//			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
+	//			records = append(records[:i], records[i+1:]...)
+	//		}
+	//	}
 
 	checkNSModifications(dc)
 
 	domainID, err := c.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	if c.manageRedirects {
-		prs, err := c.getPageRules(domainID, dc.Name)
-		//printer.Printf("GET PAGE RULES:\n")
-		//for i, p := range prs {
-		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
-		//}
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
-	}
-
-	if c.manageWorkers {
-		wrs, err := c.getWorkerRoutes(domainID, dc.Name)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, wrs...)
 	}
 
 	for _, rec := range dc.Records {
@@ -315,9 +289,9 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		if rec.Metadata[metaProxy] != "off" {
 			rec.TTL = 1
 		}
-		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-		}
+		//		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
+		//			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
+		//		}
 	}
 
 	checkNSModifications(dc)
@@ -520,6 +494,7 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 }
 
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+
 	var idTxt string
 	switch oldrec.Type {
 	case "PAGE_RULE":
@@ -536,14 +511,14 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updatePageRule(oldrec.Original.(cloudflare.PageRule).ID, domainID, newrec.GetTargetField())
+				return c.updatePageRule(idTxt, domainID, newrec.GetTargetField())
 			},
 		}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updateWorkerRoute(oldrec.Original.(cloudflare.WorkerRoute).ID, domainID, newrec.GetTargetField())
+				return c.updateWorkerRoute(idTxt, domainID, newrec.GetTargetField())
 			},
 		}}
 	default:
