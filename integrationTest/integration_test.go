@@ -921,39 +921,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		//		// Make sure we can manipulate one DNS record when there is
-		//		// another at the same RecordSet.
-		//		testgroup("testByRecordSet",
-		//			tc("initial",
-		//				a("bar", "1.2.3.4"),
-		//				a("foo", "2.3.4.5"),
-		//				a("foo", "3.4.5.6"),
-		//				mx("foo", 10, "foo"),
-		//				mx("foo", 20, "bar"),
-		//			),
-		//			tc("changeOne",
-		//				a("bar", "1.2.3.4"),
-		//				a("foo", "2.3.4.5"),
-		//				a("foo", "8.8.8.8"), // Change
-		//				mx("foo", 10, "foo"),
-		//				mx("foo", 20, "bar"),
-		//			),
-		//			tc("deleteOne",
-		//				a("bar", "1.2.3.4"),
-		//				a("foo", "2.3.4.5"),
-		//				//a("foo", "8.8.8.8"), // Delete
-		//				mx("foo", 10, "foo"),
-		//				mx("foo", 20, "bar"),
-		//			),
-		//			tc("addOne",
-		//				a("bar", "1.2.3.4"),
-		//				a("foo", "2.3.4.5"),
-		//				a("foo", "8.8.8.8"), // Add
-		//				mx("foo", 10, "foo"),
-		//				mx("foo", 20, "bar"),
-		//			),
-		//		),
-
 		testgroup("IDNA",
 			not("SOFTLAYER"),
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
