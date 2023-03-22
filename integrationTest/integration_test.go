@@ -913,6 +913,10 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("foo", "1.2.3.4"),
 				//a("foo", "3.4.5.6"), // Delete
 			),
+			tc("addOne",
+				a("foo", "1.2.3.4"),
+				a("foo", "3.4.5.6"), // Add
+			),
 		),
 
 		// Make sure we can manipulate one DNS record when there is
@@ -936,6 +940,13 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
 				//a("foo", "8.8.8.8"),  // Delete
+				mx("foo", 10, "foo"),
+				mx("foo", 20, "bar"),
+			),
+			tc("addOne",
+				a("bar", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				a("foo", "8.8.8.8"), // Add
 				mx("foo", 10, "foo"),
 				mx("foo", 20, "bar"),
 			),
