@@ -191,11 +191,12 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 			nameservers.AddNSRecords(domain)
 
 			for _, provider := range providersWithExistingZone {
-				dc, err := domain.Copy()
-				if err != nil {
-					out.Errorf("ERROR: %s", err.Error())
-					return
-				}
+				dc := domain
+				//				dc, err := domain.Copy()
+				//				if err != nil {
+				//					out.Errorf("ERROR: %s", err.Error())
+				//					return
+				//				}
 				shouldrun := args.shouldRunProvider(provider.Name, dc)
 				out.StartDNSProvider(provider.Name, !shouldrun)
 				if !shouldrun {
