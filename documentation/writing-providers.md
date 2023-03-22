@@ -302,7 +302,12 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 14: Check your work
+## Step 14: Modify the release regexp
+
+In the repo root, open `.goreleaser.yml` and add the provider to `Provider-specific changes` regexp.
+
+
+## Step 15: Check your work
 
 Here are some last-minute things to check before you submit your PR.
 
@@ -312,7 +317,7 @@ Here are some last-minute things to check before you submit your PR.
 4. Re-run the integration test one last time (See [Step 7](#step-7-integration-test))
 5. Re-read the [maintainer's responsibilities](providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, perioidically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
-## Step 15: After the PR is merged
+## Step 16: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
 2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
