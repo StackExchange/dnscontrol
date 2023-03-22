@@ -112,6 +112,7 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, error) {
+
 	domainID, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
@@ -120,6 +121,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 	if err != nil {
 		return nil, err
 	}
+
 	for _, rec := range records {
 		if rec.TTL == 0 {
 			rec.TTL = 1
@@ -163,6 +165,17 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 		}
 		records = append(records, wrs...)
 	}
+
+	// Normalize
+	models.PostProcessRecords(records)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// Don't split.
+	// Cloudflare's API only supports one TXT string of any non-zero length. No
+	// multiple strings.
+	// When serving the DNS record, it splits strings >255 octets into
+	// individual segments of 255 each. However that is hidden from the API.
+	// Therefore, whether the string is 1 octet or thousands, just store it as
+	// one string in the first element of .TxtStrings.
 
 	return records, nil
 }
@@ -256,36 +269,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
-
-	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
-		}
-		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
-		// When not forcing this property change here, dnscontrol tries each time to update
-		// the TTL of a record which simply cannot be changed anyway.
-		if rec.Metadata[metaProxy] != "off" {
-			rec.TTL = 1
-		}
-		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-		}
-	}
-
-	checkNSModifications(dc)
-
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-	// Don't split.
-	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings.
-	// When serving the DNS record, it splits strings >255 octets into
-	// individual segments of 255 each. However that is hidden from the API.
-	// Therefore, whether the string is 1 octet or thousands, just store it as
-	// one string in the first element of .TxtStrings.
-
-	if err := c.preprocessConfig(dc); err != nil {
-		return nil, err
-	}
 	for i := len(records) - 1; i >= 0; i-- {
 		rec := records[i]
 		// Delete ignore labels
@@ -294,6 +277,8 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
+
+	checkNSModifications(dc)
 
 	domainID, err := c.getDomainID(dc.Name)
 	if err != nil {
@@ -336,17 +321,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(records)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-	// Don't split.
-	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings.
-	// When serving the DNS record, it splits strings >255 octets into
-	// individual segments of 255 each. However that is hidden from the API.
-	// Therefore, whether the string is 1 octet or thousands, just store it as
-	// one string in the first element of .TxtStrings.
 
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
