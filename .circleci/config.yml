@@ -288,7 +288,7 @@ workflows:
               ignore: [master, main]
 
       - integration-tests-diff2:
-          requires: [integration-tests]
+          requires: [integration-tests-<< parameters.provider >>]
           context: DNSProviders
           matrix:
             parameters:
