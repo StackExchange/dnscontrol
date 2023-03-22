@@ -556,11 +556,11 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 func PostProcessRecords(recs []*RecordConfig) {
-	downcase(recs)
+	Downcase(recs)
 }
 
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
-func downcase(recs []*RecordConfig) {
+func Downcase(recs []*RecordConfig) {
 	for _, r := range recs {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
