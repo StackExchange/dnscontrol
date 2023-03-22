@@ -4,7 +4,6 @@ package models
 type DNSProvider interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
 	GetZoneRecords(domain string) (Records, error)
-	//GetDomainCorrections(dc *DomainConfig) ([]*Correction, error) // Legacy
 	GetZoneRecordsCorrections(dc *DomainConfig, existing Records) ([]*Correction, error)
 }
 
