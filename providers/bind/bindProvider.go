@@ -113,13 +113,14 @@ func (s SoaDefaults) String() string {
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS      []string    `json:"default_ns"`
-	DefaultSoa     SoaDefaults `json:"default_soa"`
-	nameservers    []*models.Nameserver
-	directory      string
-	filenameformat string
-	zonefile       string // Where the zone data is expected
-	zoneFileFound  bool   // Did the zonefile exist?
+	DefaultNS           []string    `json:"default_ns"`
+	DefaultSoa          SoaDefaults `json:"default_soa"`
+	nameservers         []*models.Nameserver
+	directory           string
+	filenameformat      string
+	zonefile            string // Where the zone data is e texpected
+	zoneFileFound       bool   // Did the zonefile exist?
+	skipNextSoaIncrease bool   // skip next SOA increment (for testing only)
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -246,6 +247,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		desiredSoa = dc.Records[len(dc.Records)-1]
 	} else {
 		*desiredSoa = *soaRec
+		c.skipNextSoaIncrease = true
 	}
 
 	// Normalize
@@ -308,7 +310,9 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	if changes {
 
 		// We only change the serial number if there is a change.
-		desiredSoa.SoaSerial = nextSerial
+		if !c.skipNextSoaIncrease {
+			desiredSoa.SoaSerial = nextSerial
+		}
 
 		corrections = append(corrections,
 			&models.Correction{
