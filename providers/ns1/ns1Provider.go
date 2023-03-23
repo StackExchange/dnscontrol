@@ -70,7 +70,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err != nil {
 		return nil, err
 	}
-	return models.ToNameservers(z.DNSServers)
+	return models.ToNameserversStripTD(z.DNSServers)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
