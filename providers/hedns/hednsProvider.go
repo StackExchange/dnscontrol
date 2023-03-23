@@ -349,7 +349,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 		}
 
 		// Ignore record types that dnscontrol does not support
-		if rc.Type == "HINFO" || rc.Type == "AFSDB" || rc.Type == "RP" || rc.Type == "LOC" {
+		if rc.Type == "HINFO" || rc.Type == "AFSDB" || rc.Type == "RP" {
 			return true
 		}
 
