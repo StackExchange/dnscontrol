@@ -205,6 +205,14 @@ D("example.com", REG_LOOPIA, DnsProvider(DSP_LOOPIA),
 ```
 {% endcode %}
 
+## Special notes about newer standards
+
+Loopia does not yet support [RFC7505](https://www.rfc-editor.org/rfc/rfc7505), so null `MX` records are
+currently prohibited.
+
+Until such a time when they do begin to support this, Loopias
+`auditrecords.go` code prohibits this.
+
 ## Metadata
 
 This provider does not recognize any special metadata fields unique to LOOPIA.
