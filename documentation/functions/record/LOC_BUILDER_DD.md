@@ -6,20 +6,21 @@ parameters:
   - y
   - alt
   - ttl
+parameters_object: true
 parameter_types:
-  label: string
-  x: float32
-  y: float32
-  alt: float32
-  ttl: int
+  label: string?
+  x: number
+  y: number
+  alt: number?
+  ttl: Duration?
 ---
 
 `LOC_BUILDER_DD({})` actually takes an object with the following properties:
 
   - label (optional, defaults to `@`)
-  - x
-  - y
-  - alt
+  - x (float32)
+  - y (float32)
+  - alt (float32, optional)
   - ttl (optional)
 
 A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
