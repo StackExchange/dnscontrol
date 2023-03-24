@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"sort"
 	"strings"
 
@@ -18,9 +17,9 @@ func generateFeatureMatrix() error {
 		return err
 	}
 
-	replaceInlineContent(
+	replaceTextBetweenMarkers(
 		"documentation/providers.md",
-		"<!-- provider-matrix-start -->",
+		"<!-- provider-matrix-start -->\n",
 		"<!-- provider-matrix-end -->",
 		markdownTable,
 	)
@@ -289,30 +288,4 @@ func (featureMap FeatureMap) SetSimple(
 type FeatureMatrix struct {
 	Features  []string
 	Providers map[string]FeatureMap
-}
-
-func replaceInlineContent(
-	file string,
-	startMarker string,
-	endMarker string,
-	newContent string,
-) {
-	contentBytes, err := os.ReadFile(file)
-	if err != nil {
-		panic(err)
-	}
-	content := string(contentBytes)
-
-	start := strings.Index(content, startMarker)
-	end := strings.Index(content, endMarker)
-
-	newContentString := startMarker + "\n" + newContent + endMarker
-	newContentBytes := []byte(newContentString)
-	contentBytes = []byte(content)
-	contentBytes = append(contentBytes[:start], append(newContentBytes, contentBytes[end+len(endMarker):]...)...)
-
-	err = os.WriteFile(file, contentBytes, 0644)
-	if err != nil {
-		panic(err)
-	}
 }
