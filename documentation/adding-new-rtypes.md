@@ -291,7 +291,7 @@ tests, please ask!
 
 ## Step 8: Write documentation
 
-Add a new Markdown file to `documentation/functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+Add a new Markdown file to `documentation/language_reference/domain_modifier_functions` (if the new record type is service provider specific, add it to the appropriate subfolder, creating the folder if it does not exist). Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
 
 -   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
 -   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
@@ -299,31 +299,6 @@ Add a new Markdown file to `documentation/functions/domain`. Copy an existing fi
 
 The rest of the file is the documentation. You can use Markdown syntax to format the text.
 
-Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
+If you create any helper functions such as `FOO_BUILDER`, place the markdown files documenting them in their appropriate folder e.g. `documentation/language_reference/record_modifier_functions`.
 
-{% code title="documentation/SUMMARY.md" %}
-```diff
-...
-* Domain Modifiers
-...
-    * [DnsProvider](language_reference/domain_modifier_functions/DnsProvider.md)
-+   * [FOO](language_reference/domain_modifier_functions/FOO.md)
-    * [FRAME](language_reference/domain_modifier_functions/FRAME.md)
-...
-    * Service Provider specific
-...
-        * ClouDNS
-            * [CLOUDNS_WR](language_reference/domain_modifier_functions/service_provider_specific/ClouDNS/CLOUDNS_WR.md)
-+       * ASDF
-+           * [NINJA_RECORD](language_reference/domain_modifier_functions/service_provider_specific/XYZ/FOO_NINJA.md)
-        * NS1
-            * [NS1_URLFWD](language_reference/domain_modifier_functions/service_provider_specific/NS1/NS1_URLFWD.md)
-...
-* Record Modifiers
-...
-    * [DMARC_BUILDER](language_reference/record_modifier_functions/DMARC_BUILDER.md)
-+   * [FOO_HELPER](language_reference/record_modifier_functions/FOO_HELPER.md)
-    * [SPF_BUILDER](language_reference/record_modifier_functions/SPF_BUILDER.md)
-...
-```
-{% endcode %}
+At the next run of `go generate ./...` - the documentation tables and links within the new markdown files should be automatically generated and refreshed.
