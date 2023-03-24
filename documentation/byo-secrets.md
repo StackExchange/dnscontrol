@@ -51,7 +51,7 @@ only run if they have access to the secrets they will need.
 
 Tests are executed if `*_DOMAIN` exists.  If the value is empty or
 unset, the test is skipped.  If a test doesn't require secrets, the
-`*_DOMAIN` variable is hardcoded.  Otherwise, it is set by looking up
+`*_DOMAIN` variable is hardcoded so that it always runs.  Otherwise, it is set by looking up
 the secret. For example, if a provider is called `FANCYDNS`, there must
 be a secret called `FANCYDNS_DOMAIN`.
 
@@ -68,13 +68,13 @@ Create a branch as you normally would to submit a PR to the project.
 
 Step 2: Update `build.yml`
 
-In this branch, edit `.github/workflows/build.yml`:
+In this branch, edit `.circleci/config.yml`:
 
 1. In the `integration-tests` section, add the name of your provider
    to the matrix of providers.  Technically you are adding to the list
-   at `jobs.integration-tests.strategy.matrix.provider`.
+   at `workflows.build.jobs.integration-tests.matrix.parameters.provider`.
 
-   {% code title=".github/workflows/build.yml" %}
+   {% code title=".circleci/config.yml" %}
    ```diff
    matrix:
      provider:
@@ -87,9 +87,8 @@ In this branch, edit `.github/workflows/build.yml`:
 
 2. Add your test's env:
 
-Locate the env section (technically this is `jobs.integration-tests.env`) and
-add all the env names that your provider sets in
-`integrationTest/providers.json`.
+Also in `.circleci/config.yml`, locate the env section (technically `jobs.build.integration-tests.environment`) and
+add any env variables that should be set by the project, not by an individual. Usually there is none.
 
 Please replicate the formatting of the existing entries:
 
@@ -99,9 +98,7 @@ Please replicate the formatting of the existing entries:
 * The remaining variables are sorted lexicographically (what nerds call alphabetical order).
 
 ```yaml
-FANCYDNS_DOMAIN: ${{ secrets.FANCYDNS_DOMAIN }}
-FANCYDNS_KEY: ${{ secrets.FANCYDNS_KEY }}
-FANCYDNS_USER: ${{ secrets.FANCYDNS_USER }}
+FANCYDNS_THING: myvalue
 ```
 
 # Examples
@@ -128,20 +125,15 @@ that the tests will skip if the PR does not have access to the
 secrets.
 
 If you have a fork and want to automate the testing of `AZURE_DNS`,
-simply set the secrets named in `build.yml` and the tests will
+simply set the secrets named in `.circleci/config.yml` and the tests will
 activate for your PRs.
 
 Note that `AZURE_DNS_RESOURCE_GROUP` is hardcoded to `DNSControl`. If
 this is not true for you, please feel free to submit a PR that turns
-it into a secret.
+it into a variable.
 
 ```yaml
-AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
-AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
-AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
 AZURE_DNS_RESOURCE_GROUP: DNSControl
-AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
-AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
 ```
 
 ## Example 3

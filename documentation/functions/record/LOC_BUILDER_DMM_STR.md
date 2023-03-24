@@ -5,18 +5,19 @@ parameters:
   - str
   - alt
   - ttl
+parameters_object: true
 parameter_types:
-  label: string
+  label: string?
   str: string
-  alt: float32
-  ttl: int
+  alt: number?
+  ttl: Duration?
 ---
 
 `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
 
-  - label (optional, defaults to `@`)
-  - str
-  - alt
+  - label (string, optional, defaults to `@`)
+  - str (string)
+  - alt (float32, optional)
   - ttl (optional)
 
 A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
