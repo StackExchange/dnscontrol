@@ -685,6 +685,23 @@ declare function IGNORE_TARGET(pattern: string, rType: string): DomainModifier;
 declare function INCLUDE(domain: string): DomainModifier;
 
 /**
+ * The parameter number types are as follows:
+ * 
+ * ```
+ * name: string
+ * target: string
+ * deg1: uint32
+ * min1: uint32
+ * sec1: float32
+ * deg2: uint32
+ * min2: uint32
+ * sec2: float32
+ * altitude: uint32
+ * size: float32
+ * horizontal_precision: float32
+ * vertical_precision: float32
+ * ```
+ * 
  * ## Description ##
  * 
  * Strictly follows [RFC 1876](https://datatracker.ietf.org/doc/html/rfc1876).
@@ -757,7 +774,7 @@ declare function INCLUDE(domain: string): DomainModifier;
  * 
  * @see https://dnscontrol.org/js#LOC
  */
-declare function LOC(deg1: uint32, min1: uint32, sec1: float32, deg2: uint32, min2: uint32, sec2: float32, altitude: uint32, size: float32, horizontal_precision: float32, vertical_precision: float32): DomainModifier;
+declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min2: number, sec2: number, altitude: number, size: number, horizontal_precision: number, vertical_precision: number): DomainModifier;
 
 /**
  * MX adds an MX record to the domain.
@@ -2203,9 +2220,9 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * `LOC_BUILDER_DD({})` actually takes an object with the following properties:
  * 
  *   - label (optional, defaults to `@`)
- *   - x
- *   - y
- *   - alt
+ *   - x (float32)
+ *   - y (float32)
+ *   - alt (float32, optional)
  *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
@@ -2256,14 +2273,14 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DD
  */
-declare function LOC_BUILDER_DD(label: string, x: float32, y: float32, alt: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; alt?: number; ttl?: Duration }): RecordModifier;
 
 /**
  * `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
  * 
- *   - label (optional, defaults to `@`)
- *   - str
- *   - alt
+ *   - label (string, optional, defaults to `@`)
+ *   - str (string)
+ *   - alt (float32, optional)
  *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
@@ -2298,14 +2315,14 @@ declare function LOC_BUILDER_DD(label: string, x: float32, y: float32, alt: floa
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DMM_STR
  */
-declare function LOC_BUILDER_DMM_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
 
 /**
  * `LOC_BUILDER_DMS_STR({})` actually takes an object with the following properties:
  * 
- *   - label (optional, defaults to `@`)
- *   - str
- *   - alt
+ *   - label (string, optional, defaults to `@`)
+ *   - str (string)
+ *   - alt (float32, optional)
  *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
@@ -2341,14 +2358,14 @@ declare function LOC_BUILDER_DMM_STR(label: string, str: string, alt: float32, t
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DMS_STR
  */
-declare function LOC_BUILDER_DMS_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
 
 /**
  * `LOC_BUILDER_STR({})` actually takes an object with the following: properties.
  * 
  *   - label (optional, defaults to `@`)
- *   - str
- *   - alt
+ *   - str (string)
+ *   - alt (float32, optional)
  *   - ttl (optional)
  * 
  * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
@@ -2389,7 +2406,7 @@ declare function LOC_BUILDER_DMS_STR(label: string, str: string, alt: float32, t
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_STR
  */
-declare function LOC_BUILDER_STR(label: string, str: string, alt: float32, ttl: int): RecordModifier;
+declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
 
 /**
  * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.
