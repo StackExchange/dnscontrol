@@ -135,6 +135,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 	}
 
 	// // FIXME(tlim) Why is this needed???
+	// // I don't know. Let's comment it out and see if anything breaks.
 	// for i := len(records) - 1; i >= 0; i-- {
 	// 	rec := records[i]
 	// 	// Delete ignore labels
@@ -162,14 +163,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 
 	// Normalize
 	models.PostProcessRecords(records)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-	// Don't split.
-	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings.
-	// When serving the DNS record, it splits strings >255 octets into
-	// individual segments of 255 each. However that is hidden from the API.
-	// Therefore, whether the string is 1 octet or thousands, just store it as
-	// one string in the first element of .TxtStrings.
 
 	return records, nil
 }
@@ -348,7 +341,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 			corrs = c.mkCreateCorrection(createRec, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we create NS records before any DS records.
-			addToFront = createRec.Type == "NS"
+			addToFront = (createRec.Type == "NS")
 		case diff2.CHANGE:
 			newrec := inst.New[0]
 			oldrec := inst.Old[0]
@@ -360,7 +353,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 			corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we remove DS records before any NS records.
-			addToFront = deleteRecType == "DS"
+			addToFront = (deleteRecType == "DS")
 		}
 
 		if addToFront {
@@ -388,11 +381,9 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 }
 
 func genComparable(rec *models.RecordConfig) string {
-	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
-			//return "proxy=" + rec.Metadata[metaProxy]
 			if proxy == "on" {
 				proxy = "true"
 			}
@@ -400,7 +391,6 @@ func genComparable(rec *models.RecordConfig) string {
 				proxy = "false"
 			}
 			return "proxy=" + proxy
-			//return fmt.Sprintf("proxy:%v=%s", rec.Type, proxy)
 		}
 	}
 	return ""

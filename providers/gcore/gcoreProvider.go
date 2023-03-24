@@ -121,19 +121,6 @@ func (c *gcoreProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-// PrepFoundRecords munges any records to make them compatible with
-// this provider. Usually this is a no-op.
-//func PrepFoundRecords(recs models.Records) models.Records {
-// If there are records that need to be modified, removed, etc. we
-// do it here.  Usually this is a no-op.
-//return recs
-//}
-
-// // PrepDesiredRecords munges any records to best suit this provider.
-// func PrepDesiredRecords(dc *models.DomainConfig) {
-// 	dc.Punycode()
-// }
-
 func generateChangeMsg(updates []string) string {
 	return strings.Join(updates, "\n")
 }
