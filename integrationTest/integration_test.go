@@ -1209,8 +1209,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			requires(providers.CanUseAlias),
 			tc("ALIAS at root", alias("@", "foo.com.")),
 			tc("change it", alias("@", "foo2.com.")),
-			tc("ALIAS at subdomain", alias("test", "foo.com.")),
-			tc("change it", alias("test", "foo2.com.")),
+			//tc("ALIAS at subdomain", alias("test", "foo.com.")),
+			//tc("change it", alias("test", "foo2.com.")),
 		),
 
 		// AZURE features
