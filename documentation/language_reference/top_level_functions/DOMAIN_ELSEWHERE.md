@@ -40,6 +40,6 @@ D("example.com", REG_NAMEDOTCOM,
 {% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The [`NO_PURGE`](/documentation/02_language_reference/domain_modifier_functions/NO_PURGE.md) is used out of abundance of caution but since no
+**NOTE**: The [`NO_PURGE`](../domain_modifier_functions/NO_PURGE.md) is used out of abundance of caution but since no
 `DnsProvider()` statements exist, no updates would be performed.
 {% endhint %}

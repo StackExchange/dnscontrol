@@ -51,6 +51,6 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
 ```
 {% endcode %}
 
-In the future we plan on adding a flag to [`A()`](/documentation/02_language_reference/domain_modifier_functions/A.md)which will insert
+In the future we plan on adding a flag to [`A()`](../domain_modifier_functions/A.md)which will insert
 the correct PTR() record in the appropriate `D(REV())` domain (i.e. `.arpa` domain) has been
 defined.

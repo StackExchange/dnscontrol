@@ -356,10 +356,10 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
 declare function DS(name: string, keytag: number, algorithm: number, digesttype: number, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](/documentation/02_language_reference/record_modifier_functions/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
- * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](/documentation/02_language_reference/top_level_functions/DEFAULTS.md) to override the internal defaults.
+ * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record_modifier_functions/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
+ * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../top_level_functions/DEFAULTS.md) to override the internal defaults.
  * 
- * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](/documentation/02_language_reference/domain_modifier_functions/NAMESERVER_TTL.md) to set a default TTL for all NS records.
+ * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](NAMESERVER_TTL.md) to set a default TTL for all NS records.
  * 
  * ```javascript
  * D('example.com', REGISTRAR, DnsProvider('R53'),
@@ -369,7 +369,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * );
  * ```
  * 
- * The DefaultTTL duration is the same format as [`TTL`](/documentation/02_language_reference/record_modifier_functions/TTL.md), an integer number of seconds
+ * The DefaultTTL duration is the same format as [`TTL`](../record_modifier_functions/TTL.md), an integer number of seconds
  * or a string with a unit such as `'4d'`.
  * 
  * @see https://dnscontrol.org/js#DefaultTTL
@@ -735,7 +735,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
 /**
  * NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [`NAMESERVER`](NAMESERVER.md).
  * 
- * The value can be an integer or a string. See [`TTL`](/documentation/02_language_reference/record_modifier_functions/TTL.md) for examples.
+ * The value can be an integer or a string. See [`TTL`](../record_modifier_functions/TTL.md) for examples.
  * 
  * ```javascript
  * D('example.com', REGISTRAR, DnsProvider('R53'),
@@ -757,7 +757,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  * );
  * ```
  * 
- * To apply a default TTL to all other record types, see [`DefaultTTL`](/documentation/02_language_reference/domain_modifier_functions/DefaultTTL.md)
+ * To apply a default TTL to all other record types, see [`DefaultTTL`](DefaultTTL.md)
  * 
  * @see https://dnscontrol.org/js#NAMESERVER_TTL
  */
@@ -1491,9 +1491,9 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  *   - alt (float32, optional)
  *   - ttl (optional)
  * 
- * A helper to build [`LOC`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) records. Supply four parameters instead of 12.
+ * A helper to build [`LOC`](../domain_modifier_functions/LOC.md) records. Supply four parameters instead of 12.
  * 
- * Internally assumes some defaults for [`LOC`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](../domain_modifier_functions/LOC.md) records.
  * 
  * The cartesian coordinates are decimal degrees, like you typically find in e.g. Google Maps.
  * 
@@ -1531,11 +1531,11 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](../domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DD
  */
@@ -1574,10 +1574,10 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  * 
  * Part of the series:
  *  * [`LOC()`](../domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record_modifier_functions/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record_modifier_functions/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record_modifier_functions/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record_modifier_functions/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DMM_STR
  */
@@ -1617,10 +1617,10 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  * 
  * Part of the series:
  *  * [`LOC()`](../domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record_modifier_functions/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record_modifier_functions/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record_modifier_functions/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record_modifier_functions/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_DMS_STR
  */
@@ -1634,13 +1634,13 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  *   - alt (float32, optional)
  *   - ttl (optional)
  * 
- * A helper to build [`LOC`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) records. Supply three parameters instead of 12.
+ * A helper to build [`LOC`](../domain_modifier_functions/LOC.md) records. Supply three parameters instead of 12.
  * 
- * Internally assumes some defaults for [`LOC`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](../domain_modifier_functions/LOC.md) records.
  * 
  * Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
- *  * [`LOC_BUILDER_DMS_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  * 
  * ```javascript
  * D("example.com","none"
@@ -1664,11 +1664,11 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  * ```
  * 
  * Part of the series:
- *  * [`LOC()`](/documentation/02_language_reference/domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](/documentation/02_language_reference/record_modifier_functions/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](../domain_modifier_functions/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  * 
  * @see https://dnscontrol.org/js#LOC_BUILDER_STR
  */
@@ -1961,7 +1961,7 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
 
 /**
  * TTL sets the TTL for a single record only. This will take precedence
- * over the domain's [DefaultTTL](/documentation/02_language_reference/domain_modifier_functions/DefaultTTL.md) if supplied.
+ * over the domain's [DefaultTTL](../domain_modifier_functions/DefaultTTL.md) if supplied.
  * 
  * The value can be:
  * 
@@ -1995,7 +1995,7 @@ declare function TTL(ttl: Duration): RecordModifier;
 /**
  * `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
  * name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
- * add records with [A](/documentation/02_language_reference/domain_modifier_functions/A.md), [CNAME](/documentation/02_language_reference/domain_modifier_functions/CNAME.md), and so forth, or add metadata.
+ * add records with [A](../domain_modifier_functions/A.md), [CNAME](../domain_modifier_functions/CNAME.md), and so forth, or add metadata.
  * 
  * Modifier arguments are processed according to type as follows:
  * 
@@ -2088,7 +2088,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * 
  * ## Example
  * 
- * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](/documentation/02_language_reference/domain_modifier_functions/DefaultTTL.md).
+ * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain_modifier_functions/DefaultTTL.md).
  * The domain `example.com` will have the defaults set.
  * 
  * ```javascript
@@ -2148,7 +2148,7 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
  * );
  * ```
  * 
- * NOTE: The [`NO_PURGE`](/documentation/02_language_reference/domain_modifier_functions/NO_PURGE.md) is used out of abundance of caution but since no
+ * NOTE: The [`NO_PURGE`](../domain_modifier_functions/NO_PURGE.md) is used out of abundance of caution but since no
  * `DnsProvider()` statements exist, no updates would be performed.
  * 
  * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE
@@ -2183,7 +2183,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  * );
  * ```
  * 
- * NOTE: The [`NO_PURGE`](/documentation/02_language_reference/domain_modifier_functions/NO_PURGE.md) is used to prevent DNSControl from changing the records.
+ * NOTE: The [`NO_PURGE`](../domain_modifier_functions/NO_PURGE.md) is used to prevent DNSControl from changing the records.
  * 
  * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE_AUTO
  */
@@ -2211,7 +2211,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  * not `domain.tld`.
  * 
  * Some operators only act on an apex domain (e.g.
- * [`CF_REDIRECT`](/documentation/02_language_reference/domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](/documentation/02_language_reference/domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_TEMP_REDIRECT.md)). Using them
+ * [`CF_REDIRECT`](../domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_TEMP_REDIRECT.md)). Using them
  * in a `D_EXTEND` subdomain may not be what you expect.
  * 
  * ```javascript
@@ -2428,7 +2428,7 @@ declare function PANIC(message: string): never;
  * );
  * ```
  * 
- * In the future we plan on adding a flag to [`A()`](/documentation/02_language_reference/domain_modifier_functions/A.md)which will insert
+ * In the future we plan on adding a flag to [`A()`](../domain_modifier_functions/A.md)which will insert
  * the correct PTR() record in the appropriate `D(REV())` domain (i.e. `.arpa` domain) has been
  * defined.
  * 

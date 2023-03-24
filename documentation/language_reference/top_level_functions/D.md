@@ -12,7 +12,7 @@ parameter_types:
 
 `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
 name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
-add records with [A](/documentation/02_language_reference/domain_modifier_functions/A.md), [CNAME](/documentation/02_language_reference/domain_modifier_functions/CNAME.md), and so forth, or add metadata.
+add records with [A](../domain_modifier_functions/A.md), [CNAME](../domain_modifier_functions/CNAME.md), and so forth, or add metadata.
 
 Modifier arguments are processed according to type as follows:
 
