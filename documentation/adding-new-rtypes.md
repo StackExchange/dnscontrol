@@ -79,9 +79,9 @@ popd
     func matrixData() *FeatureMatrix {
         const (
             ...
-            DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
-    +       DomainModifierFoo    = "[`FOO`](functions/domain/FOO.md)"
-            DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
+            DomainModifierCaa    = "[`CAA`](language_reference/domain_modifier_functions/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](language_reference/domain_modifier_functions/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](language_reference/domain_modifier_functions/LOC.md)"
             ...
         )
         matrix := &FeatureMatrix{
@@ -153,7 +153,7 @@ example we removed `providers.CanUseCAA` from the
 
 Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-[`A()`](functions/domain/A.md) and [`MX()`](functions/domain/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
+[`A()`](language_reference/domain_modifier_functions/A.md) and [`MX()`](language_reference/domain_modifier_functions/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
@@ -306,24 +306,24 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
 ...
 * Domain Modifiers
 ...
-    * [DnsProvider](functions/domain/DnsProvider.md)
-+   * [FOO](functions/domain/FOO.md)
-    * [FRAME](functions/domain/FRAME.md)
+    * [DnsProvider](language_reference/domain_modifier_functions/DnsProvider.md)
++   * [FOO](language_reference/domain_modifier_functions/FOO.md)
+    * [FRAME](language_reference/domain_modifier_functions/FRAME.md)
 ...
     * Service Provider specific
 ...
         * ClouDNS
-            * [CLOUDNS_WR](functions/domain/CLOUDNS_WR.md)
+            * [CLOUDNS_WR](language_reference/domain_modifier_functions/service_provider_specific/ClouDNS/CLOUDNS_WR.md)
 +       * ASDF
-+           * [NINJA_RECORD](function/domain/FOO_NINJA.md)
++           * [NINJA_RECORD](language_reference/domain_modifier_functions/service_provider_specific/XYZ/FOO_NINJA.md)
         * NS1
-            * [NS1_URLFWD](functions/domain/NS1_URLFWD.md)
+            * [NS1_URLFWD](language_reference/domain_modifier_functions/service_provider_specific/NS1/NS1_URLFWD.md)
 ...
 * Record Modifiers
 ...
-    * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
-+   * [FOO_HELPER](functions/record/FOO_HELPER.md)
-    * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
+    * [DMARC_BUILDER](language_reference/record_modifier_functions/DMARC_BUILDER.md)
++   * [FOO_HELPER](language_reference/record_modifier_functions/FOO_HELPER.md)
+    * [SPF_BUILDER](language_reference/record_modifier_functions/SPF_BUILDER.md)
 ...
 ```
 {% endcode %}

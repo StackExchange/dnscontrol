@@ -4,9 +4,9 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA Builder](functions/record/CAA_BUILDER.md)
-* [DMARC Builder](functions/record/DMARC_BUILDER.md)
-* [SPF Optimizer](functions/record/SPF_BUILDER.md)
+* [CAA Builder](language_reference/record_modifier_functions/CAA_BUILDER.md)
+* [DMARC Builder](language_reference/record_modifier_functions/DMARC_BUILDER.md)
+* [SPF Optimizer](language_reference/record_modifier_functions/SPF_BUILDER.md)
 
 # Repeat records in many domains (macros)
 

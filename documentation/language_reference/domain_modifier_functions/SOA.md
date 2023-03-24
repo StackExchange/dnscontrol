@@ -39,4 +39,4 @@ when you are making it easier for spammers how to find you.
 * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
 * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
 
-There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
+There is more info about `SOA` in the documentation for the [BIND provider](../../service_providers/providers/bind.md).

@@ -99,7 +99,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs](language_reference/JavaScript_DSL.md) and [the provider docs](providers.md) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](language_reference/JavaScript_DSL.md) and [the provider docs](service_providers/providers.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -292,7 +292,7 @@ $TTL 300
 ```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
-for the [BIND provider](providers/bind.md) to set
+for the [BIND provider](service_providers/providers/bind.md) to set
 the "master" and "mbox" settings.  Try that now.
 
 
@@ -303,7 +303,7 @@ a real domain (or a test domain if you have one).
 
 Set up the provider:  Add the providers's definition to `dnsconfig.js`
 and list any credentials in `creds.json`.  Each provider is different.
-See [the provider docs](providers.md) for
+See [the provider docs](service_providers/providers.md) for
 specifics.
 
 Edit the domain: Add the `D()` entry for the domain, or repurpose
