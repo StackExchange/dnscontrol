@@ -90,11 +90,6 @@ jobs:
       NAMEDOTCOM_URL: api.name.com
       NAMEDOTCOM_USER: dnscontroltest
 
-      HEDNS_DOMAIN: dnscontrol.net
-      HEDNS_USERNAME: dnscontroltest
-      HEDNS_PASSWORD: $HEDNS_PASSWORD
-      HEDNS_TOTP_SECRET: $HEDNS_TOTP_SECRET
-
     parameters:
       provider:
         type: string
