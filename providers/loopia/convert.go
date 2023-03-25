@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // nativeToRecord takes a DNS record from Loopia and returns a native RecordConfig struct.
@@ -24,7 +25,8 @@ func nativeToRecord(zr zoneRecord, origin string, subdomain string) (rc *models.
 	case "CAA":
 		err = rc.SetTargetCAAString(record.Rdata)
 	case "MX":
-		err = rc.SetTargetMX(record.Priority, record.Rdata)
+		// See dnscontrol issue #2218
+		err = rc.SetTargetMX(record.Priority, dnsutil.AddOrigin(record.Rdata, origin)+".")
 	case "NAPTR":
 		err = rc.SetTargetNAPTRString(record.Rdata)
 	case "TXT":
