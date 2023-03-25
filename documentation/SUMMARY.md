@@ -153,16 +153,17 @@
 
 ## Developer info
 
-* [ALIAS Records](alias.md)
-* [Bug Triage Process](bug-triage.md)
-* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
+* [Style Guide](styleguide.md)
+* [DNSControl is an opinionated system](opinions.md)
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
-* [TXT record testing](testing-txt-records.md)
-* [Unit Testing DNS Data](unittests.md)
 * [Integration Tests](integration-tests.md)
+* [Unit Testing DNS Data](unittests.md)
+* [Bug Triage Process](bug-triage.md)
+* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
 * [Debugging with dlv](debugging-with-dlv.md)
-* [DNSControl is an opinionated system](opinions.md)
+* [ALIAS Records](alias.md)
+* [TXT record testing](testing-txt-records.md)
 
 ## Release
 
