@@ -164,10 +164,9 @@ func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntr
 	}
 }
 
-// TransIP is unable to update certain changes so we need to remove and recreate them.
-// These changes include:
-// - Changes in recordsets: records with the same type and name but different content
-// - Updating TTL
+// canDirectApplyDNSEntries determines if a change can be done in a single API call or 
+// if we must remove the old records and re-create them.  TransIP is unable to do certain
+// changes in a single call. As we learn those situations, add them here.
 func canDirectApplyDNSEntries(change diff2.Change) bool {
 	desired, existing := change.New, change.Old
 
