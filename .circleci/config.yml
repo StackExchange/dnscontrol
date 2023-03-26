@@ -52,6 +52,8 @@ jobs:
           name: Build binaries
           # If there is no tag run a snapshot build
           command: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
+          environment:
+            CGO_ENABLED: 0
 
       - run:
           name: Enforce Go Formatted Code
@@ -213,6 +215,8 @@ jobs:
           command: go install github.com/goreleaser/goreleaser@latest
 
       - run: goreleaser release
+        environment:
+          CGO_ENABLED: 0
 
       - store_artifacts:
           path: dist
