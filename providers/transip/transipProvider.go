@@ -131,13 +131,13 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 		case diff2.CREATE:
 			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
 		case diff2.CHANGE:
-	        if canDirectApplyDNSEntries(change) {
-			    corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
-	        } else {
-		        deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
-		        createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
-		        corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
-	        }
+			if canDirectApplyDNSEntries(change) {
+				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
+			} else {
+				deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+				createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
+				corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
+			}
 		case diff2.REPORT:
 			corrections = append(corrections, change.CreateMessage())
 		}
@@ -164,7 +164,7 @@ func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntr
 	}
 }
 
-// canDirectApplyDNSEntries determines if a change can be done in a single API call or 
+// canDirectApplyDNSEntries determines if a change can be done in a single API call or
 // if we must remove the old records and re-create them.  TransIP is unable to do certain
 // changes in a single call. As we learn those situations, add them here.
 func canDirectApplyDNSEntries(change diff2.Change) bool {
