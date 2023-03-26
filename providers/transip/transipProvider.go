@@ -125,22 +125,21 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	}
 
 	for _, change := range instructions {
-
-		if canDirectApplyDNSEntries(change) {
-			switch change.Type {
-			case diff2.DELETE:
-				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
-			case diff2.CREATE:
-				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
-			case diff2.CHANGE:
-				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
-			case diff2.REPORT:
-				corrections = append(corrections, change.CreateMessage())
-			}
-		} else {
-			deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
-			createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
-			corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
+		switch change.Type {
+		case diff2.DELETE:
+			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
+		case diff2.CREATE:
+			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
+		case diff2.CHANGE:
+	        if canDirectApplyDNSEntries(change) {
+			    corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
+	        } else {
+		        deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+		        createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
+		        corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
+	        }
+		case diff2.REPORT:
+			corrections = append(corrections, change.CreateMessage())
 		}
 	}
 
