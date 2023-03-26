@@ -57,7 +57,7 @@ The "trailing dot" is the "." at the end of "example.com." which indicates the s
 
 DO NOT conditionally add or remove the trailing dot from a string to future-proof code. Either add it or remove it. (This applies to data received from an API call.)
 
-DO call [`panic()`](functions/global/PANIC.md) if a protocol changes unexpectedly.
+DO call Go's `panic()` function if a protocol changes unexpectedly.
 
 ### Why?
 
