@@ -1042,8 +1042,9 @@ func makeTests(t *testing.T) []*TestGroup {
 				"DIGITALOCEAN",  // No paging. Why bother?
 				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				"HEDNS",         // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",        // Their API is so damn slow. Plus, no paging.
-				"MSDNS",         //  No paging done. No need to test.
+				"MSDNS",         // No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
@@ -1055,13 +1056,13 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				//"AZURE_DNS", // Removed because it is too slow
+				//"AZURE_DNS",     // Removed because it is too slow
 				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
-				//"CSCGLOBAL", // Doesn't page. Works fine.  Due to the slow API we skip.
-				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				//"MSDNS",         // No paging done. No need to test.
 				"GCLOUD",
 				"HEXONET",
-				//"MSDNS",     //  No paging done. No need to test.
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
@@ -1071,14 +1072,15 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			only(
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
-				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
-				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
-				"HEXONET",
-				"HOSTINGDE",
+				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
-				"ROUTE53", // Batches up changes in pages.
+				"HEXONET",
+				"HOSTINGDE", // Pages.
+				"ROUTE53",   // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
