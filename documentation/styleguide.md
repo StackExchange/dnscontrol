@@ -11,9 +11,11 @@ This is a community project. The code you write today will be maintained by
 someone in the future that may not be a professional developer or one that is
 as experienced as you.
 
-Remember what Brian Kernighan wrote: "Debugging is twice as hard as writing the
+Remember what Brian Kernighan wrote:
+
+> "Debugging is twice as hard as writing the
 code in the first place. Therefore, if you write the code as cleverly as
-possible, you are, by definition, not smart enough to debug it."
+possible, you are, by definition, not smart enough to debug it." — _Brian Kernighan_
 
 Remember the [John Woods](http://wiki.c2.com/?CodeForTheMaintainer) quote:
 
