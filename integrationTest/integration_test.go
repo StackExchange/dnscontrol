@@ -695,24 +695,50 @@ func makeTests(t *testing.T) []*TestGroup {
 
 	tests := []*TestGroup{
 
+		// START HERE
+
+		// Narrative:  Hello friend!  Are you adding a new DNS provider to
+		// DNSControl? That's awesome!  I'm here to help.
 		//
+		// As you write your code, these tests will help verify that your
+		// code is correct and covers all the funny edge-cases that DNS
+		// providers throw at us.
+		//
+		// If you follow these sections marked "Narrative", I'll lead you
+		// through the tests. The tests start by testing very basic things
+		// (are you talking to the API correctly) and then moves on to
+		// more and more esoteric issues.  It's like a video game where
+		// you have to solve all the levels but the game lets you skip
+		// around as long as all the levels are completed eventually.  Some
+		// of the levels you can mark "not relevant" for your provider.
+		//
+		// Oh wait. I'm getting ahead of myself.  How do you run these
+		// tests?  That's documented here:
+		// https://docs.dnscontrol.org/developer-info/integration-tests
+		// You'll be running these tests a lot. I recommend you make a
+		// script that sets the environment variables and runs the tests
+		// to make it easy to run the tests.  However don't check that
+		// file into a GIT repo... it contains API credentials that are
+		// secret!
+
 		///// Basic functionality (add/rename/change/delete).
 
-		// Narrative:  Let's get started!  Let's make sure we can create
-		// an A record, change it, then delete it. That's the basic
-		// Add/Change/Delete process.  Once this works, you know that your
-		// API calls and authentication is working and we can do the most
-		// basic operations.
+		// Narrative:  Let's get started!  The first thing to do is to
+		// make sure we can create an A record, change it, then delete it.
+		// That's the basic Add/Change/Delete process.  Once these three
+		// features work you know that your API calls and authentication
+		// is working and we can do the most basic operations.
 
 		testgroup("A",
 			tc("Create A", a("testa", "1.1.1.1")),
 			tc("Change A target", a("testa", "3.3.3.3")),
 		),
 
-		// Narrative: That worked?  Congrats!  Now let's try something a
-		// little more difficult.  Let's do that same test at the apex of
-		// the domain.  This is a special case. Some providers refer to
-		// the apex as "@" or by listing the FQDN.
+		// Narrative: Congrats on getting those to work!  Now let's try
+		// something a little more difficult.  Let's do that same test at
+		// the apex of the domain.  This may "just work" for your
+		// provider, or they might require something special like
+		// referring to the apex as "@".
 
 		// Same test, but at the apex of the domain.
 		testgroup("Apex",
@@ -722,8 +748,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Narrative: Another edge-case is the wildcard record ("*").  In
 		// theory this should "just work" but plenty of vendors require
-		// some weird quoting or escaping. Let's find out how badly they
-		// screwed this up!
+		// some weird quoting or escaping. None of that should be required
+		// but... sigh... they do it anyway.  Let's find out how badly
+		// they screwed this up!
 
 		// Same test, but do it with a wildcard.
 		testgroup("Protocol-Wildcard",
@@ -749,10 +776,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		// MX
 
 		// Narrative: MX is the first record we're going to test with
-		// multiple fields. All records have a target. MX records also
-		// have a "Preference".  FunFact: The RFCs call this the
+		// multiple fields. All records have a target (A records have an
+		// IP address, CNAMEs have a destination (called "the canonical
+		// name" in the RFCs). MX records have a target (a hostname) but
+		// also have a "Preference".  FunFact: The RFCs call this the
 		// "preference" but most engineers refer to it as the "priority".
 		// Now you know better.
+		// Let's make sure your code creates and updates the preference
+		// correctly!
 
 		testgroup("MX",
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
@@ -773,13 +804,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		// Test API edge-cases
 
 		// Narrative: I'm proud of you for getting this far.  All the
-		// basic types work!  Now let's make sure we can create many
-		// records at once, and many records of many types at once.
-		// Usually this "just works" but maybe there's an off-by-one error
-		// lurking. Once these work we'll have a new level of confidence
-		// in the code.
+		// basic types work!  Now let's verify your code handles some of
+		// the more interesting ways that updates can happen.  For
+		// example, let's try creating many records of the same or
+		// different type at once.  Usually this "just works" but maybe
+		// there's an off-by-one error lurking. Once these work we'll have
+		// a new level of confidence in the code.
 
-		testgroup("ManyAtOne",
+		testgroup("ManyAtOnce",
 			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
 			clear(),
 			tc("Create an A record", a("www", "1.1.1.1")),
@@ -787,7 +819,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
 		),
 
-		testgroup("manyAtOneTypes",
+		testgroup("manyTypesAtOnce",
 			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
 			clear(),
 			tc("Create an A record", a("www", "1.1.1.1")),
@@ -814,19 +846,35 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
-		// This is a strange one.  It adds a new record to an existing
-		// label but the pre-existing label has its TTL change.
+		// Narrative: Did you see that `not("NETCUP")` code?  NETCUP just
+		// plain doesn't support TTLs, so those tests just plain can't
+		// ever work.  `not("NETCUP")` tells the test system to skip those
+		// tests. There's also `only()` which runs a test only for certain
+		// providers.  Those and more are documented above in the
+		// "Filters" section, which is on line 664 as I write this.
+
+		// Narrative: Ok, back to testing.  This next test is a strange
+		// one. It's a strange situation that happens rarely.  You might
+		// want to skip this and come back later, or ask for help on the
+		// mailing list.
+
+		// Test: At the start we have a single DNS record at a label.
+		// Next we add an additional record at the same label AND change
+		// the TTL of the existing record.
 		testgroup("add to label and change orig ttl",
 			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
 			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 		),
 
-		// Narrative: Good job!  We're done with TTL tests now.  If you
-		// fixed a bug in any of those tests give yourself a pat on the
-		// back. I bet they were pretty difficult.  One last edge-case:
-		// Can you change the type of a record.  Some providers don't
-		// permit this and you have to delete the old record and create a
-		// new record in its place.
+		// Narrative: We're done with TTL tests now.  If you fixed a bug
+		// in any of those tests give yourself a pat on the back. Finding
+		// bugs is not bad or shameful... it's an opportunity to help the
+		// world by fixing a problem!  If only we could fix all the
+		// world's problems by editing code!
+		//
+		// Now let's look at one more edge-case: Can you change the type
+		// of a record?  Some providers don't permit this and you have to
+		// delete the old record and create a new record in its place.
 
 		testgroup("TypeChange",
 			// Test whether the provider properly handles a label changing
@@ -841,7 +889,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		// there is a CNAME at a label, no other records can be at that
 		// label. That means the order of updates is critical when
 		// changing A->CNAME or CNAME->A.  pkg/diff2 should order the
-		// changes properly for you. Let's verify that!
+		// changes properly for you. Let's verify that we got it right!
 
 		testgroup("TypeChangeHard",
 			tc("Create a CNAME", cname("foo", "google.com.")),
@@ -851,8 +899,21 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		//// Test edge cases from various types.
 
-		// Narrative: Let's do some easy cases. They're strange, but easy.
+		// Narrative: Every DNS record type has some weird edge-case that
+		// you wouldn't expect. This is where we test those situations.
+		// They're strange, but usually easy to fix or skip.
+		//
 		// Some of these are testing the provider more than your code.
+		//
+		// You can't fix your provider's code. That's why there is the
+		// auditrecord.go system.  For example, if your provider doesn't
+		// support MX records that point to "." (yes, that's a thing),
+		// there's nothing you can do other than warn users that it isn't
+		// supported.  We do this in the auditrecords.go file in each
+		// provider. It contains "rejectif.` statements that detect
+		// unsupported situations.  Some good examples are in
+		// providers/cscglobal/auditrecords.go. Take a minute to read
+		// that.
 
 		testgroup("CNAME",
 			tc("Record pointing to @", cname("foo", "**current-domain**")),
@@ -876,9 +937,14 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		//// TXT tests
 
-		// Narrative: TXT records are weird. Let's test the weirdness
-		// we've found.  I wouldn't bother trying to fix these. Just skip
-		// them by updating auditrecords.go for your provider.
+		// Narrative: TXT records are weird. It's just text, right?  Sadly
+		// "just text" means quotes and other funny characters that might
+		// need special handling. In some cases providers ban certain
+		// chars in the string.
+		//
+		// Let's test the weirdness we've found.  I wouldn't bother trying
+		// too hard to fix these. Just skip them by updating
+		// auditrecords.go for your provider.
 
 		// In this next section we test all the edge cases related to TXT
 		// records. Compliance with the RFCs varies greatly with each provider.
@@ -935,13 +1001,14 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Narrative: Congratulate yourself for getting this far.
 		// Seriously.  Buy yourself a beer or other beverage.  Kick back.
-		// Take a break.
-		// Ok, break over!  Time for some more weird edge cases.
+		// Take a break.  Ok, break over!  Time for some more weird edge
+		// cases.
 
+		// DNSControl downcases all DNS labels. These tests make sure
+		// that's all done correctly.
 		testgroup("Case Sensitivity",
-			// The decoys are required so that there is at least one actual change in each tc.
-			// NOTE: DNSControl downcases all DNS labels. These tests make
-			// sure that's all done correctly.
+			// The decoys are required so that there is at least one actual
+			// change in each tc.
 			tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
 			tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
 			tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
@@ -1006,6 +1073,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		// features.  But first a joke:
 		// Q: What do you call someone that speaks 2 languages?
 		// A: bilingual
+		// Q: What do you call someone that speaks 3 languages?
+		// A: trilingual
 		// Q: What do you call someone that speaks 1 language?
 		// A: American
 		// Get it?  Well, that's why I'm not a stand-up comedian.
@@ -1024,12 +1093,22 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
 
-		// Narrative: If your provider sends DNS records one "page" at a
-		// time, they don't realize that computers have gigabytes of
-		// memory and the largest DNS zone might have megabytes of
-		// records.  Sigh. Never the less, they still page their replies.
-		// Let's test to make sure there's no off-by-one errors when
-		// processing those pages of data.
+		// Narrative: Some providers send the list of DNS records one
+		// "page" at a time. The data you get includes a flag that
+		// indicates you to the request is incomplete and you need to
+		// request the next page of data.  They don't realize that
+		// computers have gigabytes of RAM and the largest DNS zone might
+		// have kilobytes of records.  Unneeded complexity... sigh.
+		//
+		// Let's test to make sure we got the paging right. I always fear
+		// off-by-one errors when I write this kind of code. Like... if a
+		// get tells you it has returned a page that starts at record 0
+		// and includes 100 records, should the next "get" request records
+		// starting at 99 or 100 or 101?
+		//
+		// These tests can be VERY slow. That's why we use not() and
+		// only() to skip these tests for providers that doesn't use
+		// paging.
 
 		testgroup("pager101",
 			// Tests the paging code of providers.  Many providers page at 100.
@@ -1090,11 +1169,10 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Narrative: Many DNS record types are optional.  If the provider
 		// supports them, there's a CanUse* variable that flags that
-		// feature.  Here we test those.
-		// Each of these should (1) create the record, (2) test changing
-		// additional fields one at a time, maybe 2 at a time, (3) delete
-		// the record. If you can do those 3 things, we're pretty sure
-		// you've implemented it correctly.
+		// feature.  Here we test those.  Each of these should (1) create
+		// the record, (2) test changing additional fields one at a time,
+		// maybe 2 at a time, (3) delete the record. If you can do those 3
+		// things, we're pretty sure you've implemented it correctly.
 
 		testgroup("CAA",
 			requires(providers.CanUseCAA),
@@ -1129,6 +1207,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// Narrative: NAPTR records are used by IP telephony ("SIP")
+		// systems. NAPTR records are rarely used, but if you use them
+		// you'll want to use DNSControl because editing them is a pain.
+		// If you want a fun read, check this out:
+		// https://www.devever.net/~hl/sip-victory
+
 		testgroup("NAPTR",
 			requires(providers.CanUseNAPTR),
 			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
@@ -1143,13 +1227,21 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
-		testgroup("PTR", requires(providers.CanUsePTR), not("CLOUDNS"),
+		testgroup("PTR",
+			requires(providers.CanUsePTR),
+			not("CLOUDNS"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
 
+		// Narrative: SOA records are ignored by most DNS providers. They
+		// auto-generate the values and ignore your SOA data. Don't
+		// implement the SOA record unless your provide can not work
+		// without them, like BIND.
+
 		// SOA
-		testgroup("SOA", requires(providers.CanUseSOA),
+		testgroup("SOA",
+			requires(providers.CanUseSOA),
 			clear(), // Extra clear required or only the first run passes.
 			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
@@ -1160,7 +1252,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
 		),
 
-		testgroup("SRV", requires(providers.CanUseSRV),
+		testgroup("SRV",
+			requires(providers.CanUseSRV),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
@@ -1174,7 +1267,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// https://github.com/StackExchange/dnscontrol/issues/2066
-		testgroup("SRV", requires(providers.CanUseSRV),
+		testgroup("SRV",
+			requires(providers.CanUseSRV),
 			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
 			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
 		),
@@ -1225,7 +1319,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("DS (children only)",
-			requires(providers.CanUseDSForChildren), not("CLOUDNS", "CLOUDFLAREAPI"),
+			requires(providers.CanUseDSForChildren),
+			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
@@ -1541,7 +1636,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		//// IGNORE* features
 
 		// Narrative: You're basically done now. These remaining tests
-		// exercize the NO_PURGE and IGNORE* features.  These are handled
+		// exercise the NO_PURGE and IGNORE* features.  These are handled
 		// by the pkg/diff2 module. If they work for any provider, they
 		// should work for all providers.  However we're going to test
 		// them anyway because one never knows.  Ready?  Let's go!
@@ -1608,15 +1703,20 @@ func makeTests(t *testing.T) []*TestGroup {
 		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
 		// types of records, we should add a test at the apex.
 
+		//
+
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
 		// some tips:
 
-		// 1. thing change: re-run these tests every quarter.
-		// 2. clean up your code.
-		// 3. ask for help!  it is normal to submit a PR when most (but
-		// not all) tests are passing.  The community would be glad to
-		// help fix the remaining tests.
+		// 1. Ask for help!  It is normal to submit a PR when most (but
+		//    not all) tests are passing.  The community would be glad to
+		//    help fix the remaining tests.
+		// 2. Take a moment to clean up your code. Delete debugging
+		//    statements, add comments, run "staticcheck".
+		// 3. Thing change: Once your PR is accepted, re-run these tests
+		//    every quarter. There may be library updates, API changes,
+		//    etc.
 
 	}
 
