@@ -36,7 +36,9 @@ write code that six-months-from-now-you can understand.
 
 These are the filenames to use:
 
-(NOTE: This is a new standard. Old providers are not yet compliant.)
+{% hint style="info" %}
+**NOTE**: This is a new standard. Old providers are not yet compliant.
+{% endhint %}
 
 * `providers/foo/fooProvider.go` -- The main file.
 * `providers/foo/records.go` -- Get/Correct the records of a DNS zone: GetZoneRecords() and GetZoneRecordsCorrections(), plus any helper functions.
@@ -49,7 +51,9 @@ These are the filenames to use:
 
 # Don't conditionally add/remove trailing dots
 
-(The "trailing dot" is the "." at the end of "example.com." which indicates the string is a FQDN.)
+{% hint style="info" %}
+The "trailing dot" is the "." at the end of "example.com." which indicates the string is a FQDN.
+{% endhint %}
 
 DO NOT conditionally add or remove the trailing dot from a string to future-proof code. Either add it or remove it. (This applies to data received from an API call.)
 
