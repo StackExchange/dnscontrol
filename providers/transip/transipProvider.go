@@ -95,7 +95,6 @@ func (n *transipProvider) ListZones() ([]string, error) {
 }
 
 func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
 	curRecords, err := n.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -109,47 +108,137 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	models.PostProcessRecords(curRecords)
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
+		corrections, err := n.getCorrectionsUsingOldDiff(dc, curRecords)
+		return corrections, err
+	}
 
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(curRecords)
+	corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
+	return corrections, err
+}
+
+func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+	instructions, err := diff2.ByRecordSet(records, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, change := range instructions {
+		switch change.Type {
+		case diff2.DELETE:
+			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
+		case diff2.CREATE:
+			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
+		case diff2.CHANGE:
+			if canDirectApplyDNSEntries(change) {
+				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
+			} else {
+				deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+				createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
+				corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
+			}
+		case diff2.REPORT:
+			corrections = append(corrections, change.CreateMessage())
+		}
+	}
+
+	return corrections, nil
+}
+
+func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntry) error) func() error {
+	return func() error {
+		for _, record := range records {
+			nativeRec, err := recordToNative(record)
+
+			if err != nil {
+				return err
+			}
+
+			if err := executer(nativeRec); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+// canDirectApplyDNSEntries determines if a change can be done in a single API call or
+// if we must remove the old records and re-create them.  TransIP is unable to do certain
+// changes in a single call. As we learn those situations, add them here.
+func canDirectApplyDNSEntries(change diff2.Change) bool {
+	desired, existing := change.New, change.Old
+
+	if change.Type != diff2.CHANGE {
+		return true
+	}
+
+	if len(desired) != len(existing) {
+		return false
+	}
+
+	if len(desired) > 1 {
+		return false
+	}
+
+	for i := 0; i < len(desired); i++ {
+		if !canUpdateDNSEntry(desired[i], existing[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
+	differ := diff.New(dc)
+	_, create, del, modify, err := differ.IncrementalDiff(records)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, del := range del {
+		entry, err := recordToNative(del.Existing)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, del := range del {
-			entry, err := recordToNative(del.Existing)
-			if err != nil {
-				return nil, err
-			}
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, entry) },
+		})
+	}
 
-			corrections = append(corrections, &models.Correction{
-				Msg: del.String(),
-				F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, entry) },
-			})
+	for _, cre := range create {
+		entry, err := recordToNative(cre.Desired)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, cre := range create {
-			entry, err := recordToNative(cre.Desired)
-			if err != nil {
-				return nil, err
-			}
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
+		})
+	}
 
-			corrections = append(corrections, &models.Correction{
-				Msg: cre.String(),
-				F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
-			})
+	for _, mod := range modify {
+		targetEntry, err := recordToNative(mod.Desired)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, mod := range modify {
-			targetEntry, err := recordToNative(mod.Desired)
-			if err != nil {
-				return nil, err
-			}
-
-			// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents has changed and there exists no records with the same name.
-			// In diff2 this is solved by diffing against the recordset for the old diff mechanism we always remove the record and re-add it.
+		// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
+		// has changed. Otherwise we delete the old record and create the new one
+		if canUpdateDNSEntry(mod.Desired, mod.Existing) {
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
+			})
+		} else {
 			oldEntry, err := recordToNative(mod.Existing)
 			if err != nil {
 				return nil, err
@@ -165,13 +254,9 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
 				},
 			)
-
 		}
 
-		return corrections, nil
 	}
-
-	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

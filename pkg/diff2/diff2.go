@@ -56,28 +56,13 @@ General instructions:
   for _, change := range changes {
     switch change.Type {
     case diff2.REPORT:
-      corr = &models.Correction{Msg: change.MsgsJoined}
+      corr = change.CreateMessage()
     case diff2.CREATE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.createRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.createRecord(FILL_IN) })
     case diff2.CHANGE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.modifyRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.modifyRecord(FILL_IN) })
     case diff2.DELETE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.deleteRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.deleteRecord(FILL_IN) })
 	  default:
 		  panic("unhandled change.TYPE %s", change.Type)
     }
@@ -89,6 +74,33 @@ General instructions:
 }
 
 */
+
+// CreateCorrection creates a new Correction based on the given
+// function and prefills it with the Msg of the current Change
+func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: c.MsgsJoined,
+	}
+}
+
+// CreateMessage creates a new correction with only the message.
+// Used for diff2.Report corrections
+func (c *Change) CreateMessage() *models.Correction {
+	return &models.Correction{
+		Msg: c.MsgsJoined,
+	}
+}
+
+// CreateCorrectionWithMessage creates a new Correction based on the
+// given function and prefixes given function with the Msg of the
+// current change
+func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: fmt.Sprintf("%s: %s", msg, c.MsgsJoined),
+	}
+}
 
 // ByRecordSet takes two lists of records (existing and desired) and
 // returns instructions for turning existing into desired.
