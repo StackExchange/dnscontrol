@@ -2,7 +2,7 @@
 
 # Use the Google Go Style Guide
 
-https://google.github.io/styleguide/go/
+<https://google.github.io/styleguide/go/>
 
 
 # Always favor simplicity
