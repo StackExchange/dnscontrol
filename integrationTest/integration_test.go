@@ -695,22 +695,95 @@ func makeTests(t *testing.T) []*TestGroup {
 
 	tests := []*TestGroup{
 
+		// START HERE
+
+		// Narrative:  Hello friend!  Are you adding a new DNS provider to
+		// DNSControl? That's awesome!  I'm here to help.
 		//
-		// Basic functionality (add/rename/change/delete).
+		// As you write your code, these tests will help verify that your
+		// code is correct and covers all the funny edge-cases that DNS
+		// providers throw at us.
 		//
-		// These tests verify the basic operations of the API: Create, Change, Delete.
-		// These are tested on "@" and "www".
-		// When these tests pass, you've implemented the basics correctly.
+		// If you follow these sections marked "Narrative", I'll lead you
+		// through the tests. The tests start by testing very basic things
+		// (are you talking to the API correctly) and then moves on to
+		// more and more esoteric issues.  It's like a video game where
+		// you have to solve all the levels but the game lets you skip
+		// around as long as all the levels are completed eventually.  Some
+		// of the levels you can mark "not relevant" for your provider.
+		//
+		// Oh wait. I'm getting ahead of myself.  How do you run these
+		// tests?  That's documented here:
+		// https://docs.dnscontrol.org/developer-info/integration-tests
+		// You'll be running these tests a lot. I recommend you make a
+		// script that sets the environment variables and runs the tests
+		// to make it easy to run the tests.  However don't check that
+		// file into a GIT repo... it contains API credentials that are
+		// secret!
+
+		///// Basic functionality (add/rename/change/delete).
+
+		// Narrative:  Let's get started!  The first thing to do is to
+		// make sure we can create an A record, change it, then delete it.
+		// That's the basic Add/Change/Delete process.  Once these three
+		// features work you know that your API calls and authentication
+		// is working and we can do the most basic operations.
 
 		testgroup("A",
 			tc("Create A", a("testa", "1.1.1.1")),
-			tc("Change A target", a("testa", "1.2.3.4")),
+			tc("Change A target", a("testa", "3.3.3.3")),
 		),
 
-		testgroup("Attl",
-			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
-			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		// Narrative: Congrats on getting those to work!  Now let's try
+		// something a little more difficult.  Let's do that same test at
+		// the apex of the domain.  This may "just work" for your
+		// provider, or they might require something special like
+		// referring to the apex as "@".
+
+		// Same test, but at the apex of the domain.
+		testgroup("Apex",
+			tc("Create A", a("@", "2.2.2.2")),
+			tc("Change A target", a("@", "4.4.4.4")),
 		),
+
+		// Narrative: Another edge-case is the wildcard record ("*").  In
+		// theory this should "just work" but plenty of vendors require
+		// some weird quoting or escaping. None of that should be required
+		// but... sigh... they do it anyway.  Let's find out how badly
+		// they screwed this up!
+
+		// Same test, but do it with a wildcard.
+		testgroup("Protocol-Wildcard",
+			not("HEDNS"), // Not supported by dns.he.net due to abuse
+			tc("Create wildcard", a("*", "3.3.3.3"), a("www", "5.5.5.5")),
+			tc("Delete wildcard", a("www", "5.5.5.5")),
+		),
+
+		///// Test the basic DNS types
+
+		// Narrative: That wasn't as hard as expected, eh?  Let's test the
+		// other basic record types like AAAA, CNAME, MX and TXT.
+
+		// AAAA: TODO(tlim) Add AAAA test.
+
+		// CNAME
+
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("testcname", "www.google.com.")),
+			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		),
+
+		// MX
+
+		// Narrative: MX is the first record we're going to test with
+		// multiple fields. All records have a target (A records have an
+		// IP address, CNAMEs have a destination (called "the canonical
+		// name" in the RFCs). MX records have a target (a hostname) but
+		// also have a "Preference".  FunFact: The RFCs call this the
+		// "preference" but most engineers refer to it as the "priority".
+		// Now you know better.
+		// Let's make sure your code creates and updates the preference
+		// correctly!
 
 		testgroup("MX",
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
@@ -718,12 +791,27 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
 		),
 
-		testgroup("CNAME",
-			tc("Create a CNAME", cname("testcname", "www.google.com.")),
-			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		// TXT
+
+		// Narrative: TXT records can be very complex but we'll save those
+		// tests for later. Let's just test a simple string.
+
+		testgroup("TXT",
+			tc("Create TXT", txt("testtxt", "simple")),
+			tc("Change TXT target", txt("testtxt", "changed")),
 		),
 
-		testgroup("ManyAtOne",
+		// Test API edge-cases
+
+		// Narrative: I'm proud of you for getting this far.  All the
+		// basic types work!  Now let's verify your code handles some of
+		// the more interesting ways that updates can happen.  For
+		// example, let's try creating many records of the same or
+		// different type at once.  Usually this "just works" but maybe
+		// there's an off-by-one error lurking. Once these work we'll have
+		// a new level of confidence in the code.
+
+		testgroup("ManyAtOnce",
 			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
 			clear(),
 			tc("Create an A record", a("www", "1.1.1.1")),
@@ -731,7 +819,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
 		),
 
-		testgroup("manyAtOneTypes",
+		testgroup("manyTypesAtOnce",
 			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
 			clear(),
 			tc("Create an A record", a("www", "1.1.1.1")),
@@ -739,13 +827,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
 		),
 
-		// Make sure changes at the apex (the bare domain) work.
-		testgroup("Apex",
-			tc("Create A", a("@", "1.1.1.1")),
-			tc("Change A target", a("@", "1.2.3.4")),
+		// Exercise TTL operations.
+
+		// Narrative: TTLs are weird.  They deserve some special tests.
+		// First we'll verify some simple cases but then we'll test the
+		// weirdest edge-case we've ever seen.
+
+		testgroup("Attl",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
 		),
 
-		// Exercise TTL operations.
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
 			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
@@ -754,64 +846,74 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
-		// This is a strange one.  It adds a new record to an existing
-		// label but the pre-existing label has its TTL change.
+		// Narrative: Did you see that `not("NETCUP")` code?  NETCUP just
+		// plain doesn't support TTLs, so those tests just plain can't
+		// ever work.  `not("NETCUP")` tells the test system to skip those
+		// tests. There's also `only()` which runs a test only for certain
+		// providers.  Those and more are documented above in the
+		// "Filters" section, which is on line 664 as I write this.
+
+		// Narrative: Ok, back to testing.  This next test is a strange
+		// one. It's a strange situation that happens rarely.  You might
+		// want to skip this and come back later, or ask for help on the
+		// mailing list.
+
+		// Test: At the start we have a single DNS record at a label.
+		// Next we add an additional record at the same label AND change
+		// the TTL of the existing record.
 		testgroup("add to label and change orig ttl",
 			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
 			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 		),
 
-		testgroup("Protocol-Wildcard",
-			// Test the basic Add/Change/Delete with the domain wildcard.
-			not("HEDNS"), // Not supported by dns.he.net due to abuse
-			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
-			tc("Delete wildcard", a("www", "1.1.1.1")),
-		),
+		// Narrative: We're done with TTL tests now.  If you fixed a bug
+		// in any of those tests give yourself a pat on the back. Finding
+		// bugs is not bad or shameful... it's an opportunity to help the
+		// world by fixing a problem!  If only we could fix all the
+		// world's problems by editing code!
+		//
+		// Now let's look at one more edge-case: Can you change the type
+		// of a record?  Some providers don't permit this and you have to
+		// delete the old record and create a new record in its place.
 
 		testgroup("TypeChange",
 			// Test whether the provider properly handles a label changing
 			// from one rtype to another.
+			tc("Create A", a("foo", "1.2.3.4")),
+			tc("Change to MX", mx("foo", 5, "mx.google.com.")),
+			tc("Change back to A", a("foo", "4.5.6.7")),
+		),
+
+		// Narrative: That worked? Of course that worked. You're awesome.
+		// Now let's make it even more difficult by involving CNAMEs.  If
+		// there is a CNAME at a label, no other records can be at that
+		// label. That means the order of updates is critical when
+		// changing A->CNAME or CNAME->A.  pkg/diff2 should order the
+		// changes properly for you. Let's verify that we got it right!
+
+		testgroup("TypeChangeHard",
 			tc("Create a CNAME", cname("foo", "google.com.")),
 			tc("Change to A record", a("foo", "1.2.3.4")),
 			tc("Change back to CNAME", cname("foo", "google2.com.")),
 		),
 
-		//
-		// Test each basic DNS type
-		//
-		// This tests all the common DNS types in parallel for speed.
-		// First: 1 of each type is created.
-		// Second: the first parameter is modified.
-		// Third: the second parameter is modified. (if there is none, no changes)
+		//// Test edge cases from various types.
 
-		// NOTE: Previously we did a seperate test for each type. It was
-		// very slow on certain providers. This is faster but is a little
-		// more difficult to read.
-
-		testgroup("CommonDNS",
-			tc("Create 1 of each",
-				//a("testa", "1.1.1.1"),  // Duplicates work done by Protocol-Plain
-				cname("testcname", "example.com."),
-				mx("testmx", 5, "foo.com."),
-				txt("testtxt", "simple"),
-			),
-			tc("Change param1",
-				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
-				cname("testcname", "example2.com."),
-				mx("testmx", 6, "foo.com."),
-				txt("testtxt", "changed"),
-			),
-			tc("Change param2", // if there is one)
-				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
-				cname("testcname", "example2.com."),
-				mx("testmx", 6, "bar.com."),
-				txt("testtxt", "changed"),
-			),
-		),
-
+		// Narrative: Every DNS record type has some weird edge-case that
+		// you wouldn't expect. This is where we test those situations.
+		// They're strange, but usually easy to fix or skip.
 		//
-		// Test edge cases from various types.
+		// Some of these are testing the provider more than your code.
 		//
+		// You can't fix your provider's code. That's why there is the
+		// auditrecord.go system.  For example, if your provider doesn't
+		// support MX records that point to "." (yes, that's a thing),
+		// there's nothing you can do other than warn users that it isn't
+		// supported.  We do this in the auditrecords.go file in each
+		// provider. It contains "rejectif.` statements that detect
+		// unsupported situations.  Some good examples are in
+		// providers/cscglobal/auditrecords.go. Take a minute to read
+		// that.
 
 		testgroup("CNAME",
 			tc("Record pointing to @", cname("foo", "**current-domain**")),
@@ -833,6 +935,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
+		//// TXT tests
+
+		// Narrative: TXT records are weird. It's just text, right?  Sadly
+		// "just text" means quotes and other funny characters that might
+		// need special handling. In some cases providers ban certain
+		// chars in the string.
+		//
+		// Let's test the weirdness we've found.  I wouldn't bother trying
+		// too hard to fix these. Just skip them by updating
+		// auditrecords.go for your provider.
+
 		// In this next section we test all the edge cases related to TXT
 		// records. Compliance with the RFCs varies greatly with each provider.
 		// Rather than creating a "Capability" for each possible different
@@ -850,10 +963,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
 
-			// NB(tlim) 2023-03-07: Removing this test. Nobody does this.
-			//tc("TXT with 0-octel string", txt("foo1", "")),
-			// https://github.com/StackExchange/dnscontrol/issues/598
-			// RFC1035 permits this, but rarely do provider support it.
 			//clear(),
 			//tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			//clear(),
@@ -890,8 +999,16 @@ func makeTests(t *testing.T) []*TestGroup {
 		// API Edge Cases
 		//
 
+		// Narrative: Congratulate yourself for getting this far.
+		// Seriously.  Buy yourself a beer or other beverage.  Kick back.
+		// Take a break.  Ok, break over!  Time for some more weird edge
+		// cases.
+
+		// DNSControl downcases all DNS labels. These tests make sure
+		// that's all done correctly.
 		testgroup("Case Sensitivity",
-			// The decoys are required so that there is at least one actual change in each tc.
+			// The decoys are required so that there is at least one actual
+			// change in each tc.
 			tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
 			tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
 			tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
@@ -952,6 +1069,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// Narrative: Here we test the IDNA (internationalization)
+		// features.  But first a joke:
+		// Q: What do you call someone that speaks 2 languages?
+		// A: bilingual
+		// Q: What do you call someone that speaks 3 languages?
+		// A: trilingual
+		// Q: What do you call someone that speaks 1 language?
+		// A: American
+		// Get it?  Well, that's why I'm not a stand-up comedian.
+		// Anyway... let's make sure foreign languages work.
+
 		testgroup("IDNA",
 			not("SOFTLAYER"),
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
@@ -964,6 +1092,23 @@ func makeTests(t *testing.T) []*TestGroup {
 			// LINODE: hostname validation does not allow the target domain TLD
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
+
+		// Narrative: Some providers send the list of DNS records one
+		// "page" at a time. The data you get includes a flag that
+		// indicates you to the request is incomplete and you need to
+		// request the next page of data.  They don't realize that
+		// computers have gigabytes of RAM and the largest DNS zone might
+		// have kilobytes of records.  Unneeded complexity... sigh.
+		//
+		// Let's test to make sure we got the paging right. I always fear
+		// off-by-one errors when I write this kind of code. Like... if a
+		// get tells you it has returned a page that starts at record 0
+		// and includes 100 records, should the next "get" request records
+		// starting at 99 or 100 or 101?
+		//
+		// These tests can be VERY slow. That's why we use not() and
+		// only() to skip these tests for providers that doesn't use
+		// paging.
 
 		testgroup("pager101",
 			// Tests the paging code of providers.  Many providers page at 100.
@@ -1020,15 +1165,14 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
 
-		testgroup("NS1_URLFWD tests",
-			only("NS1"),
-			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
-		),
+		//// CanUse* types:
 
-		//
-		// CanUse* types:
-		//
+		// Narrative: Many DNS record types are optional.  If the provider
+		// supports them, there's a CanUse* variable that flags that
+		// feature.  Here we test those.  Each of these should (1) create
+		// the record, (2) test changing additional fields one at a time,
+		// maybe 2 at a time, (3) delete the record. If you can do those 3
+		// things, we're pretty sure you've implemented it correctly.
 
 		testgroup("CAA",
 			requires(providers.CanUseCAA),
@@ -1041,6 +1185,33 @@ func makeTests(t *testing.T) []*TestGroup {
 			// support this.  See providers/exoscale/auditrecords.go as an example.
 			tc("CAA whitespace", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
+
+		// LOCation records. // No.47
+		testgroup("LOC",
+			requires(providers.CanUseLOC),
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
+			//42 21 54     N  71 06  18     W -24m 30m
+			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 10, 0)),
+			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
+				//42 21 54     N  71 06  18     W -24m 30m
+				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
+				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
+				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24, 1, 200, 10),
+				//52 14 05     N  00 08  50     E 10m
+				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10, 0, 0, 0),
+				//32  7 19     S 116  2  25     E 10m
+				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
+				//42 21 28.764 N  71 00  51.617 W -44m 2000m
+				loc("d", 42, 21, 28.764, "N", 71, 0, 51.617, "W", -44, 2000, 0, 0),
+			),
+		),
+
+		// Narrative: NAPTR records are used by IP telephony ("SIP")
+		// systems. NAPTR records are rarely used, but if you use them
+		// you'll want to use DNSControl because editing them is a pain.
+		// If you want a fun read, check this out:
+		// https://www.devever.net/~hl/sip-victory
 
 		testgroup("NAPTR",
 			requires(providers.CanUseNAPTR),
@@ -1056,13 +1227,21 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
-		testgroup("PTR", requires(providers.CanUsePTR), not("CLOUDNS"),
+		testgroup("PTR",
+			requires(providers.CanUsePTR),
+			not("CLOUDNS"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
 
+		// Narrative: SOA records are ignored by most DNS providers. They
+		// auto-generate the values and ignore your SOA data. Don't
+		// implement the SOA record unless your provide can not work
+		// without them, like BIND.
+
 		// SOA
-		testgroup("SOA", requires(providers.CanUseSOA),
+		testgroup("SOA",
+			requires(providers.CanUseSOA),
 			clear(), // Extra clear required or only the first run passes.
 			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
@@ -1073,7 +1252,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
 		),
 
-		testgroup("SRV", requires(providers.CanUseSRV),
+		testgroup("SRV",
+			requires(providers.CanUseSRV),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
@@ -1087,7 +1267,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// https://github.com/StackExchange/dnscontrol/issues/2066
-		testgroup("SRV", requires(providers.CanUseSRV),
+		testgroup("SRV",
+			requires(providers.CanUseSRV),
 			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
 			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
 		),
@@ -1138,7 +1319,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("DS (children only)",
-			requires(providers.CanUseDSForChildren), not("CLOUDNS", "CLOUDFLAREAPI"),
+			requires(providers.CanUseDSForChildren),
+			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
@@ -1201,9 +1383,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		//
-		// Pseudo rtypes:
-		//
+		//// Vendor-specific record types
+
+		// Narrative: DNSControl supports DNS records that don't exist!
+		// Well, they exist for particular vendors.  Let's test each of
+		// them here. If you are writing a new provider, I have some good
+		// news: These don't apply to you!
 
 		testgroup("ALIAS",
 			requires(providers.CanUseAlias),
@@ -1440,7 +1625,24 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		// IGNORE* features
+		// NS1 features
+
+		testgroup("NS1_URLFWD tests",
+			only("NS1"),
+			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
+		),
+
+		//// IGNORE* features
+
+		// Narrative: You're basically done now. These remaining tests
+		// exercise the NO_PURGE and IGNORE* features.  These are handled
+		// by the pkg/diff2 module. If they work for any provider, they
+		// should work for all providers.  However we're going to test
+		// them anyway because one never knows.  Ready?  Let's go!
+
+		// TODO(tlim): Rewrite these to be more like the ByLabel and
+		// ByResourceSet tests.
 
 		testgroup("IGNORE_NAME function",
 			tc("Create some records",
@@ -1501,26 +1703,21 @@ func makeTests(t *testing.T) []*TestGroup {
 		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
 		// types of records, we should add a test at the apex.
 
-		// LOCation records. // No.47
-		testgroup("LOC",
-			requires(providers.CanUseLOC),
-			//42 21 54     N  71 06  18     W -24m 30m
-			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
-			//42 21 54     N  71 06  18     W -24m 30m
-			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 10, 0)),
-			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
-				//42 21 54     N  71 06  18     W -24m 30m
-				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
-				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
-				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24, 1, 200, 10),
-				//52 14 05     N  00 08  50     E 10m
-				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10, 0, 0, 0),
-				//32  7 19     S 116  2  25     E 10m
-				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
-				//42 21 28.764 N  71 00  51.617 W -44m 2000m
-				loc("d", 42, 21, 28.764, "N", 71, 0, 51.617, "W", -44, 2000, 0, 0),
-			),
-		),
+		//
+
+		// Narrative: Congrats! You're done!  If you've made it this far
+		// you're very close to being able to submit your PR.  Here's
+		// some tips:
+
+		// 1. Ask for help!  It is normal to submit a PR when most (but
+		//    not all) tests are passing.  The community would be glad to
+		//    help fix the remaining tests.
+		// 2. Take a moment to clean up your code. Delete debugging
+		//    statements, add comments, run "staticcheck".
+		// 3. Thing change: Once your PR is accepted, re-run these tests
+		//    every quarter. There may be library updates, API changes,
+		//    etc.
+
 	}
 
 	return tests
