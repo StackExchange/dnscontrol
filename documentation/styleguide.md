@@ -15,9 +15,10 @@ Remember what Brian Kernighan wrote: "Debugging is twice as hard as writing the
 code in the first place. Therefore, if you write the code as cleverly as
 possible, you are, by definition, not smart enough to debug it."
 
-Remember the [John Woods](http://wiki.c2.com/?CodeForTheMaintainer) quote,
-"Always code as if the guy who ends up maintaining your code will be a violent
-psychopath who knows where you live."
+Remember the [John Woods](http://wiki.c2.com/?CodeForTheMaintainer) quote:
+
+> "Always code as if the guy who ends up maintaining your code will be a violent
+psychopath who knows where you live." — _[John Woods](http://wiki.c2.com/?CodeForTheMaintainer)_
 
 Don't code for today-you.  Write code for six-months-from-now-you.  Have you
 met six-months-from-now-you? Oh, you should. Fine individual. They are
