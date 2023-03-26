@@ -29,7 +29,7 @@ defined as separate domains via separate [`D()`](D.md) statements, then
 not `domain.tld`.
 
 Some operators only act on an apex domain (e.g.
-[`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
+[`CF_REDIRECT`](/documentation/02_language_reference/domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](/documentation/02_language_reference/domain_modifier_functions/service_provider_specific/cloudflare_dns/CF_TEMP_REDIRECT.md)). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
 {% code title="dnsconfig.js" %}

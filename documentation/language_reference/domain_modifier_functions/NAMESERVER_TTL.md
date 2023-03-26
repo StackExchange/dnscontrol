@@ -10,7 +10,7 @@ parameter_types:
 
 NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [`NAMESERVER`](NAMESERVER.md).
 
-The value can be an integer or a string. See [`TTL`](../record/TTL.md) for examples.
+The value can be an integer or a string. See [`TTL`](/documentation/02_language_reference/record_modifier_functions/TTL.md) for examples.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -36,4 +36,4 @@ D('example.com', REGISTRAR, DnsProvider('xyz'),
 ```
 {% endcode %}
 
-To apply a default TTL to all other record types, see [`DefaultTTL`](../domain/DefaultTTL.md)
+To apply a default TTL to all other record types, see [`DefaultTTL`](/documentation/02_language_reference/domain_modifier_functions/DefaultTTL.md)

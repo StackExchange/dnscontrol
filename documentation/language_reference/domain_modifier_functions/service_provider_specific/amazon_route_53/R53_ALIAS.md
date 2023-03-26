@@ -13,7 +13,7 @@ provider: ROUTE53
 
 `R53_ALIAS` is a Route53 specific virtual record type that points a record at either another record or an AWS entity (like a Cloudfront distribution, an ELB, etc...). It is analogous to a `CNAME`, but is usually resolved at request-time and served as an `A` record. Unlike `CNAME` records, `ALIAS` records can be used at the zone apex (`@`)
 
-Unlike the regular [`ALIAS`](ALIAS.md) directive, `R53_ALIAS` is only supported on Route53. Attempting to use `R53_ALIAS` on another provider than Route53 will result in an error.
+Unlike the regular [`ALIAS`](../../ALIAS.md) directive, `R53_ALIAS` is only supported on Route53. Attempting to use `R53_ALIAS` on another provider than Route53 will result in an error.
 
 The name should be the relative label for the domain.
 

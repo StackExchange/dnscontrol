@@ -8,7 +8,7 @@
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
 * [TypeScript autocomplete and type checking](typescript.md)
-
+<!-- LANG_REF start -->
 ## Language Reference
 
 * [JavaScript DSL](js.md)
@@ -87,8 +87,9 @@
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](functions/record/R53_ZONE.md)
+<!-- LANG_REF end -->
 * [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
-
+<!-- PROVIDER start -->
 ## Service Providers
 
 * [Providers](providers.md)
@@ -135,7 +136,7 @@
     * [SoftLayer DNS](providers/softlayer.md)
     * [TransIP](providers/transip.md)
     * [Vultr](providers/vultr.md)
-
+<!-- PROVIDER end -->
 ## Commands
 
 * [creds.json](creds-json.md)

@@ -16,7 +16,7 @@ parameter_types:
 ---
 
 DNSControl contains a `CAA_BUILDER` which can be used to simply create
-[`CAA()`](../domain/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain/CAA.md) record
+`CAA` records for your domains. Instead of creating each `CAA` record
 individually, you can simply configure your report mail address, the
 authorized certificate authorities and the builder cares about the rest.
 

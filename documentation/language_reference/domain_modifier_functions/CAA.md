@@ -38,4 +38,4 @@ D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
 ```
 {% endcode %}
 
-DNSControl contains a [`CAA_BUILDER`](../record/CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.
+DNSControl contains a [`CAA_BUILDER`](../record_modifier_functions/CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.

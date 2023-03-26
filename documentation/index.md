@@ -4,7 +4,7 @@
 
 # Try It
 
-Want to jump right in? Follow our [quick start tutorial](getting-started.md) on a new domain or [migrate](migrating.md) an existing one. Read the [language spec](js.md) for more info.
+Want to jump right in? Follow our [quick start tutorial](getting-started.md) on a new domain or [migrate](migrating.md) an existing one. Read the [language spec](02_language_reference/JavaScript_DSL.md) for more info.
 
 # Use It
 

@@ -99,7 +99,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and [the provider docs](providers.md) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](language_reference/JavaScript_DSL.md) and [the provider docs](providers.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
