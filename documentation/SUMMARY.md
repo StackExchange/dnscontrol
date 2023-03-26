@@ -153,6 +153,7 @@
 
 ## Developer info
 
+* [Documentation Guide](documentation-style.md)
 * [Style Guide](styleguide.md)
 * [DNSControl is an opinionated system](opinions.md)
 * [Writing new DNS providers](writing-providers.md)
