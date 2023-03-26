@@ -20,8 +20,8 @@ Remember the [John Woods](http://wiki.c2.com/?CodeForTheMaintainer) quote,
 psychopath who knows where you live."
 
 Don't code for today-you.  Write code for six-months-from-now-you.  Have you
-met six-months-from-now-you? Oh, you should. Find individual. He or she is
-quite smart. He or she has 6 months more experience than today-you, but sadly
+met six-months-from-now-you? Oh, you should. Fine individual. They are
+quite smart. They have 6 months more experience than today-you, but sadly
 has had 6 months to forget what today-you knows.  The job of today-you is to
 write code that six-months-from-now-you can understand.
 
