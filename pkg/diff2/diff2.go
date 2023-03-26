@@ -44,60 +44,51 @@ type Change struct {
 /*
 General instructions:
 
-	  changes, err := diff2.ByRecord(existing, dc, nil)
-	  //changes, err := diff2.ByRecordSet(existing, dc, nil)
-	  //changes, err := diff2.ByLabel(existing, dc, nil)
-	  if err != nil {
-	    return nil, err
-	  }
+  changes, err := diff2.ByRecord(existing, dc, nil)
+  //changes, err := diff2.ByRecordSet(existing, dc, nil)
+  //changes, err := diff2.ByLabel(existing, dc, nil)
+  if err != nil {
+    return nil, err
+  }
 
-	  var corrections []*models.Correction
+  var corrections []*models.Correction
 
-	  for _, change := range changes {
-	    switch change.Type {
-	    case diff2.REPORT:
-	      corr = &models.Correction{Msg: change.MsgsJoined}
-	    case diff2.CREATE:
-	      corr = &models.Correction{
-	        Msg: change.MsgsJoined,
-	        F: func() error {
-	          return c.createRecord(FILL_IN)
-	        },
-	      }
-	    case diff2.CHANGE:
-	      corr = &models.Correction{
-	        Msg: change.MsgsJoined,
-	        F: func() error {
-	          return c.modifyRecord(FILL_IN)
-	        },
-	      }
-	    case diff2.DELETE:
-	      corr = &models.Correction{
-	        Msg: change.MsgsJoined,
-	        F: func() error {
-	          return c.deleteRecord(FILL_IN)
-	        },
-	      }
-		  default:
-			  panic("unhandled change.TYPE %s", change.Type)
-	    }
+  for _, change := range changes {
+    switch change.Type {
+    case diff2.REPORT:
+      corr = change.CreateMessage()
+    case diff2.CREATE:
+      corr = change.CreateCorrection(func() error { return c.createRecord(FILL_IN) })
+    case diff2.CHANGE:
+      corr = change.CreateCorrection(func() error { return c.modifyRecord(FILL_IN) })
+    case diff2.DELETE:
+      corr = change.CreateCorrection(func() error { return c.deleteRecord(FILL_IN) })
+	  default:
+		  panic("unhandled change.TYPE %s", change.Type)
+    }
 
-	    corrections = append(corrections, corr)
-	  }
+    corrections = append(corrections, corr)
+  }
 
-	  return corrections, nil
-	}
-*/
-func (c *Change) Msg() string {
-	return strings.Join(c.Msgs, "\n")
+  return corrections, nil
 }
+
+*/
 
 // CreateCorrection creates a new Correction based on the given
 // function and prefills it with the Msg of the current Change
 func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
-		Msg: c.Msg(),
+		Msg: c.MsgsJoined,
+	}
+}
+
+// CreateMessage creates a new correction with only the message.
+// Used for diff2.Report corrections
+func (c *Change) CreateMessage() *models.Correction {
+	return &models.Correction{
+		Msg: c.MsgsJoined,
 	}
 }
 
@@ -107,7 +98,7 @@ func (c *Change) CreateCorrection(correctionFunction func() error) *models.Corre
 func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
-		Msg: fmt.Sprintf("%s: %s", msg, c.Msg()),
+		Msg: fmt.Sprintf("%s: %s", msg, c.MsgsJoined),
 	}
 }
 

@@ -127,31 +127,24 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	for _, change := range instructions {
 
 		if canDirectApplyDNSEntries(change) {
-			changeFunction := n.getChangeFunction(change.Type, dc, change)
-			corrections = append(corrections, change.CreateCorrection(changeFunction))
+			switch change.Type {
+			case diff2.DELETE:
+				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
+			case diff2.CREATE:
+				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
+			case diff2.CHANGE:
+				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
+			case diff2.REPORT:
+				corrections = append(corrections, change.CreateMessage())
+			}
 		} else {
-			deleteFunction := n.getChangeFunction(diff2.DELETE, dc, change)
-			createFunction := n.getChangeFunction(diff2.CREATE, dc, change)
+			deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+			createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
 			corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
 		}
 	}
 
 	return corrections, nil
-}
-
-func (n *transipProvider) getChangeFunction(changeType diff2.Verb, dc *models.DomainConfig, change diff2.Change) func() error {
-	switch changeType {
-	case diff2.DELETE:
-		return wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
-
-	case diff2.CREATE:
-		return wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
-
-	case diff2.CHANGE:
-		return wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })
-	}
-
-	return nil
 }
 
 func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntry) error) func() error {
@@ -172,6 +165,10 @@ func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntr
 	}
 }
 
+// TransIP is unable to update certain changes so we need to remove and recreate them.
+// These changes include:
+// - Changes in recordsets: records with the same type and name but different content
+// - Updating TTL
 func canDirectApplyDNSEntries(change diff2.Change) bool {
 	desired, existing := change.New, change.Old
 
