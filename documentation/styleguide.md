@@ -41,8 +41,8 @@ These are the filenames to use:
 {% endhint %}
 
 * `providers/foo/fooProvider.go` -- The main file.
-* `providers/foo/records.go` -- Get/Correct the records of a DNS zone: GetZoneRecords() and GetZoneRecordsCorrections(), plus any helper functions.
-* `providers/foo/convert.go` -- Convert between RecordConfig and the native API's format: toRc() and toNative()
+* `providers/foo/records.go` -- Get/Correct the records of a DNS zone: `GetZoneRecords()` and `GetZoneRecordsCorrections()`, plus any helper functions.
+* `providers/foo/convert.go` -- Convert between RecordConfig and the native API's format: `toRc()` and `toNative()`
 * `providers/foo/auditrecords.go` -- The AuditRecords function and helpers
 * `providers/foo/api.go` -- Code that talks to the API, preferably through a public library.
 * `providers/foo/listzones.go` -- Code for listing and creating DNS zones and domains
@@ -57,7 +57,7 @@ The "trailing dot" is the "." at the end of "example.com." which indicates the s
 
 DO NOT conditionally add or remove the trailing dot from a string to future-proof code. Either add it or remove it. (This applies to data received from an API call.)
 
-DO call panic() if a protocol changes unexpectedly.
+DO call `panic()` if a protocol changes unexpectedly.
 
 Why?
 
