@@ -283,6 +283,7 @@ workflows:
                 - HEDNS
                 - INWX
                 - POWERDNS
+                - TRANSIP
           filters:
             branches:
               ignore: [master, main]
@@ -309,6 +310,7 @@ workflows:
                 - HEDNS
                 - INWX
                 - POWERDNS
+                - TRANSIP
           filters:
             branches:
               ignore: [master, main]
