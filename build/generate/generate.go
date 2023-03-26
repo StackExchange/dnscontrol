@@ -26,4 +26,7 @@ func main() {
 	if err := generateDocuTOC("documentation", "SUMMARY.md", "service_providers", providerStartMarker, providerEndMarker); err != nil {
 		log.Print(err)
 	}
+	if err := walkFolderForFilesToReplaceAllFileLinks("documentation/language_reference", ".md"); err != nil {
+		log.Print(err)
+	}
 }
