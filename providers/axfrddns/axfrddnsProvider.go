@@ -387,16 +387,23 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	// Compliant servers must also silently ignore an update
 	// that removes the last NS record of a zone. Therefore we
 	// don't want to remove all NS records before inserting a
-	// new one. For the particular case of NS record, we prefer
-	// to insert new records before ot remove old ones.
-	//
-	// This remarks does not apply for "modified" NS records, as
-	// updates are processed one-by-one.
+	// new one. Then, when an update want to change a NS record,
+	// we first insert a dummy NS record that we will remove
+	// at the end of the batched update.
 
 	var msgs []string
 	update := new(dns.Msg)
 	update.SetUpdate(dc.Name + ".")
 	update.Id = uint16(c.rand.Intn(math.MaxUint16))
+
+	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	if err != nil {
+		return nil, err
+	}
+	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	if err != nil {
+		return nil, err
+	}
 
 	if !diff2.EnableDiff2 {
 
@@ -411,6 +418,30 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 		changes := false
 		buf := &bytes.Buffer{}
+
+		hasNsUpdate := false
+		for _, c := range create {
+			if c.Desired.Type == "NS" && c.Desired.Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		}
+		for _, c := range del {
+			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		}
+		for _, c := range mod {
+			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		}
+
+		if hasNsUpdate {
+			update.Insert([]dns.RR{dummyNs1})
+		}
 
 		for _, c := range del {
 			changes = true
@@ -427,6 +458,10 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 			changes = true
 			fmt.Fprintln(buf, c)
 			update.Insert([]dns.RR{c.Desired.ToRR()})
+		}
+
+		if hasNsUpdate {
+			update.Remove([]dns.RR{dummyNs2})
 		}
 
 		if !changes {
@@ -447,6 +482,31 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		return nil, nil
 	}
 
+	hasNsUpdate := false
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.CREATE:
+			if change.New[0].Type == "NS" && change.New[0].Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		case diff2.CHANGE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		case diff2.DELETE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				hasNsUpdate = true
+				continue
+			}
+		}
+	}
+
+	if hasNsUpdate {
+		update.Insert([]dns.RR{dummyNs1})
+	}
+
 	for _, change := range changes {
 		switch change.Type {
 		case diff2.DELETE:
@@ -465,6 +525,10 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		case diff2.CHANGE:
 			update.Insert([]dns.RR{change.New[0].ToRR()})
 		}
+	}
+
+	if hasNsUpdate {
+		update.Remove([]dns.RR{dummyNs2})
 	}
 
 	return []*models.Correction{c.BuildCorrection(dc, msgs, update)}, nil
