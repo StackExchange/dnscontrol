@@ -140,7 +140,9 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"update-key",
 			"transfer-key",
 			"update-mode",
-			"transfer-mode":
+			"transfer-mode",
+			"domain",
+			"TYPE":
 			continue
 		default:
 			printer.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
