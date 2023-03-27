@@ -49,7 +49,7 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
-	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR":
+	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR", "OPENPGPKEY":
 		return rc.SetTarget(contents)
 	case "CAA":
 		return rc.SetTargetCAAString(contents)

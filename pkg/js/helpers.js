@@ -407,6 +407,183 @@ var DS = recordBuilder('DS', {
     },
 });
 
+// needed by OPENPGPKEY_REC() record creation
+function toUTF8Array(str) {
+    var utf8 = [];
+    for (var i = 0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+            utf8.push(0xc0 | (charcode >> 6), 0x80 | (charcode & 0x3f));
+        } else if (charcode < 0xd800 || charcode >= 0xe000) {
+            utf8.push(
+                0xe0 | (charcode >> 12),
+                0x80 | ((charcode >> 6) & 0x3f),
+                0x80 | (charcode & 0x3f)
+            );
+        }
+        // surrogate pair
+        else {
+            i++;
+            // UTF-16 encodes 0x10000-0x10FFFF by
+            // subtracting 0x10000 and splitting the
+            // 20 bits of 0x0-0xFFFFF into two halves
+            charcode =
+                0x10000 +
+                (((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff));
+            utf8.push(
+                0xf0 | (charcode >> 18),
+                0x80 | ((charcode >> 12) & 0x3f),
+                0x80 | ((charcode >> 6) & 0x3f),
+                0x80 | (charcode & 0x3f)
+            );
+        }
+    }
+    return String.fromCharCode.apply(String, utf8);
+}
+
+// needed by OPENPGPKEY_REC() record creation
+var sha256 = function sha256(ascii) {
+    function rightRotate(value, amount) {
+        return (value >>> amount) | (value << (32 - amount));
+    }
+
+    var mathPow = Math.pow;
+    var maxWord = mathPow(2, 32);
+    var lengthProperty = 'length';
+    var i, j; // Used as a counter across the whole file
+    var result = '';
+
+    var words = [];
+    var asciiBitLength = ascii[lengthProperty] * 8;
+
+    //* caching results is optional - remove/add slash from front of this line to toggle
+    // Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
+    // (we actually calculate the first 64, but extra values are just ignored)
+    var hash = (sha256.h = sha256.h || []);
+    // Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
+    var k = (sha256.k = sha256.k || []);
+    var primeCounter = k[lengthProperty];
+    /*/
+    var hash = [], k = [];
+    var primeCounter = 0;
+    //*/
+
+    var isComposite = {};
+    for (var candidate = 2; primeCounter < 64; candidate++) {
+        if (!isComposite[candidate]) {
+            for (i = 0; i < 313; i += candidate) {
+                isComposite[i] = candidate;
+            }
+            hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+            k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        }
+    }
+
+    ascii += '\x80'; // Append Ƈ' bit (plus zero padding)
+    while ((ascii[lengthProperty] % 64) - 56) ascii += '\x00'; // More zero padding
+    for (i = 0; i < ascii[lengthProperty]; i++) {
+        j = ascii.charCodeAt(i);
+        if (j >> 8) return; // ASCII check: only accept characters in range 0-255
+        words[i >> 2] |= j << (((3 - i) % 4) * 8);
+    }
+    words[words[lengthProperty]] = (asciiBitLength / maxWord) | 0;
+    words[words[lengthProperty]] = asciiBitLength;
+
+    // process each chunk
+    for (j = 0; j < words[lengthProperty]; ) {
+        var w = words.slice(j, (j += 16)); // The message is expanded into 64 words as part of the iteration
+        var oldHash = hash;
+        // This is now the undefinedworking hash", often labelled as variables a...g
+        // (we have to truncate as well, otherwise extra entries at the end accumulate
+        hash = hash.slice(0, 8);
+
+        for (i = 0; i < 64; i++) {
+            var i2 = i + j;
+            // Expand the message into 64 words
+            // Used below if
+            var w15 = w[i - 15],
+                w2 = w[i - 2];
+
+            // Iterate
+            var a = hash[0],
+                e = hash[4];
+            var temp1 =
+                hash[7] +
+                (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + // S1
+                ((e & hash[5]) ^ (~e & hash[6])) + // ch
+                k[i] +
+                // Expand the message schedule if needed
+                (w[i] =
+                    i < 16
+                        ? w[i]
+                        : (w[i - 16] +
+                              (rightRotate(w15, 7) ^
+                                  rightRotate(w15, 18) ^
+                                  (w15 >>> 3)) + // s0
+                              w[i - 7] +
+                              (rightRotate(w2, 17) ^
+                                  rightRotate(w2, 19) ^
+                                  (w2 >>> 10))) | // s1
+                          0);
+            // This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
+            var temp2 =
+                (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + // S0
+                ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2])); // maj
+
+            hash = [(temp1 + temp2) | 0].concat(hash); // We don't bother trimming off the extra ones, they're harmless as long as we're truncating when we do the slice()
+            hash[4] = (hash[4] + temp1) | 0;
+        }
+
+        for (i = 0; i < 8; i++) {
+            hash[i] = (hash[i] + oldHash[i]) | 0;
+        }
+    }
+
+    for (i = 0; i < 8; i++) {
+        for (j = 3; j + 1; j--) {
+            var b = (hash[i] >> (j * 8)) & 255;
+            result += (b < 16 ? 0 : '') + b.toString(16);
+        }
+    }
+    return result;
+};
+
+// needed by OPENPGPKEY_REC() record creation
+function sha256prefix(message) {
+    // encode as UTF-8
+    var msgBuffer = toUTF8Array(message);
+
+    // hash the message
+    var hashBuffer = sha256(msgBuffer);
+
+    // convert ArrayBuffer to Array
+    var hashArray = Array(hashBuffer);
+
+    // convert bytes to hex string
+    var hashHex = hashArray
+        .map(function (b) {
+            s = b < 10 ? '0' + b.toString(16) : b.toString(16);
+            return s;
+        })
+        .join('');
+
+    // return the first 28 octets (56 ascii characters)
+    return hashHex.substring(0, 56);
+}
+
+var OPENPGPKEY_REC = recordBuilder('OPENPGPKEY', {
+    args: [
+        ['local', _.isString],
+        ['digest', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.local;
+        record.publickey = args.digest;
+        record.target = args.digest;
+    },
+});
+
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
@@ -1368,6 +1545,98 @@ function LOC_builder_push(value, dms) {
                     p
                 )
             );
+    }
+
+    return r;
+}
+
+// OPENPGPKEY takes an object with:
+// local: The local part (username) of the email address, i.e. alice in alice@example.com
+// digest: base64-encoded data
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+function OPENPGPKEY(value) {
+    // RFC 7929:
+    // 1. The "left-hand side" of the email address, ... is encoded in UTF-8 (or its subset ASCII). If the local-part is written in another charset, it MUST be converted to UTF-8.
+    // 2. strip quotes and whitespace
+    // 3. Any non-ASCII characters, SHOULD be normalized using the Unicode Normalization Form C
+    // 4. The local-part is hashed using the SHA2-256 algorithm, truncated to 28 octets and represented in hex
+    // 5. The string "_openpgpkey" becomes the second left-most label
+
+    // Psychos out there who have e.g. ㌀ instead of アパート in their address can go to hell.
+
+    r = []; // The list of records to return.
+    p = {}; // The metaparameters to set on the LOC record.
+    var digest;
+    // PART III
+    // "normalize"
+    var local_part = value.local.replace(
+        /[\u0300-\u036f|\u00b4|\u0060|\u005e|\u007e]/g,
+        ''
+    );
+    // PART II
+    // 'spaces' https://util.unicode.org/UnicodeJsps/confusables.jsp?a=+&r=None
+    local_part = local_part.replace(/[\s ]/g, '');
+    local_part = local_part.replace(/[ ᠎]/g, ''); // danger: two characters U+1680 + U+180E
+    // 0x2000 - 0x200a + 0x202f + 0x205f
+    local_part = local_part.replace(/[             ]/g, '');
+    // 0x2028 (LINE SEPARATOR) and 0x2029 (PARAGRAPH SEPARATOR) are problematic.
+
+    // quotation marks https://util.unicode.org/UnicodeJsps/confusables.jsp?a=%22&r=None
+    local_part = local_part.replace(
+        /[\'\"`“”‘’‹›«»‘‚„''"＂〃ˮײ᳓″״‶˶ʺ“”˝‟]/g,
+        ''
+    );
+
+    var localAtIdx = local_part.indexOf('@');
+    var osuffix = '._openpgpkey';
+    var osuffixIdx = local_part.toLowerCase().indexOf(osuffix);
+
+    if (localAtIdx !== -1) {
+        local_part = local_part.substring(0, localAtIdx);
+    }
+    // else {
+    //     // throw new Error("OPENPGPKEY: local-part shall include '@'");
+    // }
+
+    // trim instances of '._openpgpkey' from the string if it is present
+    if (osuffixIdx !== -1) {
+        local_part = local_part.substring(0, osuffixIdx);
+    }
+
+    if (value.digest) {
+        // trim away any ascii armor delimiters and checksum
+        digest = value.digest
+            .replace(
+                /(?:\-{5}[A-Z ]+\-{5})?([^-]+)(?:\-{5}[A-Z ]+\-{5})?/g,
+                '$1'
+            )
+            .replace(/\s/g, '')
+            .replace(/\={1}([^\=]+)$/g, '');
+    } else throw new Error('OPENPGPKEY: provide (base64) digest');
+
+    // Discussion: doing the math in Go would be better and less error prone.
+    // Problem arises in current design: first opportunity to hash is at a get
+    // function. By then, all records are already pre-hash sorted. So the
+    // post-hash results would be "unexpected".
+    // local_part = local_part; // in case we want to do the math in Go
+
+    // PART I + III (not comprehensive) + PART IV
+    local_part = sha256prefix(local_part);
+
+    // PART V
+    // suffix the name with "._openpgpkey" - expected standard for these records.
+    var nameLen = local_part.length;
+    var osuffixLen = osuffix.length;
+    if (nameLen - osuffixLen >= 0) {
+        if (local_part.substring(nameLen - osuffixLen) != osuffix) {
+            local_part += osuffix;
+        }
+    }
+
+    if (value.ttl) {
+        r.push(OPENPGPKEY_REC(local_part, digest, TTL(value.ttl)));
+    } else {
+        r.push(OPENPGPKEY_REC(local_part, digest));
     }
 
     return r;

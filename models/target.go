@@ -101,7 +101,7 @@ func (rc *RecordConfig) GetTargetSortable() string {
 func (rc *RecordConfig) GetTargetDebug() string {
 	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT", "AKAMAICDN":
+	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT", "AKAMAICDN", "OPENPGPKEY":
 		// Nothing special.
 	case "AZURE_ALIAS":
 		content += fmt.Sprintf(" type=%s", rc.AzureAlias["type"])
