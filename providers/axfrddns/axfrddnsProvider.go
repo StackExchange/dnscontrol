@@ -304,9 +304,8 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 
 	if len(foundRecords) >= 1 && foundRecords[len(foundRecords)-1].Type == "SOA" {
 		// The SOA is sent two times: as the first and the last record
-		// See section 2.2 of RFC5936
+		// See section 2.2 of RFC5936. We remove the later one.
 		foundRecords = foundRecords[:len(foundRecords)-1]
-		// Ignoring the SOA, others providers  don't manage it either.
 	}
 
 	if foundDNSSecRecords != nil {
@@ -372,6 +371,11 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
+
+	// Ignoring the SOA, others providers don't manage it either.
+	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
+		foundRecords = foundRecords[1:]
+	}
 
 	if dc.AutoDNSSEC == "on" && !c.hasDnssecRecords {
 		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
