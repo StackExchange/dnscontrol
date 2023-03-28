@@ -53,6 +53,7 @@ func checkTarget(target string) error {
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	// #rtype_variations
 	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
@@ -707,6 +708,7 @@ func commaSepInts(list []int) string {
 // the package elsewhere, so that our test suite can look at the list of
 // capabilities we're checking and make sure that it's up-to-date.
 var providerCapabilityChecks = []pairTypeCapability{
+	// #rtype_variations
 	// If a zone uses rType X, the provider must support capability Y.
 	//{"X", providers.Y},
 	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
