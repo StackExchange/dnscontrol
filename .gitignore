@@ -11,6 +11,7 @@ integrationTest/env.sh
 integrationTest/.env
 /integrationTest/zones/*.zone
 /integrationTest/config/*.yaml
+/integrationTest/.hedns-session
 /pkg/js/parse_tests/*.ACTUAL
 env.sh
 certs/
