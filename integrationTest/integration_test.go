@@ -381,20 +381,8 @@ func a(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "A")
 }
 
-func cname(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "CNAME")
-}
-
 func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
-}
-
-func r53alias(name, aliasType, target string) *models.RecordConfig {
-	r := makeRec(name, target, "R53_ALIAS")
-	r.R53Alias = map[string]string{
-		"type": aliasType,
-	}
-	return r
 }
 
 func azureAlias(name, aliasType, target string) *models.RecordConfig {
@@ -405,15 +393,9 @@ func azureAlias(name, aliasType, target string) *models.RecordConfig {
 	return r
 }
 
-func cfRedir(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_REDIRECT")
-	return r
-}
-
-func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_TEMP_REDIRECT")
+func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "CAA")
+	r.SetTargetCAA(flag, tag, target)
 	return r
 }
 
@@ -437,77 +419,26 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	return r
 }
 
-func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) *models.RecordConfig {
-	r := makeRec(name, "", "LOC")
-	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+func cfRedir(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_REDIRECT")
 	return r
 }
 
-func ns(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS")
-}
-
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
+func cfRedirTemp(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
 }
 
-func ptr(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "PTR")
-}
-
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
-	r := makeRec(name, target, "NAPTR")
-	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
-	return r
+func cname(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "CNAME")
 }
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.SetTargetDS(keyTag, algorithm, digestType, digest)
 	return r
-}
-
-func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
-	r := makeRec(name, "", "SOA")
-	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SRV")
-	r.SetTargetSRV(priority, weight, port, target)
-	return r
-}
-
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SSHFP")
-	r.SetTargetSSHFP(algorithm, fingerprint, target)
-	return r
-}
-
-func txt(name, target string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.SetTargetTXT(target)
-	return r
-}
-
-func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "CAA")
-	r.SetTargetCAA(flag, tag, target)
-	return r
-}
-
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "TLSA")
-	r.SetTargetTLSA(usage, selector, matchingtype, target)
-	return r
-}
-
-func urlfwd(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "URLFWD")
 }
 
 func ignoreName(name string) *models.RecordConfig {
@@ -527,6 +458,13 @@ func ignoreTarget(name string, typ string) *models.RecordConfig {
 	return r
 }
 
+func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
+	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) *models.RecordConfig {
+	r := makeRec(name, "", "LOC")
+	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	return r
+}
+
 func makeRec(name, target, typ string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: typ,
@@ -537,18 +475,58 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 	return r
 }
 
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
-func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
-	r.TTL = t
-	return r
-}
-
 func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	recs := []*models.RecordConfig{}
 	for i := 0; i < n; i++ {
 		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
 	}
 	return recs
+}
+
+func mx(name string, prio uint16, target string) *models.RecordConfig {
+	r := makeRec(name, target, "MX")
+	r.MxPreference = prio
+	return r
+}
+
+func ns(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "NS")
+}
+
+func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
+	r := makeRec(name, target, "NAPTR")
+	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
+	return r
+}
+
+func ptr(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "PTR")
+}
+
+func r53alias(name, aliasType, target string) *models.RecordConfig {
+	r := makeRec(name, target, "R53_ALIAS")
+	r.R53Alias = map[string]string{
+		"type": aliasType,
+	}
+	return r
+}
+
+func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
+	r := makeRec(name, "", "SOA")
+	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
+	return r
+}
+
+func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
+	r := makeRec(name, target, "SRV")
+	r.SetTargetSRV(priority, weight, port, target)
+	return r
+}
+
+func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "SSHFP")
+	r.SetTargetSSHFP(algorithm, fingerprint, target)
+	return r
 }
 
 func testgroup(desc string, items ...interface{}) *TestGroup {
@@ -611,6 +589,28 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 		IgnoredNames:   ignoredNames,
 		IgnoredTargets: ignoredTargets,
 	}
+}
+
+func txt(name, target string) *models.RecordConfig {
+	r := makeRec(name, "", "TXT")
+	r.SetTargetTXT(target)
+	return r
+}
+
+// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
+func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
+	r.TTL = t
+	return r
+}
+
+func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "TLSA")
+	r.SetTargetTLSA(usage, selector, matchingtype, target)
+	return r
+}
+
+func urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URLFWD")
 }
 
 func clear(items ...interface{}) *TestCase {
@@ -1446,7 +1446,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		// ROUTE43 features
+		// ROUTE53 features
 
 		testgroup("R53_ALIAS2",
 			requires(providers.CanUseRoute53Alias),
