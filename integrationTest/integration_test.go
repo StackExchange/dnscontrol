@@ -1446,7 +1446,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		// ROUTE43 features
+		// ROUTE53 features
 
 		testgroup("R53_ALIAS2",
 			requires(providers.CanUseRoute53Alias),
