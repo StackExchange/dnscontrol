@@ -492,10 +492,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		case diff2.REPORT:
 			chg = r53Types.Change{}
 
-		case diff2.CREATE:
-			fallthrough
-		case diff2.CHANGE:
-			// To CREATE/CHANGE, build a new record set from the desired state and UPSERT it.
+		case diff2.CREATE, diff2.CHANGE, diff2.MODIFYTTL:
+			// To CREATE/MODIFY/MODIFYTTL, build a new record set from the desired state and UPSERT it.
 
 			// Make the rrset to be UPSERTed:
 			var rrset *r53Types.ResourceRecordSet

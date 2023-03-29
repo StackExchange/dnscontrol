@@ -257,7 +257,7 @@ func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 						return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
 					},
 				})
-			case diff2.CHANGE:
+			case diff2.CHANGE, diff2.MODIFYTTL:
 				corrections = append(corrections, &models.Correction{
 					Msg: msg,
 					F: func() error {

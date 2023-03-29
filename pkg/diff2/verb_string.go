@@ -10,13 +10,14 @@ func _() {
 	var x [1]struct{}
 	_ = x[CREATE-1]
 	_ = x[CHANGE-2]
-	_ = x[DELETE-3]
-	_ = x[REPORT-4]
+	_ = x[MODIFYTTL-3]
+	_ = x[DELETE-4]
+	_ = x[REPORT-5]
 }
 
-const _Verb_name = "CREATECHANGEDELETEREPORT"
+const _Verb_name = "CREATECHANGEMODIFYTTLDELETEREPORT"
 
-var _Verb_index = [...]uint8{0, 6, 12, 18, 24}
+var _Verb_index = [...]uint8{0, 6, 12, 21, 27, 33}
 
 func (i Verb) String() string {
 	i -= 1

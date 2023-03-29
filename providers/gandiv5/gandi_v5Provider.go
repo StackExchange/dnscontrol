@@ -392,7 +392,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 					})
 			}
 
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
 			label := inst.Key.NameFQDN

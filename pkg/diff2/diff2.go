@@ -18,11 +18,19 @@ type Verb int
 
 // CREATE and other verbs.
 const (
-	_      Verb = iota // Skip the first value of 0
-	CREATE             // Create a record/recordset/label where none existed before.
-	CHANGE             // Change existing record/recordset/label
-	DELETE             // Delete existing record/recordset/label
-	REPORT             // No change, but I have something to say!
+	_         Verb = iota // Skip the first value of 0
+	CREATE                // Create a record/recordset/label where none existed before.
+	CHANGE                // Modify existing record/recordset/label
+	MODIFYTTL             // Same as CHANGE, but only the TTL changed
+	DELETE                // Delete existing record/recordset/label
+	REPORT                // No change, but I have something to say!
+
+	// NOTES:
+	// MODIFYTTL is only issued when there is exactly 1 record being
+	// changed and the only change is the TTL. You can treat it as the
+	// same as CHANGE, or use it as an opportunity to do a more
+	// efficient update.
+	// At this time, only diff2.ByRecord() generates MODIFYTTL verbs.
 )
 
 // ChangeList is a list of Change
@@ -59,7 +67,7 @@ General instructions:
       corr = change.CreateMessage()
     case diff2.CREATE:
       corr = change.CreateCorrection(func() error { return c.createRecord(FILL_IN) })
-    case diff2.CHANGE:
+    case diff2.MODIFY, diff2.MODIFYTTL:
       corr = change.CreateCorrection(func() error { return c.modifyRecord(FILL_IN) })
     case diff2.DELETE:
       corr = change.CreateCorrection(func() error { return c.deleteRecord(FILL_IN) })

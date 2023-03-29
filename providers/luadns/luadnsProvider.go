@@ -154,7 +154,7 @@ func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			corrs = []*models.Correction{{Msg: change.MsgsJoined}}
 		case diff2.CREATE:
 			corrs = l.makeCreateCorrection(change.New[0], domainID, msg)
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			corrs = l.makeChangeCorrection(change.Old[0], change.New[0], domainID, msg)
 		case diff2.DELETE:
 			corrs = l.makeDeleteCorrection(change.Old[0], domainID, msg)

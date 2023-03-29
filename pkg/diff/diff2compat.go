@@ -66,7 +66,7 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			toCreate = append(toCreate, cor)
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			cor.Existing = inst.Old[0]
 			cor.Desired = inst.New[0]
 			toModify = append(toModify, cor)

@@ -204,7 +204,7 @@ func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual 
 		switch inst.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			corrections = append(corrections, &models.Correction{
 				Msg: inst.Msgs[0],
 				F:   c.updateRecordFunc(inst.Old[0].Original.(*Record), inst.New[0], dc.Name),

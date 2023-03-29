@@ -175,7 +175,7 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return c.createRecord(dc.Name, req)
 				},
 			}
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			id := change.Old[0].Original.(*domainRecord).ID
 			req, err := toReq(change.New[0])
 			if err != nil {

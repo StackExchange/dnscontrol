@@ -348,7 +348,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			// DS records must always have a corresponding NS record.
 			// Therefore, we create NS records before any DS records.
 			addToFront = createRec.Type == "NS"
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			newrec := inst.New[0]
 			oldrec := inst.Old[0]
 			corrs = c.mkChangeCorrection(oldrec, newrec, domainID, msg)

@@ -348,12 +348,12 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 
 	// for i, j := range changes {
-	// 	fmt.Fprintf(os.Stderr, "DEBUG: CHANGE[%v] = %+v\n", i, j)
+	// 	fmt.Fprintf(os.Stderr, "DEBUG: MODIFY[%v] = %+v\n", i, j)
 	// }
 
 	for _, change := range changes {
 
-		//fmt.Fprintf(os.Stderr, "\n\nCHANGE=%v\n", change)
+		//fmt.Fprintf(os.Stderr, "\n\nMODIFY=%v\n", change)
 
 		// Copy all param values to local variables to avoid overwrites
 		msgs := change.MsgsJoined
@@ -363,7 +363,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		switch change.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-		case diff2.CHANGE, diff2.CREATE:
+		case diff2.CREATE, diff2.CHANGE, diff2.MODIFYTTL:
 
 			changeNew := change.New
 
@@ -373,7 +373,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			// for i, j := range change.New {
 			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v ttl=%d\n", i, j, j.TTL)
 			// }
-			// fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
+			// fmt.Fprintf(os.Stderr, "DEBUG: MODIFY = \n%v\n", change)
 
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
@@ -390,7 +390,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			// for i, j := range change.New {
 			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
 			// }
-			//fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
+			//fmt.Fprintf(os.Stderr, "DEBUG: MODIFY = \n%v\n", change)
 
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,

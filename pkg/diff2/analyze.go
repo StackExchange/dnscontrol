@@ -111,6 +111,15 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 	return c
 }
 
+func mkChangeTTL(l string, t string, msg string, oldRec, newRec *models.RecordConfig) Change {
+	c := Change{Type: MODIFYTTL, Msgs: []string{msg}, MsgsJoined: msg}
+	c.Key.NameFQDN = l
+	c.Key.Type = t
+	c.Old = models.Records{oldRec}
+	c.New = models.Records{newRec}
+	return c
+}
+
 func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change {
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
@@ -170,10 +179,7 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 
 		if ecomp == dcomp && er.TTL != dr.TTL {
 			m := color.YellowString("± MODIFY-TTL %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[ei], desired[di]))
-			instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
-				models.Records{er},
-				models.Records{dr},
-			))
+			instructions = append(instructions, mkChangeTTL(dr.NameFQDN, dr.Type, m, er, dr))
 			ei++
 			di++
 		} else if ecomp < dcomp {

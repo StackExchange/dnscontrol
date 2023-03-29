@@ -221,7 +221,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 				Msg: desc,
 				F:   func() error { return n.add(recs, dc.Name) },
 			})
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.modify(recs, dc.Name) },

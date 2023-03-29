@@ -58,7 +58,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 					return client.createOneRecord(client.dnsserver, dc.Name, newrec)
 				},
 			}
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			oldrec := change.Old[0]
 			newrec := change.New[0]
 			corr = &models.Correction{

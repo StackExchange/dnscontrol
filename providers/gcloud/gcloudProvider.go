@@ -400,13 +400,13 @@ func retryNeeded(resp *gdns.Change, err error) bool {
 
 	// TODO(tlim): In theory, resp.Header has a header that says how
 	// long to wait but I haven't been able to capture that header in
-	// the wild. If you get these "RUNCHANGE HEAD" messages, please
+	// the wild. If you get these "RUNMODIFY HEAD" messages, please
 	// file a bug with the contents!
 
 	if resp != nil {
 		log.Printf("NOTE: If you see this message, please file a bug with the output below:\n")
-		log.Printf("RUNCHANGE CODE = %+v\n", resp.HTTPStatusCode)
-		log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
+		log.Printf("RUNMODIFY CODE = %+v\n", resp.HTTPStatusCode)
+		log.Printf("RUNMODIFY HEAD = %+v\n", resp.Header)
 	}
 
 	// a simple exponential back-off

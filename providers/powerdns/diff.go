@@ -3,11 +3,12 @@ package powerdns
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
-	"strings"
 )
 
 func (dsp *powerdnsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
@@ -83,7 +84,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		switch change.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-		case diff2.CREATE, diff2.CHANGE:
+		case diff2.CREATE, diff2.CHANGE, diff2.MODIFYTTL:
 			labelTTL := int(change.New[0].TTL)
 			records := buildRecordList(change)
 

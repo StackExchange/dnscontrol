@@ -130,7 +130,7 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
 		case diff2.CREATE:
 			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			if canDirectApplyDNSEntries(change) {
 				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
 			} else {
@@ -170,7 +170,7 @@ func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntr
 func canDirectApplyDNSEntries(change diff2.Change) bool {
 	desired, existing := change.New, change.Old
 
-	if change.Type != diff2.CHANGE {
+	if change.Type != diff2.CHANGE && change.Type != diff2.MODIFYTTL {
 		return true
 	}
 

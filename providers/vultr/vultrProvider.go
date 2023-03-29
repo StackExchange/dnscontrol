@@ -195,7 +195,7 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return err
 				},
 			})
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			r := toVultrRecord(dc, change.New[0], change.Old[0].Original.(govultr.DomainRecord).ID)
 			corrections = append(corrections, &models.Correction{
 				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", change.Msgs[0], r.ID),

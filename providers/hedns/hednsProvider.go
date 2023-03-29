@@ -270,7 +270,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 					return c.createZoneRecord(zoneID, record)
 				},
 			})
-		case diff2.CHANGE:
+		case diff2.CHANGE, diff2.MODIFYTTL:
 			record := change.New[0]
 			recordID := change.Old[0].Original.(Record).RecordID
 			corrections = append(corrections, &models.Correction{
