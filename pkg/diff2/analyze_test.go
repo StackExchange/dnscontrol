@@ -435,8 +435,6 @@ func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 
 func Test_diffTargets(t *testing.T) {
 
-	color.NoColor = false
-
 	type args struct {
 		existing []targetConfig
 		desired  []targetConfig
@@ -672,7 +670,7 @@ func Test_splitTTLOnly(t *testing.T) {
 			},
 			wantExistDiff:  nil,
 			wantDesireDiff: nil,
-			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
+			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    Hints=OnlyTTL\n{laba.f.com A}    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
 		},
 
 		{
