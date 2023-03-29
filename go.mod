@@ -35,7 +35,7 @@ require (
 	github.com/hexonet/go-sdk/v3 v3.5.4
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
-	github.com/miekg/dns v1.1.52
+	github.com/miekg/dns v1.1.53
 	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.2
@@ -48,8 +48,8 @@ require (
 	github.com/robertkrimen/otto v0.2.1
 	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.2
-	github.com/transip/gotransip/v6 v6.19.1
-	github.com/urfave/cli/v2 v2.25.0
+	github.com/transip/gotransip/v6 v6.20.0
+	github.com/urfave/cli/v2 v2.25.1
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/net v0.8.0
 	golang.org/x/oauth2 v0.6.0
@@ -63,7 +63,7 @@ require (
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/kylelemons/godebug v1.1.0
-	github.com/mattn/go-isatty v0.0.17
+	github.com/mattn/go-isatty v0.0.18
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/text v0.8.0

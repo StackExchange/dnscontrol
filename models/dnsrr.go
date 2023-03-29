@@ -80,12 +80,12 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 		err = rc.SetTargetLOC(v.Version, v.Latitude, v.Longitude, v.Altitude, v.Size, v.HorizPre, v.VertPre)
 	case *dns.MX:
 		err = rc.SetTargetMX(v.Preference, v.Mx)
+	case *dns.NAPTR:
+		err = rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement)
 	case *dns.NS:
 		err = rc.SetTarget(v.Ns)
 	case *dns.PTR:
 		err = rc.SetTarget(v.Ptr)
-	case *dns.NAPTR:
-		err = rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement)
 	case *dns.SOA:
 		err = rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
 	case *dns.SRV:

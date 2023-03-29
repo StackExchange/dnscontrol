@@ -384,6 +384,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.A).A = rc.GetTargetIP()
 	case dns.TypeAAAA:
 		rr.(*dns.AAAA).AAAA = rc.GetTargetIP()
+	case dns.TypeCAA:
+		rr.(*dns.CAA).Flag = rc.CaaFlag
+		rr.(*dns.CAA).Tag = rc.CaaTag
+		rr.(*dns.CAA).Value = rc.GetTargetField()
 	case dns.TypeCNAME:
 		rr.(*dns.CNAME).Target = rc.GetTargetField()
 	case dns.TypeDS:
@@ -402,8 +406,9 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.LOC).Size = rc.LocSize
 		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
 		rr.(*dns.LOC).VertPre = rc.LocVertPre
-	case dns.TypePTR:
-		rr.(*dns.PTR).Ptr = rc.GetTargetField()
+	case dns.TypeMX:
+		rr.(*dns.MX).Preference = rc.MxPreference
+		rr.(*dns.MX).Mx = rc.GetTargetField()
 	case dns.TypeNAPTR:
 		rr.(*dns.NAPTR).Order = rc.NaptrOrder
 		rr.(*dns.NAPTR).Preference = rc.NaptrPreference
@@ -411,11 +416,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.NAPTR).Service = rc.NaptrService
 		rr.(*dns.NAPTR).Regexp = rc.NaptrRegexp
 		rr.(*dns.NAPTR).Replacement = rc.GetTargetField()
-	case dns.TypeMX:
-		rr.(*dns.MX).Preference = rc.MxPreference
-		rr.(*dns.MX).Mx = rc.GetTargetField()
 	case dns.TypeNS:
 		rr.(*dns.NS).Ns = rc.GetTargetField()
+	case dns.TypePTR:
+		rr.(*dns.PTR).Ptr = rc.GetTargetField()
 	case dns.TypeSOA:
 		rr.(*dns.SOA).Ns = rc.GetTargetField()
 		rr.(*dns.SOA).Mbox = rc.SoaMbox
@@ -424,6 +428,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SOA).Retry = rc.SoaRetry
 		rr.(*dns.SOA).Expire = rc.SoaExpire
 		rr.(*dns.SOA).Minttl = rc.SoaMinttl
+	case dns.TypeSPF:
+		rr.(*dns.SPF).Txt = rc.TxtStrings
 	case dns.TypeSRV:
 		rr.(*dns.SRV).Priority = rc.SrvPriority
 		rr.(*dns.SRV).Weight = rc.SrvWeight
@@ -433,17 +439,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SSHFP).Algorithm = rc.SshfpAlgorithm
 		rr.(*dns.SSHFP).Type = rc.SshfpFingerprint
 		rr.(*dns.SSHFP).FingerPrint = rc.GetTargetField()
-	case dns.TypeCAA:
-		rr.(*dns.CAA).Flag = rc.CaaFlag
-		rr.(*dns.CAA).Tag = rc.CaaTag
-		rr.(*dns.CAA).Value = rc.GetTargetField()
 	case dns.TypeTLSA:
 		rr.(*dns.TLSA).Usage = rc.TlsaUsage
 		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
-	case dns.TypeSPF:
-		rr.(*dns.SPF).Txt = rc.TxtStrings
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = rc.TxtStrings
 	default:
