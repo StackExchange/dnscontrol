@@ -39,6 +39,10 @@ type Change struct {
 	Msgs       []string                      // Human-friendly explanation of what changed
 	MsgsJoined string                        // strings.Join(Msgs, "\n")
 	MsgsByKey  map[models.RecordKey][]string // Messages for a given key
+
+	// HintOnlyTTL is true only if (.Type == diff2.CHANGE) && (there is
+	// exactly 1 record being updated) && (the only change is the TTL)
+	HintOnlyTTL bool
 }
 
 /*
@@ -223,6 +227,9 @@ func (c Change) String() string {
 
 	fmt.Fprintf(b, "Change: verb=%v\n", c.Type)
 	fmt.Fprintf(b, "    key=%v\n", c.Key)
+	if c.HintOnlyTTL {
+		fmt.Fprint(b, "    Hints=OnlyTTL\n", c.Key)
+	}
 	if len(c.Old) != 0 {
 		fmt.Fprintf(b, "    old=%v\n", c.Old)
 	}
