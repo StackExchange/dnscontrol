@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/diff"
 )
 
@@ -425,6 +426,8 @@ func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 }
 
 func Test_diffTargets(t *testing.T) {
+
+	color.NoColor = false
 
 	type args struct {
 		existing []targetConfig

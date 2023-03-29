@@ -170,10 +170,12 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 
 		if ecomp == dcomp && er.TTL != dr.TTL {
 			m := color.YellowString("± MODIFY-TTL %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[ei], desired[di]))
-			instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
+			v := mkChange(dr.NameFQDN, dr.Type, []string{m},
 				models.Records{er},
 				models.Records{dr},
-			))
+			)
+			v.HintOnlyTTL = true
+			instructions = append(instructions, v)
 			ei++
 			di++
 		} else if ecomp < dcomp {
