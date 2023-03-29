@@ -20,7 +20,7 @@ type Verb int
 const (
 	_         Verb = iota // Skip the first value of 0
 	CREATE                // Create a record/recordset/label where none existed before.
-	CHANGE                // Modify existing record/recordset/label
+	CHANGE                // Change existing record/recordset/label
 	MODIFYTTL             // Same as CHANGE, but only the TTL changed
 	DELETE                // Delete existing record/recordset/label
 	REPORT                // No change, but I have something to say!
@@ -67,7 +67,7 @@ General instructions:
       corr = change.CreateMessage()
     case diff2.CREATE:
       corr = change.CreateCorrection(func() error { return c.createRecord(FILL_IN) })
-    case diff2.MODIFY, diff2.MODIFYTTL:
+    case diff2.CHANGE, diff2.MODIFYTTL:
       corr = change.CreateCorrection(func() error { return c.modifyRecord(FILL_IN) })
     case diff2.DELETE:
       corr = change.CreateCorrection(func() error { return c.deleteRecord(FILL_IN) })
