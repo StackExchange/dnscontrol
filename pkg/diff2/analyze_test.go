@@ -6,8 +6,17 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/diff"
 )
+
+func init() {
+	// Disable colorizing the output.
+	// NOTE: "go test ./..." turns it off automatically but "cd
+	// pkg/diff2 && go test" does not. Without this statement, the
+	// latter fails.
+	color.NoColor = true
+}
 
 var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //      [0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
