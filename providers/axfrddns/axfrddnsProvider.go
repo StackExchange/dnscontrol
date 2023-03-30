@@ -606,6 +606,8 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 				update.Remove([]dns.RR{change.Old[0].ToRR()})
 				update.Insert([]dns.RR{change.New[0].ToRR()})
 			}
+		case diff2.REPORT:
+			msgs = append(msgs, change.Msgs...)
 		}
 	}
 
