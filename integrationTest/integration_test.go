@@ -286,11 +286,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		for _, tst := range group.tests {
 
-			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
-
-			if t.Failed() {
+			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig); !ok {
 				break
 			}
+
 		}
 
 		// Remove all records so next group starts with a clean slate.
