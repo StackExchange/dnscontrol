@@ -14,7 +14,6 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	a.Add("MX", rejectif.MxNull) // Last verified 2023-03
 
 	a.Add("TXT", rejectif.TxtHasMultipleSegments) // Last verified 2023-03
-	// TODO(onlyhavecans) we can support this, but it needs more work
 
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-03
 
