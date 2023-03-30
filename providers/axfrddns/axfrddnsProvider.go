@@ -382,6 +382,25 @@ func hasDeletionForName(changes diff2.ChangeList, name string) bool {
 	return false
 }
 
+// hasNSDeletion returns true if there exist a correction that deletes or changes an NS record
+func hasNSDeletion(changes diff2.ChangeList) bool {
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.CHANGE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				return true
+			}
+		case diff2.DELETE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				return true
+			}
+		case diff2.CREATE:
+		case diff2.REPORT:
+		}
+	}
+	return false
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
@@ -445,27 +464,28 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		buf := &bytes.Buffer{}
 		buf2 := &bytes.Buffer{}
 
-		hasNsUpdate := false
+		// See comment below about hasNSDeletion.
+		hasNSDeletion := false
 		for _, c := range create {
 			if c.Desired.Type == "NS" && c.Desired.Name == "@" {
-				hasNsUpdate = true
+				hasNSDeletion = true
 				continue
 			}
 		}
 		for _, c := range del {
 			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
-				hasNsUpdate = true
+				hasNSDeletion = true
 				continue
 			}
 		}
 		for _, c := range mod {
 			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
-				hasNsUpdate = true
+				hasNSDeletion = true
 				continue
 			}
 		}
 
-		if hasNsUpdate {
+		if hasNSDeletion {
 			update.Insert([]dns.RR{dummyNs1})
 		}
 
@@ -509,7 +529,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 			}
 		}
 
-		if hasNsUpdate {
+		if hasNSDeletion {
 			update.Remove([]dns.RR{dummyNs2})
 		}
 
@@ -540,28 +560,21 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		return nil, nil
 	}
 
-	hasNsUpdate := false
-	for _, change := range changes {
-		switch change.Type {
-		case diff2.CREATE:
-			if change.New[0].Type == "NS" && change.New[0].Name == "@" {
-				hasNsUpdate = true
-				continue
-			}
-		case diff2.CHANGE:
-			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
-				hasNsUpdate = true
-				continue
-			}
-		case diff2.DELETE:
-			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
-				hasNsUpdate = true
-				continue
-			}
-		}
-	}
+	// A DNS server should silently ignore a DDNS update that removes
+	// the last NS record of a zone. Since modifying a record is
+	// implemented by successively a deletion of the old record and an
+	// insertion of the new one, then modifying all the NS record of a
+	// zone might will fail (even if the the deletion and insertion
+	// are grouped in a single batched update).
+	//
+	// To avoid this case, we will first insert a dummy NS record,
+	// that will be removed at the end of the batched updates. This
+	// record needs to inserted only when all NS records are touched
+	// The current implementation insert this dummy record as soon as
+	// a NS record is deleted or changed.
+	hasNSDeletion := hasNSDeletion(changes)
 
-	if hasNsUpdate {
+	if hasNSDeletion {
 		update.Insert([]dns.RR{dummyNs1})
 	}
 
@@ -596,7 +609,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		}
 	}
 
-	if hasNsUpdate {
+	if hasNSDeletion {
 		update.Remove([]dns.RR{dummyNs2})
 	}
 
