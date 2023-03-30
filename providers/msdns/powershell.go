@@ -283,7 +283,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "[target]"`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, `echo CREATE "%s" "%s" %q`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
@@ -390,7 +390,7 @@ func (psh *psHandle) RecordModifyTTL(dnsserver, domain string, old *models.Recor
 
 func generatePSModifyTTL(dnsserver, domain string, rec *models.RecordConfig, newTTL uint32) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo MODIFY-TTL "%s" "%s" "%q" ttl=%d`, rec.Name, rec.Type, rec.GetTargetCombined(), newTTL)
+	fmt.Fprintf(&b, `echo MODIFY-TTL "%s" "%s" %q ttl=%d->%d`, rec.Name, rec.Type, rec.GetTargetCombined(), rec.TTL, newTTL)
 	fmt.Fprintf(&b, " ; ")
 
 	fmt.Fprint(&b, `Get-DnsServerResourceRecord`)
