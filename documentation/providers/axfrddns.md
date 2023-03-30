@@ -66,10 +66,12 @@ And update `creds.json` accordingly:
 ```json
 {
     "axfrddns-a": {
+        "TYPE": "AXFRDDNS",
         "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
         "update-key": "hmac-sha256:update-key-id:AnotherSecret="
     },
     "axfrddns-b": {
+        "TYPE": "AXFRDDNS",
         "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
         "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
     }
@@ -131,6 +133,16 @@ the following error message:
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
 ```
+
+### Buggy DNS servers regarding CNAME updates
+
+When modifying a CNAME record, or when replacing an A record by a
+CNAME one in a single batched DDNS update, some DNS servers
+(e.g. Knot) will incorrectly reject the update. For this particular
+case, you might set the option `buggy-cname = "yes"` in `creds.json`.
+The changes will then be splitted in two DDNS updates, applied
+successively by server. This will allow Knot to successfully apply the
+changes, but you will loose the atomic-update property.
 
 
 ## Server configuration examples
