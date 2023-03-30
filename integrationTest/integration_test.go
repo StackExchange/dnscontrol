@@ -201,7 +201,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		if (*providerToRun == "AXFRDDNS") {
+		if *providerToRun == "AXFRDDNS" {
 			// Bind will refuse a DDNS update when the resulting zone
 			// contains a NS record without an associated address
 			// records (A or AAAA)

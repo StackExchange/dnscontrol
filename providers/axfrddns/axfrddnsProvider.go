@@ -369,6 +369,19 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	}
 }
 
+// hasDeletionForName returns true if there exist a corrections for [name] which is a deletion
+func hasDeletionForName(changes diff2.ChangeList, name string) bool {
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.DELETE:
+			if change.Old[0].Name == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
@@ -407,7 +420,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	update2 := new(dns.Msg)
 	update2.SetUpdate(dc.Name + ".")
 	update2.Id = uint16(c.rand.Intn(math.MaxUint16))
-	twoCorrections := false
+	hasTwoCorrections := false
 
 	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
@@ -424,7 +437,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 		differ := diff.New(dc)
 		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-
 		if err != nil {
 			return nil, err
 		}
@@ -467,7 +479,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 			if c.serverHasBuggyCNAME && change.Desired.Type == "CNAME" {
 				fmt.Fprintln(buf, change.String()+color.RedString(" (delete)"))
 				update.Remove([]dns.RR{change.Existing.ToRR()})
-				twoCorrections = true
+				hasTwoCorrections = true
 				fmt.Fprintln(buf2, change.String()+color.GreenString(" (create)"))
 				update2.Insert([]dns.RR{change.Desired.ToRR()})
 			} else {
@@ -488,7 +500,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 				}
 			}
 			if splitted {
-				twoCorrections = true
+				hasTwoCorrections = true
 				fmt.Fprintln(buf2, change)
 				update2.Insert([]dns.RR{change.Desired.ToRR()})
 			} else {
@@ -505,28 +517,25 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 			return nil, nil
 		}
 
-		if twoCorrections {
+		if hasTwoCorrections {
 
 			return []*models.Correction{
 				c.BuildCorrection(dc, []string{buf.String()}, update),
 				c.BuildCorrection(dc, []string{buf2.String()}, update2),
 			}, nil
 
-		} else {
-
-			return []*models.Correction{
-				c.BuildCorrection(dc, []string{buf.String()}, update),
-			}, nil
 		}
+
+		return []*models.Correction{
+			c.BuildCorrection(dc, []string{buf.String()}, update),
+		}, nil
 
 	}
 
 	changes, err := diff2.ByRecord(foundRecords, dc, nil)
-
 	if err != nil {
 		return nil, err
 	}
-
 	if changes == nil {
 		return nil, nil
 	}
@@ -559,27 +568,13 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	for _, change := range changes {
 		switch change.Type {
 		case diff2.DELETE:
-			msgs = append(msgs, change.Msgs...)
+			msgs = append(msgs, change.Msgs[0])
 			update.Remove([]dns.RR{change.Old[0].ToRR()})
-		}
-	}
-	for _, change := range changes {
-		switch change.Type {
 		case diff2.CREATE:
-			splitted := false
-			if c.serverHasBuggyCNAME && change.New[0].Type == "CNAME" {
-				for _, change2 := range changes {
-					switch change2.Type {
-					case diff2.DELETE:
-						if change2.Old[0].Name == change.New[0].Name {
-							splitted = true
-							break
-						}
-					}
-				}
-			}
-			if splitted {
-				twoCorrections = true
+			if c.serverHasBuggyCNAME &&
+				change.New[0].Type == "CNAME" &&
+				hasDeletionForName(changes, change.New[0].Name) {
+				hasTwoCorrections = true
 				msgs2 = append(msgs2, change.Msgs[0])
 				update2.Insert([]dns.RR{change.New[0].ToRR()})
 			} else {
@@ -590,7 +585,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 			if c.serverHasBuggyCNAME && change.New[0].Type == "CNAME" {
 				msgs = append(msgs, change.Msgs[0]+color.RedString(" (delete)"))
 				update.Remove([]dns.RR{change.Old[0].ToRR()})
-				twoCorrections = true
+				hasTwoCorrections = true
 				msgs2 = append(msgs2, change.Msgs[0]+color.GreenString(" (create)"))
 				update2.Insert([]dns.RR{change.New[0].ToRR()})
 			} else {
@@ -605,15 +600,14 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		update.Remove([]dns.RR{dummyNs2})
 	}
 
-	if twoCorrections {
+	if hasTwoCorrections {
 		return []*models.Correction{
 			c.BuildCorrection(dc, msgs, update),
 			c.BuildCorrection(dc, msgs2, update2),
 		}, nil
-	} else {
-		return []*models.Correction{
-			c.BuildCorrection(dc, msgs, update),
-		}, nil
 	}
+	return []*models.Correction{
+		c.BuildCorrection(dc, msgs, update),
+	}, nil
 
 }
