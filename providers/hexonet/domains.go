@@ -1,7 +1,5 @@
 package hexonet
 
-import "fmt"
-
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
@@ -41,28 +39,10 @@ func (n *HXClient) ListZones() ([]string, error) {
 			return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", &r)
 		}
 		zoneColumn := r.GetColumn("DNSZONE")
-		if zoneColumn == nil {
-			return nil, fmt.Errorf("failed getting DNSZONE BASIC column")
+		if zoneColumn != nil {
+			//return nil, fmt.Errorf("failed getting DNSZONE BASIC column")
+			zones = append(zones, zoneColumn.GetData()...)
 		}
-		zones = append(zones, zoneColumn.GetData()...)
-	}
-
-	// Premium
-
-	rs = n.client.RequestAllResponsePages(map[string]string{
-		"COMMAND":         "QueryDNSZoneList",
-		"PROPERTIES":      "PREMIUMDNS",
-		"PREMIUMDNSCLASS": "*",
-	})
-	for _, r := range rs {
-		if r.IsError() {
-			return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", &r)
-		}
-		zoneColumn := r.GetColumn("DNSZONE")
-		if zoneColumn == nil {
-			return nil, fmt.Errorf("failed getting DNSZONE PREMIUM column")
-		}
-		zones = append(zones, zoneColumn.GetData()...)
 	}
 
 	return zones, nil
