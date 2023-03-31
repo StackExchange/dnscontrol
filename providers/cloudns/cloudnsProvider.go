@@ -160,7 +160,11 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		}
 	}
 
-	var createCorrections []*models.Correction
+	var (
+		createCorrections         []*models.Correction
+		createARecordCorrections  []*models.Correction
+		createNSRecordCorrections []*models.Correction
+	)
 	for _, m := range create {
 		req, err := toReq(m.Desired)
 		if err != nil {
@@ -179,15 +183,20 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				return c.createRecord(domainID, req)
 			},
 		}
-		// at ClouDNS, we MUST have a NS for a DS
-		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
-		if m.Desired.Type == "NS" {
-			// type NS is prepended - so executed first
-			createCorrections = append([]*models.Correction{corr}, createCorrections...)
-		} else {
+		// A & AAAA need to be created before NS #2244
+		// NS need to be created before DS #1018
+		// or else errors will be thrown
+		switch m.Desired.Type {
+		case "A", "AAAA":
+			createARecordCorrections = append(createARecordCorrections, corr)
+		case "NS":
+			createNSRecordCorrections = append(createNSRecordCorrections, corr)
+		default:
 			createCorrections = append(createCorrections, corr)
 		}
 	}
+	corrections = append(corrections, createARecordCorrections...)
+	corrections = append(corrections, createNSRecordCorrections...)
 	corrections = append(corrections, createCorrections...)
 
 	for _, m := range modify {
