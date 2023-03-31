@@ -140,9 +140,9 @@ When modifying a CNAME record, or when replacing an A record by a
 CNAME one in a single batched DDNS update, some DNS servers
 (e.g. Knot) will incorrectly reject the update. For this particular
 case, you might set the option `buggy-cname = "yes"` in `creds.json`.
-The changes will then be splitted in two DDNS updates, applied
-successively by server. This will allow Knot to successfully apply the
-changes, but you will loose the atomic-update property.
+The changes will then be split in two DDNS updates, applied
+successively by the server. This will allow Knot to successfully apply
+the changes, but you will loose the atomic-update property.
 
 
 ## Server configuration examples
