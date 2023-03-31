@@ -265,9 +265,15 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 		m := color.YellowString("± MODIFY %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[i], desired[i]))
 
-		instructions = append(instructions,
-			mkChange(dr.NameFQDN, dr.Type, []string{m}, models.Records{er}, models.Records{dr}),
-		)
+		mkc := mkChange(dr.NameFQDN, dr.Type, []string{m}, models.Records{er}, models.Records{dr})
+		if len(existing) == 1 && len(desired) == 1 {
+			// If the tdata has exactly 1 item, drop a hint to the providers.
+			// For example, MSDNS can use a more efficient command if it knows
+			// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
+			// return exactly one record.
+			mkc.HintRecordSetLen1 = true
+		}
+		instructions = append(instructions, mkc)
 	}
 
 	// any left-over existing are deletes

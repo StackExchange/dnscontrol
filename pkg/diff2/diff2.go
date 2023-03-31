@@ -43,6 +43,13 @@ type Change struct {
 	// HintOnlyTTL is true only if (.Type == diff2.CHANGE) && (there is
 	// exactly 1 record being updated) && (the only change is the TTL)
 	HintOnlyTTL bool
+
+	// HintRecordSetLen1 is true only if (.Type == diff2.CHANGE) &&
+	// (there is exactly 1 record at this RecordSet).
+	// For example, MSDNS can use a more efficient command if it knows
+	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
+	// return exactly one record.
+	HintRecordSetLen1 bool
 }
 
 /*

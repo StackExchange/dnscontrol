@@ -59,10 +59,20 @@ func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		case diff2.CHANGE:
 			oldrec := change.Old[0]
 			newrec := change.New[0]
+			var f func(dnsserver string, zonename string, oldrec *models.RecordConfig, newrec *models.RecordConfig) error
+			if change.HintOnlyTTL && change.HintRecordSetLen1 {
+				// If we're only changing the TTL, and there is exactly one
+				// record of type oldrec.Type at this label, then we can do the
+				// TTL change in one command instead of deleting and re-creating
+				// the record.
+				f = client.modifyRecordTTL
+			} else {
+				f = client.modifyOneRecord
+			}
 			corr = &models.Correction{
 				Msg: msgsJoined,
 				F: func() error {
-					return client.modifyOneRecord(client.dnsserver, dc.Name, oldrec, newrec)
+					return f(client.dnsserver, dc.Name, oldrec, newrec)
 				},
 			}
 		case diff2.DELETE:
@@ -93,6 +103,10 @@ func (client *msdnsProvider) createOneRecord(dnsserver, zonename string, newrec 
 
 func (client *msdnsProvider) modifyOneRecord(dnsserver, zonename string, oldrec, newrec *models.RecordConfig) error {
 	return client.shell.RecordModify(dnsserver, zonename, oldrec, newrec)
+}
+
+func (client *msdnsProvider) modifyRecordTTL(dnsserver, zonename string, oldrec, newrec *models.RecordConfig) error {
+	return client.shell.RecordModifyTTL(dnsserver, zonename, oldrec, newrec.TTL)
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
