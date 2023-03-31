@@ -201,6 +201,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
+		if *providerToRun == "AXFRDDNS" {
+			// Bind will refuse a DDNS update when the resulting zone
+			// contains a NS record without an associated address
+			// records (A or AAAA)
+			dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
+		}
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
 		models.PostProcessRecords(dom.Records)
