@@ -224,7 +224,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
 
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "[target]"`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, `echo DELETE "%s" "%s" %q`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
@@ -283,7 +283,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "[target]"`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, `echo CREATE "%s" "%s" %q`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
@@ -370,6 +370,47 @@ func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) s
 	// NB: SOA records can't be deleted. When we implement them, we'll
 	// need to special case them and generate an in-place modification
 	// command.
+}
+
+func (psh *psHandle) RecordModifyTTL(dnsserver, domain string, old *models.RecordConfig, newTTL uint32) error {
+	c := generatePSModifyTTL(dnsserver, domain, old, newTTL)
+	//eLog(c)
+	_, stderr, err := psh.shell.Execute(c)
+	if err != nil {
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
+		return err
+	}
+	if stderr != "" {
+		printer.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
+		return fmt.Errorf("unexpected stderr from PSModify: %q", stderr)
+	}
+	return nil
+}
+
+func generatePSModifyTTL(dnsserver, domain string, rec *models.RecordConfig, newTTL uint32) string {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, `echo MODIFY-TTL "%s" "%s" %q ttl=%d->%d`, rec.Name, rec.Type, rec.GetTargetCombined(), rec.TTL, newTTL)
+	fmt.Fprintf(&b, " ; ")
+
+	fmt.Fprint(&b, `Get-DnsServerResourceRecord`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+	}
+	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+	fmt.Fprintf(&b, ` -Name "%s"`, rec.GetLabel())
+	fmt.Fprintf(&b, ` -RRType %s`, rec.Type)
+	fmt.Fprint(&b, ` | ForEach-Object { $NewRecord = $_.Clone() ;`)
+	fmt.Fprintf(&b, `$NewRecord.TimeToLive = New-TimeSpan -Seconds %d`, newTTL)
+	fmt.Fprintf(&b, " ; ")
+	fmt.Fprintf(&b, `Set-DnsServerResourceRecord`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+	}
+	fmt.Fprint(&b, ` -NewInputObject $NewRecord -OldInputObject $_`)
+	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+
+	return b.String()
 }
 
 // Note about the old generatePSModify:

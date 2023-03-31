@@ -2,7 +2,6 @@ package hexonet
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
@@ -61,7 +59,10 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 
 // GetDomainCorrections gathers correctios that would bring n to match dc.
 func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
 
 	actual, err := n.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -150,7 +151,9 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		rc.SetTargetTXTs(decodeTxt(r.Answer))
+		if err := rc.SetTargetTXTs(decodeTxt(r.Answer)); err != nil {
+			panic(fmt.Errorf("unparsable TXT record received from hexonet api: %w", err))
+		}
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(fmt.Errorf("unparsable MX record received from hexonet api: %w", err))
@@ -167,14 +170,14 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 	return rc
 }
 
-func (n *HXClient) showCommand(cmd map[string]string) error {
-	b, err := json.MarshalIndent(cmd, "", "  ")
-	if err != nil {
-		return fmt.Errorf("error: %w", err)
-	}
-	printer.Printf(string(b))
-	return nil
-}
+// func (n *HXClient) showCommand(cmd map[string]string) error {
+// 	b, err := json.MarshalIndent(cmd, "", "  ")
+// 	if err != nil {
+// 		return fmt.Errorf("error: %w", err)
+// 	}
+// 	printer.Printf(string(b))
+// 	return nil
+// }
 
 func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {
 	zone := domain + "."
