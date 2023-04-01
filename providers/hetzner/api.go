@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -32,33 +31,8 @@ func checkIsLockedSystemRecord(record record) error {
 	return nil
 }
 
-func getHomogenousDelay(headers http.Header, quotaName string) (time.Duration, error) {
-
-	var unit time.Duration
-	var unitHeader string
-	switch quotaName {
-	case "hour":
-		unit = time.Hour
-		unitHeader = "Hour"
-	case "minute":
-		unit = time.Minute
-		unitHeader = "Minute"
-	case "second":
-		unit = time.Second
-		unitHeader = "Second"
-	}
-
-	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+unitHeader)
-	if err != nil {
-		return 0, err
-	}
-
-	delay := time.Duration(int64(unit) / quota)
-	return delay, nil
-}
-
-func getRetryAfterDelay(header http.Header) (time.Duration, error) {
-	retryAfter, err := parseHeaderAsInt(header, "Retry-After")
+func parseHeaderAsSeconds(header http.Header, headerName string, fallback time.Duration) (time.Duration, error) {
+	retryAfter, err := parseHeaderAsInt(header, headerName, int64(fallback/time.Second))
 	if err != nil {
 		return 0, err
 	}
@@ -66,12 +40,15 @@ func getRetryAfterDelay(header http.Header) (time.Duration, error) {
 	return delay, nil
 }
 
-func parseHeaderAsInt(headers http.Header, headerName string) (int64, error) {
-	value, ok := headers[headerName]
-	if !ok {
-		return 0, fmt.Errorf("header %q is missing", headerName)
+func parseHeaderAsInt(headers http.Header, headerName string, fallback int64) (int64, error) {
+	v := headers.Get(headerName)
+	if v == "" {
+		return fallback, nil
 	}
-	return strconv.ParseInt(value[0], 10, 0)
+	if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+		return i, nil
+	}
+	return 0, fmt.Errorf("expected header %q to contain number, got %q", headerName, v)
 }
 
 func (api *hetznerProvider) bulkCreateRecords(records []record) error {
@@ -233,9 +210,8 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		}
 		req.Header.Add("Auth-API-Token", api.apiKey)
 
-		api.requestRateLimiter.beforeRequest()
+		api.requestRateLimiter.delayRequest()
 		resp, err := http.DefaultClient.Do(req)
-		api.requestRateLimiter.afterRequest()
 		if err != nil {
 			return err
 		}
@@ -246,17 +222,19 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 			}
 		}
 
-		api.requestRateLimiter.handleResponse(*resp)
-		// retry the request when rate-limited
-		if resp.StatusCode == 429 {
-			api.requestRateLimiter.handleRateLimitedRequest()
+		retry, err := api.requestRateLimiter.handleResponse(resp)
+		if err != nil {
+			cleanupResponseBody()
+			return err
+		}
+		if retry {
 			cleanupResponseBody()
 			continue
 		}
 
 		if !statusOK(resp.StatusCode) {
 			data, _ := io.ReadAll(resp.Body)
-			printer.Printf(string(data))
+			printer.Println(string(data))
 			cleanupResponseBody()
 			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}
@@ -270,15 +248,6 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 	}
 }
 
-func (api *hetznerProvider) startRateLimited() {
-	// _Now_ is the best reference we can get for the last request.
-	// Head-On-Head invocations of DNSControl benefit from fewer initial
-	//  rate-limited requests.
-	api.requestRateLimiter.lastRequest = time.Now()
-	// use the default delay until we have had a chance to parse limits.
-	api.requestRateLimiter.setDefaultDelay()
-}
-
 func (api *hetznerProvider) updateRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
@@ -289,66 +258,53 @@ func (api *hetznerProvider) updateRecord(record record) error {
 }
 
 type requestRateLimiter struct {
-	delay                     time.Duration
-	lastRequest               time.Time
-	optimizeForRateLimitQuota string
+	delay       time.Duration
+	lastRequest time.Time
 }
 
-func (requestRateLimiter *requestRateLimiter) afterRequest() {
-	requestRateLimiter.lastRequest = time.Now()
+func (rrl *requestRateLimiter) delayRequest() {
+	time.Sleep(time.Until(rrl.lastRequest.Add(rrl.delay)))
+
+	// When not rate-limited, include network/server latency in delay.
+	rrl.lastRequest = time.Now()
 }
 
-func (requestRateLimiter *requestRateLimiter) beforeRequest() {
-	if requestRateLimiter.delay == 0 {
-		return
-	}
-	time.Sleep(time.Until(requestRateLimiter.lastRequest.Add(requestRateLimiter.delay)))
-}
+func (rrl *requestRateLimiter) handleResponse(resp *http.Response) (bool, error) {
+	if resp.StatusCode == http.StatusTooManyRequests {
+		printer.Printf("Rate-Limited. Consider contacting the Hetzner Support for raising your quota. URL: %q, Headers: %q\n", resp.Request.URL, resp.Header)
 
-func (requestRateLimiter *requestRateLimiter) setDefaultDelay() {
-	// default to a rate-limit of 1 req/s -- the next response should update it.
-	requestRateLimiter.delay = time.Second
-}
-
-func (requestRateLimiter *requestRateLimiter) setOptimizeForRateLimitQuota(quota string) error {
-	quotaNormalized := strings.ToLower(quota)
-	switch quotaNormalized {
-	case "hour", "minute", "second":
-		requestRateLimiter.optimizeForRateLimitQuota = quotaNormalized
-	case "":
-		requestRateLimiter.optimizeForRateLimitQuota = "second"
-	default:
-		return fmt.Errorf("%q is not a valid quota, expected 'Hour', 'Minute', 'Second' or unset", quota)
-	}
-	return nil
-}
-
-func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
-	message := "Rate-Limited, consider bumping the setting 'optimize_for_rate_limit_quota': %q -> %q"
-	switch requestRateLimiter.optimizeForRateLimitQuota {
-	case "hour":
-		message = "Rate-Limited, you are already using the slowest request rate. Consider contacting the Hetzner Support for raising your quota."
-	case "minute":
-		message = fmt.Sprintf(message, "Minute", "Hour")
-	case "second":
-		message = fmt.Sprintf(message, "Second", "Minute")
-	}
-	printer.Printf(message)
-}
-
-func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response) {
-	homogenousDelay, err := getHomogenousDelay(resp.Header, requestRateLimiter.optimizeForRateLimitQuota)
-	if err != nil {
-		requestRateLimiter.setDefaultDelay()
-		return
-	}
-
-	delay := homogenousDelay
-	if resp.StatusCode == 429 {
-		retryAfterDelay, err := getRetryAfterDelay(resp.Header)
-		if err == nil {
-			delay = retryAfterDelay
+		retryAfter, err := parseHeaderAsSeconds(resp.Header, "Retry-After", time.Second)
+		if err != nil {
+			return false, err
 		}
+		rrl.delay = retryAfter
+
+		// When rate-limited, exclude network/server latency from delay.
+		rrl.lastRequest = time.Now()
+		return true, nil
+	} else {
+		limit, err := parseHeaderAsInt(resp.Header, "Ratelimit-Limit", 1)
+		if err != nil {
+			return false, err
+		}
+		remaining, err := parseHeaderAsInt(resp.Header, "Ratelimit-Remaining", 1)
+		if err != nil {
+			return false, err
+		}
+		reset, err := parseHeaderAsSeconds(resp.Header, "Ratelimit-Reset", 0)
+		if err != nil {
+			return false, err
+		}
+		if remaining == 0 {
+			// Quota exhausted. Wait until quota resets.
+			rrl.delay = reset
+		} else if remaining > limit/2 {
+			// Burst through half of the quota, ...
+			rrl.delay = 0
+		} else {
+			// ... then spread requests evenly throughout the window.
+			rrl.delay = reset / time.Duration(remaining+1)
+		}
+		return false, nil
 	}
-	requestRateLimiter.delay = delay
 }

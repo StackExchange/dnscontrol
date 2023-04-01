@@ -37,29 +37,14 @@ func init() {
 
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	if settings["api_key"] == "" {
+	apiKey := settings["api_key"]
+	if apiKey == "" {
 		return nil, fmt.Errorf("missing HETZNER api_key")
 	}
 
-	api := &hetznerProvider{}
-
-	api.apiKey = settings["api_key"]
-
-	if settings["rate_limited"] == "true" {
-		// backwards compatibility
-		settings["start_with_default_rate_limit"] = "true"
-	}
-	if settings["start_with_default_rate_limit"] == "true" {
-		api.startRateLimited()
-	}
-
-	quota := settings["optimize_for_rate_limit_quota"]
-	err := api.requestRateLimiter.setOptimizeForRateLimitQuota(quota)
-	if err != nil {
-		return nil, fmt.Errorf("unexpected value for optimize_for_rate_limit_quota: %w", err)
-	}
-
-	return api, nil
+	return &hetznerProvider{
+		apiKey: apiKey,
+	}, nil
 }
 
 // EnsureZoneExists creates a zone if it does not exist
