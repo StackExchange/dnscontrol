@@ -85,8 +85,8 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 	return record
 }
 
-func toRecordConfig(domain string, record *record) *models.RecordConfig {
-	rc := &models.RecordConfig{
+func toRecordConfig(domain string, record *record) (*models.RecordConfig, error) {
+	rc := models.RecordConfig{
 		Type:     record.Type,
 		TTL:      *record.TTL,
 		Original: record,
@@ -100,8 +100,5 @@ func toRecordConfig(domain string, record *record) *models.RecordConfig {
 		// Per RFC 1035 spaces outside quoted values are irrelevant.
 		value = strings.TrimRight(value, " ")
 	}
-
-	_ = rc.PopulateFromString(record.Type, value, domain)
-
-	return rc
+	return &rc, rc.PopulateFromString(record.Type, value, domain)
 }
