@@ -254,17 +254,19 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 			continue
 		}
 
-		defer cleanupResponseBody()
 		if !statusOK(resp.StatusCode) {
 			data, _ := io.ReadAll(resp.Body)
 			printer.Printf(string(data))
+			cleanupResponseBody()
 			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}
 		if target == nil {
+			cleanupResponseBody()
 			return nil
 		}
-		decoder := json.NewDecoder(resp.Body)
-		return decoder.Decode(target)
+		err = json.NewDecoder(resp.Body).Decode(target)
+		cleanupResponseBody()
+		return err
 	}
 }
 
