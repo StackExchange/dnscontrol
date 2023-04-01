@@ -16,7 +16,7 @@ type bulkUpdateRecordsRequest struct {
 
 type createRecordRequest struct {
 	Name   string `json:"name"`
-	TTL    int    `json:"ttl"`
+	TTL    uint32 `json:"ttl"`
 	Type   string `json:"type"`
 	Value  string `json:"value"`
 	ZoneID string `json:"zone_id"`
@@ -45,28 +45,27 @@ type getAllZonesResponse struct {
 }
 
 type record struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	TTL    *int   `json:"ttl"`
-	Type   string `json:"type"`
-	Value  string `json:"value"`
-	ZoneID string `json:"zone_id"`
+	ID     string  `json:"id"`
+	Name   string  `json:"name"`
+	TTL    *uint32 `json:"ttl"`
+	Type   string  `json:"type"`
+	Value  string  `json:"value"`
+	ZoneID string  `json:"zone_id"`
 }
 
 type zone struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	NameServers []string `json:"ns"`
-	TTL         int      `json:"ttl"`
+	TTL         uint32   `json:"ttl"`
 }
 
 func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
-	ttl := int(in.TTL)
 	record := &record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
 		Value:  in.GetTargetCombined(),
-		TTL:    &ttl,
+		TTL:    &in.TTL,
 		ZoneID: zone.ID,
 	}
 
@@ -89,7 +88,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 func toRecordConfig(domain string, record *record) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
-		TTL:      uint32(*record.TTL),
+		TTL:      *record.TTL,
 		Original: record,
 	}
 	rc.SetLabel(record.Name, domain)
