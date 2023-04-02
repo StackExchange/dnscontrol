@@ -286,11 +286,18 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		for _, tst := range group.tests {
 
-			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
-
-			if t.Failed() {
+			// TODO(tlim): This is the old version. It skipped the remaining tc() statements if one failed.
+			// The new code continues to test the remaining tc() statements.  Keeping this as a comment
+			// in case we ever want to do something similar.
+			// https://github.com/StackExchange/dnscontrol/pull/2252#issuecomment-1492204409
+			//      makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
+			//      if t.Failed() {
+			//        break
+			//      }
+			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig); !ok {
 				break
 			}
+
 		}
 
 		// Remove all records so next group starts with a clean slate.
