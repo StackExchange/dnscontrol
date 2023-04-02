@@ -11,8 +11,8 @@ github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2 h1:uqM+VoHjVH6zdlkLF2b6O
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2/go.mod h1:twTKAa1E6hLmSDjLhaCkbTMQKc7p/rNLU40rLxGEOCI=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.2.0 h1:leh5DwKv6Ihwi+h60uHtn6UWAxBbZ0q8DwQVMzf61zw=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.2.0/go.mod h1:eWRD7oawr1Mu1sLCawqVc0CUiF43ia3qQMxLscsKQ9w=
-github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.0.0 h1:yxl7xvG5sSVlR74BqjIg+dnoE82jeolZF62X1gMT2VY=
-github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.0.0/go.mod h1:eADizCOKKdr+Q+7TFPNaPh+MIjbfJ42F0snpJZwRAtU=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.1.0 h1:8iR6OLffWWorFdzL2JFCab5xpD8VKEE2DUBBl+HNTDY=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.1.0/go.mod h1:copqlcjMWc/wgQ1N2fzsJFQxDdqKGg1EQt8T5wJMOGE=
 github.com/Azure/go-autorest v14.2.0+incompatible h1:V5VMDjClD3GiElqLWO7mz2MxNAK/vTfRHdAubSIPRgs=
 github.com/Azure/go-autorest v14.2.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
 github.com/Azure/go-autorest/autorest/to v0.4.0 h1:oXVqrxakqqV1UZdSazDOPOLvOIz+XA683u8EctwboHk=
