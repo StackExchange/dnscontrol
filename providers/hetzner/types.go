@@ -22,7 +22,8 @@ type getAllRecordsResponse struct {
 	Records []record `json:"records"`
 	Meta    struct {
 		Pagination struct {
-			LastPage int `json:"last_page"`
+			LastPage     int `json:"last_page"`
+			TotalEntries int `json:"total_entries"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
@@ -31,7 +32,8 @@ type getAllZonesResponse struct {
 	Zones []zone `json:"zones"`
 	Meta  struct {
 		Pagination struct {
-			LastPage int `json:"last_page"`
+			LastPage     int `json:"last_page"`
+			TotalEntries int `json:"total_entries"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
@@ -52,8 +54,8 @@ type zone struct {
 	TTL         uint32   `json:"ttl"`
 }
 
-func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
-	record := &record{
+func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
+	r := record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
 		Value:  in.GetTargetCombined(),
@@ -61,7 +63,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 		ZoneID: zone.ID,
 	}
 
-	if record.Type == "TXT" && len(in.TxtStrings) == 1 {
+	if r.Type == "TXT" && len(in.TxtStrings) == 1 {
 		// HACK: HETZNER rejects values that fit into 255 bytes w/o quotes,
 		//  but do not fit w/ added quotes (via GetTargetCombined()).
 		// Sending the raw, non-quoted value works for the comprehensive
@@ -71,28 +73,28 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 		// Last checked: 2023-04-01
 		valueNotQuoted := in.TxtStrings[0]
 		if len(valueNotQuoted) == 254 || len(valueNotQuoted) == 255 {
-			record.Value = valueNotQuoted
+			r.Value = valueNotQuoted
 		}
 	}
 
-	return record
+	return r
 }
 
-func toRecordConfig(domain string, record *record) (*models.RecordConfig, error) {
+func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	rc := models.RecordConfig{
-		Type:     record.Type,
-		TTL:      *record.TTL,
-		Original: record,
+		Type:     r.Type,
+		TTL:      *r.TTL,
+		Original: r,
 	}
-	rc.SetLabel(record.Name, domain)
+	rc.SetLabel(r.Name, domain)
 
-	value := record.Value
+	value := r.Value
 	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
 	// NOTE: The actual DNS answer does not contain the space.
 	// Last checked: 2023-04-01
-	if record.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
+	if r.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
 		// Per RFC 1035 spaces outside quoted values are irrelevant.
 		value = strings.TrimRight(value, " ")
 	}
-	return &rc, rc.PopulateFromString(record.Type, value, domain)
+	return &rc, rc.PopulateFromString(r.Type, value, domain)
 }

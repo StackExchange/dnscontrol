@@ -63,33 +63,36 @@ func (api *hetznerProvider) createZone(name string) error {
 	return api.request("/zones", "POST", request, nil, nil)
 }
 
-func (api *hetznerProvider) deleteRecord(record record) error {
+func (api *hetznerProvider) deleteRecord(record *record) error {
 	url := fmt.Sprintf("/records/%s", record.ID)
 	return api.request(url, "DELETE", nil, nil, nil)
 }
 
 func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
-	zone, err := api.getZone(domain)
+	z, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
 	page := 1
-	records := make([]record, 0)
+	var records []record
 	for {
-		response := &getAllRecordsResponse{}
-		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.ID, page)
-		if err := api.request(url, "GET", nil, response, nil); err != nil {
+		response := getAllRecordsResponse{}
+		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", z.ID, page)
+		if err = api.request(url, "GET", nil, &response, nil); err != nil {
 			return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
 		}
-		for _, record := range response.Records {
-			if record.TTL == nil {
-				record.TTL = &zone.TTL
+		if records == nil {
+			records = make([]record, 0, response.Meta.Pagination.TotalEntries)
+		}
+		for _, r := range response.Records {
+			if r.TTL == nil {
+				r.TTL = &z.TTL
 			}
-			if record.Type == "SOA" {
+			if r.Type == "SOA" {
 				// SOA records are not available for editing, hide them.
 				continue
 			}
-			records = append(records, record)
+			records = append(records, r)
 		}
 		// meta.pagination may not be present. In that case LastPage is 0 and below the current page number.
 		if page >= response.Meta.Pagination.LastPage {
@@ -104,7 +107,7 @@ func (api *hetznerProvider) getAllZones() error {
 	if api.zones != nil {
 		return nil
 	}
-	zones := map[string]zone{}
+	var zones map[string]zone
 	page := 1
 	statusOK := func(code int) bool {
 		switch code {
@@ -118,13 +121,16 @@ func (api *hetznerProvider) getAllZones() error {
 		}
 	}
 	for {
-		response := &getAllZonesResponse{}
+		response := getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
-		if err := api.request(url, "GET", nil, response, statusOK); err != nil {
+		if err := api.request(url, "GET", nil, &response, statusOK); err != nil {
 			return fmt.Errorf("failed fetching zones: %w", err)
 		}
-		for _, zone := range response.Zones {
-			zones[zone.Name] = zone
+		if zones == nil {
+			zones = make(map[string]zone, response.Meta.Pagination.TotalEntries)
+		}
+		for _, z := range response.Zones {
+			zones[z.Name] = z
 		}
 		// meta.pagination may not be present. In that case LastPage is 0 and below the current page number.
 		if page >= response.Meta.Pagination.LastPage {
@@ -140,11 +146,11 @@ func (api *hetznerProvider) getZone(name string) (*zone, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}
-	zone, ok := api.zones[name]
+	z, ok := api.zones[name]
 	if !ok {
 		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
 	}
-	return &zone, nil
+	return &z, nil
 }
 
 func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}, statusOK func(code int) bool) error {
@@ -174,9 +180,9 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 			return err
 		}
 		cleanupResponseBody := func() {
-			err := resp.Body.Close()
-			if err != nil {
-				printer.Printf("failed closing response body: %q\n", err)
+			err2 := resp.Body.Close()
+			if err2 != nil {
+				printer.Printf("failed closing response body: %q\n", err2)
 			}
 		}
 

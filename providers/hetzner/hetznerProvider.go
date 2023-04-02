@@ -105,28 +105,29 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return nil, err
 	}
 
-	zone, err := api.getZone(domain)
+	z, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
 
+	corrections = make([]*models.Correction, 0, len(del)+1+1)
 	for _, m := range del {
-		record := m.Existing.Original.(*record)
+		r := m.Existing.Original.(*record)
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				return api.deleteRecord(*record)
+				return api.deleteRecord(r)
 			},
 		}
 		corrections = append(corrections, corr)
 	}
 
-	var createRecords []record
-	createDescription := []string{"Batch creation of records:"}
-	for _, m := range create {
-		record := fromRecordConfig(m.Desired, zone)
-		createRecords = append(createRecords, *record)
-		createDescription = append(createDescription, m.String())
+	createRecords := make([]record, len(create))
+	createDescription := make([]string, len(create)+1)
+	createDescription[0] = "Batch creation of records:"
+	for i, m := range create {
+		createRecords[i] = fromRecordConfig(m.Desired, z)
+		createDescription[i+1] = m.String()
 	}
 	if len(createRecords) > 0 {
 		corr := &models.Correction{
@@ -138,14 +139,14 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		corrections = append(corrections, corr)
 	}
 
-	var modifyRecords []record
-	modifyDescription := []string{"Batch modification of records:"}
-	for _, m := range modify {
-		id := m.Existing.Original.(*record).ID
-		record := fromRecordConfig(m.Desired, zone)
-		record.ID = id
-		modifyRecords = append(modifyRecords, *record)
-		modifyDescription = append(modifyDescription, m.String())
+	modifyRecords := make([]record, len(modify))
+	modifyDescription := make([]string, len(modify)+1)
+	modifyDescription[0] = "Batch modification of records:"
+	for i, m := range modify {
+		r := fromRecordConfig(m.Desired, z)
+		r.ID = m.Existing.Original.(*record).ID
+		modifyRecords[i] = r
+		modifyDescription[i+1] = m.String()
 	}
 	if len(modifyRecords) > 0 {
 		corr := &models.Correction{
@@ -162,13 +163,13 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 // GetNameservers returns the nameservers for a domain.
 func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	zone, err := api.getZone(domain)
+	z, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
-	nameserver := make([]*models.Nameserver, len(zone.NameServers))
-	for i := range zone.NameServers {
-		nameserver[i] = &models.Nameserver{Name: zone.NameServers[i]}
+	nameserver := make([]*models.Nameserver, len(z.NameServers))
+	for i, s := range z.NameServers {
+		nameserver[i] = &models.Nameserver{Name: s}
 	}
 	return nameserver, nil
 }
@@ -194,9 +195,9 @@ func (api *hetznerProvider) ListZones() ([]string, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}
-	var zones []string
-	for i := range api.zones {
-		zones = append(zones, i)
+	zones := make([]string, 0, len(api.zones))
+	for domain := range api.zones {
+		zones = append(zones, domain)
 	}
 	return zones, nil
 }
