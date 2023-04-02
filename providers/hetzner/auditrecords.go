@@ -11,7 +11,7 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified xxxx-xx-xx
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2023-04-01
 
 	return a.Audit(records)
 }

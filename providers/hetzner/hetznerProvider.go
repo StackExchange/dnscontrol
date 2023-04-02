@@ -13,12 +13,16 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Cannot(),
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Can(),

@@ -22,15 +22,6 @@ type hetznerProvider struct {
 	requestRateLimiter requestRateLimiter
 }
 
-func checkIsLockedSystemRecord(record record) error {
-	if record.Type == "SOA" {
-		// The upload of a BIND zone file can change the SOA record.
-		// Implementing this edge case this is too complex for now.
-		return fmt.Errorf("SOA records are locked in HETZNER zones. They are hence not available for updating")
-	}
-	return nil
-}
-
 func parseHeaderAsSeconds(header http.Header, headerName string, fallback time.Duration) (time.Duration, error) {
 	retryAfter, err := parseHeaderAsInt(header, headerName, int64(fallback/time.Second))
 	if err != nil {
@@ -52,12 +43,6 @@ func parseHeaderAsInt(headers http.Header, headerName string, fallback int64) (i
 }
 
 func (api *hetznerProvider) bulkCreateRecords(records []record) error {
-	for _, record := range records {
-		if err := checkIsLockedSystemRecord(record); err != nil {
-			return err
-		}
-	}
-
 	request := bulkCreateRecordsRequest{
 		Records: records,
 	}
@@ -65,31 +50,10 @@ func (api *hetznerProvider) bulkCreateRecords(records []record) error {
 }
 
 func (api *hetznerProvider) bulkUpdateRecords(records []record) error {
-	for _, record := range records {
-		if err := checkIsLockedSystemRecord(record); err != nil {
-			return err
-		}
-	}
-
 	request := bulkUpdateRecordsRequest{
 		Records: records,
 	}
 	return api.request("/records/bulk", "PUT", request, nil, nil)
-}
-
-func (api *hetznerProvider) createRecord(record record) error {
-	if err := checkIsLockedSystemRecord(record); err != nil {
-		return err
-	}
-
-	request := createRecordRequest{
-		Name:   record.Name,
-		TTL:    *record.TTL,
-		Type:   record.Type,
-		Value:  record.Value,
-		ZoneID: record.ZoneID,
-	}
-	return api.request("/records", "POST", request, nil, nil)
 }
 
 func (api *hetznerProvider) createZone(name string) error {
@@ -100,10 +64,6 @@ func (api *hetznerProvider) createZone(name string) error {
 }
 
 func (api *hetznerProvider) deleteRecord(record record) error {
-	if err := checkIsLockedSystemRecord(record); err != nil {
-		return err
-	}
-
 	url := fmt.Sprintf("/records/%s", record.ID)
 	return api.request(url, "DELETE", nil, nil, nil)
 }
@@ -125,12 +85,10 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 			if record.TTL == nil {
 				record.TTL = &zone.TTL
 			}
-
-			if checkIsLockedSystemRecord(record) != nil {
-				// Some records are not available for updating, hide them.
+			if record.Type == "SOA" {
+				// SOA records are not available for editing, hide them.
 				continue
 			}
-
 			records = append(records, record)
 		}
 		// meta.pagination may not be present. In that case LastPage is 0 and below the current page number.
@@ -246,15 +204,6 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		cleanupResponseBody()
 		return err
 	}
-}
-
-func (api *hetznerProvider) updateRecord(record record) error {
-	if err := checkIsLockedSystemRecord(record); err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("/records/%s", record.ID)
-	return api.request(url, "PUT", record, nil, nil)
 }
 
 type requestRateLimiter struct {

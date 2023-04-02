@@ -14,14 +14,6 @@ type bulkUpdateRecordsRequest struct {
 	Records []record `json:"records"`
 }
 
-type createRecordRequest struct {
-	Name   string `json:"name"`
-	TTL    uint32 `json:"ttl"`
-	Type   string `json:"type"`
-	Value  string `json:"value"`
-	ZoneID string `json:"zone_id"`
-}
-
 type createZoneRequest struct {
 	Name string `json:"name"`
 }
@@ -76,6 +68,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 		//  suite of integrations tests.
 		// The HETZNER validation does not provide helpful error messages.
 		// {"error":{"message":"422 Unprocessable Entity: missing: ; ","code":422}}
+		// Last checked: 2023-04-01
 		valueNotQuoted := in.TxtStrings[0]
 		if len(valueNotQuoted) == 254 || len(valueNotQuoted) == 255 {
 			record.Value = valueNotQuoted
@@ -96,6 +89,7 @@ func toRecordConfig(domain string, record *record) (*models.RecordConfig, error)
 	value := record.Value
 	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
 	// NOTE: The actual DNS answer does not contain the space.
+	// Last checked: 2023-04-01
 	if record.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
 		// Per RFC 1035 spaces outside quoted values are irrelevant.
 		value = strings.TrimRight(value, " ")
