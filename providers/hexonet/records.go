@@ -59,6 +59,14 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
+	actual, err := n.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	//checkNSModifications(dc)
+
 	txtutil.SplitSingleLongTxt(dc.Records)
 
 	var corrections []*models.Correction
