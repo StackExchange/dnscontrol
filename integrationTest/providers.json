@@ -133,9 +133,7 @@
   "HETZNER": {
     "TYPE": "HETZNER",
     "api_key": "$HETZNER_API_KEY",
-    "domain": "$HETZNER_DOMAIN",
-    "optimize_for_rate_limit_quota": "Hour",
-    "start_with_default_rate_limit": "true"
+    "domain": "$HETZNER_DOMAIN"
   },
   "HEXONET": {
     "TYPE": "HEXONET",

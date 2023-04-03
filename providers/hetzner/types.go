@@ -14,14 +14,6 @@ type bulkUpdateRecordsRequest struct {
 	Records []record `json:"records"`
 }
 
-type createRecordRequest struct {
-	Name   string `json:"name"`
-	TTL    int    `json:"ttl"`
-	Type   string `json:"type"`
-	Value  string `json:"value"`
-	ZoneID string `json:"zone_id"`
-}
-
 type createZoneRequest struct {
 	Name string `json:"name"`
 }
@@ -30,7 +22,8 @@ type getAllRecordsResponse struct {
 	Records []record `json:"records"`
 	Meta    struct {
 		Pagination struct {
-			LastPage int `json:"last_page"`
+			LastPage     int `json:"last_page"`
+			TotalEntries int `json:"total_entries"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
@@ -39,70 +32,69 @@ type getAllZonesResponse struct {
 	Zones []zone `json:"zones"`
 	Meta  struct {
 		Pagination struct {
-			LastPage int `json:"last_page"`
+			LastPage     int `json:"last_page"`
+			TotalEntries int `json:"total_entries"`
 		} `json:"pagination"`
 	} `json:"meta"`
 }
 
 type record struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	TTL    *int   `json:"ttl"`
-	Type   string `json:"type"`
-	Value  string `json:"value"`
-	ZoneID string `json:"zone_id"`
+	ID     string  `json:"id"`
+	Name   string  `json:"name"`
+	TTL    *uint32 `json:"ttl"`
+	Type   string  `json:"type"`
+	Value  string  `json:"value"`
+	ZoneID string  `json:"zone_id"`
 }
 
 type zone struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	NameServers []string `json:"ns"`
-	TTL         int      `json:"ttl"`
+	TTL         uint32   `json:"ttl"`
 }
 
-func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
-	ttl := int(in.TTL)
-	record := &record{
+func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
+	r := record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
 		Value:  in.GetTargetCombined(),
-		TTL:    &ttl,
+		TTL:    &in.TTL,
 		ZoneID: zone.ID,
 	}
 
-	if record.Type == "TXT" && len(in.TxtStrings) == 1 {
+	if r.Type == "TXT" && len(in.TxtStrings) == 1 {
 		// HACK: HETZNER rejects values that fit into 255 bytes w/o quotes,
 		//  but do not fit w/ added quotes (via GetTargetCombined()).
 		// Sending the raw, non-quoted value works for the comprehensive
 		//  suite of integrations tests.
 		// The HETZNER validation does not provide helpful error messages.
 		// {"error":{"message":"422 Unprocessable Entity: missing: ; ","code":422}}
+		// Last checked: 2023-04-01
 		valueNotQuoted := in.TxtStrings[0]
 		if len(valueNotQuoted) == 254 || len(valueNotQuoted) == 255 {
-			record.Value = valueNotQuoted
+			r.Value = valueNotQuoted
 		}
 	}
 
-	return record
+	return r
 }
 
-func toRecordConfig(domain string, record *record) *models.RecordConfig {
-	rc := &models.RecordConfig{
-		Type:     record.Type,
-		TTL:      uint32(*record.TTL),
-		Original: record,
+func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
+	rc := models.RecordConfig{
+		Type:     r.Type,
+		TTL:      *r.TTL,
+		Original: r,
 	}
-	rc.SetLabel(record.Name, domain)
+	rc.SetLabel(r.Name, domain)
 
-	value := record.Value
+	value := r.Value
 	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
 	// NOTE: The actual DNS answer does not contain the space.
-	if record.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
+	// Last checked: 2023-04-01
+	if r.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
 		// Per RFC 1035 spaces outside quoted values are irrelevant.
 		value = strings.TrimRight(value, " ")
 	}
-
-	_ = rc.PopulateFromString(record.Type, value, domain)
-
-	return rc
+	return &rc, rc.PopulateFromString(r.Type, value, domain)
 }
