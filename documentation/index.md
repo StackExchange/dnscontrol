@@ -4,21 +4,21 @@
 
 # Try It
 
-Want to jump right in? Follow our [quick start tutorial](getting-started.md) on a new domain or [migrate](migrating.md) an existing one. Read the [language spec](js.md) for more info.
+Want to jump right in? Follow our [quick start tutorial](getting-started.md) on a new domain or [migrate](migrating.md) an existing one. Read the [language spec](language_reference/JavaScript_DSL.md) for more info.
 
 # Use It
 
-Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](providers.md).
+Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](service_providers/providers.md).
 
 {% hint style="success" %}
 * Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.
 * Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!
 * Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.
 * Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.
-* Supports 35+ [DNS Providers](providers.md) including [BIND](providers/bind.md), [AWS Route 53](providers/route53.md), [Google DNS](providers/gcloud.md), and [name.com](providers/namedotcom.md).
+* Supports 35+ [DNS Providers](service_providers/providers.md) including [BIND](service_providers/providers/bind.md), [AWS Route 53](service_providers/providers/route53.md), [Google DNS](service_providers/providers/gcloud.md), and [name.com](service_providers/providers/namedotcom.md).
 * [Apply CI/CD principles](ci-cd-gitlab.md) to DNS: Unit-tests, system-tests, automated deployment.
 * All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.
-* Optimize DNS with [SPF optimizer](functions/record/SPF_BUILDER.md). Detect too many lookups. Flatten includes.
+* Optimize DNS with [SPF optimizer](language_reference/record_modifier_functions/SPF_BUILDER.md). Detect too many lookups. Flatten includes.
 * Runs on Linux, Windows, Mac, or any operating system supported by Go.
 * Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.
 * [Assign an IP address to a constant](examples.md#variables-for-common-ip-addresses) and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile".

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"sort"
 	"strings"
 
@@ -18,9 +17,9 @@ func generateFeatureMatrix() error {
 		return err
 	}
 
-	replaceInlineContent(
-		"documentation/providers.md",
-		"<!-- provider-matrix-start -->",
+	replaceTextBetweenMarkers(
+		"documentation/service_providers/providers.md",
+		"<!-- provider-matrix-start -->\n",
 		"<!-- provider-matrix-end -->",
 		markdownTable,
 	)
@@ -38,7 +37,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 		featureMap := matrix.Providers[providerName]
 
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`](providers/"+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`](service_providers/"+strings.ToLower(providerName)+".md)")
 		for _, featureName := range matrix.Features {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
@@ -76,20 +75,20 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
-		DomainModifierAlias  = "[`ALIAS`](functions/domain/ALIAS.md)"
-		DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
-		DomainModifierDnssec = "[`AUTODNSSEC`](functions/domain/AUTODNSSEC_ON.md)"
-		DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
-		DomainModifierNaptr  = "[`NAPTR`](functions/domain/NAPTR.md)"
-		DomainModifierPtr    = "[`PTR`](functions/domain/PTR.md)"
-		DomainModifierSoa    = "[`SOA`](functions/domain/SOA.md)"
-		DomainModifierSrv    = "[`SRV`](functions/domain/SRV.md)"
-		DomainModifierSshfp  = "[`SSHFP`](functions/domain/SSHFP.md)"
-		DomainModifierTlsa   = "[`TLSA`](functions/domain/TLSA.md)"
-		DomainModifierDs     = "[`DS`](functions/domain/DS.md)"
+		DomainModifierAlias  = "[`ALIAS`](../language_reference/domain_modifier_functions/ALIAS.md)"
+		DomainModifierCaa    = "[`CAA`](../language_reference/domain_modifier_functions/CAA.md)"
+		DomainModifierDnssec = "[`AUTODNSSEC`](../language_reference/domain_modifier_functions/AUTODNSSEC_ON.md)"
+		DomainModifierLoc    = "[`LOC`](../language_reference/domain_modifier_functions/LOC.md)"
+		DomainModifierNaptr  = "[`NAPTR`](../language_reference/domain_modifier_functions/NAPTR.md)"
+		DomainModifierPtr    = "[`PTR`](../language_reference/domain_modifier_functions/PTR.md)"
+		DomainModifierSoa    = "[`SOA`](../language_reference/domain_modifier_functions/SOA.md)"
+		DomainModifierSrv    = "[`SRV`](../language_reference/domain_modifier_functions/SRV.md)"
+		DomainModifierSshfp  = "[`SSHFP`](../language_reference/domain_modifier_functions/SSHFP.md)"
+		DomainModifierTlsa   = "[`TLSA`](../language_reference/domain_modifier_functions/TLSA.md)"
+		DomainModifierDs     = "[`DS`](../language_reference/domain_modifier_functions/DS.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
-		NoPurge              = "[`NO_PURGE`](functions/domain/NO_PURGE.md)"
+		NoPurge              = "[`NO_PURGE`](../language_reference/domain_modifier_functions/NO_PURGE.md)"
 		GetZones             = "get-zones"
 	)
 
@@ -289,30 +288,4 @@ func (featureMap FeatureMap) SetSimple(
 type FeatureMatrix struct {
 	Features  []string
 	Providers map[string]FeatureMap
-}
-
-func replaceInlineContent(
-	file string,
-	startMarker string,
-	endMarker string,
-	newContent string,
-) {
-	contentBytes, err := os.ReadFile(file)
-	if err != nil {
-		panic(err)
-	}
-	content := string(contentBytes)
-
-	start := strings.Index(content, startMarker)
-	end := strings.Index(content, endMarker)
-
-	newContentString := startMarker + "\n" + newContent + endMarker
-	newContentBytes := []byte(newContentString)
-	contentBytes = []byte(content)
-	contentBytes = append(contentBytes[:start], append(newContentBytes, contentBytes[end+len(endMarker):]...)...)
-
-	err = os.WriteFile(file, contentBytes, 0644)
-	if err != nil {
-		panic(err)
-	}
 }

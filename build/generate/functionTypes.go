@@ -49,20 +49,43 @@ func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 }
 
 var returnTypes = map[string]string{
-	"domain": "DomainModifier",
-	"global": "void",
-	"record": "RecordModifier",
+	"domain_modifier_functions": "DomainModifier",
+	"top_level_functions":       "void",
+	"record_modifier_functions": "RecordModifier",
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
+	folderExceptions := []string{
+		".DS_Store",
+		"js.md",
+	}
+	fileExceptions := []string{
+		".DS_Store",
+		"JavaScript_DSL.md",
+	}
 
-	srcRoot := join("documentation", "functions")
+	srcRoot := join("documentation", "language_reference")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return "", err
 	}
 	for _, t := range types {
+		if stringInSlice(t.Name(), folderExceptions) {
+			continue
+		}
+		if stringInSlice(t.Name(), fileExceptions) {
+			continue
+		}
 		if !t.IsDir() {
 			return "", errors.New("not a directory: " + join(srcRoot, t.Name()))
 		}
@@ -73,9 +96,13 @@ func generateFunctionTypes() (string, error) {
 		}
 
 		for _, f := range funcNames {
+			if stringInSlice(f.Name(), fileExceptions) {
+				continue
+			}
 			fPath := join(tPath, f.Name())
 			if f.IsDir() {
-				return "", errors.New("not a file: " + fPath)
+				// return "", errors.New("not a file: " + fPath)
+				continue
 			}
 			// println("Processing", fPath)
 			content, err := os.ReadFile(fPath)

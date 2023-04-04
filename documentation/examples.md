@@ -49,7 +49,7 @@ D('example.com', REG, DnsProvider('R53'),
 {% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The [`IP()`](functions/global/IP.md) function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
+**NOTE**: The [`IP()`](language_reference/top_level_functions/IP.md) function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
 {% endhint %}
 {% code title="dnsconfig.js" %}
 ```javascript

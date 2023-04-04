@@ -79,9 +79,9 @@ popd
     func matrixData() *FeatureMatrix {
         const (
             ...
-            DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
-    +       DomainModifierFoo    = "[`FOO`](functions/domain/FOO.md)"
-            DomainModifierLoc    = "[`LOC`](functions/domain/LOC.md)"
+            DomainModifierCaa    = "[`CAA`](language_reference/domain_modifier_functions/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](language_reference/domain_modifier_functions/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](language_reference/domain_modifier_functions/LOC.md)"
             ...
         )
         matrix := &FeatureMatrix{
@@ -153,7 +153,7 @@ example we removed `providers.CanUseCAA` from the
 
 Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-[`A()`](functions/domain/A.md) and [`MX()`](functions/domain/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
+[`A()`](language_reference/domain_modifier_functions/A.md) and [`MX()`](language_reference/domain_modifier_functions/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
@@ -291,7 +291,7 @@ tests, please ask!
 
 ## Step 8: Write documentation
 
-Add a new Markdown file to `documentation/functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+Add a new Markdown file to `documentation/language_reference/domain_modifier_functions` (if the new record type is service provider specific, add it to the appropriate subfolder, creating the folder if it does not exist). Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
 
 -   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
 -   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
@@ -299,31 +299,6 @@ Add a new Markdown file to `documentation/functions/domain`. Copy an existing fi
 
 The rest of the file is the documentation. You can use Markdown syntax to format the text.
 
-Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
+If you create any helper functions such as `FOO_BUILDER`, place the markdown files documenting them in their appropriate folder e.g. `documentation/language_reference/record_modifier_functions`.
 
-{% code title="documentation/SUMMARY.md" %}
-```diff
-...
-* Domain Modifiers
-...
-    * [DnsProvider](functions/domain/DnsProvider.md)
-+   * [FOO](functions/domain/FOO.md)
-    * [FRAME](functions/domain/FRAME.md)
-...
-    * Service Provider specific
-...
-        * ClouDNS
-            * [CLOUDNS_WR](functions/domain/CLOUDNS_WR.md)
-+       * ASDF
-+           * [NINJA_RECORD](function/domain/FOO_NINJA.md)
-        * NS1
-            * [NS1_URLFWD](functions/domain/NS1_URLFWD.md)
-...
-* Record Modifiers
-...
-    * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
-+   * [FOO_HELPER](functions/record/FOO_HELPER.md)
-    * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
-...
-```
-{% endcode %}
+At the next run of `go generate ./...` - the documentation tables and links within the new markdown files should be automatically generated and refreshed.

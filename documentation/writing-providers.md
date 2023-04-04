@@ -8,7 +8,7 @@ and the system takes care of the rest.
 Please do note that if you submit a new provider you will be
 assigned bugs related to the provider in the future (unless
 you designate someone else as the maintainer). More details
-[here](providers.md).
+[here](service_providers/providers.md).
 
 ## Overview
 
@@ -77,7 +77,7 @@ Registrar if needed.
 If you have any questions, please discuss them in the GitHub issue
 related to the request for this provider. Please let us know what
 was confusing so we can update this document with advice for future
-authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/documentation/writing-providers.md)
+authors (or even better, update [this document](writing-providers.md)
 yourself.)
 
 
@@ -204,7 +204,7 @@ an automated way to test for this bug.  The manual steps are here in
 ## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [documentation/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/providers.md): Add the provider to the provider list.
+* Edit [documentation/providers.md](service_providers/providers.md): Add the provider to the provider list.
 * Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
 
@@ -296,9 +296,9 @@ Here are some last-minute things to check before you submit your PR.
 2. Make sure all appropriate documentation is current. (See [Step 8](#step-8-manual-tests))
 3. Check that dependencies are current (See [Step 13](#step-13-dependencies))
 4. Re-run the integration test one last time (See [Step 7](#step-7-integration-test))
-5. Re-read the [maintainer's responsibilities](providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, perioidically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
+5. Re-read the [maintainer's responsibilities](service_providers/providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, perioidically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
 ## Step 16: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
-2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
+2. Verify that [documentation/providers.md](service_providers/providers.md) no longer shows the provider as "requested"

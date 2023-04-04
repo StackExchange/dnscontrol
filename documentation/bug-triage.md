@@ -2,7 +2,7 @@
 
 If an issue is related to a particular provider, assign it to
 the person responsible for the provider, as listed in
-[Providers](providers.md)'s "Maintainers of
+[Providers](service_providers/providers.md)'s "Maintainers of
 contributed providers".
 
 Otherwise leave it unassigned until someone grabs it.
@@ -27,7 +27,7 @@ priority:
 1. Respond to the issue with the message below
 1. Close the issue
 
-The [Providers](providers.md) page is generated
+The [Providers](service_providers/providers.md) page is generated
 automatically from all the issues tagged `provider-request`:
 
 1. "Requested providers: state=closed, tagged `provider-request`
