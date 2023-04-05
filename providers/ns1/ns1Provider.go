@@ -66,11 +66,26 @@ func (n *nsone) EnsureZoneExists(domain string) error {
 }
 
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	var nservers []string
+
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
 	}
-	return models.ToNameserversStripTD(z.DNSServers)
+
+	// on newly-created domains NS1 may assign nameservers with or without a
+	// trailing dot. This is not reflected in the actual DNS records, that
+	// always have the trailing dots.
+	//
+	// Handle both scenarios by stripping dots where existing, before continuing.
+	for _, ns := range z.DNSServers {
+		if strings.HasSuffix(ns, ".") {
+			nservers = append(nservers, ns[0:len(ns)-1])
+		} else {
+			nservers = append(nservers, ns)
+		}
+	}
+	return models.ToNameservers(nservers)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
