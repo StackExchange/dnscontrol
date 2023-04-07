@@ -38,8 +38,8 @@ Add this comment to the top of your `dnsconfig.js` file:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-/// <reference path="types-dnscontrol.d.ts" />
 // @ts-check
+/// <reference path="types-dnscontrol.d.ts" />
 ```
 {% endcode %}
 
