@@ -149,6 +149,7 @@ code to support this provider, we'd be glad to help in any way.
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
+* [BunnyDNS](https://github.com/StackExchange/dnscontrol/issues/2265)(#2265)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
 * [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
