@@ -149,12 +149,34 @@ code to support this provider, we'd be glad to help in any way.
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
+* [BunnyDNS](https://github.com/StackExchange/dnscontrol/issues/2265)(#2265)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
-* [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
+* [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
+* [Imperva](https://github.com/StackExchange/dnscontrol/issues/1484) (#1484)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
+* [Plesk](https://github.com/StackExchange/dnscontrol/issues/2261) (#2261)
 * [RRPPRoxy](https://github.com/StackExchange/dnscontrol/issues/1656) (#1656)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
+* [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
+
+#### Q: Why are the above GitHub issues marked "closed"?
+
+A: Following [the bug triage process](/developer-info/bug-triage), the request
+is closed once it is added to this list. If someone chooses to implement the
+provider, they re-open the issue.
+
+#### Q: Would someone write a provider for me?
+
+A: The maintainer of DNSControl does not write new providers.  New providers
+are contributed by the community.
+
+DNSControl tries to make writing a provider as easy as possible.  DNSControl
+does most of the work for you, you only have to write code to authenticate,
+download DNS records, and perform create/modify/delete operations on those
+records. Please read the directions for [Writing new DNS
+providers](/developer-info/writing-providers).  The DNS maintainers will gladly
+coach you through the process.
