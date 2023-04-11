@@ -34,11 +34,12 @@ for the version of DNSControl you are using.
 At this point some features (autocomplete) will work. However to get the full experience, including
 type checking (i.e. red squiggly underlines when you misuse APIs), there is one more step.
 
-Add this comment to the top of your `dnsconfig.js` file:
+Add these comments to the top of your `dnsconfig.js` file:
 
 {% code title="dnsconfig.js" %}
 ```javascript
 // @ts-check
+/// <reference path="types-dnscontrol.d.ts" />
 ```
 {% endcode %}
 
