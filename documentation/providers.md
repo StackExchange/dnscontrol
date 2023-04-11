@@ -163,13 +163,13 @@ code to support this provider, we'd be glad to help in any way.
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
 * [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
 
-#### Q: Why are the above Github issues marked "closed"?
+#### Q: Why are the above GitHub issues marked "closed"?
 
 A: Following [the bug triage process](/developer-info/bug-triage), the request
 is closed once it is added to this list. If someone chooses to implement the
 provider, they re-open the issue.
 
-#### Q: Would someone write a provier for me?
+#### Q: Would someone write a provider for me?
 
 A: The maintainer of DNSControl does not write new providers.  New providers
 are contributed by the community.
