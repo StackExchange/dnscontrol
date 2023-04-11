@@ -282,6 +282,7 @@ workflows:
                 - GANDI_V5
                 - HEDNS
                 - INWX
+                - NS1
                 - POWERDNS
                 - TRANSIP
           filters:
@@ -309,6 +310,7 @@ workflows:
                 - GANDI_V5
                 - HEDNS
                 - INWX
+                - NS1
                 - POWERDNS
                 - TRANSIP
           filters:
