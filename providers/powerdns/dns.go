@@ -86,6 +86,7 @@ func (dsp *powerdnsProvider) EnsureZoneExists(domain string) error {
 		Type:        zones.ZoneTypeZone,
 		DNSSec:      dsp.DNSSecOnCreate,
 		Nameservers: dsp.DefaultNS,
+		Kind:        dsp.ZoneKind,
 	})
 	return err
 }

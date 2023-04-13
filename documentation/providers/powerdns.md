@@ -29,13 +29,15 @@ Following metadata are available:
         'a.example.com.',
         'b.example.com.'
     ],
-    'dnssec_on_create': false
+    'dnssec_on_create': false,
+    'zone_kind': 'Native',
 }
 ```
 {% endcode %}
 
 - `default_ns` sets the nameserver which are used
 - `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
+- `zone_kind` is the type that will be used when creating the zone. Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`. Please see [[PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.
 
 ## Usage
 An example configuration:
