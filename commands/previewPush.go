@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
@@ -66,6 +67,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "full",
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
+	})
+	flags = append(flags, &cli.Int64Flag{
+		Name:        "bindserial",
+		Destination: &bindserial.ForcedValue,
+		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
 	})
 	return flags
 }
