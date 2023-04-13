@@ -31,6 +31,8 @@ along with other settings:
 
 * `dnsserver`: (optional) the name of the Microsoft DNS Server to communicate with.
 * `pssession`: (optional) the name of the PowerShell PSSession host to run commands on.
+* `psusername`: (optional) the username to connect to the PowerShell PSSession host.
+* `pspassword`: (optional) the password to connect to the PowerShell PSSession host.
 
 Example:
 
@@ -40,7 +42,9 @@ Example:
   "msdns": {
     "TYPE": "MSDNS",
     "dnsserver": "ny-dc01",
-    "pssession": "mywindowshost"
+    "pssession": "mywindowshost",
+    "psusername": "mywindowsusername",
+    "pspassword": "mysupersecurepassword"
   }
 }
 ```
