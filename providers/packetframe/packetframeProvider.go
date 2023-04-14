@@ -19,7 +19,7 @@ type packetframeProvider struct {
 	client      *http.Client
 	baseURL     *url.URL
 	token       string
-	domainIndex map[string]zone
+	domainIndex map[string]zoneInfo
 }
 
 // newPacketframe creates the provider.
@@ -60,17 +60,26 @@ func (api *packetframeProvider) GetNameservers(domain string) ([]*models.Nameser
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
-
+func (api *packetframeProvider) getZone(domain string) (*zoneInfo, error) {
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}
-	zone, ok := api.domainIndex[domain+"."]
+	z, ok := api.domainIndex[domain+"."]
 	if !ok {
 		return nil, fmt.Errorf("%q not a zone in Packetframe account", domain)
+	}
+
+	return &z, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
+
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, fmt.Errorf("no such zone %q in Packetframe account", domain)
 	}
 
 	records, err := api.getRecords(zone.ID)
@@ -91,48 +100,21 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	zone, err := api.getZone(dc.Name)
 	if err != nil {
-		return nil, err
-	}
-
-	dc.Punycode()
-
-	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
-			return nil, err
-		}
-	}
-	zone, ok := api.domainIndex[dc.Name+"."]
-	if !ok {
 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
-	records, err := api.getRecords(zone.ID)
-	if err != nil {
-		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
-	}
-
-	existingRecords := make([]*models.RecordConfig, len(records))
-
-	for i := range records {
-		existingRecords[i] = toRc(dc, &records[i])
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-
 	var corrections []*models.Correction
-	var create, dels, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

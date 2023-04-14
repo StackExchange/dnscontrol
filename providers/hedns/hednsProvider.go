@@ -178,18 +178,8 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
-// GetDomainCorrections returns a list of corrections for the  domain.
-func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	records, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
 	// Get the SOA record to get the ZoneID, then remove it from the list.
 	zoneID := uint64(0)
@@ -203,7 +193,6 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	}
 
 	// Normalize
-	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
@@ -215,7 +204,6 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
-	var toCreate, toDelete, toModify diff.Changeset
 
 	differ := diff.New(dc)
 	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)

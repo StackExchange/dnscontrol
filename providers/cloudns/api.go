@@ -109,6 +109,9 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
 }
 
 func (c *cloudnsProvider) fetchDomainList() error {
+	// FIXME(tlim): This should return nil if c.domainIndex != nil.  Then all
+	// the callers won't have to check if c.domainIndex == nil before calling.
+
 	c.domainIndex = map[string]string{}
 	rowsPerPage := 100
 	page := 1

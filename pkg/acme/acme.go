@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
+	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/go-acme/lego/certcrypto"
 	"github.com/go-acme/lego/certificate"
 	"github.com/go-acme/lego/challenge"
@@ -275,7 +276,7 @@ func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correcti
 		if err != nil {
 			return nil, err
 		}
-		corrections, err := p.Driver.GetDomainCorrections(dc)
+		corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
 		if err != nil {
 			return nil, err
 		}

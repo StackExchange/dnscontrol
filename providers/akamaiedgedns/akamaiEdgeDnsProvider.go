@@ -105,26 +105,13 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	return createZone(domain, a.contractID, a.groupID)
 }
 
-// GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
-// and a function that, if called, will make the change.
-// “dnscontrol preview” simply prints the text strings.
-// "dnscontrol push" prints the strings and calls the functions.
-func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	existingRecords, err := getRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(existingRecords)
 
 	var corrections []*models.Correction
 	var keysToUpdate map[models.RecordKey][]string
+	var err error
 	if !diff2.EnableDiff2 {
 		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
 	} else {

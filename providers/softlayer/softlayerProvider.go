@@ -59,25 +59,25 @@ func (s *softlayerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 	return models.ToNameservers([]string{"ns1.softlayer.com", "ns2.softlayer.com"})
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-// GetDomainCorrections returns corrections to update a domain.
-func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
-	domain, err := s.getDomain(&dc.Name)
-
+// GetZoneRecords gets all the records for domainName and converts
+// them to model.RecordConfig.
+func (s *softlayerProvider) GetZoneRecords(domainName string) (models.Records, error) {
+	domain, err := s.getDomain(&domainName)
 	if err != nil {
 		return nil, err
 	}
 
 	actual, err := s.getExistingRecords(domain)
+	if err != nil {
+		return nil, err
+	}
 
+	return actual, nil
+}
+
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	domain, err := s.getDomain(&dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +120,8 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 }
 
 func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, error) {
+	// FIXME(tlim) Memoize this
+
 	domains, err := services.GetAccountService(s.Session).
 		Filter(filter.Path("domains.name").Eq(name).Build()).
 		Mask("resourceRecords").
@@ -138,7 +140,7 @@ func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, erro
 	return &domains[0], nil
 }
 
-func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.RecordConfig, error) {
+func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (models.Records, error) {
 	actual := []*models.RecordConfig{}
 
 	for _, record := range domain.ResourceRecords {
@@ -189,9 +191,6 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 
 		actual = append(actual, recConfig)
 	}
-
-	// Normalize
-	models.PostProcessRecords(actual)
 
 	return actual, nil
 }

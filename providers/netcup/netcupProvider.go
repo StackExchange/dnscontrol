@@ -53,6 +53,7 @@ func (api *netcupProvider) GetZoneRecords(domain string) (models.Records, error)
 	for i := range records {
 		existingRecords[i] = toRecordConfig(domain, &records[i])
 	}
+
 	return existingRecords, nil
 }
 
@@ -67,15 +68,12 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	})
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
+
+	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
+	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Setting the TTL is not supported for netcup
 	for _, r := range dc.Records {
@@ -91,26 +89,14 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	dc.Records = newRecords
 
-	// Check existing set
-	existingRecords, err := api.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
-	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

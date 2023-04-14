@@ -9,19 +9,17 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
-// GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var creates, dels, modifications diff.Changeset
-	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
 		if err != nil {
 			return nil, err
 		}

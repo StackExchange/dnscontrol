@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
@@ -139,6 +139,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	var wg sync.WaitGroup
 	wg.Add(len(cfg.Domains))
 
+	// For each domain in dnsconfig.js...
 	for _, domain := range cfg.Domains {
 		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
 		// For now running this code is still sequential.
@@ -150,8 +151,16 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				return
 			}
 
+			err = domain.Punycode()
+			if err != nil {
+				return
+			}
+
+			// Correct the domain...
+
 			out.StartDomain(domain.UniqueName)
 			var providersWithExistingZone []*models.DNSProviderInstance
+			/// For each DSP...
 			for _, provider := range domain.DNSProviderInstances {
 				if !args.NoPopulate {
 					// preview run: check if zone is already there, if not print a warning
@@ -164,8 +173,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 						aceZoneName, _ := idna.ToASCII(domain.Name)
 
 						if !slices.Contains(zones, aceZoneName) {
-							out.Warnf("DEBUG: zones: %v\n", zones)
-							out.Warnf("DEBUG: Name: %v\n", domain.Name)
+							//out.Warnf("DEBUG: zones: %v\n", zones)
+							//out.Warnf("DEBUG: Name: %v\n", domain.Name)
 
 							out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
 							continue // continue with next provider, as we can not determine corrections without an existing zone
@@ -181,6 +190,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				providersWithExistingZone = append(providersWithExistingZone, provider)
 			}
 
+			// Correct the registrar...
+
 			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
 			if err != nil {
 				out.Errorf("ERROR: %s", err.Error())
@@ -190,20 +201,14 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 			nameservers.AddNSRecords(domain)
 
 			for _, provider := range providersWithExistingZone {
-				dc, err := domain.Copy()
-				if err != nil {
-					out.Errorf("ERROR: %s", err.Error())
-					return
-				}
-				shouldrun := args.shouldRunProvider(provider.Name, dc)
+
+				shouldrun := args.shouldRunProvider(provider.Name, domain)
 				out.StartDNSProvider(provider.Name, !shouldrun)
 				if !shouldrun {
 					continue
 				}
 
-				/// This is where we should audit?
-
-				corrections, err := provider.Driver.GetDomainCorrections(dc)
+				corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true
@@ -212,6 +217,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				totalCorrections += len(corrections)
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
+
+			//
 			run := args.shouldRunProvider(domain.RegistrarName, domain)
 			out.StartRegistrar(domain.RegistrarName, !run)
 			if !run {
@@ -221,11 +228,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
 				return
 			}
-			dc, err := domain.Copy()
-			if err != nil {
-				log.Fatal(err)
-			}
-			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
+
+			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domain)
 			out.EndProvider(domain.RegistrarName, len(corrections), err)
 			if err != nil {
 				anyErrors = true

@@ -14,41 +14,33 @@ you designate someone else as the maintainer). More details
 
 I'll ignore all the small stuff and get to the point.
 
-A provider's `GetDomainCorrections()` function is the workhorse
-of the provider.  It is what gets called by `dnscontrol preview`
+A typical provider implements 3 methods and DNSControl takes care of the rest:
+
+* GetZoneRecords() -- Download the list of DNS records and return them as a list of RecordConfig structs.
+* GetZoneRecordsCorrections() -- Generate a list of corrections.
+* GetNameservers() -- Query the API and return the list of parent nameservers.
+
+These three functions are all that's needed for `dnscontrol preview`
 and `dnscontrol push`.
 
-How does a provider's `GetDomainCorrections()` function work?
+The goal of `GetZoneRecords()` is to download all the DNS records,
+convert them to `models.RecordConfig` format, and return them as one big list
+(`models.Records`).
 
-The goal of `GetDomainCorrections()` is to return a list of
+The goal of `GetZoneRecordsCorrections()` is to return a list of
 corrections.  Each correction is a text string describing the change
 ("Delete CNAME record foo") and a function that, if called, will
-make the change (i.e. call the API and delete record foo).  Preview
-mode simply prints the text strings.  `dnscontrol push` prints the
+make the change (i.e. call the API and delete record foo).  `dnscontrol preview`
+simply prints the text strings.  `dnscontrol push` prints the
 strings and calls the functions. Because of how Go's functions work,
 the function will have everything it needs to make the change.
 Pretty cool, eh?
 
-So how does `GetDomainCorrections()` work?
-
-First, some terminology: The DNS records specified in the `dnsconfig.js`
-file are called the "desired" records. The DNS records stored at
-the DNS service provider are called the "existing" records.
-
-Every provider does the same basic process.  The function
-`GetDomainCorrections()` is called with a list of the desired DNS
-records (`dc.Records`).  It then contacts the provider's API and
-gathers the existing records. It converts the existing records into
-a list of `*models.RecordConfig`.
-
-Now that it has the desired and existing records in the appropriate
-format, `differ.IncrementalDiff(existingRecords)` is called and
-does all the hard work of understanding the DNS records and figuring
-out what changes need to be made.  It generates lists of adds,
-deletes, and changes.
-
-`GetDomainCorrections()` then generates the list of `models.Corrections()`
-and returns.  DNSControl takes care of the rest.
+Calculating the difference between existing and desired is difficult. Luckily
+the work is done for you.  `GetZoneRecordsCorrections()` calls a a function in
+the `pkg/diff2` module that generates a list of changes (usually an ADD,
+CHANGE, or DELETE) that can easily be turned into the API calls mentioned
+previously.
 
 So, what does all this mean?
 
@@ -60,11 +52,6 @@ adds, changes, and deletions.
 If you are new to Go, there are plenty of providers you can copy
 from. In fact, many non-Go programmers
 [have learned Go by contributing to DNSControl](https://everythingsysadmin.com/2017/08/go-get-up-to-speed.html).
-
-Oh, and what if the API simply requires that the entire zonefile be uploaded
-every time?  We still generate the text descriptions of the changes (so that
-`dnscontrol preview` looks nice) but the functions are just no-ops, except
-for one that uploads the new zonefile.
 
 Now that you understand the general process, here are the details.
 
@@ -80,11 +67,43 @@ was confusing so we can update this document with advice for future
 authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/documentation/writing-providers.md)
 yourself.)
 
+## NOTE: diff2
+
+We are in the process of changing how providers work. Sadly this document
+hasn't been fully updated yet.
+
+We are in the process of changing all providers from using `pkg/diff` to
+`pkg/diff2`.  diff2 is much easier to use as it does all the hard work for you.
+Providers are easier to write, there's less code for you to write, and fewer
+chances to make mistakes.
+
+New providers only need to implement diff2.  Older providers are implemented
+both ways, with a flag (`--diff2`) enabling the newer code.  Soon the new code
+will become the default, then the old code will be removed.
+
+The file `pkg/diff2/diff2.go` has instructions about how to use the new diff2 system.
+You can also do `grep diff2.By providers/*/*.go` to find providers that use
+the new system.
+
+Each DNS provider's API is different.  Some update one DNS record at a time.
+Others, the only change they permit is to upload the entire zone even if only one record changed!
+Others are somewhere in between: all records at a label must be updated at once, or all records
+in a RecordSet (the label + rType).  diff2 provides functions for all of these situations:
+
+diff2.ByRecord() -- Updates are done one DNS record at a time. New records are added. Changes and deletes refer to an ID assigned to the record by the provider.
+diff2.ByLabel() -- Updates are done for an entire label. Adds and changes are done by sending one or more records that will appear at that label (i.e. www.example.com). Deletes delete all records at that label.
+diff2.ByRecordSet() -- Similar to ByLabel() but updates are done on the label+type level. If www.example.com has 2 A records and 2 MX records, 
+
+
+
 
 ## Step 2: Pick a base provider
 
 Pick a similar provider as your base.  Providers basically fall
 into three general categories:
+
+NOTE: diff2 changes this.  For now, you can simply run `grep diff2.By providers/*/*.go` to see which
+providers use ByZone, ByLabel, ByRecord, ByRecordSet and pick a similar provider to copy from.
 
 * **zone:** The API requires you to upload the entire zone every time. (BIND, NAMECHEAP).
 * **incremental-record:** The API lets you add/change/delete individual DNS records. (CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, HEXONET)

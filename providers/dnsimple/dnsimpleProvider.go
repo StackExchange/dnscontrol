@@ -133,17 +133,16 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		cleanedRecords = append(cleanedRecords, rec)
 	}
 
+	// Apex NS are immutable via API
+	cleanedRecords = removeApexNS(cleanedRecords)
+
 	return cleanedRecords, nil
 }
 
-// GetDomainCorrections returns corrections that update a domain.
-func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+	removeOtherApexNS(dc)
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
 	if err != nil {
@@ -151,25 +150,13 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	corrections = append(corrections, dnssecFixes...)
 
-	records, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	// Apex NS are immutable via API
-	actual := removeApexNS(records)
-	removeOtherApexNS(dc)
-
-	// Normalize
-	models.PostProcessRecords(actual)
-
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(actual)
+	_, create, del, modify, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
