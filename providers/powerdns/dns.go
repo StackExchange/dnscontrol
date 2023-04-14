@@ -2,11 +2,12 @@ package powerdns
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
-	"net/http"
 )
 
 // GetNameservers returns the nameservers for a domain.
@@ -44,19 +45,10 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 	return curRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	// get current zone records
-	existing, err := dsp.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// post-process records
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+	// create record diff by group
+	var err error
 
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {

@@ -25,15 +25,8 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records
 	return existingRecords, nil
 }
 
-func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	existingRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	// Merge TXT strings to one string
 	for _, rc := range dc.Records {
@@ -48,14 +41,13 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 	}
 
 	var corrections []*models.Correction
-	var create, delete, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

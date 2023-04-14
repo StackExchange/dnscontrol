@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
@@ -200,6 +201,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
+		if *providerToRun == "AXFRDDNS" {
+			// Bind will refuse a DDNS update when the resulting zone
+			// contains a NS record without an associated address
+			// records (A or AAAA)
+			dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
+		}
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
 		models.PostProcessRecords(dom.Records)
@@ -211,7 +218,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := prv.GetDomainCorrections(dom)
+		corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
@@ -234,7 +241,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = prv.GetDomainCorrections(dom2)
+		corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -328,7 +335,8 @@ func TestDualProviders(t *testing.T) {
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
-		cs, err := p.GetDomainCorrections(dom)
+
+		cs, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -350,7 +358,7 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := p.GetDomainCorrections(dc)
+	cs, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
