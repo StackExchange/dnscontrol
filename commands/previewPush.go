@@ -72,6 +72,7 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "diff2",
 		Destination: &diff2.EnableDiff2,
 		Usage:       `Enable replacement diff algorithm`,
+		Value:       true,
 	})
 	return flags
 }
@@ -121,10 +122,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 
-	if diff2.EnableDiff2 {
-		printer.Println("INFO: Diff2 algorithm in use.")
-	} else {
-		printer.Println("INFO: Old diff algorithm in use. Please test --diff2 as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+	if !diff2.EnableDiff2 {
+		printer.Println("INFO: --diff2=false will go away on or about 2023-06-01. Please use --diff2=true. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
