@@ -68,11 +68,6 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "diff2",
-		Destination: &diff2.EnableDiff2,
-		Usage:       `Enable replacement diff algorithm`,
-	})
 	return flags
 }
 
