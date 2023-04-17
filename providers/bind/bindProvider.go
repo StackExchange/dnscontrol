@@ -296,6 +296,9 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 			comments = append(comments, "Automatic DNSSEC signing requested")
 		}
 
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat, dc.Name, dc.Name, ""))
+
 		// We only change the serial number if there is a change.
 		if !c.skipNextSoaIncrease {
 			desiredSoa.SoaSerial = nextSerial
