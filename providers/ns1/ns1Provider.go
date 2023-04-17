@@ -37,7 +37,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
+	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "")
 }
 
 type nsone struct {
@@ -341,7 +341,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
-			rec.Type = rtype
+			rec.Type = "NS1_URLFWD"
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
