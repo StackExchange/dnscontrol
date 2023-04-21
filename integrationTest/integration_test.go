@@ -230,9 +230,11 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if *verbose {
 				t.Log("\n" + c.Msg)
 			}
-			err = c.F()
-			if err != nil {
-				t.Fatal(err)
+			if c.F != nil { // F == nil if there is just a msg, no action.
+				err = c.F()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 
