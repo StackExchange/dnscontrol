@@ -209,6 +209,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
+		dom.Unmanaged = tst.Unmanaged
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -245,10 +246,13 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(corrections) != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
+		if count := zonerecs.CountActionable(corrections); count != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
-				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED #%d: (%p) %s", i, c.F, c.Msg)
+				//fmt.Printf("XXXXXXXXXXXXXXX unexpected:\n")
+				//fmt.Printf("change: %v\n", c)
+				//fmt.Printf("XXXXXXXXXXXXXXX end\n")
 			}
 			t.FailNow()
 		}
@@ -362,8 +366,8 @@ func TestDualProviders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cs) != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", len(cs))
+	if count := zonerecs.CountActionable(cs); count != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", count)
 		for i, c := range cs {
 			t.Logf("#%d: %s", i, c.Msg)
 		}
@@ -385,6 +389,7 @@ type TestCase struct {
 	Records        []*models.RecordConfig
 	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
+	Unmanaged      []*models.UnmanagedConfig
 }
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
@@ -585,15 +590,24 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
 	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
+	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				LabelPattern: r.GetLabel(),
+				RTypePattern: r.GetTargetField(),
+			})
 		} else if r.Type == "IGNORE_TARGET" {
 			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
 				Type:    r.GetTargetField(),
 			}
 			ignoredTargets = append(ignoredTargets, rec)
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				RTypePattern:  r.GetTargetField(),
+				TargetPattern: r.GetLabel(),
+			})
 		} else {
 			records = append(records, r)
 		}
@@ -603,6 +617,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 		Records:        records,
 		IgnoredNames:   ignoredNames,
 		IgnoredTargets: ignoredTargets,
+		Unmanaged:      unmanagedItems,
 	}
 }
 
