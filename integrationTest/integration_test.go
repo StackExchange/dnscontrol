@@ -251,10 +251,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if count := zonerecs.CountActionable(corrections); count != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
-				t.Logf("UNEXPECTED #%d: (%p) %s", i, c.F, c.Msg)
-				//fmt.Printf("XXXXXXXXXXXXXXX unexpected:\n")
-				//fmt.Printf("change: %v\n", c)
-				//fmt.Printf("XXXXXXXXXXXXXXX end\n")
+				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
 			t.FailNow()
 		}
