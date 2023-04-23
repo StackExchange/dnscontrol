@@ -1544,7 +1544,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// Bug https://github.com/StackExchange/dnscontrol/issues/2285
-		testgroup("R53_alias Pre-Existing",
+		testgroup("R53_alias pre-existing",
+			requires(providers.CanUseRoute53Alias),
 			tc("Create some records",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
