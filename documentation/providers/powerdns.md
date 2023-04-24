@@ -37,7 +37,11 @@ Following metadata are available:
 
 - `default_ns` sets the nameserver which are used
 - `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
-- `zone_kind` is the type that will be used when creating the zone. Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`. Please see [[PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.
+- `zone_kind` is the type that will be used when creating the zone.
+  <br>Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`.
+  <br>Please see [PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.
+  <br>**Note that these tokens are case-sensitive!**
+
 
 ## Usage
 An example configuration:
