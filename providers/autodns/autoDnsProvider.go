@@ -67,31 +67,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var changes []*models.RecordConfig
-
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
-
-	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	var changes []*models.RecordConfig
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 

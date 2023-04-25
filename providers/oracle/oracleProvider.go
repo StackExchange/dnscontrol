@@ -202,25 +202,9 @@ func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
 	return records, nil
 }
 
-func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-	domain := dc.Name
-
-	existingRecords, err := o.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var err error
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
@@ -241,14 +225,13 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
-	var create, dels, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +277,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		return []*models.Correction{{
 			Msg: desc,
 			F: func() error {
-				return o.patch(createRecords, deleteRecords, domain)
+				return o.patch(createRecords, deleteRecords, dc.Name)
 			},
 		}}, nil
 	}

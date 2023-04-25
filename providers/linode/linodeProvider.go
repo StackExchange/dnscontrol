@@ -122,33 +122,8 @@ func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error)
 	return api.getRecordsForDomain(domainID, domain)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	dc.Punycode()
-
-	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
-			return nil, err
-		}
-	}
-	domainID, ok := api.domainIndex[dc.Name]
-	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
-	}
-
-	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get
 	// By experimentation, Linode always rounds up. 300 -> 300, 301 -> 3600.
@@ -157,15 +132,25 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		record.TTL = fixTTL(record.TTL)
 	}
 
+	var err error
+	if api.domainIndex == nil {
+		if err = api.fetchDomainList(); err != nil {
+			return nil, err
+		}
+	}
+	domainID, ok := api.domainIndex[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
+	}
+
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

@@ -60,7 +60,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
-	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "WR")
+	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "")
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -71,14 +71,45 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(c.nameserversNames)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for a domain.
+// func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	dc.Punycode()
+// 	dc.Punycode()
+
+// 	if c.domainIndex == nil {
+// 		if err := c.fetchDomainList(); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// 	_, ok := c.domainIndex[dc.Name]
+// 	if !ok {
+// 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
+// 	}
+
+// 	existingRecords, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
+
+// 	// Get a list of available TTL values.
+// 	// The TTL list needs to be obtained for each domain, so get it first here.
+// 	c.fetchAvailableTTLValues(dc.Name)
+// 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
+// 	for _, record := range dc.Records {
+// 		record.TTL = fixTTL(record.TTL)
+// 	}
+
+// 	return c.GetZoneRecordsCorrections(dc, existingRecords)
+// }
+
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -89,13 +120,6 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	if !ok {
 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
-
-	existingRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 
 	// Get a list of available TTL values.
 	// The TTL list needs to be obtained for each domain, so get it first here.
@@ -278,6 +302,9 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		rc.DsDigestType = uint8(dsDigestType)
 		rc.DsDigest = r.Target
 		rc.SetTarget(r.Target)
+	case "CLOUD_WR":
+		rc.Type = "WR"
+		rc.SetTarget(r.Target)
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -302,6 +329,8 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR":
 		// Nothing special.
+	case "CLOUDNS_WR":
+		req["record-type"] = "WR"
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))
 	case "SRV":

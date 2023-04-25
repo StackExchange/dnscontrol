@@ -53,6 +53,9 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
+	// diff1
+	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
+	zoneNameMap map[string]string
 }
 
 type errNoExist struct {
@@ -105,6 +108,8 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
+		oldRRsMap:     map[string]map[key]*gdns.ResourceRecordSet{},
+		zoneNameMap:   map[string]string{},
 	}
 	return g, g.loadZoneInfo()
 }
@@ -168,14 +173,14 @@ func keyForRec(r *models.RecordConfig) key {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (g *gcloudProvider) GetZoneRecords(domain string) (models.Records, error) {
-	existingRecords, _, _, err := g.getZoneSets(domain)
+	existingRecords, err := g.getZoneSets(domain)
 	return existingRecords, err
 }
 
-func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 	rrs, zoneName, err := g.getRecords(domain)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, err
 	}
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
@@ -185,27 +190,32 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 		for _, rec := range set.Rrdatas {
 			rt, err := nativeToRecord(set, rec, domain)
 			if err != nil {
-				return nil, nil, "", err
+				return nil, err
 			}
 
 			existingRecords = append(existingRecords, rt)
 		}
 	}
-	return existingRecords, oldRRs, zoneName, err
+
+	g.oldRRsMap[domain] = oldRRs
+	g.zoneNameMap[domain] = zoneName
+
+	return existingRecords, err
 }
 
-func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if err := dc.Punycode(); err != nil {
-		return nil, fmt.Errorf("punycode error: %w", err)
-	}
-	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
-	if err != nil {
-		return nil, fmt.Errorf("getzonesets error: %w", err)
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	oldRRs, ok := g.oldRRsMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)
+	}
+	zoneName, ok := g.zoneNameMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("zoneNameMap: no zone named %q", dc.Name)
+	}
 
 	// first collect keys that have changed
 	var differ diff.Differ

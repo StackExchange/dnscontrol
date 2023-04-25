@@ -37,7 +37,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
+	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "")
 }
 
 type nsone struct {
@@ -154,21 +154,10 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 	return nil
 }
 
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
-
-	domain := dc.Name
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
-
-	// Get existing records
-	existingRecords, err := n.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+	domain := dc.Name
 
 	// add DNSSEC-related corrections
 	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
@@ -352,7 +341,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
-			rec.Type = rtype
+			rec.Type = "NS1_URLFWD"
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}

@@ -34,25 +34,16 @@ func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, erro
 	return actual, nil
 }
 
-// GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
-	actual, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+	checkNSModifications(dc)
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "ANAME"
 		}
 	}
-
-	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(actual)
 
 	var corrections []*models.Correction
 	var differ diff.Differ
@@ -192,19 +183,6 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	_, err := n.client.CreateRecord(record)
 	return err
 }
-
-// // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-// func encodeTxt(txts []string) string {
-// 	ans := txts[0]
-
-// 	if len(txts) > 1 {
-// 		ans = ""
-// 		for _, t := range txts {
-// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-// 		}
-// 	}
-// 	return ans
-// }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)

@@ -134,6 +134,8 @@ func (r *route53Provider) ListZones() ([]string, error) {
 }
 
 func (r *route53Provider) getZones() error {
+	// TODO(tlim) This should memoize itself.
+
 	if r.zonesByDomain != nil {
 		return nil
 	}
@@ -223,6 +225,8 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
+	// TODO(tlim) This should memoize itself.
+
 	if err := r.getZones(); err != nil {
 		return r53Types.HostedZone{}, err
 	}
@@ -260,15 +264,11 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 	return existingRecords, nil
 }
 
-func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	zone, err := r.getZone(dc)
-	if err != nil {
-		return nil, err
-	}
-
-	existingRecords, err := r.getZoneRecords(zone)
 	if err != nil {
 		return nil, err
 	}
@@ -280,12 +280,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
+
+		zone, err := r.getZone(dc)
+		if err != nil {
+			return nil, err
+		}
 
 		// diff
 		differ := diff.New(dc, getAliasMap)
@@ -482,6 +483,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 	instructions = reorderInstructions(instructions)
+	wasReport := false
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
@@ -491,6 +493,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		case diff2.REPORT:
 			chg = r53Types.Change{}
+			wasReport = true
 
 		case diff2.CREATE:
 			fallthrough
@@ -544,19 +547,33 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					var err error
-					req.HostedZoneId = zone.Id
-					withRetry(func() error {
-						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+
+		if wasReport {
+
+			// Add a "msg only" correction.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+				})
+
+		} else {
+
+			// Add a function to execute.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						var err error
+						req.HostedZoneId = zone.Id
+						withRetry(func() error {
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							return err
+						})
 						return err
-					})
-					return err
-				},
-			})
+					},
+				})
+
+		}
 
 	}
 

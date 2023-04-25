@@ -27,7 +27,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 )
@@ -202,29 +201,11 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
-	comments := make([]string, 0, 5)
-	comments = append(comments,
-		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
-	)
-	if dc.AutoDNSSEC == "on" {
-		// This does nothing but reminds the user to add the correct
-		// auto-dnssecc zone statement to named.conf.
-		// While it is a no-op, it is useful for situations where a zone
-		// has multiple providers.
-		comments = append(comments, "Automatic DNSSEC signing requested")
-	}
-
-	c.zonefile = filepath.Join(c.directory,
-		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
-
-	foundRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+	changes := false
+	var msg string
 
 	// Find the SOA records; use them to make or update the desired SOA.
 	var foundSoa *models.RecordConfig
@@ -249,13 +230,6 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		*desiredSoa = *soaRec
 		c.skipNextSoaIncrease = true
 	}
-
-	// Normalize
-	models.PostProcessRecords(foundRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
-	changes := false
-	var msg string
 
 	if !diff2.EnableDiff2 {
 
@@ -296,6 +270,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	} else {
 
 		var msgs []string
+		var err error
 		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
 		if err != nil {
 			return nil, err
@@ -308,6 +283,21 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	var corrections []*models.Correction
 	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 	if changes {
+
+		comments := make([]string, 0, 5)
+		comments = append(comments,
+			fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
+		)
+		if dc.AutoDNSSEC == "on" {
+			// This does nothing but reminds the user to add the correct
+			// auto-dnssecc zone statement to named.conf.
+			// While it is a no-op, it is useful for situations where a zone
+			// has multiple providers.
+			comments = append(comments, "Automatic DNSSEC signing requested")
+		}
+
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat, dc.Name, dc.Name, ""))
 
 		// We only change the serial number if there is a change.
 		if !c.skipNextSoaIncrease {

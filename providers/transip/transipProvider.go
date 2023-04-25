@@ -94,25 +94,15 @@ func (n *transipProvider) ListZones() ([]string, error) {
 	return domains, nil
 }
 
-func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	curRecords, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 
 	removeOtherNS(dc)
-
-	models.PostProcessRecords(curRecords)
 
 	if !diff2.EnableDiff2 {
 		corrections, err := n.getCorrectionsUsingOldDiff(dc, curRecords)
 		return corrections, err
 	}
-
 	corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
 	return corrections, err
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -70,31 +69,6 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 // Section 3: Domain Service Provider (DSP) related functions
 
-// NB(tal): To future-proof your code, all new providers should
-// implement GetDomainCorrections exactly as you see here
-// (byte-for-byte the same). In 3.0
-// we plan on using just the individual calls to GetZoneRecords,
-// PostProcessRecords, and so on.
-//
-// Currently every provider does things differently, which prevents
-// us from doing things like using GetZoneRecords() of a provider
-// to make convertzone work with all providers.
-
-// GetDomainCorrections get the current and existing records,
-// post-process them, and generate corrections.
-func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := client.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
-	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
-}
-
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
@@ -117,24 +91,6 @@ func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 	}
 
 	return existingRecords, nil
-}
-
-// PrepFoundRecords munges any records to make them compatible with
-// this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
-
-// PrepDesiredRecords munges any records to best suit this provider.
-func PrepDesiredRecords(dc *models.DomainConfig) {
-	// Sort through the dc.Records, eliminate any that can't be
-	// supported; modify any that need adjustments to work with the
-	// provider.  We try to do minimal changes otherwise it gets
-	// confusing.
-
-	dc.Punycode()
 }
 
 // NB(tlim): If we want to implement a registrar, refer to

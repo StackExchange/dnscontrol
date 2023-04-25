@@ -117,13 +117,9 @@ func soaToString(s soaValues) string {
 	return fmt.Sprintf("refresh=%d retry=%d expire=%d negativettl=%d ttl=%d", s.Refresh, s.Retry, s.Expire, s.NegativeTTL, s.TTL)
 }
 
-func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	zoneChanged := false
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var err error
 
 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
 	for _, r := range dc.Records {
@@ -134,12 +130,13 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			r.TTL = 31556926
 		}
 	}
+
+	zoneChanged := false
+
 	zone, err := hp.getZone(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-
-	records := hp.APIRecordsToStandardRecordsModel(dc.Name, zone.Records)
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
@@ -320,10 +317,10 @@ func firstNonZero(items ...uint32) uint32 {
 }
 
 func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+	// err := dc.Punycode()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	found, err := hp.getNameservers(dc.Name)
 	if err != nil {

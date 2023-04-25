@@ -109,9 +109,8 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 	return curRecords, nil
 }
 
-// GetDomainCorrections gets the corrections for a DomainConfig.
-func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 
 	for _, rec := range dc.Records {
 		switch rec.Type { // #rtype_variations
@@ -127,23 +126,16 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
-	curRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	models.PostProcessRecords(curRecords)
-
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
+		_, create, toDelete, modify, err := differ.IncrementalDiff(curRecords)
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, mod := range delete {
+		for _, mod := range toDelete {
 			id := mod.Existing.Original.(govultr.DomainRecord).ID
 			corrections = append(corrections, &models.Correction{
 				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),

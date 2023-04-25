@@ -75,25 +75,11 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	dc.Punycode()
-
-	existingRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	// Block changes to NS records for base domain
 	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
