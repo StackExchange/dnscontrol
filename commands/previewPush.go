@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
@@ -120,6 +121,12 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
+
+	if diff2.EnableDiff2 {
+		printer.Println("INFO: Diff2 algorithm in use.")
+	} else {
+		printer.Println("INFO: Old diff algorithm in use. Please test --diff2 as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {

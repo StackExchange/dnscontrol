@@ -237,29 +237,32 @@ func (rrl *requestRateLimiter) handleResponse(resp *http.Response) (bool, error)
 		// When rate-limited, exclude network/server latency from delay.
 		rrl.lastRequest = time.Now()
 		return true, nil
-	} else {
-		limit, err := parseHeaderAsInt(resp.Header, "Ratelimit-Limit", 1)
-		if err != nil {
-			return false, err
-		}
-		remaining, err := parseHeaderAsInt(resp.Header, "Ratelimit-Remaining", 1)
-		if err != nil {
-			return false, err
-		}
-		reset, err := parseHeaderAsSeconds(resp.Header, "Ratelimit-Reset", 0)
-		if err != nil {
-			return false, err
-		}
-		if remaining == 0 {
-			// Quota exhausted. Wait until quota resets.
-			rrl.delay = reset
-		} else if remaining > limit/2 {
-			// Burst through half of the quota, ...
-			rrl.delay = 0
-		} else {
-			// ... then spread requests evenly throughout the window.
-			rrl.delay = reset / time.Duration(remaining+1)
-		}
-		return false, nil
 	}
+
+	limit, err := parseHeaderAsInt(resp.Header, "Ratelimit-Limit", 1)
+	if err != nil {
+		return false, err
+	}
+
+	remaining, err := parseHeaderAsInt(resp.Header, "Ratelimit-Remaining", 1)
+	if err != nil {
+		return false, err
+	}
+
+	reset, err := parseHeaderAsSeconds(resp.Header, "Ratelimit-Reset", 0)
+	if err != nil {
+		return false, err
+	}
+
+	if remaining == 0 {
+		// Quota exhausted. Wait until quota resets.
+		rrl.delay = reset
+	} else if remaining > limit/2 {
+		// Burst through half of the quota, ...
+		rrl.delay = 0
+	} else {
+		// ... then spread requests evenly throughout the window.
+		rrl.delay = reset / time.Duration(remaining+1)
+	}
+	return false, nil
 }
