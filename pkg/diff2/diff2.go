@@ -187,7 +187,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 	// Only return the messages.  The caller has the list of records needed to build the new zone.
 	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
 	changes := false
-	for i, _ := range instructions {
+	for i := range instructions {
 		//fmt.Printf("DEBUG: ByZone #%d: %v\n", i, ii)
 		if instructions[i].Type != REPORT {
 			changes = true
