@@ -218,7 +218,7 @@ func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameser
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *dnsMadeEasyProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := api.fetchDomainRecords(domain)
 	if err != nil {
 		return nil, err

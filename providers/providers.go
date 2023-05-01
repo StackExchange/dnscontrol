@@ -157,7 +157,7 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecords(domain string) (models.Records, error) {
+func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	return nil, nil
 }
 

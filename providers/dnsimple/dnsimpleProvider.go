@@ -75,7 +75,7 @@ func (c *dnsimpleProvider) GetNameservers(_ string) ([]*models.Nameserver, error
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err

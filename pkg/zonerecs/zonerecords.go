@@ -8,7 +8,8 @@ import (
 // post-processing, and then calls GetZoneRecordsCorrections.  The
 // name sucks because all the good names were taken.
 func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, error) {
-	existingRecords, err := driver.GetZoneRecords(dc.Name)
+
+	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 // corrections that are purely informational. (i.e. `.F` is nil)
 func CountActionable(corrections []*models.Correction) int {
 	count := 0
-	for i, _ := range corrections {
+	for i := range corrections {
 		if corrections[i].F != nil {
 			count++
 		}

@@ -161,7 +161,7 @@ func (a *azurednsProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (a *azurednsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (a *azurednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	existingRecords, _, _, err := a.getExistingRecords(domain)
 	if err != nil {
 		return nil, err

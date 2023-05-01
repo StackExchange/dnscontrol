@@ -160,7 +160,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		func(domain *models.DomainConfig) {
 			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
-			if !args.shouldRunDomain(domain.UniqueName) {
+			uniquename := domain.GetUniqueName()
+			if !args.shouldRunDomain(uniquename) {
 				return
 			}
 
@@ -171,7 +172,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 
 			// Correct the domain...
 
-			out.StartDomain(domain.UniqueName)
+			out.StartDomain(uniquename)
 			var providersWithExistingZone []*models.DNSProviderInstance
 			/// For each DSP...
 			for _, provider := range domain.DNSProviderInstances {

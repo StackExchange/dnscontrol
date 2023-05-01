@@ -200,7 +200,7 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone)
+		recs, err := provider.GetZoneRecords(zone, nil)
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}

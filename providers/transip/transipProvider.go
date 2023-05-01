@@ -255,7 +255,7 @@ func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConf
 	return desired.Name == existing.Name && desired.TTL == existing.TTL && desired.Type == existing.Type
 }
 
-func (n *transipProvider) GetZoneRecords(domainName string) (models.Records, error) {
+func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
 
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if err != nil {
