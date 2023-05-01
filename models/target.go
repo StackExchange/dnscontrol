@@ -86,6 +86,8 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 
 // GetTargetRFC1035Quoted returns the target as it would be in an
 // RFC1035-style zonefile.
+// Do not use this function if RecordConfig might be a pseudo-rtype
+// such as R53_ALIAS.  Use GetTargetCombined() instead.
 func (rc *RecordConfig) GetTargetRFC1035Quoted() string {
 	return rc.zoneFileQuoted()
 }
