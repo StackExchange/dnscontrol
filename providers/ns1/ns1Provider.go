@@ -249,6 +249,10 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
+	if key.Type == "NS1_URLFWD" {
+		key.Type = "URLFWD"
+	}
+
 	_, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 	return err
 }
@@ -314,6 +318,9 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsAlgorithm)),
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest}})
+		} else if r.Type == "NS1_URLFWD" {
+			rec.Type = "URLFWD"
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
