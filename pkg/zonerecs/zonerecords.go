@@ -38,7 +38,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 // corrections that are purely informational. (i.e. `.F` is nil)
 func CountActionable(corrections []*models.Correction) int {
 	count := 0
-	for i, _ := range corrections {
+	for i := range corrections {
 		if corrections[i].F != nil {
 			count++
 		}
