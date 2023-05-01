@@ -363,7 +363,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
-		panic("foo")
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
