@@ -132,7 +132,7 @@ func handsoff(
 	if len(conflicts) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
 		if unmanagedSafely {
 			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
@@ -157,7 +157,7 @@ func reportSkips(recs models.Records, full bool) []string {
 	}
 
 	for _, r := range recs[:last] {
-		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 	}
 	if shorten {
 		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))

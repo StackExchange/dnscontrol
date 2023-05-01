@@ -36,7 +36,7 @@ func showRecs(recs models.Records) string {
 	for _, rec := range recs {
 		result += (rec.GetLabel() +
 			" " + rec.Type +
-			" " + rec.GetTargetRFC1035Quoted() +
+			" " + rec.GetTargetCombined() +
 			"\n")
 	}
 	return result
