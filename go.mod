@@ -35,7 +35,7 @@ require (
 	github.com/hexonet/go-sdk/v3 v3.5.4
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
-	github.com/miekg/dns v1.1.53
+	github.com/miekg/dns v1.1.54
 	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.2
