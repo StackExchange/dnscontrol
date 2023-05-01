@@ -483,6 +483,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		return nil, err
 	}
 	instructions = reorderInstructions(instructions)
+	wasReport := false
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
@@ -492,6 +493,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 		case diff2.REPORT:
 			chg = r53Types.Change{}
+			wasReport = true
 
 		case diff2.CREATE:
 			fallthrough
@@ -545,19 +547,33 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					var err error
-					req.HostedZoneId = zone.Id
-					withRetry(func() error {
-						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+
+		if wasReport {
+
+			// Add a "msg only" correction.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+				})
+
+		} else {
+
+			// Add a function to execute.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						var err error
+						req.HostedZoneId = zone.Id
+						withRetry(func() error {
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							return err
+						})
 						return err
-					})
-					return err
-				},
-			})
+					},
+				})
+
+		}
 
 	}
 

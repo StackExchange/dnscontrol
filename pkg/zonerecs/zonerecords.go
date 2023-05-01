@@ -32,3 +32,16 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 
 	return driver.GetZoneRecordsCorrections(dc, existingRecords)
 }
+
+// CountActionable returns the number of corrections that have
+// actions.  It is like `len(corrections)` but doesn't count any
+// corrections that are purely informational. (i.e. `.F` is nil)
+func CountActionable(corrections []*models.Correction) int {
+	count := 0
+	for i, _ := range corrections {
+		if corrections[i].F != nil {
+			count++
+		}
+	}
+	return count
+}
