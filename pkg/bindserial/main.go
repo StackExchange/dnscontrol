@@ -6,6 +6,6 @@ package bindserial
 // by isolating it to this file we limit the blast radius of this bad
 // decision.
 
-// ForceBindSerial if non-zero, BIND will generate SOA serial numbers
+// ForcedValue if non-zero, BIND will generate SOA serial numbers
 // using this value.
 var ForcedValue int64
