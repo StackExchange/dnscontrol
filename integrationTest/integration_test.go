@@ -319,6 +319,14 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 	}
 
+	// Issue https://github.com/StackExchange/dnscontrol/issues/491
+	t.Run("No trailing dot in nameserver", func(t *testing.T) {
+		for _, nameserver := range dc.Nameservers {
+			if strings.HasSuffix(nameserver.Name, ".") {
+				t.Errorf("Provider returned nameserver with trailing dot: %s (See issue https://github.com/StackExchange/dnscontrol/issues/491, TL;DR: use models.ToNameserversStripTD in GetNameservers)", nameserver)
+			}
+		}
+	})
 }
 
 func TestDualProviders(t *testing.T) {
