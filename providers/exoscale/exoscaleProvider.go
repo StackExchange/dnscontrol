@@ -88,7 +88,7 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *exoscaleProvider) GetZoneRecords(domainName string) (models.Records, error) {
+func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
 	//dc.Punycode()
 
 	domain, err := c.findDomainByName(domainName)

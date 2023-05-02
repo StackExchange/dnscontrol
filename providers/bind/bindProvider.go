@@ -153,7 +153,7 @@ func (c *bindProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
@@ -162,6 +162,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	if c.zonefile == "" {
 		// This layering violation is needed for tests only.
 		// Otherwise, this is set already.
+		// Note: In this situation there is no "uniquename" or "tag".
 		c.zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat, domain, domain, ""))
 	}
@@ -297,7 +298,9 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		}
 
 		c.zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat, dc.Name, dc.Name, ""))
+			makeFileName(c.filenameformat,
+				dc.Metadata[models.DOMAIN_UNIQUENAME], dc.Name, dc.Metadata[models.DOMAIN_TAG]),
+		)
 
 		// We only change the serial number if there is a change.
 		if !c.skipNextSoaIncrease {

@@ -108,7 +108,7 @@ func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err

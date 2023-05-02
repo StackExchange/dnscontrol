@@ -86,7 +86,7 @@ func (n *netlifyProvider) getZone(domain string) (*dnsZone, error) {
 	return nil, fmt.Errorf("no zones found for this domain")
 }
 
-func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, err := n.getZone(domain)
 	if err != nil {
 		return nil, err

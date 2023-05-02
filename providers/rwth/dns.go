@@ -13,7 +13,7 @@ import (
 var RWTHDefaultNs = []string{"dns-1.dfn.de", "dns-2.dfn.de", "zs1.rz.rwth-aachen.de", "zs2.rz.rwth-aachen.de"}
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *rwthProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *rwthProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := api.getAllRecords(domain)
 	if err != nil {
 		return nil, err

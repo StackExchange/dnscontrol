@@ -10,7 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
 
-func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := api.getDNS(domain)
 	if err != nil {
 		return nil, err

@@ -226,7 +226,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err

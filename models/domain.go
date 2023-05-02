@@ -2,19 +2,25 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
+const (
+	DOMAIN_UNIQUENAME = "dnscontrol_uniquename"
+	DOMAIN_TAG        = "dnscontrol_tag"
+)
+
 // DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
 	Name             string         `json:"name"` // NO trailing "."
-	Tag              string         `json:"-"`    // split horizon tag
-	UniqueName       string         `json:"-"`    // .Name + "!" + .Tag
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
+	// Metadata[DOMAIN_UNIQUENAME] // .Name + "!" + .Tag
+	// Metadata[DOMAIN_TAG] // split horizon tag
 	Metadata    map[string]string `json:"meta,omitempty"`
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
@@ -36,6 +42,41 @@ type DomainConfig struct {
 	// 2. Final driver instances are loaded after we load credentials. Any actual provider interaction requires that.
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
+}
+
+// GetSplitHorizonNames returns the domain's name, uniquename, and tag.
+func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
+	return dc.Name, dc.Metadata[DOMAIN_UNIQUENAME], dc.Metadata[DOMAIN_TAG]
+}
+
+// GetUniqueName returns the domain's uniquename.
+func (dc *DomainConfig) GetUniqueName() (uniquename string) {
+	return dc.Metadata[DOMAIN_UNIQUENAME]
+}
+
+// UpdateSplitHorizonNames updates the split horizon fields
+// (uniquename and tag) based on name.
+func (dc *DomainConfig) UpdateSplitHorizonNames() {
+	name, unique, tag := dc.GetSplitHorizonNames()
+
+	if unique == "" {
+		unique = name
+	}
+
+	if tag == "" {
+		l := strings.SplitN(name, "!", 2)
+		if len(l) == 2 {
+			name = l[0]
+			tag = l[1]
+		}
+	}
+
+	dc.Name = name
+	if dc.Metadata == nil {
+		dc.Metadata = map[string]string{}
+	}
+	dc.Metadata[DOMAIN_UNIQUENAME] = unique
+	dc.Metadata[DOMAIN_TAG] = tag
 }
 
 // Copy returns a deep copy of the DomainConfig.
