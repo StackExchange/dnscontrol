@@ -11,6 +11,7 @@ import (
 
 // makeFileName uses format to generate a zone's filename.  See the
 func makeFileName(format, uniquename, domain, tag string) string {
+	//fmt.Printf("DEBUG: makeFileName(%q, %q, %q, %q)\n", format, uniquename, domain, tag)
 	if format == "" {
 		fmt.Fprintf(os.Stderr, "BUG: makeFileName called with null format\n")
 		return uniquename
@@ -55,6 +56,7 @@ func makeFileName(format, uniquename, domain, tag string) string {
 		}
 	}
 
+	//fmt.Printf("DEBUG: makeFileName returns= %q\n", b.String())
 	return b.String()
 }
 

@@ -64,7 +64,7 @@ func (dc *DomainConfig) UpdateSplitHorizonNames() {
 	}
 
 	if tag == "" {
-		l := strings.SplitN(dc.Name, "!", 2)
+		l := strings.SplitN(name, "!", 2)
 		if len(l) == 2 {
 			name = l[0]
 			tag = l[1]

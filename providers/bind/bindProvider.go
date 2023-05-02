@@ -162,10 +162,9 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if c.zonefile == "" {
 		// This layering violation is needed for tests only.
 		// Otherwise, this is set already.
+		// Note: In this situation there is no "uniquename" or "tag".
 		c.zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat,
-				meta[models.DOMAIN_UNIQUENAME], domain, meta[models.DOMAIN_TAG]),
-		)
+			makeFileName(c.filenameformat, domain, domain, ""))
 	}
 	content, err := os.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
