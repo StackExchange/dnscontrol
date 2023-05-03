@@ -1,21 +1,16 @@
 name: StackExchange/dnscontrol/build
 on:
   pull_request:
-  workflow_dispatch:
-    inputs:
-      cache-key:
-        required: false
-        default: 1639697695
-        description: Change to force cache reset `pwsh > Get-Date -UFormat %s`
-      gover:
-        required: false
-        default: '1.18'
-        description: Go Version to use
+
+env:
+  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  gover: 1.18
+
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ inputs.gover }}
+      image: golang:${{ env.gover }}
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -23,8 +18,8 @@ jobs:
     - name: restore_cache
       uses: actions/cache@v3.3.1
       with:
-        key: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
-        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
+        key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
         path: "/home/circleci/go/pkg/mod"
     - name: Install goreleaser
       run: go install github.com/goreleaser/goreleaser@latest
@@ -42,7 +37,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ inputs.gover }}
+      image: golang:${{ env.gover }}
     needs:
     - build
     env:
@@ -89,8 +84,8 @@ jobs:
     - name: restore_cache
       uses: actions/cache@v3.3.1
       with:
-        key: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
-        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
+        key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       run: |-
         if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
@@ -106,7 +101,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ inputs.gover }}
+      image: golang:${{ env.gover }}
     needs:
     - integration-tests
     env:
@@ -153,8 +148,8 @@ jobs:
     - name: restore_cache
       uses: actions/cache@v3.3.1
       with:
-        key: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
-        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
+        key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       run: |-
         if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
@@ -171,7 +166,7 @@ jobs:
 ##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
 #    runs-on: ubuntu-latest
 #    container:
-#      image: golang:${{ inputs.gover }}
+#      image: golang:${{ env.gover }}
 #    needs:
 #    - build
 #    env:
@@ -187,8 +182,8 @@ jobs:
 #    - name: restore_cache
 #      uses: actions/cache@v3.3.1
 #      with:
-#        key: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
-#        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ inputs.cache-key }}
+#        key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+#        restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
 #    - name: Install goreleaser
 #      run: go install github.com/goreleaser/goreleaser@latest
 #    - run: goreleaser release
