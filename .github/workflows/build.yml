@@ -31,8 +31,14 @@ jobs:
     - uses: actions/upload-artifact@v3.1.1
       with:
         path: "/tmp/test-results"
+#    - name: Build binaries
+#      run: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
     - name: Build binaries
-      run: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
+      if: github.ref.type == 'tag'
+      run: goreleaser build --snapshot
+    - name: build binaries
+      if: github.ref.type != 'tag'
+      run: goreleaser build
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
   integration-tests:
