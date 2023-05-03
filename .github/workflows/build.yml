@@ -34,11 +34,11 @@ jobs:
 #    - name: Build binaries
 #      run: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
     - name: Build binaries
-      if: github.ref.type == 'tag'
-      run: goreleaser build --snapshot
-    - name: build binaries
-      if: github.ref.type != 'tag'
+      if: github.ref_type == 'tag'
       run: goreleaser build
+    - name: build binaries
+      if: github.ref_type != 'tag'
+      run: goreleaser build --snapshot
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
   integration-tests:
