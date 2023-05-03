@@ -26,7 +26,7 @@ jobs:
     - run: mkdir -p "$TEST_RESULTS"
     - name: Run unit tests
       run: |
-        go install gotestsum@latest
+        go install gotest.tools/gotestsum@latest
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - uses: actions/upload-artifact@v3.1.1
       with:
