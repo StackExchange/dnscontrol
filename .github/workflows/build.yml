@@ -25,7 +25,9 @@ jobs:
       run: go install github.com/goreleaser/goreleaser@latest
     - run: mkdir -p "$TEST_RESULTS"
     - name: Run unit tests
-      run: gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+      run: |
+        go install gotestsum@latest
+        gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - uses: actions/upload-artifact@v3.1.1
       with:
         path: "/tmp/test-results"
