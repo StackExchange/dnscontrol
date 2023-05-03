@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ env.gover }}
+      image: golang:1.18
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -37,7 +37,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ env.gover }}
+      image: golang:1.18
     needs:
     - build
     env:
