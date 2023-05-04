@@ -319,14 +319,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 	}
 
-	// Issue https://github.com/StackExchange/dnscontrol/issues/491
-	t.Run("No trailing dot in nameserver", func(t *testing.T) {
-		for _, nameserver := range dc.Nameservers {
-			if strings.HasSuffix(nameserver.Name, ".") {
-				t.Errorf("Provider returned nameserver with trailing dot: %s (See issue https://github.com/StackExchange/dnscontrol/issues/491, TL;DR: use models.ToNameserversStripTD in GetNameservers)", nameserver)
-			}
-		}
-	})
 }
 
 func TestDualProviders(t *testing.T) {
@@ -379,6 +371,36 @@ func TestDualProviders(t *testing.T) {
 		}
 		t.FailNow()
 	}
+}
+
+func TestNameserverDots(t *testing.T) {
+	// Issue https://github.com/StackExchange/dnscontrol/issues/491
+	// If this fails, the provider's GetNameservers() function uses
+	// models.ToNameserversStripTD() instead of models.ToNameservers()
+	// or vise-versa.
+
+	// Setup:
+	p, domain, _, _ := getProvider(t)
+	if p == nil {
+		return
+	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
+	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
+
+	t.Run("No trailing dot in nameserver", func(t *testing.T) {
+		for _, nameserver := range dc.Nameservers {
+			//fmt.Printf("DEBUG: nameserver.Name = %q\n", nameserver.Name)
+			if strings.HasSuffix(nameserver.Name, ".") {
+				t.Errorf("Provider returned nameserver with trailing dot: %q", nameserver)
+			}
+		}
+	})
 }
 
 type TestGroup struct {
