@@ -198,25 +198,25 @@ func TestNSAtRoot(t *testing.T) {
 	}
 }
 
-func TestURLFWDValid(t *testing.T) {
-	rec := &models.RecordConfig{Type: "URLFWD"}
+func TestNS1URLFWDValid(t *testing.T) {
+	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
 	rec.SetLabel("test1", "foo.com")
 	rec.SetTarget("/ http://example.com 302 2 0")
 
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {
-		t.Error("Expect no error with valid URLFWD target")
+		t.Error("Expect no error with valid NS1_URLFWD target")
 	}
 }
 
-func TestURLFWDInvalid(t *testing.T) {
-	rec := &models.RecordConfig{Type: "URLFWD"}
+func TestNS1URLFWDInvalid(t *testing.T) {
+	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
 	rec.SetLabel("test2", "foo.com")
 	rec.SetTarget("/ http://example.com 302 2")
 
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) == 0 {
-		t.Error("Expect error with invalid URLFWD target")
+		t.Error("Expect error with invalid NS1_URLFWD target")
 	}
 }
 
