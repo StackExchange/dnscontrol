@@ -4,13 +4,13 @@ on:
 
 env:
   cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
-  gover: 1.18
+  go-mod-path: /go/pkg/mod
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:${{ vars.GOVER }}
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -20,7 +20,7 @@ jobs:
       with:
         key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
         restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
-        path: "/home/circleci/go/pkg/mod"
+        path: ${{ env.go-mod-path }}
     - name: Install goreleaser
       run: go install github.com/goreleaser/goreleaser@latest
     - run: mkdir -p "$TEST_RESULTS"
@@ -31,8 +31,6 @@ jobs:
     - uses: actions/upload-artifact@v3.1.1
       with:
         path: "/tmp/test-results"
-#    - name: Build binaries
-#      run: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
     - name: Build binaries
       if: github.ref_type == 'tag'
       run: goreleaser build
@@ -41,52 +39,111 @@ jobs:
       run: goreleaser build --snapshot
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
+  integration-test-providers:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
+    steps:
+    - name: Set Integration Test Providers
+      id: get_integration_test_providers
+      shell: pwsh
+      run: |
+        $Providers = @()
+        $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
+        $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
+        $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
+        ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+          if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
+            $Providers += $_
+          }
+        }
+        Write-Host "Integration test providers: $Providers"
+        echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
+      env:
+        PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
+        ENV_CONTEXT: ${{ toJson(env) }}
+        VARS_CONTEXT: ${{ toJson(vars) }}
+        SECRETS_CONTEXT: ${{ toJson(secrets) }}
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
+    needs: integration-test-providers
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
-    needs:
-    - build
-    env:
-      TEST_RESULTS: "/tmp/test-results"
-      GOTESTSUM_FORMAT: testname
-      BIND_DOMAIN: example.com
-      HEXONET_DOMAIN: a-b-c-music.com
-      HEXONET_ENTITY: OTE
-      HEXONET_PW: test.passw0rd
-      HEXONET_UID: test.user
-      AZURE_DNS_RESOURCE_GROUP: DNSControl
-      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-      GCLOUD_PROJECT: dnscontrol-dev
-      GCLOUD_TYPE: service_account
-      NAMEDOTCOM_URL: api.name.com
-      NAMEDOTCOM_USER: dnscontroltest
+      image: golang:${{ vars.GOVER }}
+      env:
+        TEST_RESULTS: "/tmp/test-results"
+        GOTESTSUM_FORMAT: testname
+
+#        AZURE_DNS_RESOURCE_GROUP: DNSControl
+#        AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
+#        AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
+#        AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
+#        AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
+#        AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+
+        BIND_DOMAIN: example.com
+
+        CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
+        CLOUDFLAREAPI_DOMAIN: ${{ secrets.CLOUDFLAREAPI_DOMAIN }}
+#        CLOUDFLAREAPI_KEY: ${{ secrets.CLOUDFLAREAPI_KEY }}
+        CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+#        CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
+
+#        CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
+#        CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
+#        CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
+#        CLOUDNS_SUB_AUTH_ID: ${{ secrets.CLOUDNS_SUB_AUTH_ID }}
+
+        GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+        GANDI_V5_DOMAIN: ${{ secrets.GANDI_V5_DOMAIN }}
+
+        GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
+        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+        GCLOUD_PROJECT: dnscontrol-dev
+        GCLOUD_TYPE: service_account
+
+        HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+        HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
+        HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
+        HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+
+        HEXONET_DOMAIN: a-b-c-music.com
+        HEXONET_ENTITY: OTE
+        HEXONET_PW: test.passw0rd
+        HEXONET_UID: test.user
+
+        NAMEDOTCOM_DOMAIN: ${{ secrets.NAMEDOTCOM_DOMAIN }}
+        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+#        NAMEDOTCOM_URL: api.name.com
+#        NAMEDOTCOM_USER: dnscontroltest
+
+        ROUTE53_DOMAIN: ${{ secrets.ROUTE53_DOMAIN }}
+        ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
+        ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+
+        DIGITALOCEAN_DOMAIN: ${{ secrets.DIGITALOCEAN_DOMAIN }}
+        DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+#        INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
+#        INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+#        INWX_USER: ${{ secrets.INWX_USER }}
+
+#        POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+#        POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+#        POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
+#        POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
+
+        TRANSIP_ACCOUNT_NAME: ${{ vars.TRANSIP_ACCOUNT_NAME }}
+        TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
+        TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+    concurrency: ${{ matrix.provider }}
     strategy:
+      fail-fast: false
       matrix:
-        provider:
-        - BIND
-        - HEXONET
-        - AZURE_DNS
-        - CLOUDFLAREAPI
-        - GCLOUD
-        - NAMEDOTCOM
-        - ROUTE53
-        - CLOUDNS
-        - DIGITALOCEAN
-        - GANDI_V5
-        - HEDNS
-        - INWX
-        - NS1
-        - POWERDNS
-        - TRANSIP
+        provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - name: Test ${{ matrix.provider }} set
-      run: |-
-        if [ -z "$${{ matrix.provider }}_DOMAIN" ] ; then
-          echo "Skip test for ${{ matrix.provider }} provider"
-          circleci-agent step halt
-        fi
     - uses: actions/checkout@v3.5.0
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
@@ -94,6 +151,7 @@ jobs:
       with:
         key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
         restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       run: |-
         if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
@@ -109,48 +167,83 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:1:18
+      image: golang:${{ vars.GOVER }}
     needs:
+    - integration-test-providers
     - integration-tests
     env:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
+
+#      AZURE_DNS_RESOURCE_GROUP: DNSControl
+#      AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
+#      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
+#      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
+#      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
+#      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+
       BIND_DOMAIN: example.com
+
+      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
+      CLOUDFLAREAPI_DOMAIN: ${{ secrets.CLOUDFLAREAPI_DOMAIN }}
+#      CLOUDFLAREAPI_KEY: ${{ secrets.CLOUDFLAREAPI_KEY }}
+      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+#      CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
+
+#      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
+#      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
+#      CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
+#      CLOUDNS_SUB_AUTH_ID: ${{ secrets.CLOUDNS_SUB_AUTH_ID }}
+
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+      GANDI_V5_DOMAIN: ${{ secrets.GANDI_V5_DOMAIN }}
+
+      GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
+      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+      GCLOUD_PROJECT: dnscontrol-dev
+      GCLOUD_TYPE: service_account
+
+      HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+
       HEXONET_DOMAIN: a-b-c-music.com
       HEXONET_ENTITY: OTE
       HEXONET_PW: test.passw0rd
       HEXONET_UID: test.user
-      AZURE_DNS_RESOURCE_GROUP: DNSControl
-      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-      GCLOUD_PROJECT: dnscontrol-dev
-      GCLOUD_TYPE: service_account
-      NAMEDOTCOM_URL: api.name.com
-      NAMEDOTCOM_USER: dnscontroltest
+
+      NAMEDOTCOM_DOMAIN: ${{ secrets.NAMEDOTCOM_DOMAIN }}
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+#      NAMEDOTCOM_URL: api.name.com
+#      NAMEDOTCOM_USER: dnscontroltest
+
+      ROUTE53_DOMAIN: ${{ secrets.ROUTE53_DOMAIN }}
+      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
+      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+
+      DIGITALOCEAN_DOMAIN: ${{ secrets.DIGITALOCEAN_DOMAIN }}
+      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+#      INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
+#      INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+#      INWX_USER: ${{ secrets.INWX_USER }}
+
+#      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+#      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+#      POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
+#      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
+
+      TRANSIP_ACCOUNT_NAME: ${{ vars.TRANSIP_ACCOUNT_NAME }}
+      TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
+      TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+    concurrency: ${{ matrix.provider }}
     strategy:
+      fail-fast: false
       matrix:
-        provider:
-        - BIND
-        - HEXONET
-        - AZURE_DNS
-        - CLOUDFLAREAPI
-        - GCLOUD
-        - NAMEDOTCOM
-        - ROUTE53
-        - CLOUDNS
-        - DIGITALOCEAN
-        - GANDI_V5
-        - HEDNS
-        - INWX
-        - NS1
-        - POWERDNS
-        - TRANSIP
+        provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - name: Test ${{ matrix.provider }} set
-      run: |-
-        if [ -z "$${{ matrix.provider }}_DOMAIN" ] ; then
-          echo "Skip test for ${{ matrix.provider }} provider"
-          circleci-agent step halt
-        fi
     - uses: actions/checkout@v3.5.0
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
@@ -158,6 +251,7 @@ jobs:
       with:
         key: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
         restore-keys: linux-go-{{ checksum "go.sum" }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       run: |-
         if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
