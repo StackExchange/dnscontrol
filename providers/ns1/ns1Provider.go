@@ -85,7 +85,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 			nservers = append(nservers, ns)
 		}
 	}
-	return models.ToNameserversStripTD(nservers)
+	return models.ToNameservers(nservers)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
