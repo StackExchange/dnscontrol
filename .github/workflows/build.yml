@@ -28,6 +28,8 @@ jobs:
       run: |
         go install gotest.tools/gotestsum@latest
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+    - name: Enforce Go Formatted Code
+      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
     - uses: actions/upload-artifact@v3.1.1
       with:
         path: "/tmp/test-results"
@@ -37,8 +39,6 @@ jobs:
     - name: build binaries
       if: github.ref_type != 'tag'
       run: goreleaser build --snapshot
-    - name: Enforce Go Formatted Code
-      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
