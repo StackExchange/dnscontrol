@@ -1,0 +1,369 @@
+name: StackExchange/dnscontrol/build
+on:
+  pull_request:
+
+env:
+  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  go-mod-path: /go/pkg/mod
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:${{ vars.GOVER }}
+    env:
+      TEST_RESULTS: "/tmp/test-results"
+    steps:
+    - uses: actions/checkout@v3.5.0
+    - name: restore_cache
+      uses: actions/cache@v3.3.1
+      with:
+        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
+    - name: Install goreleaser
+      run: go install github.com/goreleaser/goreleaser@latest
+    - run: mkdir -p "$TEST_RESULTS"
+    - name: Run unit tests
+      run: |
+        go install gotest.tools/gotestsum@latest
+        gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+    - uses: actions/upload-artifact@v3.1.1
+      with:
+        path: "/tmp/test-results"
+    - name: Build binaries
+      if: github.ref_type == 'tag'
+      run: goreleaser build
+    - name: build binaries
+      if: github.ref_type != 'tag'
+      run: goreleaser build --snapshot
+    - name: Enforce Go Formatted Code
+      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
+  integration-test-providers:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
+    steps:
+    - name: Set Integration Test Providers
+      id: get_integration_test_providers
+      shell: pwsh
+      run: |
+        $Providers = @()
+        $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
+        $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
+        $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
+        ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+          if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
+            $Providers += $_
+          }
+        }
+        Write-Host "Integration test providers: $Providers"
+        echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
+      env:
+        PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
+        ENV_CONTEXT: ${{ toJson(env) }}
+        VARS_CONTEXT: ${{ toJson(vars) }}
+        SECRETS_CONTEXT: ${{ toJson(secrets) }}
+  integration-tests:
+    if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
+    needs: integration-test-providers
+    runs-on: ubuntu-latest
+    container:
+      image: golang:${{ vars.GOVER }}
+      env:
+        TEST_RESULTS: "/tmp/test-results"
+        GOTESTSUM_FORMAT: testname
+
+        # These providers will be tested if the env variable is set.
+        # Set it to the domain name to use during the test.
+        AZURE_DNS_DOMAIN: ${{ env.AZURE_DNS_DOMAIN_DOMAIN }}
+        BIND_DOMAIN: ${{ env.BIND_DOMAIN_DOMAIN }}
+        CLOUDFLAREAPI_DOMAIN: ${{ env.CLOUDFLAREAPI_DOMAIN_DOMAIN }}
+        CLOUDNS_DOMAIN: ${{ env.CLOUDNS_DOMAIN_DOMAIN }}
+        CSCGLOBAL_DOMAIN: ${{ env.CSCGLOBAL_DOMAIN_DOMAIN }}
+        DIGITALOCEAN_DOMAIN: ${{ env.DIGITALOCEAN_DOMAIN_DOMAIN }}
+        GANDI_V5_DOMAIN: ${{ env.GANDI_V5_DOMAIN_DOMAIN }}
+        GCLOUD_DOMAIN: ${{ env.GCLOUD_DOMAIN_DOMAIN }}
+        HEDNS_DOMAIN: ${{ env.HEDNS_DOMAIN_DOMAIN }}
+        HEXONET_DOMAIN: ${{ env.HEXONET_DOMAIN_DOMAIN }}
+        NAMEDOTCOM_DOMAIN: ${{ env.NAMEDOTCOM_DOMAIN_DOMAIN }}
+        POWERDNS_DOMAIN: ${{ env.POWERDNS_DOMAIN_DOMAIN }}
+        ROUTE53_DOMAIN: ${{ env.ROUTE53_DOMAIN_DOMAIN }}
+        TRANSIP_DOMAIN: ${{ env.TRANSIP_DOMAIN_DOMAIN }}
+
+        # The above providers have additional env variables they
+        # need for credentials and such.
+
+        AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID_DOMAIN }}
+        AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET_DOMAIN }}
+        AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP_DOMAIN }}
+        AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID_DOMAIN }}
+        AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID_DOMAIN }}
+
+        CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID_DOMAIN }}
+        CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN_DOMAIN }}
+
+        CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID_DOMAIN }}
+        CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD_DOMAIN }}
+
+        CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY_DOMAIN }}
+        CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN_DOMAIN }}
+
+        DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN_DOMAIN }}
+
+        GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY_DOMAIN }}
+
+        GCLOUD_EMAIL: ${{ secrets.GCLOUD_EMAIL_DOMAIN }}
+        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY_DOMAIN }}
+        GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_DOMAIN }}
+        GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE_DOMAIN }}
+ 
+        HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD_DOMAIN }}
+        HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET_DOMAIN }}
+        HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME_DOMAIN }}
+
+        HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY_DOMAIN }}
+        HEXONET_PW: ${{ secrets.HEXONET_PW_DOMAIN }}
+        HEXONET_UID: ${{ secrets.HEXONET_UID_DOMAIN }}
+
+        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY_DOMAIN }}
+        NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL_DOMAIN }}
+        NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER_DOMAIN }}
+
+        POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY_DOMAIN }}
+        POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL_DOMAIN }}
+        POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME_DOMAIN }}
+
+        ROUTE53_KEY: ${{ secrets.ROUTE53_KEY_DOMAIN }}
+        ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID_DOMAIN }}
+
+        TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME_DOMAIN }}
+        TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY_DOMAIN }}
+
+    concurrency: ${{ matrix.provider }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
+    steps:
+    - uses: actions/checkout@v3.5.0
+    - run: mkdir -p "$TEST_RESULTS"
+    - name: restore_cache
+      uses: actions/cache@v3.3.1
+      with:
+        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
+    - name: Run integration tests for ${{ matrix.provider }} provider
+      run: |-
+        go install gotest.tools/gotestsum@latest
+        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
+          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
+        else
+          echo "Skip test for ${{ matrix.provider }} provider"
+        fi
+      working-directory: integrationTest
+    - uses: actions/upload-artifact@v3.1.1
+      with:
+        path: "/tmp/test-results"
+  integration-tests-diff2:
+    if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    container:
+      image: golang:${{ vars.GOVER }}
+    needs:
+    - integration-test-providers
+    - integration-tests
+    env:
+      TEST_RESULTS: "/tmp/test-results"
+      GOTESTSUM_FORMAT: testname
+
+      # These providers will be tested if the env variable is set.
+      # Set it to the domain name to use during the test.
+      AZURE_DNS_DOMAIN: ${{ env.AZURE_DNS_DOMAIN_DOMAIN }}
+      BIND_DOMAIN: ${{ env.BIND_DOMAIN_DOMAIN }}
+      CLOUDFLAREAPI_DOMAIN: ${{ env.CLOUDFLAREAPI_DOMAIN_DOMAIN }}
+      CLOUDNS_DOMAIN: ${{ env.CLOUDNS_DOMAIN_DOMAIN }}
+      CSCGLOBAL_DOMAIN: ${{ env.CSCGLOBAL_DOMAIN_DOMAIN }}
+      DIGITALOCEAN_DOMAIN: ${{ env.DIGITALOCEAN_DOMAIN_DOMAIN }}
+      GANDI_V5_DOMAIN: ${{ env.GANDI_V5_DOMAIN_DOMAIN }}
+      GCLOUD_DOMAIN: ${{ env.GCLOUD_DOMAIN_DOMAIN }}
+      HEDNS_DOMAIN: ${{ env.HEDNS_DOMAIN_DOMAIN }}
+      HEXONET_DOMAIN: ${{ env.HEXONET_DOMAIN_DOMAIN }}
+      NAMEDOTCOM_DOMAIN: ${{ env.NAMEDOTCOM_DOMAIN_DOMAIN }}
+      POWERDNS_DOMAIN: ${{ env.POWERDNS_DOMAIN_DOMAIN }}
+      ROUTE53_DOMAIN: ${{ env.ROUTE53_DOMAIN_DOMAIN }}
+      TRANSIP_DOMAIN: ${{ env.TRANSIP_DOMAIN_DOMAIN }}
+
+      # The above providers have additional env variables they
+      # need for credentials and such.
+
+      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID_DOMAIN }}
+      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET_DOMAIN }}
+      AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP_DOMAIN }}
+      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID_DOMAIN }}
+      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID_DOMAIN }}
+
+      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID_DOMAIN }}
+      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN_DOMAIN }}
+
+      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID_DOMAIN }}
+      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD_DOMAIN }}
+
+      CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY_DOMAIN }}
+      CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN_DOMAIN }}
+
+      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN_DOMAIN }}
+
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY_DOMAIN }}
+
+      GCLOUD_EMAIL: ${{ secrets.GCLOUD_EMAIL_DOMAIN }}
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY_DOMAIN }}
+      GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_DOMAIN }}
+      GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE_DOMAIN }}
+
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD_DOMAIN }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET_DOMAIN }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME_DOMAIN }}
+
+      HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY_DOMAIN }}
+      HEXONET_PW: ${{ secrets.HEXONET_PW_DOMAIN }}
+      HEXONET_UID: ${{ secrets.HEXONET_UID_DOMAIN }}
+
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY_DOMAIN }}
+      NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL_DOMAIN }}
+      NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER_DOMAIN }}
+
+      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY_DOMAIN }}
+      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL_DOMAIN }}
+      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME_DOMAIN }}
+
+      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY_DOMAIN }}
+      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID_DOMAIN }}
+
+      TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME_DOMAIN }}
+      TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY_DOMAIN }}
+
+    concurrency: ${{ matrix.provider }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
+    steps:
+    - uses: actions/checkout@v3.5.0
+    - run: mkdir -p "$TEST_RESULTS"
+    - name: restore_cache
+      uses: actions/cache@v3.3.1
+      with:
+        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
+    - name: Run integration tests for ${{ matrix.provider }} provider
+      run: |-
+        go install gotest.tools/gotestsum@latest
+        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
+          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false -diff2
+        else
+          echo "Skip test for ${{ matrix.provider }} provider"
+        fi
+      working-directory: integrationTest
+    - uses: actions/upload-artifact@v3.1.1
+      with:
+        path: "/tmp/test-results"
+#  release:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
+#    runs-on: ubuntu-latest
+#    container:
+#      image: golang:${{ env.gover }}
+#    needs:
+#    - build
+#    env:
+#      DOCKERHUB_ACCESS_TOKEN:
+#      DOCKERHUB_USERNAME:
+#    steps:
+#    - uses: actions/checkout@v3.5.0
+##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
+#    - uses: "./.github/actions/docker_check"
+#      with:
+#        docker-password: "${{ secrets.DOCKER_PASSWORD }}"
+#        docker-username: "${{ env.DOCKER_LOGIN }}"
+#    - name: restore_cache
+#      uses: actions/cache@v3.3.1
+#      with:
+#        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+#        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+#    - name: Install goreleaser
+#      run: go install github.com/goreleaser/goreleaser@latest
+#    - run: goreleaser release
+#    - uses: actions/upload-artifact@v3.1.1
+#      with:
+#        path: dist
+#    - uses: actions/upload-artifact@v3.1.1
+#      with:
+#        path: |-
+#          dist/*.rpm
+#          dist/*.deb
+#  upload:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
+#    runs-on: ubuntu-latest
+#    container:
+#      image: python:3.10
+#    needs:
+#    - release
+#    env:
+#      CLOUDSMITH_API_KEY:
+#      CLOUDSMITH_USERNAME:
+#      DOCKER_LOGIN:
+#      DOCKER_PASSWORD:
+#    strategy:
+#      matrix:
+#        arch:
+#        - i386
+#        - x86_64
+#        - arm64
+#        format:
+#        distro:
+#    steps:
+#    - uses: actions/download-artifact@v3.0.1
+#      with:
+#        path: "."
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_ensure_api_key:
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_install_cli:
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_publish:
+#  upload_1:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
+#    runs-on: ubuntu-latest
+#    container:
+#      image: python:3.10
+#    needs:
+#    - release
+#    env:
+#      CLOUDSMITH_API_KEY:
+#      CLOUDSMITH_USERNAME:
+#      DOCKER_LOGIN:
+#      DOCKER_PASSWORD:
+#    strategy:
+#      matrix:
+#        arch:
+#        - i386
+#        - amd64
+#        - arm64
+#        format:
+#        distro:
+#    steps:
+#    - uses: actions/download-artifact@v3.0.1
+#      with:
+#        path: "."
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_ensure_api_key:
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_install_cli:
+##     # This item has no matching transformer
+##     - cloudsmith_cloudsmith_publish:
