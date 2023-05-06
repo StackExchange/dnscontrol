@@ -157,11 +157,11 @@ jobs:
         path: ${{ env.go-mod-path }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       run: |-
-        go install gotest.tools/gotestsum@latest
-        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
-        else
+        if [ -z "$${{ matrix.provider }}_DOMAIN" ] ; then
           echo "Skip test for ${{ matrix.provider }} provider"
+        else
+          go install gotest.tools/gotestsum@latest
+          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
         fi
       working-directory: integrationTest
     - uses: actions/upload-artifact@v3.1.1
