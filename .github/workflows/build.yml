@@ -77,20 +77,20 @@ jobs:
 
         # These providers will be tested if the env variable is set.
         # Set it to the domain name to use during the test.
-        AZURE_DNS_DOMAIN: ${{ env.AZURE_DNS_DOMAIN }}
-        BIND_DOMAIN: ${{ env.BIND_DOMAIN }}
-        CLOUDFLAREAPI_DOMAIN: ${{ env.CLOUDFLAREAPI_DOMAIN }}
-        CLOUDNS_DOMAIN: ${{ env.CLOUDNS_DOMAIN }}
-        CSCGLOBAL_DOMAIN: ${{ env.CSCGLOBAL_DOMAIN }}
-        DIGITALOCEAN_DOMAIN: ${{ env.DIGITALOCEAN_DOMAIN }}
-        GANDI_V5_DOMAIN: ${{ env.GANDI_V5_DOMAIN }}
-        GCLOUD_DOMAIN: ${{ env.GCLOUD_DOMAIN }}
-        HEDNS_DOMAIN: ${{ env.HEDNS_DOMAIN }}
-        HEXONET_DOMAIN: ${{ env.HEXONET_DOMAIN }}
-        NAMEDOTCOM_DOMAIN: ${{ env.NAMEDOTCOM_DOMAIN }}
-        POWERDNS_DOMAIN: ${{ env.POWERDNS_DOMAIN }}
-        ROUTE53_DOMAIN: ${{ env.ROUTE53_DOMAIN }}
-        TRANSIP_DOMAIN: ${{ env.TRANSIP_DOMAIN }}
+        AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
+        BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
+        CLOUDFLAREAPI_DOMAIN: ${{ vars.CLOUDFLAREAPI_DOMAIN }}
+        CLOUDNS_DOMAIN: ${{ vars.CLOUDNS_DOMAIN }}
+        CSCGLOBAL_DOMAIN: ${{ vars.CSCGLOBAL_DOMAIN }}
+        DIGITALOCEAN_DOMAIN: ${{ vars.DIGITALOCEAN_DOMAIN }}
+        GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
+        GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
+        HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+        HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
+        NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+        POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
+        ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
+        TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
         # The above providers have additional env variables they
         # need for credentials and such.
