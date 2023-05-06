@@ -130,14 +130,15 @@ jobs:
 #        INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
 #        INWX_USER: ${{ secrets.INWX_USER }}
 
-#        POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
-#        POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
-#        POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
-#        POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
+        POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+        POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+        POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
+        POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
 
         TRANSIP_ACCOUNT_NAME: ${{ vars.TRANSIP_ACCOUNT_NAME }}
         TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
         TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+
     concurrency: ${{ matrix.provider }}
     strategy:
       fail-fast: false
@@ -176,69 +177,71 @@ jobs:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
 
-#      AZURE_DNS_RESOURCE_GROUP: DNSControl
-#      AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
-#      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
-#      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
-#      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
-#      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+      # These providers will be tested if the env variable is set.
+      # Set it to the domain name to use during the test.
+      AZURE_DNS_DOMAIN: ${{ env.AZURE_DNS_DOMAIN_DOMAIN }}
+      BIND_DOMAIN: ${{ env.BIND_DOMAIN_DOMAIN }}
+      CLOUDFLAREAPI_DOMAIN: ${{ env.CLOUDFLAREAPI_DOMAIN_DOMAIN }}
+      CLOUDNS_DOMAIN: ${{ env.CLOUDNS_DOMAIN_DOMAIN }}
+      CSCGLOBAL_DOMAIN: ${{ env.CSCGLOBAL_DOMAIN_DOMAIN }}
+      DIGITALOCEAN_DOMAIN: ${{ env.DIGITALOCEAN_DOMAIN_DOMAIN }}
+      GANDI_V5_DOMAIN: ${{ env.GANDI_V5_DOMAIN_DOMAIN }}
+      GCLOUD_DOMAIN: ${{ env.GCLOUD_DOMAIN_DOMAIN }}
+      HEDNS_DOMAIN: ${{ env.HEDNS_DOMAIN_DOMAIN }}
+      HEXONET_DOMAIN: ${{ env.HEXONET_DOMAIN_DOMAIN }}
+      NAMEDOTCOM_DOMAIN: ${{ env.NAMEDOTCOM_DOMAIN_DOMAIN }}
+      POWERDNS_DOMAIN: ${{ env.POWERDNS_DOMAIN_DOMAIN }}
+      ROUTE53_DOMAIN: ${{ env.ROUTE53_DOMAIN_DOMAIN }}
+      TRANSIP_DOMAIN: ${{ env.TRANSIP_DOMAIN_DOMAIN }}
 
-      BIND_DOMAIN: example.com
+      # The above providers have additional env variables they
+      # need for credentials and such.
 
-      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
-      CLOUDFLAREAPI_DOMAIN: ${{ secrets.CLOUDFLAREAPI_DOMAIN }}
-#      CLOUDFLAREAPI_KEY: ${{ secrets.CLOUDFLAREAPI_KEY }}
-      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
-#      CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
+      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID_DOMAIN }}
+      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET_DOMAIN }}
+      AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP_DOMAIN }}
+      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID_DOMAIN }}
+      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID_DOMAIN }}
 
-#      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
-#      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
-#      CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
-#      CLOUDNS_SUB_AUTH_ID: ${{ secrets.CLOUDNS_SUB_AUTH_ID }}
+      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID_DOMAIN }}
+      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN_DOMAIN }}
 
-      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
-      GANDI_V5_DOMAIN: ${{ secrets.GANDI_V5_DOMAIN }}
+      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID_DOMAIN }}
+      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD_DOMAIN }}
 
-      GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
-      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-      GCLOUD_PROJECT: dnscontrol-dev
-      GCLOUD_TYPE: service_account
+      CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY_DOMAIN }}
+      CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN_DOMAIN }}
 
-      HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
-      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
-      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
-      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN_DOMAIN }}
 
-      HEXONET_DOMAIN: a-b-c-music.com
-      HEXONET_ENTITY: OTE
-      HEXONET_PW: test.passw0rd
-      HEXONET_UID: test.user
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY_DOMAIN }}
 
-      NAMEDOTCOM_DOMAIN: ${{ secrets.NAMEDOTCOM_DOMAIN }}
-      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
-#      NAMEDOTCOM_URL: api.name.com
-#      NAMEDOTCOM_USER: dnscontroltest
+      GCLOUD_EMAIL: ${{ secrets.GCLOUD_EMAIL_DOMAIN }}
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY_DOMAIN }}
+      GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_DOMAIN }}
+      GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE_DOMAIN }}
 
-      ROUTE53_DOMAIN: ${{ secrets.ROUTE53_DOMAIN }}
-      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
-      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD_DOMAIN }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET_DOMAIN }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME_DOMAIN }}
 
-      DIGITALOCEAN_DOMAIN: ${{ secrets.DIGITALOCEAN_DOMAIN }}
-      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY_DOMAIN }}
+      HEXONET_PW: ${{ secrets.HEXONET_PW_DOMAIN }}
+      HEXONET_UID: ${{ secrets.HEXONET_UID_DOMAIN }}
 
-#      INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
-#      INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
-#      INWX_USER: ${{ secrets.INWX_USER }}
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY_DOMAIN }}
+      NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL_DOMAIN }}
+      NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER_DOMAIN }}
 
-#      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
-#      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
-#      POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
-#      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
+      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY_DOMAIN }}
+      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL_DOMAIN }}
+      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME_DOMAIN }}
 
-      TRANSIP_ACCOUNT_NAME: ${{ vars.TRANSIP_ACCOUNT_NAME }}
-      TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
-      TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY_DOMAIN }}
+      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID_DOMAIN }}
+      TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME_DOMAIN }}
+      TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY_DOMAIN }}
+
     concurrency: ${{ matrix.provider }}
     strategy:
       fail-fast: false
