@@ -35,10 +35,10 @@ jobs:
         path: "/tmp/test-results"
     - name: Build binaries
       if: github.ref_type == 'tag'
-      run: goreleaser build --parallelism 2
+      run: goreleaser build --parallelism 4
     - name: build binaries
       if: github.ref_type != 'tag'
-      run: goreleaser build --parallelism 2 --snapshot
+      run: goreleaser build --parallelism 4 --snapshot
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
