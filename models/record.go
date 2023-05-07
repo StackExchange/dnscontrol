@@ -455,6 +455,22 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	return rr
 }
 
+func (rc *RecordConfig) Dependancies() []string {
+	rdtype, ok := dns.StringToType[rc.Type]
+	if !ok {
+		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
+	}
+
+	switch rdtype {
+	case dns.TypeNS:
+	case dns.TypeSRV:
+	case dns.TypeCNAME:
+	case dns.TypeMX:
+		return []string{rc.target}
+	}
+	return []string{}
+}
+
 // RecordKey represents a resource record in a format used by some systems.
 type RecordKey struct {
 	NameFQDN string
@@ -552,6 +568,15 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 		groups[namefqdn] = append(groups[namefqdn], rec)
 	}
 	return order, groups
+}
+
+func (recs Records) Dependancies() []string {
+	var dependancies []string
+	for _, rec := range recs {
+		dependancies = append(dependancies, rec.Dependancies()...)
+	}
+
+	return dependancies
 }
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.

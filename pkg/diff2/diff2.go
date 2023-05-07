@@ -50,6 +50,9 @@ type Change struct {
 	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
 	// return exactly one record.
 	HintRecordSetLen1 bool
+
+	// Slice with the dependancies of this changeset used to order all changes
+	HintDependancies []string
 }
 
 /*

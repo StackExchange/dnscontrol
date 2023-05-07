@@ -32,6 +32,9 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			}
 		}
 	}
+
+	instructions = orderByDependancies(instructions)
+
 	return instructions
 }
 
@@ -74,6 +77,8 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		}
 	}
 
+	instructions = orderByDependancies(instructions)
+
 	return instructions
 }
 
@@ -89,6 +94,9 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 			instructions = append(instructions, cs...)
 		}
 	}
+
+	instructions = orderByDependancies(instructions)
+
 	return instructions
 }
 
@@ -99,6 +107,7 @@ func mkAdd(l string, t string, msgs []string, newRecs models.Records) Change {
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.New = newRecs
+	c.HintDependancies = newRecs.Dependancies()
 	return c
 }
 
@@ -108,6 +117,7 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 	c.Key.Type = t
 	c.Old = oldRecs
 	c.New = newRecs
+	c.HintDependancies = newRecs.Dependancies()
 	return c
 }
 
@@ -116,6 +126,7 @@ func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change 
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.Old = oldRecs
+	c.HintDependancies = oldRecs.Dependancies()
 	return c
 }
 
