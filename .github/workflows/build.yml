@@ -65,7 +65,7 @@ jobs:
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
-  integration-tests:
+  integrtests-diff1:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     needs: integration-test-providers
     runs-on: ubuntu-latest
@@ -167,14 +167,14 @@ jobs:
     - uses: actions/upload-artifact@v3.1.1
       with:
         path: "/tmp/test-results"
-  integration-tests-diff2:
+  integrtests-diff2:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
       image: golang:${{ vars.GOVER }}
     needs:
     - integration-test-providers
-    - integration-tests
+    - integrtests-diff1
     env:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
