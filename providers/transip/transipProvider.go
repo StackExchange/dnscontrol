@@ -115,37 +115,96 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	}
 
 	for _, change := range instructions {
+
 		switch change.Type {
 		case diff2.DELETE:
-			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })))
+			oldEntries, err := recordsToNative(change.Old, true)
+			if err != nil {
+				return corrections, err
+			}
+			correction := change.CreateCorrection(
+				wrapChangeFunction(
+					oldEntries,
+					func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) },
+				),
+			)
+			corrections = append(corrections, correction)
+
 		case diff2.CREATE:
-			corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })))
+			newEntries, err := recordsToNative(change.New, false)
+			if err != nil {
+				return corrections, err
+			}
+			correction := change.CreateCorrection(
+				wrapChangeFunction(
+					newEntries,
+					func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) },
+				),
+			)
+			corrections = append(corrections, correction)
+
 		case diff2.CHANGE:
 			if canDirectApplyDNSEntries(change) {
-				corrections = append(corrections, change.CreateCorrection(wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })))
+				newEntries, err := recordsToNative(change.New, false)
+				if err != nil {
+					return corrections, err
+				}
+				correction := change.CreateCorrection(
+					wrapChangeFunction(
+						newEntries,
+						func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) },
+					),
+				)
+				corrections = append(corrections, correction)
 			} else {
-				deleteFunction := wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
-				createFunction := wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
-				corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
+
+				oldEntries, err := recordsToNative(change.Old, true)
+				if err != nil {
+					return corrections, err
+				}
+				newEntries, err := recordsToNative(change.New, false)
+				if err != nil {
+					return corrections, err
+				}
+
+				deleteCorrection := wrapChangeFunction(oldEntries, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+				createCorrection := wrapChangeFunction(newEntries, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
+				corrections = append(
+					corrections,
+					change.CreateCorrectionWithMessage("[1/2] delete", deleteCorrection),
+					change.CreateCorrectionWithMessage("[2/2] create", createCorrection),
+				)
 			}
 		case diff2.REPORT:
 			corrections = append(corrections, change.CreateMessage())
 		}
+
 	}
 
 	return corrections, nil
 }
 
-func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntry) error) func() error {
+func recordsToNative(records models.Records, useOriginal bool) ([]domain.DNSEntry, error) {
+	entries := make([]domain.DNSEntry, len(records))
+
+	for iX, record := range records {
+		entry, err := recordToNative(record, useOriginal)
+
+		if err != nil {
+			return nil, err
+		}
+
+		entries[iX] = entry
+	}
+
+	return entries, nil
+}
+
+func wrapChangeFunction(entries []domain.DNSEntry, executer func(rec domain.DNSEntry) error) func() error {
 	return func() error {
-		for _, record := range records {
-			nativeRec, err := recordToNative(record)
+		for _, entry := range entries {
 
-			if err != nil {
-				return err
-			}
-
-			if err := executer(nativeRec); err != nil {
+			if err := executer(entry); err != nil {
 				return err
 			}
 		}
@@ -192,7 +251,7 @@ func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, re
 	}
 
 	for _, del := range del {
-		entry, err := recordToNative(del.Existing)
+		entry, err := recordToNative(del.Existing, true)
 		if err != nil {
 			return nil, err
 		}
@@ -204,7 +263,7 @@ func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, re
 	}
 
 	for _, cre := range create {
-		entry, err := recordToNative(cre.Desired)
+		entry, err := recordToNative(cre.Desired, false)
 		if err != nil {
 			return nil, err
 		}
@@ -216,7 +275,7 @@ func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, re
 	}
 
 	for _, mod := range modify {
-		targetEntry, err := recordToNative(mod.Desired)
+		targetEntry, err := recordToNative(mod.Desired, false)
 		if err != nil {
 			return nil, err
 		}
@@ -229,7 +288,7 @@ func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, re
 				F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
 			})
 		} else {
-			oldEntry, err := recordToNative(mod.Existing)
+			oldEntry, err := recordToNative(mod.Existing, true)
 			if err != nil {
 				return nil, err
 			}
@@ -288,7 +347,11 @@ func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserve
 	return models.ToNameservers(nss)
 }
 
-func recordToNative(config *models.RecordConfig) (domain.DNSEntry, error) {
+func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEntry, error) {
+	if useOriginal && config.Original != nil {
+		return config.Original.(domain.DNSEntry), nil
+	}
+
 	return domain.DNSEntry{
 		Name:    config.Name,
 		Expire:  int(config.TTL),
