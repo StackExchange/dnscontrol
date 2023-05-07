@@ -2,8 +2,6 @@ module github.com/StackExchange/dnscontrol/v3
 
 go 1.18
 
-require gopkg.in/yaml.v3 v3.0.1
-
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.2
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.1.0
@@ -67,6 +65,7 @@ require (
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	golang.org/x/text v0.9.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
