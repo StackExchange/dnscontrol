@@ -194,7 +194,7 @@ jobs:
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
-#      TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
+      TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
       # The above providers have additional env variables they
       # need for credentials and such.
