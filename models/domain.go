@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	DOMAIN_UNIQUENAME = "dnscontrol_uniquename"
-	DOMAIN_TAG        = "dnscontrol_tag"
+	DomainUniqueName = "dnscontrol_uniquename"
+	DomainTag        = "dnscontrol_tag"
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
@@ -19,8 +19,8 @@ type DomainConfig struct {
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
-	// Metadata[DOMAIN_UNIQUENAME] // .Name + "!" + .Tag
-	// Metadata[DOMAIN_TAG] // split horizon tag
+	// Metadata[DomainUniqueName] // .Name + "!" + .Tag
+	// Metadata[DomainTag] // split horizon tag
 	Metadata    map[string]string `json:"meta,omitempty"`
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
@@ -46,12 +46,12 @@ type DomainConfig struct {
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
 func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
-	return dc.Name, dc.Metadata[DOMAIN_UNIQUENAME], dc.Metadata[DOMAIN_TAG]
+	return dc.Name, dc.Metadata[DomainUniqueName], dc.Metadata[DomainTag]
 }
 
 // GetUniqueName returns the domain's uniquename.
 func (dc *DomainConfig) GetUniqueName() (uniquename string) {
-	return dc.Metadata[DOMAIN_UNIQUENAME]
+	return dc.Metadata[DomainUniqueName]
 }
 
 // UpdateSplitHorizonNames updates the split horizon fields
@@ -75,8 +75,8 @@ func (dc *DomainConfig) UpdateSplitHorizonNames() {
 	if dc.Metadata == nil {
 		dc.Metadata = map[string]string{}
 	}
-	dc.Metadata[DOMAIN_UNIQUENAME] = unique
-	dc.Metadata[DOMAIN_TAG] = tag
+	dc.Metadata[DomainUniqueName] = unique
+	dc.Metadata[DomainTag] = tag
 }
 
 // Copy returns a deep copy of the DomainConfig.
