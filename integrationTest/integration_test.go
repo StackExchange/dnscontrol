@@ -620,23 +620,23 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var ignoredTargets []*models.IgnoreTarget
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
-		if r.Type == "IGNORE_NAME" {
+		switch r.Type {
+		case "IGNORE_NAME":
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
 				LabelPattern: r.GetLabel(),
 				RTypePattern: r.GetTargetField(),
 			})
-		} else if r.Type == "IGNORE_TARGET" {
-			rec := &models.IgnoreTarget{
+		case "IGNORE_TARGET":
+			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
 				Type:    r.GetTargetField(),
-			}
-			ignoredTargets = append(ignoredTargets, rec)
+			})
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
 				RTypePattern:  r.GetTargetField(),
 				TargetPattern: r.GetLabel(),
 			})
-		} else {
+		default:
 			records = append(records, r)
 		}
 	}
@@ -1774,7 +1774,16 @@ func makeTests(t *testing.T) []*TestGroup {
 		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
 		// types of records, we should add a test at the apex.
 
-		//
+		testgroup("IGNORE_TARGET b2285",
+			tc("Create some records",
+				cname("foo", "redact1.acm-validations.aws."),
+				cname("bar", "redact2.acm-validations.aws."),
+			),
+			tc("Add a new record - ignoring test.foo.com.",
+				ignoreTarget("*.acm-validations.aws.'", "CNAME"),
+				a("added", "4.6.8.9"),
+			),
+		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
