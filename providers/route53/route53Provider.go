@@ -134,7 +134,6 @@ func (r *route53Provider) ListZones() ([]string, error) {
 }
 
 func (r *route53Provider) getZones() error {
-	// TODO(tlim) This should memoize itself.
 
 	if r.zonesByDomain != nil {
 		return nil
@@ -212,20 +211,34 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	if err := r.getZones(); err != nil {
 		return nil, err
 	}
 
+	var zone r53Types.HostedZone
+
+	// If the zone_id is specified in meta, use it.
+	if zoneID, ok := meta["zone_id"]; ok {
+		zone = r.zonesByID[zoneID]
+		return r.getZoneRecords(zone)
+	}
+
+	//	fmt.Printf("DEBUG: ROUTE53 zones:\n")
+	//	for i, j := range r.zonesByDomain {
+	//		fmt.Printf("       %s: %v\n", i, aws.ToString(j.Id))
+	//	}
+
+	// Otherwise, use the domain name to look up the zone.
 	if zone, ok := r.zonesByDomain[domain]; ok {
 		return r.getZoneRecords(zone)
 	}
 
+	// Not found there?  Error.
 	return nil, errDomainNoExist{domain}
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
-	// TODO(tlim) This should memoize itself.
 
 	if err := r.getZones(); err != nil {
 		return r53Types.HostedZone{}, err
@@ -483,6 +496,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		return nil, err
 	}
 	instructions = reorderInstructions(instructions)
+	wasReport := false
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
@@ -492,6 +506,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 		case diff2.REPORT:
 			chg = r53Types.Change{}
+			wasReport = true
 
 		case diff2.CREATE:
 			fallthrough
@@ -545,19 +560,33 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					var err error
-					req.HostedZoneId = zone.Id
-					withRetry(func() error {
-						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+
+		if wasReport {
+
+			// Add a "msg only" correction.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+				})
+
+		} else {
+
+			// Add a function to execute.
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						var err error
+						req.HostedZoneId = zone.Id
+						withRetry(func() error {
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							return err
+						})
 						return err
-					})
-					return err
-				},
-			})
+					},
+				})
+
+		}
 
 	}
 

@@ -9,7 +9,9 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
@@ -67,6 +69,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
+	flags = append(flags, &cli.Int64Flag{
+		Name:        "bindserial",
+		Destination: &bindserial.ForcedValue,
+		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
+	})
 	return flags
 }
 
@@ -115,6 +122,12 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 
+	if diff2.EnableDiff2 {
+		printer.Println("INFO: Diff2 algorithm in use.")
+	} else {
+		printer.Println("INFO: Old diff algorithm in use. Please test --diff2 as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+	}
+
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
@@ -147,7 +160,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		func(domain *models.DomainConfig) {
 			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
-			if !args.shouldRunDomain(domain.UniqueName) {
+			uniquename := domain.GetUniqueName()
+			if !args.shouldRunDomain(uniquename) {
 				return
 			}
 
@@ -158,7 +172,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 
 			// Correct the domain...
 
-			out.StartDomain(domain.UniqueName)
+			out.StartDomain(uniquename)
 			var providersWithExistingZone []*models.DNSProviderInstance
 			/// For each DSP...
 			for _, provider := range domain.DNSProviderInstances {

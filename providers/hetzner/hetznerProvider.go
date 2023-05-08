@@ -149,15 +149,12 @@ func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 	if err != nil {
 		return nil, err
 	}
-	nameserver := make([]*models.Nameserver, len(z.NameServers))
-	for i, s := range z.NameServers {
-		nameserver[i] = &models.Nameserver{Name: s}
-	}
-	return nameserver, nil
+
+	return models.ToNameserversStripTD(z.NameServers)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *hetznerProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *hetznerProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := api.getAllRecords(domain)
 	if err != nil {
 		return nil, err

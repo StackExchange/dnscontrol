@@ -71,7 +71,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (client *msdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 
 	// Get the existing DNS records in native format.
 	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)

@@ -75,7 +75,7 @@ func (api *packetframeProvider) getZone(domain string) (*zoneInfo, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 
 	zone, err := api.getZone(domain)
 	if err != nil {

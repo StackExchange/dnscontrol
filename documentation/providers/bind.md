@@ -90,8 +90,8 @@ file name is the name as specified in the `D()` function plus ".zone".
 The filenameformat is a string with a few printf-like `%` verbs:
 
   * `%U`  the domain name as specified in `D()`
-  * `%D`  the domain name without any split horizon tag
-  * `%T`  the split horizon tag, or "", see `D()`
+  * `%D`  the domain name without any split horizon tag (the "example.com" part of "example.com!tag")
+  * `%T`  the split horizon tag, or "" (the "tag" part of "example.com!tag")
   * `%?x` this returns `x` if the split horizon tag is non-null, otherwise nothing. `x` can be any printable.
   * `%%`  `%`
   * ordinary characters (not `%`) are copied unchanged to the output stream
@@ -111,7 +111,7 @@ Typical values:
 
 The last example will generate the same name for both
 `D("example.tld!inside")` and `D("example.tld!outside")`.  This
-assumes two BIND providers are configured in `creds.json`, eacch with
+assumes two BIND providers are configured in `creds.json`, each with
 a different `directory` setting. Otherwise `dnscontrol` will write
 both domains to the same file, flapping between the two back and
 forth.

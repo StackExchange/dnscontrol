@@ -14,7 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-var defaultNameservers = []string{"ns1.hosting.de.", "ns2.hosting.de.", "ns3.hosting.de."}
+var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
 
 var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
@@ -90,10 +90,10 @@ func newHostingdeReg(m map[string]string) (providers.Registrar, error) {
 }
 
 func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.ToNameserversStripTD(hp.nameservers)
+	return models.ToNameservers(hp.nameservers)
 }
 
-func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (hp *hostingdeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, err := hp.getZone(domain)
 	if err != nil {
 		return nil, err

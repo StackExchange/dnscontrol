@@ -9,7 +9,7 @@ import (
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *providerClient) GetZoneRecords(domain string) (models.Records, error) {
+func (client *providerClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := client.getZoneRecordsAll(domain)
 	if err != nil {
 		return nil, err

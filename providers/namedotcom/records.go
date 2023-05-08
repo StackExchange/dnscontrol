@@ -20,7 +20,7 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err

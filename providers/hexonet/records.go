@@ -37,7 +37,7 @@ type HXRecord struct {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
+func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -60,10 +60,10 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
-	actual, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+	//	actual, err := n.GetZoneRecords(dc.Name)
+	//	if err != nil {
+	//		return nil, err
+	//	}
 
 	//checkNSModifications(dc)
 

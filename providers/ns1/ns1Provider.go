@@ -37,7 +37,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
+	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "")
 }
 
 type nsone struct {
@@ -89,7 +89,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
+func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
@@ -249,6 +249,10 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
+	if key.Type == "NS1_URLFWD" {
+		key.Type = "URLFWD"
+	}
+
 	_, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 	return err
 }
@@ -314,6 +318,9 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsAlgorithm)),
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest}})
+		} else if r.Type == "NS1_URLFWD" {
+			rec.Type = "URLFWD"
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
@@ -341,7 +348,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
-			rec.Type = rtype
+			rec.Type = "NS1_URLFWD"
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}

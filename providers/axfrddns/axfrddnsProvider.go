@@ -271,7 +271,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {

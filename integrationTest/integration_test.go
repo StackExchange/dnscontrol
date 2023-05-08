@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
@@ -112,7 +111,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
-	normalize.UpdateNameSplitHorizon(dc)
+	dc.UpdateSplitHorizonNames()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -209,6 +208,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
+		dom.Unmanaged = tst.Unmanaged
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -229,9 +229,11 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if *verbose {
 				t.Log("\n" + c.Msg)
 			}
-			err = c.F()
-			if err != nil {
-				t.Fatal(err)
+			if c.F != nil { // F == nil if there is just a msg, no action.
+				err = c.F()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 
@@ -245,8 +247,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(corrections) != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
+		if count := zonerecs.CountActionable(corrections); count != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
@@ -362,13 +364,43 @@ func TestDualProviders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cs) != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", len(cs))
+	if count := zonerecs.CountActionable(cs); count != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", count)
 		for i, c := range cs {
 			t.Logf("#%d: %s", i, c.Msg)
 		}
 		t.FailNow()
 	}
+}
+
+func TestNameserverDots(t *testing.T) {
+	// Issue https://github.com/StackExchange/dnscontrol/issues/491
+	// If this fails, the provider's GetNameservers() function uses
+	// models.ToNameserversStripTD() instead of models.ToNameservers()
+	// or vise-versa.
+
+	// Setup:
+	p, domain, _, _ := getProvider(t)
+	if p == nil {
+		return
+	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
+	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
+
+	t.Run("No trailing dot in nameserver", func(t *testing.T) {
+		for _, nameserver := range dc.Nameservers {
+			//fmt.Printf("DEBUG: nameserver.Name = %q\n", nameserver.Name)
+			if strings.HasSuffix(nameserver.Name, ".") {
+				t.Errorf("Provider returned nameserver with trailing dot: %q", nameserver)
+			}
+		}
+	})
 }
 
 type TestGroup struct {
@@ -385,6 +417,7 @@ type TestCase struct {
 	Records        []*models.RecordConfig
 	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
+	Unmanaged      []*models.UnmanagedConfig
 }
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
@@ -585,15 +618,24 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
 	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
+	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				LabelPattern: r.GetLabel(),
+				RTypePattern: r.GetTargetField(),
+			})
 		} else if r.Type == "IGNORE_TARGET" {
 			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
 				Type:    r.GetTargetField(),
 			}
 			ignoredTargets = append(ignoredTargets, rec)
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				RTypePattern:  r.GetTargetField(),
+				TargetPattern: r.GetLabel(),
+			})
 		} else {
 			records = append(records, r)
 		}
@@ -603,6 +645,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 		Records:        records,
 		IgnoredNames:   ignoredNames,
 		IgnoredTargets: ignoredTargets,
+		Unmanaged:      unmanagedItems,
 	}
 }
 
@@ -624,8 +667,8 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
-func urlfwd(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "URLFWD")
+func ns1_urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "NS1_URLFWD")
 }
 
 func clear(items ...interface{}) *TestCase {
@@ -1529,6 +1572,19 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// Bug https://github.com/StackExchange/dnscontrol/issues/2285
+		testgroup("R53_alias pre-existing",
+			requires(providers.CanUseRoute53Alias),
+			tc("Create some records",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			tc("Add a new record - ignoring foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("dev-system*"),
+			),
+		),
+
 		// CLOUDFLAREAPI features
 
 		testgroup("CF_REDIRECT",
@@ -1644,8 +1700,8 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("NS1_URLFWD tests",
 			only("NS1"),
-			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
+			tc("Add a urlfwd", ns1_urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", ns1_urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//// IGNORE* features
