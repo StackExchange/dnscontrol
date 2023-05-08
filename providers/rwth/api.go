@@ -15,7 +15,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/miekg/dns"
 )
 
 const (
@@ -31,7 +30,6 @@ type RecordReply struct {
 	Status    string    `json:"status"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Editable  bool      `json:"editable"`
-	rec       dns.RR    // Store miekg/dns
 }
 
 type zone struct {

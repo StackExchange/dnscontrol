@@ -13,9 +13,9 @@ const (
 )
 
 type netcupProvider struct {
-	domainIndex      map[string]string
-	nameserversNames []string
-	credentials      struct {
+	//domainIndex      map[string]string
+	//nameserversNames []string
+	credentials struct {
 		apikey         string
 		customernumber string
 		sessionID      string
@@ -109,20 +109,6 @@ func (api *netcupProvider) login(apikey, password, customernumber string) error 
 	api.credentials.apikey = apikey
 	api.credentials.customernumber = customernumber
 	api.credentials.sessionID = resp.SessionID
-	return nil
-}
-
-func (api *netcupProvider) logout() error {
-	data := paramLogout{
-		Key:            api.credentials.apikey,
-		SessionID:      api.credentials.sessionID,
-		CustomerNumber: api.credentials.customernumber,
-	}
-	_, err := api.get("logout", data)
-	if err != nil {
-		return fmt.Errorf("failed to logout from netcup: %s", err)
-	}
-	api.credentials.apikey, api.credentials.sessionID, api.credentials.customernumber = "", "", ""
 	return nil
 }
 
