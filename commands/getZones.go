@@ -328,6 +328,8 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	switch rec.Type { // #rtype_variations
 	case "CAA":
 		return makeCaa(rec, ttlop)
+	case "DS":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
 	case "NAPTR":
