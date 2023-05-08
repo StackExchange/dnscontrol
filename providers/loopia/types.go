@@ -51,12 +51,14 @@ type structMemberInt struct {
 
 func (m structMemberInt) structMember() {}
 
-type structMemberBool struct {
-	Name  string `xml:"name"`
-	Value bool   `xml:"value>boolean"`
-}
-
-func (m structMemberBool) structMember() {}
+// Uncomment this code in case of using it
+// It was commented out to satisfy `staticcheck` warnings about unused code
+//type structMemberBool struct {
+//	Name  string `xml:"name"`
+//	Value bool   `xml:"value>boolean"`
+//}
+//
+//func (m structMemberBool) structMember() {}
 
 type methodCall struct {
 	XMLName    xml.Name `xml:"methodCall"`

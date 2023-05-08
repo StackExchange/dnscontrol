@@ -6,9 +6,6 @@ import (
 )
 
 func Test_RFC5322MailToBind(t *testing.T) {
-	type args struct {
-		rfc5322Mail string
-	}
 	tests := []struct {
 		name        string
 		rfc5322Mail string
