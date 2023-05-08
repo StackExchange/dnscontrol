@@ -19,8 +19,6 @@ const apiBase = "https://apis.cscglobal.com/dbs/api/v2"
 
 // Api layer for CSC Global
 
-type requestParams map[string]string
-
 type errorResponse struct {
 	Code        string `json:"code"`
 	Description string `json:"description"`

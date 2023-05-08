@@ -299,7 +299,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 
 		c.zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat,
-				dc.Metadata[models.DOMAIN_UNIQUENAME], dc.Name, dc.Metadata[models.DOMAIN_TAG]),
+				dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
 		)
 
 		// We only change the serial number if there is a change.

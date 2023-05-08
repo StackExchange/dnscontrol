@@ -72,15 +72,16 @@ type cloudflareProvider struct {
 	cfClient        *cloudflare.API
 }
 
-func labelMatches(label string, matches []string) bool {
-	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
-	for _, tst := range matches {
-		if label == tst {
-			return true
-		}
-	}
-	return false
-}
+// TODO(dlemenkov): remove this function after deleting all commented code referecing it
+//func labelMatches(label string, matches []string) bool {
+//	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+//	for _, tst := range matches {
+//		if label == tst {
+//			return true
+//		}
+//	}
+//	return false
+//}
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {

@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ vars.GOVER }}
+      image: golang:1.18
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -30,7 +30,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v3.1.1
+    - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
     - name: Build binaries
@@ -70,7 +70,7 @@ jobs:
     needs: integration-test-providers
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ vars.GOVER }}
+      image: golang:1.18
       env:
         TEST_RESULTS: "/tmp/test-results"
         GOTESTSUM_FORMAT: testname
@@ -164,14 +164,14 @@ jobs:
           gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v3.1.1
+    - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
   integrtests-diff2:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:${{ vars.GOVER }}
+      image: golang:1.18
     needs:
     - integration-test-providers
     - integrtests-diff1
@@ -268,7 +268,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v3.1.1
+    - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
 #  release:
@@ -297,10 +297,10 @@ jobs:
 #    - name: Install goreleaser
 #      run: go install github.com/goreleaser/goreleaser@latest
 #    - run: goreleaser release
-#    - uses: actions/upload-artifact@v3.1.1
+#    - uses: actions/upload-artifact@v3.1.2
 #      with:
 #        path: dist
-#    - uses: actions/upload-artifact@v3.1.1
+#    - uses: actions/upload-artifact@v3.1.2
 #      with:
 #        path: |-
 #          dist/*.rpm

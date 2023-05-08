@@ -578,21 +578,6 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
-// uniq returns the unique values in a map. The result is sorted lexigraphically.
-func uniq(s []string) []string {
-	seen := make(map[string]struct{})
-	var result []string
-
-	for _, k := range s {
-		if _, ok := seen[k]; !ok {
-			seen[k] = struct{}{}
-			result = append(result, k)
-		}
-	}
-	sort.Strings(result)
-	return result
-}
-
 func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	// The RFCs say that all records at a particular recordset should have
 	// the same TTL.  Most providers don't care, and if they do the

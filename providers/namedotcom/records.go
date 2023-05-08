@@ -12,13 +12,6 @@ import (
 	"github.com/namedotcom/go/namecom"
 )
 
-var defaultNameservers = []*models.Nameserver{
-	{Name: "ns1.name.com"},
-	{Name: "ns2.name.com"},
-	{Name: "ns3.name.com"},
-	{Name: "ns4.name.com"},
-}
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := n.getRecords(domain)
