@@ -65,10 +65,6 @@ type Record struct {
 	SubDomain string `json:"subDomain,omitempty"`
 }
 
-type records struct {
-	recordsID []int
-}
-
 func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {
 	var recordIds []int
 

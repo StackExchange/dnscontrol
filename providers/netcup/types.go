@@ -21,12 +21,6 @@ type paramLogin struct {
 	CustomerNumber string `json:"customernumber"`
 }
 
-type paramLogout struct {
-	Key            string `json:"apikey"`
-	SessionID      string `json:"apisessionid"`
-	CustomerNumber string `json:"customernumber"`
-}
-
 type paramGetRecords struct {
 	Key            string `json:"apikey"`
 	SessionID      string `json:"apisessionid"`

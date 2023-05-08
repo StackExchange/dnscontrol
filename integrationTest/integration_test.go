@@ -667,7 +667,7 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
-func ns1_urlfwd(name, target string) *models.RecordConfig {
+func ns1Urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS1_URLFWD")
 }
 
@@ -1700,8 +1700,8 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("NS1_URLFWD tests",
 			only("NS1"),
-			tc("Add a urlfwd", ns1_urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", ns1_urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
+			tc("Add a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//// IGNORE* features
