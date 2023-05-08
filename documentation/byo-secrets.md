@@ -49,18 +49,14 @@ only run if they have access to the secrets they will need.
 
 # How it works
 
-Tests are executed if `*_DOMAIN` exists.  If the value is empty or
-unset, the test is skipped.  If a test doesn't require secrets, the
-`*_DOMAIN` variable is hardcoded so that it always runs.  Otherwise, it is set by looking up
-the secret. For example, if a provider is called `FANCYDNS`, there must
+Tests are executed if `*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
+unset, the test is skipped.  
+For example, if a provider is called `FANCYDNS`, there must
 be a secret called `FANCYDNS_DOMAIN`.
 
 # Bring your own secrets
 
 This section describes how to add a provider to the testing system.
-
-In this example, we will use a fictional DNS provider named
-"FANCYDNS".
 
 Step 1: Create a branch
 
@@ -68,95 +64,46 @@ Create a branch as you normally would to submit a PR to the project.
 
 Step 2: Update `build.yml`
 
-In this branch, edit `.circleci/config.yml`:
+In this branch, edit `.github/workflows/build.yml`:
 
-1. In the `integration-tests` section, add the name of your provider
-   to the matrix of providers.  Technically you are adding to the list
-   at `workflows.build.jobs.integration-tests.matrix.parameters.provider`.
+1. In the `integration-test-providers` section, the name of the provider.
 
-   {% code title=".circleci/config.yml" %}
-   ```diff
-   matrix:
-     provider:
-     - DIGITALOCEAN
-   + - FANCYDNS
-     - GANDI_V5
-     - INWX
-   ```
-   {% endcode %}
+Add your provider's name (alphabetically).
+The line looks something like:
 
-2. Add your test's env:
-
-Also in `.circleci/config.yml`, locate the env section (technically `jobs.build.integration-tests.environment`) and
-add any env variables that should be set by the project, not by an individual. Usually there is none.
-
-Please replicate the formatting of the existing entries:
-
-* A blank comment separates each provider's section.
-* The providers are listed in the same order as the matrix.provider list.
-* The `*_DOMAIN` variable is first.
-* The remaining variables are sorted lexicographically (what nerds call alphabetical order).
-
-```yaml
-FANCYDNS_THING: myvalue
+{% code title=".github/workflows/build.yml" %}
 ```
-
-# Examples
-
-Let's look at three examples:
-
-## Example 1
-
-The `BIND` integration tests do not require any secrets because it
-simply generates files locally.
-
-```yaml
-BIND_DOMAIN: example.com
+        PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
 ```
+{% endcode %}
 
-The existence of `BIND_DOMAIN`, and the fact that the value is
-available to all, means these tests will run for everyone.
+2. Add your providers `_DOMAIN` env variable:
 
-## Example 2
+Add it to the `env` section of `integrtests-diff1` and again in `integrtests-diff2`.
 
-The `AZURE_DNS` provider requires many settings. Since
-`AZURE_DNS_DOMAIN` comes from GHA's secrets storage, we can be assured
-that the tests will skip if the PR does not have access to the
-secrets.
+For example, the entry for BIND looks like:
 
-If you have a fork and want to automate the testing of `AZURE_DNS`,
-simply set the secrets named in `.circleci/config.yml` and the tests will
-activate for your PRs.
-
-Note that `AZURE_DNS_RESOURCE_GROUP` is hardcoded to `DNSControl`. If
-this is not true for you, please feel free to submit a PR that turns
-it into a variable.
-
-```yaml
-AZURE_DNS_RESOURCE_GROUP: DNSControl
+{% code title=".github/workflows/build.yml" %}
 ```
-
-## Example 3
-
-The HEXONET integration tests require secrets, but HEXONET provides an
-Operational Test and Evaluation (OT&E) environment with some "fake"
-credentials which are known publicly.
-
-Therefore, since there's nothing secret about these particular
-secrets, we hard-code them into the `build.yml` file. Since
-`HEXONET_DOMAIN` does not come from secret storage, everyone can run
-these tests. (We are grateful to HEXONET for this public service!)
-
-```yaml
-HEXONET_DOMAIN: yodream.com
-HEXONET_ENTITY: OTE
-HEXONET_PW: test.passw0rd
-HEXONET_UID: test.user
+        BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
 ```
+{% endcode %}
 
-{% hint style="info" %}
-**NOTE**: The above credentials are [known to the public](providers/hexonet.md).
-{% endhint %}
+3. Add your providers other ENV variables:
+
+If there are other env variables (for example, for an API key), add that as a "secret".
+
+For example, the entry for CLOUDFLAREAPI looks like this:
+
+{% code title=".github/workflows/build.yml" %}
+```
+        CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
+        CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+```
+{% endcode %}
+
+Step 3. Submit this PR like any other.
+
 
 # Caveats
 
