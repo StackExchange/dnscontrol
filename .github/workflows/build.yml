@@ -3,7 +3,7 @@ on:
   pull_request:
 
 env:
-  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`; this should match the same key found in the release.yml file
+  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
   go-mod-path: /go/pkg/mod
 
 jobs:
