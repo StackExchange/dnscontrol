@@ -54,6 +54,21 @@ var returnTypes = map[string]string{
 	"record": "RecordModifier",
 }
 
+var categories = map[string]string{
+	"domain": "domain-modifiers",
+	"global": "top-level-functions",
+	"record": "record-modifiers",
+}
+
+var providerNames = map[string]string{
+	"AKAMAIEDGEDNS": "akamai-edge-dns",
+	"ROUTE53":       "amazon-route-53",
+	"AZURE_DNS":     "azure-dns",
+	"CLOUDFLAREAPI": "cloudflare-dns",
+	"CLOUDNS":       "cloudns",
+	"NS1":           "ns1",
+}
+
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
@@ -143,8 +158,14 @@ func generateFunctionTypes() (string, error) {
 				}
 			}
 
+			category := categories[t.Name()]
+			if frontMatter["provider"] != nil {
+				category += "/service-provider-specific/" + providerNames[frontMatter["provider"].(string)]
+			}
+
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
+				Category:    category,
 				Params:      params,
 				ObjectParam: frontMatter["parameters_object"] == true,
 				Deprecated:  frontMatter["deprecated"] == true,
@@ -164,6 +185,7 @@ func generateFunctionTypes() (string, error) {
 // Function is a struct the stores information about functions.
 type Function struct {
 	Name        string
+	Category    string
 	Params      []Param
 	ObjectParam bool
 	Deprecated  bool
@@ -210,7 +232,7 @@ func (f Function) docs() string {
 	if f.Deprecated {
 		content += "\n\n@deprecated"
 	}
-	content += "\n\n@see https://dnscontrol.org/js#" + f.Name
+	content += fmt.Sprintf("\n\n@see https://docs.dnscontrol.org/language-reference/%s/%s", f.Category, strings.ToLower(f.Name))
 	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
 }
 
