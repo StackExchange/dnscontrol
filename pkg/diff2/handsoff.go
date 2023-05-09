@@ -243,7 +243,7 @@ func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
-			matchTarget(uc.TargetGlob, rec.GetLabel()) {
+			matchTarget(uc.TargetGlob, rec.GetTargetField()) {
 			return true
 		}
 	}
