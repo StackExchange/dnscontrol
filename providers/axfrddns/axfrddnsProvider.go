@@ -281,16 +281,19 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 	var foundDNSSecRecords *models.RecordConfig
 	foundRecords := models.Records{}
 	for _, rr := range rawRecords {
-		switch rr.(type) {
-		case *dns.RRSIG,
-			*dns.DNSKEY,
-			*dns.CDNSKEY,
-			*dns.CDS,
-			*dns.NSEC,
-			*dns.NSEC3,
-			*dns.NSEC3PARAM:
+		switch rr.Header().Rrtype {
+		case dns.TypeRRSIG,
+			dns.TypeDNSKEY,
+			dns.TypeCDNSKEY,
+			dns.TypeCDS,
+			dns.TypeNSEC,
+			dns.TypeNSEC3,
+			dns.TypeNSEC3PARAM,
+			65534:
 			// Ignoring DNSSec RRs, but replacing it with a single
 			// "TXT" placeholder
+			// Also ignoring spurious TYPE65534, see:
+			// https://bind9-users.isc.narkive.com/zX29ay0j/rndc-signing-list-not-working#post2
 			if foundDNSSecRecords == nil {
 				foundDNSSecRecords = new(models.RecordConfig)
 				foundDNSSecRecords.Type = "TXT"
