@@ -4,6 +4,7 @@ parameters:
   - name
   - target
   - modifiers...
+provider: CLOUDNS
 parameter_types:
   name: string
   target: string
