@@ -88,8 +88,8 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 
 	if resultWanted != resultActual {
 		testifyrequire.Equal(t,
-			resultActual,
 			resultWanted,
+			resultActual,
 			"GOT =\n```\n%s```\nWANT=\n```%s```\nINPUTS=\n```\n%s\n```\n",
 			resultActual,
 			resultWanted,
