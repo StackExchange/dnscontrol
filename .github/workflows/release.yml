@@ -6,10 +6,6 @@ on:
     tags:
     - /v[0-9]+(\.[0-9]+)*(-.*)*/
 
-env:
-  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`; this should match the same key found in the build.yml file
-  go-mod-path: ~/go/pkg/mod
-
 name: release
 jobs:
   release:
@@ -32,13 +28,6 @@ jobs:
 #
 #    - name: Goreleaser release
 #      run: goreleaser release
-
-    - name: restore_cache
-      uses: actions/cache@v3.3.1
-      with:
-        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        path: ${{ env.go-mod-path }}
 
 #    - name: Get release
 #      id: get_release
