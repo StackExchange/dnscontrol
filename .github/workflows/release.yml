@@ -32,6 +32,8 @@ jobs:
 
     - name: Goreleaser release
       run: goreleaser release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Get release from tag
       run: echo ::set-output name=RELEASE_VERSION::$(echo ${GITHUB_REF:11})
