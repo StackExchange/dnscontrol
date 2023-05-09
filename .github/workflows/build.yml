@@ -33,10 +33,10 @@ jobs:
     - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
-    - name: Build binaries
+    - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
       run: goreleaser build
-    - name: build binaries
+    - name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
       run: goreleaser build --snapshot
   integration-test-providers:
