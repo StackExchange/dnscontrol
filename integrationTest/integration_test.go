@@ -127,6 +127,11 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 // error explaining why it is not.
 func testPermitted(t *testing.T, p string, f TestGroup) error {
 
+	// Does this test require "diff2"?
+	if f.diff2only && !diff2.EnableDiff2 {
+		return fmt.Errorf("test for diff2 only")
+	}
+
 	// not() and only() can't be mixed.
 	if len(f.only) != 0 && len(f.not) != 0 {
 		return fmt.Errorf("invalid filter: can't mix not() and only()")
@@ -222,7 +227,15 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
-		if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
+		if tst.Changeless {
+			if count := zonerecs.CountActionable(corrections); count != 0 {
+				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
+				for i, c := range corrections {
+					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
+				}
+				t.FailNow()
+			}
+		} else if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
@@ -410,6 +423,7 @@ type TestGroup struct {
 	not       []string
 	trueflags []bool
 	tests     []*TestCase
+	diff2only bool
 }
 
 type TestCase struct {
@@ -418,6 +432,16 @@ type TestCase struct {
 	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
 	Unmanaged      []*models.UnmanagedConfig
+	Changeless     bool // set to true if any changes would be an error
+}
+
+func (tc *TestCase) ExpectNoChanges() *TestCase {
+	tc.Changeless = true
+	return tc
+}
+func (tg *TestGroup) Diff2Only() *TestGroup {
+	tg.diff2only = true
+	return tg
 }
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
@@ -627,6 +651,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 				LabelPattern: r.GetLabel(),
 				RTypePattern: r.GetTargetField(),
 			})
+			continue
 		case "IGNORE_TARGET":
 			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
@@ -636,6 +661,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 				RTypePattern:  r.GetTargetField(),
 				TargetPattern: r.GetLabel(),
 			})
+			continue
 		default:
 			records = append(records, r)
 		}
@@ -1719,21 +1745,32 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create some records",
 				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
-			),
-			tc("Add a new record - ignoring foo",
 				a("bar", "1.2.3.4"),
-				ignoreName("foo"),
 			),
+			tc("ignore foo",
+				ignoreName("foo"),
+				a("bar", "1.2.3.4"),
+			).ExpectNoChanges(),
+			clear(),
+			tc("Create some records",
+				txt("bar.foo", "simple"),
+				a("bar.foo", "1.2.3.4"),
+				a("bar", "1.2.3.4"),
+			),
+			tc("ignore *.foo",
+				ignoreName("*.foo"),
+				a("bar", "1.2.3.4"),
+			).ExpectNoChanges(),
 			clear(),
 			tc("Create some records",
 				txt("bar.foo", "simple"),
 				a("bar.foo", "1.2.3.4"),
 			),
-			tc("Add a new record - ignoring *.foo",
-				a("bar", "1.2.3.4"),
+			tc("ignore *.foo while we add 1",
 				ignoreName("*.foo"),
+				a("bar", "1.2.3.4"),
 			),
-		),
+		).Diff2Only(),
 
 		testgroup("IGNORE_NAME apex",
 			tc("Create some records",
@@ -1742,37 +1779,74 @@ func makeTests(t *testing.T) []*TestGroup {
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 			),
+			tc("ignore apex",
+				ignoreName("@"),
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+			).ExpectNoChanges(),
+			clear(),
 			tc("Add a new record - ignoring apex",
+				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 				a("added", "4.6.8.9"),
-				ignoreName("@"),
 			),
-		),
+		).Diff2Only(),
 
-		testgroup("IGNORE_TARGET function",
+		testgroup("IGNORE_TARGET function CNAME",
 			tc("Create some records",
 				cname("foo", "test.foo.com."),
-				cname("bar", "test.bar.com."),
+				cname("bar", "test.example.com."),
 			),
-			tc("Add a new record - ignoring test.foo.com.",
-				cname("bar", "bar.foo.com."),
+			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("test.foo.com.", "CNAME"),
+				cname("bar", "bar.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("test.foo.com.", "CNAME"),
+				cname("bar", "bar.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
 			),
-			clear(),
+		).Diff2Only(),
+
+		testgroup("IGNORE_TARGET function CNAME*",
 			tc("Create some records",
-				cname("bar.foo", "a.b.foo.com."),
-				a("test.foo", "1.2.3.4"),
+				cname("foo1", "test.foo.com."),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
 			),
-			tc("Add a new record - ignoring **.foo.com. targets",
-				a("bar", "1.2.3.4"),
+			tc("ignoring CNAME=test.foo.com.",
+				ignoreTarget("*.foo.com.", "CNAME"),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("*.foo.com.", "CNAME"),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
+			),
+		).Diff2Only(),
+
+		testgroup("IGNORE_TARGET function CNAME**",
+			tc("Create some records",
+				cname("foo1", "test.foo.com."),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+			),
+			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("**.foo.com.", "CNAME"),
+				cname("bar", "bar.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("**.foo.com.", "CNAME"),
+				cname("bar", "bar.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
 			),
-		),
-		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
-		// because IGNORE_TARGET only works on CNAMEs and you can't have a
-		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
-		// types of records, we should add a test at the apex.
+		).Diff2Only(),
 
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
@@ -1780,10 +1854,9 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("bar", "redact2.acm-validations.aws."),
 			),
 			tc("Add a new record - ignoring test.foo.com.",
-				ignoreTarget("*.acm-validations.aws.'", "CNAME"),
-				a("added", "4.6.8.9"),
-			),
-		),
+				ignoreTarget("**.acm-validations.aws.", "CNAME"),
+			).ExpectNoChanges(),
+		).Diff2Only(),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
