@@ -230,7 +230,7 @@ D("f.com", "none",
 `
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-FOREIGN:
 _2222222222222222.cr CNAME _333333.nnn.acm-validations.aws.
+FOREIGN:
 	`)
 }
