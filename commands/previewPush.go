@@ -125,7 +125,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if diff2.EnableDiff2 {
 		printer.Println("INFO: Diff2 algorithm in use.")
 	} else {
-		printer.Println("INFO: Old diff algorithm in use. Please test --diff2 as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+		printer.Println("INFO: Old diff algorithm in use. Please test `dnscontrol --diff2 preview` (or push) as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
