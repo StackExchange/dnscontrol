@@ -16,6 +16,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
@@ -33,8 +39,6 @@ jobs:
       run: goreleaser release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
     - name: Get release from tag
       run: echo ::set-output name=RELEASE_VERSION::$(echo ${GITHUB_REF:11})
