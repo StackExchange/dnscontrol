@@ -50,11 +50,11 @@ jobs:
     - name: Copy Linux version to dnscontrol
       run: cp dnscontrol-Linux usr/bin/dnscontrol
 
-    - name: Get release
-      id: get_release
-      uses: bruceadams/get-release@v1.3.2
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+#    - name: Get release
+#      id: get_release
+#      uses: bruceadams/get-release@v1.3.2
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Bundle RPM
       uses: bpicode/github-action-fpm@master
