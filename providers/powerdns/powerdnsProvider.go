@@ -19,6 +19,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Unimplemented("Normalization within the PowerDNS API seems to be buggy, so disabled", "https://github.com/PowerDNS/pdns/issues/10558"),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),

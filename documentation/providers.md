@@ -53,7 +53,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`OVH`](providers/ovh.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ |
 | [`PACKETFRAME`](providers/packetframe.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ |
 | [`PORKBUN`](providers/porkbun.md) | ❌ | ✅ | ❌ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| [`POWERDNS`](providers/powerdns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [`POWERDNS`](providers/powerdns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`ROUTE53`](providers/route53.md) | ✅ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`RWTH`](providers/rwth.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](providers/softlayer.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
