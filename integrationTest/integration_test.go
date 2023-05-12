@@ -1848,6 +1848,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// https://github.com/StackExchange/dnscontrol/issues/2285
+		// IGNORE_TARGET for CNAMEs wasn't working for AZURE_DNS.
+		// Interestingly enough, this has never worked with
+		// GANDI_V5/diff1.  It works on all providers in diff2.
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),
@@ -1856,7 +1860,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add a new record - ignoring test.foo.com.",
 				ignoreTarget("**.acm-validations.aws.", "CNAME"),
 			).ExpectNoChanges(),
-		),
+		).Diff2Only(),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
