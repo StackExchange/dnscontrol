@@ -33,12 +33,29 @@ jobs:
     - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
+
+# For some reason goreleaser isn't correctly setting the version
+# string used by "dnscontrol version".  Therefore, we're forcing the
+# string using the GORELEASER_CURRENT_TAG feature.
+# TODO(tlim): Use the native gorelease version mechanism.
+     - name: Retrieve version
+       id: version
+       run: |
+         echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+     - name: Reveal version
+       run: echo ${{ steps.version.outputs.TAG_NAME }}
+
+
     - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
       run: goreleaser build
+      env:
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
     - name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
       run: goreleaser build --snapshot
+      env:
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
