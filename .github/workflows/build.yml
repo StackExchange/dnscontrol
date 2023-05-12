@@ -41,7 +41,7 @@ jobs:
     - name: Retrieve version
       id: version
       run: |
-        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
     - name: Reveal version
       run: echo ${{ steps.version.outputs.TAG_NAME }}
 
