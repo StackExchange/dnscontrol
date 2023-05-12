@@ -37,4 +37,4 @@ func main() {
 	os.Exit(commands.Run("dnscontrol " + version.Banner()))
 }
 
-// comment
+// comment2
