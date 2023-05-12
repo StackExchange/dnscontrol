@@ -22,7 +22,13 @@ const (
 )
 
 var commands = []*cli.Command{}
-var version string
+
+// These are set by/for goreleaser
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func cmd(cat string, c *cli.Command) bool {
 	c.Category = cat
