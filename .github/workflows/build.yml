@@ -33,6 +33,8 @@ jobs:
     - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
+    - name: Debug
+      run: echo OUTPUT1; git describe --tags ; echo OUTPUT2; git describe ; echo OUTPUT3
     - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
       run: goreleaser build
