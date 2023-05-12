@@ -27,6 +27,9 @@ jobs:
       with:
         go-version: ^1.20
 
+    - name: Debug
+      run: (echo OUTPUT1; git describe --tags ; echo OUTPUT2; git describe ; echo OUTPUT3) || true
+
     - name: Install goreleaser
       run: go install github.com/goreleaser/goreleaser@latest
 
