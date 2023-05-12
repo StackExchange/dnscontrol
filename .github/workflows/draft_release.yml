@@ -30,6 +30,11 @@ jobs:
     - name: Install goreleaser
       run: go install github.com/goreleaser/goreleaser@latest
 
+# For some reason goreleaser isn't correctly setting the version
+# string used by "dnscontrol version".  Therefore, we're forcing the
+# string using the GORELEASER_CURRENT_TAG feature.
+# TODO(tlim): Use the native gorelease version mechanism.
+
      - name: Retrieve version
        id: version
        run: |
