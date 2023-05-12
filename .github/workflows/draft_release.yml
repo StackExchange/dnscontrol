@@ -30,6 +30,14 @@ jobs:
     - name: Debug
       run: echo OUTPUT1; git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags ; echo OUTPUT2; git describe ; echo OUTPUT3
 
+    - name: Retrieve version
+      id: version
+      run: |
+        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+
+    - name: Debug tag
+      run: echo ${{ steps.version.outputs.TAG_NAME }}
+
     - name: Install goreleaser
       run: go install github.com/goreleaser/goreleaser@latest
 
@@ -37,3 +45,4 @@ jobs:
       run: goreleaser release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
