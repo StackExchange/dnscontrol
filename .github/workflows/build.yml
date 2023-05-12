@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -72,7 +72,7 @@ jobs:
     needs: integration-test-providers
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
       env:
         TEST_RESULTS: "/tmp/test-results"
         GOTESTSUM_FORMAT: testname
@@ -173,7 +173,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
     needs:
     - integration-test-providers
     - integrtests-diff1
