@@ -34,7 +34,7 @@ jobs:
       with:
         path: "/tmp/test-results"
     - name: Debug
-      run: echo OUTPUT1; git describe --tags ; echo OUTPUT2; git describe ; echo OUTPUT3
+      run: echo OUTPUT1; git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags ; echo OUTPUT2; git describe ; echo OUTPUT3
     - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
       run: goreleaser build
