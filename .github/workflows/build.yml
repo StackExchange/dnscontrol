@@ -38,13 +38,12 @@ jobs:
 # string used by "dnscontrol version".  Therefore, we're forcing the
 # string using the GORELEASER_CURRENT_TAG feature.
 # TODO(tlim): Use the native gorelease version mechanism.
-     - name: Retrieve version
-       id: version
-       run: |
-         echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
-     - name: Reveal version
-       run: echo ${{ steps.version.outputs.TAG_NAME }}
-
+    - name: Retrieve version
+      id: version
+      run: |
+        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+    - name: Reveal version
+      run: echo ${{ steps.version.outputs.TAG_NAME }}
 
     - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
