@@ -22,7 +22,12 @@ const (
 )
 
 var commands = []*cli.Command{}
-var version string
+
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func cmd(cat string, c *cli.Command) bool {
 	c.Category = cat
