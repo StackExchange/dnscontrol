@@ -1,4 +1,4 @@
-package domaintree
+package dnssort
 
 import "testing"
 
@@ -10,7 +10,7 @@ type domainname struct {
 func Test_domaintree(t *testing.T) {
 
 	t.Run("Single domain with name",
-		executor(
+		executeTeeTest(
 			[]domainname{
 				{domain: "example.com", name: "www"},
 			},
@@ -20,7 +20,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Single FQDN",
-		executor(
+		executeTeeTest(
 			[]domainname{
 				{domain: "example.com", name: "other.domain.com."},
 			},
@@ -30,7 +30,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Single At sign",
-		executor(
+		executeTeeTest(
 			[]domainname{
 				{domain: "example.com", name: "@"},
 			},
@@ -40,7 +40,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Wildcard",
-		executor(
+		executeTeeTest(
 			[]domainname{
 				{domain: "example.com", name: "*"},
 			},
@@ -50,7 +50,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Combined domains",
-		executor(
+		executeTeeTest(
 			[]domainname{
 				{domain: "example.com", name: "*.other"},
 				{domain: "example.com", name: "specific"},
@@ -62,7 +62,7 @@ func Test_domaintree(t *testing.T) {
 	)
 }
 
-func executor(inputs []domainname, founds []string, missings []string) func(*testing.T) {
+func executeTeeTest(inputs []domainname, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tree := CreateTree()
@@ -71,13 +71,13 @@ func executor(inputs []domainname, founds []string, missings []string) func(*tes
 		}
 
 		for _, found := range founds {
-			if tree.Get(found) == false {
+			if tree.Has(found) == false {
 				t.Errorf("Expected %s to be found in tree, but is missing", found)
 			}
 		}
 
 		for _, missing := range missings {
-			if tree.Get(missing) == true {
+			if tree.Has(missing) == true {
 				t.Errorf("Expected %s to be missing in tree, but is found", missing)
 			}
 		}

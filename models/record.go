@@ -455,7 +455,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	return rr
 }
 
-func (rc *RecordConfig) Dependancies() []string {
+func (rc *RecordConfig) GetNameFQDN() string {
+	return rc.NameFQDN
+}
+
+func (rc *RecordConfig) GetFQDNDependenciesGetFQDNDependencies() []string {
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)

@@ -1,4 +1,4 @@
-package domaintree
+package dnssort
 
 import (
 	"strings"
@@ -49,7 +49,12 @@ func (tree *domainnode) addLeaf(name string, isWildcard bool) *domainnode {
 
 func (tree *domaintree) Add(domain string, name string) {
 	fqdn := normalizeDomainName(domain, name)
-	domainParts := strings.Split(fqdn, ".")
+
+	tree.AddFQDN(fqdn)
+}
+
+func (tree *domaintree) AddFQDN(fqdn string) {
+	domainParts := strings.Split(strings.TrimSuffix(fqdn, "."), ".")
 
 	isWildcard := domainParts[0] == "*"
 	if isWildcard {
@@ -64,7 +69,7 @@ func (tree *domaintree) Add(domain string, name string) {
 	ptr.addLeaf(domainParts[0], isWildcard)
 }
 
-func (tree *domaintree) Get(fqdn string) bool {
+func (tree *domaintree) Has(fqdn string) bool {
 	domainParts := strings.Split(fqdn, ".")
 
 	var mostSpecificNode *domainnode
