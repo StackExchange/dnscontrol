@@ -2,47 +2,22 @@ package dnssort
 
 import "testing"
 
-type domainname struct {
-	domain string
-	name   string
-}
-
 func Test_domaintree(t *testing.T) {
-
-	t.Run("Single domain with name",
-		executeTeeTest(
-			[]domainname{
-				{domain: "example.com", name: "www"},
-			},
-			[]string{"www.example.com"},
-			[]string{"com", "x.example.com", "x.www.example.com", "com", "example.com"},
-		),
-	)
 
 	t.Run("Single FQDN",
 		executeTeeTest(
-			[]domainname{
-				{domain: "example.com", name: "other.domain.com."},
+			[]string{
+				"other.example.com",
 			},
-			[]string{"other.domain.com"},
+			[]string{"other.example.com"},
 			[]string{"com", "x.example.com", "x.www.example.com", "example.com"},
-		),
-	)
-
-	t.Run("Single At sign",
-		executeTeeTest(
-			[]domainname{
-				{domain: "example.com", name: "@"},
-			},
-			[]string{"example.com"},
-			[]string{"com", "x.example.com", "x.www.example.com"},
 		),
 	)
 
 	t.Run("Wildcard",
 		executeTeeTest(
-			[]domainname{
-				{domain: "example.com", name: "*"},
+			[]string{
+				"*.example.com",
 			},
 			[]string{"example.com", "other.example.com"},
 			[]string{"com", "example.nl"},
@@ -51,10 +26,10 @@ func Test_domaintree(t *testing.T) {
 
 	t.Run("Combined domains",
 		executeTeeTest(
-			[]domainname{
-				{domain: "example.com", name: "*.other"},
-				{domain: "example.com", name: "specific"},
-				{domain: "example.nl", name: "specific"},
+			[]string{
+				"*.other.example.com",
+				"specific.example.com",
+				"specific.example.nl",
 			},
 			[]string{"any.other.example.com", "specific.example.com", "specific.example.nl"},
 			[]string{"com", "nl", "", "example.nl", "other.nl"},
@@ -62,12 +37,12 @@ func Test_domaintree(t *testing.T) {
 	)
 }
 
-func executeTeeTest(inputs []domainname, founds []string, missings []string) func(*testing.T) {
+func executeTeeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tree := CreateTree()
 		for _, input := range inputs {
-			tree.Add(input.domain, input.name)
+			tree.Add(input)
 		}
 
 		for _, found := range founds {

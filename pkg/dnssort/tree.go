@@ -4,33 +4,33 @@ import (
 	"strings"
 )
 
-type domaintree domainnode
+type DomainTree domainNode
 
-type domainnode struct {
+type domainNode struct {
 	IsLeaf     bool
 	IsWildcard bool
 	Name       string
-	Children   map[string]*domainnode
+	Children   map[string]*domainNode
 }
 
-func CreateTree() *domaintree {
-	return &domaintree{
+func CreateTree() *DomainTree {
+	return &DomainTree{
 		IsLeaf:     false,
 		IsWildcard: false,
 		Name:       "",
-		Children:   map[string]*domainnode{},
+		Children:   map[string]*domainNode{},
 	}
 }
 
-func createNode(name string) *domainnode {
-	return &domainnode{
+func createNode(name string) *domainNode {
+	return &domainNode{
 		IsLeaf:   false,
 		Name:     name,
-		Children: map[string]*domainnode{},
+		Children: map[string]*domainNode{},
 	}
 }
 
-func (tree *domainnode) addIntermediate(name string) *domainnode {
+func (tree *domainNode) addIntermediate(name string) *domainNode {
 	if _, ok := tree.Children[name]; !ok {
 		tree.Children[name] = createNode(name)
 	}
@@ -38,7 +38,7 @@ func (tree *domainnode) addIntermediate(name string) *domainnode {
 	return tree.Children[name]
 }
 
-func (tree *domainnode) addLeaf(name string, isWildcard bool) *domainnode {
+func (tree *domainNode) addLeaf(name string, isWildcard bool) *domainNode {
 	node := tree.addIntermediate(name)
 
 	node.IsLeaf = true
@@ -47,21 +47,15 @@ func (tree *domainnode) addLeaf(name string, isWildcard bool) *domainnode {
 	return node
 }
 
-func (tree *domaintree) Add(domain string, name string) {
-	fqdn := normalizeDomainName(domain, name)
-
-	tree.AddFQDN(fqdn)
-}
-
-func (tree *domaintree) AddFQDN(fqdn string) {
-	domainParts := strings.Split(strings.TrimSuffix(fqdn, "."), ".")
+func (tree *DomainTree) Add(fqdn string) {
+	domainParts := splitFQDN(fqdn)
 
 	isWildcard := domainParts[0] == "*"
 	if isWildcard {
 		domainParts = domainParts[1:]
 	}
 
-	ptr := (*domainnode)(tree)
+	ptr := (*domainNode)(tree)
 	for iX := len(domainParts) - 1; iX > 0; iX -= 1 {
 		ptr = ptr.addIntermediate(domainParts[iX])
 	}
@@ -69,11 +63,11 @@ func (tree *domaintree) AddFQDN(fqdn string) {
 	ptr.addLeaf(domainParts[0], isWildcard)
 }
 
-func (tree *domaintree) Has(fqdn string) bool {
-	domainParts := strings.Split(fqdn, ".")
+func (tree *DomainTree) Has(fqdn string) bool {
+	domainParts := splitFQDN(fqdn)
 
-	var mostSpecificNode *domainnode
-	ptr := (*domainnode)(tree)
+	var mostSpecificNode *domainNode
+	ptr := (*domainNode)(tree)
 
 	for iX := len(domainParts) - 1; iX >= 0; iX -= 1 {
 		node, ok := ptr.Children[domainParts[iX]]
@@ -91,14 +85,8 @@ func (tree *domaintree) Has(fqdn string) bool {
 	return ptr.IsLeaf || ptr.IsWildcard || mostSpecificNode != nil
 }
 
-func normalizeDomainName(domain string, name string) string {
-	domain = strings.TrimSuffix(domain, ".")
-	if name == "@" {
-		return domain
-	}
-	if strings.HasSuffix(name, ".") {
-		return strings.TrimSuffix(name, ".")
-	}
+func splitFQDN(fqdn string) []string {
+	normalizedFQDN := strings.TrimSuffix(fqdn, ".")
 
-	return strings.TrimSuffix(name, ".") + "." + strings.TrimPrefix(domain, ".")
+	return strings.Split(normalizedFQDN, ".")
 }

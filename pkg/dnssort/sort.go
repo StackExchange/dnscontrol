@@ -16,11 +16,51 @@ type unresolvedRecord struct {
 	record                 SortableRecord
 }
 
-func makeUnresolvedRecord(record SortableRecord) unresolvedRecord {
+type sortState struct {
+	availableNames       *DomainTree
+	resolvedNames        *DomainTree
+	sortedRecords        []SortableRecord
+	unresolvedRecords    []SortableRecord
+	workingSet           []unresolvedRecord
+	nextWorkingSet       []unresolvedRecord
+	hasResolvedLastRound bool
+}
+
+func createSortState(records []SortableRecord) sortState {
+	sortState := sortState{
+		availableNames:       CreateTree(),
+		resolvedNames:        CreateTree(),
+		sortedRecords:        make([]SortableRecord, 0),
+		unresolvedRecords:    make([]SortableRecord, 0),
+		workingSet:           nil,
+		nextWorkingSet:       nil,
+		hasResolvedLastRound: false,
+	}
+
+	for _, record := range records {
+		sortState.availableNames.Add(record.GetNameFQDN())
+	}
+
+	for _, record := range records {
+		sortState.workingSet = append(sortState.workingSet, sortState.createUnresolvedRecordFor(record))
+	}
+
+	return sortState
+}
+
+func (sortState *sortState) addAsResolved(unresolved unresolvedRecord) {
+	sortState.hasResolvedLastRound = true
+	sortState.sortedRecords = append(sortState.sortedRecords, unresolved.record)
+	sortState.resolvedNames.Add(unresolved.record.GetNameFQDN())
+}
+
+func (sortState *sortState) createUnresolvedRecordFor(record SortableRecord) unresolvedRecord {
 	unresolvedDependencies := nameMap{}
 
 	for _, fqdn := range record.GetFQDNDependencies() {
-		unresolvedDependencies.add(fqdn)
+		if sortState.availableNames.Has(fqdn) {
+			unresolvedDependencies.add(fqdn)
+		}
 	}
 
 	return unresolvedRecord{
@@ -29,55 +69,66 @@ func makeUnresolvedRecord(record SortableRecord) unresolvedRecord {
 	}
 }
 
+func (sortState *sortState) swapWorkingSets() {
+	sortState.workingSet = sortState.nextWorkingSet
+	sortState.nextWorkingSet = nil
+}
+
+func (sortState *sortState) removeResolvedNames(unresolved unresolvedRecord) {
+	for dependency := range unresolved.unresolvedDependencies {
+		if sortState.resolvedNames.Has(dependency) {
+			unresolved.unresolvedDependencies.remove(dependency)
+		}
+	}
+}
+
+func (sortState *sortState) addForNextRound(unresolved unresolvedRecord) {
+	sortState.nextWorkingSet = append(sortState.nextWorkingSet, unresolved)
+}
+
+func (sortState *sortState) hasWork() bool {
+	return len(sortState.workingSet) > 0
+}
+
+func (sortState *sortState) hasStalled() bool {
+	return !sortState.hasResolvedLastRound
+}
+
 type DependencySortResult struct {
 	SortedRecords     []SortableRecord
 	UnresolvedRecords []SortableRecord
 }
 
 func SortByDependencies(records []SortableRecord) DependencySortResult {
-	resolvedNames := CreateTree()
+	sortState := createSortState(records)
 
-	workingset := make([]unresolvedRecord, len(records))
-	var newWorkingset []unresolvedRecord
+	for sortState.hasWork() {
+		sortState.hasResolvedLastRound = false
 
-	for iX, record := range records {
-		workingset[iX] = makeUnresolvedRecord(record)
-	}
-
-	var sortedRecords []SortableRecord
-	var unresolvedRecords []SortableRecord
-
-	for len(workingset) > 0 {
-		added := 0
-
-		for _, unresolved := range workingset {
-			unresolved.unresolvedDependencies.removeAll(resolvedNames)
+		for _, unresolved := range sortState.workingSet {
+			sortState.removeResolvedNames(unresolved)
 
 			if !unresolved.unresolvedDependencies.empty() {
-				newWorkingset = append(newWorkingset, unresolved)
-
+				sortState.addForNextRound(unresolved)
 			} else {
-				sortedRecords = append(sortedRecords, unresolved.record)
-				resolvedNames.AddFQDN(unresolved.record.GetNameFQDN())
-				added += 1
+				sortState.addAsResolved(unresolved)
 			}
 		}
 
-		if added == 0 && len(workingset) > 0 {
-			log.Printf("The DNS changes appear to have unresolved dependencies like %s\n", workingset[0].unresolvedDependencies)
-			for _, unresolved := range workingset {
-				sortedRecords = append(sortedRecords, unresolved.record)
-				unresolvedRecords = append(unresolvedRecords, unresolved.record)
+		if sortState.hasStalled() {
+			log.Printf("The DNS changes appear to have unresolved dependencies like %s\n", sortState.workingSet[0].unresolvedDependencies)
+			for _, unresolved := range sortState.workingSet {
+				sortState.sortedRecords = append(sortState.sortedRecords, unresolved.record)
+				sortState.unresolvedRecords = append(sortState.unresolvedRecords, unresolved.record)
 			}
 			break
 		}
 
-		workingset = newWorkingset
-		newWorkingset = nil
+		sortState.swapWorkingSets()
 	}
 
 	return DependencySortResult{
-		SortedRecords:     sortedRecords,
-		UnresolvedRecords: unresolvedRecords,
+		SortedRecords:     sortState.sortedRecords,
+		UnresolvedRecords: sortState.unresolvedRecords,
 	}
 }
