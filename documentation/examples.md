@@ -123,6 +123,18 @@ D("example.tld", REG, DSP, ...
 ```
 {% endcode %}
 
+## Set default records modifiers ##
+{% code title="dnsconfig.js" %}
+```javascript
+DEFAULTS(
+    NAMESERVER_TTL('24h'),
+    DefaultTTL('12h'),
+    CF_PROXY_DEFAULT_OFF
+);
+```
+
+# Advanced Examples #
+
 ## Dual DNS Providers ##
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -143,17 +155,6 @@ D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
 )
 ```
 {% endcode %}
-
-## Set default records modifiers ##
-{% code title="dnsconfig.js" %}
-```javascript
-DEFAULTS(
-    NAMESERVER_TTL('24h'),
-    DefaultTTL('12h'),
-    CF_PROXY_DEFAULT_OFF
-);
-```
-# Advanced Examples #
 
 ## Automate Fastmail DKIM records ##
 
@@ -193,3 +194,8 @@ D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_DKIM('example.com')
 )
 ```
+{% endcode %}
+
+### More advanced examples
+
+See the [Code Tricks](advanced-features/code-tricks) page.
