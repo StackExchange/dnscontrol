@@ -222,13 +222,16 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 					continue
 				}
 
-				corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true
 					return
 				}
 				totalCorrections += len(corrections)
+				// When diff1 goes away, the call to printReports() should be moved to HERE.
+				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
@@ -540,6 +543,18 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)
+	}
+	return anyErrors
+}
+
+func printReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
+	anyErrors = false
+	if len(reports) == 0 {
+		return false
+	}
+	for i, report := range reports {
+		out.PrintReport(i, report)
+		notifier.Notify(domain, provider, report.Msg, nil, !push)
 	}
 	return anyErrors
 }

@@ -19,6 +19,7 @@ type CLI interface {
 	StartRegistrar(name string, skip bool)
 
 	PrintCorrection(n int, c *models.Correction)
+	PrintReport(n int, c *models.Correction) // Print corrections that are diff2.REPORT
 	EndCorrection(err error)
 	PromptToRun() bool
 }
@@ -87,6 +88,13 @@ func (c ConsolePrinter) StartDomain(domain string) {
 // PrintCorrection is called to print/format each correction.
 func (c ConsolePrinter) PrintCorrection(i int, correction *models.Correction) {
 	fmt.Fprintf(c.Writer, "#%d: %s\n", i+1, correction.Msg)
+}
+
+// PrintReport is called to print/format each non-mutating correction (diff2.REPORT).
+func (c ConsolePrinter) PrintReport(i int, correction *models.Correction) {
+	// When diff1 is eliminated:
+	//fmt.Fprintf(c.Writer, "INFO#%d: %s\n", i+1, correction.Msg)
+	fmt.Fprintf(c.Writer, "INFO: %s\n", correction.Msg)
 }
 
 // PromptToRun prompts the user to see if they want to execute a correction.

@@ -223,12 +223,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
 		if tst.Changeless {
-			if count := zonerecs.CountActionable(corrections); count != 0 {
+			if count := len(corrections); count != 0 {
 				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
 				for i, c := range corrections {
 					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
@@ -256,11 +256,11 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count := zonerecs.CountActionable(corrections); count != 0 {
+		if count := len(corrections); count != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
@@ -351,9 +351,12 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
+		}
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}
 		for i, c := range cs {
 			t.Logf("#%d:\n%s", i+1, c.Msg)
@@ -373,14 +376,17 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count := zonerecs.CountActionable(cs); count != 0 {
+	if count := len(cs); count != 0 {
 		t.Logf("Expect no corrections on second run, but found %d.", count)
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
+		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i, c.Msg)
+			t.Logf("#%d: %s", i+1, c.Msg)
 		}
 		t.FailNow()
 	}

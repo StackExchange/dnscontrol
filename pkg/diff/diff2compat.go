@@ -62,7 +62,13 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		case diff2.REPORT:
 			// Sadly the NewCompat function doesn't have an equivalent. We
 			// just output the messages now.
+			fmt.Print("INFO: ")
 			fmt.Println(inst.MsgsJoined)
+
+			// TODO(tlim): When diff1 is deleted, IncremtntalDiff should add a
+			// parameter to list the REPORT messages. It can also eliminate the
+			// first parameter (existing) since nobody uses that in the diff2
+			// world.
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			toCreate = append(toCreate, cor)
