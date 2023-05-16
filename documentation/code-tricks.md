@@ -71,9 +71,9 @@ function PARKED_R53(name) {
         END); 
 }
 
-PARKED_R53('example1.tld');
-PARKED_R53('example2.tld');
-PARKED_R53('example3.tld');
+PARKED_R53("example1.tld");
+PARKED_R53("example2.tld");
+PARKED_R53("example3.tld");
 ```
 
 Solution 2: Use a loop. (Note: See caveats below.)
