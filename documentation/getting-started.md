@@ -30,6 +30,8 @@ docker run --rm \
   -it \
   -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js \
   -v $(pwd)/creds.json:/dns/creds.json \
+  -v $(pwd)/spfcache.updated.json:/dns/spfcache.updated.json \
+  -v $(pwd)/spfcache.json:/dns/spfcache.json \
   -v $(pwd)/zones/:/dns/zones/ \
   -u $(id -u ${USER}):$(id -g ${USER}) \
   stackexchange/dnscontrol \
