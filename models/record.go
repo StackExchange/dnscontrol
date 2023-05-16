@@ -556,9 +556,9 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 // Deprecated. zonerecords.CorrectZoneRecords() calls Downcase directly.
-func PostProcessRecords(recs []*RecordConfig) {
-	Downcase(recs)
-}
+//func PostProcessRecords(recs []*RecordConfig) {
+//	Downcase(recs)
+//}
 
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
 func Downcase(recs []*RecordConfig) {

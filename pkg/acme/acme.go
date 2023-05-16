@@ -263,7 +263,7 @@ func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
 	return nil
 }
 
-// IgnoredProviders is a lit of provider names that should not be used to fill challenges.
+// IgnoredProviders is a list of provider names that should not be used to fill challenges.
 var IgnoredProviders = map[string]bool{}
 
 func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correction, error) {
@@ -276,9 +276,12 @@ func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correcti
 		if err != nil {
 			return nil, err
 		}
-		corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
+		reports, corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
 		if err != nil {
 			return nil, err
+		}
+		for _, c := range reports {
+			c.Msg = fmt.Sprintf("INFO[%s] %s", p.Name, strings.TrimSpace(c.Msg))
 		}
 		for _, c := range corrections {
 			c.Msg = fmt.Sprintf("[%s] %s", p.Name, strings.TrimSpace(c.Msg))
