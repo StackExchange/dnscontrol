@@ -123,9 +123,9 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	printer.SkinnyReport = !args.Full
 
 	if diff2.EnableDiff2 {
-		printer.Println("INFO: Diff2 algorithm in use.")
+		printer.Println("INFO: Diff2 algorithm in use. Welcome to the future!")
 	} else {
-		printer.Println("INFO: Old diff algorithm in use. Please test `dnscontrol --diff2 preview` (or push) as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+		printer.Println("WARNING: Diff1 algorithm in use. Please upgrade to diff2 (`dnscontrol --diff2=true preview`) as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
