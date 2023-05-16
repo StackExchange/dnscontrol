@@ -7,11 +7,11 @@ import (
 // CorrectZoneRecords calls both GetZoneRecords, does any
 // post-processing, and then calls GetZoneRecordsCorrections.  The
 // name sucks because all the good names were taken.
-func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, error) {
+func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, []*models.Correction, error) {
 
 	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// downcase
@@ -23,7 +23,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	// dc.Records.
 	dc, err = dc.Copy()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// punycode
@@ -33,7 +33,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 
 	everything, err := driver.GetZoneRecordsCorrections(dc, existingRecords)
 	reports, corrections := splitReportsAndCorrections(everything)
-	return rerports, corrections, err
+	return reports, corrections, err
 }
 
 func splitReportsAndCorrections(everything []*models.Correction) (reports, corrections []*models.Correction) {

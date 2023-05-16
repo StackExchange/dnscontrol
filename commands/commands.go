@@ -26,8 +26,6 @@ var commands = []*cli.Command{}
 // These are set by/for goreleaser
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
 )
 
 func cmd(cat string, c *cli.Command) bool {

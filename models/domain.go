@@ -9,8 +9,10 @@ import (
 )
 
 const (
+	// DomainUniqueName is the full `example.com!tag` name`
 	DomainUniqueName = "dnscontrol_uniquename"
-	DomainTag        = "dnscontrol_tag"
+	// DomainTag is the tag part of `example.com!tag` name
+	DomainTag = "dnscontrol_tag"
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).

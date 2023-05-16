@@ -223,7 +223,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		reports, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
@@ -256,7 +256,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		reports, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}

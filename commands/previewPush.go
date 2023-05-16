@@ -223,14 +223,15 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				}
 
 				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
-				// TODO: print out Infos
+				printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true
 					return
 				}
 				totalCorrections += len(corrections)
-				printReports(domain.Name, provider.Name, reports, out, push, notifier)
+				// When diff1 goes away, the call to printReports() should be moved to HERE.
+				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
