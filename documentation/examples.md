@@ -136,6 +136,7 @@ DEFAULTS(
     CF_PROXY_DEFAULT_OFF
 );
 ```
+{% endcode %}
 
 # Advanced Examples #
 
