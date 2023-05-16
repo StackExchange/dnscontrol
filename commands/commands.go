@@ -66,6 +66,7 @@ func Run(v string) int {
 			Name:        "diff2",
 			Usage:       "Enable replacement diff algorithm",
 			Destination: &diff2.EnableDiff2,
+			Value:       true,
 		},
 	}
 	sort.Sort(cli.CommandsByName(commands))

@@ -69,12 +69,6 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "diff2",
-		Destination: &diff2.EnableDiff2,
-		Usage:       `Enable replacement diff algorithm`,
-		Value:       true,
-	})
 	flags = append(flags, &cli.Int64Flag{
 		Name:        "bindserial",
 		Destination: &bindserial.ForcedValue,
@@ -131,7 +125,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if diff2.EnableDiff2 {
 		printer.Println("INFO: Diff2 algorithm in use. Welcome to the future!")
 	} else {
-		printer.Println("WARNING: Diff1 algorithm in use. Please use --diff2=true as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
+		printer.Println("WARNING: Diff1 algorithm in use. Please upgrade to diff2 (`dnscontrol --diff2=true preview`) as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
