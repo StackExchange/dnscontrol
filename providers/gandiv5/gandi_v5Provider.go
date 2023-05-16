@@ -129,7 +129,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (client *gandiv5Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,
 		SharingID: client.sharingid,

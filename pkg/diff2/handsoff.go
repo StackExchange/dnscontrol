@@ -119,20 +119,20 @@ func handsoff(
 	// Process UNMANAGE/IGNORE_* and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*():", len(ignorable)))
 		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
+		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
 		if unmanagedSafely {
 			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
@@ -157,7 +157,7 @@ func reportSkips(recs models.Records, full bool) []string {
 	}
 
 	for _, r := range recs[:last] {
-		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 	}
 	if shorten {
 		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
@@ -243,7 +243,7 @@ func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
-			matchTarget(uc.TargetGlob, rec.GetLabel()) {
+			matchTarget(uc.TargetGlob, rec.GetTargetField()) {
 			return true
 		}
 	}

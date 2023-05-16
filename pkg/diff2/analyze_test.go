@@ -51,18 +51,6 @@ var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
-func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
-	c := Change{
-		Type: v,
-		Old:  old,
-		New:  new,
-		Msgs: msgs,
-	}
-	c.Key.NameFQDN = l
-	c.Key.Type = t
-	return c
-}
-
 func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string) {
 	t.Helper()
 	gs := strings.TrimSpace(justMsgString(gotcc))

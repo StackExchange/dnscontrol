@@ -148,7 +148,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(nss)
 }
 
-func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 

@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -74,6 +75,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Usage:       `Enable replacement diff algorithm`,
 		Value:       true,
 	})
+	flags = append(flags, &cli.Int64Flag{
+		Name:        "bindserial",
+		Destination: &bindserial.ForcedValue,
+		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
+	})
 	return flags
 }
 
@@ -122,8 +128,10 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 
-	if !diff2.EnableDiff2 {
-		printer.Println("INFO: --diff2=false will go away on or about 2023-06-01. Please use --diff2=true. See https://github.com/StackExchange/dnscontrol/issues/2262")
+	if diff2.EnableDiff2 {
+		printer.Println("INFO: Diff2 algorithm in use. Welcome to the future!")
+	} else {
+		printer.Println("WARNING: Diff1 algorithm in use. Please use --diff2=true as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
@@ -158,7 +166,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		func(domain *models.DomainConfig) {
 			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
-			if !args.shouldRunDomain(domain.UniqueName) {
+			uniquename := domain.GetUniqueName()
+			if !args.shouldRunDomain(uniquename) {
 				return
 			}
 
@@ -169,7 +178,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 
 			// Correct the domain...
 
-			out.StartDomain(domain.UniqueName)
+			out.StartDomain(uniquename)
 			var providersWithExistingZone []*models.DNSProviderInstance
 			/// For each DSP...
 			for _, provider := range domain.DNSProviderInstances {
@@ -219,13 +228,16 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 					continue
 				}
 
-				corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true
 					return
 				}
 				totalCorrections += len(corrections)
+				// When diff1 goes away, the call to printReports() should be moved to HERE.
+				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
@@ -537,6 +549,18 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)
+	}
+	return anyErrors
+}
+
+func printReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
+	anyErrors = false
+	if len(reports) == 0 {
+		return false
+	}
+	for i, report := range reports {
+		out.PrintReport(i, report)
+		notifier.Notify(domain, provider, report.Msg, nil, !push)
 	}
 	return anyErrors
 }

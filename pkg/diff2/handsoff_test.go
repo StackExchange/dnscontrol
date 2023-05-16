@@ -36,7 +36,7 @@ func showRecs(recs models.Records) string {
 	for _, rec := range recs {
 		result += (rec.GetLabel() +
 			" " + rec.Type +
-			" " + rec.GetTargetRFC1035Quoted() +
+			" " + rec.GetTargetCombined() +
 			"\n")
 	}
 	return result
@@ -88,8 +88,8 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 
 	if resultWanted != resultActual {
 		testifyrequire.Equal(t,
-			resultActual,
 			resultWanted,
+			resultActual,
 			"GOT =\n```\n%s```\nWANT=\n```%s```\nINPUTS=\n```\n%s\n```\n",
 			resultActual,
 			resultWanted,
@@ -230,7 +230,7 @@ D("f.com", "none",
 `
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-FOREIGN:
 _2222222222222222.cr CNAME _333333.nnn.acm-validations.aws.
+FOREIGN:
 	`)
 }

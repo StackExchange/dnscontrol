@@ -156,13 +156,13 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 
 				if len(td.existingTargets) != 0 {
 					if j != 0 {
-						panic("should not happen: (CNAME not in first position)")
+						fmt.Println("WARNING: should not happen: (CNAME not in FIRST position)")
 					}
 				}
 
 				if len(td.desiredTargets) != 0 {
 					if j != highest(ld.tdata) {
-						panic("should not happen: (CNAME not in last position)")
+						fmt.Println("WARNING: should not happen: (CNAME not in last position). There are multiple records on a label with a CNAME.")
 					}
 				}
 			}

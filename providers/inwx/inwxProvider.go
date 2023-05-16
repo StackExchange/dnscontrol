@@ -288,7 +288,7 @@ func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) 
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
-func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
 		return nil, err

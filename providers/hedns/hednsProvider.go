@@ -284,7 +284,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 }
 
 // GetZoneRecords returns all the records for the given domain
-func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 
 	// Get Domain ID

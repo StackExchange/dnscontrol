@@ -115,7 +115,7 @@ func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Namese
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err

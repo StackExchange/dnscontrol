@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
@@ -112,7 +111,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
-	normalize.UpdateNameSplitHorizon(dc)
+	dc.UpdateSplitHorizonNames()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -127,6 +126,11 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 // testPermitted returns nil if the test is permitted, otherwise an
 // error explaining why it is not.
 func testPermitted(t *testing.T, p string, f TestGroup) error {
+
+	// Does this test require "diff2"?
+	if f.diff2only && !diff2.EnableDiff2 {
+		return fmt.Errorf("test for diff2 only")
+	}
 
 	// not() and only() can't be mixed.
 	if len(f.only) != 0 && len(f.not) != 0 {
@@ -209,6 +213,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
+		dom.Unmanaged = tst.Unmanaged
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -218,20 +223,30 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
-		if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
+		if tst.Changeless {
+			if count := len(corrections); count != 0 {
+				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
+				for i, c := range corrections {
+					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
+				}
+				t.FailNow()
+			}
+		} else if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
 			if *verbose {
 				t.Log("\n" + c.Msg)
 			}
-			err = c.F()
-			if err != nil {
-				t.Fatal(err)
+			if c.F != nil { // F == nil if there is just a msg, no action.
+				err = c.F()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 
@@ -241,12 +256,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(corrections) != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
+		if count := len(corrections); count != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
@@ -336,9 +351,12 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
+		}
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}
 		for i, c := range cs {
 			t.Logf("#%d:\n%s", i+1, c.Msg)
@@ -358,17 +376,50 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cs) != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", len(cs))
+	if count := len(cs); count != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", count)
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
+		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i, c.Msg)
+			t.Logf("#%d: %s", i+1, c.Msg)
 		}
 		t.FailNow()
 	}
+}
+
+func TestNameserverDots(t *testing.T) {
+	// Issue https://github.com/StackExchange/dnscontrol/issues/491
+	// If this fails, the provider's GetNameservers() function uses
+	// models.ToNameserversStripTD() instead of models.ToNameservers()
+	// or vise-versa.
+
+	// Setup:
+	p, domain, _, _ := getProvider(t)
+	if p == nil {
+		return
+	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
+	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
+
+	t.Run("No trailing dot in nameserver", func(t *testing.T) {
+		for _, nameserver := range dc.Nameservers {
+			//fmt.Printf("DEBUG: nameserver.Name = %q\n", nameserver.Name)
+			if strings.HasSuffix(nameserver.Name, ".") {
+				t.Errorf("Provider returned nameserver with trailing dot: %q", nameserver)
+			}
+		}
+	})
 }
 
 type TestGroup struct {
@@ -378,6 +429,7 @@ type TestGroup struct {
 	not       []string
 	trueflags []bool
 	tests     []*TestCase
+	diff2only bool
 }
 
 type TestCase struct {
@@ -385,6 +437,17 @@ type TestCase struct {
 	Records        []*models.RecordConfig
 	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
+	Unmanaged      []*models.UnmanagedConfig
+	Changeless     bool // set to true if any changes would be an error
+}
+
+func (tc *TestCase) ExpectNoChanges() *TestCase {
+	tc.Changeless = true
+	return tc
+}
+func (tg *TestGroup) Diff2Only() *TestGroup {
+	tg.diff2only = true
+	return tg
 }
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
@@ -585,16 +648,27 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
 	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
+	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
-		if r.Type == "IGNORE_NAME" {
+		switch r.Type {
+		case "IGNORE_NAME":
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
-		} else if r.Type == "IGNORE_TARGET" {
-			rec := &models.IgnoreTarget{
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				LabelPattern: r.GetLabel(),
+				RTypePattern: r.GetTargetField(),
+			})
+			continue
+		case "IGNORE_TARGET":
+			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
 				Type:    r.GetTargetField(),
-			}
-			ignoredTargets = append(ignoredTargets, rec)
-		} else {
+			})
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				RTypePattern:  r.GetTargetField(),
+				TargetPattern: r.GetLabel(),
+			})
+			continue
+		default:
 			records = append(records, r)
 		}
 	}
@@ -603,6 +677,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 		Records:        records,
 		IgnoredNames:   ignoredNames,
 		IgnoredTargets: ignoredTargets,
+		Unmanaged:      unmanagedItems,
 	}
 }
 
@@ -624,8 +699,8 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
-func urlfwd(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "URLFWD")
+func ns1Urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "NS1_URLFWD")
 }
 
 func clear(items ...interface{}) *TestCase {
@@ -1529,6 +1604,19 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// Bug https://github.com/StackExchange/dnscontrol/issues/2285
+		testgroup("R53_alias pre-existing",
+			requires(providers.CanUseRoute53Alias),
+			tc("Create some records",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			tc("Add a new record - ignoring foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("dev-system*"),
+			),
+		),
+
 		// CLOUDFLAREAPI features
 
 		testgroup("CF_REDIRECT",
@@ -1644,8 +1732,8 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("NS1_URLFWD tests",
 			only("NS1"),
-			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
+			tc("Add a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//// IGNORE* features
@@ -1663,21 +1751,32 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create some records",
 				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
-			),
-			tc("Add a new record - ignoring foo",
 				a("bar", "1.2.3.4"),
-				ignoreName("foo"),
 			),
+			tc("ignore foo",
+				ignoreName("foo"),
+				a("bar", "1.2.3.4"),
+			).ExpectNoChanges(),
+			clear(),
+			tc("Create some records",
+				txt("bar.foo", "simple"),
+				a("bar.foo", "1.2.3.4"),
+				a("bar", "1.2.3.4"),
+			),
+			tc("ignore *.foo",
+				ignoreName("*.foo"),
+				a("bar", "1.2.3.4"),
+			).ExpectNoChanges(),
 			clear(),
 			tc("Create some records",
 				txt("bar.foo", "simple"),
 				a("bar.foo", "1.2.3.4"),
 			),
-			tc("Add a new record - ignoring *.foo",
-				a("bar", "1.2.3.4"),
+			tc("ignore *.foo while we add 1",
 				ignoreName("*.foo"),
+				a("bar", "1.2.3.4"),
 			),
-		),
+		).Diff2Only(),
 
 		testgroup("IGNORE_NAME apex",
 			tc("Create some records",
@@ -1686,39 +1785,88 @@ func makeTests(t *testing.T) []*TestGroup {
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 			),
+			tc("ignore apex",
+				ignoreName("@"),
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+			).ExpectNoChanges(),
+			clear(),
 			tc("Add a new record - ignoring apex",
+				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 				a("added", "4.6.8.9"),
-				ignoreName("@"),
 			),
-		),
+		).Diff2Only(),
 
-		testgroup("IGNORE_TARGET function",
+		testgroup("IGNORE_TARGET function CNAME",
 			tc("Create some records",
 				cname("foo", "test.foo.com."),
-				cname("bar", "test.bar.com."),
+				cname("keep", "keep.example.com."),
 			),
-			tc("Add a new record - ignoring test.foo.com.",
-				cname("bar", "bar.foo.com."),
+			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("test.foo.com.", "CNAME"),
-			),
-			clear(),
-			tc("Create some records",
-				cname("bar.foo", "a.b.foo.com."),
-				a("test.foo", "1.2.3.4"),
-			),
-			tc("Add a new record - ignoring **.foo.com. targets",
-				a("bar", "1.2.3.4"),
-				ignoreTarget("**.foo.com.", "CNAME"),
+				cname("keep", "keep.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("test.foo.com.", "CNAME"),
+				cname("keep", "keep.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
 			),
 		),
-		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
-		// because IGNORE_TARGET only works on CNAMEs and you can't have a
-		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
-		// types of records, we should add a test at the apex.
 
-		//
+		testgroup("IGNORE_TARGET function CNAME*",
+			tc("Create some records",
+				cname("foo1", "test.foo.com."),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+			),
+			tc("ignoring CNAME=test.foo.com.",
+				ignoreTarget("*.foo.com.", "CNAME"),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("*.foo.com.", "CNAME"),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
+			),
+		),
+
+		testgroup("IGNORE_TARGET function CNAME**",
+			tc("Create some records",
+				cname("foo1", "test.foo.com."),
+				cname("foo2", "my.test.foo.com."),
+				cname("bar", "test.example.com."),
+			),
+			tc("ignoring CNAME=test.foo.com.",
+				ignoreTarget("**.foo.com.", "CNAME"),
+				cname("bar", "test.example.com."),
+			).ExpectNoChanges(),
+			tc("ignoring CNAME=test.foo.com. and add",
+				ignoreTarget("**.foo.com.", "CNAME"),
+				cname("bar", "test.example.com."),
+				a("adding", "1.2.3.4"),
+				cname("another", "www.example.com."),
+			),
+		),
+
+		// https://github.com/StackExchange/dnscontrol/issues/2285
+		// IGNORE_TARGET for CNAMEs wasn't working for AZURE_DNS.
+		// Interestingly enough, this has never worked with
+		// GANDI_V5/diff1.  It works on all providers in diff2.
+		testgroup("IGNORE_TARGET b2285",
+			tc("Create some records",
+				cname("foo", "redact1.acm-validations.aws."),
+				cname("bar", "redact2.acm-validations.aws."),
+			),
+			tc("Add a new record - ignoring test.foo.com.",
+				ignoreTarget("**.acm-validations.aws.", "CNAME"),
+			).ExpectNoChanges(),
+		).Diff2Only(),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
