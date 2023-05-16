@@ -7,11 +7,11 @@ import (
 // CorrectZoneRecords calls both GetZoneRecords, does any
 // post-processing, and then calls GetZoneRecordsCorrections.  The
 // name sucks because all the good names were taken.
-func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, error) {
+func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, []*models.Correction, error) {
 
 	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// downcase
@@ -23,7 +23,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	// dc.Records.
 	dc, err = dc.Copy()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// punycode
@@ -31,18 +31,18 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	// FIXME(tlim) It is a waste to PunyCode every iteration.
 	// This should be moved to where the JavaScript is processed.
 
-	return driver.GetZoneRecordsCorrections(dc, existingRecords)
+	everything, err := driver.GetZoneRecordsCorrections(dc, existingRecords)
+	reports, corrections := splitReportsAndCorrections(everything)
+	return reports, corrections, err
 }
 
-// CountActionable returns the number of corrections that have
-// actions.  It is like `len(corrections)` but doesn't count any
-// corrections that are purely informational. (i.e. `.F` is nil)
-func CountActionable(corrections []*models.Correction) int {
-	count := 0
-	for i := range corrections {
-		if corrections[i].F != nil {
-			count++
+func splitReportsAndCorrections(everything []*models.Correction) (reports, corrections []*models.Correction) {
+	for i := range everything {
+		if everything[i].F == nil {
+			reports = append(reports, everything[i])
+		} else {
+			corrections = append(corrections, everything[i])
 		}
 	}
-	return count
+	return reports, corrections
 }
