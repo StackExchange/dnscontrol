@@ -1641,13 +1641,13 @@ function M365_BUILDER(name, value) {
     }
 
     if (value.mx !== false) {
-        value.mx = true
+        value.mx = true;
     }
     if (value.autodiscover !== false) {
-        value.autodiscover = true
+        value.autodiscover = true;
     }
     if (value.dkim !== false) {
-        value.dkim = true
+        value.dkim = true;
     }
 
     if (!value.label) {
@@ -1659,36 +1659,71 @@ function M365_BUILDER(name, value) {
         // Microsoft uses its own, (probably) deterministic algorithm to transform these domains.
         // Unfortunately, underlying algorithm is not known to us.
         if (name.indexOf('-') !== -1) {
-            throw 'M365_BUILDER requires domainGUID for domains with dashes: ' + name;
+            throw (
+                'M365_BUILDER requires domainGUID for domains with dashes: ' +
+                name
+            );
         }
 
         value.domainGUID = name.replace('.', '-');
     }
 
     if (value.dkim && !value.initialDomain) {
-        throw 'M365_BUILDER requires your M365 account\'s initial domain to set up DKIM (default: enabled): ' + name;
+        throw (
+            "M365_BUILDER requires your M365 account's initial domain to set up DKIM (default: enabled): " +
+            name
+        );
     }
 
     r = [];
 
     // MX (default: true)
     if (value.mx) {
-        r.push(MX(value.label, 0, value.domainGUID + '.mail.protection.outlook.com.'));
+        r.push(
+            MX(
+                value.label,
+                0,
+                value.domainGUID + '.mail.protection.outlook.com.'
+            )
+        );
     }
 
     // Autodiscover (default: true)
     if (value.autodiscover) {
-        if (value.label = '@') {
+        if ((value.label = '@')) {
             r.push(CNAME('autodiscover', 'autodiscover.outlook.com.'));
         } else {
-            r.push(CNAME('autodiscover.' + value.label, 'autodiscover.outlook.com.'));
+            r.push(
+                CNAME(
+                    'autodiscover.' + value.label,
+                    'autodiscover.outlook.com.'
+                )
+            );
         }
     }
 
     // DKIM (default: true)
     if (value.dkim) {
-        r.push(CNAME('selector1._domainkey', 'selector1-' + value.domainGUID + '._domainkey.' + value.initialDomain + '.'));
-        r.push(CNAME('selector2._domainkey', 'selector2-' + value.domainGUID + '._domainkey.' + value.initialDomain + '.'));
+        r.push(
+            CNAME(
+                'selector1._domainkey',
+                'selector1-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
+        r.push(
+            CNAME(
+                'selector2._domainkey',
+                'selector2-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
     }
 
     // Skype for Business (default: false)
@@ -1696,13 +1731,31 @@ function M365_BUILDER(name, value) {
         r.push(CNAME('lyncdiscover', 'webdir.online.lync.com.'));
         r.push(CNAME('sip', 'sipdir.online.lync.com.'));
         r.push(SRV('_sip._tls', 100, 1, 443, 'sipdir.online.lync.com.'));
-        r.push(SRV('_sipfederationtls._tcp', 100, 1, 5061, 'sipfed.online.lync.com.'));
+        r.push(
+            SRV(
+                '_sipfederationtls._tcp',
+                100,
+                1,
+                5061,
+                'sipfed.online.lync.com.'
+            )
+        );
     }
 
     // Mobile Device Management (default: false)
     if (value.mdm) {
-        r.push(CNAME('enterpriseregistration', 'enterpriseregistration.windows.net.'));
-        r.push(CNAME('enterpriseenrollment', 'enterpriseenrollment.manage.microsoft.com.'));
+        r.push(
+            CNAME(
+                'enterpriseregistration',
+                'enterpriseregistration.windows.net.'
+            )
+        );
+        r.push(
+            CNAME(
+                'enterpriseenrollment',
+                'enterpriseenrollment.manage.microsoft.com.'
+            )
+        );
     }
 
     return r;
