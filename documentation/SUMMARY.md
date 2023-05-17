@@ -82,6 +82,7 @@
     * [LOC_BUILDER_DMM_STR](functions/record/LOC_BUILDER_DMM_STR.md)
     * [LOC_BUILDER_DMS_STR](functions/record/LOC_BUILDER_DMS_STR.md)
     * [LOC_BUILDER_STR](functions/record/LOC_BUILDER_STR.md)
+    * [M365_BUILDER](functions/record/M365_BUILDER.md)
     * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
     * [TTL](functions/record/TTL.md)
     * Service Provider specific
