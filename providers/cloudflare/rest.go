@@ -30,7 +30,7 @@ func (c *cloudflareProvider) fetchDomainList() error {
 // get all records for a domain
 func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
 	records := []*models.RecordConfig{}
-	rrs, err := c.cfClient.DNSRecords(context.Background(), id, cloudflare.DNSRecord{})
+	rrs, _, err := c.cfClient.ListDNSRecords(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching record list from cloudflare(%q): %w", c.cfClient.APIEmail, err)
 	}
@@ -45,7 +45,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 }
 
 func (c *cloudflareProvider) deleteDNSRecord(rec cloudflare.DNSRecord, domainID string) error {
-	return c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
+	return c.cfClient.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), rec.ID)
 }
 
 // create a correction to delete a record
@@ -53,7 +53,7 @@ func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string
 	return &models.Correction{
 		Msg: fmt.Sprintf("DELETE record: %s %s %d %q (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
 		F: func() error {
-			err := c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
+			err := c.cfClient.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), rec.ID)
 			return err
 		},
 	}
@@ -131,7 +131,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
-			cf := cloudflare.DNSRecord{
+			cf := cloudflare.CreateDNSRecordParams{
 				Name:     rec.GetLabel(),
 				Type:     rec.Type,
 				TTL:      int(rec.TTL),
@@ -154,7 +154,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			}
-			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
 				return err
 			}
@@ -197,7 +197,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	arr := []*models.Correction{{
 		Msg: msg,
 		F: func() error {
-			cf := cloudflare.DNSRecord{
+			cf := cloudflare.CreateDNSRecordParams{
 				Name:     rec.GetLabel(),
 				Type:     rec.Type,
 				TTL:      int(rec.TTL),
@@ -220,7 +220,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			}
-			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
 				return err
 			}
@@ -241,7 +241,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		return fmt.Errorf("cannot modify record if domain or record id are empty")
 	}
 
-	r := cloudflare.DNSRecord{
+	r := cloudflare.UpdateDNSRecordParams{
 		ID:       recID,
 		Proxied:  &proxied,
 		Name:     rec.GetLabel(),
@@ -270,7 +270,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		r.Data = cfDSData(rec)
 		r.Content = ""
 	}
-	return c.cfClient.UpdateDNSRecord(context.Background(), domainID, recID, r)
+	return c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 }
 
 // change universal ssl state
@@ -353,7 +353,7 @@ func (c *cloudflareProvider) createPageRule(domainID string, target string) erro
 }
 
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
-	res, err := c.cfClient.ListWorkerRoutes(context.Background(), id)
+	res, err := c.cfClient.ListWorkerRoutes(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListWorkerRoutesParams{})
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %s", err)
 	}
@@ -369,14 +369,14 @@ func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*model
 		r.SetLabel("@", domain)
 		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
 			pr.Pattern,
-			pr.Script))
+			pr.ScriptName))
 		recs = append(recs, r)
 	}
 	return recs, nil
 }
 
 func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error {
-	_, err := c.cfClient.DeleteWorkerRoute(context.Background(), domainID, recordID)
+	_, err := c.cfClient.DeleteWorkerRoute(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID)
 	return err
 }
 
@@ -396,22 +396,18 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 	if len(parts) != 2 {
 		return fmt.Errorf("unexpected target: '%s' (expected: 'PATTERN,SCRIPT')", target)
 	}
-	wr := cloudflare.WorkerRoute{
+	wr := cloudflare.CreateWorkerRouteParams{
 		Pattern: parts[0],
 		Script:  parts[1],
 	}
 
-	_, err := c.cfClient.CreateWorkerRoute(context.Background(), domainID, wr)
+	_, err := c.cfClient.CreateWorkerRoute(context.Background(), cloudflare.ZoneIdentifier(domainID), wr)
 	return err
 }
 
 func (c *cloudflareProvider) createTestWorker(workerName string) error {
-	wrp := cloudflare.WorkerRequestParams{
-		ZoneID:     "",
+	wp := cloudflare.CreateWorkerParams{
 		ScriptName: workerName,
-	}
-
-	script := cloudflare.WorkerScriptParams{
 		Script: `
 			addEventListener("fetch", (event) => {
 				event.respondWith(
@@ -420,7 +416,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 			});`,
 	}
 
-	_, err := c.cfClient.UploadWorker(context.Background(), &wrp, &script)
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.cfClient.AccountID), wp)
 	return err
 }
 
