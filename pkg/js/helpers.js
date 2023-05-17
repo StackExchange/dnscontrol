@@ -1633,6 +1633,134 @@ function DMARC_BUILDER(value) {
     return TXT(label, record.join('; '));
 }
 
+// Documentation of the records: https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?view=o365-worldwide
+function M365_BUILDER(name, value) {
+    // value is optional
+    if (!value) {
+        value = {};
+    }
+
+    if (value.mx !== false) {
+        value.mx = true;
+    }
+    if (value.autodiscover !== false) {
+        value.autodiscover = true;
+    }
+    if (value.dkim !== false) {
+        value.dkim = true;
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    if (!value.domainGUID) {
+        // Does not work with dashes in domain name.
+        // Microsoft uses its own, (probably) deterministic algorithm to transform these domains.
+        // Unfortunately, underlying algorithm is not known to us.
+        if (name.indexOf('-') !== -1) {
+            throw (
+                'M365_BUILDER requires domainGUID for domains with dashes: ' +
+                name
+            );
+        }
+
+        value.domainGUID = name.replace('.', '-');
+    }
+
+    if (value.dkim && !value.initialDomain) {
+        throw (
+            "M365_BUILDER requires your M365 account's initial domain to set up DKIM (default: enabled): " +
+            name
+        );
+    }
+
+    r = [];
+
+    // MX (default: true)
+    if (value.mx) {
+        r.push(
+            MX(
+                value.label,
+                0,
+                value.domainGUID + '.mail.protection.outlook.com.'
+            )
+        );
+    }
+
+    // Autodiscover (default: true)
+    if (value.autodiscover) {
+        if ((value.label = '@')) {
+            r.push(CNAME('autodiscover', 'autodiscover.outlook.com.'));
+        } else {
+            r.push(
+                CNAME(
+                    'autodiscover.' + value.label,
+                    'autodiscover.outlook.com.'
+                )
+            );
+        }
+    }
+
+    // DKIM (default: true)
+    if (value.dkim) {
+        r.push(
+            CNAME(
+                'selector1._domainkey',
+                'selector1-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
+        r.push(
+            CNAME(
+                'selector2._domainkey',
+                'selector2-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
+    }
+
+    // Skype for Business (default: false)
+    if (value.skypeForBusiness) {
+        r.push(CNAME('lyncdiscover', 'webdir.online.lync.com.'));
+        r.push(CNAME('sip', 'sipdir.online.lync.com.'));
+        r.push(SRV('_sip._tls', 100, 1, 443, 'sipdir.online.lync.com.'));
+        r.push(
+            SRV(
+                '_sipfederationtls._tcp',
+                100,
+                1,
+                5061,
+                'sipfed.online.lync.com.'
+            )
+        );
+    }
+
+    // Mobile Device Management (default: false)
+    if (value.mdm) {
+        r.push(
+            CNAME(
+                'enterpriseregistration',
+                'enterpriseregistration.windows.net.'
+            )
+        );
+        r.push(
+            CNAME(
+                'enterpriseenrollment',
+                'enterpriseenrollment.manage.microsoft.com.'
+            )
+        );
+    }
+
+    return r;
+}
+
 // This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
     return arr;
