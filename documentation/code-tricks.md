@@ -6,6 +6,7 @@ Solution: Use a "builder" to construct it for you.
 
 * [CAA Builder](functions/record/CAA_BUILDER.md)
 * [DMARC Builder](functions/record/DMARC_BUILDER.md)
+* [M365_BUILDER](functions/record/M365_BUILDER.md)
 * [SPF Optimizer](functions/record/SPF_BUILDER.md)
 
 # Repeat records in many domains (macros)
@@ -68,7 +69,7 @@ function PARKED_R53(name) {
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
         SPF_NONE, //deters spammers from using the domain in From: lines.
-        END); 
+        END);
 }
 
 PARKED_R53("example1.tld");
