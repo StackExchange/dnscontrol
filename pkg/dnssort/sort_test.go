@@ -2,19 +2,6 @@ package dnssort
 
 import "testing"
 
-type stubRecord struct {
-	name         string
-	dependencies []string
-}
-
-func (record stubRecord) GetNameFQDN() string {
-	return record.name
-}
-
-func (record stubRecord) GetFQDNDependencies() []string {
-	return record.dependencies
-}
-
 func Test_SortByDependencies(t *testing.T) {
 
 	t.Run("Direct dependency",
@@ -112,16 +99,7 @@ func Test_SortByDependencies(t *testing.T) {
 
 }
 
-func stubRecordsAsSortableRecords(records []stubRecord) []SortableRecord {
-	sortableRecords := make([]SortableRecord, len(records))
-	for iX := range records {
-		sortableRecords[iX] = records[iX]
-	}
-
-	return sortableRecords
-}
-
-func getRecordsNames(records []SortableRecord) []string {
+func getRecordsNames(records []SortableChange) []string {
 	names := make([]string, len(records))
 	for iX, record := range records {
 		names[iX] = record.GetNameFQDN()

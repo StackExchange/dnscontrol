@@ -40,9 +40,9 @@ func Test_domaintree(t *testing.T) {
 func executeTeeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
-		tree := CreateTree()
+		tree := CreateTree[interface{}]()
 		for _, input := range inputs {
-			tree.Add(input)
+			tree.Add(input, struct{}{})
 		}
 
 		for _, found := range founds {

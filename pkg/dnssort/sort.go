@@ -4,41 +4,51 @@ import (
 	"log"
 )
 
-type SortableRecord interface {
+type ChangeType uint8
+
+const (
+	Add ChangeType = iota
+	Delete
+	Change
+)
+
+type SortableChange interface {
+	GetType() ChangeType
 	GetNameFQDN() string
 	GetFQDNDependencies() []string
+	Equals(change SortableChange) bool
 }
 
-type SortableRecords []SortableRecord
+type SortableRecords []SortableChange
 
 type unresolvedRecord struct {
 	unresolvedDependencies nameMap
-	record                 SortableRecord
+	record                 SortableChange
 }
 
 type sortState struct {
-	availableNames       *DomainTree
-	resolvedNames        *DomainTree
-	sortedRecords        []SortableRecord
-	unresolvedRecords    []SortableRecord
+	availableNames       *DomainTree[interface{}]
+	resolvedNames        *DomainTree[interface{}]
+	sortedRecords        []SortableChange
+	unresolvedRecords    []SortableChange
 	workingSet           []unresolvedRecord
 	nextWorkingSet       []unresolvedRecord
 	hasResolvedLastRound bool
 }
 
-func createSortState(records []SortableRecord) sortState {
+func createSortState(records []SortableChange) sortState {
 	sortState := sortState{
-		availableNames:       CreateTree(),
-		resolvedNames:        CreateTree(),
-		sortedRecords:        make([]SortableRecord, 0),
-		unresolvedRecords:    make([]SortableRecord, 0),
+		availableNames:       CreateTree[interface{}](),
+		resolvedNames:        CreateTree[interface{}](),
+		sortedRecords:        make([]SortableChange, 0),
+		unresolvedRecords:    make([]SortableChange, 0),
 		workingSet:           nil,
 		nextWorkingSet:       nil,
 		hasResolvedLastRound: false,
 	}
 
 	for _, record := range records {
-		sortState.availableNames.Add(record.GetNameFQDN())
+		sortState.availableNames.Add(record.GetNameFQDN(), struct{}{})
 	}
 
 	for _, record := range records {
@@ -51,10 +61,10 @@ func createSortState(records []SortableRecord) sortState {
 func (sortState *sortState) addAsResolved(unresolved unresolvedRecord) {
 	sortState.hasResolvedLastRound = true
 	sortState.sortedRecords = append(sortState.sortedRecords, unresolved.record)
-	sortState.resolvedNames.Add(unresolved.record.GetNameFQDN())
+	sortState.resolvedNames.Add(unresolved.record.GetNameFQDN(), struct{}{})
 }
 
-func (sortState *sortState) createUnresolvedRecordFor(record SortableRecord) unresolvedRecord {
+func (sortState *sortState) createUnresolvedRecordFor(record SortableChange) unresolvedRecord {
 	unresolvedDependencies := nameMap{}
 
 	for _, fqdn := range record.GetFQDNDependencies() {
@@ -95,11 +105,11 @@ func (sortState *sortState) hasStalled() bool {
 }
 
 type DependencySortResult struct {
-	SortedRecords     []SortableRecord
-	UnresolvedRecords []SortableRecord
+	SortedRecords     []SortableChange
+	UnresolvedRecords []SortableChange
 }
 
-func SortByDependencies(records []SortableRecord) DependencySortResult {
+func SortByDependencies(records []SortableChange) DependencySortResult {
 	sortState := createSortState(records)
 
 	for sortState.hasWork() {
