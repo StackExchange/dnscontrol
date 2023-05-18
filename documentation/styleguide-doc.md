@@ -96,7 +96,7 @@ Long example: (without filename)
 
 * Mentioning language features:
 
-Not every mention to A, CNAME, and other records
+Not every mention to A, CNAME, or function
 needs to be a link to the manual for that record type.
 However, the first mention on a page should always
 be a link.  Others are at the authors digression.
@@ -121,7 +121,7 @@ Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
 
 NOTE: The `.md` is required.
 
-** Link to another website:
+* Link to another website:
 
 Just list the URL.
 
@@ -140,6 +140,6 @@ Blah blah blah [a search engine](https://www.google.com) blah blah.
 Please spellcheck documents before submitting a PR.
 
 Don't be surprised if Tom rewrites your text.  He often does that to keep the
-documentation consistent and make it more user-friendly.  It's not
+documentation consistent and make it more approachable by new users.  It's not
 [because he has a big ego](https://www.amazon.com/stores/author/B004J0QIVM).
 Well, not usually.
