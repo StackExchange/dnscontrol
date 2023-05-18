@@ -341,6 +341,11 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 
 // BuildCorrection return a Correction for a given set of DDNS update and the corresponding message.
 func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []string, update *dns.Msg) *models.Correction {
+	if update == nil {
+		return &models.Correction{
+			Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
+		}
+	}
 	return &models.Correction{
 		Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
 		F: func() error {
@@ -435,6 +440,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	// at the end of the batched update.
 
 	var msgs []string
+	var reports []string
 	var msgs2 []string
 	update := new(dns.Msg)
 	update.SetUpdate(dc.Name + ".")
@@ -610,7 +616,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 				update.Insert([]dns.RR{change.New[0].ToRR()})
 			}
 		case diff2.REPORT:
-			msgs = append(msgs, change.Msgs...)
+			reports = append(reports, change.Msgs...)
 		}
 	}
 
@@ -618,14 +624,16 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		update.Remove([]dns.RR{dummyNs2})
 	}
 
-	if hasTwoCorrections {
-		return []*models.Correction{
-			c.BuildCorrection(dc, msgs, update),
-			c.BuildCorrection(dc, msgs2, update2),
-		}, nil
-	}
-	return []*models.Correction{
-		c.BuildCorrection(dc, msgs, update),
-	}, nil
+	returnValue := []*models.Correction{}
 
+	if len(msgs) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, update))
+	}
+	if hasTwoCorrections && len(msgs2) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, msgs2, update2))
+	}
+	if len(reports) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))
+	}
+	return returnValue, nil
 }
