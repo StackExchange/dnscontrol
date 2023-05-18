@@ -207,4 +207,4 @@ D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
 
 ### More advanced examples
 
-See the [Code Tricks](code-tricks) page.
+See the [Code Tricks](code-tricks.md) page.
