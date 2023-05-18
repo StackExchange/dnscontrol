@@ -32,6 +32,10 @@ Within the git repo, docs are grouped:
 * 1. Add the page to the `$GIT/dnscontrol/documentation` (or a sub folder)
 * 2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
 
+## Documentation previews
+
+NOTE TO SELF: Ask Cafferata how to preview a draft.
+
 ## Formatting tips
 
 ### General
@@ -41,6 +45,9 @@ Break lines every 80 chars.
 Include a blank line between paragraphs.
 
 Leave one blank line before and after a heading.
+
+Javascript code should use double quotes (`"`) for strings, not single quotes
+(`'`).  They are equivalent but consistency is good.
 
 ### Headings
 
