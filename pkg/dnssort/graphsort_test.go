@@ -2,10 +2,10 @@ package dnssort
 
 import "testing"
 
-func Test_SortByDependencies(t *testing.T) {
+func Test_graphsort(t *testing.T) {
 
 	t.Run("Direct dependency",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "www.example.com", dependencies: []string{"example.com"}},
 				{name: "example.com", dependencies: []string{}},
@@ -19,7 +19,7 @@ func Test_SortByDependencies(t *testing.T) {
 	)
 
 	t.Run("Already in correct order",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "example.com", dependencies: []string{}},
 				{name: "www.example.com", dependencies: []string{"example.com"}},
@@ -33,7 +33,7 @@ func Test_SortByDependencies(t *testing.T) {
 	)
 
 	t.Run("Use wildcards",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "www.example.com", dependencies: []string{"a.test.example.com"}},
 				{name: "*.test.example.com", dependencies: []string{}},
@@ -47,7 +47,7 @@ func Test_SortByDependencies(t *testing.T) {
 	)
 
 	t.Run("Cyclic dependency added on the end",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "a.example.com", dependencies: []string{"b.example.com"}},
 				{name: "b.example.com", dependencies: []string{"a.example.com"}},
@@ -68,7 +68,7 @@ func Test_SortByDependencies(t *testing.T) {
 	)
 
 	t.Run("Self dependency added on the end",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "a.example.com", dependencies: []string{"a.example.com"}},
 				{name: "www.example.com", dependencies: []string{"example.com"}},
@@ -86,7 +86,7 @@ func Test_SortByDependencies(t *testing.T) {
 	)
 
 	t.Run("Ignores external dependency",
-		executeSort(
+		executeGraphSort(
 			[]stubRecord{
 				{name: "mail.example.com", dependencies: []string{"mail.external.tld"}},
 			},
@@ -96,22 +96,13 @@ func Test_SortByDependencies(t *testing.T) {
 			[]string{},
 		),
 	)
-
 }
 
-func getRecordsNames(records []SortableChange) []string {
-	names := make([]string, len(records))
-	for iX, record := range records {
-		names[iX] = record.GetNameFQDN()
-	}
-	return names
-}
-
-func executeSort(inputOrder []stubRecord, expectedOutputOrder []string, expectedUnresolved []string) func(*testing.T) {
+func executeGraphSort(inputOrder []stubRecord, expectedOutputOrder []string, expectedUnresolved []string) func(*testing.T) {
 	return func(t *testing.T) {
 		inputSortableRecords := stubRecordsAsSortableRecords(inputOrder)
 		t.Helper()
-		result := SortByDependencies(inputSortableRecords)
+		result := SortUsingGraph(inputSortableRecords)
 
 		for iX := range expectedOutputOrder {
 			if result.SortedRecords[iX].GetNameFQDN() != expectedOutputOrder[iX] {

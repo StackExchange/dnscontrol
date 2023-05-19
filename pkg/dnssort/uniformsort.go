@@ -9,7 +9,6 @@ type ChangeType uint8
 const (
 	Add ChangeType = iota
 	Delete
-	Change
 )
 
 type SortableChange interface {
@@ -26,7 +25,7 @@ type unresolvedRecord struct {
 	record                 SortableChange
 }
 
-type sortState struct {
+type uniformSortState struct {
 	availableNames       *DomainTree[interface{}]
 	resolvedNames        *DomainTree[interface{}]
 	sortedRecords        []SortableChange
@@ -36,8 +35,8 @@ type sortState struct {
 	hasResolvedLastRound bool
 }
 
-func createSortState(records []SortableChange) sortState {
-	sortState := sortState{
+func createUniformSortState(records []SortableChange) uniformSortState {
+	sortState := uniformSortState{
 		availableNames:       CreateTree[interface{}](),
 		resolvedNames:        CreateTree[interface{}](),
 		sortedRecords:        make([]SortableChange, 0),
@@ -58,13 +57,13 @@ func createSortState(records []SortableChange) sortState {
 	return sortState
 }
 
-func (sortState *sortState) addAsResolved(unresolved unresolvedRecord) {
+func (sortState *uniformSortState) addAsResolved(unresolved unresolvedRecord) {
 	sortState.hasResolvedLastRound = true
 	sortState.sortedRecords = append(sortState.sortedRecords, unresolved.record)
 	sortState.resolvedNames.Add(unresolved.record.GetNameFQDN(), struct{}{})
 }
 
-func (sortState *sortState) createUnresolvedRecordFor(record SortableChange) unresolvedRecord {
+func (sortState *uniformSortState) createUnresolvedRecordFor(record SortableChange) unresolvedRecord {
 	unresolvedDependencies := nameMap{}
 
 	for _, fqdn := range record.GetFQDNDependencies() {
@@ -79,12 +78,12 @@ func (sortState *sortState) createUnresolvedRecordFor(record SortableChange) unr
 	}
 }
 
-func (sortState *sortState) swapWorkingSets() {
+func (sortState *uniformSortState) swapWorkingSets() {
 	sortState.workingSet = sortState.nextWorkingSet
 	sortState.nextWorkingSet = nil
 }
 
-func (sortState *sortState) removeResolvedNames(unresolved unresolvedRecord) {
+func (sortState *uniformSortState) removeResolvedNames(unresolved unresolvedRecord) {
 	for dependency := range unresolved.unresolvedDependencies {
 		if sortState.resolvedNames.Has(dependency) {
 			unresolved.unresolvedDependencies.remove(dependency)
@@ -92,25 +91,25 @@ func (sortState *sortState) removeResolvedNames(unresolved unresolvedRecord) {
 	}
 }
 
-func (sortState *sortState) addForNextRound(unresolved unresolvedRecord) {
+func (sortState *uniformSortState) addForNextRound(unresolved unresolvedRecord) {
 	sortState.nextWorkingSet = append(sortState.nextWorkingSet, unresolved)
 }
 
-func (sortState *sortState) hasWork() bool {
+func (sortState *uniformSortState) hasWork() bool {
 	return len(sortState.workingSet) > 0
 }
 
-func (sortState *sortState) hasStalled() bool {
+func (sortState *uniformSortState) hasStalled() bool {
 	return !sortState.hasResolvedLastRound
 }
 
-type DependencySortResult struct {
+type SortResult struct {
 	SortedRecords     []SortableChange
 	UnresolvedRecords []SortableChange
 }
 
-func SortByDependencies(records []SortableChange) DependencySortResult {
-	sortState := createSortState(records)
+func SortByDependencies(records []SortableChange) SortResult {
+	sortState := createUniformSortState(records)
 
 	for sortState.hasWork() {
 		sortState.hasResolvedLastRound = false
@@ -137,7 +136,7 @@ func SortByDependencies(records []SortableChange) DependencySortResult {
 		sortState.swapWorkingSets()
 	}
 
-	return DependencySortResult{
+	return SortResult{
 		SortedRecords:     sortState.sortedRecords,
 		UnresolvedRecords: sortState.unresolvedRecords,
 	}

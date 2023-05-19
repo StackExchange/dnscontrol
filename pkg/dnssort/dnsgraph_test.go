@@ -50,7 +50,7 @@ func Test_RemoveNode(t *testing.T) {
 
 	graph := CreateGraph(stubRecordsAsSortableRecords(changes))
 
-	graph.removeNode(changes[0])
+	graph.removeNode(graph.tree.Get("example.com")[0])
 
 	// example.com change has been removed
 	nodes := graph.tree.Get("example.com")
@@ -66,5 +66,4 @@ func Test_RemoveNode(t *testing.T) {
 	assert.Len(t, nodes[0].incoming, 2)
 	assert.Equal(t, "someserver.example.com", nodes[0].incoming[0].change.GetNameFQDN())
 	assert.Equal(t, "someserver.example.com", nodes[0].incoming[1].change.GetNameFQDN())
-
 }

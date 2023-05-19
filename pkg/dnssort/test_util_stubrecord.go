@@ -6,7 +6,7 @@ type stubRecord struct {
 }
 
 func (record stubRecord) GetType() ChangeType {
-	return Change
+	return Add
 }
 
 func (record stubRecord) GetNameFQDN() string {

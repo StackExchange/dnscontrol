@@ -8,13 +8,13 @@ type dnsGraphNode struct {
 
 type dnsGraphNodes []*dnsGraphNode
 
-type dnsGraph struct {
+type DNSGraph struct {
 	all  dnsGraphNodes
 	tree *DomainTree[dnsGraphNodes]
 }
 
-func CreateGraph(changes []SortableChange) dnsGraph {
-	graph := dnsGraph{
+func CreateGraph(changes []SortableChange) *DNSGraph {
+	graph := &DNSGraph{
 		all:  dnsGraphNodes{},
 		tree: CreateTree[dnsGraphNodes](),
 	}
@@ -32,33 +32,32 @@ func CreateGraph(changes []SortableChange) dnsGraph {
 	return graph
 }
 
-func (graph *dnsGraph) removeNode(change SortableChange) {
+func (graph *DNSGraph) removeNode(toRemove *dnsGraphNode) {
 	index := -1
 	for iX, node := range graph.all {
-		if change.Equals(node.change) {
+		if node == toRemove {
 			index = iX
 			break
 		}
 	}
 
-	node := graph.all[index]
-	for _, incoming := range node.incoming {
-		incoming.outgoing = incoming.outgoing.removeNode(node)
+	for _, incoming := range toRemove.incoming {
+		incoming.outgoing = incoming.outgoing.removeNode(toRemove)
 	}
 
-	for _, outgoing := range node.outgoing {
-		outgoing.incoming = outgoing.incoming.removeNode(node)
+	for _, outgoing := range toRemove.outgoing {
+		outgoing.incoming = outgoing.incoming.removeNode(toRemove)
 	}
 
 	if index > -1 {
 		graph.all = append(graph.all[:index], graph.all[index+1:]...)
-		nodes := graph.tree.Get(node.change.GetNameFQDN())
-		nodes = nodes.removeNode(node)
-		graph.tree.Add(node.change.GetNameFQDN(), nodes)
+		nodes := graph.tree.Get(toRemove.change.GetNameFQDN())
+		nodes = nodes.removeNode(toRemove)
+		graph.tree.Add(toRemove.change.GetNameFQDN(), nodes)
 	}
 }
 
-func (graph *dnsGraph) addNode(change SortableChange) {
+func (graph *DNSGraph) addNode(change SortableChange) {
 	nodes := graph.tree.Get(change.GetNameFQDN())
 	node := &dnsGraphNode{
 		change:   change,
@@ -73,7 +72,7 @@ func (graph *dnsGraph) addNode(change SortableChange) {
 	graph.tree.Add(change.GetNameFQDN(), nodes)
 }
 
-func (graph *dnsGraph) addEdge(source string, destination string) {
+func (graph *DNSGraph) addEdge(source string, destination string) {
 	sourceNodes := graph.tree.Get(source)
 	destinationNodes := graph.tree.Get(destination)
 

@@ -5,7 +5,7 @@ import "testing"
 func Test_domaintree(t *testing.T) {
 
 	t.Run("Single FQDN",
-		executeTeeTest(
+		executeTreeTest(
 			[]string{
 				"other.example.com",
 			},
@@ -15,7 +15,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Wildcard",
-		executeTeeTest(
+		executeTreeTest(
 			[]string{
 				"*.example.com",
 			},
@@ -25,7 +25,7 @@ func Test_domaintree(t *testing.T) {
 	)
 
 	t.Run("Combined domains",
-		executeTeeTest(
+		executeTreeTest(
 			[]string{
 				"*.other.example.com",
 				"specific.example.com",
@@ -37,7 +37,7 @@ func Test_domaintree(t *testing.T) {
 	)
 }
 
-func executeTeeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
+func executeTreeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tree := CreateTree[interface{}]()
