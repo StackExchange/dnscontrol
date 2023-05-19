@@ -2458,11 +2458,11 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
 declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): RecordModifier;
 
 /**
- * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.
+ * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain (`D()`) or a specific [`R53_ALIAS()`](../domain/R53_ALIAS.md) record.
  * 
- * When used with D(), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones.
+ * When used with [`D()`](../global/D.md), it sets the zone id of the domain. This can be used to differentiate between [split horizon domains](../../providers/route53.md#split-horizon) in public and private zones.
  * 
- * When used with R53_ALIAS() it sets the required Route53 hosted zone id in a R53_ALIAS record. See [R53_ALIAS's documentation](../domain/R53_ALIAS.md) for details.
+ * When used with [`R53_ALIAS()`](../domain/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [R53_ALIAS's documentation](../domain/R53_ALIAS.md) for details.
  * 
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_zone
  */

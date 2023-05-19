@@ -27,7 +27,7 @@ The Target can be any of:
 * _S3 bucket_ (configured as website): specify the domain name of the Amazon S3 website endpoint in which you configured the bucket (for instance s3-website-us-east-2.amazonaws.com). For the available values refer to the [Amazon S3 Website Endpoints](http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
 * _Another Route53 record_: specify the value of the name of another record in the same hosted zone.
 
-For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the `R53_ZONE` record modifier.
+For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the [`R53_ZONE`](../record/R53_ZONE.md) record modifier.
 
 The zone id can be found depending on the target type:
 
