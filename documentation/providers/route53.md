@@ -93,13 +93,13 @@ var REG_NONE = NewRegistrar("none");
 D('testzone.net!private', REG_NONE,
     DnsProvider(DSP_R53),
     R53_ZONE('Z111111111JCCCP1V7UW'),
-    TXT('me',	'private testzone.net'),
+    TXT('me', 'private testzone.net'),
 );
 
 D('testzone.net!public', REG_NONE,
     DnsProvider(DSP_R53),
     R53_ZONE('Z222222222INNG98SHJQ2'),
-    TXT('me',	'public testzone.net'),
+    TXT('me', 'public testzone.net'),
 );
 ```
 {% endcode %}
