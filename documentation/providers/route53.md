@@ -85,7 +85,8 @@ This provider supports spilt horizons using the `R53_ZONE()` domain function.
 In this example the domain `testzone.net` appears in the same account twice,
 each with different zone IDs specified using `R53_ZONE()`.
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 var DSP_R53 = NewDnsProvider("r53_main");
 var REG_NONE = NewRegistrar("none");
 
@@ -101,6 +102,7 @@ D('testzone.net!public', REG_NONE,
     TXT('me',	'public testzone.net'),
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a standard [AWS access key](https://aws.amazon.com/developers/access-keys/) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.
