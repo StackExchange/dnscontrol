@@ -115,7 +115,7 @@ dockers:
     - "--label=org.opencontainers.image.source={{ .GitURL }}"
     - "--platform=linux/arm64"
 docker_manifests:
-  - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
+  - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
     image_templates:
       - *amd_image
       - *386_image
