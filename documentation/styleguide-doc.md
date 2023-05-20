@@ -33,7 +33,7 @@ Within the git repo, docs are grouped:
 
 ## Documentation previews
 
-NOTE TO SELF: Ask Cafferata how to preview a draft.
+> "Preview links are only accessible by GitBook users. We're working on a feature that will allow preview links to be viewable by anyone who accesses the PR." — _[GitBook](https://docs.gitbook.com/product-tour/git-sync/github-pull-request-preview#how-to-access-preview-links)_
 
 ## Formatting tips
 
