@@ -79,7 +79,8 @@ redirect all requests to the sandbox API instead:
 {% code title="creds.json" %}
 ```json
 {
-  "inwx":{
+  "inwx": {
+    "TYPE": "INWX",
     "username": "yourUsername",
     "password": "yourPassword",
     "sandbox": "1"

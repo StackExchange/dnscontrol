@@ -58,7 +58,8 @@ only available when first enabling two-factor authentication.
 {% code title="creds.json" %}
 ```json
 {
-  "hedns":{
+  "hedns": {
+    "TYPE": "HEDNS",
     "username": "yourUsername",
     "password": "yourPassword",
     "totp-key": "yourTOTPSharedSecret"
@@ -87,7 +88,8 @@ This option is disabled by default when this key is not present,
 {% code title="creds.json" %}
 ```json
 {
-  "hedns":{
+  "hedns": {
+    "TYPE": "HEDNS",
     "username": "yourUsername",
     "password": "yourPassword",
     "totp-key": "yourTOTPSharedSecret",
