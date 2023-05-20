@@ -24,7 +24,7 @@ Within the git repo, docs are grouped:
 * [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation): general docs
 * [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/providers/): One file per provider
 * [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/functions/): One file per dnsconfig.js language feature
-* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/assets/): Images for page FOO(PNGs only, please!)
+* [`documentation/assets/gcloud/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/assets/gcloud): Images for page Google Cloud DNS (PNGs only, please!)
 
 ## How to add a new page?
 
