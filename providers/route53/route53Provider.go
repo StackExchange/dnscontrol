@@ -47,7 +47,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	optFns := []func(*config.LoadOptions) error{
 		// Route53 uses a global endpoint and route53domains
 		// currently only has a single regional endpoint in us-east-1
-		// http://docs.aws.amazon.com/general/latest/gr/rande.html#r53_region
+		// https://docs.aws.amazon.com/general/latest/gr/rande.html#r53_region
 		config.WithRegion("us-east-1"),
 	}
 
