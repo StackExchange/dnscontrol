@@ -4,7 +4,7 @@
 
 TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the marketing website. [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the docs.dnscontrol.org website. (Yes, the names are backwards!)
 
-* **The two websites:**
+**The two websites:**
 
 * https://dnscontrol.org/
   * The main website
@@ -17,7 +17,7 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
   * Users and developer documentation
   * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
-* **The directory structure:**
+**The directory structure:**
 
 Within the git repo, docs are grouped:
 
