@@ -2,8 +2,7 @@
 
 ## Where are the docs?
 
-TL;DR version: "documentation" is the docs.dnscontrol.org website.  "docs" is
-the marketing website. (Yes, the names are backwards!)
+TL;DR version: "docs" is the marketing website. "documentation" is the docs.dnscontrol.org website. (Yes, the names are backwards!)
 
 * **The two websites:**
 
