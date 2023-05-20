@@ -2,7 +2,7 @@
 
 ## Where are the docs?
 
-TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the marketing website. [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the docs.dnscontrol.org website. (Yes, the names are backwards!)
+TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
 
 **The two websites**
 
