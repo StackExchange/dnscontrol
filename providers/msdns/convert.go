@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // extractProps and collects Name/Value pairs into maps for easier access.

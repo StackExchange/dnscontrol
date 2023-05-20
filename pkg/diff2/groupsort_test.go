@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 func makeRec(label, rtype, content string) *models.RecordConfig {

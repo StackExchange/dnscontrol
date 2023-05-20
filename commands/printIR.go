@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/js"
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/js"
+	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/urfave/cli/v2"
 )
 

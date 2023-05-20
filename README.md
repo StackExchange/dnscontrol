@@ -3,7 +3,7 @@
 [![StackExchange/dnscontrol/build](https://github.com/StackExchange/dnscontrol/actions/workflows/build.yml/badge.svg)](https://github.com/StackExchange/dnscontrol/actions/workflows/build.yml)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4)
 
 [DNSControl](https://docs.dnscontrol.org/) is a system
 for maintaining DNS zones.  It has two parts:

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/js"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/miekg/dns"
 	testifyrequire "github.com/stretchr/testify/require"
 )

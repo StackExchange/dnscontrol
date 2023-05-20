@@ -52,7 +52,7 @@ install `dnscontrol` in your `$GOBIN` directory.
 To install, simply run
 
 ```shell
-go install github.com/StackExchange/dnscontrol/v3@latest
+go install github.com/StackExchange/dnscontrol/v4@latest
 ```
 
 To download the source

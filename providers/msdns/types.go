@@ -3,7 +3,7 @@ package msdns
 import (
 	"encoding/json"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // DNSAccessor describes a system that can access Microsoft DNS.

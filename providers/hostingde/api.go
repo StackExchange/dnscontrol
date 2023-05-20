@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"golang.org/x/net/idna"
 )
 
