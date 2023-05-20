@@ -2,18 +2,18 @@
 
 ## Where are the docs?
 
-TL;DR version: "docs" is the marketing website. "documentation" is the docs.dnscontrol.org website. (Yes, the names are backwards!)
+TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the marketing website. [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the docs.dnscontrol.org website. (Yes, the names are backwards!)
 
 * **The two websites:**
 
 * https://dnscontrol.org/
   * The main website
-  * Source code: `docs`
+  * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
   * Mostly "marketing" for the project.
   * Rarely changes.  Updated via Github "pages" feature.
 * https://docs.dnscontrol.org/
   * Project documentation
-  * Source code: `documentation`
+  * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
   * Users and developer documentation
   * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
@@ -21,10 +21,10 @@ TL;DR version: "docs" is the marketing website. "documentation" is the docs.dnsc
 
 Within the git repo, docs are grouped:
 
-* `documentation/`: general docs
-* `documentation/providers/`: One file per provider
-* `documentation/functions/`: One file per dnsconfig.js language feature
-* `documentation/assets/FOO/`: Images for page FOO(PNGs only, please!)
+* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation): general docs
+* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/providers/): One file per provider
+* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/functions/): One file per dnsconfig.js language feature
+* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/assets/): Images for page FOO(PNGs only, please!)
 
 ## How to add a new page?
 
