@@ -7,15 +7,15 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
 **The two websites:**
 
 1. <https://dnscontrol.org/>
-  * The main website
-  * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
-  * Mostly "marketing" for the project.
-  * Rarely changes.  Updated via Github "pages" feature.
+   * The main website
+   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
+   * Mostly "marketing" for the project.
+   * Rarely changes.  Updated via Github "pages" feature.
 2. <https://docs.dnscontrol.org/>
-  * Project documentation
-  * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
-  * Users and developer documentation
-  * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
+   * Project documentation
+   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
+   * Users and developer documentation
+   * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
 **The directory structure:**
 
