@@ -82,15 +82,33 @@ Long example: (with filename) - [source code](https://github.com/StackExchange/d
 
 {% code title="dnsconfig.js" %}
 ```javascript
-The code goes here.
+// Providers:
+
+var REG_NONE = NewRegistrar('none');    // No registrar.
+var DNS_BIND = NewDnsProvider('bind');  // ISC BIND.
+
+// Domains:
+
+D('example.com', REG_NONE, DnsProvider(DNS_BIND),
+    A('@', '1.2.3.4')
+);
 ```
 {% endcode %}
 
-Long example: (without filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L89)
+Long example: (without filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L98)
 
 {% code %}
 ```javascript
-The code goes here.
+// Providers:
+
+var REG_NONE = NewRegistrar('none');    // No registrar.
+var DNS_BIND = NewDnsProvider('bind');  // ISC BIND.
+
+// Domains:
+
+D('example.com', REG_NONE, DnsProvider(DNS_BIND),
+    A('@', '1.2.3.4')
+);
 ```
 {% endcode %}
 
