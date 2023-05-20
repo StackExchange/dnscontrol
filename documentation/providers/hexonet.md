@@ -57,7 +57,7 @@ dnscontrol get-zones --format=nameonly hexonet HEXONET  all
 ```
 ```shell
 # Review the output.  Pick one domain and set HEXONET_DOMAIN.
-cd $GIT/dnscontrol/integrationTest
+cd integrationTest
 export HEXONET_DOMAIN=yodream.com            # Pick a domain name.
 export HEXONET_ENTITY=OTE
 export HEXONET_UID=test.user

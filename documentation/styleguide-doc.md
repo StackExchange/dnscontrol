@@ -9,12 +9,12 @@ the marketing website. (Yes, the names are backwards!)
 
 * https://dnscontrol.org/
   * The main website
-  * Source code: `$GIT/dnscontrol/docs`
+  * Source code: `docs`
   * Mostly "marketing" for the project.
   * Rarely changes.  Updated via Github "pages" feature.
 * https://docs.dnscontrol.org/
   * Project documentation
-  * Source code: `$GIT/dnscontrol/documentation`
+  * Source code: `documentation`
   * Users and developer documentation
   * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
@@ -29,7 +29,7 @@ Within the git repo, docs are grouped:
 
 ## How to add a new page?
 
-* 1. Add the page to the `$GIT/dnscontrol/documentation` (or a sub folder)
+* 1. Add the page to the `documentation` (or a sub folder)
 * 2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
 
 ## Documentation previews
