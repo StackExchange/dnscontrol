@@ -74,27 +74,23 @@ Description of the step.
 
 ### Code Snippets
 
-Long example: (with filename)
+> "Currently, we don't support adding code blocks inside other code blocks. We don't have plans to support that functionality at this time." — _GitBook Support (2023-03-29)_
 
-{% code %}
-```markdown
-    {% code title="dnsconfig.js" %}
-    ```javascript
-    The code goes here.
-    ```
-    {% endcode %}
+See the examples below, for the markdown syntax click on the 'source code'.
+
+Long example: (with filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L81)
+
+{% code title="dnsconfig.js" %}
+```javascript
+The code goes here.
 ```
 {% endcode %}
 
-Long example: (without filename)
+Long example: (without filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L89)
 
-{% code title="dnsconfig.js" %}
-```markdown
-    {% code title="dnsconfig.js" %}
-    ```javascript
-    The code goes here.
-    ```
-    {% endcode %}
+{% code %}
+```javascript
+The code goes here.
 ```
 {% endcode %}
 
