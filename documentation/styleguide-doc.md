@@ -6,12 +6,12 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
 
 **The two websites:**
 
-* https://dnscontrol.org/
+1. https://dnscontrol.org/
   * The main website
   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
   * Mostly "marketing" for the project.
   * Rarely changes.  Updated via Github "pages" feature.
-* https://docs.dnscontrol.org/
+2. https://docs.dnscontrol.org/
   * Project documentation
   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
   * Users and developer documentation
@@ -28,8 +28,8 @@ Within the git repo, docs are grouped:
 
 ## How to add a new page?
 
-* 1. Add the page to the `documentation` (or a sub folder)
-* 2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
+1. Add the page to the `documentation` (or a sub folder)
+2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
 
 ## Documentation previews
 
