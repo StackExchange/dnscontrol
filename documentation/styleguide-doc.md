@@ -4,7 +4,7 @@
 
 TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the marketing website. [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the docs.dnscontrol.org website. (Yes, the names are backwards!)
 
-**The two websites:**
+**The two websites**
 
 1. <https://dnscontrol.org/>
    * The main website
@@ -17,7 +17,7 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
    * Users and developer documentation
    * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
-**The directory structure:**
+**The directory structure**
 
 Within the git repo, docs are grouped:
 
@@ -96,7 +96,7 @@ The code goes here.
 
 ### Technical references
 
-#### Mentioning language features:
+#### Mentioning language features
 
 Not every mention to A, CNAME, or function
 needs to be a link to the manual for that record type.
@@ -107,7 +107,7 @@ be a link.  Others are at the authors digression.
 The [`PTR`](functions/domain/PTR.md) feature is helpful in LANs.
 ```
 
-#### Mentioning functions from the source code:
+#### Mentioning functions from the source code
 
 ```markdown
 The function `GetRegistrarCorrections()` returns...
@@ -115,7 +115,7 @@ The function `GetRegistrarCorrections()` returns...
 
 ### Links
 
-#### Internal links:
+#### Internal links
 
 ```markdown
 Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
@@ -123,7 +123,7 @@ Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
 
 NOTE: The `.md` is required.
 
-#### Link to another website:
+#### Link to another website
 
 Just list the URL.
 
@@ -131,7 +131,7 @@ Just list the URL.
 Blah blah blah <https://www.google.com> blah blah.
 ```
 
-#### Link with anchor text:
+#### Link with anchor text
 
 ```markdown
 Blah blah blah [a search engine](https://www.google.com) blah blah.
