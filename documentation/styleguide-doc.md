@@ -50,7 +50,7 @@ Javascript code should use double quotes (`"`) for strings, not single quotes
 
 ### Headings
 
-```
+```markdown
 #  Title of the page
 
 ## Heading
@@ -77,7 +77,7 @@ Description of the step.
 Long example: (with filename)
 
 {% code %}
-```
+```markdown
     {% code title="dnsconfig.js" %}
     ```javascript
     The code goes here.
@@ -89,7 +89,7 @@ Long example: (with filename)
 Long example: (without filename)
 
 {% code title="dnsconfig.js" %}
-```
+```markdown
     {% code title="dnsconfig.js" %}
     ```javascript
     The code goes here.
@@ -107,13 +107,13 @@ needs to be a link to the manual for that record type.
 However, the first mention on a page should always
 be a link.  Others are at the authors digression.
 
-```
+```markdown
 The [`PTR`](functions/domain/PTR.md) feature is helpful in LANs.
 ```
 
 * Mentioning functions from the source code:
 
-```
+```markdown
 The function `GetRegistrarCorrections()` returns...
 ```
 
@@ -121,7 +121,7 @@ The function `GetRegistrarCorrections()` returns...
 
 * Internal links:
 
-```
+```markdown
 Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
 ```
 
@@ -131,13 +131,13 @@ NOTE: The `.md` is required.
 
 Just list the URL.
 
-```
+```markdown
 Blah blah blah https://www.google.com blah blah.
 ```
 
 * Link with anchor text:
 
-```
+```markdown
 Blah blah blah [a search engine](https://www.google.com) blah blah.
 ```
 
