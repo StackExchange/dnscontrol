@@ -8,10 +8,10 @@ import (
 
 func Test_CreateGraph(t *testing.T) {
 	changes := []stubRecord{
-		{name: "example.com", dependencies: []string{}},
-		{name: "mail.example.com", dependencies: []string{"example.com", "someserver.example.com"}},
-		{name: "*.hq.example.com", dependencies: []string{"example.com"}},
-		{name: "someserver.example.com", dependencies: []string{"a.hq.example.com", "b.hq.example.com"}},
+		{NameFQDN: "example.com", Dependencies: []Dependency{}},
+		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}, {Type: NewDependency, NameFQDN: "someserver.example.com"}}},
+		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.hq.example.com"}, {Type: NewDependency, NameFQDN: "b.hq.example.com"}}},
 	}
 
 	graph := CreateGraph(stubRecordsAsSortableRecords(changes))
@@ -42,10 +42,10 @@ func Test_CreateGraph(t *testing.T) {
 
 func Test_RemoveNode(t *testing.T) {
 	changes := []stubRecord{
-		{name: "example.com", dependencies: []string{}},
-		{name: "mail.example.com", dependencies: []string{"example.com", "someserver.example.com"}},
-		{name: "*.hq.example.com", dependencies: []string{"example.com"}},
-		{name: "someserver.example.com", dependencies: []string{"a.hq.example.com", "b.hq.example.com"}},
+		{NameFQDN: "example.com", Dependencies: []Dependency{}},
+		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}, {Type: NewDependency, NameFQDN: "someserver.example.com"}}},
+		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.hq.example.com"}, {Type: NewDependency, NameFQDN: "b.hq.example.com"}}},
 	}
 
 	graph := CreateGraph(stubRecordsAsSortableRecords(changes))

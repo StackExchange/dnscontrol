@@ -51,8 +51,8 @@ type Change struct {
 	// return exactly one record.
 	HintRecordSetLen1 bool
 
-	// Slice with the dependancies of this changeset used to order all changes
-	HintDependancies []string
+	// Slice with the dependencies of this changeset used to order all changes
+	HintDependencies []string
 }
 
 /*

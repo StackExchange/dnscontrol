@@ -7,8 +7,8 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Direct dependency",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "www.example.com", dependencies: []string{"example.com"}},
-				{name: "example.com", dependencies: []string{}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
 				"example.com",
@@ -21,8 +21,8 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Already in correct order",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "example.com", dependencies: []string{}},
-				{name: "www.example.com", dependencies: []string{"example.com"}},
+				{NameFQDN: "example.com", Dependencies: []Dependency{}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
 			},
 			[]string{
 				"example.com",
@@ -35,8 +35,8 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Use wildcards",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "www.example.com", dependencies: []string{"a.test.example.com"}},
-				{name: "*.test.example.com", dependencies: []string{}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.test.example.com"}}},
+				{NameFQDN: "*.test.example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
 				"*.test.example.com",
@@ -49,10 +49,10 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Cyclic dependency added on the end",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "a.example.com", dependencies: []string{"b.example.com"}},
-				{name: "b.example.com", dependencies: []string{"a.example.com"}},
-				{name: "www.example.com", dependencies: []string{"example.com"}},
-				{name: "example.com", dependencies: []string{}},
+				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "b.example.com"}}},
+				{NameFQDN: "b.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
 				"example.com",
@@ -70,9 +70,9 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Self dependency added on the end",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "a.example.com", dependencies: []string{"a.example.com"}},
-				{name: "www.example.com", dependencies: []string{"example.com"}},
-				{name: "example.com", dependencies: []string{}},
+				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []Dependency{{}}},
 			},
 			[]string{
 				"example.com",
@@ -88,10 +88,26 @@ func Test_graphsort(t *testing.T) {
 	t.Run("Ignores external dependency",
 		executeGraphSort(
 			[]stubRecord{
-				{name: "mail.example.com", dependencies: []string{"mail.external.tld"}},
+				{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "mail.external.tld"}}},
 			},
 			[]string{
 				"mail.example.com",
+			},
+			[]string{},
+		),
+	)
+
+	t.Run("A Change with dependency on old and new state",
+		executeGraphSort(
+			[]stubRecord{
+				{NameFQDN: "bar2.example.com", Dependencies: []Dependency{{}}, Type: DeletionChange},
+				{NameFQDN: "foo.example.com", Dependencies: []Dependency{{NameFQDN: "bar2.example.com", Type: OldDependency}, {NameFQDN: "new2.example.com", Type: NewDependency}}, Type: AdditionChange},
+				{NameFQDN: "new2.example.com", Dependencies: []Dependency{{}}, Type: AdditionChange},
+			},
+			[]string{
+				"new2.example.com",
+				"foo.example.com",
+				"bar2.example.com",
 			},
 			[]string{},
 		),

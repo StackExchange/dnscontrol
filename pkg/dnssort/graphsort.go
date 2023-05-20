@@ -65,5 +65,5 @@ func SortUsingGraph(records []SortableChange) SortResult {
 }
 
 func nodeIsResolved(node *dnsGraphNode) bool {
-	return node.change.GetType() == Delete && len(node.incoming) == 0 || node.change.GetType() == Add && len(node.outgoing) == 0
+	return node.change.GetType() == DeletionChange && len(node.incoming) == 0 || node.change.GetType() == AdditionChange && len(node.outgoing) == 0
 }

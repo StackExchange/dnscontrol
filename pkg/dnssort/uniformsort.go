@@ -4,27 +4,6 @@ import (
 	"log"
 )
 
-type ChangeType uint8
-
-const (
-	Add ChangeType = iota
-	Delete
-)
-
-type SortableChange interface {
-	GetType() ChangeType
-	GetNameFQDN() string
-	GetFQDNDependencies() []string
-	Equals(change SortableChange) bool
-}
-
-type SortableRecords []SortableChange
-
-type unresolvedRecord struct {
-	unresolvedDependencies nameMap
-	record                 SortableChange
-}
-
 type uniformSortState struct {
 	availableNames       *DomainTree[interface{}]
 	resolvedNames        *DomainTree[interface{}]
@@ -33,6 +12,11 @@ type uniformSortState struct {
 	workingSet           []unresolvedRecord
 	nextWorkingSet       []unresolvedRecord
 	hasResolvedLastRound bool
+}
+
+type unresolvedRecord struct {
+	unresolvedDependencies nameMap
+	record                 SortableChange
 }
 
 func createUniformSortState(records []SortableChange) uniformSortState {
@@ -67,8 +51,8 @@ func (sortState *uniformSortState) createUnresolvedRecordFor(record SortableChan
 	unresolvedDependencies := nameMap{}
 
 	for _, fqdn := range record.GetFQDNDependencies() {
-		if sortState.availableNames.Has(fqdn) {
-			unresolvedDependencies.add(fqdn)
+		if sortState.availableNames.Has(fqdn.NameFQDN) {
+			unresolvedDependencies.add(fqdn.NameFQDN)
 		}
 	}
 

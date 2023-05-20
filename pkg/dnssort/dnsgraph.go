@@ -25,7 +25,7 @@ func CreateGraph(changes []SortableChange) *DNSGraph {
 
 	for _, change := range changes {
 		for _, dependency := range change.GetFQDNDependencies() {
-			graph.addEdge(change.GetNameFQDN(), dependency)
+			graph.addEdge(change.GetNameFQDN(), dependency.NameFQDN)
 		}
 	}
 

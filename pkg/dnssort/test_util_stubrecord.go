@@ -1,24 +1,25 @@
 package dnssort
 
 type stubRecord struct {
-	name         string
-	dependencies []string
+	NameFQDN     string
+	Dependencies []Dependency
+	Type         ChangeType
 }
 
 func (record stubRecord) GetType() ChangeType {
-	return Add
+	return record.Type
 }
 
 func (record stubRecord) GetNameFQDN() string {
-	return record.name
+	return record.NameFQDN
 }
 
-func (record stubRecord) GetFQDNDependencies() []string {
-	return record.dependencies
+func (record stubRecord) GetFQDNDependencies() []Dependency {
+	return record.Dependencies
 }
 
 func (record stubRecord) Equals(change SortableChange) bool {
-	return record.name == change.GetNameFQDN()
+	return record.NameFQDN == change.GetNameFQDN()
 }
 
 func stubRecordsAsSortableRecords(records []stubRecord) []SortableChange {
