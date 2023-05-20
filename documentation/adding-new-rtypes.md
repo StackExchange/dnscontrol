@@ -60,14 +60,14 @@ a minimum.
 -   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
 
 ```shell
-pushd; cd providers;
+pushd; cd providers/;
 stringer -type=Capability
 popd
 ```
 alternatively
 
 ```shell
-pushd; cd providers;
+pushd; cd providers/;
 go generate
 popd
 ```
@@ -180,7 +180,7 @@ See also `017-txt.js`.
 Run these tests via:
 
 ```shell
-cd pkg/js
+cd pkg/js/
 go test ./...
 ```
 
@@ -252,7 +252,7 @@ in the source code.
 To run the integration test with the BIND provider:
 
 ```shell
-cd integrationTest
+cd integrationTest/
 go test -v -verbose -provider BIND
 ```
 

@@ -235,7 +235,7 @@ Build the software:
 {% endhint %}
 
 ```shell
-cd docs/flattener
+cd docs/flattener/
 export GOPHERJS_GOROOT="$(go1.17.1 env GOROOT)"
 export GOOS=linux
 gopherjs build

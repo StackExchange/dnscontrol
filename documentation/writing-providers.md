@@ -181,7 +181,7 @@ Integration tests use a test account and a real domain.
 For example, this will run the tests using BIND:
 
 ```shell
-cd integrationTest
+cd integrationTest/
 go test -v -verbose -provider BIND
 ```
 
