@@ -90,7 +90,7 @@ This option is disabled by default when this key is not present,
   "hedns":{
     "username": "yourUsername",
     "password": "yourPassword",
-    "totp-key": "yourTOTPSharedSecret"
+    "totp-key": "yourTOTPSharedSecret",
     "session-file-path": "."
   }
 }
