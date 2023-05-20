@@ -32,7 +32,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar("none"); // no registrar
+var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
 D("example.tld", registrary, DnsProvider(DSP_SOFTLAYER),
