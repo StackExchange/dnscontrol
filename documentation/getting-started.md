@@ -194,7 +194,7 @@ FYI: `creds.json` fields can be read from an environment variable. The field mus
 {% code title="creds.json" %}
 ```json
 {
-    "apikey": "$GANDI_V5_APIKEY"
+  "apikey": "$GANDI_V5_APIKEY"
 }
 ```
 {% endcode %}
