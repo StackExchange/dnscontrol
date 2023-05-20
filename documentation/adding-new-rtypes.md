@@ -180,7 +180,7 @@ See also `017-txt.js`.
 Run these tests via:
 
 ```shell
-cd dnscontrol/pkg/js
+cd pkg/js
 go test ./...
 ```
 
@@ -252,7 +252,7 @@ in the source code.
 To run the integration test with the BIND provider:
 
 ```shell
-cd dnscontrol/integrationTest
+cd integrationTest
 go test -v -verbose -provider BIND
 ```
 

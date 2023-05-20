@@ -168,7 +168,6 @@ complex algorithms in the new code.
 
 Run the unit tests with this command:
 
-    cd dnscontrol
     go test ./...
 
 
@@ -182,7 +181,7 @@ Integration tests use a test account and a real domain.
 For example, this will run the tests using BIND:
 
 ```shell
-cd dnscontrol/integrationTest
+cd integrationTest
 go test -v -verbose -provider BIND
 ```
 
