@@ -139,7 +139,9 @@ The function `GetRegistrarCorrections()` returns...
 Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
 ```
 
-NOTE: The `.md` is required.
+{% hint style="info" %}
+**NOTE**: The `.md` is required.
+{% endhint %}
 
 #### Link to another website
 
