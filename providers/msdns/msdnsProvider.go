@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"runtime"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:

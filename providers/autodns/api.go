@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // ZoneListFilter describes a JSON list filter.

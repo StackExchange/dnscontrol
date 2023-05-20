@@ -10,8 +10,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 func generatePSCreateNaptr(dnsServerName, domain string, rec *models.RecordConfig) string {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/cloudflare/cloudflare-go"
 )
 

@@ -9,10 +9,10 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v3/providers"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v4/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 

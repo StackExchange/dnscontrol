@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v3/providers"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
-	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/StackExchange/dnscontrol/v4/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
 	"github.com/miekg/dns/dnsutil"
 )
 
