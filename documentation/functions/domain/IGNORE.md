@@ -1,6 +1,5 @@
 ---
 name: IGNORE
-ts_ignore: true
 ---
 
 `IGNORE()` makes it possible for DNSControl to share management of a domain with an
