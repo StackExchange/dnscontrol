@@ -33,11 +33,11 @@ D('cafferata.dev',
 {% code title="creds.json" %}
 ```json
 {
-    "transip": {
-        "TYPE": "TRANSIP",
-        "AccountName": "cafferatax",
-        "PrivateKey": "$TRANSIP_PRIVATE_KEY"
-    }
+  "transip": {
+    "TYPE": "TRANSIP",
+    "AccountName": "cafferatax",
+    "PrivateKey": "$TRANSIP_PRIVATE_KEY"
+  }
 }
 ```
 {% endcode %}

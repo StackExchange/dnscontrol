@@ -65,16 +65,16 @@ And update `creds.json` accordingly:
 {% code title="creds.json" %}
 ```json
 {
-    "axfrddns-a": {
-        "TYPE": "AXFRDDNS",
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    },
-    "axfrddns-b": {
-        "TYPE": "AXFRDDNS",
-        "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
-        "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
-    }
+  "axfrddns-a": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  },
+  "axfrddns-b": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
+    "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
+  }
 }
 ```
 {% endcode %}
