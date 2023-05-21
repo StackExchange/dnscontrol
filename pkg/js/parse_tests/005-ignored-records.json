@@ -77,6 +77,90 @@
           "target_pattern": "@"
         }
       ]
+    },
+    {
+      "name": "diff2.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [],
+      "ignored_names": [
+        {
+          "pattern": "mylabel",
+          "types": "*"
+        },
+        {
+          "pattern": "mylabel2",
+          "types": ""
+        },
+        {
+          "pattern": "mylabel3",
+          "types": ""
+        },
+        {
+          "pattern": "",
+          "types": "A"
+        },
+        {
+          "pattern": "",
+          "types": "A,AAAA"
+        },
+        {
+          "pattern": "",
+          "types": ""
+        },
+        {
+          "pattern": "labelc",
+          "types": "CNAME"
+        },
+        {
+          "pattern": "nametest",
+          "types": "*"
+        }
+      ],
+      "ignored_targets": [
+        {
+          "pattern": "targettest1",
+          "type": ""
+        },
+        {
+          "pattern": "targettest2",
+          "type": "A"
+        }
+      ],
+      "unmanaged": [
+        {
+          "label_pattern": "mylabel",
+          "rType_pattern": "*"
+        },
+        {
+          "label_pattern": "mylabel2"
+        },
+        {
+          "label_pattern": "mylabel3"
+        },
+        {
+          "rType_pattern": "A"
+        },
+        {
+          "rType_pattern": "A,AAAA"
+        },
+        {},
+        {
+          "label_pattern": "labelc",
+          "rType_pattern": "CNAME"
+        },
+        {
+          "label_pattern": "nametest",
+          "rType_pattern": "*"
+        },
+        {
+          "target_pattern": "targettest1"
+        },
+        {
+          "rType_pattern": "A",
+          "target_pattern": "targettest2"
+        }
+      ]
     }
   ]
 }

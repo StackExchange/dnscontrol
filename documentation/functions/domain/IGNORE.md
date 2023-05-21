@@ -88,7 +88,66 @@ Ignore DNS records typically inserted by Microsoft ActiveDirectory:
   IGNORE("forestdnszones", "A"),
 ```
 
-## 
+## Don't insert and ignore the same item
+
+It is considered as an error to try to ignore records that
+you yourself are inserting into a domain.
+
+This will generate an error:
+
+```
+D("example.com", ...
+    ...
+    TXT("myhost", "mytext"),
+    IGNORE("myhost", "*", "*"),
+    ...
+```
+
+To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
+
+```
+D("example.com", ...
+    DISABLE_IGNORE_SAFETY_CHECK,
+    ...
+    TXT("myhost", "mytext"),
+    IGNORE("myhost", "*", "*"),
+    ...
+```
+
+FYI: Previously DNSControl permitted disabling this check on
+a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`:
+
+```
+    // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead.
+    TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
+```
+
+The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2 world and its use will result in a validation error.
+
+# Errors
+
+* `trying to update/add IGNORE_NAME'd record: foo CNAME`
+
+This means you have both ignored `foo` and included a record (in this
+case, a CNAME) to update it.  This is an error because `IGNORE_NAME`
+is a promise not to modify records at a certain label so that others
+may have free reign there.  Therefore, DNSControl prevents you from
+modifying that label.
+
+The `foo CNAME` at the end of the message indicates the label name
+(`foo`) and the type of record (`CNAME`) that your dnsconfig.js file
+is trying to insert.
+
+You can override this error by adding the
+`IGNORE_NAME_DISABLE_SAFETY_CHECK` flag to the record.
+
+    TXT('vpn', "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
+
+Disabling this safety check creates two risks:
+
+1. Two owners (DNSControl and some other entity) toggling a record between two settings.
+2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.
+
 
 
 ## Caveats

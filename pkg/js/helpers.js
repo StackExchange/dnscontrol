@@ -929,7 +929,7 @@ function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
     };
 }
 
-function DISABLE_UNMANAGED_SAFETY_CHECK(d) {
+function DISABLE_IGNORE_SAFETY_CHECK(d) {
     // This disables a safety check intended to prevent DNSControl and
     // another system getting into a battle as they both try to update
     // the same record over and over, back and forth.  However, people

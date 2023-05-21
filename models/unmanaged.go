@@ -22,6 +22,7 @@ type UnmanagedConfig struct {
 	TargetGlob    glob.Glob `json:"-"` // Compiled version
 }
 
+// DebugUnmanagedConfig returns a string version of an []*UnmanagedConfig for debugging purposes.
 func DebugUnmanagedConfig(uc []*UnmanagedConfig) string {
 	if len(uc) == 0 {
 		return "UnmanagedConfig{}"
