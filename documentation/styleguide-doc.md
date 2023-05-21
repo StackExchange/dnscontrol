@@ -28,7 +28,7 @@ Within the git repo, docs are grouped:
 
 ## How to add a new page?
 
-1. Add the page to the `documentation` (or a sub folder)
+1. Add the page to the `documentation` folder (possibly a sub folder)
 2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
 
 ## Documentation previews
