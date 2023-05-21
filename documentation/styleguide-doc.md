@@ -74,8 +74,6 @@ Description of the step.
 
 ### Code Snippets
 
-> "Currently, we don't support adding code blocks inside other code blocks. We don't have plans to support that functionality at this time." — _GitBook Support (2023-03-29)_
-
 See the examples below, for the markdown syntax click on the 'source code'.
 
 Long example: (with filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L81)
