@@ -38,9 +38,9 @@ This can also be done via an environment variable:
 {
   "inwx": {
     "TYPE": "INWX",
+    "username": "yourUsername",
     "password": "yourPassword",
-    "totp": "$INWX_TOTP",
-    "username": "yourUsername"
+    "totp": "$INWX_TOTP"
   }
 }
 ```
@@ -64,9 +64,9 @@ This secret is only shown once when two factor authentication is enabled and you
 {
   "inwx": {
     "TYPE": "INWX",
+    "username": "yourUsername",
     "password": "yourPassword",
-    "totp-key": "yourTOTPSharedSecret",
-    "username": "yourUsername"
+    "totp-key": "yourTOTPSharedSecret"
   }
 }
 ```
@@ -79,7 +79,8 @@ redirect all requests to the sandbox API instead:
 {% code title="creds.json" %}
 ```json
 {
-  "inwx":{
+  "inwx": {
+    "TYPE": "INWX",
     "username": "yourUsername",
     "password": "yourPassword",
     "sandbox": "1"

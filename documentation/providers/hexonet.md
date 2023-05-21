@@ -39,7 +39,7 @@ Here a working example for our OT&E System:
     "apilogin": "test.user",
     "apipassword": "test.passw0rd",
     "apientity": "OTE",
-    "debugmode": "0",
+    "debugmode": "0"
   }
 }
 ```

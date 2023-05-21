@@ -9,7 +9,7 @@ Example:
 ```json
 {
   "dnsmadeeasy": {
-    "TYPE_key": "DNSMADEEASY",
+    "TYPE": "DNSMADEEASY",
     "api_key": "1c1a3c91-4770-4ce7-96f4-54c0eb0e457a",
     "secret_key": "e2268cde-2ccd-4668-a518-8aa8757a65a0"
   }

@@ -31,9 +31,9 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 ```json
 {
   "r53_main": {
+    "TYPE": "ROUTE53",
     "KeyId": "$AWS_ACCESS_KEY_ID",
-    "SecretKey": "$AWS_SECRET_ACCESS_KEY",
-    "TYPE": "ROUTE53"
+    "SecretKey": "$AWS_SECRET_ACCESS_KEY"
   }
 }
 ```

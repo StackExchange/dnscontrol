@@ -12,9 +12,9 @@ Example:
     "TYPE": "AZURE_DNS",
     "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
     "ResourceGroup": "AZURE_RESOURCE_GROUP",
-    "TenantID": "AZURE_TENANT_ID"
+    "TenantID": "AZURE_TENANT_ID",
     "ClientID": "AZURE_CLIENT_ID",
-    "ClientSecret": "AZURE_CLIENT_SECRET",
+    "ClientSecret": "AZURE_CLIENT_SECRET"
   }
 }
 ```
@@ -38,8 +38,8 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
     "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
     "ResourceGroup": "$AZURE_RESOURCE_GROUP",
     "ClientID": "$AZURE_CLIENT_ID",
-    "TenantID": "$AZURE_TENANT_ID"
-    "ClientSecret": "$AZURE_CLIENT_SECRET",
+    "TenantID": "$AZURE_TENANT_ID",
+    "ClientSecret": "$AZURE_CLIENT_SECRET"
   }
 }
 ```
