@@ -87,8 +87,8 @@ each with different zone IDs specified using [`R53_ZONE()`](../functions/record/
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var DSP_R53 = NewDnsProvider("r53_main");
 var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
 
 D('testzone.net!private', REG_NONE,
     DnsProvider(DSP_R53),

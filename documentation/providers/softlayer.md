@@ -32,7 +32,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar("none"); // no registrar
+var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
 D("example.tld", registrary, DnsProvider(DSP_SOFTLAYER),
@@ -47,6 +47,9 @@ For compatibility with the pre-generated NAMESERVER fields it's recommended to s
 
 {% code title="dnsconfig.js" %}
 ```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_SOFTLAYER = NewDnsProvider("softlayer");
+
 D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
     NAMESERVER_TTL(86400),
 

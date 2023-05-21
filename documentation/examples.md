@@ -198,6 +198,9 @@ var FASTMAIL_DKIM = function(the_domain){
 We can then use the macros as such:
 {% code title="dnsconfig.js" %}
 ```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_R53_MAIN = NewDnsProvider("r53_main");
+
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,
     FASTMAIL_DKIM("example.com")
