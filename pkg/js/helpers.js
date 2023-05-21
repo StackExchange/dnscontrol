@@ -809,10 +809,36 @@ function format_tt(transform_table) {
     return lines.join(' ; ');
 }
 
-// IGNORE(name)
-function IGNORE(name) {
-    // deprecated, use IGNORE_NAME
-    return IGNORE_NAME(name);
+var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
+    ignore_name_disable_safety_check: 'true',
+    // This disables a safety check intended to prevent:
+    // 1. Two owners toggling a record between two settings.
+    // 2. The other owner wiping all records at this label, which won't
+    // be noticed until the next time dnscontrol is run.
+    // See https://github.com/StackExchange/dnscontrol/issues/1106
+};
+
+// IGNORE(labelPattern, rtypePattern, targetPattern)
+function IGNORE(labelPattern, rtypePattern, targetPattern) {
+    if (labelPattern === undefined) {
+        labelPattern = '*';
+    }
+    if (rtypePattern === undefined) {
+        rtypePattern = '*';
+    }
+    if (targetPattern === undefined) {
+        targetPattern = '*';
+    }
+    return function (d) {
+        // diff1
+        d.ignored_names.push({ pattern: labelPattern, types: rtypePattern });
+        // diff2
+        d.unmanaged.push({
+            label_pattern: labelPattern,
+            rType_pattern: rtypePattern,
+            targegt_pattern: targetPattern,
+        });
+    };
 }
 
 // IGNORE_NAME(name, rTypes)
@@ -828,15 +854,6 @@ function IGNORE_NAME(name, rTypes) {
         });
     };
 }
-
-var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
-    ignore_name_disable_safety_check: 'true',
-    // This disables a safety check intended to prevent:
-    // 1. Two owners toggling a record between two settings.
-    // 2. The other owner wiping all records at this label, which won't
-    // be noticed until the next time dnscontrol is run.
-    // See https://github.com/StackExchange/dnscontrol/issues/1106
-};
 
 function IGNORE_TARGET(target, rType) {
     return function (d) {

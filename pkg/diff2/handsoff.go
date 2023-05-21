@@ -173,9 +173,12 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
+		fmt.Printf("DEBUG: XXXXXXXXXXXXXXXXXX Should we ignore (%q, %q, %q) map=%+v\n", rec.Name, rec.Type, rec.GetTargetField(), models.DebugUnmanagedConfig(unmanagedConfigs))
 		if matchAny(unmanagedConfigs, rec) {
+			fmt.Printf("DEBUG: IGNORED rec=%v\n", rec.Name)
 			ignorable = append(ignorable, rec)
 		} else {
+			fmt.Printf("DEBUG: NOT IGNORED\n")
 			if noPurge {
 				// Is this a candidate for purging?
 				if !desiredDB.ContainsLT(rec) {
@@ -225,6 +228,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 				c.RTypeMap[part] = struct{}{}
 			}
 		}
+		fmt.Printf("DEBUG: rtypemap=%v\n", c.RTypeMap)
 
 		if c.TargetPattern == "" || c.TargetPattern == "*" {
 			c.TargetGlob = nil // nil indicates "always match"
@@ -257,9 +261,11 @@ func matchLabel(labelGlob glob.Glob, labelName string) bool {
 }
 func matchType(typeMap map[string]struct{}, typeName string) bool {
 	if len(typeMap) == 0 {
+		//fmt.Printf("DEBUG: matchType(typeName=%q) typeMap=%v return TRUE\n", typeName, typeMap)
 		return true
 	}
 	_, ok := typeMap[typeName]
+	//fmt.Printf("DEBUG: matchType(typeName=%q) typeMap=%v return %v\n", typeName, typeMap, ok)
 	return ok
 }
 func matchTarget(targetGlob glob.Glob, targetName string) bool {

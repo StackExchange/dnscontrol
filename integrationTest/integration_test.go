@@ -519,20 +519,43 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 	return r
 }
 
-func ignoreName(name string) *models.RecordConfig {
+func ignoreName(labelSpec string) *models.RecordConfig {
 	r := &models.RecordConfig{
-		Type: "IGNORE_NAME",
+		Type:     "IGNORE_NAME",
+		Metadata: map[string]string{},
 	}
-	SetLabel(r, name, "**current-domain**")
+	// diff1
+	SetLabel(r, labelSpec, "**current-domain**")
+	// diff2
+	r.Metadata["ignore_LabelPattern"] = labelSpec
 	return r
 }
 
-func ignoreTarget(name string, typ string) *models.RecordConfig {
+func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
 	r := &models.RecordConfig{
-		Type: "IGNORE_TARGET",
+		Type:     "IGNORE_TARGET",
+		Metadata: map[string]string{},
 	}
-	r.SetTarget(typ)
-	SetLabel(r, name, "**current-domain**")
+	// diff1
+	r.SetTarget(typeSpec)
+	SetLabel(r, targetSpec, "**current-domain**")
+	// diff2
+	r.Metadata["ignore_RTypePattern"] = typeSpec
+	r.Metadata["ignore_TargetPattern"] = typeSpec
+	return r
+}
+
+func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type:     "IGNORE",
+		Metadata: map[string]string{},
+	}
+	if r.Metadata == nil {
+		r.Metadata = map[string]string{}
+	}
+	r.Metadata["ignore_LabelPattern"] = labelSpec
+	r.Metadata["ignore_RTypePattern"] = typeSpec
+	r.Metadata["ignore_TargetPattern"] = targetSpec
 	return r
 }
 
@@ -651,6 +674,19 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
 		switch r.Type {
+		case "IGNORE":
+			// diff1:
+			ignoredNames = append(ignoredNames, &models.IgnoreName{
+				Pattern: r.Metadata["ignore_LabelPattern"],
+				Types:   r.Metadata["ignore_RTypePattern"],
+			})
+			// diff2:
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				LabelPattern:  r.Metadata["ignore_LabelPattern"],
+				RTypePattern:  r.Metadata["ignore_RTypePattern"],
+				TargetPattern: r.Metadata["ignore_TargetPattern"],
+			})
+			continue
 		case "IGNORE_NAME":
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
@@ -667,7 +703,6 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 				RTypePattern:  r.GetTargetField(),
 				TargetPattern: r.GetLabel(),
 			})
-			continue
 		default:
 			records = append(records, r)
 		}
@@ -1744,8 +1779,32 @@ func makeTests(t *testing.T) []*TestGroup {
 		// should work for all providers.  However we're going to test
 		// them anyway because one never knows.  Ready?  Let's go!
 
-		// TODO(tlim): Rewrite these to be more like the ByLabel and
-		// ByResourceSet tests.
+		testgroup("IGNORE label",
+			tc("Create some records",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				a("bar", "5.5.5.5"),
+			),
+			tc("ignore label=foo",
+				a("bar", "5.5.5.5"),
+				ignore("foo", "", ""),
+			).ExpectNoChanges(),
+			tc("ignore type=txt",
+				a("foo", "1.2.3.4"),
+				a("bar", "5.5.5.5"),
+				ignore("", "TXT", ""),
+			).ExpectNoChanges(),
+			tc("ignore target=1.2.3.4",
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				ignore("", "", "1.2.3.4"),
+			).ExpectNoChanges(),
+			tc("ignore manytypes",
+				ignore("", "A,TXT", ""),
+			).ExpectNoChanges(),
+		).Diff2Only(),
+
+		// Legacy IGNORE_NAME and IGNORE_TARGET tests.
 
 		testgroup("IGNORE_NAME function",
 			tc("Create some records",
