@@ -73,7 +73,6 @@ You are free to decide if you want to use both of our provider technology or jus
 
 {% code title="dnsconfig.js" %}
 ```javascript
-// Providers:
 var REG_HX = NewRegistrar("hexonet");
 var DSP_HX = NewDnsProvider("hexonet");
 
@@ -86,7 +85,6 @@ DEFAULTS(
     DefaultTTL(3600)
 );
 
-// Domains:
 D("abhoster.com", REG_HX, DnsProvider(DSP_HX),
     NAMESERVER("ns1.ispapi.net"),
     NAMESERVER("ns2.ispapi.net"),

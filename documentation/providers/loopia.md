@@ -183,7 +183,6 @@ you're not forced to do that (thank god).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-// Providers:
 var REG_LOOPIA = NewRegistrar("loopia");
 var DSP_LOOPIA = NewDnsProvider("loopia");
 
@@ -195,7 +194,6 @@ DEFAULTS(
     DefaultTTL(3600)
 );
 
-// Domains:
 D("example.com", REG_LOOPIA, DnsProvider(DSP_LOOPIA),
     //NAMESERVER("ns1.loopia.se."), //default
     //NAMESERVER("ns2.loopia.se."), //default
