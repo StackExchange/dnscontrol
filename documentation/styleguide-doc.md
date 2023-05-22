@@ -74,9 +74,9 @@ Description of the step.
 
 ### Code Snippets
 
-See the examples below, for the Markdown syntax click on the 'source code'.
+See the examples below, for the Markdown syntax click on the 'Source code'.
 
-Long example: (with filename) - [source code](markdown-examples/code/dnsconfig-code-example-with-filename.md?plain=1)
+Long example: (with filename)
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -89,7 +89,9 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-Long example: (without filename) - [source code](markdown-examples/code/dnsconfig-code-example-without-filename.md?plain=1)
+[Source code](markdown-examples/code/dnsconfig-code-example-with-filename.md?plain=1)
+
+Long example: (without filename)
 
 {% code %}
 ```javascript
@@ -101,6 +103,8 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 {% endcode %}
+
+[Source code](markdown-examples/code/dnsconfig-code-example-without-filename.md?plain=1)
 
 ### Hint
 
@@ -114,25 +118,25 @@ There are 4 different types of hints, and both inline content and formatting are
 **Info hints** are great for showing general information, or providing tips and tricks.
 {% endhint %}
 
- [source code](markdown-examples/hint/hint-info.md?plain=1)
+ [Source code](markdown-examples/hint/hint-info.md?plain=1)
 
 {% hint style="success" %}
 **Success hints** are good for showing positive actions or achievements.
 {% endhint %}
 
- [source code](markdown-examples/hint/hint-success.md?plain=1)
+ [Source code](markdown-examples/hint/hint-success.md?plain=1)
 
 {% hint style="warning" %}
 **Warning hints** are good for showing important information or non-critical warnings.
 {% endhint %}
 
- [source code](markdown-examples/hint/hint-warning.md?plain=1)
+ [Source code](markdown-examples/hint/hint-warning.md?plain=1)
 
 {% hint style="danger" %}
 **Danger hints** are good for highlighting destructive actions or raising attention to critical information.
 {% endhint %}
 
- [source code](markdown-examples/hint/hint-danger.md?plain=1)
+ [Source code](markdown-examples/hint/hint-danger.md?plain=1)
 
 {% hint style="info" %}
 ### This is a heading
@@ -155,7 +159,7 @@ be a link.  Others are at the authors digression.
 The [`PTR`](functions/domain/PTR.md) feature is helpful in LANs.
 ```
 
-#### Mentioning functions from the source code
+#### Mentioning functions from the Source code
 
 ```markdown
 The function `GetRegistrarCorrections()` returns...
