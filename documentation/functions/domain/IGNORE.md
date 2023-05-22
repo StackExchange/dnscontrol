@@ -107,7 +107,8 @@ D("example.com", ...
 
 To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 D("example.com", ...
     DISABLE_IGNORE_SAFETY_CHECK,
     ...
