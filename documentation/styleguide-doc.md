@@ -114,17 +114,25 @@ There are 4 different types of hints, and both inline content and formatting are
 **Info hints** are great for showing general information, or providing tips and tricks.
 {% endhint %}
 
+ [source code](markdown-examples/hint/hint-info.md?plain=1)
+
 {% hint style="success" %}
 **Success hints** are good for showing positive actions or achievements.
 {% endhint %}
+
+ [source code](markdown-examples/hint/hint-success.md?plain=1)
 
 {% hint style="warning" %}
 **Warning hints** are good for showing important information or non-critical warnings.
 {% endhint %}
 
+ [source code](markdown-examples/hint/hint-warning.md?plain=1)
+
 {% hint style="danger" %}
 **Danger hints** are good for highlighting destructive actions or raising attention to critical information.
 {% endhint %}
+
+ [source code](markdown-examples/hint/hint-danger.md?plain=1)
 
 {% hint style="info" %}
 ### This is a heading
