@@ -73,6 +73,9 @@ D("example.com",
 Ignore Let's Encrypt (ACME) validation records:
 
 ```
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com",
   IGNORE("_acme-challenge.**", "TXT"),
 ```
 
