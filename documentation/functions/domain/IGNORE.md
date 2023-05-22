@@ -96,7 +96,8 @@ same record in a domain. This is done as a safety mechanism.
 
 This will generate an error:
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 D("example.com", ...
     ...
     TXT("myhost", "mytext"),
