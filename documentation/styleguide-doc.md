@@ -74,7 +74,7 @@ Description of the step.
 
 ### Code Snippets
 
-See the examples below, for the markdown syntax click on the 'source code'.
+See the examples below, for the Markdown syntax click on the 'source code'.
 
 Long example: (with filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L81)
 
