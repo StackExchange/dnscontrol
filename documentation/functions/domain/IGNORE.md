@@ -34,7 +34,7 @@ IGNORE(labelSpec):
 * `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).  
 * `targetSpec` is a glob that matches the DNS target. For example `"foo"` or `"foo*"`.  `"*"` matches all targets, as does the empty string (`""`).
 
-typeSpec and targetSpec default to `"*"` if they are omitted.
+`typeSpec` and `targetSpec` default to `"*"` if they are omitted.
 
 ## Globs
 
