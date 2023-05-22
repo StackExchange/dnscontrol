@@ -76,7 +76,7 @@ Description of the step.
 
 See the examples below, for the Markdown syntax click on the 'source code'.
 
-Long example: (with filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L81)
+Long example: (with filename) - [source code](markdown-examples/dnsconfig-code-example-with-filename.md)
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -89,7 +89,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-Long example: (without filename) - [source code](https://github.com/StackExchange/dnscontrol/blob/master/documentation/styleguide-doc.md?plain=1#L98)
+Long example: (without filename) - [source code](markdown-examples/dnsconfig-code-example-without-filename.md)
 
 {% code %}
 ```javascript
