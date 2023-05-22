@@ -123,15 +123,19 @@ D("example.com", ...
     ...
 ```
 
+{% hint style="info" %}
 FYI: Previously DNSControl permitted disabling this check on
 a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`:
+{% endhint %}
+
+The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2
+world and its use will result in a validation error. Use the above example
+instead.
 
 ```
     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
 ```
-
-The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2 world and its use will result in a validation error.
 
 ## Caveats
 

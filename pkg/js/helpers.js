@@ -811,6 +811,7 @@ function format_tt(transform_table) {
 
 var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
     ignore_name_disable_safety_check: 'true',
+    // (NOTE: diff1 only.)
     // This disables a safety check intended to prevent:
     // 1. Two owners toggling a record between two settings.
     // 2. The other owner wiping all records at this label, which won't
