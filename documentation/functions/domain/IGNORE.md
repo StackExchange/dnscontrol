@@ -79,6 +79,9 @@ Ignore Let's Encrypt (ACME) validation records:
 Ignore DNS records typically inserted by Microsoft ActiveDirectory:
 
 ```
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com",
   IGNORE("_gc.**", "SRV"), // General Catalog
   IGNORE("_kerberos.**", "SRV"), // Kerb5 server
   IGNORE("_kpasswd.**", "SRV"), // Kpassword
