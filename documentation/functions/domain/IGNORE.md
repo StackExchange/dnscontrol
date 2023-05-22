@@ -64,7 +64,7 @@ D("example.com",
   IGNORE("*", "MX", "*"), // matches all MX records
   IGNORE("*", "CNAME", "dev-*"), // matches CNAMEs with targets prefixed `dev-*`
   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
-  IGNORE("*", "*", "dev-*), // Ignore targets with a `dev-` prefix
+  IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
   IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
 );
 ```
