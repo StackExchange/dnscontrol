@@ -214,6 +214,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
 		dom.Unmanaged = tst.Unmanaged
+		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -433,18 +434,27 @@ type TestGroup struct {
 }
 
 type TestCase struct {
-	Desc           string
-	Records        []*models.RecordConfig
-	IgnoredNames   []*models.IgnoreName
-	IgnoredTargets []*models.IgnoreTarget
-	Unmanaged      []*models.UnmanagedConfig
-	Changeless     bool // set to true if any changes would be an error
+	Desc            string
+	Records         []*models.RecordConfig
+	IgnoredNames    []*models.IgnoreName
+	IgnoredTargets  []*models.IgnoreTarget
+	Unmanaged       []*models.UnmanagedConfig
+	UnmanagedUnsafe bool // DISABLE_IGNORE_SAFETY_CHECK
+	Changeless      bool // set to true if any changes would be an error
 }
 
+// ExpectNoChanges indicates that no changes is not an error, it is a requirement.
 func (tc *TestCase) ExpectNoChanges() *TestCase {
 	tc.Changeless = true
 	return tc
 }
+
+// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK
+func (tc *TestCase) UnsafeIgnore() *TestCase {
+	tc.UnmanagedUnsafe = true
+	return tc
+}
+
 func (tg *TestGroup) Diff2Only() *TestGroup {
 	tg.diff2only = true
 	return tg
@@ -1808,21 +1818,21 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create some records",
 				txt("@", "simple"),
 				a("@", "1.2.3.4"),
-			),
+			).UnsafeIgnore(),
 			tc("ignore label=apex",
 				ignore("@", "", ""),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignore type=txt",
 				a("@", "1.2.3.4"),
 				ignore("", "TXT", ""),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignore target=1.2.3.4",
 				txt("@", "simple"),
 				ignore("", "", "1.2.3.4"),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignore manytypes",
 				ignore("", "A,TXT", ""),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 		).Diff2Only(),
 
 		// Legacy IGNORE_NAME and IGNORE_TARGET tests.
@@ -1864,19 +1874,19 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("@", "1.2.3.4"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
-			),
+			).UnsafeIgnore(),
 			tc("ignore apex",
 				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			clear(),
 			tc("Add a new record - ignoring apex",
 				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 				a("added", "4.6.8.9"),
-			),
+			).UnsafeIgnore(),
 		).Diff2Only(),
 
 		testgroup("IGNORE_TARGET function CNAME",
@@ -1901,19 +1911,19 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("foo1", "test.foo.com."),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			),
+			).UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("*.foo.com.", "CNAME"),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com. and add",
 				ignoreTarget("*.foo.com.", "CNAME"),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
 				a("adding", "1.2.3.4"),
 				cname("another", "www.example.com."),
-			),
+			).UnsafeIgnore(),
 		),
 
 		testgroup("IGNORE_TARGET function CNAME**",
@@ -1921,17 +1931,17 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("foo1", "test.foo.com."),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			),
+			).UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("**.foo.com.", "CNAME"),
 				cname("bar", "test.example.com."),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com. and add",
 				ignoreTarget("**.foo.com.", "CNAME"),
 				cname("bar", "test.example.com."),
 				a("adding", "1.2.3.4"),
 				cname("another", "www.example.com."),
-			),
+			).UnsafeIgnore(),
 		),
 
 		// https://github.com/StackExchange/dnscontrol/issues/2285
