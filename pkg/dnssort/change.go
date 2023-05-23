@@ -3,8 +3,8 @@ package dnssort
 type ChangeType uint8
 
 const (
-	AdditionChange ChangeType = iota
-	DeletionChange
+	Change ChangeType = iota
+	Report
 )
 
 type DependencyType uint8

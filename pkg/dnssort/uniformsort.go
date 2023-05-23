@@ -31,7 +31,7 @@ func createUniformSortState(records []SortableChange) uniformSortState {
 	}
 
 	for _, record := range records {
-		sortState.availableNames.Add(record.GetNameFQDN(), struct{}{})
+		sortState.availableNames.Set(record.GetNameFQDN(), struct{}{})
 	}
 
 	for _, record := range records {
@@ -44,7 +44,7 @@ func createUniformSortState(records []SortableChange) uniformSortState {
 func (sortState *uniformSortState) addAsResolved(unresolved unresolvedRecord) {
 	sortState.hasResolvedLastRound = true
 	sortState.sortedRecords = append(sortState.sortedRecords, unresolved.record)
-	sortState.resolvedNames.Add(unresolved.record.GetNameFQDN(), struct{}{})
+	sortState.resolvedNames.Set(unresolved.record.GetNameFQDN(), struct{}{})
 }
 
 func (sortState *uniformSortState) createUnresolvedRecordFor(record SortableChange) unresolvedRecord {

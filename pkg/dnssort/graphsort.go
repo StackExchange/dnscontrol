@@ -36,12 +36,12 @@ func SortUsingGraph(records []SortableChange) SortResult {
 		for _, node := range sortState.graph.all {
 			sortState.hasResolvedLastRound = false
 
-			if !nodeIsResolved(node) {
+			if node.hasUnmetDependencies() {
 				continue
 			}
 
 			sortState.hasResolvedLastRound = true
-			sortState.sortedRecords = append(sortState.sortedRecords, node.change)
+			sortState.sortedRecords = append(sortState.sortedRecords, node.Change)
 			sortState.graph.removeNode(node)
 		}
 
@@ -51,10 +51,10 @@ func SortUsingGraph(records []SortableChange) SortResult {
 	}
 
 	if len(sortState.graph.all) > 0 {
-		log.Printf("The DNS changes appear to have unresolved dependencies like %s\n", sortState.graph.all[0].change.GetNameFQDN())
+		log.Printf("The DNS changes appear to have unresolved dependencies like %s\n", sortState.graph.all[0].Change.GetNameFQDN())
 		for _, unresolved := range sortState.graph.all {
-			sortState.sortedRecords = append(sortState.sortedRecords, unresolved.change)
-			sortState.unresolvedRecords = append(sortState.unresolvedRecords, unresolved.change)
+			sortState.sortedRecords = append(sortState.sortedRecords, unresolved.Change)
+			sortState.unresolvedRecords = append(sortState.unresolvedRecords, unresolved.Change)
 		}
 	}
 
@@ -64,6 +64,15 @@ func SortUsingGraph(records []SortableChange) SortResult {
 	}
 }
 
-func nodeIsResolved(node *dnsGraphNode) bool {
-	return node.change.GetType() == DeletionChange && len(node.incoming) == 0 || node.change.GetType() == AdditionChange && len(node.outgoing) == 0
+func (node *dnsGraphNode) hasUnmetDependencies() bool {
+	for _, edge := range node.Edges {
+		if edge.Dependency.Type == OldDependency && edge.Direction == IncomingEdge {
+			return true
+		}
+		if edge.Dependency.Type == NewDependency && edge.Direction == OutgoingEdge {
+			return true
+		}
+	}
+
+	return false
 }

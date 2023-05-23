@@ -18,26 +18,30 @@ func Test_CreateGraph(t *testing.T) {
 
 	nodes := graph.tree.Get("example.com")
 	assert.Len(t, nodes, 1)
-	assert.Len(t, nodes[0].outgoing, 0)
-	assert.Len(t, nodes[0].incoming, 2)
-	assert.Equal(t, "mail.example.com", nodes[0].incoming[0].change.GetNameFQDN())
-	assert.Equal(t, "*.hq.example.com", nodes[0].incoming[1].change.GetNameFQDN())
+	assert.Len(t, nodes[0].Edges, 2)
+	assert.Equal(t, "mail.example.com", nodes[0].Edges[0].Node.Change.GetNameFQDN())
+	assert.Equal(t, IncomingEdge, nodes[0].Edges[0].Direction)
+	assert.Equal(t, "*.hq.example.com", nodes[0].Edges[1].Node.Change.GetNameFQDN())
 
 	nodes = graph.tree.Get("someserver.example.com")
 	assert.Len(t, nodes, 1)
-	assert.Len(t, nodes[0].outgoing, 2)
-	assert.Len(t, nodes[0].incoming, 1)
-	assert.Equal(t, "*.hq.example.com", nodes[0].outgoing[0].change.GetNameFQDN())
-	assert.Equal(t, "*.hq.example.com", nodes[0].outgoing[1].change.GetNameFQDN())
-	assert.Equal(t, "mail.example.com", nodes[0].incoming[0].change.GetNameFQDN())
+	assert.Len(t, nodes[0].Edges, 3)
+	assert.Equal(t, "mail.example.com", nodes[0].Edges[0].Node.Change.GetNameFQDN())
+	assert.Equal(t, IncomingEdge, nodes[0].Edges[0].Direction)
+	assert.Equal(t, "*.hq.example.com", nodes[0].Edges[1].Node.Change.GetNameFQDN())
+	assert.Equal(t, OutgoingEdge, nodes[0].Edges[1].Direction)
+	assert.Equal(t, "*.hq.example.com", nodes[0].Edges[2].Node.Change.GetNameFQDN())
+	assert.Equal(t, OutgoingEdge, nodes[0].Edges[2].Direction)
 
 	nodes = graph.tree.Get("a.hq.example.com")
 	assert.Len(t, nodes, 1)
-	assert.Len(t, nodes[0].outgoing, 1)
-	assert.Len(t, nodes[0].incoming, 2)
-	assert.Equal(t, "someserver.example.com", nodes[0].incoming[0].change.GetNameFQDN())
-	assert.Equal(t, "someserver.example.com", nodes[0].incoming[1].change.GetNameFQDN())
-	assert.Equal(t, "example.com", nodes[0].outgoing[0].change.GetNameFQDN())
+	assert.Len(t, nodes[0].Edges, 3)
+	assert.Equal(t, "example.com", nodes[0].Edges[0].Node.Change.GetNameFQDN())
+	assert.Equal(t, OutgoingEdge, nodes[0].Edges[0].Direction)
+	assert.Equal(t, "someserver.example.com", nodes[0].Edges[1].Node.Change.GetNameFQDN())
+	assert.Equal(t, IncomingEdge, nodes[0].Edges[1].Direction)
+	assert.Equal(t, "someserver.example.com", nodes[0].Edges[2].Node.Change.GetNameFQDN())
+	assert.Equal(t, IncomingEdge, nodes[0].Edges[2].Direction)
 }
 
 func Test_RemoveNode(t *testing.T) {
@@ -59,11 +63,7 @@ func Test_RemoveNode(t *testing.T) {
 	nodes = graph.tree.Get("a.hq.example.com")
 	assert.Len(t, nodes, 1)
 
-	// Outgoing has been removed
-	assert.Len(t, nodes[0].outgoing, 0)
-
-	// Incoming remains untouched
-	assert.Len(t, nodes[0].incoming, 2)
-	assert.Equal(t, "someserver.example.com", nodes[0].incoming[0].change.GetNameFQDN())
-	assert.Equal(t, "someserver.example.com", nodes[0].incoming[1].change.GetNameFQDN())
+	assert.Len(t, nodes[0].Edges, 2)
+	assert.Equal(t, "someserver.example.com", nodes[0].Edges[0].Node.Change.GetNameFQDN())
+	assert.Equal(t, "someserver.example.com", nodes[0].Edges[1].Node.Change.GetNameFQDN())
 }

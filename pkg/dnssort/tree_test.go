@@ -42,7 +42,7 @@ func executeTreeTest(inputs []string, founds []string, missings []string) func(*
 		t.Helper()
 		tree := CreateTree[interface{}]()
 		for _, input := range inputs {
-			tree.Add(input, struct{}{})
+			tree.Set(input, struct{}{})
 		}
 
 		for _, found := range founds {

@@ -97,12 +97,26 @@ func Test_graphsort(t *testing.T) {
 		),
 	)
 
+	t.Run("Deletions in correct order",
+		executeGraphSort(
+			[]stubRecord{
+				{NameFQDN: "mail.example.com", Dependencies: []Dependency{}},
+				{NameFQDN: "example.com", Dependencies: []Dependency{{NameFQDN: "mail.example.com", Type: OldDependency}}},
+			},
+			[]string{
+				"example.com",
+				"mail.example.com",
+			},
+			[]string{},
+		),
+	)
+
 	t.Run("A Change with dependency on old and new state",
 		executeGraphSort(
 			[]stubRecord{
-				{NameFQDN: "bar2.example.com", Dependencies: []Dependency{{}}, Type: DeletionChange},
-				{NameFQDN: "foo.example.com", Dependencies: []Dependency{{NameFQDN: "bar2.example.com", Type: OldDependency}, {NameFQDN: "new2.example.com", Type: NewDependency}}, Type: AdditionChange},
-				{NameFQDN: "new2.example.com", Dependencies: []Dependency{{}}, Type: AdditionChange},
+				{NameFQDN: "bar2.example.com", Dependencies: []Dependency{{}}},
+				{NameFQDN: "foo.example.com", Dependencies: []Dependency{{NameFQDN: "bar2.example.com", Type: OldDependency}, {NameFQDN: "new2.example.com", Type: NewDependency}}},
+				{NameFQDN: "new2.example.com", Dependencies: []Dependency{{}}},
 			},
 			[]string{
 				"new2.example.com",

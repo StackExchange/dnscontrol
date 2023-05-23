@@ -49,7 +49,7 @@ func (tree *domainNode[T]) addLeaf(name string, isWildcard bool, data T) *domain
 	return node
 }
 
-func (tree *DomainTree[T]) Add(fqdn string, data T) {
+func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	domainParts := splitFQDN(fqdn)
 
 	isWildcard := domainParts[0] == "*"
