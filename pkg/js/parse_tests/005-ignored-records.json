@@ -66,7 +66,8 @@
         },
         {
           "label_pattern": "legacyignore",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
           "label_pattern": "@",
@@ -130,24 +131,31 @@
       "unmanaged": [
         {
           "label_pattern": "mylabel",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
-          "label_pattern": "mylabel2"
+          "label_pattern": "mylabel2",
+          "target_pattern": "*"
         },
         {
           "label_pattern": "mylabel3"
         },
         {
-          "rType_pattern": "A"
+          "rType_pattern": "A",
+          "target_pattern": "*"
         },
         {
-          "rType_pattern": "A,AAAA"
+          "rType_pattern": "A,AAAA",
+          "target_pattern": "*"
         },
-        {},
+        {
+          "target_pattern": "mytarget"
+        },
         {
           "label_pattern": "labelc",
-          "rType_pattern": "CNAME"
+          "rType_pattern": "CNAME",
+          "target_pattern": "targetc"
         },
         {
           "label_pattern": "nametest",

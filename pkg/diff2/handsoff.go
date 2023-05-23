@@ -71,7 +71,7 @@ Here is how we intend to implement these features:
       patterns, add it to the "ignored list".
   * If any item on the "ignored list" is also in "desired" (match on
       label:rtype), output a warning (defeault) or declare an error (if
-      DISABLE_UNMANAGED_SAFETY_CHECK is true).
+      DISABLE_IGNORE_SAFETY_CHECK is true).
   * When we're done, add the "ignore list" records to desired.
 
   NO_PURGE + ENSURE_ABSENT is implemented as:
@@ -84,7 +84,7 @@ The actual implementation combines this all into one loop:
     foreach rec in existing:
         if rec matches_any_unmanaged_pattern:
             if rec in desired:
-                if "DISABLE_UNMANAGED_SAFETY_CHECK" is false:
+                if "DISABLE_IGNORE_SAFETY_CHECK" is false:
                     Display a warning.
                 else
                     Return an error.
@@ -134,9 +134,9 @@ func handsoff(
 		for _, r := range conflicts {
 			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
-		if unmanagedSafely {
+		if !unmanagedSafely {
 			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
-				"ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
+				"\nERROR: Unsafe to continue. Add DISABLE_IGNORE_SAFETY_CHECK to D() to override")
 		}
 	}
 
