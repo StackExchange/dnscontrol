@@ -155,7 +155,8 @@
 
 ## Developer info
 
-* [Style Guide](styleguide.md)
+* [Code Style Guide](styleguide-code.md)
+* [Documentation Style Guide](styleguide-doc.md)
 * [DNSControl is an opinionated system](opinions.md)
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
