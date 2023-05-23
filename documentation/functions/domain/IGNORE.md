@@ -76,6 +76,7 @@ Ignore Let's Encrypt (ACME) validation records:
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
+  IGNORE("_acme-challenge", "TXT"),
   IGNORE("_acme-challenge.**", "TXT"),
 ```
 
@@ -85,15 +86,159 @@ Ignore DNS records typically inserted by Microsoft ActiveDirectory:
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
+  IGNORE("_gc", "SRV"), // General Catalog
   IGNORE("_gc.**", "SRV"), // General Catalog
+  IGNORE("_kerberos", "SRV"), // Kerb5 server
   IGNORE("_kerberos.**", "SRV"), // Kerb5 server
+  IGNORE("_kpasswd", "SRV"), // Kpassword
   IGNORE("_kpasswd.**", "SRV"), // Kpassword
+  IGNORE("_ldap", "SRV"), // LDAP
   IGNORE("_ldap.**", "SRV"), // LDAP
   IGNORE("_msdcs", "NS"), // Microsoft Domain Controller Service
-  IGNORE("_vlmcs.**", "SRV"), // KMS
-  IGNORE("domaindnszones", "A"), // The domain
-  IGNORE("forestdnszones", "A"), // The forest
+  IGNORE("_msdcs.**", "NS"), // Microsoft Domain Controller Service
+  IGNORE("_vlmcs", "SRV"), // FQDN of the KMS host
+  IGNORE("_vlmcs.**", "SRV"), // FQDN of the KMS host
+  IGNORE("domaindnszones", "A"),
+  IGNORE("domaindnszones.**", "A"),
+  IGNORE("forestdnszones", "A"),
+  IGNORE("forestdnszones.**", "A"),
 ```
+
+## Detailed examples
+
+Here are some examples that illustrate how matching works.
+
+All the examples assume the following DNS records are the "existing" records
+that a third-party is maintaining. (Don't be confused by the fact that we're
+using DNSControl notation for the records.)
+
+{% code %}
+```
+D("example.com", ...
+    A("@", "151.101.1.69"),
+    A("www", "151.101.1.69"),
+
+    A("foo", "1.1.1.1"),
+    A("bar", "2.2.2.2"),
+    CNAME("cshort", "www"),
+    CNAME("cfull", "www.plts.org."),
+    CNAME("cfull2", "www.bar.plts.org."),
+    CNAME("cfull3", "bar.www.plts.org."),
+
+    END);
+
+D_EXTEND("more.example.com",
+    A("foo", "1.1.1.1"),
+    A("bar", "2.2.2.2"),
+    CNAME("mshort", "www"),
+    CNAME("mfull", "www.plts.org."),
+    CNAME("mfull2", "www.bar.plts.org."),
+    CNAME("mfull3", "bar.www.plts.org."),
+END);
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("@", "", ""),
+    // Would match:
+    //    foo.example.com. A 1.1.1.1
+    //    foo.more.example.com. A 1.1.1.1
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("example.com.", "", ""),
+    // Would match:
+    //    nothing
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("foo", "", ""),
+    // Would match:
+    //    foo.example.com. A 1.1.1.1
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("foo.**", "", ""),
+    // Would match:
+    //    foo.more.example.com. A 1.1.1.1
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("www", "", ""),
+    // Would match:
+    //    www.example.com. A 174.136.107.196
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("www.*", "", ""),
+    // Would match:
+    //    nothing
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("www.example.com", "", ""),
+    // Would match:
+    //    nothing
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("www.example.com.", "", ""),
+    // Would match:
+    //    none
+```
+{% endcode %}
+
+{% code %}
+```
+    //IGNORE("", "", "1.1.1.*"),
+    // Would match:
+    //    foo.example.com. A 1.1.1.1
+    //    foo.more.example.com. A 1.1.1.1
+```
+{% endcode %}
+
+{% code %}
+```
+    //IGNORE("", "", "www"),
+    // Would match:
+    //    none
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("", "", "*bar*"),
+    // Would match:
+    //    cfull2.example.com. CNAME www.bar.plts.org.
+    //    cfull3.example.com. CNAME bar.www.plts.org.
+    //    mfull2.more.example.com. CNAME www.bar.plts.org.
+    //    mfull3.more.example.com. CNAME bar.www.plts.org.
+```
+{% endcode %}
+
+{% code %}
+```
+    IGNORE("", "", "bar.**"),
+    // Would match:
+    //    cfull3.example.com. CNAME bar.www.plts.org.
+    //    mfull3.more.example.com. CNAME bar.www.plts.org.
+```
+{% endcode %}
 
 ## Conflict handling
 
@@ -144,7 +289,7 @@ instead.
 as a last resort. Even then, test extensively.
 {% endhint %}
 
-* `IGNORE` is not tested with `D_EXTEND()` and may not work.
 * There is no locking.  If the external system and DNSControl make updates at the exact same time, the results are undefined.
+* IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
 * `targetSpec` does not match fields other than the primary target.  For example, `MX` records have a target hostname plus a priority. There is no way to match the priority.
-* The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external records.
+* The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external records.  It will seem like they were not ignored, but in reality BIND didn't have visibility to them so that they could be ignored.

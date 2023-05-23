@@ -837,7 +837,7 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
         d.unmanaged.push({
             label_pattern: labelPattern,
             rType_pattern: rtypePattern,
-            targegt_pattern: targetPattern,
+            target_pattern: targetPattern,
         });
     };
 }

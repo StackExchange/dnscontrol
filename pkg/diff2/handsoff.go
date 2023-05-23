@@ -173,7 +173,9 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		if matchAny(unmanagedConfigs, rec) {
+		isMatch := matchAny(unmanagedConfigs, rec)
+		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
+		if isMatch {
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -240,6 +242,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 
 // matchAny returns true if rec matches any of the uconfigs.
 func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+	//fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
