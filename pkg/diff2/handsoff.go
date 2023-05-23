@@ -2,7 +2,7 @@ package diff2
 
 // This file implements the features that tell DNSControl "hands off"
 // foreign-controlled (or shared-control) DNS records.  i.e. the
-// NO_PURGE, ENSURE_ABSENT, IGNORE_*, and UNMANAGED features.
+// NO_PURGE, ENSURE_ABSENT and IGNORE*() features.
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 
 /*
 
-# How do NO_PURGE, IGNORE_*, ENSURE_ABSENT and friends work?
+# How do NO_PURGE, IGNORE*() and ENSURE_ABSENT work?
 
 ## Terminology:
 
@@ -33,19 +33,19 @@ and 1 way to make exceptions.
 	* Existing records (matched on label:rtype) will be modified.
 	* FYI: This means you can't have a label with two A records, one controlled
 	    by DNSControl and one controlled by an external system.
-* UNMANAGED(labelglob, typelist, targetglob):
+* IGNORE(labelglob, typelist, targetglob):
     * "If an existing record matches this pattern, don't touch it!""
-    * IGNORE_NAME(foo, bar) is the same as UNMANAGED(foo, bar, "*")
-    * IGNORE_TARGET(foo) is the same as UNMANAGED("*", "*", foo)
+    * IGNORE_NAME(foo, bar) is the same as IGNORE(foo, bar, "*")
+    * IGNORE_TARGET(foo) is the same as IGNORE("*", "*", foo)
     * FYI: You CAN have a label with two A records, one controlled by
 	    DNSControl and one controlled by an external system.  DNSControl would
-		need to have an UNMANAGED() statement with a targetglob that matches
+		need to have an IGNORE() statement with a targetglob that matches
 	    the external system's target values.
 * ENSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
     though NO_PURGE is enabled.
     * If any of these records are in desired (matched on
       label:rtype:target), remove them.  This takes priority over
-      NO_PURGE/UNMANAGED/IGNORE*.
+      NO_PURGE/IGNORE*().
 
 ## Implementation premise
 
@@ -66,8 +66,8 @@ RecordSet at once, you shouldn't NOT update the record.
 
 Here is how we intend to implement these features:
 
-  UNMANAGED is implemented as:
-  * Take the list of existing records. If any match one of the UNMANAGED glob
+  IGNORE() is implemented as:
+  * Take the list of existing records. If any match one of the IGNORE glob
       patterns, add it to the "ignored list".
   * If any item on the "ignored list" is also in "desired" (match on
       label:rtype), output a warning (defeault) or declare an error (if
@@ -100,7 +100,7 @@ The actual implementation combines this all into one loop:
 
 const maxReport = 5
 
-// handsoff processes the IGNORE_*/UNMANAGED/NO_PURGE/ENSURE_ABSENT features.
+// handsoff processes the IGNORE*()//NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
 	existing, desired, absences models.Records,
@@ -116,7 +116,7 @@ func handsoff(
 		return nil, nil, err
 	}
 
-	// Process UNMANAGE/IGNORE_* and NO_PURGE features:
+	// Process IGNORE*() and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
@@ -166,7 +166,7 @@ func reportSkips(recs models.Records, full bool) []string {
 	return msgs
 }
 
-// processIgnoreAndNoPurge processes the IGNORE_*()/UNMANAGED() and NO_PURGE/ENSURE_ABSENT_REC() features.
+// processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
 func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)

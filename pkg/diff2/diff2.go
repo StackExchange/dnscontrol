@@ -201,7 +201,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 // byHelper does 90% of the work for the By*() calls.
 func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 
-	// Process NO_PURGE/ENSURE_ABSENT and UNMANAGED/IGNORE_*.
+	// Process NO_PURGE/ENSURE_ABSENT and IGNORE*().
 	desired, msgs, err := handsoff(
 		dc.Name,
 		existing, dc.Records, dc.EnsureAbsent,
