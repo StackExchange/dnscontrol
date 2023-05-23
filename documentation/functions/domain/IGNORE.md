@@ -2,23 +2,27 @@
 name: IGNORE
 ---
 
-`IGNORE()` makes it possible for DNSControl to share management of a domain with an
-external system.  The parameters of `IGNORE()` indicate which records are managed
-elsewhere and should not be modified or deleted.
+`IGNORE()` makes it possible for DNSControl to share management of a domain
+with an external system.  The parameters of `IGNORE()` indicate which records
+are managed elsewhere and should not be modified or deleted.
 
-Use case: Suppose a domain is managed by both DNSControl and a third-party system. This creates
-a problem because DNSControl will try to delete records inserted by the other system.  The
-other system may get confused and re-insert those records.  The two systems will get into
-an endless update cycle where each will revert changes made by the other in an endless loop.
+Use case: Suppose a domain is managed by both DNSControl and a third-party
+system. This creates a problem because DNSControl will try to delete records
+inserted by the other system.  The other system may get confused and re-insert
+those records.  The two systems will get into an endless update cycle where
+each will revert changes made by the other in an endless loop.
 
-To solve this problem simply include `IGNORE()` statements that identify which records
-are managed elsewhere.  DNSControl will not modify or delete those records.
+To solve this problem simply include `IGNORE()` statements that identify which
+records are managed elsewhere.  DNSControl will not modify or delete those
+records.
 
 Technically `IGNORE_NAME` is a promise that DNSControl will not modify or
 delete existing records that match particular patterns. It is like
 [`NO_PURGE`](../domain/NO_PURGE.md) that matches only specific records.
 
-Including a record that is ignored is considered an error and may have undefined behavior. This safety check can be disabled using the [`IGNORE_NAME_DISABLE_SAFETY_CHECK_PURGE`](../domain/IGNORE_NAME_DISABLE_SAFETY_CHECK.md) feature.
+Including a record that is ignored is considered an error and may have
+undefined behavior. This safety check can be disabled using the
+[`DISABLE_IGNORE_SAFETY_CHECK`](../domain/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
 
 ## Syntax
 
@@ -44,11 +48,9 @@ The `labelSpec` and `targetSpec` parameters supports glob patterns in the style
 of the [gobwas/glob](https://github.com/gobwas/glob) library.  All of the
 following patterns will work:
 
-* `IGNORE("*.foo")` will ignore all records in the style of `bar.foo`, but will not ignore records using a double
-subdomain, such as `foo.bar.foo`.
+* `IGNORE("*.foo")` will ignore all records in the style of `bar.foo`, but will not ignore records using a double subdomain, such as `foo.bar.foo`.
 * `IGNORE("**.foo")` will ignore all subdomains of `foo`, including double subdomains.
-* `IGNORE("?oo")` will ignore all records of three symbols ending in `oo`, for example `foo` and `zoo`. It will
-not match `.`
+* `IGNORE("?oo")` will ignore all records of three symbols ending in `oo`, for example `foo` and `zoo`. It will not match `.`
 * `IGNORE("[abc]oo")` will ignore records `aoo`, `boo` and `coo`. `IGNORE("[a-c]oo")` is equivalent.
 * `IGNORE("[!abc]oo")` will ignore all three symbol records ending in `oo`, except for `aoo`, `boo`, `coo`.        `IGNORE("[!a-c]oo")` is equivalent.
 * `IGNORE("{bar,[fz]oo}")` will ignore `bar`, `foo` and `zoo`.
@@ -119,15 +121,13 @@ using DNSControl notation for the records. Pretend some other system inserted th
 D("example.com", ...
     A("@", "151.101.1.69"),
     A("www", "151.101.1.69"),
-
     A("foo", "1.1.1.1"),
     A("bar", "2.2.2.2"),
     CNAME("cshort", "www"),
     CNAME("cfull", "www.plts.org."),
     CNAME("cfull2", "www.bar.plts.org."),
     CNAME("cfull3", "bar.www.plts.org."),
-
-    END);
+END);
 
 D_EXTEND("more.example.com",
     A("foo", "1.1.1.1"),
@@ -259,7 +259,8 @@ D("example.com", ...
 ```
 {% endcode %}
 
-To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
+To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement
+to the `D()`.
 
 {% code title="dnsconfig.js" %}
 ```javascript
