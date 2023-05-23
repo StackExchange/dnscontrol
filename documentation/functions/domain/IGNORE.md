@@ -24,11 +24,13 @@ Including a record that is ignored is considered an error and may have undefined
 
 The `IGNORE()` function can be used with up to 3 parameters:
 
-```
+{% code %}
+```javascript
 IGNORE(labelSpec, typeSpec, targetSpec):
 IGNORE(labelSpec, typeSpec):
 IGNORE(labelSpec):
 ```
+{% endcode %}
 
 * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
 * `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).  
@@ -52,7 +54,7 @@ not match `.`
 * `IGNORE("{bar,[fz]oo}")` will ignore `bar`, `foo` and `zoo`.
 * `IGNORE("\\*.foo")` will ignore the literal record `*.foo`.
 
-## Examples
+## Typical Usage
 
 General examples:
 
@@ -72,17 +74,16 @@ D("example.com",
 
 Ignore Let's Encrypt (ACME) validation records:
 
-```
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
   IGNORE("_acme-challenge", "TXT"),
   IGNORE("_acme-challenge.**", "TXT"),
 ```
+{% endcode %}
 
 Ignore DNS records typically inserted by Microsoft ActiveDirectory:
 
-```
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
@@ -103,6 +104,7 @@ D("example.com",
   IGNORE("forestdnszones", "A"),
   IGNORE("forestdnszones.**", "A"),
 ```
+{% endcode %}
 
 ## Detailed examples
 
@@ -110,10 +112,10 @@ Here are some examples that illustrate how matching works.
 
 All the examples assume the following DNS records are the "existing" records
 that a third-party is maintaining. (Don't be confused by the fact that we're
-using DNSControl notation for the records.)
+using DNSControl notation for the records. Pretend some other system inserted them.)
 
-{% code %}
-```
+{% code title="dnsconfig.js" %}
+```javascript
 D("example.com", ...
     A("@", "151.101.1.69"),
     A("www", "151.101.1.69"),
@@ -139,7 +141,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("@", "", ""),
     // Would match:
     //    foo.example.com. A 1.1.1.1
@@ -148,7 +150,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("example.com.", "", ""),
     // Would match:
     //    nothing
@@ -156,7 +158,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("foo", "", ""),
     // Would match:
     //    foo.example.com. A 1.1.1.1
@@ -164,7 +166,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("foo.**", "", ""),
     // Would match:
     //    foo.more.example.com. A 1.1.1.1
@@ -172,7 +174,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("www", "", ""),
     // Would match:
     //    www.example.com. A 174.136.107.196
@@ -180,7 +182,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("www.*", "", ""),
     // Would match:
     //    nothing
@@ -188,7 +190,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("www.example.com", "", ""),
     // Would match:
     //    nothing
@@ -196,7 +198,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("www.example.com.", "", ""),
     // Would match:
     //    none
@@ -204,7 +206,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     //IGNORE("", "", "1.1.1.*"),
     // Would match:
     //    foo.example.com. A 1.1.1.1
@@ -213,7 +215,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     //IGNORE("", "", "www"),
     // Would match:
     //    none
@@ -221,7 +223,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("", "", "*bar*"),
     // Would match:
     //    cfull2.example.com. CNAME www.bar.plts.org.
@@ -232,7 +234,7 @@ END);
 {% endcode %}
 
 {% code %}
-```
+```javascript
     IGNORE("", "", "bar.**"),
     // Would match:
     //    cfull3.example.com. CNAME bar.www.plts.org.
@@ -252,9 +254,10 @@ This will generate an error:
 D("example.com", ...
     ...
     TXT("myhost", "mytext"),
-    IGNORE("myhost", "*", "*"),
+    IGNORE("myhost", "*", "*"),  // Error!  Ignoring an item we inserted
     ...
 ```
+{% endcode %}
 
 To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
 
@@ -267,6 +270,7 @@ D("example.com", ...
     IGNORE("myhost", "*", "*"),
     ...
 ```
+{% endcode %}
 
 {% hint style="info" %}
 FYI: Previously DNSControl permitted disabling this check on
@@ -277,10 +281,12 @@ The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2
 world and its use will result in a validation error. Use the above example
 instead.
 
-```
+{% code %}
+```javascript
     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
 ```
+{% endcode %}
 
 ## Caveats
 
