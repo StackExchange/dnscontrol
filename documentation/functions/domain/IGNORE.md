@@ -90,9 +90,9 @@ D("example.com",
   IGNORE("_kpasswd.**", "SRV"), // Kpassword
   IGNORE("_ldap.**", "SRV"), // LDAP
   IGNORE("_msdcs", "NS"), // Microsoft Domain Controller Service
-  IGNORE("_vlmcs.**", "SRV"), // FQDN of the KMS host
-  IGNORE("domaindnszones", "A"),
-  IGNORE("forestdnszones", "A"),
+  IGNORE("_vlmcs.**", "SRV"), // KMS
+  IGNORE("domaindnszones", "A"), // The domain
+  IGNORE("forestdnszones", "A"), // The forest
 ```
 
 ## Conflict handling
