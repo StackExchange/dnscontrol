@@ -159,7 +159,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 				return err
 			}
 			// Updating id (from the outer scope) by side-effect, required for updating proxy mode
-			id = resp.Result.ID
+			id = resp.ID
 			return nil
 		},
 	}}
@@ -226,7 +226,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			}
 			// Records are created with the proxy off. If proxy should be
 			// enabled, we do a second API call.
-			resultID := resp.Result.ID
+			resultID := resp.ID
 			if rec.Metadata[metaProxy] == "on" {
 				return c.modifyRecord(domainID, resultID, true, rec)
 			}
@@ -270,7 +270,8 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		r.Data = cfDSData(rec)
 		r.Content = ""
 	}
-	return c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
+	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
+	return err
 }
 
 // change universal ssl state
