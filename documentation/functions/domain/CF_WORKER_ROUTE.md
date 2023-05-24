@@ -27,7 +27,7 @@ This example assigns the patterns `api.foo.com/*` and `foo.com/api/*` to a `my-w
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("foo.com", .... ,
+D("example.com", .... ,
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
 );
