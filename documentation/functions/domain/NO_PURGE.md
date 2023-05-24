@@ -27,7 +27,7 @@ in place.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", .... , NO_PURGE,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), NO_PURGE,
   A("foo","1.2.3.4")
 );
 ```
