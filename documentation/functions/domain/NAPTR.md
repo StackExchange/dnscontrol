@@ -157,7 +157,7 @@ Individual e164 records
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
+D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("1",  10, 10, "u", "E2U+SIP", "!^.*$!sip:bob@example.com!", "."),
   NAPTR("2",  10, 10, "u", "E2U+SIP", "!^.*$!sip:alice@example.com!", "."),
   NAPTR("4",  10, 10, "u", "E2U+SIP", "!^.*$!sip:kate@example.com!", "."),
@@ -174,7 +174,7 @@ D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
 Single e164 zone
 {% code title="dnsconfig.js" %}
 ```javascript
-D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
+D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("@", 100, 50, "u", "E2U+SIP", "!^.*$!sip:customer-service@example.com!", "."),
   NAPTR("@", 101, 50, "u", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
   NAPTR("@", 101, 50, "u", "smtp+E2U", "!^.*$!mailto:information@example.com!", ".")
@@ -187,7 +187,7 @@ D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider(R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("@", 20, 50, "s", "SIPS+D2T", "", "_sips._tcp.example.com."),
   NAPTR("@", 20, 50, "s", "SIP+D2T", "", "_sip._tcp.example.com."),
   NAPTR("@", 30, 50, "s", "SIP+D2U", "", "_sip._udp.example.com."),
@@ -208,7 +208,7 @@ D("example.com", REGISTRAR, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider(R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("@",100, 50, "a", "z3950+N2L+N2C", "", "cidserver.example.com."),
   NAPTR("@", 50, 50, "a", "rcds+N2C", "", "cidserver.example.com."),
   NAPTR("@", 30, 50, "s", "http+N2L+N2C+N2R", "", "www.example.com."),

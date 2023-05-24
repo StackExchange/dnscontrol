@@ -39,7 +39,7 @@ The zone id can be found depending on the target type:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider("ROUTE53"),
+D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
   R53_ALIAS("foo", "A", "bar"),                              // record in same zone
   R53_ALIAS("foo", "A", "bar", R53_ZONE("Z35SXDOTRQ7X7K")),  // record in same zone, zone specified
   R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com.", R53_ZONE("Z368ELLRRE2KJ0")),     // a classic ELB in us-west-1

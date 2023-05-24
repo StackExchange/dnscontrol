@@ -22,14 +22,14 @@ For more information, refer to [this page](../../nameservers.md).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, .... ,
+D("example.com", REG_MY_PROVIDER, .... ,
   DnsProvider(route53, 0),
   // Replace the nameservers:
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
 );
 
-D("example2.com", REGISTRAR, .... ,
+D("example2.com", REG_MY_PROVIDER, .... ,
   // Add these two additional nameservers to the existing list of nameservers.
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
