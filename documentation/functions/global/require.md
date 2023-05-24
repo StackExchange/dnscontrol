@@ -23,7 +23,7 @@ of the call.
 ```javascript
 require("kubernetes/clusters.js");
 
-D("mydomain.net", REG, PROVIDER,
+D("mydomain.net", REG_MY_PROVIDER, PROVIDER,
     IncludeKubernetes()
 );
 ```
@@ -67,7 +67,7 @@ You can also use it to require JSON files and initialize variables with it:
 var domains = require("./domain-ip-map.json")
 
 for (var domain in domains) {
-    D(domain, REG, PROVIDER,
+    D(domain, REG_MY_PROVIDER, PROVIDER,
         A("@", domains[domain])
     );
 }

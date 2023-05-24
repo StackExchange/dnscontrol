@@ -2,7 +2,7 @@
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG, DnsProvider(DSP_MY_PROVIDER),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     A("@", "1.2.3.4"),  // The naked or "apex" domain.
     A("server1", "2.3.4.5"),
     AAAA("wide", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"),
@@ -43,7 +43,7 @@ var addrA = IP("1.2.3.4")
 
 var DSP_R53 = NewDnsProvider("route53_user1");
 
-D("example.com", REG, DnsProvider(DSP_R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
     A("@", addrA), // 1.2.3.4
     A("www", addrA + 1), // 1.2.3.5
 )
@@ -70,7 +70,7 @@ var dcB = IP("6.6.6.6");
 // switch to dcB to failover
 var activeDC = dcA;
 
-D("example.com", REG, DnsProvider(DSP_R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
     A("@", activeDC + 5), // fixed address based on activeDC
 )
 ```
@@ -96,7 +96,7 @@ var GOOGLE_APPS_CNAME_RECORDS = [
     CNAME("start", "ghs.googlehosted.com."),
 ]
 
-D("example.com", REG, DnsProvider(DSP_R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
    GOOGLE_APPS_MX_RECORDS,
    GOOGLE_APPS_CNAME_RECORDS,
    A("@", "1.2.3.4")
@@ -107,7 +107,7 @@ D("example.com", REG, DnsProvider(DSP_R53),
 ## Use SPF_BUILDER to add comments to SPF records ##
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.tld", REG, DSP, ...
+D("example.tld", REG_MY_PROVIDER, DSP, ...
   A("@", "10.2.2.2"),
   MX("@", "example.tld."),
   SPF_BUILDER({
@@ -147,19 +147,19 @@ DEFAULTS(
 var DSP_R53 = NewDnsProvider("route53_user1");
 var DSP_GCLOUD = NewDnsProvider("gcloud_admin");
 
-D("example.com", REG, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD),
    A("@", "1.2.3.4")
 )
 
 // above zone uses 8 NS records total (4 from each provider dynamically gathered)
 // below zone will only take 2 from each for a total of 4. May be better for performance reasons.
 
-D("example2.com", REG, DnsProvider(DSP_R53, 2), DnsProvider(DSP_GCLOUD ,2),
+D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_R53, 2), DnsProvider(DSP_GCLOUD ,2),
    A("@", "1.2.3.4")
 )
 
 // or set a Provider as a non-authoritative backup (don"t register its nameservers)
-D("example3.com", REG, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD, 0),
+D("example3.com", REG_MY_PROVIDER, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD, 0),
    A("@", "1.2.3.4")
 )
 ```

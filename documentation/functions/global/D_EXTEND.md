@@ -34,7 +34,7 @@ in a `D_EXTEND` subdomain may not be what you expect.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("domain.tld", REG, DnsProvider(DNS),
+D("domain.tld", REG_MY_PROVIDER, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
   A("www", "127.0.0.2"), // www.domain.tld
   CNAME("a", "b") // a.domain.tld -> b.domain.tld
