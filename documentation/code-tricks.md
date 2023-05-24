@@ -39,14 +39,14 @@ var GOOGLE_APPS_DOMAIN_SITES = [
   CNAME("start", "ghs.googlehosted.com."),
 ];
 
-D("primarydomain.tld", REG_NAMECOM, DnsProvider(...),
+D("primarydomain.tld", REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
    GOOGLE_APPS_DOMAIN_MX,
    GOOGLE_APPS_DOMAIN_SITES,
    A(...),
    CNAME(...)
 }
 
-D("aliasdomain.tld", REG_NAMECOM, DnsProvider(...),
+D("aliasdomain.tld", REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
    GOOGLE_APPS_DOMAIN_MX,
    // FYI: GOOGLE_APPS_DOMAIN_SITES is not used here.
    A(...),
@@ -65,7 +65,7 @@ Solution 1: Use a macro.
 
 ```
 function PARKED_R53(name) {
-    D(name, REG_NAMECOM, DnsProvider(...),
+    D(name, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
         SPF_NONE, //deters spammers from using the domain in From: lines.
@@ -89,7 +89,7 @@ _.each(
     "example3.tld",
   ],
   function (d) {
-    D(d, REG_NAMECOM, DnsProvider(...),
+    D(d, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
     END);

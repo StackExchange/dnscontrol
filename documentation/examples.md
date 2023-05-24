@@ -2,7 +2,7 @@
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG, DnsProvider(...),
+D("example.com", REG, DnsProvider(DSP_MY_PROVIDER),
     A("@", "1.2.3.4"),  // The naked or "apex" domain.
     A("server1", "2.3.4.5"),
     AAAA("wide", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"),
