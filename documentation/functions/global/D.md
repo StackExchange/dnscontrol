@@ -23,11 +23,11 @@ Modifier arguments are processed according to type as follows:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REGISTRAR = NewRegistrar("name.com");
+var REG_NAMECOM = NewRegistrar("name.com");
 var r53 = NewDnsProvider("R53");
 
 // simple domain
-D("example.com", REGISTRAR, DnsProvider(r53),
+D("example.com", REG_NAMECOM, DnsProvider(r53),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com.")
 );
