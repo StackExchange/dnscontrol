@@ -14,7 +14,7 @@ These three examples all are equivalent.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", .... ,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 );
 ```
 {% endcode %}
@@ -23,7 +23,7 @@ Purge is the default, but we set it anyway:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", .... ,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   PURGE,
 );
 ```
@@ -33,7 +33,7 @@ Since the "last command wins", this is the same as `PURGE`:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", .... ,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   PURGE,
   NO_PURGE,
   PURGE,

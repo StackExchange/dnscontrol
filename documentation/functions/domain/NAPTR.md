@@ -26,9 +26,9 @@ NAPTR adds a NAPTR record to the domain. Various formats exist. NAPTR is a part 
 
 ### `subdomain`
 
-Subdomain of the domain (e.g. `example.com`) this entry represents. 
+Subdomain of the domain (e.g. `example.com`) this entry represents.
 
-#### E164 
+#### E164
 In the case of E164 (e.g. `3.2.1.5.5.5.0.0.8.1.e164.arpa.`) - where [`terminalflag`](#terminalflag) is `u` - the final digit of the zone it represents, or the zone apex record `@`. For example, the ARPA zone `3.2.1.5.5.5.0.0.8.1.e164.arpa.` represents the phone number block 001800555123*X* (or the synonymous +1800555123*X*), where *X* is the final digit of the phone number string, i.e. the [`subdomain`](#subdomain).
 
 
@@ -59,7 +59,7 @@ Flags called 'terminal' halt the looping rewrite algorithm of DNS.
 ### `service`
 (case insensitive)
 
-*`protocol+rs`* where *`protocol`* defines the protocol used by the DDDS application. *`rs`* is the resolution service. There may be 0 or more resolution services each separated by `+`. ENUM further defines this to be a type field and allows a subtype separated by a colon (`:`). 
+*`protocol+rs`* where *`protocol`* defines the protocol used by the DDDS application. *`rs`* is the resolution service. There may be 0 or more resolution services each separated by `+`. ENUM further defines this to be a type field and allows a subtype separated by a colon (`:`).
 
 For E164, typically one of `E2U+SIP` (or `E2U+sip`) or `E2U+email`. For SIP, typically `SIPS+D2T` for TCP/TLS `sips:` URIs, or TLS `sip:` URIs, or `SIP+D2T` for TCP based SIP, or `SIP+D2U` for UDP based SIP. Note that SCTP, WS and WSS are also available.
 
@@ -134,20 +134,20 @@ U-NAPTR supported regexp fields must be of the form (from the RFC):
 ```text
 "!.*!<URI>!"
 # the .* (any character 1 or more times)
-# is fixed by the RFC and essentially ignores 
+# is fixed by the RFC and essentially ignores
 # the AUS data. The result will always be URI
 ```
 
 
 ### `target`
 
-A (replacement) record for the target - format depends on [`terminalflag`](#terminalflag). 
+A (replacement) record for the target - format depends on [`terminalflag`](#terminalflag).
  * A [`SRV`](SRV.md), if the [`terminalflag`](#terminalflag) is `s` (syntax: *`_Service._Proto.Name`*)
  * An [`A`](A.md) or [`AAAA`](AAAA.md) if the [`terminalflag`](#terminalflag) is `a`
  * URI if the [`terminalflag`](#terminalflag) is `u`
 
 
-Not all examples are guaranteed to be standards compliant, or correct. 
+Not all examples are guaranteed to be standards compliant, or correct.
 
 ## Examples
 
@@ -157,16 +157,16 @@ Individual e164 records
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
-  NAPTR('1',  10, 10, "u", "E2U+SIP", "!^.*$!sip:bob@example.com!", "."),
-  NAPTR('2',  10, 10, "u", "E2U+SIP", "!^.*$!sip:alice@example.com!", "."),
-  NAPTR('4',  10, 10, "u", "E2U+SIP", "!^.*$!sip:kate@example.com!", "."),
-  NAPTR('5',  10, 10, "u", "E2U+SIP", "!^.*$!sip:steve@example.com!", "."),
-  NAPTR('6',  10, 10, "u", "E2U+SIP", "!^.*$!sip:joe@example.com!", "."),
-  NAPTR('7',  10, 10, "u", "E2U+SIP", "!^.*$!sip:jane@example.com!", "."),
-  NAPTR('8',  10, 10, "u", "E2U+SIP", "!^.*$!sip:mike@example.com!", "."),
-  NAPTR('9',  10, 10, "u", "E2U+SIP", "!^.*$!sip:linda@example.com!", "."),
-  NAPTR('0',  10, 10, "u", "E2U+SIP", "!^.*$!sip:fax@example.com!", ".")
+D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
+  NAPTR("1",  10, 10, "u", "E2U+SIP", "!^.*$!sip:bob@example.com!", "."),
+  NAPTR("2",  10, 10, "u", "E2U+SIP", "!^.*$!sip:alice@example.com!", "."),
+  NAPTR("4",  10, 10, "u", "E2U+SIP", "!^.*$!sip:kate@example.com!", "."),
+  NAPTR("5",  10, 10, "u", "E2U+SIP", "!^.*$!sip:steve@example.com!", "."),
+  NAPTR("6",  10, 10, "u", "E2U+SIP", "!^.*$!sip:joe@example.com!", "."),
+  NAPTR("7",  10, 10, "u", "E2U+SIP", "!^.*$!sip:jane@example.com!", "."),
+  NAPTR("8",  10, 10, "u", "E2U+SIP", "!^.*$!sip:mike@example.com!", "."),
+  NAPTR("9",  10, 10, "u", "E2U+SIP", "!^.*$!sip:linda@example.com!", "."),
+  NAPTR("0",  10, 10, "u", "E2U+SIP", "!^.*$!sip:fax@example.com!", ".")
 );
 ```
 {% endcode %}
@@ -174,10 +174,10 @@ D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
 Single e164 zone
 {% code title="dnsconfig.js" %}
 ```javascript
-D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
-  NAPTR('@', 100, 50, "u", "E2U+SIP", "!^.*$!sip:customer-service@example.com!", "."),
-  NAPTR('@', 101, 50, "u", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
-  NAPTR('@', 101, 50, "u", "smtp+E2U", "!^.*$!mailto:information@example.com!", ".")
+D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
+  NAPTR("@", 100, 50, "u", "E2U+SIP", "!^.*$!sip:customer-service@example.com!", "."),
+  NAPTR("@", 101, 50, "u", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
+  NAPTR("@", 101, 50, "u", "smtp+E2U", "!^.*$!mailto:information@example.com!", ".")
 );
 ```
 {% endcode %}
@@ -187,17 +187,17 @@ D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REGISTRAR, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider(R53),
-  NAPTR('@', 20, 50, "s", "SIPS+D2T", "", "_sips._tcp.example.com."),
-  NAPTR('@', 20, 50, "s", "SIP+D2T", "", "_sip._tcp.example.com."),
-  NAPTR('@', 30, 50, "s", "SIP+D2U", "", "_sip._udp.example.com."),
-  NAPTR('help', 100, 50, "s", "SIP+D2U", "!^.*$!sip:customer-service@example.com!", "_sip._udp.example.com."),
-  NAPTR('help', 101, 50, "s", "SIP+D2T", "!^.*$!sip:customer-service@example.com!", "_sip._tcp.example.com."),
-  SRV('_sip._udp', 100, 0, 5060, 'sip.example.com.'),
-  SRV('_sip._tcp', 100, 0, 5060, 'sip.example.com.'),
-  SRV('_sips._tcp', 100, 0, 5061, 'sip.example.com.'),
-  A('sip', '192.0.2.2'),
-  AAAA('sip', '2001:db8::85a3'),
+D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
+  NAPTR("@", 20, 50, "s", "SIPS+D2T", "", "_sips._tcp.example.com."),
+  NAPTR("@", 20, 50, "s", "SIP+D2T", "", "_sip._tcp.example.com."),
+  NAPTR("@", 30, 50, "s", "SIP+D2U", "", "_sip._udp.example.com."),
+  NAPTR("help", 100, 50, "s", "SIP+D2U", "!^.*$!sip:customer-service@example.com!", "_sip._udp.example.com."),
+  NAPTR("help", 101, 50, "s", "SIP+D2T", "!^.*$!sip:customer-service@example.com!", "_sip._tcp.example.com."),
+  SRV("_sip._udp", 100, 0, 5060, "sip.example.com."),
+  SRV("_sip._tcp", 100, 0, 5060, "sip.example.com."),
+  SRV("_sips._tcp", 100, 0, 5061, "sip.example.com."),
+  A("sip", "192.0.2.2"),
+  AAAA("sip", "2001:db8::85a3"),
   // and so on
 );
 ```
@@ -208,14 +208,14 @@ D("example.com", REGISTRAR, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider(R53),
-  NAPTR('@',100, 50, "a", "z3950+N2L+N2C", "", "cidserver.example.com."),
-  NAPTR('@', 50, 50, "a", "rcds+N2C", "", "cidserver.example.com."),
-  NAPTR('@', 30, 50, "s", "http+N2L+N2C+N2R", "", "www.example.com."),
-  NAPTR('www',100,100, "s", "http+I2R", "", "_http._tcp.example.com."),
-  NAPTR('www',100,100, "s", "ftp+I2R", "", "_ftp._tcp.example.com."),
-  SRV('_z3950._tcp', 0, 0, 1000, 'z3950.beast.example.com.'),
-  SRV('_http._tcp', 10, 0, 80, 'foo.example.com.'),
+D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
+  NAPTR("@",100, 50, "a", "z3950+N2L+N2C", "", "cidserver.example.com."),
+  NAPTR("@", 50, 50, "a", "rcds+N2C", "", "cidserver.example.com."),
+  NAPTR("@", 30, 50, "s", "http+N2L+N2C+N2R", "", "www.example.com."),
+  NAPTR("www",100,100, "s", "http+I2R", "", "_http._tcp.example.com."),
+  NAPTR("www",100,100, "s", "ftp+I2R", "", "_ftp._tcp.example.com."),
+  SRV("_z3950._tcp", 0, 0, 1000, "z3950.beast.example.com."),
+  SRV("_http._tcp", 10, 0, 80, "foo.example.com."),
   // and so on
 );
 ```

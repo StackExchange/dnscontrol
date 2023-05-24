@@ -80,11 +80,11 @@ Long example: (with filename)
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar('none');
-var DNS_BIND = NewDnsProvider('bind');
+var REG_NONE = NewRegistrar("none");
+var DNS_BIND = NewDnsProvider("bind");
 
-D('example.com', REG_NONE, DnsProvider(DNS_BIND),
-    A('@', '1.2.3.4')
+D("example.com", REG_NONE, DnsProvider(DNS_BIND),
+    A("@", "1.2.3.4")
 );
 ```
 {% endcode %}
@@ -95,11 +95,11 @@ Long example: (without filename)
 
 {% code %}
 ```javascript
-var REG_NONE = NewRegistrar('none');
-var DNS_BIND = NewDnsProvider('bind');
+var REG_NONE = NewRegistrar("none");
+var DNS_BIND = NewDnsProvider("bind");
 
-D('example.com', REG_NONE, DnsProvider(DNS_BIND),
-    A('@', '1.2.3.4')
+D("example.com", REG_NONE, DnsProvider(DNS_BIND),
+    A("@", "1.2.3.4")
 );
 ```
 {% endcode %}

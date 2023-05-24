@@ -32,8 +32,8 @@ IPv6 is properly handled too.
 
 *Extra Validation:* DNSControl considers it an error to include a name that
 is inappropriate for the domain.  For example
-`PTR('1.2.3.4', 'f.co.')` is valid for the domain `D("3.2.1.in-addr.arpa',`
- but DNSControl will generate an error if the domain is `D("9.9.9.in-addr.arpa',`.
+`PTR("1.2.3.4", "f.co.")` is valid for the domain `D("3.2.1.in-addr.arpa",`
+ but DNSControl will generate an error if the domain is `D("9.9.9.in-addr.arpa",`.
 This is because `1.2.3.4` is contained in `1.2.3.0/24` but not `9.9.9.0/24`.
 This validation works for IPv6, IPv4, and
 RFC2317 "Classless in-addr.arpa delegation" domains.
@@ -45,12 +45,12 @@ name is contained within the CIDR block implied by domain.  For example
 if name is `4.3.2.1.in-addr.arpa.` (note the trailing `.`)
 and the domain is `2.1.in-addr.arpa` (no trailing `.`)
 then the name will be replaced with `4.3`.  Note that the output
-of `REV('1.2.3.4')` is `4.3.2.1.in-addr.arpa.`, which means the following
+of `REV("1.2.3.4")` is `4.3.2.1.in-addr.arpa.`, which means the following
 are all equivalent:
 
-* `PTR(REV('1.2.3.4'), `
-* `PTR('4.3.2.1.in-addr.arpa.'), `
-* `PTR('4.3',`    // Assuming the domain is `2.1.in-addr.arpa`
+* `PTR(REV("1.2.3.4"), `
+* `PTR("4.3.2.1.in-addr.arpa."), `
+* `PTR("4.3",`    // Assuming the domain is `2.1.in-addr.arpa`
 
 All magic is RFC2317-aware. We use the first format listed in the
 RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
@@ -62,31 +62,31 @@ and A, B, C are the first 3 octets of the IP address. For example
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
-  PTR('1', 'foo.example.com.'),
-  PTR('2', 'bar.example.com.'),
-  PTR('3', 'baz.example.com.'),
+D(REV("1.2.3.0/24"), REGISTRAR, DnsProvider(BIND),
+  PTR("1", "foo.example.com."),
+  PTR("2", "bar.example.com."),
+  PTR("3", "baz.example.com."),
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
-  PTR('1.2.3.10', 'ten.example.com.'),    // '10'
+  PTR("1.2.3.10", "ten.example.com."),    // "10"
 );
 ```
 {% endcode %}
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D(REV('9.9.9.128/25'), REGISTRAR, DnsProvider(BIND),
-  PTR('9.9.9.129', 'first.example.com.'),
+D(REV("9.9.9.128/25"), REGISTRAR, DnsProvider(BIND),
+  PTR("9.9.9.129", "first.example.com."),
 );
 ```
 {% endcode %}
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
-  PTR('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0', 'foo.example.com.'),  // 2001:db8:302::1
+D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
+  PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
-  PTR('2001:db8:302::2', 'two.example.com.'),                          // '2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
-  PTR('2001:db8:302::3', 'three.example.com.'),                        // '3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
+  PTR("2001:db8:302::2", "two.example.com."),                          // "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
+  PTR("2001:db8:302::3", "three.example.com."),                        // "3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
 );
 ```
 {% endcode %}

@@ -20,7 +20,7 @@ Target should be a string representing the target. If it is a single label we wi
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, DnsProvider("CLOUDFLARE"),
+D("example.com", REG_MY_PROVIDER, DnsProvider("CLOUDFLARE"),
   ALIAS("@", "google.com."), // example.com -> google.com
 );
 ```

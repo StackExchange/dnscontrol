@@ -51,16 +51,16 @@ var TRANSFORM_INT = [
     { low: "2.4.6.80", high: "2.4.6.90", newBase: "123.123.123.200" },  //   Another rule, just to show that you can have many.
 ]
 
-D("foo.com", .... ,
+D("foo.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("one","1.2.3.1")
   A("two","1.2.3.2")
   A("three","1.2.3.13")
   A("four","1.2.3.14")
 );
 
-D("bar.com", .... ,
+D("bar.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("www","123.123.123.123")
-  IMPORT_TRANSFORM(TRANSFORM_INT, 'foo.com', 300),
+  IMPORT_TRANSFORM(TRANSFORM_INT, "foo.com", 300),
 );
 ```
 {% endcode %}
@@ -68,4 +68,4 @@ D("bar.com", .... ,
 Transform rules are: RANGE_START, RANGE_END, NEW_BASE.  NEW_BASE may be:
 
 * An IP address.  Rebase the IP address on this IP address. Extract the host part of the /24 and add it to the "new base" address.
-* A list of IP addresses. For each A record, inject an A record for each item in the list: `newBase: ['1.2.3.100', '2.4.6.8.100']` would produce 2 records for each A record.
+* A list of IP addresses. For each A record, inject an A record for each item in the list: `newBase: ["1.2.3.100", "2.4.6.8.100"]` would produce 2 records for each A record.

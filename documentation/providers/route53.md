@@ -90,16 +90,16 @@ each with different zone IDs specified using [`R53_ZONE()`](../functions/record/
 var REG_NONE = NewRegistrar("none");
 var DSP_R53 = NewDnsProvider("r53_main");
 
-D('testzone.net!private', REG_NONE,
+D("testzone.net!private", REG_NONE,
     DnsProvider(DSP_R53),
-    R53_ZONE('Z111111111JCCCP1V7UW'),
-    TXT('me', 'private testzone.net'),
+    R53_ZONE("Z111111111JCCCP1V7UW"),
+    TXT("me", "private testzone.net"),
 );
 
-D('testzone.net!public', REG_NONE,
+D("testzone.net!public", REG_NONE,
     DnsProvider(DSP_R53),
-    R53_ZONE('Z222222222INNG98SHJQ2'),
-    TXT('me', 'public testzone.net'),
+    R53_ZONE("Z222222222INNG98SHJQ2"),
+    TXT("me", "public testzone.net"),
 );
 ```
 {% endcode %}

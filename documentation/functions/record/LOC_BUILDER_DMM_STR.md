@@ -38,7 +38,7 @@ Note that the following are acceptable forms (symbols differ):
 D("example.com","none"
   LOC_BUILDER_STR({
     label: "tasmania",
-    str: '42°S 147°E',
+    str: "42°S 147°E",
     alt: 3,
   })
 );
