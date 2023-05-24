@@ -32,8 +32,8 @@ type DomainConfig struct {
 
 	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
 	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
-	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // UNMANAGED()
-	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_UNMANAGED_SAFETY_CHECK
+	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
+	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`

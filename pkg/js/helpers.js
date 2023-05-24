@@ -809,10 +809,56 @@ function format_tt(transform_table) {
     return lines.join(' ; ');
 }
 
-// IGNORE(name)
-function IGNORE(name) {
-    // deprecated, use IGNORE_NAME
-    return IGNORE_NAME(name);
+//function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
+//    return function (d) {
+//        d.unmanaged.push({
+//            label_pattern: label_pattern,
+//            rType_pattern: rType_pattern,
+//            target_pattern: target_pattern,
+//        });
+//    };
+//}
+
+function DISABLE_IGNORE_SAFETY_CHECK(d) {
+    // This disables a safety check intended to prevent DNSControl and
+    // another system getting into a battle as they both try to update
+    // the same record over and over, back and forth.  However, people
+    // kept asking for it so... caveat emptor!
+    // It only affects the current domain.
+    d.unmanaged_disable_safety_check = true;
+}
+
+var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
+    ignore_name_disable_safety_check: 'true',
+    // (NOTE: diff1 only.)
+    // This disables a safety check intended to prevent:
+    // 1. Two owners toggling a record between two settings.
+    // 2. The other owner wiping all records at this label, which won't
+    // be noticed until the next time dnscontrol is run.
+    // See https://github.com/StackExchange/dnscontrol/issues/1106
+};
+
+// IGNORE(labelPattern, rtypePattern, targetPattern)
+function IGNORE(labelPattern, rtypePattern, targetPattern) {
+    if (labelPattern === undefined) {
+        labelPattern = '*';
+    }
+    if (rtypePattern === undefined) {
+        rtypePattern = '*';
+    }
+    if (targetPattern === undefined) {
+        targetPattern = '*';
+    }
+    return function (d) {
+        // diff1
+        d.ignored_names.push({ pattern: labelPattern, types: rtypePattern });
+        // diff2
+        d.unmanaged.push({
+            label_pattern: labelPattern,
+            rType_pattern: rtypePattern,
+            target_pattern: targetPattern,
+        });
+    };
 }
 
 // IGNORE_NAME(name, rTypes)
@@ -821,7 +867,9 @@ function IGNORE_NAME(name, rTypes) {
         rTypes = '*';
     }
     return function (d) {
+        // diff1
         d.ignored_names.push({ pattern: name, types: rTypes });
+        // diff2
         d.unmanaged.push({
             label_pattern: name,
             rType_pattern: rTypes,
@@ -829,18 +877,11 @@ function IGNORE_NAME(name, rTypes) {
     };
 }
 
-var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
-    ignore_name_disable_safety_check: 'true',
-    // This disables a safety check intended to prevent:
-    // 1. Two owners toggling a record between two settings.
-    // 2. The other owner wiping all records at this label, which won't
-    // be noticed until the next time dnscontrol is run.
-    // See https://github.com/StackExchange/dnscontrol/issues/1106
-};
-
 function IGNORE_TARGET(target, rType) {
     return function (d) {
+        // diff1
         d.ignored_targets.push({ pattern: target, type: rType });
+        // diff2
         d.unmanaged.push({
             rType_pattern: rType,
             target_pattern: target,
@@ -900,25 +941,6 @@ function AUTODNSSEC(d) {
     console.log(
         'WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release.'
     );
-}
-
-function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
-    return function (d) {
-        d.unmanaged.push({
-            label_pattern: label_pattern,
-            rType_pattern: rType_pattern,
-            target_pattern: target_pattern,
-        });
-    };
-}
-
-function DISABLE_UNMANAGED_SAFETY_CHECK(d) {
-    // This disables a safety check intended to prevent DNSControl and
-    // another system getting into a battle as they both try to update
-    // the same record over and over, back and forth.  However, people
-    // kept asking for it so... caveat emptor!
-    // It only affects the current domain.
-    d.unmanaged_disable_safety_check = true;
 }
 
 /**

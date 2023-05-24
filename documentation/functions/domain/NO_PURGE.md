@@ -2,18 +2,28 @@
 name: NO_PURGE
 ---
 
-`NO_PURGE` indicates that records should not be deleted from a domain.
+`NO_PURGE` indicates that existing records should not be deleted from a domain.
 Records will be added and updated, but not removed.
 
-`NO_PURGE` is generally used in very specific situations:
+Suppose a domain is managed by both DNSControl and a third-party system. This
+creates a problem because DNSControl will try to delete records inserted by the
+other system.
 
-* A domain is managed by some other system and DNSControl is only used to insert a few specific records and/or keep them updated. For example a DNS Zone that is managed by Active Directory, but DNSControl is used to update a few, specific, DNS records. In this case we want to specify the DNS records we are concerned with but not delete all the other records.  This is a risky use of `NO_PURGE` since, if `NO_PURGE` was removed (or buggy) there is a chance you could delete all the other records in the zone, which could be a disaster. That said, domains with some records updated using Dynamic DNS have no other choice.
-* To work-around a pseudo record type that is not supported by DNSControl. For example some providers have a fake DNS record type called "URL" which creates a redirect. DNSControl normally deletes these records because it doesn't understand them. `NO_PURGE` will leave those records alone.
+By setting `NO_PURGE` on a domain, this tells DNSControl not to delete the
+records found in the domain.
 
-In this example DNSControl will insert "foo.example.com" into the
-zone, but otherwise leave the zone alone.  Changes to "foo"'s IP
-address will update the record. Removing the A("foo", ...) record
-from DNSControl will leave the record in place.
+It is similar to [`IGNORE`](domain/IGNORE.md) but more general.
+
+The original reason for `NO_PURGE` was that a legacy system was adopting
+DNSControl. Previously the domain was managed via Microsoft DNS Server's GUI.
+ActiveDirectory was in use, so various records were being inserted behind the
+scenes.  It was decided to use DNSControl to simply insert a few records.  The
+`NO_PURGE` setting instructed DNSControl not to delete the existing records.
+
+In this example DNSControl will insert "foo.example.com" into the zone, but
+otherwise leave the zone alone.  Changes to "foo"'s IP address will update the
+record. Removing the A("foo", ...) record from DNSControl will leave the record
+in place.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -23,19 +33,22 @@ D("example.com", .... , NO_PURGE,
 ```
 {% endcode %}
 
-The main caveat of `NO_PURGE` is that intentionally deleting records
-becomes more difficult. Suppose a `NO_PURGE` zone has an record such
-as A("ken", "1.2.3.4"). Removing the record from dnsconfig.js will
-not delete "ken" from the domain. DNSControl has no way of knowing
-the record was deleted from the file  The DNS record must be removed
-manually.  Users of `NO_PURGE` are prone to finding themselves with
-an accumulation of orphaned DNS records. That's easy to fix for a
-small zone but can be a big mess for large zones.
+The main caveat of `NO_PURGE` is that intentionally deleting records becomes
+more difficult. Suppose a `NO_PURGE` zone has an record such as A("ken",
+"1.2.3.4"). Removing the record from dnsconfig.js will not delete "ken" from
+the domain. DNSControl has no way of knowing the record was deleted from the
+file  The DNS record must be removed manually.  Users of `NO_PURGE` are prone
+to finding themselves with an accumulation of orphaned DNS records. That's easy
+to fix for a small zone but can be a big mess for large zones.
 
-Not all providers support `NO_PURGE`. For example the BIND provider
-rewrites zone files from scratch each time, which precludes supporting
-`NO_PURGE`.  DNSControl will exit with an error if `NO_PURGE` is used
-on a driver that does not support it.
+## Support
 
-There is also [`PURGE`](PURGE.md) command for completeness. [`PURGE`](PURGE.md) is the
-default, thus this command is a no-op.
+Prior to DNSControl v4.0.0, not all providers supported `NO_PURGE`.
+
+With introduction of `diff2` algorithm (enabled by default in v4.0.0),
+`NO_PURGE` works with all providers.
+
+## See also
+
+* [`PURGE`](domain/PURGE.md) is the default, thus this command is a no-op
+* [`IGNORE`](domain/IGNORE.md) is similar to `NO_PURGE` but is more selective

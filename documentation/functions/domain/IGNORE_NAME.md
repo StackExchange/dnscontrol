@@ -8,6 +8,12 @@ parameter_types:
   rTypes: string?
 ---
 
+`IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
+
+## Legacy mode ("diff1")
+
+When `--diff2=false` is used to revert to the old "diff1" algorithm, `IGNORE_NAME()` behaves as follows:
+
 {% hint style="warning" %}
 **WARNING**: The `IGNORE_*` family  of functions is risky to use. The code
 is brittle and has subtle bugs. Use at your own risk. Do not use these
