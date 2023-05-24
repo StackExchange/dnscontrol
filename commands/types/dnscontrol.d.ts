@@ -835,7 +835,7 @@ declare function FRAME(name: string, target: string, ...modifiers: RecordModifie
  * 
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore
  */
-declare const IGNORE: DomainModifier;
+declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: string): DomainModifier;
 
 /**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
