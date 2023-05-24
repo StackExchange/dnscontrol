@@ -36,7 +36,7 @@ In this example, DNSControl will insert/update the "baz.example.com" record but 
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com",
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE_NAME("foo"), // ignore all record types for name foo
   IGNORE_NAME("baz", "*"), // ignore all record types for name baz
   IGNORE_NAME("bar", "A,MX"), // ignore only A and MX records for name bar
