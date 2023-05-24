@@ -172,15 +172,15 @@ the following minimal configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG = NewRegistrar("none");
+var REG_NONE = NewRegistrar("none");
 var DNS = NewDnsProvider("axfrddns", {
     default_ns: [
         "ns.example.com.",
     ],
 });
 
-D("example.com", REG, DnsProvider(DNS),
-  A("ns", "127.0.0.1")
+D("example.com", REG_NONE, DnsProvider(DNS),
+    A("ns", "127.0.0.1")
 )
 ```
 {% endcode %}
