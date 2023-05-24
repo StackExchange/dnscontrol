@@ -62,7 +62,7 @@ General examples:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com",
+D("example.com", ...
   IGNORE("foo"), // matches any records on foo.example.com
   IGNORE("baz", "A"), // matches any A records on label baz.example.com
   IGNORE("*", "MX", "*"), // matches all MX records
@@ -70,7 +70,7 @@ D("example.com",
   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
   IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
   IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
-);
+END);
 ```
 {% endcode %}
 
@@ -78,9 +78,10 @@ Ignore Let's Encrypt (ACME) validation records:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com",
+D("example.com", ...
   IGNORE("_acme-challenge", "TXT"),
   IGNORE("_acme-challenge.**", "TXT"),
+END);
 ```
 {% endcode %}
 
@@ -88,7 +89,7 @@ Ignore DNS records typically inserted by Microsoft ActiveDirectory:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com",
+D("example.com", ...
   IGNORE("_gc", "SRV"), // General Catalog
   IGNORE("_gc.**", "SRV"), // General Catalog
   IGNORE("_kerberos", "SRV"), // Kerb5 server
@@ -105,6 +106,7 @@ D("example.com",
   IGNORE("domaindnszones.**", "A"),
   IGNORE("forestdnszones", "A"),
   IGNORE("forestdnszones.**", "A"),
+END);
 ```
 {% endcode %}
 
