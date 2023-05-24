@@ -38,6 +38,6 @@ parameter_types:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-SSHFP('@', 1, 1, '00yourAmazingFingerprint00'),
+SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
 ```
 {% endcode %}

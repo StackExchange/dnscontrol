@@ -87,7 +87,7 @@ is trying to insert.
 You can override this error by adding the
 `IGNORE_NAME_DISABLE_SAFETY_CHECK` flag to the record.
 
-    TXT('vpn', "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
+    TXT("vpn", "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
 
 Disabling this safety check creates two risks:
 

@@ -25,7 +25,7 @@ names (labels), and targets (as appropriate). See the examples below.
 Matching the domain name to previously-defined domains is done using a
 `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
 defined as separate domains via separate [`D()`](D.md) statements, then
-`D_EXTEND('sub.sub.domain.tld', ...)` would match `sub.domain.tld`,
+`D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`,
 not `domain.tld`.
 
 Some operators only act on an apex domain (e.g.

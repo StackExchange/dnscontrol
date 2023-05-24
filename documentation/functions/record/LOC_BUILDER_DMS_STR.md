@@ -38,7 +38,7 @@ Note that the following are acceptable forms (symbols differ):
 D("example.com","none"
   LOC_BUILDER_DMS_STR({
     label: "sydney-opera-house",
-    str: '33°51′31″S 151°12′51″E',
+    str: "33°51′31″S 151°12′51″E",
     alt: 4,
     ttl: "5m",
   })

@@ -34,11 +34,11 @@ D("example.com", REGISTRAR, DnsProvider(r53),
 
 // "macro" for records that can be mixed into any zone
 var GOOGLE_APPS_DOMAIN_MX = [
-    MX('@', 1, 'aspmx.l.google.com.'),
-    MX('@', 5, 'alt1.aspmx.l.google.com.'),
-    MX('@', 5, 'alt2.aspmx.l.google.com.'),
-    MX('@', 10, 'alt3.aspmx.l.google.com.'),
-    MX('@', 10, 'alt4.aspmx.l.google.com.'),
+    MX("@", 1, "aspmx.l.google.com."),
+    MX("@", 5, "alt1.aspmx.l.google.com."),
+    MX("@", 5, "alt2.aspmx.l.google.com."),
+    MX("@", 10, "alt3.aspmx.l.google.com."),
+    MX("@", 10, "alt4.aspmx.l.google.com."),
 ]
 
 D("example.com", REGISTRAR, DnsProvider(r53),
@@ -94,7 +94,7 @@ define domains `example.com!george` and `example.com!john` then:
 
 * `--domains=example.com` will not match either domain.
 * `--domains='example.com!george'` will match only match the first.
-* `--domains='example.com!george',example.com!john` will match both.
+* `--domains='example.com!george",example.com!john` will match both.
 
 {% hint style="info" %}
 **NOTE**: The quotes are required if your shell treats `!` as a special

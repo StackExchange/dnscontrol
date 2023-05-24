@@ -33,7 +33,7 @@ It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](/language-reference/record-m
 {% code title="dnsconfig.js" %}
 ```javascript
 M365_BUILDER({
-    initialDomain: 'example.onmicrosoft.com',
+    initialDomain: "example.onmicrosoft.com",
 });
 ```
 {% endcode %}
@@ -45,13 +45,13 @@ This sets up `MX` records, Autodiscover, and DKIM.
 {% code title="dnsconfig.js" %}
 ```javascript
 M365_BUILDER({
-    label: 'test',
+    label: "test",
     mx: false,
     autodiscover: false,
     dkim: false,
     mdm: true,
-    domainGUID: 'test-example-com', // Can be automatically derived in this case, if example.com is the context.
-    initialDomain: 'example.onmicrosoft.com',
+    domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
+    initialDomain: "example.onmicrosoft.com",
 });
 ```
 {% endcode %}
@@ -60,7 +60,7 @@ This sets up Mobile Device Management only.
 
 ### Parameters
 
-* `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `'@'`)
+* `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
 * `mx` Set an `MX` record? (default: `true`)
 * `autodiscover` Set Autodiscover `CNAME` record? (default: `true`)
 * `dkim` Set DKIM `CNAME` records? (default: `true`)

@@ -35,7 +35,7 @@ In this example, DNSControl will insert/update the "baz.example.com" record but 
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
-  IGNORE_TARGET('**.acm-validations.aws.', 'CNAME'),
+  IGNORE_TARGET("**.acm-validations.aws.", "CNAME"),
   A("baz", "1.2.3.4")
 );
 ```
