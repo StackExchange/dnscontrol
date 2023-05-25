@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -677,6 +679,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	// Check account data if set
 	if m["accountid"] != "" {
 		api.cfClient.AccountID = m["accountid"]
+	}
+
+	debug, err := strconv.ParseBool(os.Getenv("CLOUDFLAREAPI_DEBUG"))
+	if err == nil {
+		api.cfClient.Debug = debug
 	}
 
 	if len(metadata) > 0 {
