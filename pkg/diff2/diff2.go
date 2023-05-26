@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnssort"
 )
 
 // Verb indicates the Change's type (create, delete, etc.)
@@ -50,9 +51,32 @@ type Change struct {
 	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
 	// return exactly one record.
 	HintRecordSetLen1 bool
+}
 
-	// Slice with the dependencies of this changeset used to order all changes
-	HintDependencies []string
+func (change *Change) GetType() dnssort.ChangeType {
+	if change.Type == REPORT {
+		return dnssort.REPORT
+	}
+
+	return dnssort.CHANGE
+}
+
+func (change *Change) GetNameFQDN() string {
+	return change.Key.NameFQDN
+}
+
+func (change *Change) GetFQDNDependencies() []dnssort.Dependency {
+	var dependencies []dnssort.Dependency
+
+	if change.Type == CHANGE || change.Type == DELETE {
+		dependencies = append(dependencies, dnssort.CreateDependencies(change.Old.GetFQDNDependencies(), dnssort.OLD_DEPENDENCY)...)
+	}
+
+	return dependencies
+}
+
+func (change *Change) Equals(target Change) bool {
+	return change.Key.NameFQDN == target.Key.NameFQDN
 }
 
 /*

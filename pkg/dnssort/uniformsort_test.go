@@ -7,7 +7,7 @@ func Test_SortByDependencies(t *testing.T) {
 	t.Run("Direct dependency",
 		executeUniformSort(
 			[]stubRecord{
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
 				{NameFQDN: "example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
@@ -22,7 +22,7 @@ func Test_SortByDependencies(t *testing.T) {
 		executeUniformSort(
 			[]stubRecord{
 				{NameFQDN: "example.com", Dependencies: []Dependency{}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
 			},
 			[]string{
 				"example.com",
@@ -35,7 +35,7 @@ func Test_SortByDependencies(t *testing.T) {
 	t.Run("Use wildcards",
 		executeUniformSort(
 			[]stubRecord{
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.test.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "a.test.example.com"}}},
 				{NameFQDN: "*.test.example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
@@ -49,9 +49,9 @@ func Test_SortByDependencies(t *testing.T) {
 	t.Run("Cyclic dependency added on the end",
 		executeUniformSort(
 			[]stubRecord{
-				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "b.example.com"}}},
-				{NameFQDN: "b.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.example.com"}}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "b.example.com"}}},
+				{NameFQDN: "b.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
 				{NameFQDN: "example.com", Dependencies: []Dependency{}},
 			},
 			[]string{
@@ -70,8 +70,8 @@ func Test_SortByDependencies(t *testing.T) {
 	t.Run("Self dependency added on the end",
 		executeUniformSort(
 			[]stubRecord{
-				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.example.com"}}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
 				{NameFQDN: "example.com", Dependencies: []Dependency{{}}},
 			},
 			[]string{
@@ -88,7 +88,7 @@ func Test_SortByDependencies(t *testing.T) {
 	t.Run("Ignores external dependency",
 		executeUniformSort(
 			[]stubRecord{
-				{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "mail.external.tld"}}},
+				{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "mail.external.tld"}}},
 			},
 			[]string{
 				"mail.example.com",

@@ -28,9 +28,9 @@ func splitRecordsByType(records []SortableChange) ([]SortableChange, []SortableC
 
 	for _, record := range records {
 		switch record.GetType() {
-		case Report:
+		case REPORT:
 			reports = append(reports, record)
-		case Change:
+		case CHANGE:
 			changes = append(changes, record)
 		}
 	}
@@ -84,10 +84,10 @@ func SortUsingGraph(records []SortableChange) SortResult {
 
 func (node *dnsGraphNode) hasUnmetDependencies() bool {
 	for _, edge := range node.Edges {
-		if edge.Dependency.Type == OldDependency && edge.Direction == IncomingEdge {
+		if edge.Dependency.Type == OLD_DEPENDENCY && edge.Direction == IncomingEdge {
 			return true
 		}
-		if edge.Dependency.Type == NewDependency && edge.Direction == OutgoingEdge {
+		if edge.Dependency.Type == NEW_DEPENDENCY && edge.Direction == OutgoingEdge {
 			return true
 		}
 	}

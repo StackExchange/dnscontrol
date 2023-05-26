@@ -3,15 +3,15 @@ package dnssort
 type ChangeType uint8
 
 const (
-	Change ChangeType = iota
-	Report
+	CHANGE ChangeType = iota
+	REPORT
 )
 
 type DependencyType uint8
 
 const (
-	NewDependency DependencyType = iota
-	OldDependency
+	NEW_DEPENDENCY DependencyType = iota
+	OLD_DEPENDENCY
 )
 
 type Dependency struct {
@@ -24,4 +24,14 @@ type SortableChange interface {
 	GetNameFQDN() string
 	GetFQDNDependencies() []Dependency
 	Equals(change SortableChange) bool
+}
+
+func CreateDependencies(dependencyFQDNs []string, dependencyType DependencyType) []Dependency {
+	var dependencies []Dependency
+
+	for _, dependency := range dependencyFQDNs {
+		dependencies = append(dependencies, Dependency{NameFQDN: dependency, Type: dependencyType})
+	}
+
+	return dependencies
 }

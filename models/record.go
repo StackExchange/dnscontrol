@@ -459,7 +459,7 @@ func (rc *RecordConfig) GetNameFQDN() string {
 	return rc.NameFQDN
 }
 
-func (rc *RecordConfig) GetFQDNDependenciesGetFQDNDependencies() []string {
+func (rc *RecordConfig) GetFQDNDependencies() []string {
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
@@ -574,13 +574,13 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 	return order, groups
 }
 
-func (recs Records) Dependancies() []string {
-	var dependancies []string
+func (recs Records) GetFQDNDependencies() []string {
+	var dependencies []string
 	for _, rec := range recs {
-		dependancies = append(dependancies, rec.Dependancies()...)
+		dependencies = append(dependencies, rec.GetFQDNDependencies()...)
 	}
 
-	return dependancies
+	return dependencies
 }
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
