@@ -252,7 +252,7 @@ See the [DNS-over-HTTPS Provider](providers/dnsoverhttps.md) documentation for m
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_MONITOR = NewRegistrar('DNS-over-HTTPS');
+var REG_MONITOR = NewRegistrar("DNS-over-HTTPS");
 
 D("example1.com", REG_MONITOR,
   NAMESERVER("ns1.example1.com."),

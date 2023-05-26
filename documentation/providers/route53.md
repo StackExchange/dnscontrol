@@ -31,9 +31,9 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 ```json
 {
   "r53_main": {
+    "TYPE": "ROUTE53",
     "KeyId": "$AWS_ACCESS_KEY_ID",
-    "SecretKey": "$AWS_SECRET_ACCESS_KEY",
-    "TYPE": "ROUTE53"
+    "SecretKey": "$AWS_SECRET_ACCESS_KEY"
   }
 }
 ```
@@ -80,27 +80,29 @@ D("example.tld", REG_NONE, DnsProvider(DSP_R53),
 
 ## Split horizon
 
-This provider supports spilt horizons using the `R53_ZONE()` domain function.
+This provider supports spilt horizons using the [`R53_ZONE()`](../functions/record/R53_ZONE.md) domain function.
 
 In this example the domain `testzone.net` appears in the same account twice,
-each with different zone IDs specified using `R53_ZONE()`.
+each with different zone IDs specified using [`R53_ZONE()`](../functions/record/R53_ZONE.md).
 
-```
-var DSP_R53 = NewDnsProvider("r53_main");
+{% code title="dnsconfig.js" %}
+```javascript
 var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
 
-D('testzone.net!private', REG_NONE,
+D("testzone.net!private", REG_NONE,
     DnsProvider(DSP_R53),
-    R53_ZONE('Z111111111JCCCP1V7UW'),
-    TXT('me',	'private testzone.net'),
+    R53_ZONE("Z111111111JCCCP1V7UW"),
+    TXT("me", "private testzone.net"),
 );
 
-D('testzone.net!public', REG_NONE,
+D("testzone.net!public", REG_NONE,
     DnsProvider(DSP_R53),
-    R53_ZONE('Z222222222INNG98SHJQ2'),
-    TXT('me',	'public testzone.net'),
+    R53_ZONE("Z222222222INNG98SHJQ2"),
+    TXT("me", "public testzone.net"),
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a standard [AWS access key](https://aws.amazon.com/developers/access-keys/) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.

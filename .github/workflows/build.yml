@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -33,12 +33,28 @@ jobs:
     - uses: actions/upload-artifact@v3.1.2
       with:
         path: "/tmp/test-results"
+
+# For some reason goreleaser isn't correctly setting the version
+# string used by "dnscontrol version".  Therefore, we're forcing the
+# string using the GORELEASER_CURRENT_TAG feature.
+# TODO(tlim): Use the native gorelease version mechanism.
+    - name: Retrieve version
+      id: version
+      run: |
+        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
+    - name: Reveal version
+      run: echo ${{ steps.version.outputs.TAG_NAME }}
+
     - name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
       run: goreleaser build
+      env:
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
     - name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
       run: goreleaser build --snapshot
+      env:
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
@@ -61,7 +77,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -70,7 +86,7 @@ jobs:
     needs: integration-test-providers
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
       env:
         TEST_RESULTS: "/tmp/test-results"
         GOTESTSUM_FORMAT: testname
@@ -171,7 +187,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:1.18
+      image: golang:1.20
     needs:
     - integration-test-providers
     - integrtests-diff1

@@ -11,7 +11,7 @@ Converts an IPv4 address from string to an integer. This allows performing mathe
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var addrA = IP('1.2.3.4')
+var addrA = IP("1.2.3.4")
 var addrB = addrA + 1
 // addrB = 1.2.3.5
 ```

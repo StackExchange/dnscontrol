@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/kylelemons/godebug/diff"
 )
 

@@ -120,11 +120,6 @@ docker_manifests:
       - *amd_image
       - *386_image
       - *arm_image
-  - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
-    image_templates:
-      - *amd_image
-      - *386_image
-      - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     skip_push: auto
     image_templates:

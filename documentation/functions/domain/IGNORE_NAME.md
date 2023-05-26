@@ -8,6 +8,12 @@ parameter_types:
   rTypes: string?
 ---
 
+`IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
+
+## Legacy mode ("diff1")
+
+When `--diff2=false` is used to revert to the old "diff1" algorithm, `IGNORE_NAME()` behaves as follows:
+
 {% hint style="warning" %}
 **WARNING**: The `IGNORE_*` family  of functions is risky to use. The code
 is brittle and has subtle bugs. Use at your own risk. Do not use these
@@ -30,7 +36,7 @@ In this example, DNSControl will insert/update the "baz.example.com" record but 
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com",
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE_NAME("foo"), // ignore all record types for name foo
   IGNORE_NAME("baz", "*"), // ignore all record types for name baz
   IGNORE_NAME("bar", "A,MX"), // ignore only A and MX records for name bar
@@ -81,7 +87,7 @@ is trying to insert.
 You can override this error by adding the
 `IGNORE_NAME_DISABLE_SAFETY_CHECK` flag to the record.
 
-    TXT('vpn', "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
+    TXT("vpn", "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
 
 Disabling this safety check creates two risks:
 

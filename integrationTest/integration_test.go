@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v3/providers"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
-	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/StackExchange/dnscontrol/v4/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -214,6 +214,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom.IgnoredNames = tst.IgnoredNames
 		dom.IgnoredTargets = tst.IgnoredTargets
 		dom.Unmanaged = tst.Unmanaged
+		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -223,12 +224,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
 		if tst.Changeless {
-			if count := zonerecs.CountActionable(corrections); count != 0 {
+			if count := len(corrections); count != 0 {
 				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
 				for i, c := range corrections {
 					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
@@ -256,11 +257,11 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count := zonerecs.CountActionable(corrections); count != 0 {
+		if count := len(corrections); count != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
@@ -351,9 +352,12 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
+		}
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}
 		for i, c := range cs {
 			t.Logf("#%d:\n%s", i+1, c.Msg)
@@ -373,14 +377,17 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count := zonerecs.CountActionable(cs); count != 0 {
+	if count := len(cs); count != 0 {
 		t.Logf("Expect no corrections on second run, but found %d.", count)
+		for i, c := range rs {
+			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
+		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i, c.Msg)
+			t.Logf("#%d: %s", i+1, c.Msg)
 		}
 		t.FailNow()
 	}
@@ -427,18 +434,27 @@ type TestGroup struct {
 }
 
 type TestCase struct {
-	Desc           string
-	Records        []*models.RecordConfig
-	IgnoredNames   []*models.IgnoreName
-	IgnoredTargets []*models.IgnoreTarget
-	Unmanaged      []*models.UnmanagedConfig
-	Changeless     bool // set to true if any changes would be an error
+	Desc            string
+	Records         []*models.RecordConfig
+	IgnoredNames    []*models.IgnoreName
+	IgnoredTargets  []*models.IgnoreTarget
+	Unmanaged       []*models.UnmanagedConfig
+	UnmanagedUnsafe bool // DISABLE_IGNORE_SAFETY_CHECK
+	Changeless      bool // set to true if any changes would be an error
 }
 
+// ExpectNoChanges indicates that no changes is not an error, it is a requirement.
 func (tc *TestCase) ExpectNoChanges() *TestCase {
 	tc.Changeless = true
 	return tc
 }
+
+// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK
+func (tc *TestCase) UnsafeIgnore() *TestCase {
+	tc.UnmanagedUnsafe = true
+	return tc
+}
+
 func (tg *TestGroup) Diff2Only() *TestGroup {
 	tg.diff2only = true
 	return tg
@@ -513,20 +529,43 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 	return r
 }
 
-func ignoreName(name string) *models.RecordConfig {
+func ignoreName(labelSpec string) *models.RecordConfig {
 	r := &models.RecordConfig{
-		Type: "IGNORE_NAME",
+		Type:     "IGNORE_NAME",
+		Metadata: map[string]string{},
 	}
-	SetLabel(r, name, "**current-domain**")
+	// diff1
+	SetLabel(r, labelSpec, "**current-domain**")
+	// diff2
+	r.Metadata["ignore_LabelPattern"] = labelSpec
 	return r
 }
 
-func ignoreTarget(name string, typ string) *models.RecordConfig {
+func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
 	r := &models.RecordConfig{
-		Type: "IGNORE_TARGET",
+		Type:     "IGNORE_TARGET",
+		Metadata: map[string]string{},
 	}
-	r.SetTarget(typ)
-	SetLabel(r, name, "**current-domain**")
+	// diff1
+	r.SetTarget(typeSpec)
+	SetLabel(r, targetSpec, "**current-domain**")
+	// diff2
+	r.Metadata["ignore_RTypePattern"] = typeSpec
+	r.Metadata["ignore_TargetPattern"] = typeSpec
+	return r
+}
+
+func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type:     "IGNORE",
+		Metadata: map[string]string{},
+	}
+	if r.Metadata == nil {
+		r.Metadata = map[string]string{}
+	}
+	r.Metadata["ignore_LabelPattern"] = labelSpec
+	r.Metadata["ignore_RTypePattern"] = typeSpec
+	r.Metadata["ignore_TargetPattern"] = targetSpec
 	return r
 }
 
@@ -645,6 +684,19 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
 		switch r.Type {
+		case "IGNORE":
+			// diff1:
+			ignoredNames = append(ignoredNames, &models.IgnoreName{
+				Pattern: r.Metadata["ignore_LabelPattern"],
+				Types:   r.Metadata["ignore_RTypePattern"],
+			})
+			// diff2:
+			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
+				LabelPattern:  r.Metadata["ignore_LabelPattern"],
+				RTypePattern:  r.Metadata["ignore_RTypePattern"],
+				TargetPattern: r.Metadata["ignore_TargetPattern"],
+			})
+			continue
 		case "IGNORE_NAME":
 			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
@@ -661,7 +713,6 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 				RTypePattern:  r.GetTargetField(),
 				TargetPattern: r.GetLabel(),
 			})
-			continue
 		default:
 			records = append(records, r)
 		}
@@ -1738,8 +1789,53 @@ func makeTests(t *testing.T) []*TestGroup {
 		// should work for all providers.  However we're going to test
 		// them anyway because one never knows.  Ready?  Let's go!
 
-		// TODO(tlim): Rewrite these to be more like the ByLabel and
-		// ByResourceSet tests.
+		testgroup("IGNORE main",
+			tc("Create some records",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				a("bar", "5.5.5.5"),
+			),
+			tc("ignore label=foo",
+				a("bar", "5.5.5.5"),
+				ignore("foo", "", ""),
+			).ExpectNoChanges(),
+			tc("ignore type=txt",
+				a("foo", "1.2.3.4"),
+				a("bar", "5.5.5.5"),
+				ignore("", "TXT", ""),
+			).ExpectNoChanges(),
+			tc("ignore target=1.2.3.4",
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				ignore("", "", "1.2.3.4"),
+			).ExpectNoChanges(),
+			tc("ignore manytypes",
+				ignore("", "A,TXT", ""),
+			).ExpectNoChanges(),
+		).Diff2Only(),
+
+		testgroup("IGNORE apex",
+			tc("Create some records",
+				txt("@", "simple"),
+				a("@", "1.2.3.4"),
+			).UnsafeIgnore(),
+			tc("ignore label=apex",
+				ignore("@", "", ""),
+			).ExpectNoChanges().UnsafeIgnore(),
+			tc("ignore type=txt",
+				a("@", "1.2.3.4"),
+				ignore("", "TXT", ""),
+			).ExpectNoChanges().UnsafeIgnore(),
+			tc("ignore target=1.2.3.4",
+				txt("@", "simple"),
+				ignore("", "", "1.2.3.4"),
+			).ExpectNoChanges().UnsafeIgnore(),
+			tc("ignore manytypes",
+				ignore("", "A,TXT", ""),
+			).ExpectNoChanges().UnsafeIgnore(),
+		).Diff2Only(),
+
+		// Legacy IGNORE_NAME and IGNORE_TARGET tests.
 
 		testgroup("IGNORE_NAME function",
 			tc("Create some records",
@@ -1778,19 +1874,19 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("@", "1.2.3.4"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
-			),
+			).UnsafeIgnore(),
 			tc("ignore apex",
 				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			clear(),
 			tc("Add a new record - ignoring apex",
 				ignoreName("@"),
 				txt("bar", "stringbar"),
 				a("bar", "2.4.6.8"),
 				a("added", "4.6.8.9"),
-			),
+			).UnsafeIgnore(),
 		).Diff2Only(),
 
 		testgroup("IGNORE_TARGET function CNAME",
@@ -1815,19 +1911,19 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("foo1", "test.foo.com."),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			),
+			).UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("*.foo.com.", "CNAME"),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com. and add",
 				ignoreTarget("*.foo.com.", "CNAME"),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
 				a("adding", "1.2.3.4"),
 				cname("another", "www.example.com."),
-			),
+			).UnsafeIgnore(),
 		),
 
 		testgroup("IGNORE_TARGET function CNAME**",
@@ -1835,19 +1931,23 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("foo1", "test.foo.com."),
 				cname("foo2", "my.test.foo.com."),
 				cname("bar", "test.example.com."),
-			),
+			).UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("**.foo.com.", "CNAME"),
 				cname("bar", "test.example.com."),
-			).ExpectNoChanges(),
+			).ExpectNoChanges().UnsafeIgnore(),
 			tc("ignoring CNAME=test.foo.com. and add",
 				ignoreTarget("**.foo.com.", "CNAME"),
 				cname("bar", "test.example.com."),
 				a("adding", "1.2.3.4"),
 				cname("another", "www.example.com."),
-			),
+			).UnsafeIgnore(),
 		),
 
+		// https://github.com/StackExchange/dnscontrol/issues/2285
+		// IGNORE_TARGET for CNAMEs wasn't working for AZURE_DNS.
+		// Interestingly enough, this has never worked with
+		// GANDI_V5/diff1.  It works on all providers in diff2.
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),
@@ -1856,7 +1956,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add a new record - ignoring test.foo.com.",
 				ignoreTarget("**.acm-validations.aws.", "CNAME"),
 			).ExpectNoChanges(),
-		),
+		).Diff2Only(),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's

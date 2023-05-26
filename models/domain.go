@@ -9,8 +9,10 @@ import (
 )
 
 const (
+	// DomainUniqueName is the full `example.com!tag` name`
 	DomainUniqueName = "dnscontrol_uniquename"
-	DomainTag        = "dnscontrol_tag"
+	// DomainTag is the tag part of `example.com!tag` name
+	DomainTag = "dnscontrol_tag"
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
@@ -30,8 +32,8 @@ type DomainConfig struct {
 
 	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
 	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
-	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // UNMANAGED()
-	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_UNMANAGED_SAFETY_CHECK
+	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
+	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`

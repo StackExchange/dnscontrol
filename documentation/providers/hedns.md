@@ -15,8 +15,8 @@ and password used to log in to the [web interface](https://dns.he.net).
 {
   "hedns": {
     "TYPE": "HEDNS",
-    "password": "yourPassword",
-    "username": "yourUsername"
+    "username": "yourUsername",
+    "password": "yourPassword"
   }
 }
 ```
@@ -32,9 +32,9 @@ This can also be done via an environment variable:
 {
   "hedns": {
     "TYPE": "HEDNS",
+    "username": "yourUsername",
     "password": "yourPassword",
-    "totp": "$HEDNS_TOTP",
-    "username": "yourUsername"
+    "totp": "$HEDNS_TOTP"
   }
 }
 ```
@@ -58,7 +58,8 @@ only available when first enabling two-factor authentication.
 {% code title="creds.json" %}
 ```json
 {
-  "hedns":{
+  "hedns": {
+    "TYPE": "HEDNS",
     "username": "yourUsername",
     "password": "yourPassword",
     "totp-key": "yourTOTPSharedSecret"
@@ -87,10 +88,11 @@ This option is disabled by default when this key is not present,
 {% code title="creds.json" %}
 ```json
 {
-  "hedns":{
+  "hedns": {
+    "TYPE": "HEDNS",
     "username": "yourUsername",
     "password": "yourPassword",
-    "totp-key": "yourTOTPSharedSecret"
+    "totp-key": "yourTOTPSharedSecret",
     "session-file-path": "."
   }
 }

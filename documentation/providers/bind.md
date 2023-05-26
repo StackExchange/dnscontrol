@@ -96,7 +96,6 @@ The filenameformat is a string with a few printf-like `%` verbs:
   * `%%`  `%`
   * ordinary characters (not `%`) are copied unchanged to the output stream
   * FYI: format strings must not end with an incomplete `%` or `%?`
-  * FYI: `/` or other filesystem separators result in undefined behavior
 
 Typical values:
 
@@ -115,6 +114,12 @@ assumes two BIND providers are configured in `creds.json`, each with
 a different `directory` setting. Otherwise `dnscontrol` will write
 both domains to the same file, flapping between the two back and
 forth.
+
+(new in v4.2.0) `dnscontrol push` will create subdirectories along the path to
+the filename. This includes both the portion of the path created by the
+`directory` setting and the `filenameformat` setting. The automatic creation of
+subdirectories is disabled if `dnscontrol` is running as root for security
+reasons.
 
 # FYI: get-zones
 

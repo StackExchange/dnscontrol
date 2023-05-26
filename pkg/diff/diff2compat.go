@@ -3,8 +3,8 @@ package diff
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 )
 
 // NewCompat is a constructor that uses the new pkg/diff2 system
@@ -62,7 +62,13 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		case diff2.REPORT:
 			// Sadly the NewCompat function doesn't have an equivalent. We
 			// just output the messages now.
+			fmt.Print("INFO: ")
 			fmt.Println(inst.MsgsJoined)
+
+			// TODO(tlim): When diff1 is deleted, IncremtntalDiff should add a
+			// parameter to list the REPORT messages. It can also eliminate the
+			// first parameter (existing) since nobody uses that in the diff2
+			// world.
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			toCreate = append(toCreate, cor)

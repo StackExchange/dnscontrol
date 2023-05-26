@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
 )
@@ -677,6 +679,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	// Check account data if set
 	if m["accountid"] != "" {
 		api.cfClient.AccountID = m["accountid"]
+	}
+
+	debug, err := strconv.ParseBool(os.Getenv("CLOUDFLAREAPI_DEBUG"))
+	if err == nil {
+		api.cfClient.Debug = debug
 	}
 
 	if len(metadata) > 0 {

@@ -56,23 +56,23 @@ The format of the file is a simple JSON array of objects:
 {% code title="certs.json" %}
 ```json
 [
-    {
-        "cert_name": "mainCert",
-        "names": [
-            "example.com.com",
-            "www.example.com"
-        ]
-    },
-    {
-        "cert_name": "wildcardCert",
-        "names": [
-            "example.com",
-            "*.example.com",
-            "*.foo.example.com",
-            "otherdomain.tld",
-            "*.otherdomain.tld"
-        ]
-    }
+  {
+    "cert_name": "mainCert",
+    "names": [
+      "example.com.com",
+      "www.example.com"
+    ]
+  },
+  {
+    "cert_name": "wildcardCert",
+    "names": [
+      "example.com",
+      "*.example.com",
+      "*.foo.example.com",
+      "otherdomain.tld",
+      "*.otherdomain.tld"
+    ]
+  }
 ]
 ```
 {% endcode %}

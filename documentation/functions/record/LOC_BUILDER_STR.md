@@ -35,17 +35,17 @@ Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
 D("example.com","none"
   , LOC_BUILDER_STR({
     label: "old-faithful",
-    str: '44.46046°N 110.82815°W',
+    str: "44.46046°N 110.82815°W",
     alt: 2240,
   })
   , LOC_BUILDER_STR({
     label: "ribblehead-viaduct",
-    str: '54.210436°N 2.370231°W',
+    str: "54.210436°N 2.370231°W",
     alt: 300,
   })
   , LOC_BUILDER_STR({
     label: "guinness-brewery",
-    str: '53°20′40″N 6°17′20″W',
+    str: "53°20′40″N 6°17′20″W",
     alt: 300,
   })
 );

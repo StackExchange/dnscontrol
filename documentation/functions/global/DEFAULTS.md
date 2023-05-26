@@ -19,7 +19,7 @@ The domain `example.com` will have the defaults set.
 var COMMON = NewDnsProvider("foo");
 DEFAULTS(
   DnsProvider(COMMON, 0),
-  DefaultTTL('1d')
+  DefaultTTL("1d")
 );
 
 D("example.com",

@@ -146,7 +146,7 @@ Add the provider list so DNSControl knows it exists.
 **If you are implementing a DNS Service Provider:**
 
 Implement all the calls in the
-[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3/providers#DNSServiceProvider).
+[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/providers#DNSServiceProvider).
 
 The function `GetDomainCorrections()` is a bit interesting. It returns
 a list of corrections to be made. These are in the form of functions
@@ -155,7 +155,7 @@ that DNSControl can call to actually make the corrections.
 **If you are implementing a DNS Registrar:**
 
 Implement all the calls in the
-[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3/providers#Registrar).
+[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/providers#Registrar).
 
 The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
@@ -168,7 +168,6 @@ complex algorithms in the new code.
 
 Run the unit tests with this command:
 
-    cd dnscontrol
     go test ./...
 
 
@@ -182,7 +181,7 @@ Integration tests use a test account and a real domain.
 For example, this will run the tests using BIND:
 
 ```shell
-cd dnscontrol/integrationTest
+cd integrationTest/
 go test -v -verbose -provider BIND
 ```
 

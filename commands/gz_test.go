@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/andreyvit/diff"
 )
 

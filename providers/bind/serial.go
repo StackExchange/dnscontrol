@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
+	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 )
 
 var nowFunc = time.Now

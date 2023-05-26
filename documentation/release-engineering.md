@@ -123,7 +123,7 @@ were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
@@ -235,7 +235,7 @@ Build the software:
 {% endhint %}
 
 ```shell
-cd docs/flattener
+cd docs/flattener/
 export GOPHERJS_GOROOT="$(go1.17.1 env GOROOT)"
 export GOOS=linux
 gopherjs build

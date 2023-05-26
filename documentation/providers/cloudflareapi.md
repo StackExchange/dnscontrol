@@ -155,6 +155,9 @@ The following example shows how to set meta variables with and without aliases:
 
 {% code title="dnsconfig.js" %}
 ```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
+
 D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
     A("www2","1.2.3.12", CF_PROXY_OFF),       // default is OFF, this is a no-op.
@@ -205,6 +208,7 @@ The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for y
 ```javascript
 // chiphacker.com should redirect to electronics.stackexchange.com
 
+var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_redirects": true}); // enable manage_redirects
 
 D("chiphacker.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
@@ -236,6 +240,7 @@ The Cloudflare provider can manage Worker Routes for your domains. Simply use th
 
 {% code title="dnsconfig.js" %}
 ```javascript
+var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_workers": true}); // enable managing worker routes
 
 D("foo.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),

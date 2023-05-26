@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -339,10 +339,22 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 		found := re.FindStringSubmatch(record.Value)
 
 		weight, _ := strconv.Atoi(found[1])
-		rc.SrvWeight = uint16(weight)
+		if weight < 0 {
+			rc.SrvWeight = 0
+		} else if weight > 65535 {
+			rc.SrvWeight = 65535
+		} else {
+			rc.SrvWeight = uint16(weight)
+		}
 
 		port, _ := strconv.Atoi(found[2])
-		rc.SrvPort = uint16(port)
+		if port < 0 {
+			rc.SrvPort = 0
+		} else if port > 65535 {
+			rc.SrvPort = 65535
+		} else {
+			rc.SrvPort = uint16(port)
+		}
 
 		rc.SetTarget(found[3])
 	}

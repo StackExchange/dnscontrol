@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
-	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/go-acme/lego/certcrypto"
 	"github.com/go-acme/lego/certificate"
 	"github.com/go-acme/lego/challenge"
@@ -263,7 +263,7 @@ func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
 	return nil
 }
 
-// IgnoredProviders is a lit of provider names that should not be used to fill challenges.
+// IgnoredProviders is a list of provider names that should not be used to fill challenges.
 var IgnoredProviders = map[string]bool{}
 
 func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correction, error) {
@@ -276,9 +276,12 @@ func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correcti
 		if err != nil {
 			return nil, err
 		}
-		corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
+		reports, corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
 		if err != nil {
 			return nil, err
+		}
+		for _, c := range reports {
+			c.Msg = fmt.Sprintf("INFO[%s] %s", p.Name, strings.TrimSpace(c.Msg))
 		}
 		for _, c := range corrections {
 			c.Msg = fmt.Sprintf("[%s] %s", p.Name, strings.TrimSpace(c.Msg))

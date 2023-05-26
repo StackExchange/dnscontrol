@@ -65,16 +65,16 @@ And update `creds.json` accordingly:
 {% code title="creds.json" %}
 ```json
 {
-    "axfrddns-a": {
-        "TYPE": "AXFRDDNS",
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    },
-    "axfrddns-b": {
-        "TYPE": "AXFRDDNS",
-        "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
-        "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
-    }
+  "axfrddns-a": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  },
+  "axfrddns-b": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
+    "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
+  }
 }
 ```
 {% endcode %}
@@ -172,15 +172,15 @@ the following minimal configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG = NewRegistrar('none');
-var DNS = NewDnsProvider('axfrddns', {
+var REG_NONE = NewRegistrar("none");
+var DNS = NewDnsProvider("axfrddns", {
     default_ns: [
         "ns.example.com.",
     ],
 });
 
-D('example.com', REG, DnsProvider(DNS),
-  A('ns', '127.0.0.1')
+D("example.com", REG_NONE, DnsProvider(DNS),
+    A("ns", "127.0.0.1")
 )
 ```
 {% endcode %}

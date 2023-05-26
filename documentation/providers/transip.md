@@ -47,9 +47,10 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
+var REG_NONE = NewRegistrar("none");
 var DSP_TRANSIP = NewDnsProvider("transip");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_TRANSIP),
+D("example.tld", REG_NONE, DnsProvider(DSP_TRANSIP),
     A("test", "1.2.3.4")
 );
 ```

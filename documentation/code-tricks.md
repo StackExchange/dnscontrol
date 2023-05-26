@@ -6,6 +6,7 @@ Solution: Use a "builder" to construct it for you.
 
 * [CAA Builder](functions/record/CAA_BUILDER.md)
 * [DMARC Builder](functions/record/DMARC_BUILDER.md)
+* [M365_BUILDER](functions/record/M365_BUILDER.md)
 * [SPF Optimizer](functions/record/SPF_BUILDER.md)
 
 # Repeat records in many domains (macros)
@@ -38,14 +39,14 @@ var GOOGLE_APPS_DOMAIN_SITES = [
   CNAME("start", "ghs.googlehosted.com."),
 ];
 
-D("primarydomain.tld", DnsProvider(...),
+D("primarydomain.tld", REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
    GOOGLE_APPS_DOMAIN_MX,
    GOOGLE_APPS_DOMAIN_SITES,
    A(...),
    CNAME(...)
 }
 
-D("aliasdomain.tld", DnsProvider(...),
+D("aliasdomain.tld", REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
    GOOGLE_APPS_DOMAIN_MX,
    // FYI: GOOGLE_APPS_DOMAIN_SITES is not used here.
    A(...),
@@ -60,7 +61,23 @@ D("aliasdomain.tld", DnsProvider(...),
 Problem: We have many domains, each should have the exact same
 records.
 
-Solution: Use a loop. (Note: See caveats below.)
+Solution 1: Use a macro.
+
+```
+function PARKED_R53(name) {
+    D(name, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
+       A("@", "10.2.3.4"),
+       CNAME("www", "@"),
+        SPF_NONE, //deters spammers from using the domain in From: lines.
+        END);
+}
+
+PARKED_R53("example1.tld");
+PARKED_R53("example2.tld");
+PARKED_R53("example3.tld");
+```
+
+Solution 2: Use a loop. (Note: See caveats below.)
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -72,7 +89,7 @@ _.each(
     "example3.tld",
   ],
   function (d) {
-    D(d, REG_NAMECOM, DnsProvider(NAMECOM),
+    D(d, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
     END);
@@ -80,7 +97,6 @@ _.each(
 );
 ```
 {% endcode %}
-
 
 # Caveats about getting too fancy
 

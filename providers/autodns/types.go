@@ -1,8 +1,8 @@
 package autodns
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/providers/bind"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/providers/bind"
 )
 
 // ResourceRecord represents DNS records in API calls.

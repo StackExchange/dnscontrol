@@ -8,16 +8,16 @@ import (
 
 	"golang.org/x/net/idna"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/bindserial"
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
+	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
@@ -123,9 +123,9 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	printer.SkinnyReport = !args.Full
 
 	if diff2.EnableDiff2 {
-		printer.Println("INFO: Diff2 algorithm in use.")
+		printer.Println("INFO: Diff2 algorithm in use. Welcome to the future!")
 	} else {
-		printer.Println("INFO: Old diff algorithm in use. Please test `dnscontrol --diff2 preview` (or push) as it will be the default in releases after 2023-05-07. See https://github.com/StackExchange/dnscontrol/issues/2262")
+		printer.Println("WARNING: Diff1 algorithm in use. Please upgrade to diff2 (`dnscontrol --diff2=true preview`) as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
@@ -222,13 +222,16 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 					continue
 				}
 
-				corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true
 					return
 				}
 				totalCorrections += len(corrections)
+				// When diff1 goes away, the call to printReports() should be moved to HERE.
+				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
@@ -540,6 +543,18 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)
+	}
+	return anyErrors
+}
+
+func printReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
+	anyErrors = false
+	if len(reports) == 0 {
+		return false
+	}
+	for i, report := range reports {
+		out.PrintReport(i, report)
+		notifier.Notify(domain, provider, report.Msg, nil, !push)
 	}
 	return anyErrors
 }

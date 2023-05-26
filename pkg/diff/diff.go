@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/fatih/color"
 	"github.com/gobwas/glob"
 )

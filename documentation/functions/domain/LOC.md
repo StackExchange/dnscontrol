@@ -102,7 +102,7 @@ The coordinate format for `LOC()` is:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("foo.com","none"
+D("example.com","none"
   // LOC "subdomain", d1, m1, s1, "[NnSs]", d2, m2, s2, "[EeWw]", alt, siz, hp, vp)
   //42 21 54     N  71 06  18     W -24m 30m
   , LOC("@", 42, 21, 54,     "N", 71,  6, 18,     "W", -24,   30,    0,  0)

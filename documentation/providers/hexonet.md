@@ -39,7 +39,7 @@ Here a working example for our OT&E System:
     "apilogin": "test.user",
     "apipassword": "test.passw0rd",
     "apientity": "OTE",
-    "debugmode": "0",
+    "debugmode": "0"
   }
 }
 ```
@@ -57,7 +57,7 @@ dnscontrol get-zones --format=nameonly hexonet HEXONET  all
 ```
 ```shell
 # Review the output.  Pick one domain and set HEXONET_DOMAIN.
-cd $GIT/dnscontrol/integrationTest
+cd integrationTest/
 export HEXONET_DOMAIN=yodream.com            # Pick a domain name.
 export HEXONET_ENTITY=OTE
 export HEXONET_UID=test.user
@@ -73,7 +73,6 @@ You are free to decide if you want to use both of our provider technology or jus
 
 {% code title="dnsconfig.js" %}
 ```javascript
-// Providers:
 var REG_HX = NewRegistrar("hexonet");
 var DSP_HX = NewDnsProvider("hexonet");
 
@@ -86,7 +85,6 @@ DEFAULTS(
     DefaultTTL(3600)
 );
 
-// Domains:
 D("abhoster.com", REG_HX, DnsProvider(DSP_HX),
     NAMESERVER("ns1.ispapi.net"),
     NAMESERVER("ns2.ispapi.net"),
