@@ -7,30 +7,30 @@ const (
 	OutgoingEdge
 )
 
-type dnsGraphEdge struct {
+type dnsGraphEdge[T SortableChange] struct {
 	Dependency Dependency
-	Node       *dnsGraphNode
+	Node       *dnsGraphNode[T]
 	Direction  edgeDirection
 }
 
-type dnsGraphEdges []dnsGraphEdge
+type dnsGraphEdges[T SortableChange] []dnsGraphEdge[T]
 
-type dnsGraphNode struct {
-	Change SortableChange
-	Edges  dnsGraphEdges
+type dnsGraphNode[T SortableChange] struct {
+	Change T
+	Edges  dnsGraphEdges[T]
 }
 
-type dnsGraphNodes []*dnsGraphNode
+type dnsGraphNodes[T SortableChange] []*dnsGraphNode[T]
 
-type DNSGraph struct {
-	all  dnsGraphNodes
-	tree *DomainTree[dnsGraphNodes]
+type DNSGraph[T SortableChange] struct {
+	all  dnsGraphNodes[T]
+	tree *DomainTree[dnsGraphNodes[T]]
 }
 
-func CreateGraph(changes []SortableChange) *DNSGraph {
-	graph := &DNSGraph{
-		all:  dnsGraphNodes{},
-		tree: CreateTree[dnsGraphNodes](),
+func CreateGraph[T SortableChange](changes []T) *DNSGraph[T] {
+	graph := &DNSGraph[T]{
+		all:  dnsGraphNodes[T]{},
+		tree: CreateTree[dnsGraphNodes[T]](),
 	}
 
 	for _, change := range changes {
@@ -47,7 +47,7 @@ func CreateGraph(changes []SortableChange) *DNSGraph {
 	return graph
 }
 
-func (graph *DNSGraph) removeNode(toRemove *dnsGraphNode) {
+func (graph *DNSGraph[T]) removeNode(toRemove *dnsGraphNode[T]) {
 	index := -1
 	for iX, node := range graph.all {
 		if node == toRemove {
@@ -61,28 +61,29 @@ func (graph *DNSGraph) removeNode(toRemove *dnsGraphNode) {
 	}
 
 	if index > -1 {
-		graph.all = append(graph.all[:index], graph.all[index+1:]...)
+		graph.all[index] = graph.all[len(graph.all)-1]
+		graph.all = graph.all[:len(graph.all)-1]
 		nodes := graph.tree.Get(toRemove.Change.GetNameFQDN())
 		nodes = nodes.removeNode(toRemove)
 		graph.tree.Set(toRemove.Change.GetNameFQDN(), nodes)
 	}
 }
 
-func (graph *DNSGraph) addNode(change SortableChange) {
+func (graph *DNSGraph[T]) addNode(change T) {
 	nodes := graph.tree.Get(change.GetNameFQDN())
-	node := &dnsGraphNode{
+	node := &dnsGraphNode[T]{
 		Change: change,
-		Edges:  dnsGraphEdges{},
+		Edges:  dnsGraphEdges[T]{},
 	}
 	if nodes == nil {
-		nodes = dnsGraphNodes{node}
+		nodes = dnsGraphNodes[T]{node}
 	}
 
 	graph.all = append(graph.all, node)
 	graph.tree.Set(change.GetNameFQDN(), nodes)
 }
 
-func (graph *DNSGraph) addEdge(sourceNodes []*dnsGraphNode, dependency Dependency) {
+func (graph *DNSGraph[T]) addEdge(sourceNodes []*dnsGraphNode[T], dependency Dependency) {
 	destinationNodes := graph.tree.Get(dependency.NameFQDN)
 
 	if sourceNodes == nil || destinationNodes == nil {
@@ -91,13 +92,13 @@ func (graph *DNSGraph) addEdge(sourceNodes []*dnsGraphNode, dependency Dependenc
 
 	for _, sourceNode := range sourceNodes {
 		for _, destinationNode := range destinationNodes {
-			sourceNode.Edges = append(sourceNode.Edges, dnsGraphEdge{
+			sourceNode.Edges = append(sourceNode.Edges, dnsGraphEdge[T]{
 				Dependency: dependency,
 				Node:       destinationNode,
 				Direction:  OutgoingEdge,
 			})
 
-			destinationNode.Edges = append(destinationNode.Edges, dnsGraphEdge{
+			destinationNode.Edges = append(destinationNode.Edges, dnsGraphEdge[T]{
 				Dependency: dependency,
 				Node:       sourceNode,
 				Direction:  IncomingEdge,
@@ -106,8 +107,8 @@ func (graph *DNSGraph) addEdge(sourceNodes []*dnsGraphNode, dependency Dependenc
 	}
 }
 
-func (nodes dnsGraphNodes) removeNode(toRemove *dnsGraphNode) dnsGraphNodes {
-	var newNodes dnsGraphNodes
+func (nodes dnsGraphNodes[T]) removeNode(toRemove *dnsGraphNode[T]) dnsGraphNodes[T] {
+	var newNodes dnsGraphNodes[T]
 
 	for _, node := range nodes {
 		if node != toRemove {
@@ -118,8 +119,8 @@ func (nodes dnsGraphNodes) removeNode(toRemove *dnsGraphNode) dnsGraphNodes {
 	return newNodes
 }
 
-func (edges dnsGraphEdges) removeNode(toRemove *dnsGraphNode) dnsGraphEdges {
-	var newEdges dnsGraphEdges
+func (edges dnsGraphEdges[T]) removeNode(toRemove *dnsGraphNode[T]) dnsGraphEdges[T] {
+	var newEdges dnsGraphEdges[T]
 
 	for _, edge := range edges {
 		if edge.Node != toRemove {

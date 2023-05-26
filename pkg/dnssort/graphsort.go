@@ -2,35 +2,35 @@ package dnssort
 
 import "log"
 
-type directedSortState struct {
-	graph                *DNSGraph
-	sortedRecords        []SortableChange
-	unresolvedRecords    []SortableChange
+type directedSortState[T SortableChange] struct {
+	graph                *DNSGraph[T]
+	sortedRecords        []T
+	unresolvedRecords    []T
 	hasResolvedLastRound bool
 }
 
-func createDirectedSortState(records []SortableChange) directedSortState {
+func createDirectedSortState[T SortableChange](records []T) directedSortState[T] {
 	changes, reportChanges := splitRecordsByType(records)
 
 	graph := CreateGraph(changes)
 
-	return directedSortState{
+	return directedSortState[T]{
 		graph:                graph,
-		unresolvedRecords:    []SortableChange{},
+		unresolvedRecords:    []T{},
 		sortedRecords:        reportChanges,
 		hasResolvedLastRound: false,
 	}
 }
 
-func splitRecordsByType(records []SortableChange) ([]SortableChange, []SortableChange) {
-	var changes []SortableChange
-	var reports []SortableChange
+func splitRecordsByType[T SortableChange](records []T) ([]T, []T) {
+	var changes []T
+	var reports []T
 
 	for _, record := range records {
 		switch record.GetType() {
-		case REPORT:
+		case Report:
 			reports = append(reports, record)
-		case CHANGE:
+		case Change:
 			changes = append(changes, record)
 		}
 	}
@@ -38,15 +38,15 @@ func splitRecordsByType(records []SortableChange) ([]SortableChange, []SortableC
 	return changes, reports
 }
 
-func (sortState *directedSortState) hasWork() bool {
+func (sortState *directedSortState[T]) hasWork() bool {
 	return len(sortState.graph.all) > 0
 }
 
-func (sortState *directedSortState) hasStalled() bool {
+func (sortState *directedSortState[T]) hasStalled() bool {
 	return !sortState.hasResolvedLastRound
 }
 
-func SortUsingGraph(records []SortableChange) SortResult {
+func SortUsingGraph[T SortableChange](records []T) SortResult[T] {
 	sortState := createDirectedSortState(records)
 
 	for sortState.hasWork() {
@@ -76,18 +76,18 @@ func SortUsingGraph(records []SortableChange) SortResult {
 		}
 	}
 
-	return SortResult{
+	return SortResult[T]{
 		SortedRecords:     sortState.sortedRecords,
 		UnresolvedRecords: sortState.unresolvedRecords,
 	}
 }
 
-func (node *dnsGraphNode) hasUnmetDependencies() bool {
+func (node *dnsGraphNode[T]) hasUnmetDependencies() bool {
 	for _, edge := range node.Edges {
-		if edge.Dependency.Type == OLD_DEPENDENCY && edge.Direction == IncomingEdge {
+		if edge.Dependency.Type == OldDependency && edge.Direction == IncomingEdge {
 			return true
 		}
-		if edge.Dependency.Type == NEW_DEPENDENCY && edge.Direction == OutgoingEdge {
+		if edge.Dependency.Type == NewDependency && edge.Direction == OutgoingEdge {
 			return true
 		}
 	}

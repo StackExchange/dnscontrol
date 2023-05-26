@@ -53,30 +53,26 @@ type Change struct {
 	HintRecordSetLen1 bool
 }
 
-func (change *Change) GetType() dnssort.ChangeType {
-	if change.Type == REPORT {
-		return dnssort.REPORT
+func (c Change) GetType() dnssort.ChangeType {
+	if c.Type == REPORT {
+		return dnssort.Report
 	}
 
-	return dnssort.CHANGE
+	return dnssort.Change
 }
 
-func (change *Change) GetNameFQDN() string {
-	return change.Key.NameFQDN
+func (c Change) GetNameFQDN() string {
+	return c.Key.NameFQDN
 }
 
-func (change *Change) GetFQDNDependencies() []dnssort.Dependency {
+func (c Change) GetFQDNDependencies() []dnssort.Dependency {
 	var dependencies []dnssort.Dependency
 
-	if change.Type == CHANGE || change.Type == DELETE {
-		dependencies = append(dependencies, dnssort.CreateDependencies(change.Old.GetFQDNDependencies(), dnssort.OLD_DEPENDENCY)...)
+	if c.Type == CHANGE || c.Type == DELETE {
+		dependencies = append(dependencies, dnssort.CreateDependencies(c.Old.GetFQDNDependencies(), dnssort.OldDependency)...)
 	}
 
 	return dependencies
-}
-
-func (change *Change) Equals(target Change) bool {
-	return change.Key.NameFQDN == target.Key.NameFQDN
 }
 
 /*

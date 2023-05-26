@@ -9,9 +9,9 @@ import (
 func Test_CreateGraph(t *testing.T) {
 	changes := []stubRecord{
 		{NameFQDN: "example.com", Dependencies: []Dependency{}},
-		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}, {Type: NEW_DEPENDENCY, NameFQDN: "someserver.example.com"}}},
-		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
-		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "a.hq.example.com"}, {Type: NEW_DEPENDENCY, NameFQDN: "b.hq.example.com"}}},
+		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}, {Type: NewDependency, NameFQDN: "someserver.example.com"}}},
+		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.hq.example.com"}, {Type: NewDependency, NameFQDN: "b.hq.example.com"}}},
 	}
 
 	graph := CreateGraph(stubRecordsAsSortableRecords(changes))
@@ -47,9 +47,9 @@ func Test_CreateGraph(t *testing.T) {
 func Test_RemoveNode(t *testing.T) {
 	changes := []stubRecord{
 		{NameFQDN: "example.com", Dependencies: []Dependency{}},
-		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}, {Type: NEW_DEPENDENCY, NameFQDN: "someserver.example.com"}}},
-		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "example.com"}}},
-		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NEW_DEPENDENCY, NameFQDN: "a.hq.example.com"}, {Type: NEW_DEPENDENCY, NameFQDN: "b.hq.example.com"}}},
+		{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}, {Type: NewDependency, NameFQDN: "someserver.example.com"}}},
+		{NameFQDN: "*.hq.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}},
+		{NameFQDN: "someserver.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "a.hq.example.com"}, {Type: NewDependency, NameFQDN: "b.hq.example.com"}}},
 	}
 
 	graph := CreateGraph(stubRecordsAsSortableRecords(changes))
