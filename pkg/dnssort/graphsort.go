@@ -10,14 +10,32 @@ type directedSortState struct {
 }
 
 func createDirectedSortState(records []SortableChange) directedSortState {
-	graph := CreateGraph(records)
+	changes, reportChanges := splitRecordsByType(records)
+
+	graph := CreateGraph(changes)
 
 	return directedSortState{
 		graph:                graph,
 		unresolvedRecords:    []SortableChange{},
-		sortedRecords:        []SortableChange{},
+		sortedRecords:        reportChanges,
 		hasResolvedLastRound: false,
 	}
+}
+
+func splitRecordsByType(records []SortableChange) ([]SortableChange, []SortableChange) {
+	var changes []SortableChange
+	var reports []SortableChange
+
+	for _, record := range records {
+		switch record.GetType() {
+		case Report:
+			reports = append(reports, record)
+		case Change:
+			changes = append(changes, record)
+		}
+	}
+
+	return changes, reports
 }
 
 func (sortState *directedSortState) hasWork() bool {

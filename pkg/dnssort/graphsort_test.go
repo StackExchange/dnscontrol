@@ -126,6 +126,34 @@ func Test_graphsort(t *testing.T) {
 			[]string{},
 		),
 	)
+
+	t.Run("Reports first and ignore dependencies",
+		executeGraphSort(
+			[]stubRecord{
+				{NameFQDN: "example.com", Dependencies: []Dependency{}},
+				{NameFQDN: "test.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "example.com"}}, Type: Report},
+			},
+			[]string{
+				"test.example.com",
+				"example.com",
+			},
+			[]string{},
+		),
+	)
+
+	t.Run("Reports are not resolvable as dependencies",
+		executeGraphSort(
+			[]stubRecord{
+				{NameFQDN: "test2.example.com", Dependencies: []Dependency{{Type: NewDependency, NameFQDN: "test.example.com"}}},
+				{NameFQDN: "test.example.com", Dependencies: []Dependency{}, Type: Report},
+			},
+			[]string{
+				"test.example.com",
+				"test2.example.com",
+			},
+			[]string{},
+		),
+	)
 }
 
 func executeGraphSort(inputOrder []stubRecord, expectedOutputOrder []string, expectedUnresolved []string) func(*testing.T) {
@@ -134,22 +162,24 @@ func executeGraphSort(inputOrder []stubRecord, expectedOutputOrder []string, exp
 		t.Helper()
 		result := SortUsingGraph(inputSortableRecords)
 
-		for iX := range expectedOutputOrder {
-			if result.SortedRecords[iX].GetNameFQDN() != expectedOutputOrder[iX] {
-				t.Errorf("Invalid order on index %d after sort. Expected order: %v. Got order: %v\n", iX, expectedOutputOrder, getRecordsNames(result.SortedRecords))
-			}
-		}
 		if len(expectedOutputOrder) != len(result.SortedRecords) {
 			t.Errorf("Missing records after sort. Expected order: %v. Got order: %v\n", expectedOutputOrder, getRecordsNames(result.SortedRecords))
-		}
-
-		for iX := range expectedUnresolved {
-			if result.UnresolvedRecords[iX].GetNameFQDN() != expectedUnresolved[iX] {
-				t.Errorf("Invalid unresolved records after sort. Expected: %v. Got: %v\n", expectedOutputOrder, getRecordsNames(result.UnresolvedRecords))
+		} else {
+			for iX := range expectedOutputOrder {
+				if result.SortedRecords[iX].GetNameFQDN() != expectedOutputOrder[iX] {
+					t.Errorf("Invalid order on index %d after sort. Expected order: %v. Got order: %v\n", iX, expectedOutputOrder, getRecordsNames(result.SortedRecords))
+				}
 			}
 		}
+
 		if len(expectedUnresolved) != len(result.UnresolvedRecords) {
 			t.Errorf("Missing unresolved records. Expected unresolved: %v. Got: %v\n", expectedUnresolved, getRecordsNames(result.UnresolvedRecords))
+		} else {
+			for iX := range expectedUnresolved {
+				if result.UnresolvedRecords[iX].GetNameFQDN() != expectedUnresolved[iX] {
+					t.Errorf("Invalid unresolved records after sort. Expected: %v. Got: %v\n", expectedOutputOrder, getRecordsNames(result.UnresolvedRecords))
+				}
+			}
 		}
 	}
 }
