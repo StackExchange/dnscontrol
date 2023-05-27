@@ -92,6 +92,7 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Origin    string            `json:"origin"`
 
 	// If you add a field to this struct, also add it to the list on MarshalJSON.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -161,6 +162,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+		Origin    string            `json:"origin"`
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -260,6 +262,7 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
+	rc.Origin = origin
 	if short == "" || short == "@" {
 		rc.Name = "@"
 		rc.NameFQDN = origin
@@ -297,6 +300,7 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
+	rc.Origin = origin
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -467,10 +471,15 @@ func (rc *RecordConfig) GetFQDNDependencies() []string {
 
 	switch rdtype {
 	case dns.TypeNS:
+		fallthrough
 	case dns.TypeSRV:
+		fallthrough
 	case dns.TypeCNAME:
+		fallthrough
 	case dns.TypeMX:
-		return []string{rc.target}
+		return []string{
+			dnsutil.AddOrigin(rc.target, rc.Origin),
+		}
 	}
 	return []string{}
 }

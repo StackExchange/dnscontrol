@@ -52,7 +52,8 @@ var d12 = makeRec("labh", "A", "1.2.3.4")                 // [12']
 var d13 = makeRec("labc", "CNAME", "labe")                // [13']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
-func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string) {
+func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string, wantstringdefault string) {
+	wantstring = coalesce(wantstring, wantstringdefault)
 	t.Helper()
 	gs := strings.TrimSpace(justMsgString(gotcc))
 	ws := strings.TrimSpace(wantstring)
@@ -89,8 +90,11 @@ func Test_analyzeByRecordSet(t *testing.T) {
 		args            args
 		wantMsgs        string
 		wantChangeRSet  string
+		wantMsgsRSet    string
 		wantChangeLabel string
+		wantMsgsLabel   string
 		wantChangeRec   string
+		wantMsgsRec     string
 		wantChangeZone  string
 	}{
 
@@ -183,22 +187,26 @@ ChangeList: len=1
 				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
 			},
 			wantMsgs: `
+± MODIFY laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)
++ CREATE laba.f.com A 1.2.3.5 ttl=300
+`,
+			wantMsgsLabel: `
 + CREATE laba.f.com A 1.2.3.5 ttl=300
 ± MODIFY laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)
-		`,
+`,
 			wantChangeRSet: `
 ChangeList: len=2
 00: Change: verb=CHANGE
-    key={laba.f.com A}
-    old=[1.2.3.4]
-    new=[1.2.3.4 1.2.3.5]
-    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
-01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
     msg=["± MODIFY laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
-		`,
+01: Change: verb=CHANGE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    new=[1.2.3.4 1.2.3.5]
+    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
+`,
 			wantChangeLabel: `
 ChangeList: len=1
 00: Change: verb=CHANGE
@@ -209,15 +217,15 @@ ChangeList: len=1
 		`,
 			wantChangeRec: `
 ChangeList: len=2
-00: Change: verb=CREATE
-    key={laba.f.com A}
-    new=[1.2.3.5]
-    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
-01: Change: verb=CHANGE
+00: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
     msg=["± MODIFY laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
+01: Change: verb=CREATE
+    key={laba.f.com A}
+    new=[1.2.3.5]
+    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
 `,
 		},
 
@@ -235,51 +243,51 @@ ChangeList: len=2
 		`,
 			wantChangeRSet: `
 ChangeList: len=3
-00: Change: verb=DELETE
-    key={laba.f.com A}
-    old=[1.2.3.4]
-    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+00: Change: verb=CREATE
+    key={labe.f.com A}
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
 01: Change: verb=CHANGE
     key={labc.f.com CNAME}
     old=[laba]
     new=[labe]
     msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
-02: Change: verb=CREATE
-    key={labe.f.com A}
-    new=[10.10.10.95]
-    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
+02: Change: verb=DELETE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
 		`,
 			wantChangeLabel: `
 ChangeList: len=3
-00: Change: verb=DELETE
-    key={laba.f.com }
-    old=[1.2.3.4]
-    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+00: Change: verb=CREATE
+    key={labe.f.com }
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
 01: Change: verb=CHANGE
     key={labc.f.com }
     old=[laba]
     new=[labe]
     msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
-02: Change: verb=CREATE
-    key={labe.f.com }
-    new=[10.10.10.95]
-    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
+02: Change: verb=DELETE
+    key={laba.f.com }
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
 `,
 			wantChangeRec: `
 ChangeList: len=3
-00: Change: verb=DELETE
-    key={laba.f.com A}
-    old=[1.2.3.4]
-    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+00: Change: verb=CREATE
+    key={labe.f.com A}
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
 01: Change: verb=CHANGE
     key={labc.f.com CNAME}
     old=[laba]
     new=[labe]
     msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
-02: Change: verb=CREATE
-    key={labe.f.com A}
-    new=[10.10.10.95]
-    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
+02: Change: verb=DELETE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
 `,
 		},
 
@@ -442,25 +450,32 @@ ChangeList: len=12
 
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByRecordSet(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
-			compareMsgs(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantMsgs)
+			compareMsgs(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantMsgsRSet, tt.wantMsgs)
 			compareCL(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantChangeRSet)
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByLabel(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
-			compareMsgs(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantMsgs)
+			compareMsgs(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantMsgsLabel, tt.wantMsgs)
 			compareCL(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantChangeLabel)
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByRecord(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
-			compareMsgs(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantMsgs)
+			compareMsgs(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantMsgsRec, tt.wantMsgs)
 			compareCL(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantChangeRec)
 		})
 
 		// NB(tlim): There is no analyzeByZone().  diff2.ByZone() uses analyzeByRecord().
 
 	}
+}
+
+func coalesce(a string, b string) string {
+	if a != "" {
+		return a
+	}
+	return b
 }
 
 func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {

@@ -71,6 +71,9 @@ func (c Change) GetFQDNDependencies() []dnssort.Dependency {
 	if c.Type == CHANGE || c.Type == DELETE {
 		dependencies = append(dependencies, dnssort.CreateDependencies(c.Old.GetFQDNDependencies(), dnssort.OldDependency)...)
 	}
+	if c.Type == CHANGE || c.Type == CREATE {
+		dependencies = append(dependencies, dnssort.CreateDependencies(c.New.GetFQDNDependencies(), dnssort.NewDependency)...)
+	}
 
 	return dependencies
 }
