@@ -48,22 +48,14 @@ func CreateGraph[T SortableChange](changes []T) *DNSGraph[T] {
 }
 
 func (graph *DNSGraph[T]) removeNode(toRemove *dnsGraphNode[T]) {
-	index := -1
-	for iX, node := range graph.all {
-		if node == toRemove {
-			index = iX
-			break
-		}
-	}
-
 	for _, edge := range toRemove.Edges {
 		edge.Node.Edges = edge.Node.Edges.removeNode(toRemove)
 	}
 
-	if index > -1 {
-		graph.all[index] = graph.all[len(graph.all)-1]
-		graph.all = graph.all[:len(graph.all)-1]
-		nodes := graph.tree.Get(toRemove.Change.GetNameFQDN())
+	graph.all = graph.all.removeNode(toRemove)
+
+	nodes := graph.tree.Get(toRemove.Change.GetNameFQDN())
+	if nodes != nil {
 		nodes = nodes.removeNode(toRemove)
 		graph.tree.Set(toRemove.Change.GetNameFQDN(), nodes)
 	}

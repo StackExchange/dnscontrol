@@ -18,37 +18,38 @@ func init() {
 	color.NoColor = true
 }
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //      [0]
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               // [ 0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
 var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
 var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
-var testDataAMX10a = makeRec("laba", "MX", "10 laba")              //     [1]
-var testDataCCa = makeRec("labc", "CNAME", "laba")                 //     [2]
-var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             //  [3]
-var e4 = makeRec("labe", "A", "10.10.10.16")                       //  [4]
-var e5 = makeRec("labe", "A", "10.10.10.17")                       //  [5]
-var e6 = makeRec("labe", "A", "10.10.10.18")                       //  [6]
-var e7 = makeRec("labg", "NS", "10.10.10.15")                      // [7]
-var e8 = makeRec("labg", "NS", "10.10.10.16")                      // [8]
-var e9 = makeRec("labg", "NS", "10.10.10.17")                      // [9]
+var testDataAMX10a = makeRec("laba", "MX", "10 laba")              // [ 1]
+var testDataCCa = makeRec("labc", "CNAME", "laba")                 // [ 2]
+var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             // [ 3]
+var e4 = makeRec("labe", "A", "10.10.10.16")                       // [ 4]
+var e5 = makeRec("labe", "A", "10.10.10.17")                       // [ 5]
+var e6 = makeRec("labe", "A", "10.10.10.18")                       // [ 6]
+var e7 = makeRec("labg", "NS", "10.10.10.15")                      // [ 7]
+var e8 = makeRec("labg", "NS", "10.10.10.16")                      // [ 8]
+var e9 = makeRec("labg", "NS", "10.10.10.17")                      // [ 9]
 var e10 = makeRec("labg", "NS", "10.10.10.18")                     // [10]
-var e11mx = makeRec("labh", "MX", "22 ttt")                        //     [11]
-var e11 = makeRec("labh", "CNAME", "labd")                         //     [11]
+var e11mx = makeRec("labh", "MX", "22 ttt")                        // [11]
+var e11 = makeRec("labh", "CNAME", "labd")                         // [11]
 var testDataApexMX1aaa = makeRec("", "MX", "1 aaa")
 
-var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") //      [0']
-var testDataAA12345 = makeRec("laba", "A", "1.2.3.5")     //      [1']
-var testDataAMX20b = makeRec("laba", "MX", "20 labb")     //     [2']
-var d3 = makeRec("labe", "A", "10.10.10.95")              //  [3']
-var d4 = makeRec("labe", "A", "10.10.10.96")              //  [4']
-var d5 = makeRec("labe", "A", "10.10.10.97")              //  [5']
-var d6 = makeRec("labe", "A", "10.10.10.98")              //  [6']
-var d7 = makeRec("labf", "TXT", "foo")                    //      [7']
-var d8 = makeRec("labg", "NS", "10.10.10.10")             // [8']
-var d9 = makeRec("labg", "NS", "10.10.10.15")             // [9']
+var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") // [ 0']
+var testDataAA12345 = makeRec("laba", "A", "1.2.3.5")     // [ 1']
+var testDataAMX20b = makeRec("laba", "MX", "20 labb")     // [ 2']
+var d3 = makeRec("labe", "A", "10.10.10.95")              // [ 3']
+var d4 = makeRec("labe", "A", "10.10.10.96")              // [ 4']
+var d5 = makeRec("labe", "A", "10.10.10.97")              // [ 5']
+var d6 = makeRec("labe", "A", "10.10.10.98")              // [ 6']
+var d7 = makeRec("labf", "TXT", "foo")                    // [ 7']
+var d8 = makeRec("labg", "NS", "10.10.10.10")             // [ 8']
+var d9 = makeRec("labg", "NS", "10.10.10.15")             // [ 9']
 var d10 = makeRec("labg", "NS", "10.10.10.16")            // [10']
 var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
-var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
+var d12 = makeRec("labh", "A", "1.2.3.4")                 // [12']
+var d13 = makeRec("labc", "CNAME", "labe")                // [13']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
 func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string) {
@@ -217,6 +218,68 @@ ChangeList: len=2
     old=[10 laba]
     new=[20 labb]
     msg=["± MODIFY laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
+`,
+		},
+
+		{
+			name: "order forward and backward dependent records",
+			args: args{
+				origin:   origin,
+				existing: models.Records{testDataAA1234, testDataCCa},
+				desired:  models.Records{d13, d3},
+			},
+			wantMsgs: `
++ CREATE labe.f.com A 10.10.10.95 ttl=300
+± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)
+- DELETE laba.f.com A 1.2.3.4 ttl=300
+		`,
+			wantChangeRSet: `
+ChangeList: len=3
+00: Change: verb=DELETE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+01: Change: verb=CHANGE
+    key={labc.f.com CNAME}
+    old=[laba]
+    new=[labe]
+    msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
+02: Change: verb=CREATE
+    key={labe.f.com A}
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
+		`,
+			wantChangeLabel: `
+ChangeList: len=3
+00: Change: verb=DELETE
+    key={laba.f.com }
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+01: Change: verb=CHANGE
+    key={labc.f.com }
+    old=[laba]
+    new=[labe]
+    msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
+02: Change: verb=CREATE
+    key={labe.f.com }
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
+`,
+			wantChangeRec: `
+ChangeList: len=3
+00: Change: verb=DELETE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    msg=["- DELETE laba.f.com A 1.2.3.4 ttl=300"]
+01: Change: verb=CHANGE
+    key={labc.f.com CNAME}
+    old=[laba]
+    new=[labe]
+    msg=["± MODIFY labc.f.com CNAME (laba ttl=300) -> (labe ttl=300)"]
+02: Change: verb=CREATE
+    key={labe.f.com A}
+    new=[10.10.10.95]
+    msg=["+ CREATE labe.f.com A 10.10.10.95 ttl=300"]
 `,
 		},
 
