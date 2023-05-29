@@ -61,6 +61,13 @@ func generateDTSFile(funcs string) error {
 		combined = append(combined, string(content))
 	}
 	combined = append(combined, funcs)
-	os.WriteFile(join("commands", "types", "dnscontrol.d.ts"), []byte(strings.Join(combined, "\n\n")), 0644)
+	fileContent := strings.Join(combined, "\n\n")
+	lines := strings.Split(fileContent, "\n")
+	fileContent = ""
+	for _, line := range lines {
+		fileContent += strings.TrimRight(line, " \t") + "\n"
+	}
+	fileContent = strings.TrimRight(fileContent, "\n")
+	os.WriteFile(join("commands", "types", "dnscontrol.d.ts"), []byte(fileContent+"\n"), 0644)
 	return nil
 }
