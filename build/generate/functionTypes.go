@@ -32,6 +32,33 @@ func fixRuns(s string) string {
 
 var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
 
+func readDocFile(fPath string) (map[string]interface{}, string, error) {
+	content, err := os.ReadFile(fPath)
+	if err != nil {
+		return nil, "", err
+	}
+	frontMatter, body, err := parseFrontMatter(string(content))
+	if err != nil {
+		return nil, "", err
+	}
+
+	lines := strings.Split(body, "\n")
+
+	body = ""
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
+			continue
+		}
+		body += line + "\n"
+	}
+
+	body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
+	body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
+	body = fixRuns(body)
+	return frontMatter, body, nil
+}
+
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
 	if len(delimiterIndices) < 1 {
@@ -93,31 +120,15 @@ func generateFunctionTypes() (string, error) {
 				return "", errors.New("not a file: " + fPath)
 			}
 			// println("Processing", fPath)
-			content, err := os.ReadFile(fPath)
-			if err != nil {
-				return "", err
-			}
-			frontMatter, body, err := parseFrontMatter(string(content))
+			frontMatter, body, err := readDocFile(fPath)
 			if err != nil {
 				println("Error parsing front matter in", fPath, "error: ", err.Error())
 				continue
+
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue
 			}
-
-			lines := strings.Split(body, "\n")
-			body = ""
-			for _, line := range lines {
-				if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
-					continue
-				}
-				body += line + "\n"
-			}
-
-			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
-			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
-			body = fixRuns(body)
 
 			paramNames := []string{}
 			if frontMatter["parameters"] != nil {
