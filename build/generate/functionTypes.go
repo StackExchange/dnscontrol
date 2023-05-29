@@ -16,6 +16,7 @@ func join(parts ...string) string {
 	return strings.Join(parts, string(os.PathSeparator))
 }
 
+// removes repeated blank lines, replacing them with a single blank line.
 func fixRuns(s string) string {
 	lines := strings.Split(s, "\n")
 	var out []string
