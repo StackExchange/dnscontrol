@@ -70,7 +70,7 @@ Include a blank line between paragraphs.
 
 Leave one blank line before and after a heading.
 
-Javascript code should use double quotes (`"`) for strings, not single quotes
+JavaScript code should use double quotes (`"`) for strings, not single quotes
 (`'`).  They are equivalent but consistency is good.
 
 ### Headings
