@@ -31,6 +31,31 @@ Within the git repo, docs are grouped:
 1. Add the page to the `documentation` folder (possibly a sub folder)
 2. List the page in `SUMMARY.md` so that it will appear in the table of contents, sidebar, etc.
 
+## Top-of-Document parameters
+
+Files in the `documentation/functions/{record,domain,global}` subdirectories
+have a header at the top that is used to populate other systems.
+
+Here's an example from [`A`](functions/domain/A.md)
+
+```
+---
+name: A
+parameters:
+  - name
+  - address
+  - modifiers...
+parameter_types:
+  name: string
+  address: string | number
+  "modifiers...": RecordModifier[]
+---
+```
+
+* `name`: The name of the function/constant in the document. This should match the filename (aside from the `.md` suffix).
+* `parameters`: These are the names of the parameters that the function accepts. `modifiers...` indicates that a variable number of modifiers can be added.
+* `parameter_types`: The typescript type for each parameter. This is used when generating `types-dnscontrol.d.ts`
+
 ## Documentation previews
 
 > "Preview links are only accessible by GitBook users. We're working on a feature that will allow preview links to be viewable by anyone who accesses the PR." — _[GitBook](https://docs.gitbook.com/product-tour/git-sync/github-pull-request-preview#how-to-access-preview-links)_
