@@ -48,6 +48,16 @@ These are the filenames to use:
 * `providers/foo/listzones.go` -- Code for listing and creating DNS zones and domains
 * `providers/foo/dnssec.go` -- Code for DNSSEC support
 
+# JavaScript annotations
+
+Functions in `pkg/js/helpers.js` should be annotated using the
+[JSDoc](https://jsdoc.app/tags-param.html) `@` notation. These are used to
+generate autocomplete instructions for your IDE.
+
+* Add `@param {type} foo` for a parameter named `foo` that is of type `type`.
+  * Example: `@param {string} foo Description of the parameter`
+* Add `@deprecated` if the function is deprecated.
+
 
 # Don't conditionally add/remove trailing dots
 
