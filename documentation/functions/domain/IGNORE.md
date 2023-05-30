@@ -1,5 +1,13 @@
 ---
 name: IGNORE
+parameters:
+    - labelSpec
+    - typeSpec
+    - targetSpec
+parameter_types:
+    labelSpec: string
+    typeSpec: string?
+    targetSpec: string?
 ---
 
 `IGNORE()` makes it possible for DNSControl to share management of a domain
