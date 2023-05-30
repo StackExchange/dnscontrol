@@ -41,6 +41,7 @@ Here's an example from [`A`](functions/domain/A.md)
 ```
 ---
 name: A
+provider: NAMEDOTCOM
 parameters:
   - name
   - address
@@ -55,6 +56,7 @@ parameter_types:
 * `name`: The name of the function/constant in the document. This should match the filename (aside from the `.md` suffix).
 * `parameters`: These are the names of the parameters that the function accepts. `modifiers...` indicates that a variable number of modifiers can be added.
 * `parameter_types`: The typescript type for each parameter. This is used when generating `types-dnscontrol.d.ts`
+* `provider`: If a feature is only available for one provider
 
 ## Documentation previews
 
