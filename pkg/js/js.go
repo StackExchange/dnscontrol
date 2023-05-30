@@ -35,8 +35,8 @@ var currentDirectory string
 // EnableFetch sets whether to enable fetch() in JS execution environment
 var EnableFetch bool = false
 
-// ExecuteJavascript accepts a javascript file and runs it, returning the resulting dnsConfig.
-func ExecuteJavascript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
+// ExecuteJavaScript accepts a javascript file and runs it, returning the resulting dnsConfig.
+func ExecuteJavaScript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
 	script, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
