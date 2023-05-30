@@ -41,7 +41,7 @@ func TestParsedFiles(t *testing.T) {
 			var err error
 
 			// Compile the .js file:
-			conf, err := ExecuteJavascript(string(filepath.Join(testDir, name)), true, nil)
+			conf, err := ExecuteJavaScript(string(filepath.Join(testDir, name)), true, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -144,7 +144,7 @@ func TestErrors(t *testing.T) {
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {
-			if _, err := ExecuteJavascript(tst.text, true, nil); err == nil {
+			if _, err := ExecuteJavaScript(tst.text, true, nil); err == nil {
 				t.Fatal("Expected error but found none")
 			}
 		})

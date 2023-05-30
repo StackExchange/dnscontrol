@@ -122,7 +122,7 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 		return nil, fmt.Errorf("no config specified")
 	}
 
-	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode, stringSliceToMap(args.Variable))
+	dnsConfig, err := js.ExecuteJavaScript(args.JSFile, args.DevMode, stringSliceToMap(args.Variable))
 	if err != nil {
 		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
