@@ -158,13 +158,19 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
 	}
-
-	if c.zonefile == "" {
+	_, okTag := meta[models.DomainTag]
+	_, okUnique := meta[models.DomainUniqueName]
+	if !okTag && !okUnique {
 		// This layering violation is needed for tests only.
 		// Otherwise, this is set already.
 		// Note: In this situation there is no "uniquename" or "tag".
 		c.zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat, domain, domain, ""))
+	} else {
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat,
+				meta[models.DomainUniqueName], domain, meta[models.DomainTag]),
+		)
 	}
 	content, err := os.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
