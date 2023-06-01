@@ -651,7 +651,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rtype = "TXT"
 				fallthrough
 			default:
-				ty := string(rtype)
+				rtypeString := string(rtype)
 				val := *rec.Value
 
 				// AWS Route53 has a bug.  Sometimes it returns a target
@@ -673,18 +673,26 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				// first n pushes. It will seem odd but this is AWS's bug.
 				// The UPSERT command only fixes the first record, even if
 				// the UPSET received a list of corrections.
-				if ty == "CNAME" || ty == "MX" {
+				if rtypeString == "CNAME" || rtypeString == "MX" {
 					if !strings.HasSuffix(val, ".") {
 						val = val + "."
 					}
 				}
 
+				var err error
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
-					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
-				}
 				rc.Original = set
+				switch rtypeString {
+				case "TXT":
+					err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
+				default:
+					err = rc.PopulateFromString(rtypeString, val, origin)
+				}
+				if err != nil {
+					return nil, fmt.Errorf("unparsable record type=%q received from ROUTE53: %w", rtypeString, err)
+				}
+
 				results = append(results, rc)
 			}
 		}
