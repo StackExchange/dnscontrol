@@ -367,6 +367,8 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
+		case "TXT":
+			err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
 		default:
 			err = rc.PopulateFromString(rc.Type, data, domain)
 		}
