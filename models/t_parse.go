@@ -13,25 +13,29 @@ import (
 // seems to quote them differently.
 //
 // Recommended calling convention:  Process the exceptions first, then use the
-// function for everything else.
+// PopulateFromString function for everything else.
 //
-//		  var err error
-//		  switch rType {
-//		  case "MX":
-//	       // MX priority in a separate field.
-//	       if err := rc.SetTargetMX(cr.Priority, target); err != nil {
-//	         return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
-//	       }
-//		  case "TXT":
-//	       // TXT records are stored verbatim; no quoting/escaping to parse.
-//			  err = rc.SetTargetTXT(target)
-//	       // ProTip: Use rc.SetTargetTXTs(manystrings) if the API or parser returns a list of substrings.
-//		  default:
-//			  err = rec.PopulateFromString(rType, target, origin)
-//		  }
-//		  if err != nil {
-//			  return nil, fmt.Errorf("unparsable record received from CHANGE_TO_PROVDER_NAME: %w", err)
-//		  }
+//      rtype := FILL_IN_TYPE
+//     	var err error
+//      rc := &models.RecordConfig{Type: rtype}
+//      rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
+//      rc.TTL = uint32(FILL_IN_TTL)
+//      rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
+//     	switch rtype {
+//     	case "MX":
+//     		// MX priority in a separate field.
+//     		err = rc.SetTargetMX(cr.Priority, target)
+//     	case "TXT":
+//     		// TXT records are stored verbatim; no quoting/escaping to parse.
+//     		err = rc.SetTargetTXT(target)
+//     	default:
+//     		err = rc.PopulateFromString(rtype, target, origin)
+//     	}
+//     	if err != nil {
+//     		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
+//     	}
+//     	return rc, nil
+
 func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if rc.Type != "" && rc.Type != rtype {
 		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type))
@@ -64,7 +68,9 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
-		return rc.SetTargetTXT(contents)
+		return rc.SetTargetTXTs(ParseQuotedTxt(contents))
+		// Some day we'll switch to this:
+		//return rc.SetTargetTXT(contents)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
 	case "SSHFP":
