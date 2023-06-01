@@ -64,7 +64,7 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
-		return rc.SetTargetTXTString(contents)
+		return rc.SetTargetTXT(contents)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
 	case "SSHFP":
