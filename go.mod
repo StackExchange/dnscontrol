@@ -29,7 +29,7 @@ require (
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
-	github.com/hashicorp/vault/api v1.9.1
+	github.com/hashicorp/vault/api v1.9.2
 	github.com/hexonet/go-sdk/v3 v3.5.4
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
@@ -92,6 +92,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.9.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
