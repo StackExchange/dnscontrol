@@ -68,9 +68,10 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
+		// Parsing the contents may be unexpected. If your provider gives you a
+		// string that needs no further parsing, special case TXT and use
+		// rc.SetTargetTXT(target) like in the example above.
 		return rc.SetTargetTXTs(ParseQuotedTxt(contents))
-		// Some day we'll switch to this:
-		//return rc.SetTargetTXT(contents)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
 	case "SSHFP":
