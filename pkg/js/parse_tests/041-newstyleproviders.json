@@ -1,19 +1,73 @@
 {
-  "dns_providers": [
-    { "name": "dns1", "type": "CLOUDFLAREAPI" },
-    { "name": "dns2a", "type": "CLOUDFLAREAPI" },
-    { "name": "dns2b", "type": "CLOUDFLAREAPI", "meta": { "dnsmetakey": "dns2b" } },
-    { "name": "dns3", "type": "CLOUDFLAREAPI", "meta": { "dnsmetakey": "dns3" } },
-    { "name": "dns1h", "type": "CLOUDFLAREAPI" },
-    { "name": "dns2bh", "type": "CLOUDFLAREAPI", "meta": { "dnsmetakey": "dns2bh" } }
-  ],
-  "domains": [],
   "registrars": [
-    { "name": "foo1", "type": "-" },
-    { "name": "foo2a", "type": "NONE" },
-    { "name": "foo2b", "type": "-", "meta": { "regmetakey": "reg2b" } },
-    { "name": "foo3", "type": "MANUAL", "meta": { "regmetakey": "reg3" } },
-    { "name": "foo1h", "type": "-" },
-    { "name": "foo2bh", "type": "-", "meta": { "regmetakey": "reg2bh" } }
-  ]
+    {
+      "name": "foo1",
+      "type": "-"
+    },
+    {
+      "name": "foo2a",
+      "type": "NONE"
+    },
+    {
+      "name": "foo2b",
+      "type": "-",
+      "meta": {
+        "regmetakey": "reg2b"
+      }
+    },
+    {
+      "name": "foo3",
+      "type": "MANUAL",
+      "meta": {
+        "regmetakey": "reg3"
+      }
+    },
+    {
+      "name": "foo1h",
+      "type": "-"
+    },
+    {
+      "name": "foo2bh",
+      "type": "-",
+      "meta": {
+        "regmetakey": "reg2bh"
+      }
+    }
+  ],
+  "dns_providers": [
+    {
+      "name": "dns1",
+      "type": "CLOUDFLAREAPI"
+    },
+    {
+      "name": "dns2a",
+      "type": "CLOUDFLAREAPI"
+    },
+    {
+      "name": "dns2b",
+      "type": "CLOUDFLAREAPI",
+      "meta": {
+        "dnsmetakey": "dns2b"
+      }
+    },
+    {
+      "name": "dns3",
+      "type": "CLOUDFLAREAPI",
+      "meta": {
+        "dnsmetakey": "dns3"
+      }
+    },
+    {
+      "name": "dns1h",
+      "type": "CLOUDFLAREAPI"
+    },
+    {
+      "name": "dns2bh",
+      "type": "CLOUDFLAREAPI",
+      "meta": {
+        "dnsmetakey": "dns2bh"
+      }
+    }
+  ],
+  "domains": []
 }

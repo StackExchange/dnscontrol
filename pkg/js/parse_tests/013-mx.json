@@ -10,8 +10,9 @@
         {
           "type": "MX",
           "name": "@",
-          "target": "foo.com.",
-          "mxpreference": 15
+          "origin": "",
+          "mxpreference": 15,
+          "target": "foo.com."
         }
       ]
     }

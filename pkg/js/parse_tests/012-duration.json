@@ -10,32 +10,37 @@
         {
           "type": "A",
           "name": "@",
-          "target": "1.2.3.4",
-          "ttl": 300
+          "ttl": 300,
+          "origin": "",
+          "target": "1.2.3.4"
         },
         {
           "type": "A",
           "name": "a",
-          "target": "1.2.3.5",
-          "ttl": 300
+          "ttl": 300,
+          "origin": "",
+          "target": "1.2.3.5"
         },
         {
           "type": "A",
           "name": "b",
-          "target": "1.2.3.6",
-          "ttl": 180
+          "ttl": 180,
+          "origin": "",
+          "target": "1.2.3.6"
         },
         {
           "type": "A",
           "name": "c",
-          "target": "1.2.3.7",
-          "ttl": 10800
+          "ttl": 10800,
+          "origin": "",
+          "target": "1.2.3.7"
         },
         {
           "type": "A",
           "name": "d",
-          "target": "1.2.3.8",
-          "ttl": 259200
+          "ttl": 259200,
+          "origin": "",
+          "target": "1.2.3.8"
         }
       ]
     }

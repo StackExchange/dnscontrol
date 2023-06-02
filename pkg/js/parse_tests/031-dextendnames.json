@@ -1,4 +1,10 @@
 {
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -8,36 +14,135 @@
   "domains": [
     {
       "name": "domain.tld",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "127.0.0.1", "type": "A" },
-        { "name": "a", "target": "127.0.0.2", "type": "A" },
-        { "name": "b", "target": "c", "type": "CNAME" },
-        { "name": "@", "target": "127.0.0.3", "type": "A" },
-        { "name": "d", "target": "127.0.0.4", "type": "A" },
-        { "name": "e", "target": "f", "type": "CNAME" },
-        { "name": "ub", "subdomain": "ub", "target": "127.0.0.5", "type": "A" },
-        { "name": "g.ub", "subdomain": "ub", "target": "127.0.0.6", "type": "A" },
-        { "name": "h.ub", "subdomain": "ub", "target": "i", "type": "CNAME" },
-        { "name": "ssub", "subdomain": "ssub", "target": "127.0.0.7", "type": "A" },
-        { "name": "j.ssub", "subdomain": "ssub", "target": "127.0.0.8", "type": "A" },
-        { "name": "k.ssub", "subdomain": "ssub", "target": "l", "type": "CNAME" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "origin": "",
+          "target": "127.0.0.1"
+        },
+        {
+          "type": "A",
+          "name": "a",
+          "origin": "",
+          "target": "127.0.0.2"
+        },
+        {
+          "type": "CNAME",
+          "name": "b",
+          "origin": "",
+          "target": "c"
+        },
+        {
+          "type": "A",
+          "name": "@",
+          "origin": "",
+          "target": "127.0.0.3"
+        },
+        {
+          "type": "A",
+          "name": "d",
+          "origin": "",
+          "target": "127.0.0.4"
+        },
+        {
+          "type": "CNAME",
+          "name": "e",
+          "origin": "",
+          "target": "f"
+        },
+        {
+          "type": "A",
+          "name": "ub",
+          "subdomain": "ub",
+          "origin": "",
+          "target": "127.0.0.5"
+        },
+        {
+          "type": "A",
+          "name": "g.ub",
+          "subdomain": "ub",
+          "origin": "",
+          "target": "127.0.0.6"
+        },
+        {
+          "type": "CNAME",
+          "name": "h.ub",
+          "subdomain": "ub",
+          "origin": "",
+          "target": "i"
+        },
+        {
+          "type": "A",
+          "name": "ssub",
+          "subdomain": "ssub",
+          "origin": "",
+          "target": "127.0.0.7"
+        },
+        {
+          "type": "A",
+          "name": "j.ssub",
+          "subdomain": "ssub",
+          "origin": "",
+          "target": "127.0.0.8"
+        },
+        {
+          "type": "CNAME",
+          "name": "k.ssub",
+          "subdomain": "ssub",
+          "origin": "",
+          "target": "l"
+        }
+      ]
     },
     {
       "name": "sub.domain.tld",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "127.0.1.1", "type": "A" },
-        { "name": "aa", "target": "127.0.1.2", "type": "A" },
-        { "name": "bb", "target": "cc", "type": "CNAME" },
-        { "name": "@", "target": "127.0.1.3", "type": "A" },
-        { "name": "dd", "target": "127.0.1.4", "type": "A" },
-        { "name": "ee", "target": "ff", "type": "CNAME" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "origin": "",
+          "target": "127.0.1.1"
+        },
+        {
+          "type": "A",
+          "name": "aa",
+          "origin": "",
+          "target": "127.0.1.2"
+        },
+        {
+          "type": "CNAME",
+          "name": "bb",
+          "origin": "",
+          "target": "cc"
+        },
+        {
+          "type": "A",
+          "name": "@",
+          "origin": "",
+          "target": "127.0.1.3"
+        },
+        {
+          "type": "A",
+          "name": "dd",
+          "origin": "",
+          "target": "127.0.1.4"
+        },
+        {
+          "type": "CNAME",
+          "name": "ee",
+          "origin": "",
+          "target": "ff"
+        }
+      ]
     }
-  ],
-  "registrars": [ { "name": "Third-Party", "type": "NONE" } ]
+  ]
 }

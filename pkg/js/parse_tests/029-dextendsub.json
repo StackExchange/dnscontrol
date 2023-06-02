@@ -23,12 +23,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "10.1.1.1"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "10.2.2.2"
         },
         {
@@ -36,6 +38,7 @@
           "name": "bar",
           "subdomain": "bar",
           "ttl": 300,
+          "origin": "",
           "target": "10.3.3.3"
         },
         {
@@ -43,6 +46,7 @@
           "name": "www.bar",
           "subdomain": "bar",
           "ttl": 300,
+          "origin": "",
           "target": "10.4.4.4"
         },
         {
@@ -50,6 +54,7 @@
           "name": "a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "ttl": 300,
+          "origin": "",
           "target": "10.25.25.25"
         },
         {
@@ -57,6 +62,7 @@
           "name": "www.a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "ttl": 300,
+          "origin": "",
           "target": "10.26.26.26"
         }
       ]
@@ -72,18 +78,21 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "20.5.5.5"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "20.6.6.6"
         },
         {
           "type": "A",
           "name": "a",
           "ttl": 300,
+          "origin": "",
           "target": "20.10.10.10"
         }
       ]
@@ -99,18 +108,21 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "30.7.7.7"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "30.8.8.8"
         },
         {
           "type": "A",
           "name": "a",
           "ttl": 300,
+          "origin": "",
           "target": "30.9.9.9"
         }
       ]
@@ -126,12 +138,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "40.12.12.12"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "40.12.12.12"
         },
         {
@@ -139,6 +153,7 @@
           "name": "morty",
           "subdomain": "morty",
           "ttl": 300,
+          "origin": "",
           "target": "40.17.17.17"
         },
         {
@@ -146,6 +161,7 @@
           "name": "www.morty",
           "subdomain": "morty",
           "ttl": 300,
+          "origin": "",
           "target": "40.18.18.18"
         }
       ]
@@ -161,12 +177,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "50.13.13.13"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "50.14.14.14"
         },
         {
@@ -174,6 +192,7 @@
           "name": "zip",
           "subdomain": "zip",
           "ttl": 300,
+          "origin": "",
           "target": "50.15.15.15"
         },
         {
@@ -181,6 +200,7 @@
           "name": "www.zip",
           "subdomain": "zip",
           "ttl": 300,
+          "origin": "",
           "target": "50.16.16.16"
         }
       ]
@@ -196,12 +216,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "60.19.19.19"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "60.20.20.20"
         },
         {
@@ -209,6 +231,7 @@
           "name": "bar",
           "subdomain": "bar",
           "ttl": 300,
+          "origin": "",
           "target": "60.21.21.21"
         },
         {
@@ -216,6 +239,7 @@
           "name": "www.bar",
           "subdomain": "bar",
           "ttl": 300,
+          "origin": "",
           "target": "60.22.22.22"
         },
         {
@@ -223,6 +247,7 @@
           "name": "baz.bar",
           "subdomain": "baz.bar",
           "ttl": 300,
+          "origin": "",
           "target": "60.23.23.23"
         },
         {
@@ -230,6 +255,7 @@
           "name": "www.baz.bar",
           "subdomain": "baz.bar",
           "ttl": 300,
+          "origin": "",
           "target": "60.24.24.24"
         }
       ]
@@ -245,12 +271,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.1"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.2"
         },
         {
@@ -258,6 +286,7 @@
           "name": "düsseldorf",
           "subdomain": "düsseldorf",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.3"
         },
         {
@@ -265,6 +294,7 @@
           "name": "www.düsseldorf",
           "subdomain": "düsseldorf",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.4"
         },
         {
@@ -272,6 +302,7 @@
           "name": "ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.5"
         },
         {
@@ -279,6 +310,7 @@
           "name": "www.ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.6"
         }
       ]
@@ -294,12 +326,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.7"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.8"
         },
         {
@@ -307,6 +341,7 @@
           "name": "subdomain",
           "subdomain": "subdomain",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.9"
         },
         {
@@ -314,6 +349,7 @@
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.10"
         },
         {
@@ -321,6 +357,7 @@
           "name": "düsseltal",
           "subdomain": "düsseltal",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.11"
         },
         {
@@ -328,6 +365,7 @@
           "name": "www.düsseltal",
           "subdomain": "düsseltal",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.12"
         },
         {
@@ -335,6 +373,7 @@
           "name": "ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.13"
         },
         {
@@ -342,6 +381,7 @@
           "name": "www.ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.14"
         }
       ]
@@ -357,12 +397,14 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.15"
         },
         {
           "type": "A",
           "name": "www",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.16"
         },
         {
@@ -370,6 +412,7 @@
           "name": "subdomain",
           "subdomain": "subdomain",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.17"
         },
         {
@@ -377,6 +420,7 @@
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.18"
         },
         {
@@ -384,6 +428,7 @@
           "name": "düsseldorf",
           "subdomain": "düsseldorf",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.19"
         },
         {
@@ -391,6 +436,7 @@
           "name": "www.düsseldorf",
           "subdomain": "düsseldorf",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.20"
         },
         {
@@ -398,6 +444,7 @@
           "name": "ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.21"
         },
         {
@@ -405,6 +452,7 @@
           "name": "www.ü",
           "subdomain": "ü",
           "ttl": 300,
+          "origin": "",
           "target": "10.0.0.22"
         }
       ]
@@ -421,6 +469,7 @@
           "name": "a.sub",
           "subdomain": "sub",
           "ttl": 300,
+          "origin": "",
           "target": "b"
         },
         {
@@ -428,6 +477,7 @@
           "name": "b.sub",
           "subdomain": "sub",
           "ttl": 300,
+          "origin": "",
           "target": "@"
         },
         {
@@ -435,6 +485,7 @@
           "name": "c.sub",
           "subdomain": "sub",
           "ttl": 300,
+          "origin": "",
           "target": "sub.example.tld."
         },
         {
@@ -442,6 +493,7 @@
           "name": "e.sub",
           "subdomain": "sub",
           "ttl": 300,
+          "origin": "",
           "target": "otherdomain.tld."
         }
       ]

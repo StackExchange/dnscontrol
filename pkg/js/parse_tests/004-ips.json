@@ -22,16 +22,19 @@
         {
           "type": "A",
           "name": "@",
+          "origin": "",
           "target": "1.2.3.4"
         },
         {
           "type": "A",
           "name": "p1",
+          "origin": "",
           "target": "1.2.3.5"
         },
         {
           "type": "A",
           "name": "p255",
+          "origin": "",
           "target": "1.2.4.3"
         }
       ]

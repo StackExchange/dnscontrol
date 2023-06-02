@@ -10,26 +10,31 @@
         {
           "type": "A",
           "name": "@",
+          "origin": "",
           "target": "1.2.3.4"
         },
         {
           "type": "CNAME",
           "name": "A",
+          "origin": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "C",
+          "origin": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "D",
+          "origin": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "B",
+          "origin": "",
           "target": "foo.com."
         }
       ]

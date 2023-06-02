@@ -10,12 +10,13 @@
         {
           "type": "SOA",
           "name": "@",
-          "target": "ns1.foo.com.",
+          "origin": "",
           "soambox": "admin.foo.com",
           "soarefresh": 3600,
-          "soaexpire": 604800,
           "soaretry": 900,
-          "soaminttl": 86400
+          "soaexpire": 604800,
+          "soaminttl": 86400,
+          "target": "ns1.foo.com."
         }
       ]
     }

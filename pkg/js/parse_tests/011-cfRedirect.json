@@ -10,11 +10,13 @@
         {
           "type": "CF_REDIRECT",
           "name": "@",
+          "origin": "",
           "target": "test.foo.com,https://goo.com/$1"
         },
         {
           "type": "CF_TEMP_REDIRECT",
           "name": "@",
+          "origin": "",
           "target": "test.foo.com,https://goo.com/$1"
         }
       ]

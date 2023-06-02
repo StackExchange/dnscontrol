@@ -1,4 +1,10 @@
 {
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -7,52 +13,52 @@
   ],
   "domains": [
     {
+      "name": "foo.com",
+      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
-      "name": "foo.com",
       "records": [
         {
+          "type": "A",
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
-          "target": "10.2.3.1",
-          "type": "A"
+          "origin": "",
+          "target": "10.2.3.1"
         },
         {
+          "type": "A",
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
-          "target": "10.2.3.2",
-          "type": "A"
+          "origin": "",
+          "target": "10.2.3.2"
         },
         {
+          "type": "A",
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
-          "target": "10.2.3.3",
-          "type": "A"
+          "origin": "",
+          "target": "10.2.3.3"
         },
         {
+          "type": "CF_REDIRECT",
           "name": "@",
-          "target": "test1.foo.com,https://goo.com/$1",
-          "type": "CF_REDIRECT"
+          "origin": "",
+          "target": "test1.foo.com,https://goo.com/$1"
         },
         {
+          "type": "CF_TEMP_REDIRECT",
           "name": "@",
-          "target": "test2.foo.com,https://goo.com/$1",
-          "type": "CF_TEMP_REDIRECT"
+          "origin": "",
+          "target": "test2.foo.com,https://goo.com/$1"
         },
         {
+          "type": "CF_WORKER_ROUTE",
           "name": "@",
-          "target": "test3.foo.com,test-worker",
-          "type": "CF_WORKER_ROUTE"
+          "origin": "",
+          "target": "test3.foo.com,test-worker"
         }
-      ],
-      "registrar": "Third-Party"
-    }
-  ],
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
+      ]
     }
   ]
 }

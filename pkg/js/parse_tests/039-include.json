@@ -22,6 +22,7 @@
         {
           "type": "A",
           "name": "@",
+          "origin": "",
           "target": "1.2.3.4"
         }
       ]
@@ -36,11 +37,13 @@
         {
           "type": "A",
           "name": "@",
+          "origin": "",
           "target": "1.2.3.4"
         },
         {
           "type": "A",
           "name": "local",
+          "origin": "",
           "target": "127.0.0.1"
         }
       ]

@@ -1,53 +1,57 @@
 {
+  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "dnsProviders": {},
       "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
       "records": [
         {
+          "type": "NAPTR",
           "name": "@",
-          "naptrflags": "U",
+          "origin": "",
           "naptrorder": 100,
           "naptrpreference": 10,
-          "naptrregexp": "!^.*$!sip:customer-service@example.com!",
+          "naptrflags": "U",
           "naptrservice": "E2U+sip",
-          "target": "example",
-          "type": "NAPTR"
+          "naptrregexp": "!^.*$!sip:customer-service@example.com!",
+          "target": "example"
         },
         {
+          "type": "NAPTR",
           "name": "@",
-          "naptrflags": "U",
+          "origin": "",
           "naptrorder": 102,
           "naptrpreference": 10,
-          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrflags": "U",
           "naptrservice": "E2U+email",
-          "target": "example",
-          "type": "NAPTR"
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "target": "example"
         },
         {
+          "type": "NAPTR",
           "name": "@",
-          "naptrflags": "U",
+          "origin": "",
           "naptrorder": 103,
           "naptrpreference": 10,
-          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrflags": "U",
           "naptrservice": "E2U+email",
-          "target": "",
-          "type": "NAPTR"
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "target": ""
         },
         {
+          "type": "NAPTR",
           "name": "@",
-          "naptrflags": "U",
+          "origin": "",
           "naptrorder": 104,
           "naptrpreference": 10,
-          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrflags": "U",
           "naptrservice": "E2U+email",
-          "target": ".",
-          "type": "NAPTR"
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "target": "."
         }
-      ],
-      "registrar": "none"
+      ]
     }
-  ],
-  "registrars": []
+  ]
 }
