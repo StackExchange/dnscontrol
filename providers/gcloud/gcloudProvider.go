@@ -300,8 +300,16 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
-	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		return nil, fmt.Errorf("unparsable record received from GCLOUD: %w", err)
+	rtype := set.Type
+	var err error
+	switch rtype {
+	case "TXT":
+		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
+	default:
+		err = r.PopulateFromString(rtype, rec, origin)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
 	}
 	return r, nil
 }
