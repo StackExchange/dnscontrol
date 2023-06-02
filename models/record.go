@@ -589,10 +589,10 @@ func Downcase(recs []*RecordConfig) {
 func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, origin)
-		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
