@@ -1,5 +1,5 @@
 {
-    "bind": {
-        "directory": "test_data"
-    }
+  "bind": {
+    "directory": "test_data"
+  }
 }

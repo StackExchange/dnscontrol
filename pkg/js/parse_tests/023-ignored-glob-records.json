@@ -1,18 +1,17 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         {
           "pattern": "\\*.testignore",
           "types": "*"
         }
       ],
+      "name": "foo.com",
+      "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "\\*.testignore",
@@ -21,5 +20,6 @@
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }

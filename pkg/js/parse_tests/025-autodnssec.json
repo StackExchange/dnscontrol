@@ -1,26 +1,26 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
+      "dnsProviders": {},
       "name": "nothing.com",
-      "registrar": "none",
-      "dnsProviders": {},
-      "records": []
+      "records": [],
+      "registrar": "none"
     },
     {
+      "auto_dnssec": "on",
+      "dnsProviders": {},
       "name": "with.com",
-      "registrar": "none",
-      "dnsProviders": {},
       "records": [],
-      "auto_dnssec": "on"
+      "registrar": "none"
     },
     {
-      "name": "without.com",
-      "registrar": "none",
+      "auto_dnssec": "off",
       "dnsProviders": {},
+      "name": "without.com",
       "records": [],
-      "auto_dnssec": "off"
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

@@ -18,12 +18,12 @@
   },
   "AXFRDDNS": {
     "TYPE": "AXFRDDNS",
+    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_UPDATE_KEY",
-    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME"
+    "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
   "AZURE_DNS": {
     "ClientID": "$AZURE_DNS_CLIENT_ID",

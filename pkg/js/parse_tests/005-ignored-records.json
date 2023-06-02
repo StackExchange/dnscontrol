@@ -1,12 +1,8 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         {
           "pattern": "testignore",
@@ -43,6 +39,9 @@
           "type": "CNAME"
         }
       ],
+      "name": "foo.com",
+      "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "testignore",
@@ -80,10 +79,7 @@
       ]
     },
     {
-      "name": "diff2.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         {
           "pattern": "mylabel",
@@ -128,6 +124,9 @@
           "type": "A"
         }
       ],
+      "name": "diff2.com",
+      "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "mylabel",
@@ -170,5 +169,6 @@
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }

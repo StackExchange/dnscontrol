@@ -1,43 +1,43 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "A",
           "name": "@",
           "target": "1.2.3.4",
-          "ttl": 300
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "a",
           "target": "1.2.3.5",
-          "ttl": 300
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "b",
           "target": "1.2.3.6",
-          "ttl": 180
+          "ttl": 180,
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "c",
           "target": "1.2.3.7",
-          "ttl": 10800
+          "ttl": 10800,
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "d",
           "target": "1.2.3.8",
-          "ttl": 259200
+          "ttl": 259200,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

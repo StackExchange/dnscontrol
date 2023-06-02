@@ -1,34 +1,34 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "meta": {
         "zone_id": "Z2FTEDLFRTZ"
-      }
+      },
+      "name": "foo.com",
+      "records": [],
+      "registrar": "none"
     },
     {
-      "name": "foo.com!internal",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "zone_id": "Z2FTEDLFRTF"
+      },
+      "name": "foo.com!internal",
       "records": [
         {
-          "type": "R53_ALIAS",
           "name": "atest",
           "r53_alias": {
             "type": "A",
             "zone_id": "Z2FTEDLFRTZ"
           },
-          "target": "foo.com."
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         }
       ],
-      "meta": {
-        "zone_id": "Z2FTEDLFRTF"
-      }
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

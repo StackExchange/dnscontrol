@@ -4,8 +4,8 @@
   },
   "cloudflare": {
     "TYPE": "CLOUDFLAREAPI",
-    "apitoken": "op://Secrets/Cloudflare DNSControl/credential",
-    "accountid": "op://Secrets/Cloudflare DNSControl/username"
+    "accountid": "op://Secrets/Cloudflare DNSControl/username",
+    "apitoken": "op://Secrets/Cloudflare DNSControl/credential"
   },
   "linode": {
     "TYPE": "LINODE",
