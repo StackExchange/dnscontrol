@@ -71,6 +71,7 @@ nfpms:
 dockers:
   - image_templates:
     - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
+    - &amd_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
     goos: linux
     goarch: amd64
     use: buildx
@@ -86,6 +87,7 @@ dockers:
     - "--platform=linux/amd64"
   - image_templates:
     - &386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-386"
+    - &386_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-386"
     goos: linux
     goarch: '386'
     use: buildx
@@ -101,6 +103,7 @@ dockers:
     - "--platform=linux/i386"
   - image_templates:
     - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
+    - &arm_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
     goos: linux
     goarch: arm64
     use: buildx
@@ -120,12 +123,23 @@ docker_manifests:
       - *amd_image
       - *386_image
       - *arm_image
+  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
+    image_templates:
+      - *amd_image_ghcr
+      - *386_image_ghcr
+      - *arm_image_ghcr
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     skip_push: auto
     image_templates:
       - *amd_image
       - *386_image
       - *arm_image
+  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:latest"
+    skip_push: auto
+    image_templates:
+      - *amd_image_ghcr
+      - *386_image_ghcr
+      - *arm_image_ghcr
 checksum:
   name_template: 'checksums.txt'
 snapshot:
