@@ -566,20 +566,40 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
-			// These record types have a target that is case insensitive, so we downcase it.
+		case "AKAMAICDN", "AAAA", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
-		case "LOC":
-			// Do nothing to affect case of letters.
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
-			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
-			// Do nothing.
+			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
+		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
 				r.target = strings.ToLower(r.target) // .target stores the Ns
 			}
 			if r.SoaMbox != "DEFAULT_NOT_SET." {
 				r.SoaMbox = strings.ToLower(r.SoaMbox)
+			}
+		default:
+			// TODO: we'd like to panic here, but custom record types complicate things.
+		}
+	}
+}
+
+// CanonicalizeTargets turns Targets into FQDNs
+func CanonicalizeTargets(recs []*RecordConfig, origin string) {
+	for _, r := range recs {
+		switch r.Type { // #rtype_variations
+		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+			// Target is a hostname that might be a shortname. Turn it into a FQDN.
+			r.target = dnsutil.AddOrigin(r.target, origin)
+		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+			// Do nothing.
+		case "SOA":
+			if r.target != "DEFAULT_NOT_SET." {
+				r.target = dnsutil.AddOrigin(r.target, origin) // .target stores the Ns
+			}
+			if r.SoaMbox != "DEFAULT_NOT_SET." {
+				r.SoaMbox = dnsutil.AddOrigin(r.SoaMbox, origin)
 			}
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.

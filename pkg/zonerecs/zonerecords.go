@@ -16,6 +16,9 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 
 	// downcase
 	models.Downcase(existingRecords)
+	models.Downcase(dc.Records)
+	models.CanonicalizeTargets(existingRecords, dc.Name)
+	models.CanonicalizeTargets(dc.Records, dc.Name)
 
 	// Copy dc so that any corrections code that wants to
 	// modify the records may. For example, if the provider only
