@@ -10,7 +10,6 @@
         {
           "type": "TLSA",
           "name": "_443._tcp",
-          "origin": "",
           "tlsausage": 3,
           "tlsaselector": 1,
           "tlsamatchingtype": 1,

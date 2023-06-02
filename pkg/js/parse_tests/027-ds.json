@@ -10,7 +10,6 @@
         {
           "type": "DS",
           "name": "@",
-          "origin": "",
           "dskeytag": 1000,
           "dsalgorithm": 13,
           "dsdigesttype": 2,
@@ -20,7 +19,6 @@
         {
           "type": "DS",
           "name": "@",
-          "origin": "",
           "dskeytag": 1,
           "dsalgorithm": 1,
           "dsdigesttype": 1,

@@ -11,35 +11,30 @@
           "type": "A",
           "name": "@",
           "ttl": 300,
-          "origin": "",
           "target": "1.2.3.4"
         },
         {
           "type": "A",
           "name": "a",
           "ttl": 300,
-          "origin": "",
           "target": "1.2.3.5"
         },
         {
           "type": "A",
           "name": "b",
           "ttl": 180,
-          "origin": "",
           "target": "1.2.3.6"
         },
         {
           "type": "A",
           "name": "c",
           "ttl": 10800,
-          "origin": "",
           "target": "1.2.3.7"
         },
         {
           "type": "A",
           "name": "d",
           "ttl": 259200,
-          "origin": "",
           "target": "1.2.3.8"
         }
       ]

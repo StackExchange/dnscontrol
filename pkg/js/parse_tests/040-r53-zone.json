@@ -22,7 +22,6 @@
         {
           "type": "R53_ALIAS",
           "name": "atest",
-          "origin": "",
           "r53_alias": {
             "type": "A",
             "zone_id": "Z2FTEDLFRTZ"

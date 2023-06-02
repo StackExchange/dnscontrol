@@ -22,14 +22,12 @@
         {
           "type": "NS",
           "name": "1.3.1.in-addr.arpa",
-          "origin": "",
           "target": "ns1.example.com."
         },
         {
           "type": "NS",
           "name": "2.3.1.in-addr.arpa",
           "subdomain": "2",
-          "origin": "",
           "target": "ns2.example.org."
         }
       ]

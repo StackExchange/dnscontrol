@@ -22,13 +22,11 @@
         {
           "type": "PTR",
           "name": "1",
-          "origin": "",
           "target": "foo.example.com."
         },
         {
           "type": "PTR",
           "name": "1.2.3.2",
-          "origin": "",
           "target": "bar.example.com."
         },
         {
@@ -37,40 +35,34 @@
           "meta": {
             "skip_fqdn_check": "true"
           },
-          "origin": "",
           "target": "baz.example.com."
         },
         {
           "type": "PTR",
           "name": "4",
           "subdomain": "4",
-          "origin": "",
           "target": "silly.example.com."
         },
         {
           "type": "PTR",
           "name": "1.2.3.5",
           "subdomain": "5",
-          "origin": "",
           "target": "willy.example.com."
         },
         {
           "type": "PTR",
           "name": "6.3.2.1.in-addr.arpa",
           "subdomain": "6",
-          "origin": "",
           "target": "billy.example.com."
         },
         {
           "type": "PTR",
           "name": "7",
-          "origin": "",
           "target": "my.example.com."
         },
         {
           "type": "PTR",
           "name": "1.2.3.8",
-          "origin": "",
           "target": "fair.example.com."
         },
         {
@@ -79,7 +71,6 @@
           "meta": {
             "skip_fqdn_check": "true"
           },
-          "origin": "",
           "target": "lady.example.com."
         }
       ]

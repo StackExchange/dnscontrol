@@ -10,7 +10,6 @@
         {
           "type": "A",
           "name": "normal",
-          "origin": "",
           "target": "1.1.1.1"
         }
       ],
@@ -18,7 +17,6 @@
         {
           "type": "A",
           "name": "helper",
-          "origin": "",
           "target": "2.2.2.2"
         }
       ]

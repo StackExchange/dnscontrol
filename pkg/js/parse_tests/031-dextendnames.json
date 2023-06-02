@@ -22,79 +22,67 @@
         {
           "type": "A",
           "name": "@",
-          "origin": "",
           "target": "127.0.0.1"
         },
         {
           "type": "A",
           "name": "a",
-          "origin": "",
           "target": "127.0.0.2"
         },
         {
           "type": "CNAME",
           "name": "b",
-          "origin": "",
           "target": "c"
         },
         {
           "type": "A",
           "name": "@",
-          "origin": "",
           "target": "127.0.0.3"
         },
         {
           "type": "A",
           "name": "d",
-          "origin": "",
           "target": "127.0.0.4"
         },
         {
           "type": "CNAME",
           "name": "e",
-          "origin": "",
           "target": "f"
         },
         {
           "type": "A",
           "name": "ub",
           "subdomain": "ub",
-          "origin": "",
           "target": "127.0.0.5"
         },
         {
           "type": "A",
           "name": "g.ub",
           "subdomain": "ub",
-          "origin": "",
           "target": "127.0.0.6"
         },
         {
           "type": "CNAME",
           "name": "h.ub",
           "subdomain": "ub",
-          "origin": "",
           "target": "i"
         },
         {
           "type": "A",
           "name": "ssub",
           "subdomain": "ssub",
-          "origin": "",
           "target": "127.0.0.7"
         },
         {
           "type": "A",
           "name": "j.ssub",
           "subdomain": "ssub",
-          "origin": "",
           "target": "127.0.0.8"
         },
         {
           "type": "CNAME",
           "name": "k.ssub",
           "subdomain": "ssub",
-          "origin": "",
           "target": "l"
         }
       ]
@@ -109,37 +97,31 @@
         {
           "type": "A",
           "name": "@",
-          "origin": "",
           "target": "127.0.1.1"
         },
         {
           "type": "A",
           "name": "aa",
-          "origin": "",
           "target": "127.0.1.2"
         },
         {
           "type": "CNAME",
           "name": "bb",
-          "origin": "",
           "target": "cc"
         },
         {
           "type": "A",
           "name": "@",
-          "origin": "",
           "target": "127.0.1.3"
         },
         {
           "type": "A",
           "name": "dd",
-          "origin": "",
           "target": "127.0.1.4"
         },
         {
           "type": "CNAME",
           "name": "ee",
-          "origin": "",
           "target": "ff"
         }
       ]

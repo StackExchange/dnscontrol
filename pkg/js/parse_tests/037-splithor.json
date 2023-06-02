@@ -30,13 +30,11 @@
         {
           "type": "A",
           "name": "main",
-          "origin": "",
           "target": "3.3.3.3"
         },
         {
           "type": "A",
           "name": "www",
-          "origin": "",
           "target": "33.33.33.33"
         }
       ]
@@ -51,13 +49,11 @@
         {
           "type": "A",
           "name": "main",
-          "origin": "",
           "target": "1.1.1.1"
         },
         {
           "type": "A",
           "name": "main",
-          "origin": "",
           "target": "11.11.11.11"
         }
       ]
@@ -72,7 +68,6 @@
         {
           "type": "A",
           "name": "main",
-          "origin": "",
           "target": "8.8.8.8"
         }
       ]

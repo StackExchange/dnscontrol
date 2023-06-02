@@ -18,7 +18,6 @@
           "meta": {
             "cloudflare_proxy": "ON"
           },
-          "origin": "",
           "target": "1.2.3.4"
         }
       ]

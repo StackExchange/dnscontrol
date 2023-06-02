@@ -10,7 +10,6 @@
         {
           "type": "SOA",
           "name": "@",
-          "origin": "",
           "soambox": "admin.foo.com",
           "soarefresh": 3600,
           "soaretry": 900,

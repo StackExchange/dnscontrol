@@ -23,7 +23,6 @@
           "type": "A",
           "name": "@",
           "ttl": 42,
-          "origin": "",
           "target": "1.2.3.4"
         }
       ]

@@ -10,7 +10,6 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
-          "origin": "",
           "srvpriority": 1,
           "srvweight": 100,
           "srvport": 123,
@@ -19,7 +18,6 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
-          "origin": "",
           "srvpriority": 2,
           "srvweight": 100,
           "srvport": 123,
@@ -28,7 +26,6 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
-          "origin": "",
           "srvpriority": 3,
           "srvweight": 100,
           "srvport": 123,
@@ -37,7 +34,6 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
-          "origin": "",
           "srvpriority": 4,
           "srvweight": 100,
           "srvport": 123,
@@ -46,7 +42,6 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
-          "origin": "",
           "srvport": 1,
           "target": "zeros"
         }

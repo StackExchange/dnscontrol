@@ -10,21 +10,18 @@
         {
           "type": "CAA",
           "name": "@",
-          "origin": "",
           "caatag": "issue",
           "target": "letsencrypt.org"
         },
         {
           "type": "CAA",
           "name": "@",
-          "origin": "",
           "caatag": "issuewild",
           "target": ";"
         },
         {
           "type": "CAA",
           "name": "@",
-          "origin": "",
           "caatag": "iodef",
           "caaflag": 128,
           "target": "mailto:test@example.com"
@@ -32,14 +29,12 @@
         {
           "type": "CAA",
           "name": "@",
-          "origin": "",
           "caatag": "iodef",
           "target": "http://example.com"
         },
         {
           "type": "CAA",
           "name": "@",
-          "origin": "",
           "caatag": "iodef",
           "caaflag": 128,
           "target": "https://example.com"

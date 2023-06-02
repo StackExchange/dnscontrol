@@ -10,7 +10,6 @@
         {
           "type": "R53_ALIAS",
           "name": "mxtest",
-          "origin": "",
           "r53_alias": {
             "type": "MX"
           },
@@ -19,7 +18,6 @@
         {
           "type": "R53_ALIAS",
           "name": "atest",
-          "origin": "",
           "r53_alias": {
             "type": "A"
           },
@@ -28,7 +26,6 @@
         {
           "type": "R53_ALIAS",
           "name": "atest",
-          "origin": "",
           "r53_alias": {
             "type": "A",
             "zone_id": "Z2FTEDLFRTF"
@@ -38,7 +35,6 @@
         {
           "type": "R53_ALIAS",
           "name": "aaaatest",
-          "origin": "",
           "r53_alias": {
             "type": "AAAA"
           },
@@ -47,7 +43,6 @@
         {
           "type": "R53_ALIAS",
           "name": "aaaatest",
-          "origin": "",
           "r53_alias": {
             "type": "AAAA",
             "zone_id": "ERERTFGFGF"
@@ -57,7 +52,6 @@
         {
           "type": "R53_ALIAS",
           "name": "cnametest",
-          "origin": "",
           "r53_alias": {
             "type": "CNAME"
           },
@@ -66,7 +60,6 @@
         {
           "type": "R53_ALIAS",
           "name": "ptrtest",
-          "origin": "",
           "r53_alias": {
             "type": "PTR"
           },
@@ -75,7 +68,6 @@
         {
           "type": "R53_ALIAS",
           "name": "txttest",
-          "origin": "",
           "r53_alias": {
             "type": "TXT"
           },
@@ -84,7 +76,6 @@
         {
           "type": "R53_ALIAS",
           "name": "srvtest",
-          "origin": "",
           "r53_alias": {
             "type": "SRV"
           },
@@ -93,7 +84,6 @@
         {
           "type": "R53_ALIAS",
           "name": "spftest",
-          "origin": "",
           "r53_alias": {
             "type": "SPF"
           },
@@ -102,7 +92,6 @@
         {
           "type": "R53_ALIAS",
           "name": "caatest",
-          "origin": "",
           "r53_alias": {
             "type": "CAA"
           },
@@ -111,7 +100,6 @@
         {
           "type": "R53_ALIAS",
           "name": "naptrtest",
-          "origin": "",
           "r53_alias": {
             "type": "NAPTR"
           },

@@ -10,7 +10,6 @@
         {
           "type": "ALIAS",
           "name": "@",
-          "origin": "",
           "target": "foo.com."
         }
       ]

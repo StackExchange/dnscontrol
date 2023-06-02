@@ -10,7 +10,6 @@
         {
           "type": "AZURE_ALIAS",
           "name": "atest",
-          "origin": "",
           "azure_alias": {
             "type": "A"
           },
@@ -19,7 +18,6 @@
         {
           "type": "AZURE_ALIAS",
           "name": "aaaatest",
-          "origin": "",
           "azure_alias": {
             "type": "AAAA"
           },
@@ -28,7 +26,6 @@
         {
           "type": "AZURE_ALIAS",
           "name": "cnametest",
-          "origin": "",
           "azure_alias": {
             "type": "CNAME"
           },

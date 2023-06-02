@@ -11,7 +11,6 @@
           "type": "TXT",
           "name": "_dmarc",
           "ttl": 300,
-          "origin": "",
           "txtstrings": [
             "v=DMARC1\\; p=reject\\; sp=reject\\; pct=100\\; rua=mailto:xx...@yyyy.com\\; ruf=mailto:xx...@yyyy.com\\; fo=1"
           ],

@@ -92,7 +92,6 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-	Origin    string            `json:"origin"`
 
 	// If you add a field to this struct, also add it to the list on MarshalJSON.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -162,7 +161,6 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-		Origin    string            `json:"origin"`
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -262,7 +260,6 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
-	rc.Origin = origin
 	if short == "" || short == "@" {
 		rc.Name = "@"
 		rc.NameFQDN = origin
@@ -300,7 +297,6 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
-	rc.Origin = origin
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -478,7 +474,7 @@ func (rc *RecordConfig) GetFQDNDependencies() []string {
 		fallthrough
 	case dns.TypeMX:
 		return []string{
-			dnsutil.AddOrigin(rc.target, rc.Origin),
+			rc.target,
 		}
 	}
 	return []string{}
@@ -629,15 +625,15 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		switch r.Type { // #rtype_variations
 		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
-			r.target = dnsutil.AddOrigin(r.target, origin)
+			r.target = dns.Fqdn(dnsutil.AddOrigin(r.target, origin))
 		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
-				r.target = dnsutil.AddOrigin(r.target, origin) // .target stores the Ns
+				r.target = dns.Fqdn(dnsutil.AddOrigin(r.target, origin)) // .target stores the Ns
 			}
 			if r.SoaMbox != "DEFAULT_NOT_SET." {
-				r.SoaMbox = dnsutil.AddOrigin(r.SoaMbox, origin)
+				r.SoaMbox = dns.Fqdn(dnsutil.AddOrigin(r.SoaMbox, origin))
 			}
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.

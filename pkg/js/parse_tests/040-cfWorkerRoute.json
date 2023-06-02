@@ -10,7 +10,6 @@
         {
           "type": "CF_WORKER_ROUTE",
           "name": "@",
-          "origin": "",
           "target": "test.foo.com,test-worker"
         }
       ]

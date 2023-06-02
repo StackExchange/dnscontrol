@@ -10,7 +10,6 @@
         {
           "type": "LOC",
           "name": "@",
-          "origin": "",
           "locsize": 51,
           "loclatitude": 2299997648,
           "loclongitude": 1891505648,
@@ -20,7 +19,6 @@
         {
           "type": "LOC",
           "name": "a",
-          "origin": "",
           "locsize": 18,
           "lochorizpre": 36,
           "locvertpre": 19,
@@ -32,7 +30,6 @@
         {
           "type": "LOC",
           "name": "b",
-          "origin": "",
           "loclatitude": 2335528648,
           "loclongitude": 2148013648,
           "localtitude": 10001000,
@@ -41,7 +38,6 @@
         {
           "type": "LOC",
           "name": "c",
-          "origin": "",
           "loclatitude": 2031844648,
           "loclongitude": 2565228648,
           "localtitude": 10001000,
@@ -50,7 +46,6 @@
         {
           "type": "LOC",
           "name": "d",
-          "origin": "",
           "locsize": 37,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -60,7 +55,6 @@
         {
           "type": "LOC",
           "name": "big-ben",
-          "origin": "",
           "loclatitude": 2332886681,
           "loclongitude": 2147034997,
           "localtitude": 10000600,
@@ -70,7 +64,6 @@
           "type": "LOC",
           "name": "white-house",
           "ttl": 300,
-          "origin": "",
           "loclatitude": 2287515583,
           "loclongitude": 1870152064,
           "localtitude": 10001900,
@@ -80,7 +73,6 @@
           "type": "LOC",
           "name": "opera-house",
           "ttl": 300,
-          "origin": "",
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
           "localtitude": 10000400,
@@ -90,7 +82,6 @@
           "type": "LOC",
           "name": "opera-house2",
           "ttl": 300,
-          "origin": "",
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
           "localtitude": 10000400,
@@ -100,7 +91,6 @@
           "type": "LOC",
           "name": "opera-house3",
           "ttl": 300,
-          "origin": "",
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
           "localtitude": 10000400,
@@ -110,7 +100,6 @@
           "type": "LOC",
           "name": "opera-house4",
           "ttl": 300,
-          "origin": "",
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
           "localtitude": 10000400,
@@ -119,7 +108,6 @@
         {
           "type": "LOC",
           "name": "fraser-island",
-          "origin": "",
           "loclatitude": 2056619648,
           "loclongitude": 2698823648,
           "localtitude": 10000300,
@@ -128,7 +116,6 @@
         {
           "type": "LOC",
           "name": "tasmania",
-          "origin": "",
           "loclatitude": 1996283648,
           "loclongitude": 2676683648,
           "localtitude": 10000300,
@@ -137,7 +124,6 @@
         {
           "type": "LOC",
           "name": "hawaii",
-          "origin": "",
           "loclatitude": 2224883648,
           "loclongitude": 1578683648,
           "localtitude": 10092000,
@@ -146,7 +132,6 @@
         {
           "type": "LOC",
           "name": "old-faithful",
-          "origin": "",
           "loclatitude": 2307541648,
           "loclongitude": 1748502648,
           "localtitude": 10224000,
@@ -155,7 +140,6 @@
         {
           "type": "LOC",
           "name": "ribblehead-viaduct",
-          "origin": "",
           "loclatitude": 2342641648,
           "loclongitude": 2138950648,
           "localtitude": 10030000,
@@ -164,7 +148,6 @@
         {
           "type": "LOC",
           "name": "guinness-brewery",
-          "origin": "",
           "loclatitude": 2339523648,
           "loclongitude": 2124843648,
           "localtitude": 10030000,
