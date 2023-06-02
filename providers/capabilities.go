@@ -78,6 +78,9 @@ const (
 
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange
 	DocOfficiallySupported
+
+	// CanUseDHCID indicates the provider can handle DHCID records
+	CanUseDHCID
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}

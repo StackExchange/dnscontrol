@@ -407,6 +407,9 @@ var DS = recordBuilder('DS', {
     },
 });
 
+// DHCID(name,target, recordModifiers...)
+var DHCID = recordBuilder('DHCID');
+
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
