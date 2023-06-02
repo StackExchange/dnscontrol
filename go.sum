@@ -21,8 +21,8 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.0.0/go.mod h1:kgDm
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7 h1:AJKJCKcb/psppPl/9CUiQQnTG+Bce0/cIweD5w5Q7aQ=
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7/go.mod h1:GCzqZQHydohgVLSIqRKZeTt8IGb1Y4NaFfim3H40uUI=
-github.com/G-Core/gcore-dns-sdk-go v0.2.3 h1:WODi+qWlZyF7E7SH8rq/DCACa/Zhsuhu1h0DuFJc2Yg=
-github.com/G-Core/gcore-dns-sdk-go v0.2.3/go.mod h1:TM+VaDvBPObF+x085lS3i0kc2OPAkuW2c4Leg7Pe6jI=
+github.com/G-Core/gcore-dns-sdk-go v0.2.6 h1:R82ANd7BnhIe2mV/12Ebdx9QYVl2++E4kfDIu97JEOk=
+github.com/G-Core/gcore-dns-sdk-go v0.2.6/go.mod h1:KliUjfPonDvXyAGNiuO+MYVG/7lmWHZ+4Hi0sPxgOjg=
 github.com/PuerkitoBio/goquery v1.8.1 h1:uQxhNlArOIdbrH1tr0UXwdVFgDcZDrZVdcpygAcwmWM=
 github.com/PuerkitoBio/goquery v1.8.1/go.mod h1:Q8ICL1kNUJ2sXGoAhPGUdYDJvgQgHzJsnnd3H7Ho5jQ=
 github.com/TomOnTime/utfutil v0.0.0-20230223141146-125e65197b36 h1:vfVc5pSCq58ljNpXXwUcLnHATYi/x+YUdqFc9uBhLbM=
