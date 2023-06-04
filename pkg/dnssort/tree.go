@@ -4,6 +4,19 @@ import (
 	"strings"
 )
 
+// CreateTree creates a tree like structure to add arbitrary data to DNS names.
+// The DomainTree splits the domain name based on the dot (.), reverses the resulting list and add all strings the tree in order.
+// It has support for wildcard domain names the tree nodes (`Set`), but not during retrieval (Get and Has).
+// Get always returns the most specific node; it doesn't immediately return the node upon finding a wildcard node.
+func CreateTree[T any]() *DomainTree[T] {
+	return &DomainTree[T]{
+		IsLeaf:     false,
+		IsWildcard: false,
+		Name:       "",
+		Children:   map[string]*domainNode[T]{},
+	}
+}
+
 type DomainTree[T any] domainNode[T]
 
 type domainNode[T any] struct {
@@ -12,15 +25,6 @@ type domainNode[T any] struct {
 	Name       string
 	Children   map[string]*domainNode[T]
 	data       T
-}
-
-func CreateTree[T any]() *DomainTree[T] {
-	return &DomainTree[T]{
-		IsLeaf:     false,
-		IsWildcard: false,
-		Name:       "",
-		Children:   map[string]*domainNode[T]{},
-	}
 }
 
 func createNode[T any](name string) *domainNode[T] {

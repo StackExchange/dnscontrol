@@ -1,5 +1,51 @@
 package dnssort
 
+// SortUsingGraph sorts changes based on their dependencies using a directed graph.
+// Most changes have dependencies on other changes.
+// Either they are depend on already (a backwards dependency) or their new state depend on another record (a forwards dependency) which can be in our change set or an existing record.
+// A rough sketch of our sorting algorithm is as follows
+//
+// while graph has nodes:
+//
+//	  foreach node in graph:
+//
+//		  if node has no dependencies:
+//		    add node to sortedNodes
+//		    remove node from graph
+//
+// return sortedNodes
+//
+// The code below also accounts for the existence of cycles by tracking if any nodes were added to the sorted set in the last round.
+func SortUsingGraph[T SortableChange](records []T) SortResult[T] {
+	sortState := createDirectedSortState(records)
+
+	for sortState.hasWork() {
+
+		for _, node := range sortState.graph.all {
+			sortState.hasResolvedLastRound = false
+
+			if node.hasUnmetDependencies() {
+				continue
+			}
+
+			sortState.hasResolvedLastRound = true
+			sortState.addSortedRecord(node.Change)
+			sortState.graph.removeNode(node)
+		}
+
+		if sortState.hasStalled() {
+			break
+		}
+	}
+
+	sortState.finalize()
+
+	return SortResult[T]{
+		SortedRecords:     sortState.sortedRecords,
+		UnresolvedRecords: sortState.unresolvedRecords,
+	}
+}
+
 type directedSortState[T SortableChange] struct {
 	graph                *DNSGraph[T]
 	sortedRecords        []T
@@ -42,36 +88,6 @@ func (sortState *directedSortState[T]) hasWork() bool {
 
 func (sortState *directedSortState[T]) hasStalled() bool {
 	return !sortState.hasResolvedLastRound
-}
-
-func SortUsingGraph[T SortableChange](records []T) SortResult[T] {
-	sortState := createDirectedSortState(records)
-
-	for sortState.hasWork() {
-
-		for _, node := range sortState.graph.all {
-			sortState.hasResolvedLastRound = false
-
-			if node.hasUnmetDependencies() {
-				continue
-			}
-
-			sortState.hasResolvedLastRound = true
-			sortState.addSortedRecord(node.Change)
-			sortState.graph.removeNode(node)
-		}
-
-		if sortState.hasStalled() {
-			break
-		}
-	}
-
-	sortState.finalize()
-
-	return SortResult[T]{
-		SortedRecords:     sortState.sortedRecords,
-		UnresolvedRecords: sortState.unresolvedRecords,
-	}
 }
 
 func (sortState *directedSortState[T]) addSortedRecord(node T) {
