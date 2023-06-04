@@ -6,18 +6,15 @@
       "name": "foo.com",
       "registrar": "none",
       "dnsProviders": {},
+      "records": [],
       "meta": {
         "zone_id": "Z2FTEDLFRTZ"
-      },
-      "records": []
+      }
     },
     {
       "name": "foo.com!internal",
       "registrar": "none",
       "dnsProviders": {},
-      "meta": {
-        "zone_id": "Z2FTEDLFRTF"
-      },
       "records": [
         {
           "type": "R53_ALIAS",
@@ -28,7 +25,10 @@
           },
           "target": "foo.com."
         }
-      ]
+      ],
+      "meta": {
+        "zone_id": "Z2FTEDLFRTF"
+      }
     }
   ]
 }

@@ -10,34 +10,34 @@
         {
           "type": "CAA",
           "name": "@",
-          "caatag": "issue",
-          "target": "letsencrypt.org"
+          "target": "letsencrypt.org",
+          "caatag": "issue"
         },
         {
           "type": "CAA",
           "name": "@",
-          "caatag": "issuewild",
-          "target": ";"
+          "target": ";",
+          "caatag": "issuewild"
         },
         {
           "type": "CAA",
           "name": "@",
+          "target": "mailto:test@example.com",
           "caatag": "iodef",
-          "caaflag": 128,
-          "target": "mailto:test@example.com"
+          "caaflag": 128
         },
         {
           "type": "CAA",
           "name": "@",
-          "caatag": "iodef",
-          "target": "http://example.com"
+          "target": "http://example.com",
+          "caatag": "iodef"
         },
         {
           "type": "CAA",
           "name": "@",
+          "target": "https://example.com",
           "caatag": "iodef",
-          "caaflag": 128,
-          "target": "https://example.com"
+          "caaflag": 128
         }
       ]
     }

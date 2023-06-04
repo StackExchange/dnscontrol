@@ -10,32 +10,32 @@
         {
           "type": "A",
           "name": "@",
-          "ttl": 300,
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "ttl": 300
         },
         {
           "type": "A",
           "name": "a",
-          "ttl": 300,
-          "target": "1.2.3.5"
+          "target": "1.2.3.5",
+          "ttl": 300
         },
         {
           "type": "A",
           "name": "b",
-          "ttl": 180,
-          "target": "1.2.3.6"
+          "target": "1.2.3.6",
+          "ttl": 180
         },
         {
           "type": "A",
           "name": "c",
-          "ttl": 10800,
-          "target": "1.2.3.7"
+          "target": "1.2.3.7",
+          "ttl": 10800
         },
         {
           "type": "A",
           "name": "d",
-          "ttl": 259200,
-          "target": "1.2.3.8"
+          "target": "1.2.3.8",
+          "ttl": 259200
         }
       ]
     }

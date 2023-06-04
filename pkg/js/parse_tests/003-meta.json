@@ -15,10 +15,10 @@
         {
           "type": "A",
           "name": "@",
+          "target": "1.2.3.4",
           "meta": {
             "cloudflare_proxy": "ON"
-          },
-          "target": "1.2.3.4"
+          }
         }
       ]
     }

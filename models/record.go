@@ -455,24 +455,15 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	return rr
 }
 
-func (rc *RecordConfig) GetNameFQDN() string {
-	return rc.NameFQDN
-}
-
-func (rc *RecordConfig) GetFQDNDependencies() []string {
+// GetDependencies returns the FQDNs on which this record dependents
+func (rc *RecordConfig) GetDependencies() []string {
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
 	switch rdtype {
-	case dns.TypeNS:
-		fallthrough
-	case dns.TypeSRV:
-		fallthrough
-	case dns.TypeCNAME:
-		fallthrough
-	case dns.TypeMX:
+	case dns.TypeNS, dns.TypeSRV, dns.TypeCNAME, dns.TypeMX:
 		return []string{
 			rc.target,
 		}
@@ -579,10 +570,11 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 	return order, groups
 }
 
-func (recs Records) GetFQDNDependencies() []string {
+// GetAllDependencies concatinates all dependencies of all records
+func (recs Records) GetAllDependencies() []string {
 	var dependencies []string
 	for _, rec := range recs {
-		dependencies = append(dependencies, rec.GetFQDNDependencies()...)
+		dependencies = append(dependencies, rec.GetDependencies()...)
 	}
 
 	return dependencies

@@ -38,8 +38,8 @@ func CreateGraph[T SortableChange](changes []T) *DNSGraph[T] {
 	}
 
 	for _, change := range changes {
-		sourceNodes := graph.tree.Get(change.GetNameFQDN())
-		for _, dependency := range change.GetFQDNDependencies() {
+		sourceNodes := graph.tree.Get(change.GetName())
+		for _, dependency := range change.GetDependencies() {
 			graph.addEdge(sourceNodes, dependency)
 		}
 	}
@@ -54,15 +54,15 @@ func (graph *DNSGraph[T]) removeNode(toRemove *dnsGraphNode[T]) {
 
 	graph.all = graph.all.removeNode(toRemove)
 
-	nodes := graph.tree.Get(toRemove.Change.GetNameFQDN())
+	nodes := graph.tree.Get(toRemove.Change.GetName())
 	if nodes != nil {
 		nodes = nodes.removeNode(toRemove)
-		graph.tree.Set(toRemove.Change.GetNameFQDN(), nodes)
+		graph.tree.Set(toRemove.Change.GetName(), nodes)
 	}
 }
 
 func (graph *DNSGraph[T]) addNode(change T) {
-	nodes := graph.tree.Get(change.GetNameFQDN())
+	nodes := graph.tree.Get(change.GetName())
 	node := &dnsGraphNode[T]{
 		Change: change,
 		Edges:  dnsGraphEdges[T]{},
@@ -72,7 +72,7 @@ func (graph *DNSGraph[T]) addNode(change T) {
 	}
 
 	graph.all = append(graph.all, node)
-	graph.tree.Set(change.GetNameFQDN(), nodes)
+	graph.tree.Set(change.GetName(), nodes)
 }
 
 func (graph *DNSGraph[T]) addEdge(sourceNodes []*dnsGraphNode[T], dependency Dependency) {

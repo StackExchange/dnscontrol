@@ -10,11 +10,11 @@ func (record stubRecord) GetType() ChangeType {
 	return record.Type
 }
 
-func (record stubRecord) GetNameFQDN() string {
+func (record stubRecord) GetName() string {
 	return record.NameFQDN
 }
 
-func (record stubRecord) GetFQDNDependencies() []Dependency {
+func (record stubRecord) GetDependencies() []Dependency {
 	return record.Dependencies
 }
 

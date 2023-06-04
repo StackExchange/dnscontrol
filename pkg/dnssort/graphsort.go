@@ -90,11 +90,11 @@ func (sortState *directedSortState[T]) finalize() {
 
 func (node *dnsGraphNode[T]) hasUnmetDependencies() bool {
 	for _, edge := range node.Edges {
-		if edge.Dependency.Type == OldDependency && edge.Direction == IncomingEdge {
+		if edge.Dependency.Type == BackwardDependency && edge.Direction == IncomingEdge {
 			return true
 		}
 
-		if edge.Dependency.Type == NewDependency && edge.Direction == OutgoingEdge {
+		if edge.Dependency.Type == ForwardDependency && edge.Direction == OutgoingEdge {
 			return true
 		}
 	}

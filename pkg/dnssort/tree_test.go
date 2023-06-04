@@ -20,7 +20,7 @@ func Test_domaintree(t *testing.T) {
 				"*.example.com",
 			},
 			[]string{"example.com", "other.example.com"},
-			[]string{"com", "example.nl"},
+			[]string{"com", "example.nl", "*.com"},
 		),
 	)
 

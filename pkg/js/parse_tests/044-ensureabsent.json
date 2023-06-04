@@ -1,25 +1,25 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "example.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "example.com",
       "records": [
         {
-          "type": "A",
           "name": "normal",
-          "target": "1.1.1.1"
+          "target": "1.1.1.1",
+          "type": "A"
         }
       ],
       "recordsabsent": [
         {
-          "type": "A",
           "name": "helper",
-          "target": "2.2.2.2"
+          "target": "2.2.2.2",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

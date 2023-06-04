@@ -10,8 +10,8 @@ const (
 type DependencyType uint8
 
 const (
-	NewDependency DependencyType = iota
-	OldDependency
+	ForwardDependency DependencyType = iota
+	BackwardDependency
 )
 
 type Dependency struct {
@@ -21,8 +21,8 @@ type Dependency struct {
 
 type SortableChange interface {
 	GetType() ChangeType
-	GetNameFQDN() string
-	GetFQDNDependencies() []Dependency
+	GetName() string
+	GetDependencies() []Dependency
 }
 
 func CreateDependencies(dependencyFQDNs []string, dependencyType DependencyType) []Dependency {
@@ -39,7 +39,7 @@ func GetRecordsNamesForChanges[T SortableChange](changes []T) []string {
 	var names []string
 
 	for _, change := range changes {
-		names = append(names, change.GetNameFQDN())
+		names = append(names, change.GetName())
 	}
 
 	return names

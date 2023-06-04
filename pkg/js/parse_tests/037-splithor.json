@@ -1,10 +1,4 @@
 {
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
-    }
-  ],
   "dns_providers": [
     {
       "name": "otherconfig",
@@ -21,56 +15,62 @@
   ],
   "domains": [
     {
-      "name": "example.com",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "otherconfig": -1
       },
+      "name": "example.com",
       "records": [
         {
-          "type": "A",
           "name": "main",
-          "target": "3.3.3.3"
+          "target": "3.3.3.3",
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "www",
-          "target": "33.33.33.33"
+          "target": "33.33.33.33",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
     },
     {
-      "name": "example.com!inside",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "name": "example.com!inside",
       "records": [
         {
-          "type": "A",
           "name": "main",
-          "target": "1.1.1.1"
+          "target": "1.1.1.1",
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "main",
-          "target": "11.11.11.11"
+          "target": "11.11.11.11",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
     },
     {
-      "name": "example.com!outside",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "bind": -1
       },
+      "name": "example.com!outside",
       "records": [
         {
-          "type": "A",
           "name": "main",
-          "target": "8.8.8.8"
+          "target": "8.8.8.8",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
     }
   ]
 }

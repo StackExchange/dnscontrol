@@ -61,18 +61,18 @@ func (c Change) GetType() dnssort.ChangeType {
 	return dnssort.Change
 }
 
-func (c Change) GetNameFQDN() string {
+func (c Change) GetName() string {
 	return c.Key.NameFQDN
 }
 
-func (c Change) GetFQDNDependencies() []dnssort.Dependency {
+func (c Change) GetDependencies() []dnssort.Dependency {
 	var dependencies []dnssort.Dependency
 
 	if c.Type == CHANGE || c.Type == DELETE {
-		dependencies = append(dependencies, dnssort.CreateDependencies(c.Old.GetFQDNDependencies(), dnssort.OldDependency)...)
+		dependencies = append(dependencies, dnssort.CreateDependencies(c.Old.GetAllDependencies(), dnssort.BackwardDependency)...)
 	}
 	if c.Type == CHANGE || c.Type == CREATE {
-		dependencies = append(dependencies, dnssort.CreateDependencies(c.New.GetFQDNDependencies(), dnssort.NewDependency)...)
+		dependencies = append(dependencies, dnssort.CreateDependencies(c.New.GetAllDependencies(), dnssort.ForwardDependency)...)
 	}
 
 	return dependencies

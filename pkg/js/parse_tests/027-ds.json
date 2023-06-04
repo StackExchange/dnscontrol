@@ -10,20 +10,20 @@
         {
           "type": "DS",
           "name": "@",
+          "target": "",
           "dskeytag": 1000,
           "dsalgorithm": 13,
           "dsdigesttype": 2,
-          "dsdigest": "AABBCCDDEEFF",
-          "target": ""
+          "dsdigest": "AABBCCDDEEFF"
         },
         {
           "type": "DS",
           "name": "@",
+          "target": "",
           "dskeytag": 1,
           "dsalgorithm": 1,
           "dsdigesttype": 1,
-          "dsdigest": "FFFF",
-          "target": ""
+          "dsdigest": "FFFF"
         }
       ]
     }
