@@ -1,14 +1,14 @@
-package dnssort
+package dnstree
 
 import (
 	"strings"
 )
 
-// CreateTree creates a tree like structure to add arbitrary data to DNS names.
+// Create creates a tree like structure to add arbitrary data to DNS names.
 // The DomainTree splits the domain name based on the dot (.), reverses the resulting list and add all strings the tree in order.
 // It has support for wildcard domain names the tree nodes (`Set`), but not during retrieval (Get and Has).
 // Get always returns the most specific node; it doesn't immediately return the node upon finding a wildcard node.
-func CreateTree[T any]() *DomainTree[T] {
+func Create[T any]() *DomainTree[T] {
 	return &DomainTree[T]{
 		IsLeaf:     false,
 		IsWildcard: false,
@@ -35,24 +35,9 @@ func createNode[T any](name string) *domainNode[T] {
 	}
 }
 
-func (tree *domainNode[T]) addIntermediate(name string) *domainNode[T] {
-	if _, ok := tree.Children[name]; !ok {
-		tree.Children[name] = createNode[T](name)
-	}
-
-	return tree.Children[name]
-}
-
-func (tree *domainNode[T]) addLeaf(name string, isWildcard bool, data T) *domainNode[T] {
-	node := tree.addIntermediate(name)
-
-	node.data = data
-	node.IsLeaf = true
-	node.IsWildcard = node.IsWildcard || isWildcard
-
-	return node
-}
-
+// Set adds given data to the given fqdn.
+// The FQDN can contain a wildcard on the start.
+// example fqdn: *.example.com
 func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	domainParts := splitFQDN(fqdn)
 
@@ -69,6 +54,15 @@ func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	ptr.addLeaf(domainParts[0], isWildcard, data)
 }
 
+// Retrieves the attached data from a given FQDN.
+// The tree will return the data entry for the most specific FQDN entry.
+// If no entry is found Get will return the default value for the specific type.
+//
+// tree.Set("*.example.com", 1)
+// tree.Set("a.example.com", 2)
+// tree.Get("a.example.com") // 2
+// tree.Get("a.a.example.com") // 1
+// tree.Get("other.com") // 0
 func (tree *DomainTree[T]) Get(fqdn string) T {
 	domainParts := splitFQDN(fqdn)
 
@@ -102,6 +96,7 @@ func (tree *DomainTree[T]) Get(fqdn string) T {
 	return *new(T)
 }
 
+// Has returns if the tree contains data for given FQDN.
 func (tree *DomainTree[T]) Has(fqdn string) bool {
 	domainParts := splitFQDN(fqdn)
 
@@ -128,4 +123,22 @@ func splitFQDN(fqdn string) []string {
 	normalizedFQDN := strings.TrimSuffix(fqdn, ".")
 
 	return strings.Split(normalizedFQDN, ".")
+}
+
+func (tree *domainNode[T]) addIntermediate(name string) *domainNode[T] {
+	if _, ok := tree.Children[name]; !ok {
+		tree.Children[name] = createNode[T](name)
+	}
+
+	return tree.Children[name]
+}
+
+func (tree *domainNode[T]) addLeaf(name string, isWildcard bool, data T) *domainNode[T] {
+	node := tree.addIntermediate(name)
+
+	node.data = data
+	node.IsLeaf = true
+	node.IsWildcard = node.IsWildcard || isWildcard
+
+	return node
 }

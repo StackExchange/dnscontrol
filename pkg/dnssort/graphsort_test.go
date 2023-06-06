@@ -1,14 +1,20 @@
-package dnssort
+package dnssort_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph/testutils"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnssort"
+)
 
 func Test_graphsort(t *testing.T) {
 
 	t.Run("Direct dependency",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "example.com"}}},
-				{NameFQDN: "example.com", Dependencies: []Dependency{}},
+			[]testutils.StubRecord{
+				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{}},
 			},
 			[]string{
 				"example.com",
@@ -20,9 +26,9 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Already in correct order",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "example.com", Dependencies: []Dependency{}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "example.com"}}},
+			[]testutils.StubRecord{
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{}},
+				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}},
 			},
 			[]string{
 				"example.com",
@@ -34,9 +40,9 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Use wildcards",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "a.test.example.com"}}},
-				{NameFQDN: "*.test.example.com", Dependencies: []Dependency{}},
+			[]testutils.StubRecord{
+				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "a.test.example.com"}}},
+				{NameFQDN: "*.test.example.com", Dependencies: []dnsgraph.Dependency{}},
 			},
 			[]string{
 				"*.test.example.com",
@@ -48,11 +54,11 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Cyclic dependency added on the end",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "b.example.com"}}},
-				{NameFQDN: "b.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "a.example.com"}}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "example.com"}}},
-				{NameFQDN: "example.com", Dependencies: []Dependency{}},
+			[]testutils.StubRecord{
+				{NameFQDN: "a.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "b.example.com"}}},
+				{NameFQDN: "b.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{}},
 			},
 			[]string{
 				"example.com",
@@ -69,10 +75,10 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Self dependency added on the end",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "a.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "a.example.com"}}},
-				{NameFQDN: "www.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "example.com"}}},
-				{NameFQDN: "example.com", Dependencies: []Dependency{{}}},
+			[]testutils.StubRecord{
+				{NameFQDN: "a.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "a.example.com"}}},
+				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}},
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{{}}},
 			},
 			[]string{
 				"example.com",
@@ -87,8 +93,8 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Ignores external dependency",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "mail.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "mail.external.tld"}}},
+			[]testutils.StubRecord{
+				{NameFQDN: "mail.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "mail.external.tld"}}},
 			},
 			[]string{
 				"mail.example.com",
@@ -99,9 +105,9 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Deletions in correct order",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "mail.example.com", Dependencies: []Dependency{}},
-				{NameFQDN: "example.com", Dependencies: []Dependency{{NameFQDN: "mail.example.com", Type: BackwardDependency}}},
+			[]testutils.StubRecord{
+				{NameFQDN: "mail.example.com", Dependencies: []dnsgraph.Dependency{}},
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{{NameFQDN: "mail.example.com", Type: dnsgraph.BackwardDependency}}},
 			},
 			[]string{
 				"example.com",
@@ -113,10 +119,10 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("A Change with dependency on old and new state",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "bar2.example.com", Dependencies: []Dependency{{}}},
-				{NameFQDN: "foo.example.com", Dependencies: []Dependency{{NameFQDN: "bar2.example.com", Type: BackwardDependency}, {NameFQDN: "new2.example.com", Type: ForwardDependency}}},
-				{NameFQDN: "new2.example.com", Dependencies: []Dependency{{}}},
+			[]testutils.StubRecord{
+				{NameFQDN: "bar2.example.com", Dependencies: []dnsgraph.Dependency{{}}},
+				{NameFQDN: "foo.example.com", Dependencies: []dnsgraph.Dependency{{NameFQDN: "bar2.example.com", Type: dnsgraph.BackwardDependency}, {NameFQDN: "new2.example.com", Type: dnsgraph.ForwardDependency}}},
+				{NameFQDN: "new2.example.com", Dependencies: []dnsgraph.Dependency{{}}},
 			},
 			[]string{
 				"new2.example.com",
@@ -129,9 +135,9 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Reports first and ignore dependencies",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "example.com", Dependencies: []Dependency{}},
-				{NameFQDN: "test.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "example.com"}}, Type: Report},
+			[]testutils.StubRecord{
+				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{}},
+				{NameFQDN: "test.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}, Type: dnsgraph.Report},
 			},
 			[]string{
 				"test.example.com",
@@ -143,9 +149,9 @@ func Test_graphsort(t *testing.T) {
 
 	t.Run("Reports are not resolvable as dependencies",
 		executeGraphSort(
-			[]stubRecord{
-				{NameFQDN: "test2.example.com", Dependencies: []Dependency{{Type: ForwardDependency, NameFQDN: "test.example.com"}}},
-				{NameFQDN: "test.example.com", Dependencies: []Dependency{}, Type: Report},
+			[]testutils.StubRecord{
+				{NameFQDN: "test2.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "test.example.com"}}},
+				{NameFQDN: "test.example.com", Dependencies: []dnsgraph.Dependency{}, Type: dnsgraph.Report},
 			},
 			[]string{
 				"test.example.com",
@@ -156,28 +162,28 @@ func Test_graphsort(t *testing.T) {
 	)
 }
 
-func executeGraphSort(inputOrder []stubRecord, expectedOutputOrder []string, expectedUnresolved []string) func(*testing.T) {
+func executeGraphSort(inputOrder []testutils.StubRecord, expectedOutputOrder []string, expectedUnresolved []string) func(*testing.T) {
 	return func(t *testing.T) {
-		inputSortableRecords := stubRecordsAsSortableRecords(inputOrder)
+		inputSortableRecords := testutils.StubRecordsAsGraphable(inputOrder)
 		t.Helper()
-		result := SortUsingGraph(inputSortableRecords)
+		result := dnssort.SortUsingGraph(inputSortableRecords)
 
 		if len(expectedOutputOrder) != len(result.SortedRecords) {
-			t.Errorf("Missing records after sort. Expected order: %v. Got order: %v\n", expectedOutputOrder, GetRecordsNamesForChanges(result.SortedRecords))
+			t.Errorf("Missing records after sort. Expected order: %v. Got order: %v\n", expectedOutputOrder, dnsgraph.GetRecordsNamesForGraphables(result.SortedRecords))
 		} else {
 			for iX := range expectedOutputOrder {
 				if result.SortedRecords[iX].GetName() != expectedOutputOrder[iX] {
-					t.Errorf("Invalid order on index %d after sort. Expected order: %v. Got order: %v\n", iX, expectedOutputOrder, GetRecordsNamesForChanges(result.SortedRecords))
+					t.Errorf("Invalid order on index %d after sort. Expected order: %v. Got order: %v\n", iX, expectedOutputOrder, dnsgraph.GetRecordsNamesForGraphables(result.SortedRecords))
 				}
 			}
 		}
 
 		if len(expectedUnresolved) != len(result.UnresolvedRecords) {
-			t.Errorf("Missing unresolved records. Expected unresolved: %v. Got: %v\n", expectedUnresolved, GetRecordsNamesForChanges(result.UnresolvedRecords))
+			t.Errorf("Missing unresolved records. Expected unresolved: %v. Got: %v\n", expectedUnresolved, dnsgraph.GetRecordsNamesForGraphables(result.UnresolvedRecords))
 		} else {
 			for iX := range expectedUnresolved {
 				if result.UnresolvedRecords[iX].GetName() != expectedUnresolved[iX] {
-					t.Errorf("Invalid unresolved records after sort. Expected: %v. Got: %v\n", expectedOutputOrder, GetRecordsNamesForChanges(result.UnresolvedRecords))
+					t.Errorf("Invalid unresolved records after sort. Expected: %v. Got: %v\n", expectedOutputOrder, dnsgraph.GetRecordsNamesForGraphables(result.UnresolvedRecords))
 				}
 			}
 		}

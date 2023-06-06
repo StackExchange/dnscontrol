@@ -1,5 +1,7 @@
 package dnssort
 
+import "github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph"
+
 // SortUsingGraph sorts changes based on their dependencies using a directed graph.
 // Most changes have dependencies on other changes.
 // Either they are depend on already (a backwards dependency) or their new state depend on another record (a forwards dependency) which can be in our change set or an existing record.
@@ -16,21 +18,21 @@ package dnssort
 // return sortedNodes
 //
 // The code below also accounts for the existence of cycles by tracking if any nodes were added to the sorted set in the last round.
-func SortUsingGraph[T SortableChange](records []T) SortResult[T] {
+func SortUsingGraph[T dnsgraph.Graphable](records []T) SortResult[T] {
 	sortState := createDirectedSortState(records)
 
 	for sortState.hasWork() {
 
-		for _, node := range sortState.graph.all {
+		for _, node := range sortState.graph.All {
 			sortState.hasResolvedLastRound = false
 
-			if node.hasUnmetDependencies() {
+			if hasUnmetDependencies(node) {
 				continue
 			}
 
 			sortState.hasResolvedLastRound = true
-			sortState.addSortedRecord(node.Change)
-			sortState.graph.removeNode(node)
+			sortState.addSortedRecord(node.Data)
+			sortState.graph.RemoveNode(node)
 		}
 
 		if sortState.hasStalled() {
@@ -46,17 +48,17 @@ func SortUsingGraph[T SortableChange](records []T) SortResult[T] {
 	}
 }
 
-type directedSortState[T SortableChange] struct {
-	graph                *DNSGraph[T]
+type directedSortState[T dnsgraph.Graphable] struct {
+	graph                *dnsgraph.DNSGraph[T]
 	sortedRecords        []T
 	unresolvedRecords    []T
 	hasResolvedLastRound bool
 }
 
-func createDirectedSortState[T SortableChange](records []T) directedSortState[T] {
+func createDirectedSortState[T dnsgraph.Graphable](records []T) directedSortState[T] {
 	changes, reportChanges := splitRecordsByType(records)
 
-	graph := CreateGraph(changes)
+	graph := dnsgraph.CreateGraph(changes)
 
 	return directedSortState[T]{
 		graph:                graph,
@@ -66,15 +68,15 @@ func createDirectedSortState[T SortableChange](records []T) directedSortState[T]
 	}
 }
 
-func splitRecordsByType[T SortableChange](records []T) ([]T, []T) {
+func splitRecordsByType[T dnsgraph.Graphable](records []T) ([]T, []T) {
 	var changes []T
 	var reports []T
 
 	for _, record := range records {
 		switch record.GetType() {
-		case Report:
+		case dnsgraph.Report:
 			reports = append(reports, record)
-		case Change:
+		case dnsgraph.Change:
 			changes = append(changes, record)
 		}
 	}
@@ -83,7 +85,7 @@ func splitRecordsByType[T SortableChange](records []T) ([]T, []T) {
 }
 
 func (sortState *directedSortState[T]) hasWork() bool {
-	return len(sortState.graph.all) > 0
+	return len(sortState.graph.All) > 0
 }
 
 func (sortState *directedSortState[T]) hasStalled() bool {
@@ -96,21 +98,21 @@ func (sortState *directedSortState[T]) addSortedRecord(node T) {
 
 func (sortState *directedSortState[T]) finalize() {
 	// Add all of the changes remaining in the graph as unresolved and add them at the end of the sorted result to at least include everything
-	if len(sortState.graph.all) > 0 {
-		for _, unresolved := range sortState.graph.all {
-			sortState.addSortedRecord(unresolved.Change)
-			sortState.unresolvedRecords = append(sortState.unresolvedRecords, unresolved.Change)
+	if len(sortState.graph.All) > 0 {
+		for _, unresolved := range sortState.graph.All {
+			sortState.addSortedRecord(unresolved.Data)
+			sortState.unresolvedRecords = append(sortState.unresolvedRecords, unresolved.Data)
 		}
 	}
 }
 
-func (node *dnsGraphNode[T]) hasUnmetDependencies() bool {
+func hasUnmetDependencies[T dnsgraph.Graphable](node *dnsgraph.DNSGraphNode[T]) bool {
 	for _, edge := range node.Edges {
-		if edge.Dependency.Type == BackwardDependency && edge.Direction == IncomingEdge {
+		if edge.Dependency.Type == dnsgraph.BackwardDependency && edge.Direction == dnsgraph.IncomingEdge {
 			return true
 		}
 
-		if edge.Dependency.Type == ForwardDependency && edge.Direction == OutgoingEdge {
+		if edge.Dependency.Type == dnsgraph.ForwardDependency && edge.Direction == dnsgraph.OutgoingEdge {
 			return true
 		}
 	}

@@ -613,7 +613,8 @@ func Downcase(recs []*RecordConfig) {
 
 // CanonicalizeTargets turns Targets into FQDNs
 func CanonicalizeTargets(recs []*RecordConfig, origin string) {
-	originFQDN := dns.Fqdn(origin)
+	originFQDN := origin + "."
+
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
 		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":

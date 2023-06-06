@@ -1,11 +1,8 @@
 package dnssort
 
-type unresolvedRecord[T SortableChange] struct {
-	unresolvedDependencies nameMap
-	record                 T
-}
+import "github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph"
 
-type SortResult[T SortableChange] struct {
+type SortResult[T dnsgraph.Graphable] struct {
 	SortedRecords     []T
 	UnresolvedRecords []T
 }

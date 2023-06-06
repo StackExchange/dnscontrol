@@ -1,4 +1,4 @@
-package dnssort
+package dnstree
 
 import "testing"
 
@@ -40,7 +40,7 @@ func Test_domaintree(t *testing.T) {
 func executeTreeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
-		tree := CreateTree[interface{}]()
+		tree := Create[interface{}]()
 		for _, input := range inputs {
 			tree.Set(input, struct{}{})
 		}

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/dnssort"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph"
 )
 
 // Verb indicates the Change's type (create, delete, etc.)
@@ -53,26 +53,26 @@ type Change struct {
 	HintRecordSetLen1 bool
 }
 
-func (c Change) GetType() dnssort.ChangeType {
+func (c Change) GetType() dnsgraph.NodeType {
 	if c.Type == REPORT {
-		return dnssort.Report
+		return dnsgraph.Report
 	}
 
-	return dnssort.Change
+	return dnsgraph.Change
 }
 
 func (c Change) GetName() string {
 	return c.Key.NameFQDN
 }
 
-func (c Change) GetDependencies() []dnssort.Dependency {
-	var dependencies []dnssort.Dependency
+func (c Change) GetDependencies() []dnsgraph.Dependency {
+	var dependencies []dnsgraph.Dependency
 
 	if c.Type == CHANGE || c.Type == DELETE {
-		dependencies = append(dependencies, dnssort.CreateDependencies(c.Old.GetAllDependencies(), dnssort.BackwardDependency)...)
+		dependencies = append(dependencies, dnsgraph.CreateDependencies(c.Old.GetAllDependencies(), dnsgraph.BackwardDependency)...)
 	}
 	if c.Type == CHANGE || c.Type == CREATE {
-		dependencies = append(dependencies, dnssort.CreateDependencies(c.New.GetAllDependencies(), dnssort.ForwardDependency)...)
+		dependencies = append(dependencies, dnsgraph.CreateDependencies(c.New.GetAllDependencies(), dnsgraph.ForwardDependency)...)
 	}
 
 	return dependencies
