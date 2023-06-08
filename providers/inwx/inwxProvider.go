@@ -343,6 +343,22 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 	return records, nil
 }
 
+// ListZones returns the zones configured in INWX.
+func (api *inwxAPI) ListZones() ([]string, error) {
+	if api.domainIndex == nil { // only pull the data once.
+		if err := api.fetchNameserverDomains(); err != nil {
+			return nil, err
+		}
+	}
+
+	var domains []string
+	for domain := range api.domainIndex {
+		domains = append(domains, domain)
+	}
+
+	return domains, nil
+}
+
 // updateNameservers is used by GetRegistrarCorrections to update the domain's nameservers.
 func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
