@@ -27,6 +27,7 @@ var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
+var skipDualProvTest = flag.Bool("skipdualprovtest", false, "Add parameter to disable TestDualProviders tests")
 
 func init() {
 	testing.Init()
@@ -336,6 +337,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 func TestDualProviders(t *testing.T) {
+	if *skipDualProvTest {
+		t.Skip("Skipping.  DualProvidersTest disabled.")
+		return
+	}
 	p, domain, _, _ := getProvider(t)
 	if p == nil {
 		return
