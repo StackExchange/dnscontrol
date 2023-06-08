@@ -308,7 +308,14 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		   Records with empty targets (i.e. records with target ".")
 		   are not allowed.
 		*/
-		if record.Type == "CNAME" || record.Type == "MX" || record.Type == "NS" || record.Type == "SRV" {
+		var rtypeAddDot = map[string]bool{
+			"CNAME": true,
+			"MX":    true,
+			"NS":    true,
+			"SRV":   true,
+			"PTR":   true,
+		}
+		if rtypeAddDot[record.Type] {
 			record.Content = record.Content + "."
 		}
 
