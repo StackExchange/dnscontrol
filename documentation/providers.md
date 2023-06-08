@@ -123,7 +123,7 @@ Providers in this category and their maintainers are:
 |[`HEXONET`](providers/hexonet.md)|@KaiSchwarz-cnic|
 |[`HOSTINGDE`](providers/hostingde.md)|@membero|
 |[`INTERNETBS`](providers/internetbs.md)|@pragmaton|
-|[`INWX`](providers/inwx.md)|@svenpeter42|
+|[`INWX`](providers/inwx.md)|@patschi|
 |[`LINODE`](providers/linode.md)|@koesie10|
 |[`LOOPIA`](providers/loopia.md)|@systemcrash|
 |[`LUADNS`](providers/luadns.md)|@riku22|
