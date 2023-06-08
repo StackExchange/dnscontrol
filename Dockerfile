@@ -1,11 +1,11 @@
 # syntax = docker/dockerfile:1.4
 
-FROM alpine:3.18.0@sha256:02bb6f428431fbc2809c5d1b41eab5a68350194fb508869a33cb1af4444c9b11 as RUN
+# We're using Debian because that is also the base image for the `golang` images
+FROM debian:11@sha256:432f545c6ba13b79e2681f4cc4858788b0ab099fc1cca799cc0fae4687c69070 AS RUN
 
-#RUN --mount=type=cache,target=/var/cache/apk \
-#    apk update \
-#    && apk add ca-certificates \
-#    && update-ca-certificates
+# Install `ca-certificates` since `debian` does not ship with them
+# and they are required for a few of our supported providers
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY dnscontrol /usr/local/bin/
 
