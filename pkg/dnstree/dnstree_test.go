@@ -1,6 +1,10 @@
-package dnstree
+package dnstree_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnstree"
+)
 
 func Test_domaintree(t *testing.T) {
 
@@ -40,7 +44,7 @@ func Test_domaintree(t *testing.T) {
 func executeTreeTest(inputs []string, founds []string, missings []string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
-		tree := Create[interface{}]()
+		tree := dnstree.Create[interface{}]()
 		for _, input := range inputs {
 			tree.Set(input, struct{}{})
 		}
