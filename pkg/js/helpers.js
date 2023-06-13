@@ -1794,7 +1794,7 @@ function DKIM(arr) {
 function require_glob() {
     arguments[2] = 'js'; // force to only include .js files.
     var files = glob.apply(null, arguments);
-    for (i = 0; i < files.length; i++) {
+    for (var i = 0; i < files.length; i++) {
         require(files[i]);
     }
     return files;
@@ -1824,7 +1824,7 @@ function DOMAIN_ELSEWHERE(domain, registrar, nslist) {
     // NB(tlim): NO_PURGE is added as a precaution since something else
     // is maintaining the DNS records in that zone.  In theory this is
     // not needed since this domain won't have a DSP defined.
-    for (i = 0; i < nslist.length; i++) {
+    for (var i = 0; i < nslist.length; i++) {
         D_EXTEND(domain, NAMESERVER(nslist[i]));
     }
 }
@@ -1837,7 +1837,7 @@ function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
     // NB(tlim): NO_PURGE is required since something else
     // is maintaining the DNS records in that zone, and we have access
     // to updating it (but we don't want to use it.)
-    for (i = 2; i < arguments.length; i++) {
+    for (var i = 2; i < arguments.length; i++) {
         D_EXTEND(domain, DnsProvider(arguments[i]));
     }
 }
