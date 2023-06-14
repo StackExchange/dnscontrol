@@ -316,13 +316,15 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // ToDiffable returns a string that is comparable by a differ.
 // extraMaps: a list of maps that should be included in the comparison.
 // NB(tlim): This will be deprecated when pkg/diff is replaced by pkg/diff2.
-// Use // ToComparableNoTTL() instead.
+// Use ToComparableNoTTL() instead.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	var content string
 	switch rc.Type {
 	case "SOA":
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
+	case "TXT":
+		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetTXTJoined(), rc.TTL)
 	default:
 		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
 	}
@@ -354,6 +356,9 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // pseudo-records like ANAME or R53_ALIAS
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if rc.Type == "TXT" {
+		return rc.GetTargetTXTJoined()
+	}
 	return rc.GetTargetCombined()
 }
 
