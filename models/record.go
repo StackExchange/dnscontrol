@@ -324,7 +324,7 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
 	case "TXT":
-		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetTXTJoined(), rc.TTL)
+		content = fmt.Sprintf("%q ttl=%d", rc.GetTargetTXTJoined(), rc.TTL)
 	default:
 		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
 	}
@@ -357,7 +357,7 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
 	if rc.Type == "TXT" {
-		return rc.GetTargetTXTJoined()
+		return fmt.Sprintf("%q", rc.GetTargetTXTJoined())
 	}
 	return rc.GetTargetCombined()
 }
