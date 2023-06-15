@@ -35,7 +35,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
-D("example.com", registrary, DnsProvider(DSP_SOFTLAYER),
+D("example.com", REG_NONE, DnsProvider(DSP_SOFTLAYER),
     A("test", "1.2.3.4")
 );
 ```
