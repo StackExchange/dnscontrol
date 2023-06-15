@@ -13,7 +13,7 @@ See [`IGNORE()`](../domain/IGNORE.md) for more information.
 
 ## Syntax
 
-```
+```javascript
 D("example.com", ...
     DISABLE_IGNORE_SAFETY_CHECK,
     ...
