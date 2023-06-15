@@ -84,7 +84,10 @@ func init() {
 func (n *transipProvider) ListZones() ([]string, error) {
 	var domains []string
 
-	domainsMap, _ := n.domains.GetAll()
+	domainsMap, err := n.domains.GetAll()
+	if err != nil {
+		return nil, err
+	}
 	for _, domainname := range domainsMap {
 		domains = append(domains, domainname.Name)
 	}
