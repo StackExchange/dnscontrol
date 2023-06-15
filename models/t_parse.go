@@ -35,7 +35,6 @@ import (
 //     		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
 //     	}
 //     	return rc, nil
-
 func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if rc.Type != "" && rc.Type != rtype {
 		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type))
