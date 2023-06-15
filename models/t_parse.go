@@ -15,26 +15,26 @@ import (
 // Recommended calling convention:  Process the exceptions first, then use the
 // PopulateFromString function for everything else.
 //
-//      rtype := FILL_IN_TYPE
-//     	var err error
-//      rc := &models.RecordConfig{Type: rtype}
-//      rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
-//      rc.TTL = uint32(FILL_IN_TTL)
-//      rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
-//     	switch rtype {
-//     	case "MX":
-//     		// MX priority in a separate field.
-//     		err = rc.SetTargetMX(cr.Priority, target)
-//     	case "TXT":
-//     		// TXT records are stored verbatim; no quoting/escaping to parse.
-//     		err = rc.SetTargetTXT(target)
-//     	default:
-//     		err = rc.PopulateFromString(rtype, target, origin)
-//     	}
-//     	if err != nil {
-//     		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
-//     	}
-//     	return rc, nil
+//	rtype := FILL_IN_TYPE
+//	var err error
+//	rc := &models.RecordConfig{Type: rtype}
+//	rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
+//	rc.TTL = uint32(FILL_IN_TTL)
+//	rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
+//	switch rtype {
+//	case "MX":
+//		// MX priority in a separate field.
+//		err = rc.SetTargetMX(cr.Priority, target)
+//	case "TXT":
+//		// TXT records are stored verbatim; no quoting/escaping to parse.
+//		err = rc.SetTargetTXT(target)
+//	default:
+//		err = rc.PopulateFromString(rtype, target, origin)
+//	}
+//	if err != nil {
+//		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
+//	}
+//	return rc, nil
 func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if rc.Type != "" && rc.Type != rtype {
 		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type))
