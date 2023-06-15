@@ -43,7 +43,7 @@ as the registrar and DNS service provider:
 var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_NAMECOM = NewDnsProvider("name.com");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
+D("example.com", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
     A("test", "1.2.3.4")
 );
 ```
@@ -57,7 +57,7 @@ as the registrar and DNS only, DNS hosted elsewhere:
 var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_R53 = NewDnsProvider("r53");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DSP_R53),
+D("example.com", REG_NAMECOM, DnsProvider(DSP_R53),
     A("test","1.2.3.4")
 );
 ```

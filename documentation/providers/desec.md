@@ -27,7 +27,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_DESEC = NewDnsProvider("desec");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
+D("example.com", REG_NONE, DnsProvider(DSP_DESEC),
     A("test", "1.2.3.4")
 );
 ```

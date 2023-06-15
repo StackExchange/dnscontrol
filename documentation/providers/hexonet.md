@@ -85,7 +85,7 @@ DEFAULTS(
     DefaultTTL(3600)
 );
 
-D("abhoster.com", REG_HEXONET, DnsProvider(DSP_HEXONET),
+D("example.com", REG_HEXONET, DnsProvider(DSP_HEXONET),
     NAMESERVER("ns1.ispapi.net"),
     NAMESERVER("ns2.ispapi.net"),
     NAMESERVER("ns3.ispapi.net"),

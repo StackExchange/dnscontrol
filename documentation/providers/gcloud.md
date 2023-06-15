@@ -64,7 +64,7 @@ An example configuration:
 var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_GCLOUD = NewDnsProvider("gcloud");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
+D("example.com", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
     A("test", "1.2.3.4")
 );
 ```

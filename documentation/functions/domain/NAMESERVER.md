@@ -83,7 +83,7 @@ It looks like this:
 {% code title="dnsconfig.js" %}
 ```javascript
 var REG_THIRDPARTY = NewRegistrar("ThirdParty");
-D("mydomain.com", REG_THIRDPARTY,
+D("example.com", REG_THIRDPARTY,
   ...
 )
 ```

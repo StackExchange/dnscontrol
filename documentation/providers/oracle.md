@@ -35,7 +35,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_ORACLE = NewDnsProvider("oracle");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_ORACLE),
+D("example.com", REG_NONE, DnsProvider(DSP_ORACLE),
     NAMESERVER_TTL(86400),
 
     A("test", "1.2.3.4")
