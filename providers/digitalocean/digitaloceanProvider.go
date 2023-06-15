@@ -109,6 +109,40 @@ retry:
 	return err
 }
 
+// ListZones returns the list of zones (domains) in this account.
+func (api *digitaloceanProvider) ListZones() ([]string, error) {
+	ctx := context.Background()
+	zones := []string{}
+	opt := &godo.ListOptions{PerPage: perPageSize}
+retry:
+	for {
+		result, resp, err := api.client.Domains.List(ctx, opt)
+		if err != nil {
+			if pauseAndRetry(resp) {
+				goto retry
+			}
+			return nil, err
+		}
+
+		for _, d := range result {
+			zones = append(zones, d.Name)
+		}
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return zones, nil
+}
+
 // GetNameservers returns the nameservers for domain.
 func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
