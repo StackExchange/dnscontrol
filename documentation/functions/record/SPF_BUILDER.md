@@ -39,7 +39,7 @@ Here is an example of how SPF settings are normally done:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all")
 )
 ```
@@ -55,7 +55,7 @@ This has a few problems:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@", "10.2.2.2"),
   MX("@", "example.com."),
   SPF_BUILDER({
@@ -98,7 +98,7 @@ When you want to specify SPF settings for a domain, use the
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   ...
   ...
   ...
@@ -305,11 +305,11 @@ var SPF_MYSETTINGS = SPF_BUILDER({
   ]
 });
 
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     SPF_MYSETTINGS
 );
 
-D("example2.tld", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), ...
+D("example2.tld", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
      SPF_MYSETTINGS
 );
 ```
