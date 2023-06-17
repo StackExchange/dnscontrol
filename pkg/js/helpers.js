@@ -809,10 +809,56 @@ function format_tt(transform_table) {
     return lines.join(' ; ');
 }
 
-// IGNORE(name)
-function IGNORE(name) {
-    // deprecated, use IGNORE_NAME
-    return IGNORE_NAME(name);
+//function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
+//    return function (d) {
+//        d.unmanaged.push({
+//            label_pattern: label_pattern,
+//            rType_pattern: rType_pattern,
+//            target_pattern: target_pattern,
+//        });
+//    };
+//}
+
+function DISABLE_IGNORE_SAFETY_CHECK(d) {
+    // This disables a safety check intended to prevent DNSControl and
+    // another system getting into a battle as they both try to update
+    // the same record over and over, back and forth.  However, people
+    // kept asking for it so... caveat emptor!
+    // It only affects the current domain.
+    d.unmanaged_disable_safety_check = true;
+}
+
+var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
+    ignore_name_disable_safety_check: 'true',
+    // (NOTE: diff1 only.)
+    // This disables a safety check intended to prevent:
+    // 1. Two owners toggling a record between two settings.
+    // 2. The other owner wiping all records at this label, which won't
+    // be noticed until the next time dnscontrol is run.
+    // See https://github.com/StackExchange/dnscontrol/issues/1106
+};
+
+// IGNORE(labelPattern, rtypePattern, targetPattern)
+function IGNORE(labelPattern, rtypePattern, targetPattern) {
+    if (labelPattern === undefined) {
+        labelPattern = '*';
+    }
+    if (rtypePattern === undefined) {
+        rtypePattern = '*';
+    }
+    if (targetPattern === undefined) {
+        targetPattern = '*';
+    }
+    return function (d) {
+        // diff1
+        d.ignored_names.push({ pattern: labelPattern, types: rtypePattern });
+        // diff2
+        d.unmanaged.push({
+            label_pattern: labelPattern,
+            rType_pattern: rtypePattern,
+            target_pattern: targetPattern,
+        });
+    };
 }
 
 // IGNORE_NAME(name, rTypes)
@@ -821,7 +867,9 @@ function IGNORE_NAME(name, rTypes) {
         rTypes = '*';
     }
     return function (d) {
+        // diff1
         d.ignored_names.push({ pattern: name, types: rTypes });
+        // diff2
         d.unmanaged.push({
             label_pattern: name,
             rType_pattern: rTypes,
@@ -829,18 +877,11 @@ function IGNORE_NAME(name, rTypes) {
     };
 }
 
-var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
-    ignore_name_disable_safety_check: 'true',
-    // This disables a safety check intended to prevent:
-    // 1. Two owners toggling a record between two settings.
-    // 2. The other owner wiping all records at this label, which won't
-    // be noticed until the next time dnscontrol is run.
-    // See https://github.com/StackExchange/dnscontrol/issues/1106
-};
-
 function IGNORE_TARGET(target, rType) {
     return function (d) {
+        // diff1
         d.ignored_targets.push({ pattern: target, type: rType });
+        // diff2
         d.unmanaged.push({
             rType_pattern: rType,
             target_pattern: target,
@@ -900,25 +941,6 @@ function AUTODNSSEC(d) {
     console.log(
         'WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release.'
     );
-}
-
-function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
-    return function (d) {
-        d.unmanaged.push({
-            label_pattern: label_pattern,
-            rType_pattern: rType_pattern,
-            target_pattern: target_pattern,
-        });
-    };
-}
-
-function DISABLE_UNMANAGED_SAFETY_CHECK(d) {
-    // This disables a safety check intended to prevent DNSControl and
-    // another system getting into a battle as they both try to update
-    // the same record over and over, back and forth.  However, people
-    // kept asking for it so... caveat emptor!
-    // It only affects the current domain.
-    d.unmanaged_disable_safety_check = true;
 }
 
 /**
@@ -1633,6 +1655,134 @@ function DMARC_BUILDER(value) {
     return TXT(label, record.join('; '));
 }
 
+// Documentation of the records: https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?view=o365-worldwide
+function M365_BUILDER(name, value) {
+    // value is optional
+    if (!value) {
+        value = {};
+    }
+
+    if (value.mx !== false) {
+        value.mx = true;
+    }
+    if (value.autodiscover !== false) {
+        value.autodiscover = true;
+    }
+    if (value.dkim !== false) {
+        value.dkim = true;
+    }
+
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    if (!value.domainGUID) {
+        // Does not work with dashes in domain name.
+        // Microsoft uses its own, (probably) deterministic algorithm to transform these domains.
+        // Unfortunately, underlying algorithm is not known to us.
+        if (name.indexOf('-') !== -1) {
+            throw (
+                'M365_BUILDER requires domainGUID for domains with dashes: ' +
+                name
+            );
+        }
+
+        value.domainGUID = name.replace('.', '-');
+    }
+
+    if (value.dkim && !value.initialDomain) {
+        throw (
+            "M365_BUILDER requires your M365 account's initial domain to set up DKIM (default: enabled): " +
+            name
+        );
+    }
+
+    r = [];
+
+    // MX (default: true)
+    if (value.mx) {
+        r.push(
+            MX(
+                value.label,
+                0,
+                value.domainGUID + '.mail.protection.outlook.com.'
+            )
+        );
+    }
+
+    // Autodiscover (default: true)
+    if (value.autodiscover) {
+        if ((value.label = '@')) {
+            r.push(CNAME('autodiscover', 'autodiscover.outlook.com.'));
+        } else {
+            r.push(
+                CNAME(
+                    'autodiscover.' + value.label,
+                    'autodiscover.outlook.com.'
+                )
+            );
+        }
+    }
+
+    // DKIM (default: true)
+    if (value.dkim) {
+        r.push(
+            CNAME(
+                'selector1._domainkey',
+                'selector1-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
+        r.push(
+            CNAME(
+                'selector2._domainkey',
+                'selector2-' +
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
+            )
+        );
+    }
+
+    // Skype for Business (default: false)
+    if (value.skypeForBusiness) {
+        r.push(CNAME('lyncdiscover', 'webdir.online.lync.com.'));
+        r.push(CNAME('sip', 'sipdir.online.lync.com.'));
+        r.push(SRV('_sip._tls', 100, 1, 443, 'sipdir.online.lync.com.'));
+        r.push(
+            SRV(
+                '_sipfederationtls._tcp',
+                100,
+                1,
+                5061,
+                'sipfed.online.lync.com.'
+            )
+        );
+    }
+
+    // Mobile Device Management (default: false)
+    if (value.mdm) {
+        r.push(
+            CNAME(
+                'enterpriseregistration',
+                'enterpriseregistration.windows.net.'
+            )
+        );
+        r.push(
+            CNAME(
+                'enterpriseenrollment',
+                'enterpriseenrollment.manage.microsoft.com.'
+            )
+        );
+    }
+
+    return r;
+}
+
 // This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
     return arr;
@@ -1644,7 +1794,7 @@ function DKIM(arr) {
 function require_glob() {
     arguments[2] = 'js'; // force to only include .js files.
     var files = glob.apply(null, arguments);
-    for (i = 0; i < files.length; i++) {
+    for (var i = 0; i < files.length; i++) {
         require(files[i]);
     }
     return files;
@@ -1674,7 +1824,7 @@ function DOMAIN_ELSEWHERE(domain, registrar, nslist) {
     // NB(tlim): NO_PURGE is added as a precaution since something else
     // is maintaining the DNS records in that zone.  In theory this is
     // not needed since this domain won't have a DSP defined.
-    for (i = 0; i < nslist.length; i++) {
+    for (var i = 0; i < nslist.length; i++) {
         D_EXTEND(domain, NAMESERVER(nslist[i]));
     }
 }
@@ -1687,7 +1837,7 @@ function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
     // NB(tlim): NO_PURGE is required since something else
     // is maintaining the DNS records in that zone, and we have access
     // to updating it (but we don't want to use it.)
-    for (i = 2; i < arguments.length; i++) {
+    for (var i = 2; i < arguments.length; i++) {
         D_EXTEND(domain, DnsProvider(arguments[i]));
     }
 }

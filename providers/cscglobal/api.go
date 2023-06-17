@@ -11,15 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/mattn/go-isatty"
 )
 
 const apiBase = "https://apis.cscglobal.com/dbs/api/v2"
 
 // Api layer for CSC Global
-
-type requestParams map[string]string
 
 type errorResponse struct {
 	Code        string `json:"code"`

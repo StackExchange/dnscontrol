@@ -6,10 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/ovh/go-ovh/ovh"
 )
 
@@ -95,7 +95,7 @@ func (c *ovhProvider) ListZones() (zones []string, err error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *ovhProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	if !c.zones[domain] {
 		return nil, errNoExist{domain}
 	}
@@ -115,26 +115,15 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 			actual = append(actual, rec)
 		}
 	}
+
 	return actual, nil
 }
 
-func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var err error
-
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	actual, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(actual)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
+	var err error
 	if !diff2.EnableDiff2 {
 		corrections, err = c.getDiff1DomainCorrections(dc, actual)
 	} else {

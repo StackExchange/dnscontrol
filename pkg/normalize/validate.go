@@ -6,9 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
@@ -53,6 +54,7 @@ func checkTarget(target string) error {
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	// #rtype_variations
 	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
@@ -205,7 +207,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
-	case "URLFWD":
+	case "NS1_URLFWD":
 		if len(strings.Fields(target)) != 5 {
 			check(fmt.Errorf("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
 		}
@@ -426,6 +428,14 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 			// Populate FQDN:
 			rec.SetLabel(rec.GetLabel(), domain.Name)
+
+			// Warn if a diff1-only feature is used in diff2 mode.
+			if diff2.EnableDiff2 {
+				if _, ok := rec.Metadata["ignore_name_disable_safety_check"]; ok {
+					errs = append(errs, fmt.Errorf("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
+				}
+			}
+
 		}
 	}
 
@@ -477,7 +487,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Check for duplicates
 		errs = append(errs, checkDuplicates(d.Records)...)
 		// Check for different TTLs under the same label
-		errs = append(errs, checkLabelHasMultipleTTLs(d.Records)...)
+		errs = append(errs, checkRecordSetHasMultipleTTLs(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -513,47 +523,25 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	return errs
 }
 
-// UpdateNameSplitHorizon fills in the split horizon fields.
-func UpdateNameSplitHorizon(dc *models.DomainConfig) {
-	if dc.UniqueName == "" {
-		dc.UniqueName = dc.Name
-	}
-	if dc.Tag == "" {
-		l := strings.SplitN(dc.Name, "!", 2)
-		if len(l) == 2 {
-			dc.Name = l[0]
-			dc.Tag = l[1]
-		}
-	}
-}
-
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
 	// Parse out names and tags.
 	for _, d := range config.Domains {
-		UpdateNameSplitHorizon(d)
+		d.UpdateSplitHorizonNames()
 	}
 
 	// Verify uniquenames are unique
 	seen := map[string]bool{}
 	for _, d := range config.Domains {
-		if seen[d.UniqueName] {
-			return fmt.Errorf("duplicate domain name: %q", d.UniqueName)
+		uniquename := d.GetUniqueName()
+		if seen[uniquename] {
+			return fmt.Errorf("duplicate domain name: %q", uniquename)
 		}
-		seen[d.UniqueName] = true
+		seen[uniquename] = true
 	}
 
 	return nil
 }
-
-//// parseDomainSpec parses "domain.tld!tag" into its component parts.
-//func parseDomainSpec(s string) (domain, tag string) {
-//	l := strings.SplitN(s, "!", 2)
-//	if len(l) == 2 {
-//		return l[0], l[1]
-//	}
-//	return l[0], ""
-//}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	if strings.ToLower(dc.RegistrarName) == "none" {
@@ -599,23 +587,8 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
-// uniq returns the unique values in a map. The result is sorted lexigraphically.
-func uniq(s []string) []string {
-	seen := make(map[string]struct{})
-	var result []string
-
-	for _, k := range s {
-		if _, ok := seen[k]; !ok {
-			seen[k] = struct{}{}
-			result = append(result, k)
-		}
-	}
-	sort.Strings(result)
-	return result
-}
-
-func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
-	// The RFCs say that all records at a particular label should have
+func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
+	// The RFCs say that all records at a particular recordset should have
 	// the same TTL.  Most providers don't care, and if they do the
 	// dnscontrol provider code usually picks the lowest TTL for all of them.
 
@@ -650,26 +623,6 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	sort.Strings(labels)
 	slices.Compact(labels)
 
-	// Less clear error message:
-	// for _, label := range labels {
-	// 	if len(m[label]) > 1 {
-	// 		result := ""
-	// 		for ttl, v := range m[label] {
-	// 			result += fmt.Sprintf(" %d:", ttl)
-
-	// 			rtypes := make([]string, len(v))
-	// 			i := 0
-	// 			for k := range v {
-	// 				rtypes[i] = k
-	// 				i++
-	// 			}
-
-	// 			result += strings.Join(rtypes, "/")
-	// 		}
-	// 		errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q:%v", label, result)})
-	// 	}
-	// }
-
 	// Invert for a more clear error message:
 	for _, label := range labels {
 		if len(m[label]) > 1 {
@@ -682,8 +635,14 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 					r[rtype][ttl] = true
 				}
 			}
-			result := formatInconsistency(r)
-			errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
+
+			// Report any cases where a RecordSet has > 1 different TTLs
+			for rtype := range r {
+				if len(r[rtype]) > 1 {
+					result := formatInconsistency(r)
+					errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
+				}
+			}
 		}
 	}
 
@@ -721,6 +680,7 @@ func commaSepInts(list []int) string {
 // the package elsewhere, so that our test suite can look at the list of
 // capabilities we're checking and make sure that it's up-to-date.
 var providerCapabilityChecks = []pairTypeCapability{
+	// #rtype_variations
 	// If a zone uses rType X, the provider must support capability Y.
 	//{"X", providers.Y},
 	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),

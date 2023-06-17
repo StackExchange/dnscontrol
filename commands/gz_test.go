@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/andreyvit/diff"
 )
 
@@ -18,7 +18,7 @@ func TestFormatTypes(t *testing.T) {
 	  test_data/$DOMAIN.zone   zone            test_data/$DOMAIN.zone.zone
 	*/
 
-	for _, domain := range []string{"simple.com", "example.org", "apex.com"} {
+	for _, domain := range []string{"simple.com", "example.org", "apex.com", "ds.com"} {
 		t.Run(domain+"/js", func(t *testing.T) { testFormat(t, domain, "js") })
 		t.Run(domain+"/djs", func(t *testing.T) { testFormat(t, domain, "djs") })
 		t.Run(domain+"/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })

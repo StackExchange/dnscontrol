@@ -10,11 +10,11 @@ import (
 
 	egoscale "github.com/exoscale/egoscale/v2"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 const (
@@ -88,22 +88,13 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
+func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
+	//dc.Punycode()
 
-// GetDomainCorrections returns a list of corretions for the  domain.
-func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-
-	domain, err := c.findDomainByName(dc.Name)
+	domain, err := c.findDomainByName(domainName)
 	if err != nil {
 		return nil, err
 	}
-
 	domainID := *domain.ID
 
 	ctx := context.Background()
@@ -165,7 +156,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if record.TTL != nil {
 			rc.TTL = uint32(*record.TTL)
 		}
-		rc.SetLabel(rname, dc.Name)
+		rc.SetLabel(rname, domainName)
 
 		switch rtype {
 		case "ALIAS", "URL":
@@ -178,7 +169,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			}
 			err = rc.SetTargetMX(prio, rcontent)
 		default:
-			err = rc.PopulateFromString(rtype, rcontent, dc.Name)
+			err = rc.PopulateFromString(rtype, rcontent, domainName)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
@@ -186,25 +177,33 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 		existingRecords = append(existingRecords, rc)
 	}
-	removeOtherNS(dc)
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+	return existingRecords, nil
+}
+
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	removeOtherNS(dc)
+	domain, err := c.findDomainByName(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	domainID := *domain.ID
 
 	var corrections []*models.Correction
-	var create, delete, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, toDelete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, del := range delete {
+	for _, del := range toDelete {
 		record := del.Existing.Original.(*egoscale.DNSDomainRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // Verb indicates the Change's type (create, delete, etc.)
@@ -39,6 +39,17 @@ type Change struct {
 	Msgs       []string                      // Human-friendly explanation of what changed
 	MsgsJoined string                        // strings.Join(Msgs, "\n")
 	MsgsByKey  map[models.RecordKey][]string // Messages for a given key
+
+	// HintOnlyTTL is true only if (.Type == diff2.CHANGE) && (there is
+	// exactly 1 record being updated) && (the only change is the TTL)
+	HintOnlyTTL bool
+
+	// HintRecordSetLen1 is true only if (.Type == diff2.CHANGE) &&
+	// (there is exactly 1 record at this RecordSet).
+	// For example, MSDNS can use a more efficient command if it knows
+	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
+	// return exactly one record.
+	HintRecordSetLen1 bool
 }
 
 /*
@@ -56,28 +67,13 @@ General instructions:
   for _, change := range changes {
     switch change.Type {
     case diff2.REPORT:
-      corr = &models.Correction{Msg: change.MsgsJoined}
+      corr = change.CreateMessage()
     case diff2.CREATE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.createRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.createRecord(FILL_IN) })
     case diff2.CHANGE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.modifyRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.modifyRecord(FILL_IN) })
     case diff2.DELETE:
-      corr = &models.Correction{
-        Msg: change.MsgsJoined,
-        F: func() error {
-          return c.deleteRecord(FILL_IN)
-        },
-      }
+      corr = change.CreateCorrection(func() error { return c.deleteRecord(FILL_IN) })
 	  default:
 		  panic("unhandled change.TYPE %s", change.Type)
     }
@@ -89,6 +85,33 @@ General instructions:
 }
 
 */
+
+// CreateCorrection creates a new Correction based on the given
+// function and prefills it with the Msg of the current Change
+func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: c.MsgsJoined,
+	}
+}
+
+// CreateMessage creates a new correction with only the message.
+// Used for diff2.Report corrections
+func (c *Change) CreateMessage() *models.Correction {
+	return &models.Correction{
+		Msg: c.MsgsJoined,
+	}
+}
+
+// CreateCorrectionWithMessage creates a new Correction based on the
+// given function and prefixes given function with the Msg of the
+// current change
+func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: fmt.Sprintf("%s: %s", msg, c.MsgsJoined),
+	}
+}
 
 // ByRecordSet takes two lists of records (existing and desired) and
 // returns instructions for turning existing into desired.
@@ -163,7 +186,14 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 
 	// Only return the messages.  The caller has the list of records needed to build the new zone.
 	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
-	return justMsgs(instructions), len(instructions) != 0, err
+	changes := false
+	for i := range instructions {
+		//fmt.Printf("DEBUG: ByZone #%d: %v\n", i, ii)
+		if instructions[i].Type != REPORT {
+			changes = true
+		}
+	}
+	return justMsgs(instructions), changes, err
 }
 
 //
@@ -171,7 +201,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 // byHelper does 90% of the work for the By*() calls.
 func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 
-	// Process NO_PURGE/ENSURE_ABSENT and UNMANAGED/IGNORE_*.
+	// Process NO_PURGE/ENSURE_ABSENT and IGNORE*().
 	desired, msgs, err := handsoff(
 		dc.Name,
 		existing, dc.Records, dc.EnsureAbsent,
@@ -211,6 +241,9 @@ func (c Change) String() string {
 
 	fmt.Fprintf(b, "Change: verb=%v\n", c.Type)
 	fmt.Fprintf(b, "    key=%v\n", c.Key)
+	if c.HintOnlyTTL {
+		fmt.Fprint(b, "    Hints=OnlyTTL\n", c.Key)
+	}
 	if len(c.Old) != 0 {
 		fmt.Fprintf(b, "    old=%v\n", c.Old)
 	}

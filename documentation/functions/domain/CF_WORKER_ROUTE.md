@@ -23,13 +23,13 @@ backups and manually verifying `dnscontrol preview` output before running
 `dnscontrol push`.
 {% endhint %}
 
-This example assigns the patterns `api.foo.com/*` and `foo.com/api/*` to a `my-worker` script:
+This example assigns the patterns `api.example.com/*` and `example.com/api/*` to a `my-worker` script:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("foo.com", .... ,
-    CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
-    CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+    CF_WORKER_ROUTE("api.example.com/*", "my-worker"),
+    CF_WORKER_ROUTE("example.com/api/*", "my-worker"),
 );
 ```
 {% endcode %}

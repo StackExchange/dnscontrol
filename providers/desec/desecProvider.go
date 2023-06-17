@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -74,31 +74,31 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if dc.AutoDNSSEC == "off" {
-		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
-	}
+// func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	if dc.AutoDNSSEC == "off" {
+// 		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
+// 	}
 
-	existing, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
-	clean := PrepFoundRecords(existing)
-	var minTTL uint32
-	c.mutex.Lock()
-	if ttl, ok := c.domainIndex[dc.Name]; !ok {
-		minTTL = 3600
-	} else {
-		minTTL = ttl
-	}
-	c.mutex.Unlock()
-	PrepDesiredRecords(dc, minTTL)
-	return c.GenerateDomainCorrections(dc, clean)
-}
+// 	existing, err := c.GetZoneRecords(dc.Name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	models.PostProcessRecords(existing)
+// 	clean := PrepFoundRecords(existing)
+// 	var minTTL uint32
+// 	c.mutex.Lock()
+// 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
+// 		minTTL = 3600
+// 	} else {
+// 		minTTL = ttl
+// 	}
+// 	c.mutex.Unlock()
+// 	PrepDesiredRecords(dc, minTTL)
+// 	return c.GetZoneRecordsCorrections(dc, clean)
+// }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -110,6 +110,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
+
 	return existingRecords, nil
 }
 
@@ -123,14 +124,6 @@ func (c *desecProvider) EnsureZoneExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// PrepFoundRecords munges any records to make them compatible with
-// this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
-
 // PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// Sort through the dc.Records, eliminate any that can't be
@@ -138,8 +131,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// provider.  We try to do minimal changes otherwise it gets
 	// confusing.
 
-	dc.Punycode()
-	txtutil.SplitSingleLongTxt(dc.Records)
+	//dc.Punycode()
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -158,12 +150,19 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	dc.Records = recordsToKeep
 }
 
-// GenerateDomainCorrections takes the desired and existing records
-// and produces a Correction list.  The correction list is simply
-// a list of functions to call to actually make the desired
-// correction, and a message to output to the user when the change is
-// made.
-func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records)
+
+	var minTTL uint32
+	c.mutex.Lock()
+	if ttl, ok := c.domainIndex[dc.Name]; !ok {
+		minTTL = 3600
+	} else {
+		minTTL = ttl
+	}
+	c.mutex.Unlock()
+	PrepDesiredRecords(dc, minTTL)
 
 	var corrections []*models.Correction
 	var err error
@@ -248,4 +247,13 @@ func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, nil
+}
+
+// ListZones return all the zones in the account
+func (c *desecProvider) ListZones() ([]string, error) {
+	var domains []string
+	for domain := range c.domainIndex {
+		domains = append(domains, domain)
+	}
+	return domains, nil
 }

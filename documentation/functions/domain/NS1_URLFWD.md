@@ -4,6 +4,7 @@ parameters:
   - name
   - target
   - modifiers...
+provider: NS1
 parameter_types:
   name: string
   target: string

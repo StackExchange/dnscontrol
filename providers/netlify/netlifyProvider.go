@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
 
@@ -86,7 +86,7 @@ func (n *netlifyProvider) getZone(domain string) (*dnsZone, error) {
 	return nil, fmt.Errorf("no zones found for this domain")
 }
 
-func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, err := n.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -176,31 +176,19 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	records, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(records)
 	removeOtherApexNS(dc)
 
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(records)
+	_, create, del, modify, err := differ.IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}

@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
@@ -23,6 +23,7 @@ import (
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -52,6 +53,9 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
+	// diff1
+	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
+	zoneNameMap map[string]string
 }
 
 type errNoExist struct {
@@ -104,6 +108,8 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
+		oldRRsMap:     map[string]map[key]*gdns.ResourceRecordSet{},
+		zoneNameMap:   map[string]string{},
 	}
 	return g, g.loadZoneInfo()
 }
@@ -166,15 +172,15 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (g *gcloudProvider) GetZoneRecords(domain string) (models.Records, error) {
-	existingRecords, _, _, err := g.getZoneSets(domain)
+func (g *gcloudProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	existingRecords, err := g.getZoneSets(domain)
 	return existingRecords, err
 }
 
-func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 	rrs, zoneName, err := g.getRecords(domain)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, err
 	}
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
@@ -184,27 +190,32 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 		for _, rec := range set.Rrdatas {
 			rt, err := nativeToRecord(set, rec, domain)
 			if err != nil {
-				return nil, nil, "", err
+				return nil, err
 			}
 
 			existingRecords = append(existingRecords, rt)
 		}
 	}
-	return existingRecords, oldRRs, zoneName, err
+
+	g.oldRRsMap[domain] = oldRRs
+	g.zoneNameMap[domain] = zoneName
+
+	return existingRecords, err
 }
 
-func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if err := dc.Punycode(); err != nil {
-		return nil, fmt.Errorf("punycode error: %w", err)
-	}
-	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
-	if err != nil {
-		return nil, fmt.Errorf("getzonesets error: %w", err)
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	oldRRs, ok := g.oldRRsMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)
+	}
+	zoneName, ok := g.zoneNameMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("zoneNameMap: no zone named %q", dc.Name)
+	}
 
 	// first collect keys that have changed
 	var differ diff.Differ
@@ -289,8 +300,16 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
-	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		return nil, fmt.Errorf("unparsable record received from GCLOUD: %w", err)
+	rtype := set.Type
+	var err error
+	switch rtype {
+	case "TXT":
+		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
+	default:
+		err = r.PopulateFromString(rtype, rec, origin)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
 	}
 	return r, nil
 }

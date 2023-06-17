@@ -2,11 +2,12 @@ package powerdns
 
 import (
 	"context"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"net/http"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
-	"net/http"
 )
 
 // GetNameservers returns the nameservers for a domain.
@@ -19,7 +20,7 @@ func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domain)
 	if err != nil {
 		return nil, err
@@ -44,19 +45,10 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 	return curRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	// get current zone records
-	existing, err := dsp.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// post-process records
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+	// create record diff by group
+	var err error
 
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
@@ -94,6 +86,7 @@ func (dsp *powerdnsProvider) EnsureZoneExists(domain string) error {
 		Type:        zones.ZoneTypeZone,
 		DNSSec:      dsp.DNSSecOnCreate,
 		Nameservers: dsp.DefaultNS,
+		Kind:        dsp.ZoneKind,
 	})
 	return err
 }

@@ -3,9 +3,10 @@ package powerdns
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mittwald/go-powerdns/apis/zones"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	pdns "github.com/mittwald/go-powerdns"
 )
 
@@ -40,8 +41,9 @@ type powerdnsProvider struct {
 	APIKey         string
 	APIUrl         string
 	ServerName     string
-	DefaultNS      []string `json:"default_ns"`
-	DNSSecOnCreate bool     `json:"dnssec_on_create"`
+	DefaultNS      []string       `json:"default_ns"`
+	DNSSecOnCreate bool           `json:"dnssec_on_create"`
+	ZoneKind       zones.ZoneKind `json:"zone_kind"`
 
 	nameservers []*models.Nameserver
 }

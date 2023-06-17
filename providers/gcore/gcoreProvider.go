@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 )
@@ -76,19 +76,8 @@ func (c *gcoreProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-func (c *gcoreProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(existing)
-	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
-	return c.GenerateDomainCorrections(dc, clean)
-}
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *gcoreProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *gcoreProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, err := c.provider.Zone(c.ctx, domain)
 	if err != nil {
 		return nil, err
@@ -132,19 +121,6 @@ func (c *gcoreProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-// PrepFoundRecords munges any records to make them compatible with
-// this provider. Usually this is a no-op.
-func PrepFoundRecords(recs models.Records) models.Records {
-	// If there are records that need to be modified, removed, etc. we
-	// do it here.  Usually this is a no-op.
-	return recs
-}
-
-// PrepDesiredRecords munges any records to best suit this provider.
-func PrepDesiredRecords(dc *models.DomainConfig) {
-	dc.Punycode()
-}
-
 func generateChangeMsg(updates []string) string {
 	return strings.Join(updates, "\n")
 }
@@ -154,7 +130,7 @@ func generateChangeMsg(updates []string) string {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction

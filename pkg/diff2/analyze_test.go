@@ -5,9 +5,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/diff"
 )
+
+func init() {
+	// Disable colorizing the output.
+	// NOTE: "go test ./..." turns it off automatically but "cd
+	// pkg/diff2 && go test" does not. Without this statement, the
+	// latter fails.
+	color.NoColor = true
+}
 
 var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //      [0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
@@ -41,18 +50,6 @@ var d10 = makeRec("labg", "NS", "10.10.10.16")            // [10']
 var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
-
-func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
-	c := Change{
-		Type: v,
-		Old:  old,
-		New:  new,
-		Msgs: msgs,
-	}
-	c.Key.NameFQDN = l
-	c.Key.Type = t
-	return c
-}
 
 func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string) {
 	t.Helper()
@@ -661,7 +658,7 @@ func Test_splitTTLOnly(t *testing.T) {
 			},
 			wantExistDiff:  nil,
 			wantDesireDiff: nil,
-			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
+			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    Hints=OnlyTTL\n{laba.f.com A}    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
 		},
 
 		{

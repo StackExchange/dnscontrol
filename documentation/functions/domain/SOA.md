@@ -24,7 +24,7 @@ parameter_types:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_THIRDPARTY, DnsProvider("DNS_BIND"),
+D("example.com", REG_MY_PROVIDER, DnsProvider("DNS_BIND"),
   SOA("@", "ns3.example.org.", "hostmaster@example.org", 3600, 600, 604800, 1440),
 );
 ```

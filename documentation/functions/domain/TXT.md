@@ -24,13 +24,13 @@ Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/la
 
 {% code title="dnsconfig.js" %}
 ```javascript
-    D("example.com", REGISTRAR, ....,
-      TXT('@', '598611146-3338560'),
-      TXT('listserve', 'google-site-verification=12345'),
-      TXT('multiple', ['one', 'two', 'three']),  // Multiple strings
-      TXT('quoted', 'any "quotes" and escapes? ugh; no worries!'),
-      TXT('_domainkey', 't=y; o=-;'), // Escapes are done for you automatically.
-      TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
+    D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+      TXT("@", "598611146-3338560"),
+      TXT("listserve", "google-site-verification=12345"),
+      TXT("multiple", ["one", "two", "three"]),  // Multiple strings
+      TXT("quoted", "any "quotes" and escapes? ugh; no worries!"),
+      TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
+      TXT("long", "X".repeat(300)) // Long strings are split automatically.
     );
 ```
 {% endcode %}

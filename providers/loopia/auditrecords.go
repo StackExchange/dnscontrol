@@ -2,8 +2,8 @@ package loopia
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
 
 // AuditRecords returns a list of errors corresponding to the records
@@ -16,6 +16,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	//Loopias TXT length limit appears to be 450 octets
 	a.Add("TXT", TxtHasSegmentLen450orLonger)
+
+	a.Add("MX", rejectif.MxNull) // Last verified 2023-03-23
 
 	return a.Audit(records)
 }

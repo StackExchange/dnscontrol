@@ -2,19 +2,20 @@ package diff2
 
 // This file implements the features that tell DNSControl "hands off"
 // foreign-controlled (or shared-control) DNS records.  i.e. the
-// NO_PURGE, ENSURE_ABSENT, IGNORE_*, and UNMANAGED features.
+// NO_PURGE, ENSURE_ABSENT and IGNORE*() features.
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/gobwas/glob"
 )
 
 /*
 
-# How do NO_PURGE, IGNORE_*, ENSURE_ABSENT and friends work?
+# How do NO_PURGE, IGNORE*() and ENSURE_ABSENT work?
 
 ## Terminology:
 
@@ -32,19 +33,19 @@ and 1 way to make exceptions.
 	* Existing records (matched on label:rtype) will be modified.
 	* FYI: This means you can't have a label with two A records, one controlled
 	    by DNSControl and one controlled by an external system.
-* UNMANAGED(labelglob, typelist, targetglob):
+* IGNORE(labelglob, typelist, targetglob):
     * "If an existing record matches this pattern, don't touch it!""
-    * IGNORE_NAME(foo, bar) is the same as UNMANAGED(foo, bar, "*")
-    * IGNORE_TARGET(foo) is the same as UNMANAGED("*", "*", foo)
+    * IGNORE_NAME(foo, bar) is the same as IGNORE(foo, bar, "*")
+    * IGNORE_TARGET(foo) is the same as IGNORE("*", "*", foo)
     * FYI: You CAN have a label with two A records, one controlled by
 	    DNSControl and one controlled by an external system.  DNSControl would
-		need to have an UNMANAGED() statement with a targetglob that matches
+		need to have an IGNORE() statement with a targetglob that matches
 	    the external system's target values.
 * ENSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
     though NO_PURGE is enabled.
     * If any of these records are in desired (matched on
       label:rtype:target), remove them.  This takes priority over
-      NO_PURGE/UNMANAGED/IGNORE*.
+      NO_PURGE/IGNORE*().
 
 ## Implementation premise
 
@@ -65,12 +66,12 @@ RecordSet at once, you shouldn't NOT update the record.
 
 Here is how we intend to implement these features:
 
-  UNMANAGED is implemented as:
-  * Take the list of existing records. If any match one of the UNMANAGED glob
+  IGNORE() is implemented as:
+  * Take the list of existing records. If any match one of the IGNORE glob
       patterns, add it to the "ignored list".
   * If any item on the "ignored list" is also in "desired" (match on
       label:rtype), output a warning (defeault) or declare an error (if
-      DISABLE_UNMANAGED_SAFETY_CHECK is true).
+      DISABLE_IGNORE_SAFETY_CHECK is true).
   * When we're done, add the "ignore list" records to desired.
 
   NO_PURGE + ENSURE_ABSENT is implemented as:
@@ -83,7 +84,7 @@ The actual implementation combines this all into one loop:
     foreach rec in existing:
         if rec matches_any_unmanaged_pattern:
             if rec in desired:
-                if "DISABLE_UNMANAGED_SAFETY_CHECK" is false:
+                if "DISABLE_IGNORE_SAFETY_CHECK" is false:
                     Display a warning.
                 else
                     Return an error.
@@ -97,7 +98,9 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
-// handsoff processes the IGNORE_*/UNMANAGED/NO_PURGE/ENSURE_ABSENT features.
+const maxReport = 5
+
+// handsoff processes the IGNORE*()//NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
 	existing, desired, absences models.Records,
@@ -113,31 +116,27 @@ func handsoff(
 		return nil, nil, err
 	}
 
-	// Process UNMANAGE/IGNORE_* and NO_PURGE features:
+	// Process IGNORE*() and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
-		for _, r := range foreign {
-			msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-		}
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
+		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
-		for _, r := range ignorable {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
-		}
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*():", len(ignorable)))
+		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
-		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
+		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
-			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
+			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
-		if unmanagedSafely {
+		if !unmanagedSafely {
 			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
-				"ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
+				"\nERROR: Unsafe to continue. Add DISABLE_IGNORE_SAFETY_CHECK to D() to override")
 		}
 	}
 
@@ -147,14 +146,36 @@ func handsoff(
 	return desired, msgs, nil
 }
 
-// processIgnoreAndNoPurge processes the IGNORE_*()/UNMANAGED() and NO_PURGE/ENSURE_ABSENT_REC() features.
+// reportSkips reports records being skipped, if !full only the first maxReport are output.
+func reportSkips(recs models.Records, full bool) []string {
+	var msgs []string
+
+	shorten := (!full) && (len(recs) > maxReport)
+	last := len(recs)
+	if shorten {
+		last = maxReport
+	}
+
+	for _, r := range recs[:last] {
+		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
+	}
+	if shorten {
+		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
+	}
+
+	return msgs
+}
+
+// processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
 func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		if matchAny(unmanagedConfigs, rec) {
+		isMatch := matchAny(unmanagedConfigs, rec)
+		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
+		if isMatch {
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -221,10 +242,11 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 
 // matchAny returns true if rec matches any of the uconfigs.
 func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+	//fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
-			matchTarget(uc.TargetGlob, rec.GetLabel()) {
+			matchTarget(uc.TargetGlob, rec.GetTargetField()) {
 			return true
 		}
 	}

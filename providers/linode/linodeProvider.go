@@ -9,10 +9,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
@@ -26,7 +26,10 @@ Info required in `creds.json`:
 
 */
 
+// Allowed values from the Linode API
+// https://www.linode.com/docs/api/domains/#domains-list__responses
 var allowedTTLValues = []uint32{
+	0,       // Default, currently 1209600 seconds
 	300,     // 5 minutes
 	3600,    // 1 hour
 	7200,    // 2 hours
@@ -108,7 +111,7 @@ func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err
@@ -122,17 +125,19 @@ func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error)
 	return api.getRecordsForDomain(domainID, domain)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
+	// We need to make sure we don't change it every time if it is as close as it's going to get
+	// The documentation says that it will always round up to the next highest value: 300 -> 300, 301 -> 3600.
+	// https://www.linode.com/docs/api/domains/#domains-list__responses
+	for _, record := range dc.Records {
+		record.TTL = fixTTL(record.TTL)
 	}
 
-	dc.Punycode()
-
+	var err error
 	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
+		if err = api.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}
@@ -141,31 +146,14 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
-	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-
-	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
-	// We need to make sure we don't change it every time if it is as close as it's going to get
-	// By experimentation, Linode always rounds up. 300 -> 300, 301 -> 3600.
-	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/domains/components/SelectDNSSeconds.js#L19
-	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
-	}
-
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

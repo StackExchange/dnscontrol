@@ -8,7 +8,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone.
+`NAMESERVER()` instructs DNSControl to inform the domain"s registrar where to find this zone.
 For some registrars this will also add NS records to the zone itself.
 
 This takes exactly one argument: the name of the nameserver. It must end with
@@ -22,14 +22,14 @@ For more information, refer to [this page](../../nameservers.md).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR, .... ,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DnsProvider(route53, 0),
   // Replace the nameservers:
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
 );
 
-D("example2.com", REGISTRAR, .... ,
+D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   // Add these two additional nameservers to the existing list of nameservers.
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
@@ -56,7 +56,7 @@ the registrar who does the hard work of talking to the people that
 control `.com`.  If the domain was `gmeet.io`, the registrar does
 the right thing to talk to the people that control `.io`.
 
-(A better name might have been `PARENTNAMESERVER()` but we didn't
+(A better name might have been `PARENTNAMESERVER()` but we didn"t
 think of that at the time.)
 
 Each registrar handles delegations differently.  Most use
@@ -82,7 +82,7 @@ It looks like this:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_THIRDPARTY = NewRegistrar('ThirdParty', 'NONE')
+var REG_THIRDPARTY = NewRegistrar("ThirdParty");
 D("mydomain.com", REG_THIRDPARTY,
   ...
 )

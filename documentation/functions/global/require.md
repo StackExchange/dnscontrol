@@ -21,9 +21,9 @@ of the call.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-require('kubernetes/clusters.js');
+require("kubernetes/clusters.js");
 
-D("mydomain.net", REG, PROVIDER,
+D("mydomain.net", REG_MY_PROVIDER, PROVIDER,
     IncludeKubernetes()
 );
 ```
@@ -31,8 +31,8 @@ D("mydomain.net", REG, PROVIDER,
 
 {% code title="kubernetes/clusters.js" %}
 ```javascript
-require('./clusters/prod.js');
-require('./clusters/dev.js');
+require("./clusters/prod.js");
+require("./clusters/dev.js");
 
 function IncludeKubernetes() {
     return [includeK8Sprod(), includeK8Sdev()];
@@ -64,10 +64,10 @@ You can also use it to require JSON files and initialize variables with it:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var domains = require('./domain-ip-map.json')
+var domains = require("./domain-ip-map.json")
 
 for (var domain in domains) {
-    D(domain, REG, PROVIDER,
+    D(domain, REG_MY_PROVIDER, PROVIDER,
         A("@", domains[domain])
     );
 }

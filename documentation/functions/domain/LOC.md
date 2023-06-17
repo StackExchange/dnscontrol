@@ -14,17 +14,35 @@ parameters:
 parameter_types:
   name: string
   target: string
-  deg1: uint32
-  min1: uint32
-  sec1: float32
-  deg2: uint32
-  min2: uint32
-  sec2: float32
-  altitude: uint32
-  size: float32
-  horizontal_precision: float32
-  vertical_precision: float32
+  deg1: number
+  min1: number
+  sec1: number
+  deg2: number
+  min2: number
+  sec2: number
+  altitude: number
+  size: number
+  horizontal_precision: number
+  vertical_precision: number
 ---
+
+The parameter number types are as follows:
+
+```
+name: string
+target: string
+deg1: uint32
+min1: uint32
+sec1: float32
+deg2: uint32
+min2: uint32
+sec2: float32
+altitude: uint32
+size: float32
+horizontal_precision: float32
+vertical_precision: float32
+```
+
 
 ## Description ##
 
@@ -84,7 +102,7 @@ The coordinate format for `LOC()` is:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("foo.com","none"
+D("example.com","none"
   // LOC "subdomain", d1, m1, s1, "[NnSs]", d2, m2, s2, "[EeWw]", alt, siz, hp, vp)
   //42 21 54     N  71 06  18     W -24m 30m
   , LOC("@", 42, 21, 54,     "N", 71,  6, 18,     "W", -24,   30,    0,  0)

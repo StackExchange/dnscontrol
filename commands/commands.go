@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/js"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/js"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/urfave/cli/v2"
 )
 
@@ -22,7 +22,11 @@ const (
 )
 
 var commands = []*cli.Command{}
-var version string
+
+// These are set by/for goreleaser
+var (
+	version = "dev"
+)
 
 func cmd(cat string, c *cli.Command) bool {
 	c.Category = cat
@@ -62,6 +66,7 @@ func Run(v string) int {
 			Name:        "diff2",
 			Usage:       "Enable replacement diff algorithm",
 			Destination: &diff2.EnableDiff2,
+			Value:       true,
 		},
 	}
 	sort.Sort(cli.CommandsByName(commands))

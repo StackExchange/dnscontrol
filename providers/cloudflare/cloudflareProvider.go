@@ -3,19 +3,19 @@ package cloudflare
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
+	"os"
+	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
-	"github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -74,15 +74,16 @@ type cloudflareProvider struct {
 	cfClient        *cloudflare.API
 }
 
-func labelMatches(label string, matches []string) bool {
-	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
-	for _, tst := range matches {
-		if label == tst {
-			return true
-		}
-	}
-	return false
-}
+// TODO(dlemenkov): remove this function after deleting all commented code referecing it
+//func labelMatches(label string, matches []string) bool {
+//	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+//	for _, tst := range matches {
+//		if label == tst {
+//			return true
+//		}
+//	}
+//	return false
+//}
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -111,18 +112,20 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, error) {
-	id, err := c.getDomainID(domain)
+func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+
+	domainID, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.getRecordsForDomain(id, domain)
+	records, err := c.getRecordsForDomain(domainID, domain)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, rec := range records {
-		if rec.TTL == 1 {
-			rec.TTL = 0
+		if rec.TTL == 0 {
+			rec.TTL = 1
 		}
 		// Store the proxy status ("orange cloud") for use by get-zones:
 		m := getProxyMetadata(rec)
@@ -133,6 +136,37 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 			rec.Metadata["cloudflare_proxy"] = p
 		}
 	}
+
+	// // FIXME(tlim) Why is this needed???
+	// // I don't know. Let's comment it out and see if anything breaks.
+	// for i := len(records) - 1; i >= 0; i-- {
+	// 	rec := records[i]
+	// 	// Delete ignore labels
+	// 	if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
+	// 		printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
+	// 		records = append(records[:i], records[i+1:]...)
+	// 	}
+	// }
+
+	if c.manageRedirects {
+		prs, err := c.getPageRules(domainID, domain)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, prs...)
+	}
+
+	if c.manageWorkers {
+		wrs, err := c.getWorkerRoutes(domainID, domain)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, wrs...)
+	}
+
+	// Normalize
+	models.PostProcessRecords(records)
+
 	return records, nil
 }
 
@@ -149,52 +183,26 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 	return id, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	domainID, err := c.getDomainID(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	records, err := c.getRecordsForDomain(domainID, dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
-	for i := len(records) - 1; i >= 0; i-- {
-		rec := records[i]
-		// Delete ignore labels
-		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-			records = append(records[:i], records[i+1:]...)
-		}
-	}
+	//	for i := len(records) - 1; i >= 0; i-- {
+	//		rec := records[i]
+	//		// Delete ignore labels
+	//		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
+	//			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
+	//			records = append(records[:i], records[i+1:]...)
+	//		}
+	//	}
 
-	if c.manageRedirects {
-		prs, err := c.getPageRules(domainID, dc.Name)
-		//printer.Printf("GET PAGE RULES:\n")
-		//for i, p := range prs {
-		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
-		//}
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
-	}
+	checkNSModifications(dc)
 
-	if c.manageWorkers {
-		wrs, err := c.getWorkerRoutes(domainID, dc.Name)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, wrs...)
+	domainID, err := c.getDomainID(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, rec := range dc.Records {
@@ -207,23 +215,12 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		if rec.Metadata[metaProxy] != "off" {
 			rec.TTL = 1
 		}
-		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-		}
+		//		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
+		//			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
+		//		}
 	}
 
 	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(records)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-	// Don't split.
-	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings.
-	// When serving the DNS record, it splits strings >255 octets into
-	// individual segments of 255 each. However that is hidden from the API.
-	// Therefore, whether the string is 1 octet or thousands, just store it as
-	// one string in the first element of .TxtStrings.
 
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
@@ -347,7 +344,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrs = c.mkCreateCorrection(createRec, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we create NS records before any DS records.
-			addToFront = createRec.Type == "NS"
+			addToFront = (createRec.Type == "NS")
 		case diff2.CHANGE:
 			newrec := inst.New[0]
 			oldrec := inst.Old[0]
@@ -359,7 +356,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we remove DS records before any NS records.
-			addToFront = deleteRecType == "DS"
+			addToFront = (deleteRecType == "DS")
 		}
 
 		if addToFront {
@@ -387,13 +384,16 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 }
 
 func genComparable(rec *models.RecordConfig) string {
-	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
-			//return "proxy=" + rec.Metadata[metaProxy]
+			if proxy == "on" {
+				proxy = "true"
+			}
+			if proxy == "off" {
+				proxy = "false"
+			}
 			return "proxy=" + proxy
-			//return fmt.Sprintf("proxy:%v=%s", rec.Type, proxy)
 		}
 	}
 	return ""
@@ -417,6 +417,7 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 }
 
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+
 	var idTxt string
 	switch oldrec.Type {
 	case "PAGE_RULE":
@@ -433,14 +434,14 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updatePageRule(oldrec.Original.(cloudflare.PageRule).ID, domainID, newrec.GetTargetField())
+				return c.updatePageRule(idTxt, domainID, newrec.GetTargetField())
 			},
 		}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updateWorkerRoute(oldrec.Original.(cloudflare.WorkerRoute).ID, domainID, newrec.GetTargetField())
+				return c.updateWorkerRoute(idTxt, domainID, newrec.GetTargetField())
 			},
 		}}
 	default:
@@ -678,6 +679,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	// Check account data if set
 	if m["accountid"] != "" {
 		api.cfClient.AccountID = m["accountid"]
+	}
+
+	debug, err := strconv.ParseBool(os.Getenv("CLOUDFLAREAPI_DEBUG"))
+	if err == nil {
+		api.cfClient.Debug = debug
 	}
 
 	if len(metadata) > 0 {

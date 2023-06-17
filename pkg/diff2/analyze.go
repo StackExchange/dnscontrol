@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/fatih/color"
 )
 
@@ -170,10 +170,12 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 
 		if ecomp == dcomp && er.TTL != dr.TTL {
 			m := color.YellowString("± MODIFY-TTL %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[ei], desired[di]))
-			instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
+			v := mkChange(dr.NameFQDN, dr.Type, []string{m},
 				models.Records{er},
 				models.Records{dr},
-			))
+			)
+			v.HintOnlyTTL = true
+			instructions = append(instructions, v)
 			ei++
 			di++
 		} else if ecomp < dcomp {
@@ -263,9 +265,15 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 		m := color.YellowString("± MODIFY %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[i], desired[i]))
 
-		instructions = append(instructions,
-			mkChange(dr.NameFQDN, dr.Type, []string{m}, models.Records{er}, models.Records{dr}),
-		)
+		mkc := mkChange(dr.NameFQDN, dr.Type, []string{m}, models.Records{er}, models.Records{dr})
+		if len(existing) == 1 && len(desired) == 1 {
+			// If the tdata has exactly 1 item, drop a hint to the providers.
+			// For example, MSDNS can use a more efficient command if it knows
+			// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
+			// return exactly one record.
+			mkc.HintRecordSetLen1 = true
+		}
+		instructions = append(instructions, mkc)
 	}
 
 	// any left-over existing are deletes

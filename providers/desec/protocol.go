@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 const apiBase = "https://desec.io/api/v1"
@@ -260,13 +260,15 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	return nil
 }
 
-func (c *desecProvider) deleteRR(domain, shortname, t string) error {
-	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
-	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
-	}
-	return nil
-}
+// Uncomment this function in case of using it
+// It was commented out to satisfy `staticcheck` warnings about unused code
+//func (c *desecProvider) deleteRR(domain, shortname, t string) error {
+//	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
+//	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
+//		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
+//	}
+//	return nil
+//}
 
 func (c *desecProvider) get(target, method string) ([]byte, *http.Response, error) {
 	retrycnt := 0

@@ -1,11 +1,14 @@
 # syntax = docker/dockerfile:1.4
 
-FROM alpine:3.17.2@sha256:69665d02cb32192e52e07644d76bc6f25abeb5410edc1c7a81a10ba3f0efb90a as RUN
+FROM alpine:3.18.0@sha256:02bb6f428431fbc2809c5d1b41eab5a68350194fb508869a33cb1af4444c9b11 as RUN
 
-#RUN --mount=type=cache,target=/var/cache/apk \
-#    apk update \
-#    && apk add ca-certificates \
-#    && update-ca-certificates
+# Add runtime dependencies
+# - tzdata: Go time required external dependency eg: TRANSIP and possibly others
+# - ca-certificates: Needed for https to work properly
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk update \
+    && apk add tzdata ca-certificates \
+    && update-ca-certificates
 
 COPY dnscontrol /usr/local/bin/
 

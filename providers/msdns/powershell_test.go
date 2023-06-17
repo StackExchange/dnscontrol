@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 func Test_generatePSZoneAll(t *testing.T) {
@@ -146,16 +146,16 @@ func Test_generatePSModify(t *testing.T) {
 		want string
 	}{
 		{name: "A", args: args{domain: "example.com", dnsserver: "", old: recA1, rec: recA2},
-			want: `echo DELETE "A" "@" "[target]" ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "[target]" ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
+			want: `echo DELETE "A" "@" "1.2.3.4" ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "10.20.30.40" ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
 		},
 		{name: "MX1", args: args{domain: "example.com", dnsserver: "", old: recMX1, rec: recMX2},
-			want: `echo DELETE "MX" "@" "[target]" ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "[target]" ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
+			want: `echo DELETE "MX" "@" "5 foo.com." ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "50 foo2.com." ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
 		},
 		{name: "A-remote", args: args{domain: "example.com", dnsserver: "myremote", old: recA1, rec: recA2},
-			want: `echo DELETE "A" "@" "[target]" ; Remove-DnsServerResourceRecord -ComputerName "myremote" -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "[target]" ; Add-DnsServerResourceRecord -ComputerName "myremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
+			want: `echo DELETE "A" "@" "1.2.3.4" ; Remove-DnsServerResourceRecord -ComputerName "myremote" -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "10.20.30.40" ; Add-DnsServerResourceRecord -ComputerName "myremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
 		},
 		{name: "MX1-remote", args: args{domain: "example.com", dnsserver: "yourremote", old: recMX1, rec: recMX2},
-			want: `echo DELETE "MX" "@" "[target]" ; Remove-DnsServerResourceRecord -ComputerName "yourremote" -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "[target]" ; Add-DnsServerResourceRecord -ComputerName "yourremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
+			want: `echo DELETE "MX" "@" "5 foo.com." ; Remove-DnsServerResourceRecord -ComputerName "yourremote" -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "50 foo2.com." ; Add-DnsServerResourceRecord -ComputerName "yourremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
 		},
 	}
 	for _, tt := range tests {

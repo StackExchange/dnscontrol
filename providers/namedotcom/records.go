@@ -6,21 +6,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/namedotcom/go/namecom"
 )
 
-var defaultNameservers = []*models.Nameserver{
-	{Name: "ns1.name.com"},
-	{Name: "ns2.name.com"},
-	{Name: "ns3.name.com"},
-	{Name: "ns4.name.com"},
-}
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -34,25 +27,16 @@ func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, erro
 	return actual, nil
 }
 
-// GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
-	actual, err := n.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+	checkNSModifications(dc)
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "ANAME"
 		}
 	}
-
-	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(actual)
 
 	var corrections []*models.Correction
 	var differ diff.Differ
@@ -192,19 +176,6 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	_, err := n.client.CreateRecord(record)
 	return err
 }
-
-// // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-// func encodeTxt(txts []string) string {
-// 	ans := txts[0]
-
-// 	if len(txts) > 1 {
-// 		ans = ""
-// 		for _, t := range txts {
-// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-// 		}
-// 	}
-// 	return ans
-// }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)

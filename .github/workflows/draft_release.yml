@@ -1,0 +1,61 @@
+on:
+  push:
+    tags:
+    - v[0-9]+.[0-9]+.[0-9]+
+    - v[0-9]+.[0-9]+.[0-9]+-*
+
+name: draft release
+jobs:
+  draft_release:
+    name: draft release
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+      pull-requests: write
+    steps:
+
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ^1.20
+
+    - name: Install goreleaser
+      run: go install github.com/goreleaser/goreleaser@latest
+
+# For some reason goreleaser isn't correctly setting the version
+# string used by "dnscontrol version".  Therefore, we're forcing the
+# string using the GORELEASER_CURRENT_TAG feature.
+# TODO(tlim): Use the native gorelease version mechanism.
+
+    - name: Retrieve version
+      id: version
+      run: |
+        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+
+    - name: Reveal version
+      run: echo ${{ steps.version.outputs.TAG_NAME }}
+
+    - name: Goreleaser release
+      run: goreleaser release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}

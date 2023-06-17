@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 /*
@@ -78,7 +78,7 @@ func (l *luadnsProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (l *luadnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	domainID, err := l.getDomainID(domain)
 	if err != nil {
 		return nil, err
@@ -94,25 +94,15 @@ func (l *luadnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+
+	checkNS(dc)
+
 	domainID, err := l.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	records, err := l.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	checkNS(dc)
-
-	// Normalize
-	models.PostProcessRecords(records)
 
 	var corrections []*models.Correction
 	var corrs []*models.Correction

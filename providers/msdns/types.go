@@ -3,7 +3,7 @@ package msdns
 import (
 	"encoding/json"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // DNSAccessor describes a system that can access Microsoft DNS.
@@ -14,6 +14,7 @@ type DNSAccessor interface {
 	RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error
 	RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error
 	RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error
+	RecordModifyTTL(dnsserver, domain string, old *models.RecordConfig, newTTL uint32) error
 }
 
 // nativeRecord the JSON received from PowerShell when listing all DNS

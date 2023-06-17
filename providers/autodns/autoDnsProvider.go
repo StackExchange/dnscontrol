@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -67,31 +67,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var changes []*models.RecordConfig
-
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
-
-	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	var changes []*models.RecordConfig
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 
@@ -273,7 +254,7 @@ func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *autoDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	zone, _ := api.getZone(domain)
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
@@ -358,10 +339,22 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 		found := re.FindStringSubmatch(record.Value)
 
 		weight, _ := strconv.Atoi(found[1])
-		rc.SrvWeight = uint16(weight)
+		if weight < 0 {
+			rc.SrvWeight = 0
+		} else if weight > 65535 {
+			rc.SrvWeight = 65535
+		} else {
+			rc.SrvWeight = uint16(weight)
+		}
 
 		port, _ := strconv.Atoi(found[2])
-		rc.SrvPort = uint16(port)
+		if port < 0 {
+			rc.SrvPort = 0
+		} else if port > 65535 {
+			rc.SrvPort = 65535
+		} else {
+			rc.SrvPort = uint16(port)
+		}
 
 		rc.SetTarget(found[3])
 	}

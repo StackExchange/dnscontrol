@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/digitalocean/godo"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
@@ -109,13 +109,47 @@ retry:
 	return err
 }
 
+// ListZones returns the list of zones (domains) in this account.
+func (api *digitaloceanProvider) ListZones() ([]string, error) {
+	ctx := context.Background()
+	zones := []string{}
+	opt := &godo.ListOptions{PerPage: perPageSize}
+retry:
+	for {
+		result, resp, err := api.client.Domains.List(ctx, opt)
+		if err != nil {
+			if pauseAndRetry(resp) {
+				goto retry
+			}
+			return nil, err
+		}
+
+		for _, d := range result {
+			zones = append(zones, d.Name)
+		}
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return zones, nil
+}
+
 // GetNameservers returns the nameservers for domain.
 func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err
@@ -133,19 +167,11 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, 
 	return existingRecords, nil
 }
 
-// GetDomainCorrections returns a list of corretions for the  domain.
-func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	ctx := context.Background()
-	dc.Punycode()
-
-	existingRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	ctx := context.Background()
 
 	var corrections []*models.Correction
 	var differ diff.Differ

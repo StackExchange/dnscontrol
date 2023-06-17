@@ -5,7 +5,7 @@ package cscglobal
 import (
 	"net"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // nativeToRecordA takes an A record from DNS and returns a native RecordConfig struct.

@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -178,18 +178,8 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
-// GetDomainCorrections returns a list of corrections for the  domain.
-func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	records, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
 	// Get the SOA record to get the ZoneID, then remove it from the list.
 	zoneID := uint64(0)
@@ -203,7 +193,6 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	}
 
 	// Normalize
-	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
@@ -215,7 +204,6 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
-	var toCreate, toDelete, toModify diff.Changeset
 
 	differ := diff.New(dc)
 	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)
@@ -296,7 +284,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 }
 
 // GetZoneRecords returns all the records for the given domain
-func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 
 	// Get Domain ID
@@ -361,7 +349,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 		}
 
 		// Ignore record types that dnscontrol does not support
-		if rc.Type == "HINFO" || rc.Type == "AFSDB" || rc.Type == "RP" || rc.Type == "LOC" {
+		if rc.Type == "HINFO" || rc.Type == "AFSDB" || rc.Type == "RP" {
 			return true
 		}
 
@@ -379,6 +367,8 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
+		case "TXT":
+			err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
 		default:
 			err = rc.PopulateFromString(rc.Type, data, domain)
 		}

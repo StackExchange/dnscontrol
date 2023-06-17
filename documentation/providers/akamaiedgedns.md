@@ -21,7 +21,8 @@ Example:
 
 {% code title="creds.json" %}
 ```json
-"akamaiedgedns": {
+{
+  "akamaiedgedns": {
     "TYPE": "AKAMAIEDGEDNS",
     "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
@@ -29,6 +30,7 @@ Example:
     "client_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "contract_id": "X-XXXX",
     "group_id": "NNNNNN"
+  }
 }
 ```
 {% endcode %}

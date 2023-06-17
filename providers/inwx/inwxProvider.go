@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
 )
@@ -226,32 +226,24 @@ func checkRecords(records models.Records) error {
 	return nil
 }
 
-// GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
-func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
-	foundRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	err = checkRecords(dc.Records)
+	err := checkRecords(dc.Records)
 	if err != nil {
 		return nil, err
 	}
 
 	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +288,7 @@ func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) 
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
-func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
 		return nil, err
@@ -316,7 +308,14 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 		   Records with empty targets (i.e. records with target ".")
 		   are not allowed.
 		*/
-		if record.Type == "CNAME" || record.Type == "MX" || record.Type == "NS" || record.Type == "SRV" {
+		var rtypeAddDot = map[string]bool{
+			"CNAME": true,
+			"MX":    true,
+			"NS":    true,
+			"SRV":   true,
+			"PTR":   true,
+		}
+		if rtypeAddDot[record.Type] {
 			record.Content = record.Content + "."
 		}
 
@@ -342,6 +341,22 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	return records, nil
+}
+
+// ListZones returns the zones configured in INWX.
+func (api *inwxAPI) ListZones() ([]string, error) {
+	if api.domainIndex == nil { // only pull the data once.
+		if err := api.fetchNameserverDomains(); err != nil {
+			return nil, err
+		}
+	}
+
+	var domains []string
+	for domain := range api.domainIndex {
+		domains = append(domains, domain)
+	}
+
+	return domains, nil
 }
 
 // updateNameservers is used by GetRegistrarCorrections to update the domain's nameservers.

@@ -6,9 +6,9 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/StackExchange/dnscontrol/v3/commands"
-	"github.com/StackExchange/dnscontrol/v3/pkg/version"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/commands"
+	"github.com/StackExchange/dnscontrol/v4/pkg/version"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/fatih/color"
 )
 

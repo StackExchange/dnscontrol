@@ -31,9 +31,9 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 ```json
 {
   "r53_main": {
+    "TYPE": "ROUTE53",
     "KeyId": "$AWS_ACCESS_KEY_ID",
-    "SecretKey": "$AWS_SECRET_ACCESS_KEY",
-    "TYPE": "ROUTE53"
+    "SecretKey": "$AWS_SECRET_ACCESS_KEY"
   }
 }
 ```
@@ -74,6 +74,32 @@ var DSP_R53 = NewDnsProvider("r53_main");
 
 D("example.tld", REG_NONE, DnsProvider(DSP_R53),
     A("test", "1.2.3.4")
+);
+```
+{% endcode %}
+
+## Split horizon
+
+This provider supports spilt horizons using the [`R53_ZONE()`](../functions/record/R53_ZONE.md) domain function.
+
+In this example the domain `testzone.net` appears in the same account twice,
+each with different zone IDs specified using [`R53_ZONE()`](../functions/record/R53_ZONE.md).
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
+
+D("testzone.net!private", REG_NONE,
+    DnsProvider(DSP_R53),
+    R53_ZONE("Z111111111JCCCP1V7UW"),
+    TXT("me", "private testzone.net"),
+);
+
+D("testzone.net!public", REG_NONE,
+    DnsProvider(DSP_R53),
+    R53_ZONE("Z222222222INNG98SHJQ2"),
+    TXT("me", "public testzone.net"),
 );
 ```
 {% endcode %}

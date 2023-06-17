@@ -14,12 +14,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -32,7 +32,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSOA:              providers.Cannot(),
@@ -105,26 +105,13 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	return createZone(domain, a.contractID, a.groupID)
 }
 
-// GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
-// and a function that, if called, will make the change.
-// “dnscontrol preview” simply prints the text strings.
-// "dnscontrol push" prints the strings and calls the functions.
-func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-
-	existingRecords, err := getRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(existingRecords)
 
 	var corrections []*models.Correction
 	var keysToUpdate map[models.RecordKey][]string
+	var err error
 	if !diff2.EnableDiff2 {
 		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
 	} else {
@@ -237,7 +224,7 @@ func (a *edgeDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
-func (a *edgeDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (a *edgeDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := getRecords(domain)
 	if err != nil {
 		return nil, err

@@ -10,10 +10,10 @@ import (
 	"golang.org/x/net/idna"
 	"golang.org/x/oauth2"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/vultr/govultr/v2"
 )
 
@@ -76,10 +76,10 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *vultrProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	listOptions := &govultr.ListOptions{}
-	records, meta, err := api.client.DomainRecord.List(context.Background(), domain, listOptions)
-	curRecords := make(models.Records, meta.Total)
+	records, recordsMeta, err := api.client.DomainRecord.List(context.Background(), domain, listOptions)
+	curRecords := make(models.Records, recordsMeta.Total)
 	nextI := 0
 
 	for {
@@ -97,11 +97,11 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 		}
 		nextI = currentI + 1
 
-		if meta.Links.Next == "" {
+		if recordsMeta.Links.Next == "" {
 			break
 		} else {
-			listOptions.Cursor = meta.Links.Next
-			records, meta, err = api.client.DomainRecord.List(context.Background(), domain, listOptions)
+			listOptions.Cursor = recordsMeta.Links.Next
+			records, recordsMeta, err = api.client.DomainRecord.List(context.Background(), domain, listOptions)
 			continue
 		}
 	}
@@ -109,9 +109,8 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 	return curRecords, nil
 }
 
-// GetDomainCorrections gets the corrections for a DomainConfig.
-func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 
 	for _, rec := range dc.Records {
 		switch rec.Type { // #rtype_variations
@@ -127,23 +126,16 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
-	curRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	models.PostProcessRecords(curRecords)
-
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
+		_, create, toDelete, modify, err := differ.IncrementalDiff(curRecords)
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, mod := range delete {
+		for _, mod := range toDelete {
 			id := mod.Existing.Original.(govultr.DomainRecord).ID
 			corrections = append(corrections, &models.Correction{
 				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),

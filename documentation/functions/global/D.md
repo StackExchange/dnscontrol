@@ -23,22 +23,22 @@ Modifier arguments are processed according to type as follows:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REGISTRAR = NewRegistrar("name.com");
+var REG_NAMECOM = NewRegistrar("name.com");
 var r53 = NewDnsProvider("R53");
 
 // simple domain
-D("example.com", REGISTRAR, DnsProvider(r53),
+D("example.com", REG_NAMECOM, DnsProvider(r53),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com.")
 );
 
 // "macro" for records that can be mixed into any zone
 var GOOGLE_APPS_DOMAIN_MX = [
-    MX('@', 1, 'aspmx.l.google.com.'),
-    MX('@', 5, 'alt1.aspmx.l.google.com.'),
-    MX('@', 5, 'alt2.aspmx.l.google.com.'),
-    MX('@', 10, 'alt3.aspmx.l.google.com.'),
-    MX('@', 10, 'alt4.aspmx.l.google.com.'),
+    MX("@", 1, "aspmx.l.google.com."),
+    MX("@", 5, "alt1.aspmx.l.google.com."),
+    MX("@", 5, "alt2.aspmx.l.google.com."),
+    MX("@", 10, "alt3.aspmx.l.google.com."),
+    MX("@", 10, "alt4.aspmx.l.google.com."),
 ]
 
 D("example.com", REGISTRAR, DnsProvider(r53),
@@ -62,15 +62,15 @@ To differentiate the different domains, specify the domains as
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG = NewRegistrar("Third-Party");
+var REG_THIRDPARTY = NewRegistrar("ThirdParty");
 var DNS_INSIDE = NewDnsProvider("Cloudflare");
 var DNS_OUTSIDE = NewDnsProvider("bind");
 
-D("example.com!inside", REG, DnsProvider(DNS_INSIDE),
+D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
   A("www", "10.10.10.10")
 );
 
-D("example.com!outside", REG, DnsProvider(DNS_OUTSIDE),
+D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
   A("www", "20.20.20.20")
 );
 
@@ -94,7 +94,7 @@ define domains `example.com!george` and `example.com!john` then:
 
 * `--domains=example.com` will not match either domain.
 * `--domains='example.com!george'` will match only match the first.
-* `--domains='example.com!george',example.com!john` will match both.
+* `--domains='example.com!george",example.com!john` will match both.
 
 {% hint style="info" %}
 **NOTE**: The quotes are required if your shell treats `!` as a special

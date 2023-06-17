@@ -16,6 +16,7 @@ func join(parts ...string) string {
 	return strings.Join(parts, string(os.PathSeparator))
 }
 
+// removes repeated blank lines, replacing them with a single blank line.
 func fixRuns(s string) string {
 	lines := strings.Split(s, "\n")
 	var out []string
@@ -31,6 +32,33 @@ func fixRuns(s string) string {
 }
 
 var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
+
+func readDocFile(fPath string) (map[string]interface{}, string, error) {
+	content, err := os.ReadFile(fPath)
+	if err != nil {
+		return nil, "", err
+	}
+	frontMatter, body, err := parseFrontMatter(string(content))
+	if err != nil {
+		return nil, "", err
+	}
+
+	lines := strings.Split(body, "\n")
+
+	body = ""
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
+			continue
+		}
+		body += line + "\n"
+	}
+
+	body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
+	body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
+	body = fixRuns(body)
+	return frontMatter, body, nil
+}
 
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
@@ -52,6 +80,21 @@ var returnTypes = map[string]string{
 	"domain": "DomainModifier",
 	"global": "void",
 	"record": "RecordModifier",
+}
+
+var categories = map[string]string{
+	"domain": "domain-modifiers",
+	"global": "top-level-functions",
+	"record": "record-modifiers",
+}
+
+var providerNames = map[string]string{
+	"AKAMAIEDGEDNS": "akamai-edge-dns",
+	"ROUTE53":       "amazon-route-53",
+	"AZURE_DNS":     "azure-dns",
+	"CLOUDFLAREAPI": "cloudflare-dns",
+	"CLOUDNS":       "cloudns",
+	"NS1":           "ns1",
 }
 
 func generateFunctionTypes() (string, error) {
@@ -78,31 +121,15 @@ func generateFunctionTypes() (string, error) {
 				return "", errors.New("not a file: " + fPath)
 			}
 			// println("Processing", fPath)
-			content, err := os.ReadFile(fPath)
-			if err != nil {
-				return "", err
-			}
-			frontMatter, body, err := parseFrontMatter(string(content))
+			frontMatter, body, err := readDocFile(fPath)
 			if err != nil {
 				println("Error parsing front matter in", fPath, "error: ", err.Error())
 				continue
+
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue
 			}
-
-			lines := strings.Split(body, "\n")
-			body = ""
-			for _, line := range lines {
-				if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
-					continue
-				}
-				body += line + "\n"
-			}
-
-			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
-			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
-			body = fixRuns(body)
 
 			paramNames := []string{}
 			if frontMatter["parameters"] != nil {
@@ -143,8 +170,14 @@ func generateFunctionTypes() (string, error) {
 				}
 			}
 
+			category := categories[t.Name()]
+			if frontMatter["provider"] != nil {
+				category += "/service-provider-specific/" + providerNames[frontMatter["provider"].(string)]
+			}
+
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
+				Category:    category,
 				Params:      params,
 				ObjectParam: frontMatter["parameters_object"] == true,
 				Deprecated:  frontMatter["deprecated"] == true,
@@ -164,6 +197,7 @@ func generateFunctionTypes() (string, error) {
 // Function is a struct the stores information about functions.
 type Function struct {
 	Name        string
+	Category    string
 	Params      []Param
 	ObjectParam bool
 	Deprecated  bool
@@ -210,7 +244,7 @@ func (f Function) docs() string {
 	if f.Deprecated {
 		content += "\n\n@deprecated"
 	}
-	content += "\n\n@see https://dnscontrol.org/js#" + f.Name
+	content += fmt.Sprintf("\n\n@see https://docs.dnscontrol.org/language-reference/%s/%s", f.Category, strings.ToLower(f.Name))
 	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
 }
 

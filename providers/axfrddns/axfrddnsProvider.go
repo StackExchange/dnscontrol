@@ -23,12 +23,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/fatih/color"
 	"github.com/miekg/dns"
 )
 
@@ -56,13 +57,15 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand         *rand.Rand
-	master       string
-	updateMode   string
-	transferMode string
-	nameservers  []*models.Nameserver
-	transferKey  *Key
-	updateKey    *Key
+	rand                *rand.Rand
+	master              string
+	updateMode          string
+	transferMode        string
+	nameservers         []*models.Nameserver
+	transferKey         *Key
+	updateKey           *Key
+	hasDnssecRecords    bool
+	serverHasBuggyCNAME bool
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -132,6 +135,12 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	if err != nil {
 		return nil, err
 	}
+	switch strings.ToLower(strings.TrimSpace(config["buggy-cname"])) {
+	case "yes", "true":
+		api.serverHasBuggyCNAME = true
+	default:
+		api.serverHasBuggyCNAME = false
+	}
 	for key := range config {
 		switch key {
 		case "master",
@@ -139,7 +148,9 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"update-key",
 			"transfer-key",
 			"update-mode",
-			"transfer-mode":
+			"transfer-mode",
+			"domain",
+			"TYPE":
 			continue
 		default:
 			printer.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
@@ -260,7 +271,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {
@@ -270,16 +281,19 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 	var foundDNSSecRecords *models.RecordConfig
 	foundRecords := models.Records{}
 	for _, rr := range rawRecords {
-		switch rr.(type) {
-		case *dns.RRSIG,
-			*dns.DNSKEY,
-			*dns.CDNSKEY,
-			*dns.CDS,
-			*dns.NSEC,
-			*dns.NSEC3,
-			*dns.NSEC3PARAM:
+		switch rr.Header().Rrtype {
+		case dns.TypeRRSIG,
+			dns.TypeDNSKEY,
+			dns.TypeCDNSKEY,
+			dns.TypeCDS,
+			dns.TypeNSEC,
+			dns.TypeNSEC3,
+			dns.TypeNSEC3PARAM,
+			65534:
 			// Ignoring DNSSec RRs, but replacing it with a single
 			// "TXT" placeholder
+			// Also ignoring spurious TYPE65534, see:
+			// https://bind9-users.isc.narkive.com/zX29ay0j/rndc-signing-list-not-working#post2
 			if foundDNSSecRecords == nil {
 				foundDNSSecRecords = new(models.RecordConfig)
 				foundDNSSecRecords.Type = "TXT"
@@ -301,7 +315,7 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 
 	if len(foundRecords) >= 1 && foundRecords[len(foundRecords)-1].Type == "SOA" {
 		// The SOA is sent two times: as the first and the last record
-		// See section 2.2 of RFC5936
+		// See section 2.2 of RFC5936. We remove the later one.
 		foundRecords = foundRecords[:len(foundRecords)-1]
 	}
 
@@ -309,153 +323,317 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 		foundRecords = append(foundRecords, foundDNSSecRecords)
 	}
 
-	return foundRecords, nil
-
-}
-
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-
-	foundRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
-		// Ignoring the SOA, others providers  don't manage it either.
-		foundRecords = foundRecords[1:]
-	}
-
-	hasDnssecRecords := false
+	c.hasDnssecRecords = false
 	if len(foundRecords) >= 1 {
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
 			last.Name == dnssecDummyLabel &&
 			len(last.TxtStrings) == 1 &&
 			last.TxtStrings[0] == dnssecDummyTxt {
-			hasDnssecRecords = true
+			c.hasDnssecRecords = true
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}
 	}
 
+	return foundRecords, nil
+
+}
+
+// BuildCorrection return a Correction for a given set of DDNS update and the corresponding message.
+func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []string, update *dns.Msg) *models.Correction {
+	if update == nil {
+		return &models.Correction{
+			Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
+		}
+	}
+	return &models.Correction{
+		Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
+		F: func() error {
+
+			client := new(dns.Client)
+			client.Net = c.updateMode
+			client.Timeout = dnsTimeout
+			if c.updateKey != nil {
+				client.TsigSecret =
+					map[string]string{c.updateKey.id: c.updateKey.secret}
+				update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
+				if c.updateKey.algo == dns.HmacMD5 {
+					client.TsigProvider = md5Provider(c.updateKey.secret)
+				}
+			}
+
+			msg, _, err := client.Exchange(update, c.master)
+			if err != nil {
+				return err
+			}
+			if msg.MsgHdr.Rcode != 0 {
+				return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
+					dns.RcodeToString[msg.MsgHdr.Rcode],
+					msg.MsgHdr.Rcode)
+			}
+
+			return nil
+		},
+	}
+}
+
+// hasDeletionForName returns true if there exist a corrections for [name] which is a deletion
+func hasDeletionForName(changes diff2.ChangeList, name string) bool {
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.DELETE:
+			if change.Old[0].Name == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// hasNSDeletion returns true if there exist a correction that deletes or changes an NS record
+func hasNSDeletion(changes diff2.ChangeList) bool {
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.CHANGE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				return true
+			}
+		case diff2.DELETE:
+			if change.Old[0].Type == "NS" && change.Old[0].Name == "@" {
+				return true
+			}
+		case diff2.CREATE:
+		case diff2.REPORT:
+		}
+	}
+	return false
+}
+
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
+
+	// Ignoring the SOA, others providers don't manage it either.
+	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
+		foundRecords = foundRecords[1:]
+	}
+
 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
-	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
+	if dc.AutoDNSSEC == "on" && !c.hasDnssecRecords {
 		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
 	}
-	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
+	if dc.AutoDNSSEC == "off" && c.hasDnssecRecords {
 		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
-	// Normalize
-	models.PostProcessRecords(foundRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// An RFC2136-compliant server must silently ignore an
+	// update that inserts a non-CNAME RRset when a CNAME RR
+	// with the same name is present in the zone (and
+	// vice-versa). Therefore we prefer to first remove records
+	// and then insert new ones.
+	//
+	// Compliant servers must also silently ignore an update
+	// that removes the last NS record of a zone. Therefore we
+	// don't want to remove all NS records before inserting a
+	// new one. Then, when an update want to change a NS record,
+	// we first insert a dummy NS record that we will remove
+	// at the end of the batched update.
 
-	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
+	var msgs []string
+	var reports []string
+	var msgs2 []string
+	update := new(dns.Msg)
+	update.SetUpdate(dc.Name + ".")
+	update.Id = uint16(c.rand.Intn(math.MaxUint16))
+	update2 := new(dns.Msg)
+	update2.SetUpdate(dc.Name + ".")
+	update2.Id = uint16(c.rand.Intn(math.MaxUint16))
+	hasTwoCorrections := false
+
+	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	if err != nil {
+		return nil, err
 	}
-	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
 		return nil, err
 	}
 
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
-	changes := false
-	for _, i := range create {
-		changes = true
-		fmt.Fprintln(buf, i)
+	if !diff2.EnableDiff2 {
+
+		// Legacy code with the old `diff`
+
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		changes := false
+		buf := &bytes.Buffer{}
+		buf2 := &bytes.Buffer{}
+
+		// See comment below about hasNSDeletion.
+		hasNSDeletion := false
+		for _, c := range create {
+			if c.Desired.Type == "NS" && c.Desired.Name == "@" {
+				hasNSDeletion = true
+				continue
+			}
+		}
+		for _, c := range del {
+			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
+				hasNSDeletion = true
+				continue
+			}
+		}
+		for _, c := range mod {
+			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
+				hasNSDeletion = true
+				continue
+			}
+		}
+
+		if hasNSDeletion {
+			update.Insert([]dns.RR{dummyNs1})
+		}
+
+		for _, change := range del {
+			changes = true
+			fmt.Fprintln(buf, change)
+			update.Remove([]dns.RR{change.Existing.ToRR()})
+		}
+		for _, change := range mod {
+			changes = true
+			if c.serverHasBuggyCNAME && change.Desired.Type == "CNAME" {
+				fmt.Fprintln(buf, change.String()+color.RedString(" (delete)"))
+				update.Remove([]dns.RR{change.Existing.ToRR()})
+				hasTwoCorrections = true
+				fmt.Fprintln(buf2, change.String()+color.GreenString(" (create)"))
+				update2.Insert([]dns.RR{change.Desired.ToRR()})
+			} else {
+				fmt.Fprintln(buf, change)
+				update.Remove([]dns.RR{change.Existing.ToRR()})
+				update.Insert([]dns.RR{change.Desired.ToRR()})
+			}
+		}
+		for _, change := range create {
+			changes = true
+			splitted := false
+			if c.serverHasBuggyCNAME && change.Desired.Type == "CNAME" {
+				for _, change2 := range del {
+					if change2.Existing.Name == change.Desired.Name {
+						splitted = true
+						break
+					}
+				}
+			}
+			if splitted {
+				hasTwoCorrections = true
+				fmt.Fprintln(buf2, change)
+				update2.Insert([]dns.RR{change.Desired.ToRR()})
+			} else {
+				fmt.Fprintln(buf, change)
+				update.Insert([]dns.RR{change.Desired.ToRR()})
+			}
+		}
+
+		if hasNSDeletion {
+			update.Remove([]dns.RR{dummyNs2})
+		}
+
+		if !changes {
+			return nil, nil
+		}
+
+		if hasTwoCorrections {
+
+			return []*models.Correction{
+				c.BuildCorrection(dc, []string{buf.String()}, update),
+				c.BuildCorrection(dc, []string{buf2.String()}, update2),
+			}, nil
+
+		}
+
+		return []*models.Correction{
+			c.BuildCorrection(dc, []string{buf.String()}, update),
+		}, nil
+
 	}
-	for _, i := range del {
-		changes = true
-		fmt.Fprintln(buf, i)
+
+	changes, err := diff2.ByRecord(foundRecords, dc, nil)
+	if err != nil {
+		return nil, err
 	}
-	for _, i := range mod {
-		changes = true
-		fmt.Fprintln(buf, i)
-	}
-	msg := fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, buf)
-
-	if changes {
-
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-
-					// An RFC2136-compliant server must silently ignore an
-					// update that inserts a non-CNAME RRset when a CNAME RR
-					// with the same name is present in the zone (and
-					// vice-versa). Therefore we prefer to first remove records
-					// and then insert new ones.
-					//
-					// Compliant servers must also silently ignore an update
-					// that removes the last NS record of a zone. Therefore we
-					// don't want to remove all NS records before inserting a
-					// new one. For the particular case of NS record, we prefer
-					// to insert new records before ot remove old ones.
-					//
-					// This remarks does not apply for "modified" NS records, as
-					// updates are processed one-by-one.
-					//
-					// This provider does not allow modifying the TTL of an NS
-					// record in a zone that defines only one NS. That would
-					// would require removing the single NS record, before
-					// adding the new one. But who does that anyway?
-
-					update := new(dns.Msg)
-					update.SetUpdate(dc.Name + ".")
-					update.Id = uint16(c.rand.Intn(math.MaxUint16))
-					for _, c := range create {
-						if c.Desired.Type == "NS" {
-							update.Insert([]dns.RR{c.Desired.ToRR()})
-						}
-					}
-					for _, c := range del {
-						update.Remove([]dns.RR{c.Existing.ToRR()})
-					}
-					for _, c := range mod {
-						update.Remove([]dns.RR{c.Existing.ToRR()})
-						update.Insert([]dns.RR{c.Desired.ToRR()})
-					}
-					for _, c := range create {
-						if c.Desired.Type != "NS" {
-							update.Insert([]dns.RR{c.Desired.ToRR()})
-						}
-					}
-
-					client := new(dns.Client)
-					client.Net = c.updateMode
-					client.Timeout = dnsTimeout
-					if c.updateKey != nil {
-						client.TsigSecret =
-							map[string]string{c.updateKey.id: c.updateKey.secret}
-						update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
-						if c.updateKey.algo == dns.HmacMD5 {
-							client.TsigProvider = md5Provider(c.updateKey.secret)
-						}
-					}
-
-					msg, _, err := client.Exchange(update, c.master)
-					if err != nil {
-						return err
-					}
-					if msg.MsgHdr.Rcode != 0 {
-						return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
-							dns.RcodeToString[msg.MsgHdr.Rcode],
-							msg.MsgHdr.Rcode)
-					}
-
-					return nil
-				},
-			})
+	if changes == nil {
+		return nil, nil
 	}
 
-	return corrections, nil
+	// A DNS server should silently ignore a DDNS update that removes
+	// the last NS record of a zone. Since modifying a record is
+	// implemented by successively a deletion of the old record and an
+	// insertion of the new one, then modifying all the NS record of a
+	// zone might will fail (even if the the deletion and insertion
+	// are grouped in a single batched update).
+	//
+	// To avoid this case, we will first insert a dummy NS record,
+	// that will be removed at the end of the batched updates. This
+	// record needs to inserted only when all NS records are touched
+	// The current implementation insert this dummy record as soon as
+	// a NS record is deleted or changed.
+	hasNSDeletion := hasNSDeletion(changes)
 
+	if hasNSDeletion {
+		update.Insert([]dns.RR{dummyNs1})
+	}
+
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.DELETE:
+			msgs = append(msgs, change.Msgs[0])
+			update.Remove([]dns.RR{change.Old[0].ToRR()})
+		case diff2.CREATE:
+			if c.serverHasBuggyCNAME &&
+				change.New[0].Type == "CNAME" &&
+				hasDeletionForName(changes, change.New[0].Name) {
+				hasTwoCorrections = true
+				msgs2 = append(msgs2, change.Msgs[0])
+				update2.Insert([]dns.RR{change.New[0].ToRR()})
+			} else {
+				msgs = append(msgs, change.Msgs[0])
+				update.Insert([]dns.RR{change.New[0].ToRR()})
+			}
+		case diff2.CHANGE:
+			if c.serverHasBuggyCNAME && change.New[0].Type == "CNAME" {
+				msgs = append(msgs, change.Msgs[0]+color.RedString(" (delete)"))
+				update.Remove([]dns.RR{change.Old[0].ToRR()})
+				hasTwoCorrections = true
+				msgs2 = append(msgs2, change.Msgs[0]+color.GreenString(" (create)"))
+				update2.Insert([]dns.RR{change.New[0].ToRR()})
+			} else {
+				msgs = append(msgs, change.Msgs[0])
+				update.Remove([]dns.RR{change.Old[0].ToRR()})
+				update.Insert([]dns.RR{change.New[0].ToRR()})
+			}
+		case diff2.REPORT:
+			reports = append(reports, change.Msgs...)
+		}
+	}
+
+	if hasNSDeletion {
+		update.Remove([]dns.RR{dummyNs2})
+	}
+
+	returnValue := []*models.Correction{}
+
+	if len(msgs) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, update))
+	}
+	if hasTwoCorrections && len(msgs2) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, msgs2, update2))
+	}
+	if len(reports) > 0 {
+		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))
+	}
+	return returnValue, nil
 }

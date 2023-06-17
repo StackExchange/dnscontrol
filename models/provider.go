@@ -3,8 +3,8 @@ package models
 // DNSProvider is an interface for DNS Provider plug-ins.
 type DNSProvider interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
-	GetZoneRecords(domain string) (Records, error)
-	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
+	GetZoneRecords(domain string, meta map[string]string) (Records, error)
+	GetZoneRecordsCorrections(dc *DomainConfig, existing Records) ([]*Correction, error)
 }
 
 // Registrar is an interface for Registrar plug-ins.

@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
 )
@@ -75,7 +75,7 @@ func (c *dnsimpleProvider) GetNameservers(_ string) ([]*models.Nameserver, error
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -119,10 +119,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Content)
 		case "SRV":
-			parts := strings.Fields(r.Content)
-			if len(parts) == 3 {
-				r.Content += "."
-			}
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
 			err = rec.SetTargetTXT(r.Content)
@@ -137,17 +133,16 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		cleanedRecords = append(cleanedRecords, rec)
 	}
 
+	// Apex NS are immutable via API
+	cleanedRecords = removeApexNS(cleanedRecords)
+
 	return cleanedRecords, nil
 }
 
-// GetDomainCorrections returns corrections that update a domain.
-func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
-	err := dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
+	removeOtherApexNS(dc)
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
 	if err != nil {
@@ -155,25 +150,13 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	corrections = append(corrections, dnssecFixes...)
 
-	records, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	// Apex NS are immutable via API
-	actual := removeApexNS(records)
-	removeOtherApexNS(dc)
-
-	// Normalize
-	models.PostProcessRecords(actual)
-
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(actual)
+	_, create, del, modify, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}

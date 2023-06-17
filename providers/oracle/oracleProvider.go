@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/oracle/oci-go-sdk/v32/common"
 	"github.com/oracle/oci-go-sdk/v32/dns"
 	"github.com/oracle/oci-go-sdk/v32/example/helpers"
@@ -148,7 +148,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(nss)
 }
 
-func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -202,25 +202,9 @@ func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
 	return records, nil
 }
 
-func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dc.Punycode()
-	if err != nil {
-		return nil, err
-	}
-	domain := dc.Name
-
-	existingRecords, err := o.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var err error
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
@@ -241,14 +225,13 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
-	var create, dels, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +277,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		return []*models.Correction{{
 			Msg: desc,
 			F: func() error {
-				return o.patch(createRecords, deleteRecords, domain)
+				return o.patch(createRecords, deleteRecords, dc.Name)
 			},
 		}}, nil
 	}

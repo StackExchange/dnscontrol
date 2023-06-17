@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future. Implement this only if the provider is a "registrar" (i.e. can update the NS records of the parent to a domain).
@@ -157,11 +157,13 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	return nil, nil
+}
+
+// GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
+func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	return nil, nil
 }
 
 // GetDomainCorrections returns corrections to update a domain.

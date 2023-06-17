@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
@@ -37,7 +37,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
+	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "")
 }
 
 type nsone struct {
@@ -66,15 +66,30 @@ func (n *nsone) EnsureZoneExists(domain string) error {
 }
 
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	var nservers []string
+
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
 	}
-	return models.ToNameservers(z.DNSServers)
+
+	// on newly-created domains NS1 may assign nameservers with or without a
+	// trailing dot. This is not reflected in the actual DNS records, that
+	// always have the trailing dots.
+	//
+	// Handle both scenarios by stripping dots where existing, before continuing.
+	for _, ns := range z.DNSServers {
+		if strings.HasSuffix(ns, ".") {
+			nservers = append(nservers, ns[0:len(ns)-1])
+		} else {
+			nservers = append(nservers, ns)
+		}
+	}
+	return models.ToNameservers(nservers)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
+func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
@@ -139,21 +154,10 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 	return nil
 }
 
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
-
-	domain := dc.Name
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
-
-	// Get existing records
-	existingRecords, err := n.GetZoneRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	//  Normalize
-	models.PostProcessRecords(existingRecords)
+	domain := dc.Name
 
 	// add DNSSEC-related corrections
 	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
@@ -245,6 +249,10 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
+	if key.Type == "NS1_URLFWD" {
+		key.Type = "URLFWD"
+	}
+
 	_, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 	return err
 }
@@ -310,6 +318,9 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsAlgorithm)),
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest}})
+		} else if r.Type == "NS1_URLFWD" {
+			rec.Type = "URLFWD"
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
@@ -337,7 +348,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
-			rec.Type = rtype
+			rec.Type = "NS1_URLFWD"
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}

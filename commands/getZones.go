@@ -6,10 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
 )
 
@@ -200,7 +200,7 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone)
+		recs, err := provider.GetZoneRecords(zone, nil)
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
@@ -328,6 +328,8 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	switch rec.Type { // #rtype_variations
 	case "CAA":
 		return makeCaa(rec, ttlop)
+	case "DS":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
 	case "NAPTR":

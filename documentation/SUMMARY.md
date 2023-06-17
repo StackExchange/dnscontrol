@@ -35,9 +35,10 @@
     * [AUTODNSSEC_ON](functions/domain/AUTODNSSEC_ON.md)
     * [CAA](functions/domain/CAA.md)
     * [CNAME](functions/domain/CNAME.md)
-    * [DS](functions/domain/DS.md)
     * [DefaultTTL](functions/domain/DefaultTTL.md)
+    * [DISABLE_IGNORE_SAFETY_CHECK](functions/domain/DISABLE_IGNORE_SAFETY_CHECK.md)
     * [DnsProvider](functions/domain/DnsProvider.md)
+    * [DS](functions/domain/DS.md)
     * [FRAME](functions/domain/FRAME.md)
     * [IGNORE](functions/domain/IGNORE.md)
     * [IGNORE_NAME](functions/domain/IGNORE_NAME.md)
@@ -81,7 +82,8 @@
     * [LOC_BUILDER_DD](functions/record/LOC_BUILDER_DD.md)
     * [LOC_BUILDER_DMM_STR](functions/record/LOC_BUILDER_DMM_STR.md)
     * [LOC_BUILDER_DMS_STR](functions/record/LOC_BUILDER_DMS_STR.md)
-    * [LOC_BUILDER_STRING](functions/record/LOC_BUILDER_STRING.md)
+    * [LOC_BUILDER_STR](functions/record/LOC_BUILDER_STR.md)
+    * [M365_BUILDER](functions/record/M365_BUILDER.md)
     * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
     * [TTL](functions/record/TTL.md)
     * Service Provider specific
@@ -153,16 +155,18 @@
 
 ## Developer info
 
-* [ALIAS Records](alias.md)
-* [Bug Triage Process](bug-triage.md)
-* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
+* [Code Style Guide](styleguide-code.md)
+* [Documentation Style Guide](styleguide-doc.md)
+* [DNSControl is an opinionated system](opinions.md)
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
-* [TXT record testing](testing-txt-records.md)
-* [Unit Testing DNS Data](unittests.md)
 * [Integration Tests](integration-tests.md)
+* [Unit Testing DNS Data](unittests.md)
+* [Bug Triage Process](bug-triage.md)
+* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
 * [Debugging with dlv](debugging-with-dlv.md)
-* [DNSControl is an opinionated system](opinions.md)
+* [ALIAS Records](alias.md)
+* [TXT record testing](testing-txt-records.md)
 
 ## Release
 

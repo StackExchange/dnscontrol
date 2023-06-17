@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -18,12 +18,6 @@ type request struct {
 type paramLogin struct {
 	Key            string `json:"apikey"`
 	Password       string `json:"apipassword"`
-	CustomerNumber string `json:"customernumber"`
-}
-
-type paramLogout struct {
-	Key            string `json:"apikey"`
-	SessionID      string `json:"apisessionid"`
 	CustomerNumber string `json:"customernumber"`
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/ovh/go-ovh/ovh"
 )
@@ -63,10 +63,6 @@ type Record struct {
 	FieldType string `json:"fieldType,omitempty"`
 	ID        int64  `json:"id,omitempty"`
 	SubDomain string `json:"subDomain,omitempty"`
-}
-
-type records struct {
-	recordsID []int
 }
 
 func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {

@@ -22,14 +22,14 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar('none');
-var DNS_BIND = NewDnsProvider('bind');
+var REG_NONE = NewRegistrar("none");
+var DNS_BIND = NewDnsProvider("bind");
 
-D('example.com', REG_NONE, DnsProvider(DNS_BIND), [
-  A('@', '1.2.3.4'),
+D("example.com", REG_NONE, DnsProvider(DNS_BIND), [
+  A("@", "1.2.3.4"),
 ]);
 
-FETCH('https://example.com', {
+FETCH("https://example.com", {
   // All three options below are optional
   headers: {"X-Authentication": "barfoo"},
   method: "POST",
@@ -38,8 +38,8 @@ FETCH('https://example.com', {
   return r.text();
 }).then(function(t) {
   // Example of generating record based on response
-  D_EXTEND('example.com', [
-    TXT('@', t.slice(0, 100)),
+  D_EXTEND("example.com", [
+    TXT("@", t.slice(0, 100)),
   ]);
 });
 ```

@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 // nativeToRecord takes a DNS record from G-Core and returns a native RecordConfig struct.

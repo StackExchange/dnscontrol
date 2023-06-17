@@ -28,7 +28,7 @@ managed by DNSControl and those that aren't.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("foo.com", .... ,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   CF_TEMP_REDIRECT("example.mydomain.com/*", "https://otherplace.yourdomain.com/$1"),
 );
 ```

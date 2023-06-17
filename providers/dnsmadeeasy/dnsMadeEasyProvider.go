@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -63,14 +63,47 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for a domain.
+// func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc, err := dc.Copy()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	err = dc.Punycode()
+// 	err = dc.Punycode()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	for _, rec := range dc.Records {
+// 		if rec.Type == "ALIAS" {
+// 			// ALIAS is called ANAME on DNS Made Easy
+// 			rec.Type = "ANAME"
+// 		} else if rec.Type == "NS" {
+// 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
+// 			rec.TTL = fixedNameServerRecordTTL
+// 		}
+// 	}
+
+// 	domainName := dc.Name
+
+// 	// Get existing records
+// 	existingRecords, err := api.GetZoneRecords(domainName)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Normalize
+// 	models.PostProcessRecords(existingRecords)
+
+// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
+// }
+
+func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	domainName := dc.Name
+	domain, err := api.findDomain(domainName)
 	if err != nil {
 		return nil, err
 	}
@@ -85,32 +118,14 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 		}
 	}
 
-	domainName := dc.Name
-
-	domain, err := api.findDomain(domainName)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domainName)
-	if err != nil {
-		return nil, err
-	}
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +218,7 @@ func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameser
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *dnsMadeEasyProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := api.fetchDomainRecords(domain)
 	if err != nil {
 		return nil, err

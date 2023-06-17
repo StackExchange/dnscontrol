@@ -11,12 +11,12 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -47,7 +47,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	optFns := []func(*config.LoadOptions) error{
 		// Route53 uses a global endpoint and route53domains
 		// currently only has a single regional endpoint in us-east-1
-		// http://docs.aws.amazon.com/general/latest/gr/rande.html#r53_region
+		// https://docs.aws.amazon.com/general/latest/gr/rande.html#r53_region
 		config.WithRegion("us-east-1"),
 	}
 
@@ -134,6 +134,7 @@ func (r *route53Provider) ListZones() ([]string, error) {
 }
 
 func (r *route53Provider) getZones() error {
+
 	if r.zonesByDomain != nil {
 		return nil
 	}
@@ -210,19 +211,35 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	if err := r.getZones(); err != nil {
 		return nil, err
 	}
 
+	var zone r53Types.HostedZone
+
+	// If the zone_id is specified in meta, use it.
+	if zoneID, ok := meta["zone_id"]; ok {
+		zone = r.zonesByID[zoneID]
+		return r.getZoneRecords(zone)
+	}
+
+	//	fmt.Printf("DEBUG: ROUTE53 zones:\n")
+	//	for i, j := range r.zonesByDomain {
+	//		fmt.Printf("       %s: %v\n", i, aws.ToString(j.Id))
+	//	}
+
+	// Otherwise, use the domain name to look up the zone.
 	if zone, ok := r.zonesByDomain[domain]; ok {
 		return r.getZoneRecords(zone)
 	}
 
+	// Not found there?  Error.
 	return nil, errDomainNoExist{domain}
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
+
 	if err := r.getZones(); err != nil {
 		return r53Types.HostedZone{}, err
 	}
@@ -260,15 +277,11 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 	return existingRecords, nil
 }
 
-func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	zone, err := r.getZone(dc)
-	if err != nil {
-		return nil, err
-	}
-
-	existingRecords, err := r.getZoneRecords(zone)
 	if err != nil {
 		return nil, err
 	}
@@ -280,12 +293,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
+
+		zone, err := r.getZone(dc)
+		if err != nil {
+			return nil, err
+		}
 
 		// diff
 		differ := diff.New(dc, getAliasMap)
@@ -473,7 +487,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	changes := []r53Types.Change{}
-	changeDesc := []string{}
+	changeDesc := []string{} // TODO(tlim): This should be a [][]string so that we aren't joining strings until the last moment.
 
 	// Amazon Route53 is a "ByRecordSet" API.
 	// At each label:rtype pair, we either delete all records or UPSERT the desired records.
@@ -482,6 +496,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 	instructions = reorderInstructions(instructions)
+	var reports []*models.Correction
+
+	//wasReport := false
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
@@ -490,7 +507,12 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		switch inst.Type {
 
 		case diff2.REPORT:
-			chg = r53Types.Change{}
+			// REPORTs are held in a separate list so that they aren't part of the batching process.
+			reports = append(reports,
+				&models.Correction{
+					Msg: inst.MsgsJoined,
+				})
+			continue
 
 		case diff2.CREATE:
 			fallthrough
@@ -540,7 +562,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 
 		changes = append(changes, chg)
-		changeDesc = append(changeDesc, inst.Msgs...)
+		changeDesc = append(changeDesc, inst.MsgsJoined)
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
@@ -557,7 +579,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return err
 				},
 			})
-
 	}
 
 	// Send the changes in as few API calls as possible.
@@ -575,7 +596,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	return corrections, nil
+	return append(reports, corrections...), nil
 
 }
 
@@ -630,7 +651,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rtype = "TXT"
 				fallthrough
 			default:
-				ty := string(rtype)
+				rtypeString := string(rtype)
 				val := *rec.Value
 
 				// AWS Route53 has a bug.  Sometimes it returns a target
@@ -652,18 +673,26 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				// first n pushes. It will seem odd but this is AWS's bug.
 				// The UPSERT command only fixes the first record, even if
 				// the UPSET received a list of corrections.
-				if ty == "CNAME" || ty == "MX" {
+				if rtypeString == "CNAME" || rtypeString == "MX" {
 					if !strings.HasSuffix(val, ".") {
 						val = val + "."
 					}
 				}
 
+				var err error
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
-					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
-				}
 				rc.Original = set
+				switch rtypeString {
+				case "TXT":
+					err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
+				default:
+					err = rc.PopulateFromString(rtypeString, val, origin)
+				}
+				if err != nil {
+					return nil, fmt.Errorf("unparsable record type=%q received from ROUTE53: %w", rtypeString, err)
+				}
+
 				results = append(results, rc)
 			}
 		}

@@ -65,14 +65,16 @@ And update `creds.json` accordingly:
 {% code title="creds.json" %}
 ```json
 {
-    "axfrddns-a": {
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    },
-    "axfrddns-b": {
-        "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
-        "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
-    }
+  "axfrddns-a": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  },
+  "axfrddns-b": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha512:transfer-key-id-B:SmallSecret=",
+    "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
+  }
 }
 ```
 {% endcode %}
@@ -100,11 +102,16 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
 ```
 {% endcode %}
 
+{% code title="creds.json" %}
 ```json
 {
-   nameservers = "ns1.example.tld,ns2.example.tld,ns3.example.tld,ns4.example.tld"
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "nameservers": "ns1.example.tld.,ns2.example.tld.,ns3.example.tld.,ns4.example.tld."
+  }
 }
 ```
+{% endcode %}
 
 ### Primary master
 
@@ -117,11 +124,16 @@ of the zone. In that case, the IP or the name of the primary server
 must be provided in `creds.json`. With this option, a non-standard
 port might be used.
 
+{% code title="creds.json" %}
 ```json
 {
-   master = "10.20.30.40:5353"
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "master": "10.20.30.40:5353"
+  }
 }
 ```
+{% endcode %}
 
 When no nameserver appears in the zone, and no default nameservers nor
 custom master are configured, the AXFR+DDNS provider will fail with
@@ -131,6 +143,47 @@ the following error message:
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
 ```
+
+### Buggy DNS servers regarding CNAME updates
+
+When modifying a CNAME record, or when replacing an A record by a
+CNAME one in a single batched DDNS update, some DNS servers
+(e.g. Knot) will incorrectly reject the update. For this particular
+case, you might set the option `buggy-cname = "yes"` in `creds.json`.
+The changes will then be split in two DDNS updates, applied
+successively by the server. This will allow Knot to successfully apply
+the changes, but you will loose the atomic-update property.
+
+### Example: local testing
+
+When testing `dnscontrol` against a local nameserver, you might use
+the following minimal configuration:
+
+{% code title="creds.json" %}
+```json
+{
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "master": "127.0.0.1"
+  }
+}
+```
+{% endcode %}
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NONE = NewRegistrar("none");
+var DNS = NewDnsProvider("axfrddns", {
+    default_ns: [
+        "ns.example.com.",
+    ],
+});
+
+D("example.com", REG_NONE, DnsProvider(DNS),
+    A("ns", "127.0.0.1")
+)
+```
+{% endcode %}
 
 
 ## Server configuration examples

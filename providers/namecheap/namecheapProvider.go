@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	nc "github.com/billputer/go-namecheap"
 	"golang.org/x/net/publicsuffix"
 )
@@ -114,7 +114,7 @@ func doWithRetry(f func() error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namecheapProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	sld, tld := splitDomain(domain)
 	var records *nc.DomainDNSGetHostsResult
 	var err error
@@ -126,24 +126,113 @@ func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error
 		return nil, err
 	}
 
+	// namecheap has this really annoying feature where they add some parking records if you have no records.
+	// This causes a few problems for our purposes, specifically the integration tests.
+	// lets detect that one case and pretend it is a no-op.
+	if len(records.Hosts) == 2 {
+		if records.Hosts[0].Type == "CNAME" &&
+			strings.Contains(records.Hosts[0].Address, "parkingpage") &&
+			records.Hosts[1].Type == "URL" {
+			// return an empty zone
+			return nil, nil
+		}
+	}
+
+	// Copying this from GetDomainCorrections.  This seems redundent
+	// with what toRecords() does.  Leaving it out.
+	// 	for _, r := range records.Hosts {
+	// 		if r.Type == "SOA" {
+	// 			continue
+	// 		}
+	// 		rec := &models.RecordConfig{
+	// 			Type:         r.Type,
+	// 			TTL:          uint32(r.TTL),
+	// 			MxPreference: uint16(r.MXPref),
+	// 			Original:     r,
+	// 		}
+	// 		rec.SetLabel(r.Name, dc.Name)
+	// 		switch rtype := r.Type; rtype { // #rtype_variations
+	// 		case "TXT":
+	// 			rec.SetTargetTXT(r.Address)
+	// 		case "CAA":
+	// 			rec.SetTargetCAAString(r.Address)
+	// 		default:
+	// 			rec.SetTarget(r.Address)
+	// 		}
+	// 		actual = append(actual, rec)
+	// 	}
+
 	return toRecords(records, domain)
 }
 
-// GetDomainCorrections returns the corrections for the domain.
-func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	sld, tld := splitDomain(dc.Name)
-	var records *nc.DomainDNSGetHostsResult
-	var err error
-	doWithRetry(func() error {
-		records, err = n.client.DomainsDNSGetHosts(sld, tld)
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
+// // GetDomainCorrections returns the corrections for the domain.
+// func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+// 	dc.Punycode()
+// 	sld, tld := splitDomain(dc.Name)
+// 	var records *nc.DomainDNSGetHostsResult
+// 	var err error
+// 	doWithRetry(func() error {
+// 		records, err = n.client.DomainsDNSGetHosts(sld, tld)
+// 		return err
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	var actual []*models.RecordConfig
+// 	var actual []*models.RecordConfig
+
+// 	// namecheap does not allow setting @ NS with basic DNS
+// 	dc.Filter(func(r *models.RecordConfig) bool {
+// 		if r.Type == "NS" && r.GetLabel() == "@" {
+// 			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
+// 				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+// 			}
+// 			return false
+// 		}
+// 		return true
+// 	})
+
+// 	// namecheap has this really annoying feature where they add some parking records if you have no records.
+// 	// This causes a few problems for our purposes, specifically the integration tests.
+// 	// lets detect that one case and pretend it is a no-op.
+// 	if len(dc.Records) == 0 && len(records.Hosts) == 2 {
+// 		if records.Hosts[0].Type == "CNAME" &&
+// 			strings.Contains(records.Hosts[0].Address, "parkingpage") &&
+// 			records.Hosts[1].Type == "URL" {
+// 			return nil, nil
+// 		}
+// 	}
+
+// 	for _, r := range records.Hosts {
+// 		if r.Type == "SOA" {
+// 			continue
+// 		}
+// 		rec := &models.RecordConfig{
+// 			Type:         r.Type,
+// 			TTL:          uint32(r.TTL),
+// 			MxPreference: uint16(r.MXPref),
+// 			Original:     r,
+// 		}
+// 		rec.SetLabel(r.Name, dc.Name)
+// 		switch rtype := r.Type; rtype { // #rtype_variations
+// 		case "TXT":
+// 			rec.SetTargetTXT(r.Address)
+// 		case "CAA":
+// 			rec.SetTargetCAAString(r.Address)
+// 		default:
+// 			rec.SetTarget(r.Address)
+// 		}
+// 		actual = append(actual, rec)
+// 	}
+
+// 	// Normalize
+// 	models.PostProcessRecords(actual)
+
+// 	return n.GetZoneRecordsCorrections(dc, actual)
+// }
+
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
 	// namecheap does not allow setting @ NS with basic DNS
 	dc.Filter(func(r *models.RecordConfig) bool {
@@ -156,50 +245,13 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return true
 	})
 
-	// namecheap has this really annoying feature where they add some parking records if you have no records.
-	// This causes a few problems for our purposes, specifically the integration tests.
-	// lets detect that one case and pretend it is a no-op.
-	if len(dc.Records) == 0 && len(records.Hosts) == 2 {
-		if records.Hosts[0].Type == "CNAME" &&
-			strings.Contains(records.Hosts[0].Address, "parkingpage") &&
-			records.Hosts[1].Type == "URL" {
-			return nil, nil
-		}
-	}
-
-	for _, r := range records.Hosts {
-		if r.Type == "SOA" {
-			continue
-		}
-		rec := &models.RecordConfig{
-			Type:         r.Type,
-			TTL:          uint32(r.TTL),
-			MxPreference: uint16(r.MXPref),
-			Original:     r,
-		}
-		rec.SetLabel(r.Name, dc.Name)
-		switch rtype := r.Type; rtype { // #rtype_variations
-		case "TXT":
-			rec.SetTargetTXT(r.Address)
-		case "CAA":
-			rec.SetTargetCAAString(r.Address)
-		default:
-			rec.SetTarget(r.Address)
-		}
-		actual = append(actual, rec)
-	}
-
-	// Normalize
-	models.PostProcessRecords(actual)
-
-	var create, delete, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, delete, modify, err = differ.IncrementalDiff(actual)
+	_, create, delete, modify, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +297,14 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 			MxPreference: uint16(dnsHost.MXPref),
 			Name:         dnsHost.Name,
 		}
-		record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+		record.SetLabel(dnsHost.Name, origin)
+
+		switch dnsHost.Type {
+		case "MX":
+			record.SetTargetMX(uint16(dnsHost.MXPref), dnsHost.Address)
+		default:
+			record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+		}
 
 		records = append(records, &record)
 	}

@@ -21,7 +21,6 @@ priority:
 
 # How to handle a provider request
 
-
 1. Change the subject to be "Provider request: name of the provider"
 1. Set the label `provider-request`
 1. Respond to the issue with the message below
@@ -46,10 +45,7 @@ I will now close the issue.  I know that's a bit confusing, but it will remain o
 
 If someone would like to volunteer to implement this, please re-open this issue and add the tag `has-pr`.
 
-We encourage you to try adding this provider yourself.  We've tried to
-make the process as friendly as possible.  Many people have reported
-that adding a provider was their first experience writing Go.  The
-process is documented here:
+We encourage you to try adding this provider yourself.  We've tried to make the process as friendly as possible.  Many people have reported that adding a provider was their first experience writing Go.  The process is documented here:
 https://docs.dnscontrol.org/developer-info/writing-providers
 If you need assistance, please speak up in this issue and someone will get back to you ASAP.
 ```

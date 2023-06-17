@@ -5,27 +5,25 @@ These are the instructions for producing a release.
 CircleCI will do most of the work for you. You will need to edit the draft release notes.
 
 Please change the version number as appropriate.  Substitute (for example)
-`3.20.0` any place you see `VERSION` in this doc.
+`v3.28.0` any place you see `$VERSION` in this doc.
 
 ## Step 1. Rebuild generated files
 
 ```shell
+export VERSION=v3.28.0
 git checkout master
 git pull
-go generate
+go fmt ./...
+go generate ./...
 go mod tidy
-git add -A
-git commit -m "Update generated files for VERSION"
+git commit -a -m "Update generated files for $VERSION"
 ```
-
-This will update the following generated files:
-
-* `commands/types/dnscontrol.d.ts`
 
 ## Step 2. Tag the commit in master that you want to release
 
 ```shell
-git tag -a v3.20.0
+export VERSION=v3.28.0
+git tag -m "Release $VERSION" -a $VERSION
 git push origin --tags
 ```
 
@@ -125,7 +123,7 @@ were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
@@ -237,7 +235,7 @@ Build the software:
 {% endhint %}
 
 ```shell
-cd docs/flattener
+cd docs/flattener/
 export GOPHERJS_GOROOT="$(go1.17.1 env GOROOT)"
 export GOOS=linux
 gopherjs build

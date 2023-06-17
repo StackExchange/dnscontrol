@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 const (
@@ -75,25 +75,11 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
-// GetDomainCorrections returns the corrections for a domain.
-func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc, err := dc.Copy()
-	if err != nil {
-		return nil, err
-	}
-
-	dc.Punycode()
-
-	existingRecords, err := c.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	// Block changes to NS records for base domain
 	checkNSModifications(dc)
-
-	// Normalize
-	models.PostProcessRecords(existingRecords)
 
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
@@ -205,7 +191,7 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *porkbunProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err

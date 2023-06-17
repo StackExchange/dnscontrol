@@ -2,19 +2,22 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/idna"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
+	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
@@ -66,6 +69,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
+	flags = append(flags, &cli.Int64Flag{
+		Name:        "bindserial",
+		Destination: &bindserial.ForcedValue,
+		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
+	})
 	return flags
 }
 
@@ -114,6 +122,12 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 
+	if diff2.EnableDiff2 {
+		printer.Println("INFO: Diff2 algorithm in use. Welcome to the future!")
+	} else {
+		printer.Println("WARNING: Diff1 algorithm in use. Please upgrade to diff2 (`dnscontrol --diff2=true preview`) as diff1 will go away after 2023-07-05. See https://github.com/StackExchange/dnscontrol/issues/2262")
+	}
+
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
@@ -133,93 +147,117 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	anyErrors := false
 	totalCorrections := 0
-DomainLoop:
+
+	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
+	var wg sync.WaitGroup
+	wg.Add(len(cfg.Domains))
+
+	// For each domain in dnsconfig.js...
 	for _, domain := range cfg.Domains {
-		if !args.shouldRunDomain(domain.UniqueName) {
-			continue
-		}
-		out.StartDomain(domain.UniqueName)
-		var providersWithExistingZone []*models.DNSProviderInstance
-		for _, provider := range domain.DNSProviderInstances {
+		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
+		// For now running this code is still sequential.
+		// Please note that at the end of this anonymous function there is a } (domain) which executes this function actually
+		func(domain *models.DomainConfig) {
+			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
 
-			if !args.NoPopulate {
-				// preview run: check if zone is already there, if not print a warning
-				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
-					zones, err := lister.ListZones()
-					if err != nil {
-						return err
-					}
-					aceZoneName, _ := idna.ToASCII(domain.Name)
+			uniquename := domain.GetUniqueName()
+			if !args.shouldRunDomain(uniquename) {
+				return
+			}
 
-					if !slices.Contains(zones, aceZoneName) {
-						out.Warnf("DEBUG: zones: %v\n", zones)
-						out.Warnf("DEBUG: Name: %v\n", domain.Name)
+			err = domain.Punycode()
+			if err != nil {
+				return
+			}
 
-						out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-						continue // continue with next provider, as we can not determine corrections without an existing zone
-					}
-				} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
-					// this is the actual push, ensure domain exists at DSP
-					if err := creator.EnsureZoneExists(domain.Name); err != nil {
-						out.Warnf("Error creating domain: %s\n", err)
-						continue // continue with next provider, as we couldn't create this one
+			// Correct the domain...
+
+			out.StartDomain(uniquename)
+			var providersWithExistingZone []*models.DNSProviderInstance
+			/// For each DSP...
+			for _, provider := range domain.DNSProviderInstances {
+				if !args.NoPopulate {
+					// preview run: check if zone is already there, if not print a warning
+					if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+						zones, err := lister.ListZones()
+						if err != nil {
+							out.Errorf("ERROR: %s", err.Error())
+							return
+						}
+						aceZoneName, _ := idna.ToASCII(domain.Name)
+
+						if !slices.Contains(zones, aceZoneName) {
+							//out.Warnf("DEBUG: zones: %v\n", zones)
+							//out.Warnf("DEBUG: Name: %v\n", domain.Name)
+
+							out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+							continue // continue with next provider, as we can not determine corrections without an existing zone
+						}
+					} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
+						// this is the actual push, ensure domain exists at DSP
+						if err := creator.EnsureZoneExists(domain.Name); err != nil {
+							out.Warnf("Error creating domain: %s\n", err)
+							continue // continue with next provider, as we couldn't create this one
+						}
 					}
 				}
+				providersWithExistingZone = append(providersWithExistingZone, provider)
 			}
-			providersWithExistingZone = append(providersWithExistingZone, provider)
-		}
 
-		nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
-		if err != nil {
-			return err
-		}
-		domain.Nameservers = nsList
-		nameservers.AddNSRecords(domain)
+			// Correct the registrar...
 
-		for _, provider := range providersWithExistingZone {
-			dc, err := domain.Copy()
+			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
 			if err != nil {
-				return err
+				out.Errorf("ERROR: %s", err.Error())
+				return
 			}
-			shouldrun := args.shouldRunProvider(provider.Name, dc)
-			out.StartDNSProvider(provider.Name, !shouldrun)
-			if !shouldrun {
-				continue
+			domain.Nameservers = nsList
+			nameservers.AddNSRecords(domain)
+
+			for _, provider := range providersWithExistingZone {
+
+				shouldrun := args.shouldRunProvider(provider.Name, domain)
+				out.StartDNSProvider(provider.Name, !shouldrun)
+				if !shouldrun {
+					continue
+				}
+
+				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				printReports(domain.Name, provider.Name, reports, out, push, notifier)
+				out.EndProvider(provider.Name, len(corrections), err)
+				if err != nil {
+					anyErrors = true
+					return
+				}
+				totalCorrections += len(corrections)
+				// When diff1 goes away, the call to printReports() should be moved to HERE.
+				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
+				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
-			/// This is where we should audit?
+			//
+			run := args.shouldRunProvider(domain.RegistrarName, domain)
+			out.StartRegistrar(domain.RegistrarName, !run)
+			if !run {
+				return
+			}
+			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+				out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+				return
+			}
 
-			corrections, err := provider.Driver.GetDomainCorrections(dc)
-			out.EndProvider(provider.Name, len(corrections), err)
+			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domain)
+			out.EndProvider(domain.RegistrarName, len(corrections), err)
 			if err != nil {
 				anyErrors = true
-				continue DomainLoop
+				return
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
-		}
-		run := args.shouldRunProvider(domain.RegistrarName, domain)
-		out.StartRegistrar(domain.RegistrarName, !run)
-		if !run {
-			continue
-		}
-		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-			continue
-		}
-		dc, err := domain.Copy()
-		if err != nil {
-			log.Fatal(err)
-		}
-		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
-		out.EndProvider(domain.RegistrarName, len(corrections), err)
-		if err != nil {
-			anyErrors = true
-			continue
-		}
-		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+		}(domain)
 	}
+	wg.Wait() // wait for all anonymous functions to finish
+
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
@@ -505,6 +543,18 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)
+	}
+	return anyErrors
+}
+
+func printReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
+	anyErrors = false
+	if len(reports) == 0 {
+		return false
+	}
+	for i, report := range reports {
+		out.PrintReport(i, report)
+		notifier.Notify(domain, provider, report.Msg, nil, !push)
 	}
 	return anyErrors
 }

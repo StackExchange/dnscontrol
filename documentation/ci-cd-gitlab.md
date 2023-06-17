@@ -15,17 +15,17 @@ For convenience, both configuration files are shown below.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var PROVIDER_NONE = NewRegistrar('none');
-var PROVIDER_TRANSIP = NewDnsProvider('transip', '-');
+var PROVIDER_NONE = NewRegistrar("none");
+var PROVIDER_TRANSIP = NewDnsProvider("transip", "-");
 
-D('cafferata.dev',
+D("cafferata.dev",
     PROVIDER_NONE,
     DnsProvider(PROVIDER_TRANSIP),
-    DefaultTTL('1d'),
-    TXT('spf', [
-        'v=spf1',
-        '-all'
-    ].join(' '))
+    DefaultTTL("1d"),
+    TXT("spf", [
+        "v=spf1",
+        "-all"
+    ].join(" "))
 );
 ```
 {% endcode %}
@@ -33,11 +33,11 @@ D('cafferata.dev',
 {% code title="creds.json" %}
 ```json
 {
-    "transip": {
-        "TYPE": "TRANSIP",
-        "AccountName": "cafferatax",
-        "PrivateKey": "$TRANSIP_PRIVATE_KEY"
-    }
+  "transip": {
+    "TYPE": "TRANSIP",
+    "AccountName": "cafferatax",
+    "PrivateKey": "$TRANSIP_PRIVATE_KEY"
+  }
 }
 ```
 {% endcode %}
@@ -99,18 +99,18 @@ Because the above GitLab CI configuration expects a diff, we apply this by (_for
 `dnsconfig.js`
 
 ```diff
-var PROVIDER_NONE = NewRegistrar('none');
-var PROVIDER_TRANSIP = NewDnsProvider('transip', '-');
+var PROVIDER_NONE = NewRegistrar("none");
+var PROVIDER_TRANSIP = NewDnsProvider("transip", "-");
 
-D('cafferata.dev',
+D("cafferata.dev",
     PROVIDER_NONE,
     DnsProvider(PROVIDER_TRANSIP),
-    DefaultTTL('1d'),
-    TXT('spf', [
-        'v=spf1',
-+       'include:_spf.google.com',
-        '-all'
-    ].join(' '))
+    DefaultTTL("1d"),
+    TXT("spf", [
+        "v=spf1",
++       "include:_spf.google.com",
+        "-all"
+    ].join(" "))
 );
 ```
 
