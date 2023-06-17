@@ -315,7 +315,7 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
         * ClouDNS
             * [CLOUDNS_WR](functions/domain/CLOUDNS_WR.md)
 +       * ASDF
-+           * [NINJA_RECORD](function/domain/FOO_NINJA.md)
++           * [ASDF_NINJA](function/domain/ASDF_NINJA.md)
         * NS1
             * [NS1_URLFWD](functions/domain/NS1_URLFWD.md)
 ...
