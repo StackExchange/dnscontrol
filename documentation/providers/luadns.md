@@ -28,7 +28,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_LUADNS = NewDnsProvider("luadns");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_LUADNS),
+D("example.com", REG_NONE, DnsProvider(DSP_LUADNS),
     A("test", "1.2.3.4")
 );
 ```

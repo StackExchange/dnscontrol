@@ -28,7 +28,7 @@ For example you can use:
 ```javascript
 CAA_BUILDER({
   label: "@",
-  iodef: "mailto:test@domain.tld",
+  iodef: "mailto:test@example.com",
   iodef_critical: true,
   issue: [
     "letsencrypt.org",
@@ -51,7 +51,7 @@ The parameters are:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)
+CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
 CAA("@", "issue", "letsencrypt.org")
 CAA("@", "issue", "comodoca.com")
 CAA("@", "issuewild", ";")

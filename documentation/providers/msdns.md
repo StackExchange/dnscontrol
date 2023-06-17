@@ -57,7 +57,7 @@ An example DNS configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_MSDNS = NewDnsProvider("msdns");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_MSDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_MSDNS),
       A("test", "1.2.3.4")
 )
 ```

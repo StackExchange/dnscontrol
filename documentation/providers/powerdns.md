@@ -51,7 +51,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_POWERDNS = NewDnsProvider("powerdns");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_POWERDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
     A("test", "1.2.3.4")
 );
 ```

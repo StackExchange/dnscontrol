@@ -35,7 +35,7 @@ Note that the following are acceptable forms (symbols differ):
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com","none"
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   LOC_BUILDER_STR({
     label: "tasmania",
     str: "42°S 147°E",

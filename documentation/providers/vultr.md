@@ -28,7 +28,7 @@ An example configuration:
 ```javascript
 var DSP_VULTR = NewDnsProvider("vultr");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_VULTR),
+D("example.com", REG_DNSIMPLE, DnsProvider(DSP_VULTR),
     A("test", "1.2.3.4")
 );
 ```

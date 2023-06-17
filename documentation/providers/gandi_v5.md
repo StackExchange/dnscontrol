@@ -58,7 +58,7 @@ An example configuration:
 var REG_GANDI = NewRegistrar("gandi");
 var DSP_GANDI = NewDnsProvider("gandi");
 
-D("example.tld", REG_GANDI, DnsProvider(DSP_GANDI),
+D("example.com", REG_GANDI, DnsProvider(DSP_GANDI),
     A("test", "1.2.3.4")
 );
 ```
