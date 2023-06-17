@@ -23,11 +23,8 @@ Modifier arguments are processed according to type as follows:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NAMECOM = NewRegistrar("name.com");
-var r53 = NewDnsProvider("R53");
-
 // simple domain
-D("example.com", REG_NAMECOM, DnsProvider(r53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com.")
 );
@@ -41,7 +38,7 @@ var GOOGLE_APPS_DOMAIN_MX = [
     MX("@", 10, "alt4.aspmx.l.google.com."),
 ]
 
-D("example.com", REG_MY_PROVIDER, DnsProvider(r53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX

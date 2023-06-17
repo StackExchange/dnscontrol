@@ -23,7 +23,7 @@ of the call.
 ```javascript
 require("kubernetes/clusters.js");
 
-D("example.com", REG_MY_PROVIDER, PROVIDER,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IncludeKubernetes()
 );
 ```
