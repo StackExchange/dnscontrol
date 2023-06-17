@@ -969,12 +969,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		// weirdest edge-case we've ever seen.
 
 		testgroup("Attl",
+			not("LINODE"), // Linode does not support arbitrary TTLs: both are rounded up to 3600.
 			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
 			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
 		),
 
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
+			not("LINODE"), // Linode does not support arbitrary TTLs: 666 and 1000 are both rounded up to 3600.
 			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
@@ -1223,7 +1225,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		),
 		testgroup("IDNAs in CNAME targets",
-			not("LINODE", "CLOUDFLAREAPI"),
+			not("CLOUDFLAREAPI"),
 			// LINODE: hostname validation does not allow the target domain TLD
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
