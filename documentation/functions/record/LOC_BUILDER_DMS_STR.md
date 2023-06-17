@@ -35,7 +35,7 @@ Note that the following are acceptable forms (symbols differ):
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com","none"
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   LOC_BUILDER_DMS_STR({
     label: "sydney-opera-house",
     str: "33°51′31″S 151°12′51″E",

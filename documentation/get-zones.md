@@ -136,7 +136,7 @@ Read a zonefile, generate a JS file, then use the JS file to see how
 different it is from the zonefile:
 
 ```shell
-dnscontrol get-zone --format=djs -out=foo.djs bind - example.org
+dnscontrol get-zone --format=djs -out=foo.djs bind - example.com
 dnscontrol preview --config foo.js
 ```
 

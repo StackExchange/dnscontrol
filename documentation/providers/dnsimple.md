@@ -34,7 +34,7 @@ An example configuration:
 var REG_DNSIMPLE = NewRegistrar("dnsimple");
 var DSP_DNSIMPLE = NewDnsProvider("dnsimple");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
+D("example.com", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
     A("test", "1.2.3.4")
 );
 ```

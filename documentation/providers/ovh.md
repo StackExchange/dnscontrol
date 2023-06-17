@@ -33,7 +33,7 @@ An example configuration: (DNS hosted with OVH):
 var REG_OVH = NewRegistrar("ovh");
 var DSP_OVH = NewDnsProvider("ovh");
 
-D("example.tld", REG_OVH, DnsProvider(DSP_OVH),
+D("example.com", REG_OVH, DnsProvider(DSP_OVH),
     A("test", "1.2.3.4")
 );
 ```
@@ -46,7 +46,7 @@ An example configuration: (Registrar only. DNS hosted elsewhere)
 var REG_OVH = NewRegistrar("ovh");
 var DSP_R53 = NewDnsProvider("r53");
 
-D("example.tld", REG_OVH, DnsProvider(DSP_R53),
+D("example.com", REG_OVH, DnsProvider(DSP_R53),
     A("test", "1.2.3.4")
 );
 ```

@@ -22,7 +22,7 @@ Example:
     "TYPE": "CSCGLOBAL",
     "api-key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
-    "notification_emails": "test@example.tld,hostmaster@example.tld"
+    "notification_emails": "test@example.com,hostmaster@example.com"
   }
 }
 ```
@@ -36,7 +36,7 @@ An example configuration:
 var REG_CSCGLOBAL = NewRegistrar("cscglobal");
 var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
+D("example.com", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
   A("test", "1.2.3.4")
 );
 ```

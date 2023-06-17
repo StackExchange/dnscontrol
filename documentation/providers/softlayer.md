@@ -35,7 +35,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
-D("example.tld", registrary, DnsProvider(DSP_SOFTLAYER),
+D("example.com", REG_NONE, DnsProvider(DSP_SOFTLAYER),
     A("test", "1.2.3.4")
 );
 ```
@@ -50,7 +50,7 @@ For compatibility with the pre-generated NAMESERVER fields it's recommended to s
 var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
-D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
+D("example.com", REG_NONE, DnsProvider(SOFTLAYER),
     NAMESERVER_TTL(86400),
 
     A("test", "1.2.3.4")

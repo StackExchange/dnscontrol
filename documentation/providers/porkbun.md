@@ -30,7 +30,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_PORKBUN = NewDnsProvider("porkbun");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_PORKBUN),
+D("example.com", REG_NONE, DnsProvider(DSP_PORKBUN),
     A("test", "1.2.3.4")
 );
 ```
