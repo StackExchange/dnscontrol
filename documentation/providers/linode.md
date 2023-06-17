@@ -38,8 +38,9 @@ D("example.tld", REG_NONE, DnsProvider(DSP_LINODE),
 
 ## Caveats
 Linode does not allow all TTLs, but only a specific subset of TTLs. The following TTLs are supported
-([source](https://github.com/linode/manager/blob/master/src/domains/components/SelectDNSSeconds.js)):
+([source](https://www.linode.com/docs/api/domains/#domains-list__responses)):
 
+- 0 (Default, currently equivalent to 1209600, or 14 days)
 - 300
 - 3600
 - 7200
