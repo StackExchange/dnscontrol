@@ -25,13 +25,13 @@ For example these two statements are equivalent:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
+DOMAIN_ELSEWHERE("example.com", REG_MY_PROVIDER, ["ns1.foo.com", "ns2.foo.com"]);
 ```
 {% endcode %}
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_NAMEDOTCOM,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     NO_PURGE,
     NAMESERVER("ns1.foo.com"),
     NAMESERVER("ns2.foo.com")

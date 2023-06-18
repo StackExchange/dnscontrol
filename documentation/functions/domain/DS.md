@@ -28,7 +28,7 @@ Digest must be a string.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DS("example.com", 2371, 13, 2, "ABCDEF")
 );
 ```

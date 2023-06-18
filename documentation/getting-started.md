@@ -249,7 +249,7 @@ Done. 1 corrections.
 ## 6. Make a change
 
 Try making a change to `dnsconfig.js`. For example, change the IP
-address of in `A('@', '1.2.3.4')` or add an additional A record.
+address of in `A("@", "1.2.3.4")` or add an additional A record.
 
 In our case, we changed the IP address to 10.10.10.10. Previewing
 our change looks like this:
