@@ -196,6 +196,9 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec, err := models.RRtoRC(rr, zoneName)
+		if rec.Type == "TXT" {
+			rec.SetTargetTXTs(fixMiekgQuoteBug(rec.TxtStrings))
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -206,6 +209,13 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		return nil, fmt.Errorf("error while parsing '%v': %w", zonefileName, err)
 	}
 	return foundRecords, nil
+}
+
+func fixMiekgQuoteBug(parts []string) []string {
+	for i, part := range parts {
+		parts[i] = strings.ReplaceAll(part, `\"`, `"`)
+	}
+	return parts
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
