@@ -95,7 +95,10 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	case *dns.TLSA:
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
-		err = rc.SetTargetTXTs(v.Txt)
+		parts := fixMiekgQuoteBug(v.Txt)
+		//fmt.Printf("DEBUG: XXXXXXXXXX TXT OLD %v :: %+v\n", parts, parts)
+		err = rc.SetTargetTXTs(parts)
+		//fmt.Printf("DEBUG: XXXXXXXXXX TXT NEW %s\n", rc.GetTargetTXTJoined())
 	default:
 		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)", rc.Type, rr)
 	}
@@ -103,4 +106,11 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 		return *rc, fmt.Errorf("unparsable record received: %w", err)
 	}
 	return *rc, nil
+}
+
+func fixMiekgQuoteBug(parts []string) []string {
+	for i, part := range parts {
+		parts[i] = strings.ReplaceAll(part, `\"`, `"`)
+	}
+	return parts
 }
