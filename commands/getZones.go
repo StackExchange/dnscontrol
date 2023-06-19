@@ -351,12 +351,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "TLSA":
 		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
-		if len(rec.TxtStrings) == 1 {
-			target = `'` + rec.TxtStrings[0] + `'`
-		} else {
-			target = `['` + strings.Join(rec.TxtStrings, `', '`) + `']`
-		}
-		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
+		target = jsonQuoted(rec.GetTargetField())
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		// DnsControl uses the API to get this info. NAMESERVER() is just

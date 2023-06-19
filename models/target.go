@@ -23,12 +23,6 @@ var debugWarnTxtField = false
 // GetTargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
 func (rc *RecordConfig) GetTargetField() string {
-	if debugWarnTxtField {
-		if rc.Type == "TXT" {
-			fmt.Printf("DEBUG: WARNING: GetTargetField called on TXT record is frequently wrong: %q\n", rc.target)
-			//debug.PrintStack()
-		}
-	}
 	return rc.target
 }
 

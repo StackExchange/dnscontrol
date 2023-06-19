@@ -88,7 +88,6 @@ func TestRecordConfig_Copy(t *testing.T) {
 		TlsaUsage        uint8
 		TlsaSelector     uint8
 		TlsaMatchingType uint8
-		TxtStrings       []string
 		R53Alias         map[string]string
 		AzureAlias       map[string]string
 		Original         interface{}
@@ -135,7 +134,6 @@ func TestRecordConfig_Copy(t *testing.T) {
 				TlsaUsage:        1,
 				TlsaSelector:     2,
 				TlsaMatchingType: 3,
-				TxtStrings:       []string{"one", "two", "three"},
 				R53Alias:         map[string]string{"a": "eh", "b": "bee"},
 				AzureAlias:       map[string]string{"az": "az", "ure": "your"},
 				//Original         interface{},
@@ -174,7 +172,6 @@ func TestRecordConfig_Copy(t *testing.T) {
 				TlsaUsage:        1,
 				TlsaSelector:     2,
 				TlsaMatchingType: 3,
-				TxtStrings:       []string{"one", "two", "three"},
 				R53Alias:         map[string]string{"a": "eh", "b": "bee"},
 				AzureAlias:       map[string]string{"az": "az", "ure": "your"},
 				//Original         interface{},
@@ -217,7 +214,6 @@ func TestRecordConfig_Copy(t *testing.T) {
 				TlsaUsage:        tt.fields.TlsaUsage,
 				TlsaSelector:     tt.fields.TlsaSelector,
 				TlsaMatchingType: tt.fields.TlsaMatchingType,
-				TxtStrings:       tt.fields.TxtStrings,
 				R53Alias:         tt.fields.R53Alias,
 				AzureAlias:       tt.fields.AzureAlias,
 				Original:         tt.fields.Original,
