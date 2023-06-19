@@ -3,6 +3,7 @@ package diff2
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -238,6 +239,8 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		label := key.NameFQDN
 		rtype := key.Type
 		compNoTTL, compFull := mkCompareBlobs(rec, cc.compareableFunc)
+		fmt.Fprintf(os.Stdout, "DEBUG: ******************\n")
+		fmt.Fprintf(os.Stdout, "DEBUG: addRecords comp=%s\n", compNoTTL)
 
 		// Are we seeing this label for the first time?
 		var labelIdx int

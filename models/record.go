@@ -354,6 +354,9 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // pseudo-records like ANAME or R53_ALIAS
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if rc.Type == "TXT" {
+		return rc.GetTargetTXTJoined()
+	}
 	return rc.GetTargetCombined()
 }
 
