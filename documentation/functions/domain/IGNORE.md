@@ -70,7 +70,7 @@ General examples:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("foo"), // matches any records on foo.example.com
   IGNORE("baz", "A"), // matches any A records on label baz.example.com
   IGNORE("*", "MX", "*"), // matches all MX records
@@ -86,7 +86,7 @@ Ignore Let's Encrypt (ACME) validation records:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("_acme-challenge", "TXT"),
   IGNORE("_acme-challenge.**", "TXT"),
 END);
@@ -97,7 +97,7 @@ Ignore DNS records typically inserted by Microsoft ActiveDirectory:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("_gc", "SRV"), // General Catalog
   IGNORE("_gc.**", "SRV"), // General Catalog
   IGNORE("_kerberos", "SRV"), // Kerb5 server
@@ -128,7 +128,7 @@ using DNSControl notation for the records. Pretend some other system inserted th
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     A("@", "151.101.1.69"),
     A("www", "151.101.1.69"),
     A("foo", "1.1.1.1"),
@@ -261,7 +261,7 @@ This will generate an error:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     ...
     TXT("myhost", "mytext"),
     IGNORE("myhost", "*", "*"),  // Error!  Ignoring an item we inserted
@@ -274,7 +274,7 @@ to the `D()`.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     DISABLE_IGNORE_SAFETY_CHECK,
     ...
     TXT("myhost", "mytext"),

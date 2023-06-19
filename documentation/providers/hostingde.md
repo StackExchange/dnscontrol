@@ -25,7 +25,7 @@ An example configuration:
 var REG_HOSTINGDE = NewRegistrar("hosting.de");
 var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
 
-D("example.tld", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
+D("example.com", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
     A("test", "1.2.3.4")
 );
 ```

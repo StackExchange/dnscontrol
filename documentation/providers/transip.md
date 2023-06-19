@@ -50,7 +50,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_TRANSIP = NewDnsProvider("transip");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_TRANSIP),
+D("example.com", REG_NONE, DnsProvider(DSP_TRANSIP),
     A("test", "1.2.3.4")
 );
 ```

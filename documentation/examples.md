@@ -23,7 +23,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```javascript
 var mailTTL = TTL("1h");
 
-D("example.com", registrar,
+D("example.com", REG_MY_PROVIDER,
     NAMESERVER_TTL("10m"), // On domain apex NS RRs
     DefaultTTL("5m"), // Default for a domain
 
@@ -107,9 +107,9 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
 ## Use SPF_BUILDER to add comments to SPF records ##
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.tld", REG_MY_PROVIDER, DSP, ...
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@", "10.2.2.2"),
-  MX("@", "example.tld."),
+  MX("@", "example.com."),
   SPF_BUILDER({
     label: "@",
     overflow: "_spf%d",

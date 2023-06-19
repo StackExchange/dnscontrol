@@ -92,10 +92,10 @@ the later allows `get-zones` to work properly.
 ```javascript
 var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
         "default_ns": [
-            "ns1.example.tld.",
-            "ns2.example.tld.",
-            "ns3.example.tld.",
-            "ns4.example.tld."
+            "ns1.example.com.",
+            "ns2.example.com.",
+            "ns3.example.com.",
+            "ns4.example.com."
         ]
     }
 }
@@ -107,7 +107,7 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
 {
   "axfrddns": {
     "TYPE": "AXFRDDNS",
-    "nameservers": "ns1.example.tld.,ns2.example.tld.,ns3.example.tld.,ns4.example.tld."
+    "nameservers": "ns1.example.com.,ns2.example.com.,ns3.example.com.,ns4.example.com."
   }
 }
 ```
@@ -191,7 +191,7 @@ D("example.com", REG_NONE, DnsProvider(DNS),
 ### Bind9
 
 Here is a sample `named.conf` example for an authauritative server on
-zone `example.tld`. It uses a simple IP-based ACL for the AXFR
+zone `example.com`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
 {% code title="named.conf" %}
@@ -210,9 +210,9 @@ options {
 
 };
 
-zone "example.tld" {
+zone "example.com" {
   type master;
-  file "/etc/bind/db.example.tld";
+  file "/etc/bind/db.example.com";
   allow-transfer { example-transfer; };
   allow-update { example-update; };
 };

@@ -23,7 +23,7 @@ of the call.
 ```javascript
 require("kubernetes/clusters.js");
 
-D("mydomain.net", REG_MY_PROVIDER, PROVIDER,
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IncludeKubernetes()
 );
 ```
@@ -77,8 +77,8 @@ for (var domain in domains) {
 {% code title="domain-ip-map.json" %}
 ```javascript
 {
-    "mydomain.net": "1.1.1.1",
-    "myotherdomain.org": "5.5.5.5"
+    "example.com": "1.1.1.1",
+    "other-example.com``": "5.5.5.5"
 }
 ```
 {% endcode %}
