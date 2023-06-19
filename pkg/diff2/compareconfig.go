@@ -240,7 +240,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		rtype := key.Type
 		compNoTTL, compFull := mkCompareBlobs(rec, cc.compareableFunc)
 		fmt.Fprintf(os.Stdout, "DEBUG: ******************\n")
-		fmt.Fprintf(os.Stdout, "DEBUG: addRecords comp=%s\n", compNoTTL)
+		fmt.Fprintf(os.Stdout, "DEBUG: addRecords %v comp=%s\n", storeInExisting, compNoTTL)
 
 		// Are we seeing this label for the first time?
 		var labelIdx int

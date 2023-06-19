@@ -235,7 +235,7 @@ ChangeList: len=2
 ± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)
-+ CREATE labf.f.com TXT "foo" ttl=300
++ CREATE labf.f.com TXT foo ttl=300
 ± MODIFY labg.f.com NS (10.10.10.17 ttl=300) -> (10.10.10.10 ttl=300)
 ± MODIFY labg.f.com NS (10.10.10.18 ttl=300) -> (10.10.10.97 ttl=300)
 - DELETE labh.f.com CNAME labd ttl=300
@@ -265,7 +265,7 @@ ChangeList: len=8
 04: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
-    msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
+    msg=["+ CREATE labf.f.com TXT foo ttl=300"]
 05: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
@@ -299,7 +299,7 @@ ChangeList: len=6
 03: Change: verb=CREATE
     key={labf.f.com }
     new=["foo"]
-    msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
+    msg=["+ CREATE labf.f.com TXT foo ttl=300"]
 04: Change: verb=CHANGE
     key={labg.f.com }
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
@@ -349,7 +349,7 @@ ChangeList: len=12
 07: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
-    msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
+    msg=["+ CREATE labf.f.com TXT foo ttl=300"]
 08: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.17]
