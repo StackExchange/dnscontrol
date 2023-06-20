@@ -461,6 +461,8 @@ ChangeList: len=11
 		},
 	}
 	for _, tt := range tests {
+		models.CanonicalizeTargets(tt.args.existing, tt.args.origin)
+		models.CanonicalizeTargets(tt.args.desired, tt.args.origin)
 
 		// Each "analyze*()" should return the same msgs, but a different ChangeList.
 		// Sadly the analyze*() functions are destructive to the CompareConfig struct.

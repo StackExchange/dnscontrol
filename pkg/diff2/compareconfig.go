@@ -93,11 +93,6 @@ type targetConfig struct {
 
 // NewCompareConfig creates a CompareConfig from a set of records and other data.
 func NewCompareConfig(origin string, existing, desired models.Records, compFn ComparableFunc) *CompareConfig {
-	models.Downcase(existing)
-	models.Downcase(desired)
-	models.CanonicalizeTargets(existing, origin)
-	models.CanonicalizeTargets(desired, origin)
-
 	cc := &CompareConfig{
 		existing: existing,
 		desired:  desired,
