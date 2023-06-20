@@ -68,6 +68,12 @@ func Run(v string) int {
 			Destination: &diff2.EnableDiff2,
 			Value:       true,
 		},
+		&cli.BoolFlag{
+			Name:        "disableordering",
+			Usage:       "Disables the dns ordering part of the diff2 package",
+			Destination: &diff2.DisableOrdering,
+			Value:       false,
+		},
 	}
 	sort.Sort(cli.CommandsByName(commands))
 	app.Commands = commands

@@ -8,10 +8,15 @@ import (
 )
 
 func orderByDependencies(changes ChangeList) ChangeList {
+	if DisableOrdering {
+		log.Println("[Info: ordering of the changes has been disabled.]")
+		return changes
+	}
+
 	a := dnssort.SortUsingGraph(changes)
 
 	if len(a.UnresolvedRecords) > 0 {
-		log.Printf("Found unresolved records %v.\n"+
+		log.Printf("Warning: Found unresolved records %v.\n"+
 			"This can indicate a circular dependency, please ensure all targets from given records exist and no circular dependencies exist in the changeset."+
 			"These unresolved records are still added as changes and pushed to the provider, but will cause issues if and when the provider checks the changes\n",
 			dnsgraph.GetRecordsNamesForGraphables(a.UnresolvedRecords),
