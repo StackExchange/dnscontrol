@@ -54,6 +54,23 @@ git clone https://github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
+## 1.1. Shell Completion
+
+Shell completion is available for `zsh` and `bash`.
+
+### zsh
+
+Add `eval "$(dnscontrol shell-completion zsh)"` to your `~/.zshrc` file.
+
+This requires completion to be enabled in zsh. A good tutorial for this is available at
+[The Valuable Dev](https://thevaluable.dev/zsh-completion-guide-examples/) <sup>[[archived](https://web.archive.org/web/20231015083946/https://thevaluable.dev/zsh-completion-guide-examples/)]</sup>.
+
+### bash
+
+Add `eval "$(dnscontrol shell-completion bash)"` to your `~/.bashrc` file.
+
+This requires the `bash-completion` package to be installed. See [scop/bash-completion](https://github.com/scop/bash-completion/) for instructions.
+
 ## 2. Create a place for the config files
 
 Create a directory where you'll store your configuration files.
