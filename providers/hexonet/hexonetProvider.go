@@ -7,7 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	hxcl "github.com/hexonet/go-sdk/v3/apiclient"
+	hxcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/apiclient"
 )
 
 // HXClient describes a connection to the hexonet API.
