@@ -19,6 +19,7 @@ require (
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
+	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.5
 	github.com/cloudflare/cloudflare-go v0.68.0
 	github.com/digitalocean/godo v1.99.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
@@ -30,7 +31,6 @@ require (
 	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.9.2
-	github.com/hexonet/go-sdk/v3 v3.5.4
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
 	github.com/miekg/dns v1.1.54
