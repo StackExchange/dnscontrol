@@ -28,13 +28,6 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
-	// Merge TXT strings to one string
-	for _, rc := range dc.Records {
-		if rc.HasFormatIdenticalToTXT() {
-			rc.SetTargetTXT(strings.Join(rc.TxtStrings, ""))
-		}
-	}
-
 	// Domainnameshop doesn't allow arbitrary TTLs they must be a multiple of 60.
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)

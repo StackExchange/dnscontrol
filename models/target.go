@@ -21,7 +21,7 @@ Not the best design, but we're stuck with it until we re-do RecordConfig, possib
 var debugWarnTxtField = false
 
 // GetTargetField returns the target. There may be other fields (for example
-// an MX record also has a .MxPreference field.
+// an MX record also has a .MxPreference field; they are not included.
 func (rc *RecordConfig) GetTargetField() string {
 	return rc.target
 }

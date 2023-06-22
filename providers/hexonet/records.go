@@ -256,7 +256,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 	case "CAA":
 		record.Answer = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, record.Answer)
 	case "TXT":
-		record.Answer = encodeTxt(rc.TxtStrings)
+		record.Answer = encodeTxt([]string{rc.GetTargetField()})
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")

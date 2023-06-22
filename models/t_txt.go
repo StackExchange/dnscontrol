@@ -49,13 +49,13 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 // SetTargetTXTs sets the TXT fields when there are many strings.
 // The individual strings are stored in .TxtStrings, and joined to make .Target.
 func (rc *RecordConfig) SetTargetTXTs(s []string) error {
-	if rc.Type == "" {
-		rc.Type = "TXT"
-	} else if !rc.HasFormatIdenticalToTXT() {
-		panic("assertion failed: SetTargetTXTs called when .Type is not TXT or compatible type")
-	}
+	// if rc.Type == "" {
+	// 	rc.Type = "TXT"
+	// } else if !rc.HasFormatIdenticalToTXT() {
+	// 	panic("assertion failed: SetTargetTXTs called when .Type is not TXT or compatible type")
+	// }
 
-	rc.SetTarget(strings.Join(s))
+	rc.SetTargetTXT(strings.Join(s, ""))
 	return nil
 }
 
@@ -74,6 +74,7 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 //	"foo bar"    << 1 string
 //	"foo" "bar"  << 2 strings
 //	foo          << error. No quotes! Did you intend to use SetTargetTXT?
+//
 // Deprecated: GetTargetTXTJoined is deprecated. ...or should be.
 func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
 	if s != "" && s[0] != '"' {

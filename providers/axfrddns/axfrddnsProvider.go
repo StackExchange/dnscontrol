@@ -328,8 +328,7 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
 			last.Name == dnssecDummyLabel &&
-			len(last.TxtStrings) == 1 &&
-			last.TxtStrings[0] == dnssecDummyTxt {
+			last.GetTargetField() == dnssecDummyTxt {
 			c.hasDnssecRecords = true
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}

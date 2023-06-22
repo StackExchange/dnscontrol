@@ -63,7 +63,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
 		ZoneID: zone.ID,
 	}
 
-	if r.Type == "TXT" && len(in.TxtStrings) == 1 {
+	if r.Type == "TXT" {
 		// HACK: HETZNER rejects values that fit into 255 bytes w/o quotes,
 		//  but do not fit w/ added quotes (via GetTargetCombined()).
 		// Sending the raw, non-quoted value works for the comprehensive
@@ -71,7 +71,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
 		// The HETZNER validation does not provide helpful error messages.
 		// {"error":{"message":"422 Unprocessable Entity: missing: ; ","code":422}}
 		// Last checked: 2023-04-01
-		valueNotQuoted := in.TxtStrings[0]
+		valueNotQuoted := in.GetTargetField()
 		if len(valueNotQuoted) == 254 || len(valueNotQuoted) == 255 {
 			r.Value = valueNotQuoted
 		}

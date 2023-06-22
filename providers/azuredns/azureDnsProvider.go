@@ -653,11 +653,9 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
-				var txts []*string
-				for _, txt := range rec.TxtStrings {
-					txts = append(txts, to.StringPtr(txt))
-				}
+			tt := rec.GetTargetField()
+			if tt != "" {
+				txts := []*string{to.StringPtr(tt)}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
 			}
 		case "MX":
@@ -729,11 +727,9 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
-				var txts []*string
-				for _, txt := range rec.TxtStrings {
-					txts = append(txts, to.StringPtr(txt))
-				}
+			tt := rec.GetTargetField()
+			if tt != "" {
+				txts := []*string{to.StringPtr(tt)}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
 			}
 		case "MX":
