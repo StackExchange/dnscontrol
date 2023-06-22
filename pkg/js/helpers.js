@@ -523,11 +523,9 @@ var TXT = recordBuilder('TXT', {
         record.name = args.name;
         // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
-            record.txtstrings = [args.target];
-            record.target = args.target; // Overwritten by the Go code
+            record.target = args.target;
         } else {
-            record.txtstrings = args.target;
-            record.target = args.target.join(''); // Overwritten by the Go code
+            record.target = args.target.join('');
         }
     },
 });
