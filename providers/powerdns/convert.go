@@ -22,7 +22,7 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 
 	switch rtype {
 	case "TXT":
-		// PowerDNS API accepts long TXTs without requiring to split them
+		// PowerDNS API accepts long TXTs without requiring to split them.
 		// The API then returns them as they initially came in, e.g. "averylooooooo[...]oooooongstring" or "string" "string"
 		// So we need to strip away " and split into multiple string
 		// We can't use SetTargetRFC1035Quoted, it would split the long strings into multiple parts
