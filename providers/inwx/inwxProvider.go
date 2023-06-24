@@ -216,10 +216,9 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 func checkRecords(records models.Records) error {
 	for _, r := range records {
 		if r.Type == "TXT" {
-			for _, target := range r.TxtStrings {
-				if strings.ContainsAny(target, "`") {
-					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
-				}
+			target := r.GetTargetField()
+			if strings.ContainsAny(target, "`") {
+				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
 			}
 		}
 	}

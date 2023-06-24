@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -294,7 +295,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		if r.Type == "MX" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()))})
 		} else if r.Type == "TXT" {
-			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
+			rec.AddAnswer(&dns.Answer{Rdata: txtutil.ToChunks(r.GetTargetField())})
 		} else if r.Type == "CAA" {
 			rec.AddAnswer(&dns.Answer{
 				Rdata: []string{

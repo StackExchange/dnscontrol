@@ -29,18 +29,18 @@ func AuditRecords(records []*models.RecordConfig) []error {
 // are longer than permitted by NDC. Sadly their
 // length limit is undocumented. This seems to work.
 func MaxLengthNDC(rc *models.RecordConfig) error {
-	if len(rc.TxtStrings) == 0 {
+	if len(rc.GetTargetField()) == 0 {
 		return nil
 	}
 
 	sum := 2 // Count the start and end quote.
 	// Add the length of each segment.
-	for _, segment := range rc.TxtStrings {
-		sum += len(segment)                // The length of each segment
-		sum += strings.Count(segment, `"`) // Add 1 for any char to be escaped
-	}
+	segment := rc.GetTargetField()
+	sum += len(segment)                // The length of each segment
+	sum += strings.Count(segment, `"`) // Add 1 for any char to be escaped
+
 	// Add 3 (quote space quote) for each interior join.
-	sum += 3 * (len(rc.TxtStrings) - 1)
+	sum += 3 * (len(rc.GetTargetField()) - 1)
 
 	if sum > 512 {
 		return fmt.Errorf("encoded txt too long")

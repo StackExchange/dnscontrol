@@ -10,45 +10,27 @@
         {
           "type": "TXT",
           "name": "a",
-          "target": "simple",
-          "txtstrings": [
-            "simple"
-          ]
+          "target": "simple"
         },
         {
           "type": "TXT",
           "name": "b",
-          "target": "ws at end ",
-          "txtstrings": [
-            "ws at end "
-          ]
+          "target": "ws at end "
         },
         {
           "type": "TXT",
           "name": "c",
-          "target": "one",
-          "txtstrings": [
-            "one"
-          ]
+          "target": "one"
         },
         {
           "type": "TXT",
           "name": "d",
-          "target": "bonieclyde",
-          "txtstrings": [
-            "bonie",
-            "clyde"
-          ]
+          "target": "bonieclyde"
         },
         {
           "type": "TXT",
           "name": "e",
-          "target": "strawwoodbrick",
-          "txtstrings": [
-            "straw",
-            "wood",
-            "brick"
-          ]
+          "target": "strawwoodbrick"
         }
       ]
     }
