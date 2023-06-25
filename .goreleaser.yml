@@ -9,6 +9,13 @@ builds:
       - windows
       - darwin
       - freebsd
+    # GOARCH to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    #
+    # Default: [ '386', 'amd64', 'arm64' ]
+    goarch:
+      - amd64
+      - arm64
     ldflags:
       - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
