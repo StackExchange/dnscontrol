@@ -49,8 +49,8 @@ require (
 	github.com/transip/gotransip/v6 v6.20.0
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
-	golang.org/x/net v0.10.0
-	golang.org/x/oauth2 v0.8.0
+	golang.org/x/net v0.11.0
+	golang.org/x/oauth2 v0.9.0
 	google.golang.org/api v0.128.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.4
 )
@@ -132,10 +132,10 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
