@@ -6,6 +6,8 @@ func TestFixTTL(t *testing.T) {
 	for i, test := range []struct {
 		given, expected uint32
 	}{
+		{0, 0},
+		{1, 300},
 		{299, 300},
 		{300, 300},
 		{301, 3600},

@@ -41,18 +41,18 @@ In this example we set the default SOA settings and NS records.
 ```javascript
 var DSP_BIND = NewDnsProvider("bind", {
     "default_soa": {
-        "master": "ns1.example.tld.",
-        "mbox": "spamtrap.example.tld.",
+        "master": "ns1.example.com.",
+        "mbox": "spamtrap.example.com.",
         "refresh": 3600,
         "retry": 600,
         "expire": 604800,
         "minttl": 1440,
     },
     "default_ns": [
-        "ns1.example.tld.",
-        "ns2.example.tld.",
-        "ns3.example.tld.",
-        "ns4.example.tld."
+        "ns1.example.com.",
+        "ns2.example.com.",
+        "ns3.example.com.",
+        "ns4.example.com."
     ]
 })
 ```
@@ -109,7 +109,7 @@ Typical values:
     * `db_example.com`
 
 The last example will generate the same name for both
-`D("example.tld!inside")` and `D("example.tld!outside")`.  This
+`D("example.com!inside")` and `D("example.com!outside")`.  This
 assumes two BIND providers are configured in `creds.json`, each with
 a different `directory` setting. Otherwise `dnscontrol` will write
 both domains to the same file, flapping between the two back and

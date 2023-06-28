@@ -26,7 +26,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_NETCUP = NewDnsProvider("netcup");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_NETCUP),
+D("example.com", REG_NONE, DnsProvider(DSP_NETCUP),
     A("test", "1.2.3.4")
 );
 ```

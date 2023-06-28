@@ -29,7 +29,7 @@ An example configuration:
 var REG_NETLIFY = NewRegistrar("netlify");
 var DSP_NETLIFY = NewDnsProvider("netlify");
 
-D("example.tld", REG_NETLIFY, DnsProvider(DSP_NETLIFY),
+D("example.com", REG_NETLIFY, DnsProvider(DSP_NETLIFY),
     A("test", "1.2.3.4")
 );
 ```

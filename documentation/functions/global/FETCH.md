@@ -22,10 +22,7 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar("none");
-var DNS_BIND = NewDnsProvider("bind");
-
-D("example.com", REG_NONE, DnsProvider(DNS_BIND), [
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), [
   A("@", "1.2.3.4"),
 ]);
 

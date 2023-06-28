@@ -22,9 +22,7 @@ DEFAULTS(
   DefaultTTL("1d")
 );
 
-D("example.com",
-  REGISTRAR,
-  DnsProvider("R53"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4")
 );
 ```
@@ -37,9 +35,7 @@ The domain `example2.com` will **not** have the defaults set.
 ```javascript
 DEFAULTS();
 
-D("example2.com",
-  REGISTRAR,
-  DnsProvider("R53"),
+D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4")
 );
 ```

@@ -8,8 +8,8 @@ ts_return: string
 ---
 
 `REV` returns the reverse lookup domain for an IP network. For
-example `REV('1.2.3.0/24')` returns `3.2.1.in-addr.arpa.` and
-`REV('2001:db8:302::/48)` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
+example `REV("1.2.3.0/24")` returns `3.2.1.in-addr.arpa.` and
+`REV("2001:db8:302::/48")` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
 This is used in [`D()`](D.md) functions to create reverse DNS lookup zones.
 
 This is a convenience function. You could specify `D("3.2.1.in-addr.arpa",

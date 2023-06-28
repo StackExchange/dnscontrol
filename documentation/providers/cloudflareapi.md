@@ -158,7 +158,7 @@ The following example shows how to set meta variables with and without aliases:
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
     A("www2","1.2.3.12", CF_PROXY_OFF),       // default is OFF, this is a no-op.
     A("www3","1.2.3.13", {"cloudflare_proxy": "on"}) // Old format.
@@ -175,12 +175,12 @@ var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
 
 // Example domain where the CF proxy abides by the default (off).
-D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("proxied", "1.2.3.4", CF_PROXY_ON),
     A("notproxied", "1.2.3.5"),
     A("another", "1.2.3.6", CF_PROXY_ON),
-    ALIAS("@", "www.example.tld.", CF_PROXY_ON),
-    CNAME("myalias", "www.example.tld.", CF_PROXY_ON)
+    ALIAS("@", "www.example.com.", CF_PROXY_ON),
+    CNAME("myalias", "www.example.com.", CF_PROXY_ON)
 );
 
 // Example domain where the CF proxy default is set to "on":

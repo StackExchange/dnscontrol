@@ -32,7 +32,7 @@ Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com","none"
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   , LOC_BUILDER_STR({
     label: "old-faithful",
     str: "44.46046°N 110.82815°W",

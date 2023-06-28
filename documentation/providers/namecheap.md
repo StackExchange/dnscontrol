@@ -50,7 +50,7 @@ An example configuration:
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_BIND),
+D("example.com", REG_NAMECHEAP, DnsProvider(DSP_BIND),
     A("test", "1.2.3.4")
 );
 ```
@@ -64,7 +64,7 @@ records can be used like any other record:
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_NAMECHEAP = NewDnsProvider("namecheap");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
+D("example.com", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
   URL("@", "http://example.com/"),
   URL("www", "http://example.com/"),
   URL301("backup", "http://backup.example.com/")

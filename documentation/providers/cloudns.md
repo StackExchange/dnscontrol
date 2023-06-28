@@ -40,7 +40,7 @@ Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDNS),
   CLOUDNS_WR("@", "http://example.com/"),
   CLOUDNS_WR("www", "http://example.com/")
 )
@@ -55,7 +55,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDNS),
     A("test", "1.2.3.4")
 );
 ```

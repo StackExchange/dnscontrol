@@ -26,7 +26,7 @@ Flags are controlled by modifier:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider("GCLOUD"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   // Allow letsencrypt to issue certificate for this domain
   CAA("@", "issue", "letsencrypt.org"),
   // Allow no CA to issue wildcard certificate for this domain

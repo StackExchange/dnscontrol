@@ -26,7 +26,10 @@ Info required in `creds.json`:
 
 */
 
+// Allowed values from the Linode API
+// https://www.linode.com/docs/api/domains/#domains-list__responses
 var allowedTTLValues = []uint32{
+	0,       // Default, currently 1209600 seconds
 	300,     // 5 minutes
 	3600,    // 1 hour
 	7200,    // 2 hours
@@ -126,8 +129,8 @@ func (api *linodeProvider) GetZoneRecords(domain string, meta map[string]string)
 func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get
-	// By experimentation, Linode always rounds up. 300 -> 300, 301 -> 3600.
-	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/domains/components/SelectDNSSeconds.js#L19
+	// The documentation says that it will always round up to the next highest value: 300 -> 300, 301 -> 3600.
+	// https://www.linode.com/docs/api/domains/#domains-list__responses
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
 	}

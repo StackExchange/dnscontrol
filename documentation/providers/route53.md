@@ -72,7 +72,7 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_R53 = NewDnsProvider("r53_main");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_R53),
+D("example.com", REG_NONE, DnsProvider(DSP_R53),
     A("test", "1.2.3.4")
 );
 ```

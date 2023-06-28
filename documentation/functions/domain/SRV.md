@@ -22,11 +22,11 @@ Priority, weight, and port are ints.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider("GCLOUD"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   // Create SRV records for a a SIP service:
   //               pr  w   port, target
-  SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.tld."),
-  SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.tld."),
+  SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
+  SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.com."),
 );
 ```
 {% endcode %}

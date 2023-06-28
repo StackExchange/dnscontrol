@@ -14,7 +14,7 @@ The value can be an integer or a string. See [`TTL`](../record/TTL.md) for examp
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider("R53"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NAMESERVER_TTL("2d"),
   NAMESERVER("ns")
 );
@@ -25,7 +25,7 @@ Use `NAMESERVER_TTL("3600"),` or `NAMESERVER_TTL("1h"),` for a 1h default TTL fo
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider("xyz"),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DefaultTTL("4h"),
   NAMESERVER_TTL("3600"),
   NAMESERVER("ns1.provider.com."), //inherits NAMESERVER_TTL

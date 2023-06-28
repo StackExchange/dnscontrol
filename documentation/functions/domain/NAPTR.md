@@ -187,7 +187,7 @@ D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NAPTR("@", 20, 50, "s", "SIPS+D2T", "", "_sips._tcp.example.com."),
   NAPTR("@", 20, 50, "s", "SIP+D2T", "", "_sip._tcp.example.com."),
   NAPTR("@", 30, 50, "s", "SIP+D2U", "", "_sip._udp.example.com."),
@@ -208,7 +208,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(R53),
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NAPTR("@",100, 50, "a", "z3950+N2L+N2C", "", "cidserver.example.com."),
   NAPTR("@", 50, 50, "a", "rcds+N2C", "", "cidserver.example.com."),
   NAPTR("@", 30, 50, "s", "http+N2L+N2C+N2R", "", "www.example.com."),

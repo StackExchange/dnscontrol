@@ -99,7 +99,7 @@ INWX.
 
 ## Usage
 An example `dnsconfig.js` configuration file
-for `example.tld` registered with INWX
+for `example.com` registered with INWX
 and delegated to Cloudflare:
 
 {% code title="dnsconfig.js" %}
@@ -107,7 +107,7 @@ and delegated to Cloudflare:
 var REG_INWX = NewRegistrar("inwx");
 var DSP_CF = NewDnsProvider("cloudflare");
 
-D("example.tld", REG_INWX, DnsProvider(DSP_CF),
+D("example.com", REG_INWX, DnsProvider(DSP_CF),
     A("test", "1.2.3.4")
 );
 ```
