@@ -71,6 +71,7 @@ type cloudflareProvider struct {
 	ignoredLabels   []string
 	manageRedirects bool
 	manageWorkers   bool
+	accountId       string
 	cfClient        *cloudflare.API
 }
 
@@ -678,7 +679,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	// Check account data if set
 	if m["accountid"] != "" {
-		api.cfClient.AccountID = m["accountid"]
+		api.accountId = m["accountid"]
 	}
 
 	debug, err := strconv.ParseBool(os.Getenv("CLOUDFLAREAPI_DEBUG"))
