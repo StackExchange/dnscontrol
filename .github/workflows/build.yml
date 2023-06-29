@@ -22,7 +22,7 @@ jobs:
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         path: ${{ env.go-mod-path }}
     - name: Install goreleaser
-      run: go install github.com/goreleaser/goreleaser@latest
+      run: go install github.com/goreleaser/goreleaser@v1.18
     - run: mkdir -p "$TEST_RESULTS"
     - name: Run unit tests
       run: |
