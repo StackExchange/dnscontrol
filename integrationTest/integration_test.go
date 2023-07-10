@@ -592,7 +592,7 @@ func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
 func makeRec(name, target, typ string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: typ,
-		TTL:  300,
+		TTL:  models.NewTTL(300),
 	}
 	SetLabel(r, name, "**current-domain**")
 	r.SetTarget(target)
@@ -768,7 +768,7 @@ func txt(name, target string) *models.RecordConfig {
 
 // func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
 func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
-	r.TTL = t
+	r.TTL = models.NewTTL(t)
 	return r
 }
 

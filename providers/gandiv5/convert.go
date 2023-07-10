@@ -20,7 +20,7 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 	// We must split them out into individual records, one for each value.
 	for _, value := range n.RrsetValues {
 		rc := &models.RecordConfig{
-			TTL:      uint32(n.RrsetTTL),
+			TTL:      models.NewTTL(uint32(n.RrsetTTL)),
 			Original: n,
 		}
 		rc.SetLabel(n.RrsetName, origin)
@@ -63,7 +63,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 			// Allocate a new ZoneRecord:
 			zr := livedns.DomainRecord{
 				RrsetType:   r.Type,
-				RrsetTTL:    int(r.TTL),
+				RrsetTTL:    int(r.TTL.Value()),
 				RrsetName:   label,
 				RrsetValues: []string{r.GetTargetCombined()},
 			}
@@ -71,10 +71,10 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 		} else {
 			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
 
-			if r.TTL != uint32(zr.RrsetTTL) {
+			if r.TTL.Value() != uint32(zr.RrsetTTL) {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
-				if r.TTL < uint32(zr.RrsetTTL) {
-					zr.RrsetTTL = int(r.TTL)
+				if r.TTL.Value() < uint32(zr.RrsetTTL) {
+					zr.RrsetTTL = int(r.TTL.Value())
 				}
 			}
 

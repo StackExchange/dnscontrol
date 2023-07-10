@@ -29,7 +29,7 @@ Info required in `creds.json`:
 // Allowed values from the Linode API
 // https://www.linode.com/docs/api/domains/#domains-list__responses
 var allowedTTLValues = []uint32{
-	0,       // Default, currently 1209600 seconds
+	0,       // Default, currently 86400 seconds
 	300,     // 5 minutes
 	3600,    // 1 hour
 	7200,    // 2 hours
@@ -132,7 +132,7 @@ func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	// The documentation says that it will always round up to the next highest value: 300 -> 300, 301 -> 3600.
 	// https://www.linode.com/docs/api/domains/#domains-list__responses
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = models.NewTTL(fixTTL(record.TTL.Value()))
 	}
 
 	var err error
@@ -249,7 +249,7 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:         r.Type,
-		TTL:          r.TTLSec,
+		TTL:          models.NewTTL(r.TTLSec),
 		MxPreference: r.Priority,
 		SrvPriority:  r.Priority,
 		SrvWeight:    r.Weight,
@@ -277,7 +277,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 		Type:     rc.Type,
 		Name:     rc.GetLabel(),
 		Target:   rc.GetTargetField(),
-		TTL:      int(rc.TTL),
+		TTL:      int(rc.TTL.Value()),
 		Priority: 0,
 		Port:     int(rc.SrvPort),
 		Weight:   int(rc.SrvWeight),

@@ -59,7 +59,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
 		Name:   in.GetLabel(),
 		Type:   in.Type,
 		Value:  in.GetTargetCombined(),
-		TTL:    &in.TTL,
+		TTL:    in.TTL.ValueRef(),
 		ZoneID: zone.ID,
 	}
 
@@ -83,7 +83,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
 func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	rc := models.RecordConfig{
 		Type:     r.Type,
-		TTL:      *r.TTL,
+		TTL:      models.NewTTL(*r.TTL),
 		Original: r,
 	}
 	rc.SetLabel(r.Name, domain)

@@ -56,13 +56,13 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 
 // AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
-	ttl := uint32(300)
+	ttl := models.EmptyTTL()
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
 		t, err := strconv.ParseUint(ttls, 10, 32)
 		if err != nil {
 			fmt.Printf("WARNING: ns_ttl for %s (%s) is not a valid int", dc.Name, ttls)
 		} else {
-			ttl = uint32(t)
+			ttl = models.NewTTL(uint32(t))
 		}
 	}
 	for _, ns := range dc.Nameservers {

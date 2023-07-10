@@ -89,7 +89,7 @@ type RecordConfig struct {
 	SubDomain string            `json:"subdomain,omitempty"`
 	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 	target    string            // If a name, must end with "."
-	TTL       uint32            `json:"ttl,omitempty"`
+	TTL       TTL               `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
@@ -158,7 +158,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		SubDomain string            `json:"subdomain,omitempty"`
 		NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 		target    string            // If a name, must end with "."
-		TTL       uint32            `json:"ttl,omitempty"`
+		TTL       *uint32           `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
@@ -212,6 +212,9 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	// Set each unexported field.
 	rc.SetTarget(recj.Target)
+	if recj.TTL != nil {
+		rc.TTL = NewTTL(*recj.TTL)
+	}
 
 	// Some sanity checks:
 	if recj.Type != rc.Type {
@@ -321,10 +324,10 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	var content string
 	switch rc.Type {
 	case "SOA":
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL.Value())
 		// SoaSerial is not used in comparison
 	default:
-		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
+		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL.Value())
 	}
 	for _, valueMap := range extraMaps {
 		// sort the extra values map keys to perform a deterministic
@@ -373,10 +376,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	rr.Header().Name = rc.NameFQDN + "."
 	rr.Header().Rrtype = rdtype
 	rr.Header().Class = dns.ClassINET
-	rr.Header().Ttl = rc.TTL
-	if rc.TTL == 0 {
-		rr.Header().Ttl = DefaultTTL
-	}
+	rr.Header().Ttl = rc.TTL.Value()
 
 	// Fill in the data.
 	switch rdtype { // #rtype_variations

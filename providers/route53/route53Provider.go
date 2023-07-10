@@ -423,7 +423,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 							Value: aws.String(val),
 						}
 						rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-						i := int64(rec.TTL)
+						i := int64(rec.TTL.Value())
 						rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 					}
 					// Assemble the change and add it to the list:
@@ -540,7 +540,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 						Value: aws.String(r.GetTargetCombined()),
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-					i := int64(r.TTL)
+					i := int64(r.TTL.Value())
 					rrset.TTL = &i
 				}
 			}
@@ -626,7 +626,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 	if set.AliasTarget != nil {
 		rc := &models.RecordConfig{
 			Type: "R53_ALIAS",
-			TTL:  300,
+			TTL:  models.NewTTL(300),
 			R53Alias: map[string]string{
 				"type":    string(set.Type),
 				"zone_id": aws.ToString(set.AliasTarget.HostedZoneId),
@@ -680,7 +680,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				}
 
 				var err error
-				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
+				rc := &models.RecordConfig{TTL: models.NewTTL(uint32(aws.ToInt64(set.TTL)))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				rc.Original = set
 				switch rtypeString {

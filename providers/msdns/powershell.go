@@ -296,7 +296,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	}
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -Name "%s"`, rec.GetLabel())
-	fmt.Fprintf(&b, ` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
+	fmt.Fprintf(&b, ` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL.Value())
 	switch rec.Type {
 	case "A":
 		fmt.Fprintf(&b, ` -A -IPv4Address "%s"`, rec.GetTargetIP())
@@ -390,7 +390,7 @@ func (psh *psHandle) RecordModifyTTL(dnsserver, domain string, old *models.Recor
 
 func generatePSModifyTTL(dnsserver, domain string, rec *models.RecordConfig, newTTL uint32) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo MODIFY-TTL "%s" "%s" %q ttl=%d->%d`, rec.Name, rec.Type, rec.GetTargetCombined(), rec.TTL, newTTL)
+	fmt.Fprintf(&b, `echo MODIFY-TTL "%s" "%s" %q ttl=%d->%d`, rec.Name, rec.Type, rec.GetTargetCombined(), rec.TTL.Value(), newTTL)
 	fmt.Fprintf(&b, " ; ")
 
 	fmt.Fprint(&b, `Get-DnsServerResourceRecord`)

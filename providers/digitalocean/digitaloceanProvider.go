@@ -294,7 +294,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 
 	t := &models.RecordConfig{
 		Type:         r.Type,
-		TTL:          uint32(r.TTL),
+		TTL:          models.NewTTL(uint32(r.TTL)),
 		MxPreference: uint16(r.Priority),
 		SrvPriority:  uint16(r.Priority),
 		SrvWeight:    uint16(r.Weight),
@@ -339,7 +339,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Type:     rc.Type,
 		Name:     name,
 		Data:     target,
-		TTL:      int(rc.TTL),
+		TTL:      int(rc.TTL.Value()),
 		Priority: priority,
 		Port:     int(rc.SrvPort),
 		Weight:   int(rc.SrvWeight),

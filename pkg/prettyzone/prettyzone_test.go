@@ -38,7 +38,7 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 
 func TestMostCommonTtl(t *testing.T) {
 	var records []dns.RR
-	var g, e uint32
+	var g, e models.TTL
 	r1, _ := dns.NewRR("bosun.org. 100 IN A 1.1.1.1")
 	r2, _ := dns.NewRR("bosun.org. 200 IN A 1.1.1.1")
 	r3, _ := dns.NewRR("bosun.org. 300 IN A 1.1.1.1")
@@ -47,50 +47,50 @@ func TestMostCommonTtl(t *testing.T) {
 
 	// All records are TTL=100
 	records = nil
-	records, e = append(records, r1, r1, r1), 100
+	records, e = append(records, r1, r1, r1), models.NewTTL(100)
 	x, err := models.RRstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
 	g = MostCommonTTL(x)
 	if e != g {
-		t.Fatalf("expected %d; got %d\n", e, g)
+		t.Fatalf("expected %d; got %d\n", e.Value(), g.Value())
 	}
 
 	// Mixture of TTLs with an obvious winner.
 	records = nil
-	records, e = append(records, r1, r2, r2), 200
+	records, e = append(records, r1, r2, r2), models.NewTTL(200)
 	rcs, err := models.RRstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
 	g = MostCommonTTL(rcs)
 	if e != g {
-		t.Fatalf("expected %d; got %d\n", e, g)
+		t.Fatalf("expected %d; got %d\n", e.Value(), g.Value())
 	}
 
 	// 3-way tie. Largest TTL should be used.
 	records = nil
-	records, e = append(records, r1, r2, r3), 300
+	records, e = append(records, r1, r2, r3), models.NewTTL(300)
 	rcs, err = models.RRstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
 	g = MostCommonTTL(rcs)
 	if e != g {
-		t.Fatalf("expected %d; got %d\n", e, g)
+		t.Fatalf("expected %d; got %d\n", e.Value(), g.Value())
 	}
 
 	// NS records are ignored.
 	records = nil
-	records, e = append(records, r1, r4, r5), 100
+	records, e = append(records, r1, r4, r5), models.NewTTL(100)
 	rcs, err = models.RRstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
 	g = MostCommonTTL(rcs)
 	if e != g {
-		t.Fatalf("expected %d; got %d\n", e, g)
+		t.Fatalf("expected %d; got %d\n", e.Value(), g.Value())
 	}
 
 }
@@ -299,9 +299,9 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	r1, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.153")
 	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
 	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
-	rsynm := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
+	rsynm := &models.RecordConfig{Type: "R53_ALIAS", TTL: models.NewTTL(300)}
 	rsynm.SetLabel("myalias", "bosun.org")
-	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
+	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: models.NewTTL(300)}
 	rsynz.SetLabel("zalias", "bosun.org")
 
 	recs, err := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
@@ -313,7 +313,7 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	recs = append(recs, rsynz)
 
 	buf := &bytes.Buffer{}
-	WriteZoneFileRC(buf, recs, "bosun.org", 0, []string{"c1", "c2", "c3\nc4"})
+	WriteZoneFileRC(buf, recs, "bosun.org", models.EmptyTTL(), []string{"c1", "c2", "c3\nc4"})
 	expected := `$TTL 300
 ; c1
 ; c2

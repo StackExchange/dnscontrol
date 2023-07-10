@@ -167,7 +167,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 		Type:    rec.Type,
 		Content: content,
 		Name:    rec.GetLabel(),
-		TTL:     int(rec.TTL),
+		TTL:     int(rec.TTL.Value()),
 	}
 
 	switch rType := rec.Type; rType {
@@ -320,7 +320,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		}
 
 		rc := &models.RecordConfig{
-			TTL:      uint32(record.TTL),
+			TTL:      models.NewTTL(uint32(record.TTL)),
 			Original: record,
 		}
 		rc.SetLabelFromFQDN(record.Name, domain)

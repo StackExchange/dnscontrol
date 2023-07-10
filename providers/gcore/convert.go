@@ -20,7 +20,7 @@ func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordCon
 	// Split G-Core's RRset into individual records
 	for _, value := range n.Records {
 		rc := &models.RecordConfig{
-			TTL:      uint32(n.TTL),
+			TTL:      models.NewTTL(uint32(n.TTL)),
 			Original: n,
 		}
 		rc.SetLabelFromFQDN(recName, zoneName)
@@ -89,17 +89,17 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 
 		if result == nil {
 			result = &dnssdk.RRSet{
-				TTL:     int(r.TTL),
+				TTL:     int(r.TTL.Value()),
 				Filters: nil,
 				Records: []dnssdk.ResourceRecord{rr},
 			}
 		} else {
 			result.Records = append(result.Records, rr)
 
-			if int(r.TTL) != result.TTL {
+			if int(r.TTL.Value()) != result.TTL {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, result.TTL)
-				if int(r.TTL) < result.TTL {
-					result.TTL = int(r.TTL)
+				if int(r.TTL.Value()) < result.TTL {
+					result.TTL = int(r.TTL.Value())
 				}
 			}
 		}

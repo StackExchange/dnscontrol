@@ -329,7 +329,7 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 
 		rc := &models.RecordConfig{
 			Type: parser.parseStringAttr(element.Find("td > .rrlabel"), "data"),
-			TTL:  parser.parseIntElementUint32(element.Find("td:nth-child(5)")),
+			TTL:  models.NewTTL(parser.parseIntElementUint32(element.Find("td:nth-child(5)"))),
 			Original: Record{
 				ZoneName:   domain,
 				ZoneID:     domainID,
@@ -576,7 +576,7 @@ func (c *hednsProvider) editZoneRecord(zoneID uint64, recordID uint64, rc *model
 		"menu":                {"edit_zone"},
 		"hosted_dns_zoneid":   {strconv.FormatUint(zoneID, 10)},
 		"hosted_dns_editzone": {"1"},
-		"TTL":                 {strconv.FormatUint(uint64(rc.TTL), 10)},
+		"TTL":                 {strconv.FormatUint(uint64(rc.TTL.Value()), 10)},
 		"Name":                {rc.Name},
 	}
 

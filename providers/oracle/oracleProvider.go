@@ -173,7 +173,7 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 
 			rc := &models.RecordConfig{
 				Type:     *record.Rtype,
-				TTL:      uint32(*record.Ttl),
+				TTL:      models.NewTTL(uint32(*record.Ttl)),
 				Original: record,
 			}
 			rc.SetLabelFromFQDN(*record.Domain, zone)
@@ -219,9 +219,9 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			continue
 		}
 
-		if rec.TTL != 86400 {
+		if rec.TTL.Value() != 86400 {
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
-			rec.TTL = 86400
+			rec.TTL = models.NewTTL(86400)
 		}
 	}
 
@@ -328,7 +328,7 @@ func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOp
 	fqdn := rec.GetLabelFQDN()
 	rtype := rec.Type
 	rdata := rec.GetTargetCombined()
-	ttl := int(rec.TTL)
+	ttl := int(rec.TTL.Value())
 
 	return dns.RecordOperation{
 		Domain:    &fqdn,

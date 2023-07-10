@@ -14,7 +14,7 @@ func nativeToRecord(zr zoneRecord, origin string, subdomain string) (rc *models.
 	record := zr.GetZR()
 
 	rc = &models.RecordConfig{
-		TTL:      record.TTL,
+		TTL:      models.NewTTL(record.TTL),
 		Original: record,
 		Type:     record.Type,
 	}
@@ -45,7 +45,7 @@ func recordToNative(rc *models.RecordConfig, id ...uint32) paramStruct {
 	//rc is the record from dnscontrol to loopia
 	zrec := zRec{}
 	zrec.Type = rc.Type
-	zrec.TTL = rc.TTL
+	zrec.TTL = rc.TTL.Value()
 	zrec.Rdata = rc.GetTargetCombined()
 
 	if rc.Original != nil {

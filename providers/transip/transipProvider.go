@@ -357,7 +357,7 @@ func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEn
 
 	return domain.DNSEntry{
 		Name:    config.Name,
-		Expire:  int(config.TTL),
+		Expire:  int(config.TTL.Value()),
 		Type:    config.Type,
 		Content: getTargetRecordContent(config),
 	}, nil
@@ -365,7 +365,7 @@ func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEn
 
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
-		TTL:      uint32(entry.Expire),
+		TTL:      models.NewTTL(uint32(entry.Expire)),
 		Type:     entry.Type,
 		Original: entry,
 	}

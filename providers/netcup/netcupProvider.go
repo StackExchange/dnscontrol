@@ -77,7 +77,7 @@ func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 
 	// Setting the TTL is not supported for netcup
 	for _, r := range dc.Records {
-		r.TTL = 0
+		r.TTL = models.NewTTL(0)
 	}
 
 	// Filter out types we can't modify (like NS)

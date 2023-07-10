@@ -105,7 +105,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 		}
 
 		rec := &models.RecordConfig{
-			TTL:      uint32(r.TTL),
+			TTL:      models.NewTTL(uint32(r.TTL)),
 			Original: r,
 		}
 
@@ -262,7 +262,7 @@ func toReq(rc *models.RecordConfig) *dnsRecordCreate {
 		Type:     rc.Type,
 		Hostname: name,
 		Value:    target,
-		TTL:      int64(rc.TTL),
+		TTL:      int64(rc.TTL.Value()),
 		Priority: priority,
 		Port:     int64(rc.SrvPort),
 		Weight:   int64(rc.SrvWeight),

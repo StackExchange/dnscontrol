@@ -293,7 +293,7 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 	for _, dnsHost := range result.Hosts {
 		record := models.RecordConfig{
 			Type:         dnsHost.Type,
-			TTL:          uint32(dnsHost.TTL),
+			TTL:          models.NewTTL(uint32(dnsHost.TTL)),
 			MxPreference: uint16(dnsHost.MXPref),
 			Name:         dnsHost.Name,
 		}
@@ -332,7 +332,7 @@ func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
 			Type:    r.Type,
 			Address: value,
 			MXPref:  int(r.MxPreference),
-			TTL:     int(r.TTL),
+			TTL:     int(r.TTL.Value()),
 		}
 		recs = append(recs, rec)
 		id++

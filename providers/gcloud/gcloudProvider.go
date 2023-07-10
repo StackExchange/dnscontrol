@@ -311,7 +311,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
 				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
-				newRRs.Ttl = int64(r.TTL)
+				newRRs.Ttl = int64(r.TTL.Value())
 			}
 		}
 		if len(newRRs.Rrdatas) > 0 {
@@ -406,7 +406,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
-	r.TTL = uint32(set.Ttl)
+	r.TTL = models.NewTTL(uint32(set.Ttl))
 	rtype := set.Type
 	var err error
 	switch rtype {

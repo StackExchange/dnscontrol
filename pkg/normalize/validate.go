@@ -243,7 +243,7 @@ func transformCNAME(target, oldDomain, newDomain string) string {
 }
 
 // import_transform imports the records of one zone into another, modifying records along the way.
-func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IPConversion, ttl uint32) error {
+func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IPConversion, ttl models.TTL) error {
 	// Read srcDomain.Records, transform, and append to dstDomain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
 	// 2. Append destDomainname to the end of the label.
@@ -258,7 +258,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			rec2, _ := rec.Copy()
 			newlabel := rec2.GetLabelFQDN()
 			rec2.SetLabel(newlabel, dstDomain.Name)
-			if ttl != 0 {
+			if ttl.IsSet() {
 				rec2.TTL = ttl
 			}
 			return rec2
@@ -348,10 +348,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
-
-			if rec.TTL == 0 {
-				rec.TTL = models.DefaultTTL
-			}
 
 			// Canonicalize Label:
 			if rec.GetLabel() == (domain.Name + ".") {
@@ -601,7 +597,7 @@ func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error
 	m := make(map[string]map[uint32]map[string]bool)
 	for _, r := range records {
 		label := r.GetLabelFQDN()
-		ttl := r.TTL
+		ttl := r.TTL.Value()
 		rtype := r.Type
 
 		if _, ok := m[label]; !ok {

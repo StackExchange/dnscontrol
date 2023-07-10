@@ -30,7 +30,7 @@ func generatePSCreateNaptr(dnsServerName, domain string, rec *models.RecordConfi
 	fmt.Fprintf(&b, `$Service     = %s ; `, escapePS(rec.NaptrService))
 	fmt.Fprintf(&b, `$Regex       = %s ; `, escapePS(rec.NaptrRegexp))
 	fmt.Fprintf(&b, `$Replacement = %s ; `, escapePS(rec.GetTargetField()))
-	fmt.Fprintf(&b, `dnscmd %s/recordadd $zoneName $rrName %d naptr $Order $Preference $Flags $Service $Regex $Replacement ; `, computername, rec.TTL)
+	fmt.Fprintf(&b, `dnscmd %s/recordadd $zoneName $rrName %d naptr $Order $Preference $Flags $Service $Regex $Replacement ; `, computername, rec.TTL.Value())
 	return b.String()
 }
 

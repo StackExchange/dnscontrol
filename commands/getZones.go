@@ -227,12 +227,12 @@ func GetZone(args GetZoneArgs) error {
 	for i, recs := range zoneRecs {
 		zoneName := zones[i]
 
-		z := prettyzone.PrettySort(recs, zoneName, 0, nil)
+		z := prettyzone.PrettySort(recs, zoneName, models.EmptyTTL(), nil)
 		switch args.OutputFormat {
 
 		case "zone":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
-			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
+			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, models.NewTTL(uint32(args.DefaultTTL)), nil)
 			fmt.Fprintln(w)
 
 		case "js", "djs":
@@ -243,12 +243,15 @@ func GetZone(args GetZoneArgs) error {
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
 			o = append(o, fmt.Sprintf("DnsProvider(%s)", dspVariableName))
-			defaultTTL := uint32(args.DefaultTTL)
-			if defaultTTL == 0 {
+			defaultTTL := models.EmptyTTL()
+			if args.DefaultTTL != 0 {
+				defaultTTL = models.NewTTL(uint32(args.DefaultTTL))
+			}
+			if !defaultTTL.IsSet() {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
 			}
-			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
-				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
+			if defaultTTL.IsSet() {
+				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL.Value()))
 			}
 			for _, rec := range recs {
 				if (rec.Type == "CNAME") && (rec.Name == "@") {
@@ -287,7 +290,7 @@ func GetZone(args GetZoneArgs) error {
 				}
 
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined(), cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL.Value(), rec.Type, rec.GetTargetCombined(), cfproxy)
 			}
 
 		default:
@@ -307,15 +310,15 @@ func jsonQuoted(i string) string {
 	return string(b)
 }
 
-func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) string {
+func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL models.TTL) string {
 
 	target := rec.GetTargetCombined()
 
-	ttl := uint32(0)
+	ttl := models.EmptyTTL()
 	ttlop := ""
-	if rec.TTL != defaultTTL && rec.TTL != 0 {
+	if rec.TTL != defaultTTL && rec.TTL.IsSet() {
 		ttl = rec.TTL
-		ttlop = fmt.Sprintf(", TTL(%d)", ttl)
+		ttlop = fmt.Sprintf(", TTL(%d)", ttl.Value())
 	}
 
 	cfproxy := ""
@@ -386,7 +389,7 @@ func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
 
-func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
+func makeR53alias(rec *models.RecordConfig, ttl models.TTL) string {
 	items := []string{
 		`"` + rec.Name + `"`,
 		`"` + rec.R53Alias["type"] + `"`,
@@ -395,8 +398,8 @@ func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 	if z, ok := rec.R53Alias["zone_id"]; ok {
 		items = append(items, `R53_ZONE("`+z+`")`)
 	}
-	if ttl != 0 {
-		items = append(items, fmt.Sprintf("TTL(%d)", ttl))
+	if ttl.IsSet() {
+		items = append(items, fmt.Sprintf("TTL(%d)", ttl.Value()))
 	}
 	return rec.Type + "(" + strings.Join(items, ", ") + ")"
 }

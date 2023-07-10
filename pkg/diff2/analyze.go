@@ -239,7 +239,7 @@ func humanDiff(a, b targetConfig) string {
 	}
 
 	// Just the TTLs are different:
-	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
+	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL.Value(), b.rec.TTL.Value())
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {

@@ -102,7 +102,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		}
 
 		rec := &models.RecordConfig{
-			TTL:      uint32(r.TTL),
+			TTL:      models.NewTTL(uint32(r.TTL)),
 			Original: r,
 		}
 		rec.SetLabel(r.Name, domain)
@@ -499,7 +499,7 @@ func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 			Name:     dnsimpleapi.String(rc.GetLabel()),
 			Type:     rc.Type,
 			Content:  getTargetRecordContent(rc),
-			TTL:      int(rc.TTL),
+			TTL:      int(rc.TTL.Value()),
 			Priority: getTargetRecordPriority(rc),
 		}
 		_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
@@ -561,7 +561,7 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 			Name:     dnsimpleapi.String(rc.GetLabel()),
 			Type:     rc.Type,
 			Content:  getTargetRecordContent(rc),
-			TTL:      int(rc.TTL),
+			TTL:      int(rc.TTL.Value()),
 			Priority: getTargetRecordPriority(rc),
 		}
 

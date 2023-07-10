@@ -260,7 +260,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 	origin, data := domain, r.Data
 
 	rc := &models.RecordConfig{
-		TTL:      uint32(r.TTL),
+		TTL:      models.NewTTL(uint32(r.TTL)),
 		Original: r,
 	}
 	rc.SetLabel(r.Name, domain)
@@ -339,7 +339,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 		Type:     rc.Type,
 		Name:     name,
 		Data:     data,
-		TTL:      int(rc.TTL),
+		TTL:      int(rc.TTL.Value()),
 		Priority: priority,
 	}
 	switch rtype := rc.Type; rtype { // #rtype_variations

@@ -99,7 +99,7 @@ func (rc *RecordConfig) GetTargetSortable() string {
 
 // GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
-	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
+	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL.Value())
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT", "AKAMAICDN":
 		// Nothing special.

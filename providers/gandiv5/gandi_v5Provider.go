@@ -169,13 +169,13 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			// Therefore, we change this to a CNAME.
 			rec.Type = "CNAME"
 		}
-		if rec.TTL < 300 {
+		if rec.TTL.Value() < 300 {
 			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
-			rec.TTL = 300
+			rec.TTL = models.NewTTL(300)
 		}
-		if rec.TTL > 2592000 {
+		if rec.TTL.Value() > 2592000 {
 			printer.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
-			rec.TTL = 2592000
+			rec.TTL = models.NewTTL(2592000)
 		}
 		if rec.Type == "TXT" {
 			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.

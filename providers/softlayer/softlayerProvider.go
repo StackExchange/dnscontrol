@@ -152,7 +152,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 
 		recConfig := &models.RecordConfig{
 			Type:     recType,
-			TTL:      uint32(*record.Ttl),
+			TTL:      models.NewTTL(uint32(*record.Ttl)),
 			Original: record,
 		}
 		recConfig.SetTarget(*record.Data)
@@ -196,7 +196,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 }
 
 func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
+	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL.Value())), int(desired.MxPreference), *domain.Id
 	var weight, priority, port = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
 	var host, data, newType = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
@@ -266,7 +266,7 @@ func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
+	var ttl, preference = verifyMinTTL(int(desired.TTL.Value())), int(desired.MxPreference)
 	var priority, weight, port = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {

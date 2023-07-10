@@ -126,7 +126,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	c.fetchAvailableTTLValues(dc.Name)
 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = models.NewTTL(fixTTL(record.TTL.Value()))
 	}
 
 	var corrections []*models.Correction
@@ -260,7 +260,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
-		TTL:          uint32(ttl),
+		TTL:          models.NewTTL(uint32(ttl)),
 		MxPreference: uint16(priority),
 		SrvPriority:  uint16(priority),
 		SrvWeight:    uint16(weight),
@@ -318,7 +318,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		"record-type": rc.Type,
 		"host":        rc.GetLabel(),
 		"record":      rc.GetTargetField(),
-		"ttl":         strconv.Itoa(int(rc.TTL)),
+		"ttl":         strconv.Itoa(int(rc.TTL.Value())),
 	}
 
 	// ClouDNS doesn't use "@", it uses an empty name

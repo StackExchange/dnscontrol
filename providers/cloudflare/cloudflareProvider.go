@@ -127,8 +127,8 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 	}
 
 	for _, rec := range records {
-		if rec.TTL == 0 {
-			rec.TTL = 1
+		if !rec.TTL.IsSet() {
+			rec.TTL = models.NewTTL(1)
 		}
 		// Store the proxy status ("orange cloud") for use by get-zones:
 		m := getProxyMetadata(rec)
@@ -216,7 +216,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		// When not forcing this property change here, dnscontrol tries each time to update
 		// the TTL of a record which simply cannot be changed anyway.
 		if rec.Metadata[metaProxy] != "off" {
-			rec.TTL = 1
+			rec.TTL = models.NewTTL(1)
 		}
 		//		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
 		//			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
@@ -579,13 +579,13 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.Metadata = map[string]string{}
 		}
 		// cloudflare uses "1" to mean "auto-ttl"
-		// if we get here and ttl is not specified (or is the dnscontrol default of 300),
+		// if we get here and ttl is not specified,
 		// use automatic mode instead.
-		if rec.TTL == 0 || rec.TTL == 300 {
-			rec.TTL = 1
+		if !rec.TTL.IsSet() {
+			rec.TTL = models.NewTTL(1)
 		}
-		if rec.TTL != 1 && rec.TTL < 60 {
-			rec.TTL = 60
+		if rec.TTL.Value() != 1 && rec.TTL.Value() < 60 {
+			rec.TTL = models.NewTTL(60)
 		}
 
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
@@ -621,7 +621,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
 			currentPrPrio++
-			rec.TTL = 1
+			rec.TTL = models.NewTTL(1)
 			rec.Type = "PAGE_RULE"
 		}
 
@@ -631,7 +631,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if len(parts) != 2 {
 				return fmt.Errorf("invalid data specified for cloudflare worker record")
 			}
-			rec.TTL = 1
+			rec.TTL = models.NewTTL(1)
 			rec.Type = "WORKER_ROUTE"
 		}
 	}
@@ -837,7 +837,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	}
 
 	rc := &models.RecordConfig{
-		TTL:      uint32(cr.TTL),
+		TTL:      models.NewTTL(uint32(cr.TTL)),
 		Original: cr,
 		Metadata: map[string]string{},
 	}

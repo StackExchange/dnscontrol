@@ -315,8 +315,8 @@ func TestCheckDuplicates(t *testing.T) {
 		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "NS"}),
 		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "PTR"}),
 		// The only difference is the TTL.
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 222}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(111)}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(222)}),
 		// Three records each with a different target.
 		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
 		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
@@ -357,8 +357,8 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_err_1type_2ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different ttl per record
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 222}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(111)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: models.NewTTL(222)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) == 0 {
@@ -369,8 +369,8 @@ func TestCheckRecordSetHasMultipleTTLs_err_1type_2ttl(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_noerr_1type_1ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different ttl per record
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(111)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: models.NewTTL(111)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
@@ -381,8 +381,8 @@ func TestCheckRecordSetHasMultipleTTLs_noerr_1type_1ttl(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_noerr_2type_2ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different record types, different TTLs
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 333}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 444}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(333)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: models.NewTTL(444)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
@@ -393,8 +393,8 @@ func TestCheckRecordSetHasMultipleTTLs_noerr_2type_2ttl(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_noerr_2type_1ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different record types, different TTLs
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 333}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 333}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(333)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: models.NewTTL(333)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
@@ -405,9 +405,9 @@ func TestCheckRecordSetHasMultipleTTLs_noerr_2type_1ttl(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_err_3type_2ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different record types, different TTLs
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 555}),
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 555}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 666}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(555)}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(555)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: models.NewTTL(666)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
@@ -418,9 +418,9 @@ func TestCheckRecordSetHasMultipleTTLs_err_3type_2ttl(t *testing.T) {
 func TestCheckRecordSetHasMultipleTTLs_err_3type_3ttl(t *testing.T) {
 	records := []*models.RecordConfig{
 		// different record types, different TTLs
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 777}),
-		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 888}),
-		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: 999}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(777)}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: models.NewTTL(888)}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "NS", TTL: models.NewTTL(999)}),
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 1 {

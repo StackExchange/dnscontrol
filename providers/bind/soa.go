@@ -29,7 +29,12 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 		soaMail = soautil.RFC5322MailToBind(soaMail)
 	}
 
-	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
+	defSoaTTL := models.EmptyTTL()
+	if defSoa.TTL != 0 {
+		defSoaTTL = models.NewTTL(defSoa.TTL)
+	}
+
+	soaRec.TTL = firstSet(desired.TTL, defSoaTTL, existing.TTL)
 	soaRec.SetTargetSOA(
 		firstNonNull(desired.GetTargetField(), existing.GetTargetField(), defSoa.Ns, "DEFAULT_NOT_SET."),
 		soaMail,
@@ -59,4 +64,13 @@ func firstNonZero(items ...uint32) uint32 {
 		}
 	}
 	return 999
+}
+
+func firstSet(items ...models.TTL) models.TTL {
+	for _, item := range items {
+		if item.IsSet() {
+			return item
+		}
+	}
+	return models.EmptyTTL()
 }

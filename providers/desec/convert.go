@@ -19,7 +19,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 	// We must split them out into individual records, one for each value.
 	for _, value := range n.Records {
 		rc := &models.RecordConfig{
-			TTL:      n.TTL,
+			TTL:      models.NewTTL(n.TTL),
 			Original: n,
 		}
 		rc.SetLabel(n.Subname, origin)
@@ -53,7 +53,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 			// Allocate a new ZoneRecord:
 			zr := resourceRecord{
 				Type:    r.Type,
-				TTL:     r.TTL,
+				TTL:     r.TTL.Value(),
 				Subname: label,
 				Records: []string{r.GetTargetCombined()},
 			}
@@ -61,10 +61,10 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 		} else {
 			zr.Records = append(zr.Records, r.GetTargetCombined())
 
-			if r.TTL != zr.TTL {
+			if r.TTL.Value() != zr.TTL {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.TTL)
-				if r.TTL < zr.TTL {
-					zr.TTL = r.TTL
+				if r.TTL.Value() < zr.TTL {
+					zr.TTL = r.TTL.Value()
 				}
 			}
 

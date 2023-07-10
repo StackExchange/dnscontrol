@@ -136,7 +136,7 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
-		TTL:      r.TTL,
+		TTL:      models.NewTTL(r.TTL),
 		Original: r,
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
@@ -245,7 +245,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 		Host:       rc.GetLabel(),
 		Type:       rc.Type,
 		Answer:     rc.GetTargetField(),
-		TTL:        rc.TTL,
+		TTL:        rc.TTL.Value(),
 		Priority:   uint32(rc.MxPreference),
 	}
 	switch rc.Type { // #rtype_variations

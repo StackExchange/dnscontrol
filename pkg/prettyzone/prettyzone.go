@@ -16,9 +16,9 @@ import (
 // MostCommonTTL returns the most common TTL in a set of records. If there is
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
-func MostCommonTTL(records models.Records) uint32 {
+func MostCommonTTL(records models.Records) models.TTL {
 	// Index the TTLs in use:
-	d := make(map[uint32]int)
+	d := make(map[models.TTL]int)
 	for _, r := range records {
 		if r.Type != "NS" {
 			d[r.TTL]++
@@ -32,10 +32,10 @@ func MostCommonTTL(records models.Records) uint32 {
 		}
 	}
 	// Find the largest key with that count:
-	var mk uint32
+	var mk models.TTL
 	for key, value := range d {
 		if value == mc {
-			if key > mk {
+			if key.Value() > mk.Value() {
 				mk = key
 			}
 		}
@@ -50,11 +50,11 @@ func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
 		return err
 	}
 
-	return WriteZoneFileRC(w, rcs, origin, 0, nil)
+	return WriteZoneFileRC(w, rcs, origin, models.EmptyTTL(), nil)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
-func WriteZoneFileRC(w io.Writer, records models.Records, origin string, defaultTTL uint32, comments []string) error {
+func WriteZoneFileRC(w io.Writer, records models.Records, origin string, defaultTTL models.TTL, comments []string) error {
 	// This function prioritizes beauty over output size.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
@@ -66,7 +66,7 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string, default
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	if defaultTTL == 0 {
+	if !defaultTTL.IsSet() {
 		defaultTTL = MostCommonTTL(records)
 	}
 
@@ -76,17 +76,14 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string, default
 }
 
 // PrettySort sorts the records in a pretty order.
-func PrettySort(records models.Records, origin string, defaultTTL uint32, comments []string) *ZoneGenData {
-	if defaultTTL == 0 {
+func PrettySort(records models.Records, origin string, defaultTTL models.TTL, comments []string) *ZoneGenData {
+	if !defaultTTL.IsSet() {
 		defaultTTL = MostCommonTTL(records)
 	}
 	z := &ZoneGenData{
 		Origin:     origin + ".",
-		DefaultTTL: defaultTTL,
+		DefaultTTL: defaultTTL.Value(),
 		Comments:   comments,
-	}
-	if z.DefaultTTL == 0 {
-		z.DefaultTTL = 300
 	}
 	z.Records = nil
 	z.Records = append(z.Records, records...)
@@ -130,8 +127,8 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// ttl
 		ttl := ""
-		if rr.TTL != z.DefaultTTL && rr.TTL != 0 {
-			ttl = fmt.Sprint(rr.TTL)
+		if rr.TTL.Value() != z.DefaultTTL {
+			ttl = fmt.Sprint(rr.TTL.Value())
 		}
 
 		// type

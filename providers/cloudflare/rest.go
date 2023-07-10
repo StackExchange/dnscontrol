@@ -135,12 +135,12 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
 	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
+		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL.Value(), prio, content),
 		F: func() error {
 			cf := cloudflare.CreateDNSRecordParams{
 				Name:     rec.GetLabel(),
 				Type:     rec.Type,
-				TTL:      int(rec.TTL),
+				TTL:      int(rec.TTL.Value()),
 				Content:  content,
 				Priority: &rec.MxPreference,
 			}
@@ -171,7 +171,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 	}}
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
+			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL.Value(), rec.GetTargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
@@ -195,10 +195,10 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
 	if msg == "" {
-		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
+		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL.Value(), prio, content)
 	}
 	if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
-		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
+		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL.Value(), rec.GetTargetField())
 	}
 	arr := []*models.Correction{{
 		Msg: msg,
@@ -206,7 +206,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			cf := cloudflare.CreateDNSRecordParams{
 				Name:     rec.GetLabel(),
 				Type:     rec.Type,
-				TTL:      int(rec.TTL),
+				TTL:      int(rec.TTL.Value()),
 				Content:  content,
 				Priority: &rec.MxPreference,
 			}
@@ -254,7 +254,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Type:     rec.Type,
 		Content:  rec.GetTargetField(),
 		Priority: &rec.MxPreference,
-		TTL:      int(rec.TTL),
+		TTL:      int(rec.TTL.Value()),
 	}
 	if rec.Type == "TXT" {
 		r.Content = rec.GetTargetTXTJoined()
@@ -311,7 +311,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		r := &models.RecordConfig{
 			Type:     "PAGE_RULE",
 			Original: thisPr,
-			TTL:      1,
+			TTL:      models.NewTTL(1),
 		}
 		r.SetLabel("@", domain)
 		r.SetTarget(fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
@@ -371,7 +371,7 @@ func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*model
 		r := &models.RecordConfig{
 			Type:     "WORKER_ROUTE",
 			Original: thisPr,
-			TTL:      1,
+			TTL:      models.NewTTL(1),
 		}
 		r.SetLabel("@", domain)
 		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT

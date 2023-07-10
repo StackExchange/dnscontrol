@@ -148,7 +148,7 @@ func (r record) nativeToRecord(domain string) *models.RecordConfig {
 
 	rc := &models.RecordConfig{
 		Type:         "",
-		TTL:          r.TTL,
+		TTL:          models.NewTTL(r.TTL),
 		MxPreference: r.Priority,
 		SrvPriority:  r.Priority,
 		Original:     r,
@@ -186,7 +186,7 @@ func recordToNative(rc *models.RecordConfig) *record {
 		Name:    rc.NameFQDN,
 		Type:    rc.Type,
 		Content: strings.TrimSuffix(rc.GetTargetCombined(), "."),
-		TTL:     rc.TTL,
+		TTL:     rc.TTL.Value(),
 	}
 
 	switch rc.Type { // #rtype_variations

@@ -154,7 +154,7 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 			Original: record,
 		}
 		if record.TTL != nil {
-			rc.TTL = uint32(*record.TTL)
+			rc.TTL = models.NewTTL(uint32(*record.TTL))
 		}
 		rc.SetLabel(rname, domainName)
 
@@ -269,8 +269,8 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 			Priority: prio,
 		}
 
-		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
+		if rc.TTL.Value() != 0 {
+			ttl := int64(rc.TTL.Value())
 			record.TTL = &ttl
 		}
 
@@ -325,8 +325,8 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 		record.Name = &name
 		record.Type = &rc.Type
 		record.Content = &target
-		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
+		if rc.TTL.Value() != 0 {
+			ttl := int64(rc.TTL.Value())
 			record.TTL = &ttl
 		}
 

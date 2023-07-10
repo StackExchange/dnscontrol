@@ -14,7 +14,7 @@ func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.
 
 	t := &models.RecordConfig{
 		Type:         currentRecord.Type,
-		TTL:          fixTTL(uint32(currentRecord.TTL)),
+		TTL:          models.NewTTL(fixTTL(uint32(currentRecord.TTL))),
 		MxPreference: uint16(currentRecord.ActualPriority),
 		SrvPriority:  uint16(currentRecord.ActualPriority),
 		SrvWeight:    uint16(currentRecord.ActualWeight),
@@ -60,7 +60,7 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 	dnsR := &domainNameShopRecord{
 		ID:            0,
 		Host:          rc.GetLabel(),
-		TTL:           uint16(fixTTL(rc.TTL)),
+		TTL:           uint16(fixTTL(rc.TTL.Value())),
 		Type:          rc.Type,
 		Data:          data,
 		Weight:        strconv.Itoa(int(rc.SrvWeight)),

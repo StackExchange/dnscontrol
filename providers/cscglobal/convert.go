@@ -16,7 +16,7 @@ func nativeToRecordA(nr nativeRecordA, origin string, defaultTTL uint32) *models
 	}
 	rc := &models.RecordConfig{
 		Type: "A",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetIP(net.ParseIP(nr.Value).To4())
@@ -31,7 +31,7 @@ func nativeToRecordCNAME(nr nativeRecordCNAME, origin string, defaultTTL uint32)
 	}
 	rc := &models.RecordConfig{
 		Type: "CNAME",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTarget(nr.Value)
@@ -46,7 +46,7 @@ func nativeToRecordAAAA(nr nativeRecordAAAA, origin string, defaultTTL uint32) *
 	}
 	rc := &models.RecordConfig{
 		Type: "AAAA",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetIP(net.ParseIP(nr.Value).To16())
@@ -61,7 +61,7 @@ func nativeToRecordTXT(nr nativeRecordTXT, origin string, defaultTTL uint32) *mo
 	}
 	rc := &models.RecordConfig{
 		Type: "TXT",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetTXT(nr.Value)
@@ -76,7 +76,7 @@ func nativeToRecordMX(nr nativeRecordMX, origin string, defaultTTL uint32) *mode
 	}
 	rc := &models.RecordConfig{
 		Type: "MX",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetMX(nr.Priority, nr.Value)
@@ -91,7 +91,7 @@ func nativeToRecordNS(nr nativeRecordNS, origin string, defaultTTL uint32) *mode
 	}
 	rc := &models.RecordConfig{
 		Type: "NS",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTarget(nr.Value)
@@ -106,7 +106,7 @@ func nativeToRecordSRV(nr nativeRecordSRV, origin string, defaultTTL uint32) *mo
 	}
 	rc := &models.RecordConfig{
 		Type: "SRV",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetSRV(nr.Priority, nr.Weight, nr.Port, nr.Value)
@@ -121,7 +121,7 @@ func nativeToRecordCAA(nr nativeRecordCAA, origin string, defaultTTL uint32) *mo
 	}
 	rc := &models.RecordConfig{
 		Type: "CAA",
-		TTL:  ttl,
+		TTL:  models.NewTTL(ttl),
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetCAA(nr.Flag, nr.Tag, nr.Value)

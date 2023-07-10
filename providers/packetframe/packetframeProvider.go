@@ -174,7 +174,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 func toReq(zoneID string, dc *models.DomainConfig, rc *models.RecordConfig) (*domainRecord, error) {
 	req := &domainRecord{
 		Type:  rc.Type,
-		TTL:   int(rc.TTL),
+		TTL:   int(rc.TTL.Value()),
 		Label: rc.GetLabel(),
 		Zone:  zoneID,
 	}
@@ -196,7 +196,7 @@ func toReq(zoneID string, dc *models.DomainConfig, rc *models.RecordConfig) (*do
 func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
-		TTL:      uint32(r.TTL),
+		TTL:      models.NewTTL(uint32(r.TTL)),
 		Original: r,
 	}
 
