@@ -114,7 +114,15 @@ func (g *gcloudProvider) loadZoneInfo() error {
 	g.zones = map[string]*gdns.ManagedZone{}
 	pageToken := ""
 	for {
+	retry:
 		resp, err := g.client.ManagedZones.List(g.project).PageToken(pageToken).Do()
+		var check *googleapi.ServerResponse
+		if resp != nil {
+			check = &resp.ServerResponse
+		}
+		if retryNeeded(check, err) {
+			goto retry
+		}
 		if err != nil {
 			return err
 		}
@@ -273,7 +281,11 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	runChange := func() error {
 	retry:
 		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		if retryNeeded(resp, err) {
+		var check *googleapi.ServerResponse
+		if resp != nil {
+			check = &resp.ServerResponse
+		}
+		if retryNeeded(check, err) {
 			goto retry
 		}
 		if err != nil {
@@ -319,7 +331,15 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, s
 		if pageToken != "" {
 			call = call.PageToken(pageToken)
 		}
+	retry:
 		resp, err := call.Do()
+		var check *googleapi.ServerResponse
+		if resp != nil {
+			check = &resp.ServerResponse
+		}
+		if retryNeeded(check, err) {
+			goto retry
+		}
 		if err != nil {
 			return nil, "", err
 		}
@@ -376,7 +396,7 @@ const maxBackoff = time.Minute * 3      // Maximum backoff delay
 var backoff = initialBackoff
 var backoff404 = false // Set if the last call requested a retry of a 404
 
-func retryNeeded(resp *gdns.Change, err error) bool {
+func retryNeeded(resp *googleapi.ServerResponse, err error) bool {
 	if err != nil {
 		return false // Not an error.
 	}
