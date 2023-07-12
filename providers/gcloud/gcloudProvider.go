@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 	"google.golang.org/api/option"
 )
 
+const selfLinkBasePath = "https://www.googleapis.com/compute/v1/projects/"
+
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
@@ -34,6 +37,12 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
 }
+
+var (
+	visibilityCheck  = regexp.MustCompile("^(public|private)$")
+	networkURLCheck  = regexp.MustCompile("^" + selfLinkBasePath + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
+	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
+)
 
 func sPtr(s string) *string {
 	return &s
@@ -55,6 +64,9 @@ type gcloudProvider struct {
 	// diff1
 	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
 	zoneNameMap map[string]string
+	// provider metadata fields
+	Visibility string   `json:"visibility"`
+	Networks   []string `json:"networks"`
 }
 
 type errNoExist struct {
@@ -104,10 +116,38 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		oldRRsMap:     map[string]map[key]*gdns.ResourceRecordSet{},
 		zoneNameMap:   map[string]string{},
 	}
+	if len(metadata) != 0 {
+		err := json.Unmarshal(metadata, g)
+		if err != nil {
+			return nil, err
+		}
+		if len(g.Visibility) != 0 {
+			if ok := visibilityCheck.MatchString(g.Visibility); !ok {
+				return nil, fmt.Errorf("GCLOUD :visibility set but not one of \"public\" or \"private\"")
+			}
+			printer.Printf("GCLOUD :visibility %s configured\n", g.Visibility)
+		}
+		for i, v := range g.Networks {
+			if ok := networkURLCheck.MatchString(v); ok {
+				// the user specified a fully qualified network url
+				continue
+			}
+			if ok := networkNameCheck.MatchString(v); !ok {
+				return nil, fmt.Errorf("GCLOUD :networks set but %s does not appear to be a valid network name or url", v)
+			}
+			// assume target vpc network exists in the same project as the dns zones
+			g.Networks[i] = fmt.Sprintf("%s%s/global/networks/%s", selfLinkBasePath, g.project, v)
+		}
+	}
 	return g, g.loadZoneInfo()
 }
 
 func (g *gcloudProvider) loadZoneInfo() error {
+	// TODO(asn-iac): In order to fully support split horizon domains within the same GCP project,
+	// need to parse the zone Visibility field from *ManagedZone, but currently
+	// gcloudProvider.zones is map[string]*gdns.ManagedZone
+	// where the map keys are the zone dns names. A given GCP project can have
+	// multiple zones of the same dns name.
 	if g.zones != nil {
 		return nil
 	}
@@ -367,22 +407,32 @@ func (g *gcloudProvider) EnsureZoneExists(domain string) error {
 		return nil
 	}
 	var mz *gdns.ManagedZone
-	if g.nameServerSet != nil {
-		printer.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
-		mz = &gdns.ManagedZone{
-			DnsName:       domain + ".",
-			NameServerSet: *g.nameServerSet,
-			Name:          "zone-" + strings.Replace(domain, ".", "-", -1),
-			Description:   "zone added by dnscontrol",
-		}
-	} else {
-		printer.Printf("Adding zone for %s to gcloud account \n", domain)
-		mz = &gdns.ManagedZone{
-			DnsName:     domain + ".",
-			Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
-			Description: "zone added by dnscontrol",
-		}
+	printer.Printf("Adding zone for %s to gcloud account ", domain)
+	mz = &gdns.ManagedZone{
+		DnsName:     domain + ".",
+		Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
+		Description: "zone added by dnscontrol",
 	}
+	if g.nameServerSet != nil {
+		mz.NameServerSet = *g.nameServerSet
+		printer.Printf("with name_server_set %s ", *g.nameServerSet)
+	}
+	if len(g.Visibility) != 0 {
+		mz.Visibility = g.Visibility
+		printer.Printf("with %s visibility ", g.Visibility)
+		// prevent possible GCP resource name conflicts when split horizon can be properly implemented
+		mz.Name = strings.Replace(mz.Name, "zone-", "zone-"+g.Visibility+"-", 1)
+	}
+	if g.Networks != nil {
+		mzn := make([]*gdns.ManagedZonePrivateVisibilityConfigNetwork, len(g.Networks))
+		printer.Printf("for network(s) ")
+		for _, v := range g.Networks {
+			printer.Printf("%s ", v)
+			mzn = append(mzn, &gdns.ManagedZonePrivateVisibilityConfigNetwork{NetworkUrl: v})
+		}
+		mz.PrivateVisibilityConfig = &gdns.ManagedZonePrivateVisibilityConfig{Networks: mzn}
+	}
+	printer.Printf("\n")
 	g.zones[domain+"."], err = g.client.ManagedZones.Create(g.project, mz).Do()
 	return err
 }
