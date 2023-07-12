@@ -244,6 +244,20 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 	return existingRecords, err
 }
 
+type msgs struct {
+	Additions, Deletions []string
+}
+
+type orderedChanges struct {
+	Change *gdns.Change
+	Msgs   msgs
+}
+
+type correctionValues struct {
+	Change *gdns.Change
+	Msgs   string
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
@@ -270,30 +284,25 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
 
-	changedKeys := map[key]bool{}
-	var msgs []string
+	changedKeys := map[key]string{}
 	for _, c := range create {
-		msgs = append(msgs, fmt.Sprint(c))
-		changedKeys[keyForRec(c.Desired)] = true
+		changedKeys[keyForRec(c.Desired)] = fmt.Sprintln(c)
 	}
 	for _, d := range delete {
-		msgs = append(msgs, fmt.Sprint(d))
-		changedKeys[keyForRec(d.Existing)] = true
+		changedKeys[keyForRec(d.Existing)] = fmt.Sprintln(d)
 	}
 	for _, m := range modify {
-		msgs = append(msgs, fmt.Sprint(m))
-		changedKeys[keyForRec(m.Existing)] = true
+		changedKeys[keyForRec(m.Existing)] = fmt.Sprintln(m)
 	}
 	if len(changedKeys) == 0 {
 		return nil, nil
 	}
-	chg := &gdns.Change{Kind: "dns#change"}
-	for ck := range changedKeys {
-		// remove old version (if present)
-		if old, ok := oldRRs[ck]; ok {
-			chg.Deletions = append(chg.Deletions, old)
-		}
-		// collect records to replace with
+	chg := orderedChanges{Change: &gdns.Change{}, Msgs: msgs{}}
+	// create slices of Deletions and Additions
+	// that can be split into properly ordered batches
+	// if necessary.  Retain the string messages from
+	// differ in the same order
+	for ck, msg := range changedKeys {
 		newRRs := &gdns.ResourceRecordSet{
 			Name: ck.Name,
 			Type: ck.Type,
@@ -306,39 +315,92 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			}
 		}
 		if len(newRRs.Rrdatas) > 0 {
-			chg.Additions = append(chg.Additions, newRRs)
+			// if we have Rrdatas because the key from differ
+			// exists in normalized config,
+			// check whether the key also has data in oldRRs.
+			// if so, this is actually a modify operation, insert
+			// the Addition and Deletion at the beginning of the slices
+			// to ensure they are executed in the same batch
+			if old, ok := oldRRs[ck]; ok {
+				chg.Change.Additions = append([]*gdns.ResourceRecordSet{newRRs}, chg.Change.Additions...)
+				chg.Change.Deletions = append([]*gdns.ResourceRecordSet{old}, chg.Change.Deletions...)
+				chg.Msgs.Additions = append([]string{msg}, chg.Msgs.Additions...)
+				chg.Msgs.Deletions = append([]string{""}, chg.Msgs.Deletions...)
+			} else {
+				// otherwise this is a pure Addition
+				chg.Change.Additions = append(chg.Change.Additions, newRRs)
+				chg.Msgs.Additions = append(chg.Msgs.Additions, msg)
+			}
+		} else {
+			// there is no Rrdatas from normalized config for this key.
+			// it must be a Deletion, use the ResourceRecordSet from
+			// oldRRs
+			if old, ok := oldRRs[ck]; ok {
+				chg.Change.Deletions = append(chg.Change.Deletions, old)
+				chg.Msgs.Deletions = append(chg.Msgs.Deletions, msg)
+			}
 		}
 	}
 
-	// FIXME(tlim): Google will return an error if too many changes are
-	// specified in a single request. We should split up very large
-	// batches.  This can be reliably reproduced with the 1201
-	// integration test.  The error you get is:
-	// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
-	//log.Printf("PAUSE STT = %+v %v\n", err, resp)
-	//log.Printf("PAUSE ERR = %+v %v\n", err, resp)
-
-	runChange := func() error {
-	retry:
-		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		var check *googleapi.ServerResponse
-		if resp != nil {
-			check = &resp.ServerResponse
+	// create a slice of Changes in batches of at most
+	// 1000 Deletions and 1000 Additions per Change.
+	// create a slice of strings that aligns with the batch
+	// to output with each correction/Change
+	const batchMax = 1000
+	setBatchLen := func(len int) int {
+		if len > batchMax {
+			return batchMax
 		}
-		if retryNeeded(check, err) {
-			goto retry
+		return len
+	}
+	chgSet := []correctionValues{}
+	for len(chg.Change.Deletions) > 0 {
+		b := setBatchLen(len(chg.Change.Deletions))
+		chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Deletions: chg.Change.Deletions[:b:b], Kind: "dns#change"}, Msgs: "\n" + strings.Join(chg.Msgs.Deletions[:b:b], "")})
+		chg.Change.Deletions = chg.Change.Deletions[b:]
+		chg.Msgs.Deletions = chg.Msgs.Deletions[b:]
+	}
+	for i := 0; len(chg.Change.Additions) > 0; i++ {
+		b := setBatchLen(len(chg.Change.Additions))
+		if len(chgSet) == i {
+			chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Additions: chg.Change.Additions[:b:b], Kind: "dns#change"}, Msgs: "\n" + strings.Join(chg.Msgs.Additions[:b:b], "")})
+		} else {
+			chgSet[i].Change.Additions = chg.Change.Additions[:b:b]
+			chgSet[i].Msgs += strings.Join(chg.Msgs.Additions[:b:b], "")
 		}
-		if err != nil {
-			return fmt.Errorf("runChange error: %w", err)
+		chg.Change.Additions = chg.Change.Additions[b:]
+		chg.Msgs.Additions = chg.Msgs.Additions[b:]
+	}
+	// create a Correction for each gdns.Change
+	// that needs to be executed
+	corrections := []*models.Correction{}
+	makeCorrection := func(chg *gdns.Change, msgs string) {
+		runChange := func() error {
+		retry:
+			resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+			var check *googleapi.ServerResponse
+			if resp != nil {
+				check = &resp.ServerResponse
+			}
+			if retryNeeded(check, err) {
+				goto retry
+			}
+			if err != nil {
+				return fmt.Errorf("runChange error: %w", err)
+			}
+			return nil
 		}
-		return nil
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: strings.TrimSuffix(msgs, "\n"),
+				F:   runChange,
+			})
+	}
+	for _, v := range chgSet {
+		makeCorrection(v.Change, v.Msgs)
 	}
 
-	return []*models.Correction{{
-		Msg: strings.Join(msgs, "\n"),
-		F:   runChange,
-	}}, nil
-
+	return corrections, nil
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
