@@ -383,8 +383,7 @@ func (g *gcloudProvider) EnsureZoneExists(domain string) error {
 			Description: "zone added by dnscontrol",
 		}
 	}
-	g.zones = nil // reset cache
-	_, err = g.client.ManagedZones.Create(g.project, mz).Do()
+	g.zones[domain+"."], err = g.client.ManagedZones.Create(g.project, mz).Do()
 	return err
 }
 
