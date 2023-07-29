@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -18,7 +19,7 @@ type porkbunProvider struct {
 	secretKey string
 }
 
-type requestParams map[string]string
+type requestParams map[string]any
 
 type errorResponse struct {
 	Status  string `json:"status"`
@@ -38,6 +39,11 @@ type domainRecord struct {
 type recordResponse struct {
 	Status  string         `json:"status"`
 	Records []domainRecord `json:"records"`
+}
+
+type nsResponse struct {
+	Status      string   `json:"status"`
+	Nameservers []string `json:"ns"`
 }
 
 func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, error) {
@@ -120,4 +126,27 @@ func (c *porkbunProvider) getRecords(domain string) ([]domainRecord, error) {
 		records = append(records, rec)
 	}
 	return records, nil
+}
+
+func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
+	params := requestParams{}
+	var bodyString, err = c.post(fmt.Sprintf("/domain/getNs/%s", domain), params)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching nameserver list from porkbun: %s", err)
+	}
+
+	var ns nsResponse
+	json.Unmarshal(bodyString, &ns)
+
+	sort.Strings(ns.Nameservers)
+	return ns.Nameservers, nil
+}
+
+func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
+	params := requestParams{}
+	params["ns"] = ns
+	if _, err := c.post(fmt.Sprintf("/domain/updateNs/%s", domain), params); err != nil {
+		return fmt.Errorf("failed NS update (porkbun): %s", err)
+	}
+	return nil
 }
