@@ -2774,7 +2774,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/spf_builder
  */
-declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize?: string; parts?: string[]; flatten?: string[] }): DomainModifier;
+declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize?: number; parts: string[]; flatten?: string[] }): DomainModifier;
 
 /**
  * `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
