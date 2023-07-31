@@ -668,7 +668,7 @@ retry:
 			time.Sleep(backoff)
 			backoff = backoff + (backoff / 2)
 			if backoff > maxBackoff {
-				return nil, fmt.Errorf("CSC Global API timeout max backoff (geturl): %s URL: %d%s",
+				return nil, fmt.Errorf("CSC Global API timeout max backoff (geturl): %s URL: %s%s",
 					bodyString,
 					req.Host, req.URL.RequestURI())
 			}
