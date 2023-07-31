@@ -24,8 +24,15 @@ func main() {
 		cmd := exec.Command("go", "build", "-o", out, "-ldflags", flags, pkg)
 		os.Setenv("GOOS", goos)
 		os.Setenv("GO111MODULE", "on")
+		os.Setenv("CGO_ENABLED", "0")
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
+
+		// assume that Linux is building for amd64
+		if goos == "linux" {
+			os.Setenv("GOARCH", "amd64")
+		}
+
 		err := cmd.Run()
 		if err != nil {
 			log.Fatal(err)
