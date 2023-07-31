@@ -643,9 +643,10 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 	req.Header.Add("Authorization", "Bearer "+client.token)
 	req.Header.Add("Accept", "application/json")
 
-	var backoff = time.Second * 5
+	// Default CSCGlobal rate limit is twenty requests per second
+	var backoff = time.Second
 
-	const maxBackoff = time.Minute * 3
+	const maxBackoff = time.Second * 15
 
 retry:
 	resp, err := hclient.Do(req)
