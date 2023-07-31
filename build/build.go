@@ -29,7 +29,9 @@ func main() {
 		cmd.Stdout = os.Stdout
 
 		// For now just build for amd64 everywhere
-		os.Setenv("GOARCH", "amd64")
+		if os.Getenv("GOARCH") == "" {
+			os.Setenv("GOARCH", "amd64")
+		}
 
 		err := cmd.Run()
 		if err != nil {
