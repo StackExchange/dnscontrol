@@ -20,7 +20,7 @@ require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.5
-	github.com/cloudflare/cloudflare-go v0.68.0
+	github.com/cloudflare/cloudflare-go v0.73.0
 	github.com/digitalocean/godo v1.99.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.2.0
@@ -49,7 +49,7 @@ require (
 	github.com/transip/gotransip/v6 v6.20.0
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
-	golang.org/x/net v0.11.0
+	golang.org/x/net v0.12.0
 	golang.org/x/oauth2 v0.9.0
 	google.golang.org/api v0.128.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.4
@@ -64,7 +64,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/text v0.10.0
+	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -107,7 +107,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
@@ -132,10 +132,10 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
