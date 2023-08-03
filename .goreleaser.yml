@@ -48,7 +48,7 @@ universal_binaries:
 
 nfpms:
   - id: packages_rpm
-    name_template: >-
+    file_name_template: >-
       {{ .ProjectName }}-
       {{ .Version }}.
       {{- if eq .Arch "386" }}i386
@@ -61,7 +61,7 @@ nfpms:
     formats:
     - rpm
   - id: packages_deb
-    name_template: >-
+    file_name_template: >-
       {{ .ProjectName }}-
       {{ .Version }}.
       {{- if eq .Arch "386" }}i386
