@@ -47,27 +47,31 @@ universal_binaries:
     id: build
 
 nfpms:
-  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
-    id: packages_rpm
+  - id: packages_rpm
+    name_template: >-
+      {{ .ProjectName }}-
+      {{ .Version }}.
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
     homepage:  https://docs.dnscontrol.org/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT
     formats:
     - rpm
-    replacements:
-      386: i386
-      amd64: x86_64
-  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
-    id: packages_deb
+  - id: packages_deb
+    name_template: >-
+      {{ .ProjectName }}-
+      {{ .Version }}.
+      {{- if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
     homepage:  https://docs.dnscontrol.org/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT
     formats:
     - deb
-    replacements:
-      386: i386
 dockers:
   - image_templates:
     - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
