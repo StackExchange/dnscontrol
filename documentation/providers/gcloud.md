@@ -90,6 +90,37 @@ will enable it on your account, responding with a list of names to use in the `n
 
 > `name_server_set` only applies on `create-domains` at the moment. Additional work needs to be done to support it during `push`
 
+## Private Domains
+
+This optional feature allows for the instantiation of Google Cloud DNS zones with the `Visibility` field set to `private` and with specific Google Cloud VPC Networks granted visibility to the zone.
+
+Example:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NAMECOM = NewRegistrar("name.com");
+var DSP_GCLOUD = NewDnsProvider("gcloud", {
+    "visibility": "private",
+    "networks": [
+        "https://www.googleapis.com/compute/v1/projects/mydnsproject/global/networks/myvpcnetwork",
+        "my2ndvpcnetwork"
+    ]
+});
+
+D("example.tld", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
+    A("test", "1.2.3.4")
+);
+```
+{% endcode %}
+
+> `visiblity` and `networks` only applies on `create-domains` at the moment. Neither setting is enforced by the provider after a zone is created.  Additional work is required to support modifications to `networks` visibility during `push`, however the API will not permit `visibility` to be modified on an existing zone.
+
+> `networks` may be specified using the network name if the VPC network exists in `project_id`
+
+> multiple network urls may be specified in `networks`
+
+> split horizon zones using the `GCLOUD` provider are currently only supported when the providers' credentials target separate `project_id` values
+
 # Debugging credentials
 
 You can test your `creds.json` entry with the command: `dnscontrol check-creds foo GCLOUD` where `foo` is the name of key used in `creds.json`.  Error messages you might see:
