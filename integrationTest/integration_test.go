@@ -1294,6 +1294,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
+				"GCLOUD",
 				"HEXONET",
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
