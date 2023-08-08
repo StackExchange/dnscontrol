@@ -55,7 +55,7 @@ jobs:
       run: echo ${{ steps.version.outputs.TAG_NAME }}
 
     - name: Goreleaser release
-      run: goreleaser --verbose -p 1 release
+      run: goreleaser release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
