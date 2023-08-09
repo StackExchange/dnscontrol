@@ -14,11 +14,11 @@ func init() {
 			if chat_id, ok := cfg["telegram_chat_id"]; ok {
 				notifier := &telegramNotifier{
 					BOT_TOKEN: bot_token,
-					CHAT_ID: chat_id,
+					CHAT_ID:   chat_id,
 				}
 				return notifier
 			}
-		}		
+		}
 		return nil
 	})
 }
@@ -26,13 +26,13 @@ func init() {
 // telegramNotifier sends notifications to Telegram
 type telegramNotifier struct {
 	BOT_TOKEN string
-	CHAT_ID string
+	CHAT_ID   string
 }
 
 func (s *telegramNotifier) Notify(domain, provider, msg string, err error, preview bool) {
 	var payload struct {
-		ChatID int64 `json:"chat_id"`
-		Text string `json:"text"`
+		ChatID int64  `json:"chat_id"`
+		Text   string `json:"text"`
 	}
 
 	var url = fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BOT_TOKEN)
