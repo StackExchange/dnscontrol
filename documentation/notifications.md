@@ -24,7 +24,7 @@ Notifications are set up in your credentials JSON file. They will use the `notif
 ```
 {% endcode %}
 
-You also must run `dnscontrol preview` or `dnscontrol push` with the `-notify` flag to enable notification sending at all.
+You also must run `dnscontrol preview` or `dnscontrol push` with the `--notify` flag to enable notification sending at all.
 
 ## Notification types
 
