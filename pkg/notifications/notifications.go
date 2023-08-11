@@ -1,5 +1,7 @@
 package notifications
 
+import "regexp"
+
 // Notifier is a type that can send a notification
 type Notifier interface {
 	// Notify will be called after a correction is performed.
@@ -29,9 +31,24 @@ func Init(config map[string]string) Notifier {
 
 type multiNotifier []Notifier
 
+// removes any ansi color codes from a given string
+func stripAnsiColors(colored string) (string, error) {
+	re, err := regexp.Compile(`\x1b\[[0-9;]*m`)
+	if err != nil {
+		return colored, err
+	}
+	return re.ReplaceAllString(colored, ""), nil
+}
+
 func (m multiNotifier) Notify(domain, provider string, message string, err error, preview bool) {
+
+	// force-remove ansi colors that might come with the message from dnscontrol.
+	// These usually don't render well in notifiers, outputting escape codes.
+	// If a notifier wants to output colors, they should probably implement
+	// them natively.
+	nMsg, _ := stripAnsiColors(message)
 	for _, n := range m {
-		n.Notify(domain, provider, message, err, preview)
+		n.Notify(domain, provider, nMsg, err, preview)
 	}
 }
 func (m multiNotifier) Done() {
