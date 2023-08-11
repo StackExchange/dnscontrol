@@ -13,7 +13,7 @@ CI environments or particular notification mechanisms that don't support ANSI co
 codes.
 
 In order to do so, a global `--no-colors` command option is provided, which when
-set, will disable colors globally.
+set `--no-colors=true`, will disable colors globally.
 
 ## (Force) Enable colors
 
