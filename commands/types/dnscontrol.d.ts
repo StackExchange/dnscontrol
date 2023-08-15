@@ -370,6 +370,50 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
 declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * DNSControl contains a `CAA_BUILDER` which can be used to simply create
+ * [`CAA()`](../domain/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain/CAA.md) record
+ * individually, you can simply configure your report mail address, the
+ * authorized certificate authorities and the builder cares about the rest.
+ *
+ * ## Example
+ *
+ * For example you can use:
+ *
+ * ```javascript
+ * CAA_BUILDER({
+ *   label: "@",
+ *   iodef: "mailto:test@example.com",
+ *   iodef_critical: true,
+ *   issue: [
+ *     "letsencrypt.org",
+ *     "comodoca.com",
+ *   ],
+ *   issuewild: "none",
+ * })
+ * ```
+ *
+ * The parameters are:
+ *
+ * * `label:` The label of the CAA record. (Optional. Default: `"@"`)
+ * * `iodef:` Report all violation to configured mail address.
+ * * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ * * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
+ * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
+ *
+ * `CAA_BUILDER()` returns multiple records (when configured as example above):
+ *
+ * ```javascript
+ * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
+ * CAA("@", "issue", "letsencrypt.org")
+ * CAA("@", "issue", "comodoca.com")
+ * CAA("@", "issuewild", ";")
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/caa_builder
+ */
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): RecordModifier;
+
+/**
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
  * generate a HTTP 301 permanent redirect.
  *
@@ -476,6 +520,129 @@ declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordMo
 declare function CNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
+ * name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
+ * add records with [A](../domain/A.md), [CNAME](../domain/CNAME.md), and so forth, or add metadata.
+ *
+ * Modifier arguments are processed according to type as follows:
+ *
+ * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
+ * - An object argument will be merged into the domain's metadata collection.
+ * - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
+ *    be used like a macro in multiple domains.
+ *
+ * ```javascript
+ * // simple domain
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   A("@","1.2.3.4"),
+ *   CNAME("test", "foo.example2.com.")
+ * );
+ *
+ * // "macro" for records that can be mixed into any zone
+ * var GOOGLE_APPS_DOMAIN_MX = [
+ *     MX("@", 1, "aspmx.l.google.com."),
+ *     MX("@", 5, "alt1.aspmx.l.google.com."),
+ *     MX("@", 5, "alt2.aspmx.l.google.com."),
+ *     MX("@", 10, "alt3.aspmx.l.google.com."),
+ *     MX("@", 10, "alt4.aspmx.l.google.com."),
+ * ]
+ *
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   A("@","1.2.3.4"),
+ *   CNAME("test", "foo.example2.com."),
+ *   GOOGLE_APPS_DOMAIN_MX
+ * );
+ * ```
+ *
+ * # Split Horizon DNS
+ *
+ * DNSControl supports Split Horizon DNS. Simply
+ * define the domain two or more times, each with
+ * their own unique parameters.
+ *
+ * To differentiate the different domains, specify the domains as
+ * `domain.tld!tag`, such as `example.com!inside` and
+ * `example.com!outside`.
+ *
+ * ```javascript
+ * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+ * var DNS_INSIDE = NewDnsProvider("Cloudflare");
+ * var DNS_OUTSIDE = NewDnsProvider("bind");
+ *
+ * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
+ *   A("www", "10.10.10.10")
+ * );
+ *
+ * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
+ *   A("www", "20.20.20.20")
+ * );
+ *
+ * D_EXTEND("example.com!inside",
+ *   A("internal", "10.99.99.99")
+ * );
+ * ```
+ *
+ * A domain name without a `!` is assigned a tag that is the empty
+ * string. For example, `example.com` and `example.com!` are equivalent.
+ * However, we strongly recommend against using the empty tag, as it
+ * risks creating confusion.  In other words, if you have `domain.tld`
+ * and `domain.tld!external` you now require humans to remember that
+ * `domain.tld` is the external one.  I mean... the internal one.  You
+ * may have noticed this mistake, but will your coworkers?  Will you in
+ * six months? You get the idea.
+ *
+ * DNSControl command line flag `--domains` matches the full name (with the "!").  If you
+ * define domains `example.com!george` and `example.com!john` then:
+ *
+ * * `--domains=example.com` will not match either domain.
+ * * `--domains='example.com!george'` will match only match the first.
+ * * `--domains='example.com!george",example.com!john` will match both.
+ *
+ * NOTE: The quotes are required if your shell treats `!` as a special
+ * character, which is probably does.  If you see an error that mentions
+ * `event not found` you probably forgot the quotes.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/d
+ */
+declare function D(name: string, registrar: string, ...modifiers: DomainModifier[]): void;
+
+/**
+ * `DEFAULTS` allows you to declare a set of default arguments to apply to all subsequent domains. Subsequent calls to [`D`](D.md) will have these
+ * arguments passed as if they were the first modifiers in the argument list.
+ *
+ * ## Example
+ *
+ * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain/DefaultTTL.md).
+ * The domain `example.com` will have the defaults set.
+ *
+ * ```javascript
+ * var COMMON = NewDnsProvider("foo");
+ * DEFAULTS(
+ *   DnsProvider(COMMON, 0),
+ *   DefaultTTL("1d")
+ * );
+ *
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * If you want to clear the defaults, you can do the following.
+ * The domain `example2.com` will **not** have the defaults set.
+ *
+ * ```javascript
+ * DEFAULTS();
+ *
+ * D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/defaults
+ */
+declare function DEFAULTS(...modifiers: DomainModifier[]): void;
+
+/**
  * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an
  * error to insert records that match an `IGNORE()` pattern. This disables that
  * safety check for the entire domain.
@@ -501,6 +668,163 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
 declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
 
 /**
+ * DNSControl contains a `DMARC_BUILDER` which can be used to simply create
+ * DMARC policies for your domains.
+ *
+ * ## Example
+ *
+ * ### Simple example
+ *
+ * ```javascript
+ * DMARC_BUILDER({
+ *   policy: "reject",
+ *   ruf: [
+ *     "mailto:mailauth-reports@example.com",
+ *   ],
+ * })
+ * ```
+ *
+ * This yield the following record:
+ *
+ * ```text
+ * @   IN  TXT "v=DMARC1; p=reject; ruf=mailto:mailauth-reports@example.com"
+ * ```
+ *
+ * ### Advanced example
+ *
+ * ```javascript
+ * DMARC_BUILDER({
+ *   policy: "reject",
+ *   subdomainPolicy: "quarantine",
+ *   percent: 50,
+ *   alignmentSPF: "r",
+ *   alignmentDKIM: "strict",
+ *   rua: [
+ *     "mailto:mailauth-reports@example.com",
+ *     "https://dmarc.example.com/submit",
+ *   ],
+ *   ruf: [
+ *     "mailto:mailauth-reports@example.com",
+ *   ],
+ *   failureOptions: "1",
+ *   reportInterval: "1h",
+ * });
+ * ```
+ *
+ * ```javascript
+ * DMARC_BUILDER({
+ *   label: "insecure",
+ *   policy: "none",
+ *   ruf: [
+ *     "mailto:mailauth-reports@example.com",
+ *   ],
+ *   failureOptions: {
+ *       SPF: false,
+ *       DKIM: true,
+ *   },
+ * });
+ * ```
+ *
+ * This yields the following records:
+ *
+ * ```text
+ * @           IN  TXT "v=DMARC1; p=reject; sp=quarantine; adkim=s; aspf=r; pct=50; rua=mailto:mailauth-reports@example.com,https://dmarc.example.com/submit; ruf=mailto:mailauth-reports@example.com; fo=1; ri=3600"
+ * insecure    IN  TXT "v=DMARC1; p=none; ruf=mailto:mailauth-reports@example.com; fo=d"
+ * ```
+ *
+ * ### Parameters
+ *
+ * * `label:` The DNS label for the DMARC record (`_dmarc` prefix is added, default: `"@"`)
+ * * `version:` The DMARC version to be used (default: `DMARC1`)
+ * * `policy:` The DMARC policy (`p=`), must be one of `"none"`, `"quarantine"`, `"reject"`
+ * * `subdomainPolicy:` The DMARC policy for subdomains (`sp=`), must be one of `"none"`, `"quarantine"`, `"reject"` (optional)
+ * * `alignmentSPF:` `"strict"`/`"s"` or `"relaxed"`/`"r"` alignment for SPF (`aspf=`, default: `"r"`)
+ * * `alignmentDKIM:` `"strict"`/`"s"` or `"relaxed"`/`"r"` alignment for DKIM (`adkim=`, default: `"r"`)
+ * * `percent:` Number between `0` and `100`, percentage for which policies are applied (`pct=`, default: `100`)
+ * * `rua:` Array of aggregate report targets (optional)
+ * * `ruf:` Array of failure report targets (optional)
+ * * `failureOptions:` Object or string; Object containing booleans `SPF` and `DKIM`, string is passed raw (`fo=`, default: `"0"`)
+ * * `failureFormat:` Format in which failure reports are requested (`rf=`, default: `"afrf"`)
+ * * `reportInterval:` Interval in which reports are requested (`ri=`)
+ * * `ttl:` Input for `TTL` method (optional)
+ *
+ * ### Caveats
+ *
+ * * TXT records are automatically split using `AUTOSPLIT`.
+ * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/dmarc_builder
+ */
+declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): RecordModifier;
+
+/**
+ * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
+ * a domain's zones are managed elsewhere. That is, it permits you easily delegate
+ * a domain to a hard-coded list of DNS servers.
+ *
+ * `DOMAIN_ELSEWHERE` is useful when you control a domain's registrar but not the
+ * DNS servers. For example, suppose you own a domain but the DNS servers are run
+ * by someone else, perhaps a SaaS product you've subscribed to or a DNS server
+ * that is run by your brother-in-law who doesn't trust you with the API keys that
+ * would let you maintain the domain using DNSControl. You need an easy way to
+ * point (delegate) the domain at a specific list of DNS servers.
+ *
+ * For example these two statements are equivalent:
+ *
+ * ```javascript
+ * DOMAIN_ELSEWHERE("example.com", REG_MY_PROVIDER, ["ns1.foo.com", "ns2.foo.com"]);
+ * ```
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     NO_PURGE,
+ *     NAMESERVER("ns1.foo.com"),
+ *     NAMESERVER("ns2.foo.com")
+ * );
+ * ```
+ *
+ * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used out of abundance of caution but since no
+ * `DnsProvider()` statements exist, no updates would be performed.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere
+ */
+declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_names: string[]): void;
+
+/**
+ * `DOMAIN_ELSEWHERE_AUTO()` is similar to `DOMAIN_ELSEWHERE()` but instead of
+ * a hardcoded list of nameservers, a DnsProvider() is queried.
+ *
+ * `DOMAIN_ELSEWHERE_AUTO` is useful when you control a domain's registrar but the
+ * DNS zones are managed by another system. Luckily you have enough access to that
+ * other system that you can query it to determine the zone's nameservers.
+ *
+ * For example, suppose you own a domain but the DNS servers for it are in Azure.
+ * Further suppose that something in Azure maintains the zones (automatic or
+ * human). Azure picks the nameservers for the domains automatically, and that
+ * list may change occasionally.  `DOMAIN_ELSEWHERE_AUTO` allows you to easily
+ * query Azure to determine the domain's delegations so that you do not need to
+ * hard-code them in your dnsconfig.js file.
+ *
+ * For example these two statements are equivalent:
+ *
+ * ```javascript
+ * DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
+ * ```
+ *
+ * ```javascript
+ * D("example.com", REG_NAMEDOTCOM,
+ *     NO_PURGE,
+ *     DnsProvider(DSP_AZURE)
+ * );
+ * ```
+ *
+ * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used to prevent DNSControl from changing the records.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere_auto
+ */
+declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: string, dnsProvider: string): void;
+
+/**
  * DS adds a DS record to the domain.
  *
  * Key Tag should be a number.
@@ -520,6 +844,89 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ds
  */
 declare function DS(name: string, keytag: number, algorithm: number, digesttype: number, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `D_EXTEND` adds records (and metadata) to a domain previously defined
+ * by [`D()`](D.md). It can also be used to add subdomain records (and metadata)
+ * to a previously defined domain.
+ *
+ * The first argument is a domain name. If it exactly matches a
+ * previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md),
+ * simply adding records as if they had been specified in the original
+ * [`D()`](D.md).
+ *
+ * If the domain name does not match an existing domain, but could be a
+ * (non-delegated) subdomain of an existing domain, the new records (and
+ * metadata) are added with the subdomain part appended to all record
+ * names (labels), and targets (as appropriate). See the examples below.
+ *
+ * Matching the domain name to previously-defined domains is done using a
+ * `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
+ * defined as separate domains via separate [`D()`](D.md) statements, then
+ * `D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`,
+ * not `domain.tld`.
+ *
+ * Some operators only act on an apex domain (e.g.
+ * [`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
+ * in a `D_EXTEND` subdomain may not be what you expect.
+ *
+ * ```javascript
+ * D("domain.tld", REG_MY_PROVIDER, DnsProvider(DNS),
+ *   A("@", "127.0.0.1"), // domain.tld
+ *   A("www", "127.0.0.2"), // www.domain.tld
+ *   CNAME("a", "b") // a.domain.tld -> b.domain.tld
+ * );
+ * D_EXTEND("domain.tld",
+ *   A("aaa", "127.0.0.3"), // aaa.domain.tld
+ *   CNAME("c", "d") // c.domain.tld -> d.domain.tld
+ * );
+ * D_EXTEND("sub.domain.tld",
+ *   A("bbb", "127.0.0.4"), // bbb.sub.domain.tld
+ *   A("ccc", "127.0.0.5"), // ccc.sub.domain.tld
+ *   CNAME("e", "f") // e.sub.domain.tld -> f.sub.domain.tld
+ * );
+ * D_EXTEND("sub.sub.domain.tld",
+ *   A("ddd", "127.0.0.6"), // ddd.sub.sub.domain.tld
+ *   CNAME("g", "h") // g.sub.sub.domain.tld -> h.sub.sub.domain.tld
+ * );
+ * D_EXTEND("sub.domain.tld",
+ *   A("@", "127.0.0.7"), // sub.domain.tld
+ *   CNAME("i", "j") // i.sub.domain.tld -> j.sub.domain.tld
+ * );
+ * ```
+ *
+ * This will end up in the following modifications: (This output assumes the `--full` flag)
+ *
+ * ```text
+ * ******************** Domain: domain.tld
+ * ----- Getting nameservers from: cloudflare
+ * ----- DNS Provider: cloudflare...7 corrections
+ * #1: CREATE A aaa.domain.tld 127.0.0.3
+ * #2: CREATE A bbb.sub.domain.tld 127.0.0.4
+ * #3: CREATE A ccc.sub.domain.tld 127.0.0.5
+ * #4: CREATE A ddd.sub.sub.domain.tld 127.0.0.6
+ * #5: CREATE A sub.domain.tld 127.0.0.7
+ * #6: CREATE A www.domain.tld 127.0.0.2
+ * #7: CREATE A domain.tld 127.0.0.1
+ * #8: CREATE CNAME a.domain.tld b.domain.tld.
+ * #9: CREATE CNAME c.domain.tld d.domain.tld.
+ * #10: CREATE CNAME e.sub.domain.tld f.sub.domain.tld.
+ * #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
+ * #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
+ * ```
+ *
+ * ProTips: `D_EXTEND()` permits you to create very complex and
+ * sophisticated configurations, but you shouldn't. Be nice to the next
+ * person that edits the file, who may not be as expert as yourself.
+ * Enhance readability by putting any `D_EXTEND()` statements immediately
+ * after the original [`D()`](D.md), like in above example.  Avoid the temptation
+ * to obscure the addition of records to existing domains with randomly
+ * placed `D_EXTEND()` statements. Don't build up a domain using loops of
+ * `D_EXTEND()` statements. You'll be glad you didn't.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/d_extend
+ */
+declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
 
 /**
  * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
@@ -984,6 +1391,30 @@ declare function IGNORE_TARGET(pattern: string, rType: string): DomainModifier;
 declare function INCLUDE(domain: string): DomainModifier;
 
 /**
+ * Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
+ *
+ * ```javascript
+ * var addrA = IP("1.2.3.4")
+ * var addrB = addrA + 1
+ * // addrB = 1.2.3.5
+ * ```
+ *
+ * NOTE: `IP()` does not accept IPv6 addresses (PRs gladly accepted!). IPv6 addresses are simply strings:
+ *
+ * ```javascript
+ * // IPv4 Var
+ * var addrA1 = IP("1.2.3.4");
+ * var addrA2 = "1.2.3.4";
+ *
+ * // IPv6 Var
+ * var addrAAAA = "0:0:0:0:0:0:0:0";
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/ip
+ */
+declare function IP(ip: string): number;
+
+/**
  * The parameter number types are as follows:
  *
  * ```
@@ -1074,6 +1505,247 @@ declare function INCLUDE(domain: string): DomainModifier;
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc
  */
 declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min2: number, sec2: number, altitude: number, size: number, horizontal_precision: number, vertical_precision: number): DomainModifier;
+
+/**
+ * `LOC_BUILDER_DD({})` actually takes an object with the following properties:
+ *
+ *   - label (optional, defaults to `@`)
+ *   - x (float32)
+ *   - y (float32)
+ *   - alt (float32, optional)
+ *   - ttl (optional)
+ *
+ * A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
+ *
+ * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ *
+ * The cartesian coordinates are decimal degrees, like you typically find in e.g. Google Maps.
+ *
+ * Examples.
+ *
+ * Big Ben:
+ * `51.50084265331501, -0.12462541415599787`
+ *
+ * The White House:
+ * `38.89775977858357, -77.03655125982903`
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     LOC_BUILDER_DD({
+ *     label: "big-ben",
+ *     x: 51.50084265331501,
+ *     y: -0.12462541415599787,
+ *     alt: 6,
+ *   })
+ *   , LOC_BUILDER_DD({
+ *     label: "white-house",
+ *     x: 38.89775977858357,
+ *     y: -77.03655125982903,
+ *     alt: 19,
+ *   })
+ *   , LOC_BUILDER_DD({
+ *     label: "white-house-ttl",
+ *     x: 38.89775977858357,
+ *     y: -77.03655125982903,
+ *     alt: 19,
+ *     ttl: "5m",
+ *   })
+ * );
+ *
+ * ```
+ *
+ * Part of the series:
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dd
+ */
+declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; alt?: number; ttl?: Duration }): RecordModifier;
+
+/**
+ * `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
+ *
+ *   - label (string, optional, defaults to `@`)
+ *   - str (string)
+ *   - alt (float32, optional)
+ *   - ttl (optional)
+ *
+ * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ *
+ * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ *
+ * Accepts a string with decimal minutes (DMM) coordinates in the form: 25.24°S 153.15°E
+ *
+ * Note that the following are acceptable forms (symbols differ):
+ * * `25.24°S 153.15°E`
+ * * `25.24 S 153.15 E`
+ * * `25.24° S 153.15° E`
+ * * `25.24S 153.15E`
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   LOC_BUILDER_STR({
+ *     label: "tasmania",
+ *     str: "42°S 147°E",
+ *     alt: 3,
+ *   })
+ * );
+ *
+ * ```
+ *
+ * Part of the series:
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dmm_str
+ */
+declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+
+/**
+ * `LOC_BUILDER_DMS_STR({})` actually takes an object with the following properties:
+ *
+ *   - label (string, optional, defaults to `@`)
+ *   - str (string)
+ *   - alt (float32, optional)
+ *   - ttl (optional)
+ *
+ * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ *
+ * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ *
+ * Accepts a string with degrees, minutes, and seconds (DMS) coordinates in the form: 41°24'12.2"N 2°10'26.5"E
+ *
+ * Note that the following are acceptable forms (symbols differ):
+ * * `33°51′31″S 151°12′51″E`
+ * * `33°51'31"S 151°12'51"E`
+ * * `33d51m31sS 151d12m51sE`
+ * * `33d51m31s S 151d12m51s E`
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   LOC_BUILDER_DMS_STR({
+ *     label: "sydney-opera-house",
+ *     str: "33°51′31″S 151°12′51″E",
+ *     alt: 4,
+ *     ttl: "5m",
+ *   })
+ * );
+ *
+ * ```
+ *
+ * Part of the series:
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dms_str
+ */
+declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+
+/**
+ * `LOC_BUILDER_STR({})` actually takes an object with the following: properties.
+ *
+ *   - label (optional, defaults to `@`)
+ *   - str (string)
+ *   - alt (float32, optional)
+ *   - ttl (optional)
+ *
+ * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ *
+ * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ *
+ * Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   , LOC_BUILDER_STR({
+ *     label: "old-faithful",
+ *     str: "44.46046°N 110.82815°W",
+ *     alt: 2240,
+ *   })
+ *   , LOC_BUILDER_STR({
+ *     label: "ribblehead-viaduct",
+ *     str: "54.210436°N 2.370231°W",
+ *     alt: 300,
+ *   })
+ *   , LOC_BUILDER_STR({
+ *     label: "guinness-brewery",
+ *     str: "53°20′40″N 6°17′20″W",
+ *     alt: 300,
+ *   })
+ * );
+ *
+ * ```
+ *
+ * Part of the series:
+ *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_str
+ */
+declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+
+/**
+ * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
+ *
+ * It defaults to a setup without support for legacy Skype for Business applications.
+ * It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](/language-reference/record-modifiers/dmarc_builder) and [`DMARC_BUILDER`](/language-reference/record-modifiers/spf_builder).
+ *
+ * ## Example
+ *
+ * ### Simple example
+ *
+ * ```javascript
+ * M365_BUILDER({
+ *     initialDomain: "example.onmicrosoft.com",
+ * });
+ * ```
+ *
+ * This sets up `MX` records, Autodiscover, and DKIM.
+ *
+ * ### Advanced example
+ *
+ * ```javascript
+ * M365_BUILDER({
+ *     label: "test",
+ *     mx: false,
+ *     autodiscover: false,
+ *     dkim: false,
+ *     mdm: true,
+ *     domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
+ *     initialDomain: "example.onmicrosoft.com",
+ * });
+ * ```
+ *
+ * This sets up Mobile Device Management only.
+ *
+ * ### Parameters
+ *
+ * * `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
+ * * `mx` Set an `MX` record? (default: `true`)
+ * * `autodiscover` Set Autodiscover `CNAME` record? (default: `true`)
+ * * `dkim` Set DKIM `CNAME` records? (default: `true`)
+ * * `skypeForBusiness` Set Skype for Business/Microsoft Teams records? (default: `false`)
+ * * `mdm` Set Mobile Device Management records? (default: `false`)
+ * * `domainGUID` The GUID of _this_ Microsoft 365 domain (default: `<label>.<context>` with `.` replaced by `-`, no default if domain contains dashes)
+ * * `initialDomain` The initial domain of your Microsoft 365 tenant/account, ends in `onmicrosoft.com`
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/m365_builder
+ */
+declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): RecordModifier;
 
 /**
  * MX adds an MX record to the domain.
@@ -1480,6 +2152,95 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
 declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * NewDnsProvider activates a DNS Service Provider (DSP) specified in `creds.json`.
+ * A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
+ * answers on port 53 to queries related to the zone).
+ *
+ * * `name` must match the name of an entry in `creds.json`.
+ * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../providers.md).
+ *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
+ *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
+ * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../providers.md) for details.
+ *
+ * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
+ *
+ * Prior to [v3.16](../../v316.md):
+ *
+ * ```javascript
+ * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
+ * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
+ *
+ * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * In [v3.16](../../v316.md) and later:
+ *
+ * ```javascript
+ * var REG_MYNDC = NewRegistrar("mynamedotcom");
+ * var DNS_MYAWS = NewDnsProvider("myaws");
+ *
+ * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
+ */
+declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
+
+/**
+ * NewRegistrar activates a Registrar Provider specified in `creds.json`.
+ * A registrar maintains the domain's registration and delegation (i.e. the
+ * nameservers for the domain).  DNSControl only manages the delegation.
+ *
+ * * `name` must match the name of an entry in `creds.json`.
+ * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../providers.md).
+ *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
+ *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
+ * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../providers.md) for details.
+ *
+ * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
+ *
+ * Prior to [v3.16](../../v316.md):
+ *
+ * ```javascript
+ * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
+ * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
+ *
+ * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * In [v3.16](../../v316.md) and later:
+ *
+ * ```javascript
+ * var REG_MYNDC = NewRegistrar("mynamedotcom");
+ * var DNS_MYAWS = NewDnsProvider("myaws");
+ *
+ * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+ *   A("@","1.2.3.4")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newregistrar
+ */
+declare function NewRegistrar(name: string, type?: string, meta?: object): string;
+
+/**
+ * `PANIC` terminates the script and therefore DNSControl with an exit code of 1. This should be used if your script cannot gather enough information to generate records, for example when a HTTP request failed.
+ *
+ * ```javascript
+ * PANIC("Something really bad has happened");
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/panic
+ */
+declare function PANIC(message: string): never;
+
+/**
  * PTR adds a PTR record to the domain.
  *
  * The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
@@ -1645,597 +2406,15 @@ declare const PURGE: DomainModifier;
 declare function R53_ALIAS(name: string, target: string, zone_idModifier: DomainModifier & RecordModifier): DomainModifier;
 
 /**
- * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
+ * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../global/D.md)) or a specific [`R53_ALIAS()`](../domain/R53_ALIAS.md) record.
  *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
- * );
- * ```
+ * When used with [`D()`](../global/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
  *
- * If you accidentally include an `@` in the email field DNSControl will quietly
- * change it to a `.`. This way you can specify a human-readable email address
- * when you are making it easier for spammers how to find you.
+ * When used with [`R53_ALIAS()`](../domain/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain/R53_ALIAS.md) documentation for details.
  *
- * ## Notes
- * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
- * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
- * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
- *
- * There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/soa
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_zone
  */
-declare function SOA(name: string, ns: string, mbox: string, refresh: number, retry: number, expire: number, minttl: number, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
- *
- * Priority, weight, and port are ints.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   // Create SRV records for a a SIP service:
- *   //               pr  w   port, target
- *   SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
- *   SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.com."),
- * );
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/srv
- */
-declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * `SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
- *
- * **Algorithm** (type of the key)
- *
- * | ID | Algorithm |
- * |----|-----------|
- * | 0  | reserved  |
- * | 1  | RSA       |
- * | 2  | DSA       |
- * | 3  | ECDSA     |
- * | 4  | ED25519   |
- *
- * **Type** (fingerprint format)
- *
- * | ID | Algorithm |
- * |----|-----------|
- * | 0  | reserved  |
- * | 1  | SHA-1     |
- * | 2  | SHA-256   |
- *
- * `value` is the fingerprint as a string.
- *
- * ```javascript
- * SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/sshfp
- */
-declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
- *
- * Usage, selector, and type are ints.
- *
- * Certificate is a hex string.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   // Create TLSA record for certificate used on TCP port 443
- *   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
- * );
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/tlsa
- */
-declare function TLSA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * `TXT` adds an `TXT` record To a domain. The name should be the relative
- * label for the record. Use `@` for the domain apex.
- *
- * The contents is either a single or multiple strings.  To
- * specify multiple strings, specify them as an array.
- *
- * Each string is a JavaScript string (quoted using single or double
- * quotes).  The (somewhat complex) quoting rules of the DNS protocol
- * will be done for you.
- *
- * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
- *
- * ```javascript
- *     D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *       TXT("@", "598611146-3338560"),
- *       TXT("listserve", "google-site-verification=12345"),
- *       TXT("multiple", ["one", "two", "three"]),  // Multiple strings
- *       TXT("quoted", "any "quotes" and escapes? ugh; no worries!"),
- *       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
- *       TXT("long", "X".repeat(300)) // Long strings are split automatically.
- *     );
- * ```
- *
- * NOTE: In the past, long strings had to be annotated with the keyword
- * `AUTOSPLIT`. This is no longer required. The keyword is now a no-op.
- *
- * ### Long strings
- *
- * Strings that are longer than 255 octets (bytes) will be quietly
- * split into 255-octets chunks or the provider may report an error
- * if it does not handle multiple strings.
- *
- * ### TXT record edge cases
- *
- * Most providers do not support the full possibilities of what a `TXT`
- * record can store.  DNSControl can not handle all the edge cases
- * and incompatibles that providers have introduced.  Instead, it
- * stores the string(s) that you provide and passes them to the provider
- * verbatim. The provider may opt to accept the data, fix it, or
- * reject it. This happens early in the processing, long before
- * the DNSControl talks to the provider's API.
- *
- * The RFCs specify that a `TXT` record stores one or more strings,
- * each is up to 255 octets (bytes) long. We call these individual
- * strings *chunks*.  Each chunk may be zero to 255 octets long.
- * There is no limit to the number of chunks in a `TXT` record,
- * other than IP packet length restrictions.  The contents of each chunk
- * may be octets of value from 0x00 to 0xff.
- *
- * In reality DNS Service Providers (DSPs) place many restrictions on `TXT`
- * records.
- *
- * Some DSPs only support a single string of 255 octets or fewer.
- * Multiple strings, or any one string being longer than 255 octets will
- * result in an error. One provider limits the string to 254 octets,
- * which makes me think they're code has an off-by-one error.
- *
- * Some DSPs only support one string, but it may be of any length.
- * Behind the scenes the provider splits it into 255-octet chunks
- * (except the last one, of course).
- *
- * Some DSPs support multiple strings, but API requests must be 512-bytes
- * or fewer, and with quoting, escaping, and other encoding mishegoss
- * you can't be sure what will be permitted until you actually try it.
- *
- * Regardless of the quantity and length of strings, some providers ban
- * double quotes, back-ticks, or other chars.
- *
- * ### Testing the support of a provider
- *
- * #### How can you tell if a provider will support a particular `TXT()` record?
- *
- * Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
- * with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
- * see if any errors are produced.  The check command does not talk to
- * the provider's API, thus permitting you to do this without having an
- * account at that provider.
- *
- * #### What if the provider rejects a string that is supported?
- *
- * Suppose I can create the TXT record using the DSP's web portal but
- * DNSControl rejects the string?
- *
- * It is possible that the provider code in DNSControl rejects strings
- * that the DSP accepts.  This is because the test is done in code, not
- * by querying the provider's API.  It is possible that the code was
- * written to work around a bug (such as rejecting a string with a
- * back-tick) but now that bug has been fixed.
- *
- * All such checks are in `providers/${providername}/auditrecords.go`.
- * You can try removing the check that you feel is in error and see if
- * the provider's API accepts the record.  You can do this by running the
- * integration tests, or by simply adding that record to an existing
- * `dnsconfig.js` and seeing if `dnscontrol push` is able to push that
- * record into production. (Be careful if you are testing this on a
- * domain used in production.)
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/txt
- */
-declare function TXT(name: string, contents: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * Documentation needed.
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
- */
-declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * Documentation needed.
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
- */
-declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
- * name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
- * add records with [A](../domain/A.md), [CNAME](../domain/CNAME.md), and so forth, or add metadata.
- *
- * Modifier arguments are processed according to type as follows:
- *
- * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
- * - An object argument will be merged into the domain's metadata collection.
- * - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
- *    be used like a macro in multiple domains.
- *
- * ```javascript
- * // simple domain
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   A("@","1.2.3.4"),
- *   CNAME("test", "foo.example2.com.")
- * );
- *
- * // "macro" for records that can be mixed into any zone
- * var GOOGLE_APPS_DOMAIN_MX = [
- *     MX("@", 1, "aspmx.l.google.com."),
- *     MX("@", 5, "alt1.aspmx.l.google.com."),
- *     MX("@", 5, "alt2.aspmx.l.google.com."),
- *     MX("@", 10, "alt3.aspmx.l.google.com."),
- *     MX("@", 10, "alt4.aspmx.l.google.com."),
- * ]
- *
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   A("@","1.2.3.4"),
- *   CNAME("test", "foo.example2.com."),
- *   GOOGLE_APPS_DOMAIN_MX
- * );
- * ```
- *
- * # Split Horizon DNS
- *
- * DNSControl supports Split Horizon DNS. Simply
- * define the domain two or more times, each with
- * their own unique parameters.
- *
- * To differentiate the different domains, specify the domains as
- * `domain.tld!tag`, such as `example.com!inside` and
- * `example.com!outside`.
- *
- * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
- * var DNS_INSIDE = NewDnsProvider("Cloudflare");
- * var DNS_OUTSIDE = NewDnsProvider("bind");
- *
- * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
- *   A("www", "10.10.10.10")
- * );
- *
- * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
- *   A("www", "20.20.20.20")
- * );
- *
- * D_EXTEND("example.com!inside",
- *   A("internal", "10.99.99.99")
- * );
- * ```
- *
- * A domain name without a `!` is assigned a tag that is the empty
- * string. For example, `example.com` and `example.com!` are equivalent.
- * However, we strongly recommend against using the empty tag, as it
- * risks creating confusion.  In other words, if you have `domain.tld`
- * and `domain.tld!external` you now require humans to remember that
- * `domain.tld` is the external one.  I mean... the internal one.  You
- * may have noticed this mistake, but will your coworkers?  Will you in
- * six months? You get the idea.
- *
- * DNSControl command line flag `--domains` matches the full name (with the "!").  If you
- * define domains `example.com!george` and `example.com!john` then:
- *
- * * `--domains=example.com` will not match either domain.
- * * `--domains='example.com!george'` will match only match the first.
- * * `--domains='example.com!george",example.com!john` will match both.
- *
- * NOTE: The quotes are required if your shell treats `!` as a special
- * character, which is probably does.  If you see an error that mentions
- * `event not found` you probably forgot the quotes.
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/d
- */
-declare function D(name: string, registrar: string, ...modifiers: DomainModifier[]): void;
-
-/**
- * `DEFAULTS` allows you to declare a set of default arguments to apply to all subsequent domains. Subsequent calls to [`D`](D.md) will have these
- * arguments passed as if they were the first modifiers in the argument list.
- *
- * ## Example
- *
- * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain/DefaultTTL.md).
- * The domain `example.com` will have the defaults set.
- *
- * ```javascript
- * var COMMON = NewDnsProvider("foo");
- * DEFAULTS(
- *   DnsProvider(COMMON, 0),
- *   DefaultTTL("1d")
- * );
- *
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * If you want to clear the defaults, you can do the following.
- * The domain `example2.com` will **not** have the defaults set.
- *
- * ```javascript
- * DEFAULTS();
- *
- * D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/defaults
- */
-declare function DEFAULTS(...modifiers: DomainModifier[]): void;
-
-/**
- * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
- * a domain's zones are managed elsewhere. That is, it permits you easily delegate
- * a domain to a hard-coded list of DNS servers.
- *
- * `DOMAIN_ELSEWHERE` is useful when you control a domain's registrar but not the
- * DNS servers. For example, suppose you own a domain but the DNS servers are run
- * by someone else, perhaps a SaaS product you've subscribed to or a DNS server
- * that is run by your brother-in-law who doesn't trust you with the API keys that
- * would let you maintain the domain using DNSControl. You need an easy way to
- * point (delegate) the domain at a specific list of DNS servers.
- *
- * For example these two statements are equivalent:
- *
- * ```javascript
- * DOMAIN_ELSEWHERE("example.com", REG_MY_PROVIDER, ["ns1.foo.com", "ns2.foo.com"]);
- * ```
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *     NO_PURGE,
- *     NAMESERVER("ns1.foo.com"),
- *     NAMESERVER("ns2.foo.com")
- * );
- * ```
- *
- * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used out of abundance of caution but since no
- * `DnsProvider()` statements exist, no updates would be performed.
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere
- */
-declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_names: string[]): void;
-
-/**
- * `DOMAIN_ELSEWHERE_AUTO()` is similar to `DOMAIN_ELSEWHERE()` but instead of
- * a hardcoded list of nameservers, a DnsProvider() is queried.
- *
- * `DOMAIN_ELSEWHERE_AUTO` is useful when you control a domain's registrar but the
- * DNS zones are managed by another system. Luckily you have enough access to that
- * other system that you can query it to determine the zone's nameservers.
- *
- * For example, suppose you own a domain but the DNS servers for it are in Azure.
- * Further suppose that something in Azure maintains the zones (automatic or
- * human). Azure picks the nameservers for the domains automatically, and that
- * list may change occasionally.  `DOMAIN_ELSEWHERE_AUTO` allows you to easily
- * query Azure to determine the domain's delegations so that you do not need to
- * hard-code them in your dnsconfig.js file.
- *
- * For example these two statements are equivalent:
- *
- * ```javascript
- * DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
- * ```
- *
- * ```javascript
- * D("example.com", REG_NAMEDOTCOM,
- *     NO_PURGE,
- *     DnsProvider(DSP_AZURE)
- * );
- * ```
- *
- * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used to prevent DNSControl from changing the records.
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere_auto
- */
-declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: string, dnsProvider: string): void;
-
-/**
- * `D_EXTEND` adds records (and metadata) to a domain previously defined
- * by [`D()`](D.md). It can also be used to add subdomain records (and metadata)
- * to a previously defined domain.
- *
- * The first argument is a domain name. If it exactly matches a
- * previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md),
- * simply adding records as if they had been specified in the original
- * [`D()`](D.md).
- *
- * If the domain name does not match an existing domain, but could be a
- * (non-delegated) subdomain of an existing domain, the new records (and
- * metadata) are added with the subdomain part appended to all record
- * names (labels), and targets (as appropriate). See the examples below.
- *
- * Matching the domain name to previously-defined domains is done using a
- * `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
- * defined as separate domains via separate [`D()`](D.md) statements, then
- * `D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`,
- * not `domain.tld`.
- *
- * Some operators only act on an apex domain (e.g.
- * [`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
- * in a `D_EXTEND` subdomain may not be what you expect.
- *
- * ```javascript
- * D("domain.tld", REG_MY_PROVIDER, DnsProvider(DNS),
- *   A("@", "127.0.0.1"), // domain.tld
- *   A("www", "127.0.0.2"), // www.domain.tld
- *   CNAME("a", "b") // a.domain.tld -> b.domain.tld
- * );
- * D_EXTEND("domain.tld",
- *   A("aaa", "127.0.0.3"), // aaa.domain.tld
- *   CNAME("c", "d") // c.domain.tld -> d.domain.tld
- * );
- * D_EXTEND("sub.domain.tld",
- *   A("bbb", "127.0.0.4"), // bbb.sub.domain.tld
- *   A("ccc", "127.0.0.5"), // ccc.sub.domain.tld
- *   CNAME("e", "f") // e.sub.domain.tld -> f.sub.domain.tld
- * );
- * D_EXTEND("sub.sub.domain.tld",
- *   A("ddd", "127.0.0.6"), // ddd.sub.sub.domain.tld
- *   CNAME("g", "h") // g.sub.sub.domain.tld -> h.sub.sub.domain.tld
- * );
- * D_EXTEND("sub.domain.tld",
- *   A("@", "127.0.0.7"), // sub.domain.tld
- *   CNAME("i", "j") // i.sub.domain.tld -> j.sub.domain.tld
- * );
- * ```
- *
- * This will end up in the following modifications: (This output assumes the `--full` flag)
- *
- * ```text
- * ******************** Domain: domain.tld
- * ----- Getting nameservers from: cloudflare
- * ----- DNS Provider: cloudflare...7 corrections
- * #1: CREATE A aaa.domain.tld 127.0.0.3
- * #2: CREATE A bbb.sub.domain.tld 127.0.0.4
- * #3: CREATE A ccc.sub.domain.tld 127.0.0.5
- * #4: CREATE A ddd.sub.sub.domain.tld 127.0.0.6
- * #5: CREATE A sub.domain.tld 127.0.0.7
- * #6: CREATE A www.domain.tld 127.0.0.2
- * #7: CREATE A domain.tld 127.0.0.1
- * #8: CREATE CNAME a.domain.tld b.domain.tld.
- * #9: CREATE CNAME c.domain.tld d.domain.tld.
- * #10: CREATE CNAME e.sub.domain.tld f.sub.domain.tld.
- * #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
- * #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
- * ```
- *
- * ProTips: `D_EXTEND()` permits you to create very complex and
- * sophisticated configurations, but you shouldn't. Be nice to the next
- * person that edits the file, who may not be as expert as yourself.
- * Enhance readability by putting any `D_EXTEND()` statements immediately
- * after the original [`D()`](D.md), like in above example.  Avoid the temptation
- * to obscure the addition of records to existing domains with randomly
- * placed `D_EXTEND()` statements. Don't build up a domain using loops of
- * `D_EXTEND()` statements. You'll be glad you didn't.
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/d_extend
- */
-declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
-
-/**
- * Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
- *
- * ```javascript
- * var addrA = IP("1.2.3.4")
- * var addrB = addrA + 1
- * // addrB = 1.2.3.5
- * ```
- *
- * NOTE: `IP()` does not accept IPv6 addresses (PRs gladly accepted!). IPv6 addresses are simply strings:
- *
- * ```javascript
- * // IPv4 Var
- * var addrA1 = IP("1.2.3.4");
- * var addrA2 = "1.2.3.4";
- *
- * // IPv6 Var
- * var addrAAAA = "0:0:0:0:0:0:0:0";
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/ip
- */
-declare function IP(ip: string): number;
-
-/**
- * NewDnsProvider activates a DNS Service Provider (DSP) specified in `creds.json`.
- * A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
- * answers on port 53 to queries related to the zone).
- *
- * * `name` must match the name of an entry in `creds.json`.
- * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../providers.md).
- *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
- *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
- * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../providers.md) for details.
- *
- * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
- *
- * Prior to [v3.16](../../v316.md):
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
- * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * In [v3.16](../../v316.md) and later:
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom");
- * var DNS_MYAWS = NewDnsProvider("myaws");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
- */
-declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
-
-/**
- * NewRegistrar activates a Registrar Provider specified in `creds.json`.
- * A registrar maintains the domain's registration and delegation (i.e. the
- * nameservers for the domain).  DNSControl only manages the delegation.
- *
- * * `name` must match the name of an entry in `creds.json`.
- * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../providers.md).
- *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
- *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
- * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../providers.md) for details.
- *
- * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
- *
- * Prior to [v3.16](../../v316.md):
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
- * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * In [v3.16](../../v316.md) and later:
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom");
- * var DNS_MYAWS = NewDnsProvider("myaws");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4")
- * );
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newregistrar
- */
-declare function NewRegistrar(name: string, type?: string, meta?: object): string;
-
-/**
- * `PANIC` terminates the script and therefore DNSControl with an exit code of 1. This should be used if your script cannot gather enough information to generate records, for example when a HTTP request failed.
- *
- * ```javascript
- * PANIC("Something really bad has happened");
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/panic
- */
-declare function PANIC(message: string): never;
+declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
 
 /**
  * `REV` returns the reverse lookup domain for an IP network. For
@@ -2289,489 +2468,28 @@ declare function PANIC(message: string): never;
 declare function REV(address: string): string;
 
 /**
- * `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
- * configured at the time the function is called. Calling this function early or later in
- * `dnsconfig.js` may return different results. Typical usage is to iterate over all
- * domains at the end of your configuration file.
- *
- * Example for adding records to all configured domains:
- * ```javascript
- * var domains = getConfiguredDomains();
- * for(i = 0; i < domains.length; i++) {
- *   D_EXTEND(domains[i],
- *     TXT("_important", "BLA") // I know, not really creative.
- *   )
- * }
- * ```
- *
- * This will end up in following modifications: (All output assumes the `--full` flag)
- *
- * ```text
- * ******************** Domain: domain1.tld
- * ----- Getting nameservers from: registrar
- * ----- DNS Provider: registrar...2 corrections
- * #1: CREATE TXT _important.domain1.tld "BLA" ttl=43200
- * #2: REFRESH zone domain1.tld
- *
- * ******************** Domain: domain2.tld
- * ----- Getting nameservers from: registrar
- * ----- DNS Provider: registrar...2 corrections
- * #1: CREATE TXT _important.domain2.tld "BLA" ttl=43200
- * #2: REFRESH zone domain2.tld
- * ```
- *
- * Example for adding DMARC report records:
- *
- * This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
- *
- * ```javascript
- * var domains = getConfiguredDomains();
- * for(i = 0; i < domains.length; i++) {
- *     D_EXTEND("domain1.tld",
- *         TXT(domains[i] + "._report._dmarc", "v=DMARC1")
- *     );
- * }
- * ```
- *
- * This will end up in following modifications:
- *
- * ```text
- * ******************** Domain: domain2.tld
- * ----- Getting nameservers from: registrar
- * ----- DNS Provider: registrar...4 corrections
- * #1: CREATE TXT domain1.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
- * #2: CREATE TXT domain3.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
- * #3: CREATE TXT domain4.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
- * #4: REFRESH zone domain2.tld
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/getconfigureddomains
- */
-declare function getConfiguredDomains(): string[];
-
-/**
- * `require_glob()` can recursively load `.js` files, optionally non-recursive as well.
- *
- * Possible parameters are:
- *
- * - Path as string, where you would like to start including files. Mandatory. Pattern matching possible, see [GoLand path/filepath/#Match docs](https://golang.org/pkg/path/filepath/#Match).
- * - If being recursive. This is a boolean if the search should be recursive or not. Define either `true` or `false`. Default is `true`.
- *
- * Example to load `.js` files recursively:
- *
- * ```javascript
- * require_glob("./domains/");
- * ```
- *
- * Example to load `.js` files only in `domains/`:
- *
- * ```javascript
- * require_glob("./domains/", false);
- * ```
- *
- * One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
- * file where it's being executed in. Let's go with an example, as it describes it better:
- *
- * ```javascript
- * require("domains/index.js");
- * ```
- *
- * ```javascript
- * require_glob("./user1/");
- * ```
- *
- * This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
- * is called in the subfolder `domains/`.
- *
- * @see https://docs.dnscontrol.org/language-reference/top-level-functions/require_glob
- */
-declare function require_glob(path: string, recursive: boolean): void;
-
-/**
- * DNSControl contains a `CAA_BUILDER` which can be used to simply create
- * [`CAA()`](../domain/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain/CAA.md) record
- * individually, you can simply configure your report mail address, the
- * authorized certificate authorities and the builder cares about the rest.
- *
- * ## Example
- *
- * For example you can use:
- *
- * ```javascript
- * CAA_BUILDER({
- *   label: "@",
- *   iodef: "mailto:test@example.com",
- *   iodef_critical: true,
- *   issue: [
- *     "letsencrypt.org",
- *     "comodoca.com",
- *   ],
- *   issuewild: "none",
- * })
- * ```
- *
- * The parameters are:
- *
- * * `label:` The label of the CAA record. (Optional. Default: `"@"`)
- * * `iodef:` Report all violation to configured mail address.
- * * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
- * * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
- * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
- *
- * `CAA_BUILDER()` returns multiple records (when configured as example above):
- *
- * ```javascript
- * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
- * CAA("@", "issue", "letsencrypt.org")
- * CAA("@", "issue", "comodoca.com")
- * CAA("@", "issuewild", ";")
- * ```
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/caa_builder
- */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): RecordModifier;
-
-/**
- * DNSControl contains a `DMARC_BUILDER` which can be used to simply create
- * DMARC policies for your domains.
- *
- * ## Example
- *
- * ### Simple example
- *
- * ```javascript
- * DMARC_BUILDER({
- *   policy: "reject",
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- * })
- * ```
- *
- * This yield the following record:
- *
- * ```text
- * @   IN  TXT "v=DMARC1; p=reject; ruf=mailto:mailauth-reports@example.com"
- * ```
- *
- * ### Advanced example
- *
- * ```javascript
- * DMARC_BUILDER({
- *   policy: "reject",
- *   subdomainPolicy: "quarantine",
- *   percent: 50,
- *   alignmentSPF: "r",
- *   alignmentDKIM: "strict",
- *   rua: [
- *     "mailto:mailauth-reports@example.com",
- *     "https://dmarc.example.com/submit",
- *   ],
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- *   failureOptions: "1",
- *   reportInterval: "1h",
- * });
- * ```
- *
- * ```javascript
- * DMARC_BUILDER({
- *   label: "insecure",
- *   policy: "none",
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- *   failureOptions: {
- *       SPF: false,
- *       DKIM: true,
- *   },
- * });
- * ```
- *
- * This yields the following records:
- *
- * ```text
- * @           IN  TXT "v=DMARC1; p=reject; sp=quarantine; adkim=s; aspf=r; pct=50; rua=mailto:mailauth-reports@example.com,https://dmarc.example.com/submit; ruf=mailto:mailauth-reports@example.com; fo=1; ri=3600"
- * insecure    IN  TXT "v=DMARC1; p=none; ruf=mailto:mailauth-reports@example.com; fo=d"
- * ```
- *
- * ### Parameters
- *
- * * `label:` The DNS label for the DMARC record (`_dmarc` prefix is added, default: `"@"`)
- * * `version:` The DMARC version to be used (default: `DMARC1`)
- * * `policy:` The DMARC policy (`p=`), must be one of `"none"`, `"quarantine"`, `"reject"`
- * * `subdomainPolicy:` The DMARC policy for subdomains (`sp=`), must be one of `"none"`, `"quarantine"`, `"reject"` (optional)
- * * `alignmentSPF:` `"strict"`/`"s"` or `"relaxed"`/`"r"` alignment for SPF (`aspf=`, default: `"r"`)
- * * `alignmentDKIM:` `"strict"`/`"s"` or `"relaxed"`/`"r"` alignment for DKIM (`adkim=`, default: `"r"`)
- * * `percent:` Number between `0` and `100`, percentage for which policies are applied (`pct=`, default: `100`)
- * * `rua:` Array of aggregate report targets (optional)
- * * `ruf:` Array of failure report targets (optional)
- * * `failureOptions:` Object or string; Object containing booleans `SPF` and `DKIM`, string is passed raw (`fo=`, default: `"0"`)
- * * `failureFormat:` Format in which failure reports are requested (`rf=`, default: `"afrf"`)
- * * `reportInterval:` Interval in which reports are requested (`ri=`)
- * * `ttl:` Input for `TTL` method (optional)
- *
- * ### Caveats
- *
- * * TXT records are automatically split using `AUTOSPLIT`.
- * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/dmarc_builder
- */
-declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): RecordModifier;
-
-/**
- * `LOC_BUILDER_DD({})` actually takes an object with the following properties:
- *
- *   - label (optional, defaults to `@`)
- *   - x (float32)
- *   - y (float32)
- *   - alt (float32, optional)
- *   - ttl (optional)
- *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
- *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
- *
- * The cartesian coordinates are decimal degrees, like you typically find in e.g. Google Maps.
- *
- * Examples.
- *
- * Big Ben:
- * `51.50084265331501, -0.12462541415599787`
- *
- * The White House:
- * `38.89775977858357, -77.03655125982903`
+ * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *     LOC_BUILDER_DD({
- *     label: "big-ben",
- *     x: 51.50084265331501,
- *     y: -0.12462541415599787,
- *     alt: 6,
- *   })
- *   , LOC_BUILDER_DD({
- *     label: "white-house",
- *     x: 38.89775977858357,
- *     y: -77.03655125982903,
- *     alt: 19,
- *   })
- *   , LOC_BUILDER_DD({
- *     label: "white-house-ttl",
- *     x: 38.89775977858357,
- *     y: -77.03655125982903,
- *     alt: 19,
- *     ttl: "5m",
- *   })
+ *   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
  * );
- *
  * ```
  *
- * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ * If you accidentally include an `@` in the email field DNSControl will quietly
+ * change it to a `.`. This way you can specify a human-readable email address
+ * when you are making it easier for spammers how to find you.
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dd
+ * ## Notes
+ * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
+ * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
+ * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
+ *
+ * There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/soa
  */
-declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; alt?: number; ttl?: Duration }): RecordModifier;
-
-/**
- * `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
- *
- *   - label (string, optional, defaults to `@`)
- *   - str (string)
- *   - alt (float32, optional)
- *   - ttl (optional)
- *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
- *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
- *
- * Accepts a string with decimal minutes (DMM) coordinates in the form: 25.24°S 153.15°E
- *
- * Note that the following are acceptable forms (symbols differ):
- * * `25.24°S 153.15°E`
- * * `25.24 S 153.15 E`
- * * `25.24° S 153.15° E`
- * * `25.24S 153.15E`
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   LOC_BUILDER_STR({
- *     label: "tasmania",
- *     str: "42°S 147°E",
- *     alt: 3,
- *   })
- * );
- *
- * ```
- *
- * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dmm_str
- */
-declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
-
-/**
- * `LOC_BUILDER_DMS_STR({})` actually takes an object with the following properties:
- *
- *   - label (string, optional, defaults to `@`)
- *   - str (string)
- *   - alt (float32, optional)
- *   - ttl (optional)
- *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
- *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
- *
- * Accepts a string with degrees, minutes, and seconds (DMS) coordinates in the form: 41°24'12.2"N 2°10'26.5"E
- *
- * Note that the following are acceptable forms (symbols differ):
- * * `33°51′31″S 151°12′51″E`
- * * `33°51'31"S 151°12'51"E`
- * * `33d51m31sS 151d12m51sE`
- * * `33d51m31s S 151d12m51s E`
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   LOC_BUILDER_DMS_STR({
- *     label: "sydney-opera-house",
- *     str: "33°51′31″S 151°12′51″E",
- *     alt: 4,
- *     ttl: "5m",
- *   })
- * );
- *
- * ```
- *
- * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dms_str
- */
-declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
-
-/**
- * `LOC_BUILDER_STR({})` actually takes an object with the following: properties.
- *
- *   - label (optional, defaults to `@`)
- *   - str (string)
- *   - alt (float32, optional)
- *   - ttl (optional)
- *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
- *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
- *
- * Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   , LOC_BUILDER_STR({
- *     label: "old-faithful",
- *     str: "44.46046°N 110.82815°W",
- *     alt: 2240,
- *   })
- *   , LOC_BUILDER_STR({
- *     label: "ribblehead-viaduct",
- *     str: "54.210436°N 2.370231°W",
- *     alt: 300,
- *   })
- *   , LOC_BUILDER_STR({
- *     label: "guinness-brewery",
- *     str: "53°20′40″N 6°17′20″W",
- *     alt: 300,
- *   })
- * );
- *
- * ```
- *
- * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_str
- */
-declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
-
-/**
- * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
- *
- * It defaults to a setup without support for legacy Skype for Business applications.
- * It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](/language-reference/record-modifiers/dmarc_builder) and [`DMARC_BUILDER`](/language-reference/record-modifiers/spf_builder).
- *
- * ## Example
- *
- * ### Simple example
- *
- * ```javascript
- * M365_BUILDER({
- *     initialDomain: "example.onmicrosoft.com",
- * });
- * ```
- *
- * This sets up `MX` records, Autodiscover, and DKIM.
- *
- * ### Advanced example
- *
- * ```javascript
- * M365_BUILDER({
- *     label: "test",
- *     mx: false,
- *     autodiscover: false,
- *     dkim: false,
- *     mdm: true,
- *     domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
- *     initialDomain: "example.onmicrosoft.com",
- * });
- * ```
- *
- * This sets up Mobile Device Management only.
- *
- * ### Parameters
- *
- * * `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
- * * `mx` Set an `MX` record? (default: `true`)
- * * `autodiscover` Set Autodiscover `CNAME` record? (default: `true`)
- * * `dkim` Set DKIM `CNAME` records? (default: `true`)
- * * `skypeForBusiness` Set Skype for Business/Microsoft Teams records? (default: `false`)
- * * `mdm` Set Mobile Device Management records? (default: `false`)
- * * `domainGUID` The GUID of _this_ Microsoft 365 domain (default: `<label>.<context>` with `.` replaced by `-`, no default if domain contains dashes)
- * * `initialDomain` The initial domain of your Microsoft 365 tenant/account, ends in `onmicrosoft.com`
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/m365_builder
- */
-declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): RecordModifier;
-
-/**
- * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../global/D.md)) or a specific [`R53_ALIAS()`](../domain/R53_ALIAS.md) record.
- *
- * When used with [`D()`](../global/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
- *
- * When used with [`R53_ALIAS()`](../domain/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain/R53_ALIAS.md) documentation for details.
- *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_zone
- */
-declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
+declare function SOA(name: string, ns: string, mbox: string, refresh: number, retry: number, expire: number, minttl: number, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * DNSControl can optimize the SPF settings on a domain by flattening
@@ -3054,9 +2772,76 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * );
  * ```
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/spf_builder
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/spf_builder
  */
-declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize: string[]; parts?: number; flatten?: string[] }): RecordModifier;
+declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize?: number; parts: string[]; flatten?: string[] }): DomainModifier;
+
+/**
+ * `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
+ *
+ * Priority, weight, and port are ints.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   // Create SRV records for a a SIP service:
+ *   //               pr  w   port, target
+ *   SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
+ *   SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/srv
+ */
+declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+ *
+ * **Algorithm** (type of the key)
+ *
+ * | ID | Algorithm |
+ * |----|-----------|
+ * | 0  | reserved  |
+ * | 1  | RSA       |
+ * | 2  | DSA       |
+ * | 3  | ECDSA     |
+ * | 4  | ED25519   |
+ *
+ * **Type** (fingerprint format)
+ *
+ * | ID | Algorithm |
+ * |----|-----------|
+ * | 0  | reserved  |
+ * | 1  | SHA-1     |
+ * | 2  | SHA-256   |
+ *
+ * `value` is the fingerprint as a string.
+ *
+ * ```javascript
+ * SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/sshfp
+ */
+declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
+ *
+ * Usage, selector, and type are ints.
+ *
+ * Certificate is a hex string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   // Create TLSA record for certificate used on TCP port 443
+ *   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/tlsa
+ */
+declare function TLSA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * TTL sets the TTL for a single record only. This will take precedence
@@ -3090,3 +2875,218 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/ttl
  */
 declare function TTL(ttl: Duration): RecordModifier;
+
+/**
+ * `TXT` adds an `TXT` record To a domain. The name should be the relative
+ * label for the record. Use `@` for the domain apex.
+ *
+ * The contents is either a single or multiple strings.  To
+ * specify multiple strings, specify them as an array.
+ *
+ * Each string is a JavaScript string (quoted using single or double
+ * quotes).  The (somewhat complex) quoting rules of the DNS protocol
+ * will be done for you.
+ *
+ * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
+ *
+ * ```javascript
+ *     D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *       TXT("@", "598611146-3338560"),
+ *       TXT("listserve", "google-site-verification=12345"),
+ *       TXT("multiple", ["one", "two", "three"]),  // Multiple strings
+ *       TXT("quoted", "any "quotes" and escapes? ugh; no worries!"),
+ *       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
+ *       TXT("long", "X".repeat(300)) // Long strings are split automatically.
+ *     );
+ * ```
+ *
+ * NOTE: In the past, long strings had to be annotated with the keyword
+ * `AUTOSPLIT`. This is no longer required. The keyword is now a no-op.
+ *
+ * ### Long strings
+ *
+ * Strings that are longer than 255 octets (bytes) will be quietly
+ * split into 255-octets chunks or the provider may report an error
+ * if it does not handle multiple strings.
+ *
+ * ### TXT record edge cases
+ *
+ * Most providers do not support the full possibilities of what a `TXT`
+ * record can store.  DNSControl can not handle all the edge cases
+ * and incompatibles that providers have introduced.  Instead, it
+ * stores the string(s) that you provide and passes them to the provider
+ * verbatim. The provider may opt to accept the data, fix it, or
+ * reject it. This happens early in the processing, long before
+ * the DNSControl talks to the provider's API.
+ *
+ * The RFCs specify that a `TXT` record stores one or more strings,
+ * each is up to 255 octets (bytes) long. We call these individual
+ * strings *chunks*.  Each chunk may be zero to 255 octets long.
+ * There is no limit to the number of chunks in a `TXT` record,
+ * other than IP packet length restrictions.  The contents of each chunk
+ * may be octets of value from 0x00 to 0xff.
+ *
+ * In reality DNS Service Providers (DSPs) place many restrictions on `TXT`
+ * records.
+ *
+ * Some DSPs only support a single string of 255 octets or fewer.
+ * Multiple strings, or any one string being longer than 255 octets will
+ * result in an error. One provider limits the string to 254 octets,
+ * which makes me think they're code has an off-by-one error.
+ *
+ * Some DSPs only support one string, but it may be of any length.
+ * Behind the scenes the provider splits it into 255-octet chunks
+ * (except the last one, of course).
+ *
+ * Some DSPs support multiple strings, but API requests must be 512-bytes
+ * or fewer, and with quoting, escaping, and other encoding mishegoss
+ * you can't be sure what will be permitted until you actually try it.
+ *
+ * Regardless of the quantity and length of strings, some providers ban
+ * double quotes, back-ticks, or other chars.
+ *
+ * ### Testing the support of a provider
+ *
+ * #### How can you tell if a provider will support a particular `TXT()` record?
+ *
+ * Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
+ * with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
+ * see if any errors are produced.  The check command does not talk to
+ * the provider's API, thus permitting you to do this without having an
+ * account at that provider.
+ *
+ * #### What if the provider rejects a string that is supported?
+ *
+ * Suppose I can create the TXT record using the DSP's web portal but
+ * DNSControl rejects the string?
+ *
+ * It is possible that the provider code in DNSControl rejects strings
+ * that the DSP accepts.  This is because the test is done in code, not
+ * by querying the provider's API.  It is possible that the code was
+ * written to work around a bug (such as rejecting a string with a
+ * back-tick) but now that bug has been fixed.
+ *
+ * All such checks are in `providers/${providername}/auditrecords.go`.
+ * You can try removing the check that you feel is in error and see if
+ * the provider's API accepts the record.  You can do this by running the
+ * integration tests, or by simply adding that record to an existing
+ * `dnsconfig.js` and seeing if `dnscontrol push` is able to push that
+ * record into production. (Be careful if you are testing this on a
+ * domain used in production.)
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/txt
+ */
+declare function TXT(name: string, contents: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * Documentation needed.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
+ */
+declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * Documentation needed.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
+ */
+declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
+ * configured at the time the function is called. Calling this function early or later in
+ * `dnsconfig.js` may return different results. Typical usage is to iterate over all
+ * domains at the end of your configuration file.
+ *
+ * Example for adding records to all configured domains:
+ * ```javascript
+ * var domains = getConfiguredDomains();
+ * for(i = 0; i < domains.length; i++) {
+ *   D_EXTEND(domains[i],
+ *     TXT("_important", "BLA") // I know, not really creative.
+ *   )
+ * }
+ * ```
+ *
+ * This will end up in following modifications: (All output assumes the `--full` flag)
+ *
+ * ```text
+ * ******************** Domain: domain1.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...2 corrections
+ * #1: CREATE TXT _important.domain1.tld "BLA" ttl=43200
+ * #2: REFRESH zone domain1.tld
+ *
+ * ******************** Domain: domain2.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...2 corrections
+ * #1: CREATE TXT _important.domain2.tld "BLA" ttl=43200
+ * #2: REFRESH zone domain2.tld
+ * ```
+ *
+ * Example for adding DMARC report records:
+ *
+ * This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
+ *
+ * ```javascript
+ * var domains = getConfiguredDomains();
+ * for(i = 0; i < domains.length; i++) {
+ *     D_EXTEND("domain1.tld",
+ *         TXT(domains[i] + "._report._dmarc", "v=DMARC1")
+ *     );
+ * }
+ * ```
+ *
+ * This will end up in following modifications:
+ *
+ * ```text
+ * ******************** Domain: domain2.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...4 corrections
+ * #1: CREATE TXT domain1.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #2: CREATE TXT domain3.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #3: CREATE TXT domain4.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #4: REFRESH zone domain2.tld
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/getconfigureddomains
+ */
+declare function getConfiguredDomains(): string[];
+
+/**
+ * `require_glob()` can recursively load `.js` files, optionally non-recursive as well.
+ *
+ * Possible parameters are:
+ *
+ * - Path as string, where you would like to start including files. Mandatory. Pattern matching possible, see [GoLand path/filepath/#Match docs](https://golang.org/pkg/path/filepath/#Match).
+ * - If being recursive. This is a boolean if the search should be recursive or not. Define either `true` or `false`. Default is `true`.
+ *
+ * Example to load `.js` files recursively:
+ *
+ * ```javascript
+ * require_glob("./domains/");
+ * ```
+ *
+ * Example to load `.js` files only in `domains/`:
+ *
+ * ```javascript
+ * require_glob("./domains/", false);
+ * ```
+ *
+ * One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
+ * file where it's being executed in. Let's go with an example, as it describes it better:
+ *
+ * ```javascript
+ * require("domains/index.js");
+ * ```
+ *
+ * ```javascript
+ * require_glob("./user1/");
+ * ```
+ *
+ * This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
+ * is called in the subfolder `domains/`.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/require_glob
+ */
+declare function require_glob(path: string, recursive: boolean): void;
