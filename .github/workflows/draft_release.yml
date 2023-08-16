@@ -8,7 +8,7 @@ name: draft release
 jobs:
   draft_release:
     name: draft release
-    runs-on: ubuntu-20.04-16core
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
