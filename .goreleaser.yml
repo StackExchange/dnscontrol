@@ -71,7 +71,7 @@ nfpms:
   - id: packages_deb
     file_name_template: >-
       {{ .ProjectName }}-
-      {{ .Version }}.
+      {{- .Version }}.
       {{- if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
     homepage:  https://docs.dnscontrol.org/
