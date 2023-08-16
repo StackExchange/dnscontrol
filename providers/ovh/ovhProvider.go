@@ -227,8 +227,8 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 
 	rtype := r.FieldType
 
-	// ovh uses a custom type for SPF and DKIM
-	if rtype == "SPF" || rtype == "DKIM" {
+	// ovh uses a custom type for SPF, DKIM and DMARC
+	if rtype == "SPF" || rtype == "DKIM" || rtype == "DMARC" {
 		rtype = "TXT"
 	}
 
