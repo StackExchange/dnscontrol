@@ -8,7 +8,7 @@ name: draft release
 jobs:
   draft_release:
     name: draft release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04-16core
     permissions:
       packages: write
       contents: write
@@ -18,7 +18,9 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v3
       with:
-        fetch-depth: 1
+        fetch-depth: 0
+# fetch-depth: 0 because we need the entire repo to be able to
+# generate the release notes.
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
