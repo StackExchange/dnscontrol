@@ -65,7 +65,7 @@ func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string
 }
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
-	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.cfClient.AccountID}, "full")
+	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.accountId}, "full")
 	return zone.ID, err
 }
 
@@ -422,7 +422,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 			});`,
 	}
 
-	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.cfClient.AccountID), wp)
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountId), wp)
 	return err
 }
 
