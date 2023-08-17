@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"context"
 	"fmt"
+	"golang.org/x/net/idna"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,10 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	}
 
 	for _, zone := range zones {
+		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
+			c.domainIndex[encoded] = zone.ID
+			c.nameservers[encoded] = append(c.nameservers[encoded], zone.NameServers...)
+		}
 		c.domainIndex[zone.Name] = zone.ID
 		c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.NameServers...)
 	}
@@ -60,7 +65,7 @@ func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string
 }
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
-	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.cfClient.AccountID}, "full")
+	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.accountId}, "full")
 	return zone.ID, err
 }
 
@@ -417,7 +422,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 			});`,
 	}
 
-	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.cfClient.AccountID), wp)
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountId), wp)
 	return err
 }
 
