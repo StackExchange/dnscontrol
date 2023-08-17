@@ -31,6 +31,9 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+// Number of retries for API backend requests in case of StatusTooManyRequests responses
+const CLIENT_RETRIES = 10
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newProvider,
@@ -48,27 +51,53 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	if creds["api_token"] == "" {
 		return nil, fmt.Errorf("api_token required for ns1")
 	}
-	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
+
+	// Enable Sleep API Rate limit strategy - it will sleep until new tokens are available
+	// see https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting
+	// this strategy would imply the least sleep time for non-parallel client requests
+	return &nsone{rest.NewClient(
+		http.DefaultClient,
+		rest.SetAPIKey(creds["api_token"]),
+		func(c *rest.Client) {
+			c.RateLimitStrategySleep()
+		},
+	)}, nil
+}
+
+// A wrapper around rest.Client's Zones.Get() implementing retries
+// no explicit sleep is needed, it is implemented in NS1 client's RateLimitStrategy we used
+func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
+	for rtr := 0; ; rtr++ {
+		z, httpResp, err := n.Zones.Get(domain)
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return z, err
+	}
 }
 
 func (n *nsone) EnsureZoneExists(domain string) error {
 	// This enables the create-domains subcommand
-
 	zone := dns.NewZone(domain)
-	_, err := n.Zones.Create(zone)
 
-	if err == rest.ErrZoneExists {
-		// if domain exists already, just return nil, nothing to do here.
-		return nil
+	for rtr := 0; ; rtr++ {
+		httpResp, err := n.Zones.Create(zone)
+		if err == rest.ErrZoneExists {
+			// if domain exists already, just return nil, nothing to do here.
+			return nil
+		}
+		// too many requests - retry w/out waiting. We specified rate limit strategy creating the client
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return err
 	}
-
-	return err
 }
 
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	var nservers []string
 
-	z, _, err := n.Zones.Get(domain, true)
+  z, _, err := n.Zones.Get(domain, true)
 	if err != nil {
 		return nil, err
 	}
@@ -112,20 +141,23 @@ func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Re
 //  2. DNSSEC is disabled (returns false)
 //  3. some error state   (return false plus the error)
 func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
-	_, _, err := n.DNSSEC.Get(domain)
+	for rtr := 0; ; rtr++ {
+		_, httpResp, err := n.DNSSEC.Get(domain)
+		// rest.ErrDNSECNotEnabled is our "disabled" state
+		if err != nil && err == rest.ErrDNSECNotEnabled {
+			return false, nil
+		}
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		// any other errors not expected, let's surface them
+		if err != nil {
+			return false, err
+		}
 
-	// rest.ErrDNSECNotEnabled is our "disabled" state
-	if err != nil && err == rest.ErrDNSECNotEnabled {
-		return false, nil
+		// no errors returned, we assume DNSSEC is enabled
+		return true, nil
 	}
-
-	// any other errors not expected, let's surface them
-	if err != nil {
-		return false, err
-	}
-
-	// no errors returned, we assume DNSSEC is enabled
-	return true, nil
 }
 
 // getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
@@ -244,8 +276,13 @@ func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecor
 }
 
 func (n *nsone) add(recs models.Records, domain string) error {
-	_, err := n.Records.Create(buildRecord(recs, domain, ""))
-	return err
+	for rtr := 0; ; rtr++ {
+		httpResp, err := n.Records.Create(buildRecord(recs, domain, ""))
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return err
+	}
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
@@ -253,13 +290,23 @@ func (n *nsone) remove(key models.RecordKey, domain string) error {
 		key.Type = "URLFWD"
 	}
 
-	_, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
-	return err
+	for rtr := 0; ; rtr++ {
+		httpResp, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return err
+	}
 }
 
 func (n *nsone) modify(recs models.Records, domain string) error {
-	_, err := n.Records.Update(buildRecord(recs, domain, ""))
-	return err
+	for rtr := 0; ; rtr++ {
+		httpResp, err := n.Records.Update(buildRecord(recs, domain, ""))
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return err
+	}
 }
 
 // configureDNSSEC configures DNSSEC for a zone. Set 'enabled' to true to enable, false to disable.
@@ -276,8 +323,13 @@ func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
 		return err
 	}
 	z.DNSSEC = &enabled
-	_, err = n.Zones.Update(z)
-	return err
+	for rtr := 0; ; rtr++ {
+		httpResp, err := n.Zones.Update(z)
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+			continue
+		}
+		return err
+	}
 }
 
 func buildRecord(recs models.Records, domain string, id string) *dns.Record {
