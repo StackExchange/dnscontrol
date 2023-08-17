@@ -68,7 +68,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 // no explicit sleep is needed, it is implemented in NS1 client's RateLimitStrategy we used
 func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
 	for rtr := 0; ; rtr++ {
-		z, httpResp, err := n.Zones.Get(domain)
+		z, httpResp, err := n.Zones.Get(domain, true)
 		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
 			continue
 		}
