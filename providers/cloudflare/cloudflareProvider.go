@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/idna"
 	"net"
 	"os"
 	"strconv"
@@ -486,8 +487,14 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+
+	punyRoot, err := idna.ToASCII(dc.Name)
+	if err != nil {
+		punyRoot = dc.Name
+	}
+
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
+		if rec.Type == "NS" && rec.GetLabelFQDN() == punyRoot {
 			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
 				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
 			}

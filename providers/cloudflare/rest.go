@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"context"
 	"fmt"
+	"golang.org/x/net/idna"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,10 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	}
 
 	for _, zone := range zones {
+		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
+			c.domainIndex[encoded] = zone.ID
+			c.nameservers[encoded] = append(c.nameservers[encoded], zone.NameServers...)
+		}
 		c.domainIndex[zone.Name] = zone.ID
 		c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.NameServers...)
 	}

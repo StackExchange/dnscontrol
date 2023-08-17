@@ -18,13 +18,53 @@ Notifications are set up in your credentials JSON file. They will use the `notif
         ...
   } ,
   "notifications": {
-      "slack_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+      "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
       "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000"
   }
 ```
 {% endcode %}
 
-You also must run `dnscontrol preview` or `dnscontrol push` with the `-notify` flag to enable notification sending at all.
+## Usage
+
+If you want to send a notification, add the `--notify` flag to the `dnscontrol preview` or `dnscontrol push` commands.
+
+Below is an example where we add [the A record](functions/domain/A.md) `foo` and display the notification output.
+
+{% code title="dnsconfig.js" %}
+```diff
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
++ A("foo", "1.2.3.4"),
+);
+```
+{% endcode %}
+
+### Preview example
+
+In case of `dnscontrol preview`:
+
+```shell
+dnscontrol preview --notify
+```
+
+**The notification output**
+
+```shell
+**Preview: example.com[my_provider] -** CREATE foo.example.com A (1.2.3.4 ttl=86400)
+```
+
+### Push example
+
+In case of `dnscontrol push`:
+
+```shell
+dnscontrol push --notify
+```
+
+**The notification output**
+
+```shell
+Successfully ran correction for **example.com[my_provider]** - CREATE foo.example.com A 1.2.3.4 ttl=86400
+```
 
 ## Notification types
 
