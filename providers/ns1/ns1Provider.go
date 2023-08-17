@@ -68,7 +68,7 @@ func (n *nsone) EnsureZoneExists(domain string) error {
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	var nservers []string
 
-	z, _, err := n.Zones.Get(domain)
+	z, _, err := n.Zones.Get(domain, true)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	z, _, err := n.Zones.Get(domain)
+	z, _, err := n.Zones.Get(domain, true)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 //
 // Unfortunately this is not detectable otherwise, so given that we have a nice error message, we just let this through.
 func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
-	z, _, err := n.Zones.Get(domain)
+	z, _, err := n.Zones.Get(domain, true)
 	if err != nil {
 		return err
 	}
