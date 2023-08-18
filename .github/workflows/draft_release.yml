@@ -38,9 +38,6 @@ jobs:
       with:
         go-version: ^1.20
 
-    - name: Install goreleaser
-      run: go install github.com/goreleaser/goreleaser@latest
-
 # For some reason goreleaser isn't correctly setting the version
 # string used by "dnscontrol version".  Therefore, we're forcing the
 # string using the GORELEASER_CURRENT_TAG feature.
@@ -53,9 +50,14 @@ jobs:
 
     - name: Reveal version
       run: echo ${{ steps.version.outputs.TAG_NAME }}
-
-    - name: Goreleaser release
-      run: goreleaser release
+    -
+      id: release
+      name: Goreleaser release
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
