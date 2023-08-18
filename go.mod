@@ -20,7 +20,7 @@ require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.5
-	github.com/cloudflare/cloudflare-go v0.68.0
+	github.com/cloudflare/cloudflare-go v0.75.0
 	github.com/digitalocean/godo v1.100.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.2.0
@@ -94,6 +94,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-test/deep v1.0.3 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
