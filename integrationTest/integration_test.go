@@ -35,6 +35,28 @@ func init() {
 	flag.Parse()
 }
 
+// Helper constants/funcs for the CLOUDFLARE proxy testing:
+
+func CF_PROXY_OFF() *TestCase { return tc("proxyoff", cfProxyA("proxyme", "174.136.107.111", "off")) }
+func CF_PROXY_ON() *TestCase  { return tc("proxyon", cfProxyA("proxyme", "174.136.107.111", "on")) }
+
+// Return a singleton for the _FULL variables.
+func CF_PROXY_FULL1() *TestCase {
+	return tc("proxyfull1", cfProxyA("proxyme", "174.136.107.111", "full"))
+}
+func CF_PROXY_FULL2() *TestCase {
+	return tc("proxyfull2", cfProxyA("proxyme", "174.136.107.222", "full"))
+}
+
+func CF_CPROXY_OFF() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CF_CPROXY_ON() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+
+func CF_CPROXY_FULL() *TestCase {
+	return tc("cproxyfull", cfProxyCNAME("cproxy", "example.com.", "full"))
+}
+
+// ---
+
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
@@ -827,15 +849,6 @@ func makeTests(t *testing.T) []*TestGroup {
 	// the last tc(), or to provide a clean slate for the next tc().
 	// Each testgroup() begins and ends with clear(), so you don't have
 	// to list the clear() yourself.
-
-	CF_PROXY_OFF := tc("proxyoff", cfProxyA("proxyme", "174.136.107.111", "off"))
-	CF_PROXY_ON := tc("proxyon", cfProxyA("proxyme", "174.136.107.111", "on"))
-	CF_PROXY_FULL1 := tc("proxyfull1", cfProxyA("proxyme", "174.136.107.111", "full"))
-	CF_PROXY_FULL2 := tc("proxyfull2", cfProxyA("proxyme", "174.136.107.222", "full"))
-
-	CF_CPROXY_OFF := tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off"))
-	CF_CPROXY_ON := tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on"))
-	CF_CPROXY_FULL := tc("cproxyfull", cfProxyCNAME("cproxy", "example.com.", "full"))
 
 	tests := []*TestGroup{
 
@@ -1742,74 +1755,76 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
+		// These next testgroups attempt every combination of
+		// on/off/full1/full2
+
 		// 46
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			CF_PROXY_OFF, clear(),
-			CF_PROXY_ON, clear(),
-			//CF_PROXY_FULL1, clear(),   // BROKEN
-			CF_PROXY_FULL2, clear(),
+			CF_PROXY_OFF(), clear(),
+			CF_PROXY_ON(), clear(),
+			CF_PROXY_FULL1(), clear(),
+			CF_PROXY_FULL2(), clear(),
 		),
 
 		// 47
 		testgroup("CF_PROXY A off to X",
-			//CF_PROXY_OFF, CF_PROXY_OFF, clear(), // redundant
-			CF_PROXY_OFF, CF_PROXY_ON, clear(),
-			//CF_PROXY_OFF, CF_PROXY_FULL1, clear(), BROKEN
-			CF_PROXY_OFF, CF_PROXY_FULL2, clear(),
+			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
+			CF_PROXY_OFF(), CF_PROXY_ON(), clear(),
+			CF_PROXY_OFF(), CF_PROXY_FULL1(), clear(),
+			CF_PROXY_OFF(), CF_PROXY_FULL2(), clear(),
 		),
 
 		// 48
 		testgroup("CF_PROXY A on to X",
-			CF_PROXY_ON, CF_PROXY_OFF, clear(),
-			//CF_PROXY_ON, CF_PROXY_ON, clear(), // redundant
-			CF_PROXY_ON, CF_PROXY_FULL1.ExpectNoChanges(), clear(),
-			CF_PROXY_ON, CF_PROXY_FULL2, clear(),
+			CF_PROXY_ON(), CF_PROXY_OFF(), clear(),
+			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
+			//CF_PROXY_ON(), CF_PROXY_FULL1(), clear(), // would have no changes
+			CF_PROXY_ON(), CF_PROXY_FULL2(), clear(),
 		),
 
 		// 49
 		testgroup("CF_PROXY A full1 to X",
-			clear(),
-		//CF_PROXY_FULL1, CF_PROXY_OFF, clear(),  // BROKEN
-		//CF_PROXY_FULL1, CF_PROXY_ON, clear(),  // BROKEN
-		//CF_PROXY_FULL1, CF_PROXY_FULL1, clear(), // redundant
-		//CF_PROXY_FULL1, CF_PROXY_FULL2, clear(), // BROKEN!!
+			CF_PROXY_FULL1(), CF_PROXY_OFF(), clear(),
+			//CF_PROXY_FULL1(), CF_PROXY_ON(), clear(), // would have no changes
+			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
+			CF_PROXY_FULL1(), CF_PROXY_FULL2(), clear(),
 		),
 
 		// 50
 		testgroup("CF_PROXY A full2 to X",
-			CF_PROXY_FULL2, CF_PROXY_OFF, clear(),
-			CF_PROXY_FULL2, CF_PROXY_ON, clear(),
-			//CF_PROXY_FULL2, CF_PROXY_FULL1, clear(), // BROKEN
-			//CF_PROXY_FULL2, CF_PROXY_FULL2, clear(), // redundant
+			CF_PROXY_FULL2(), CF_PROXY_OFF(), clear(),
+			CF_PROXY_FULL2(), CF_PROXY_ON(), clear(),
+			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(), // BROKEN
+			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
 		),
 
 		// 51
 		testgroup("CF_PROXY CNAME create",
-			CF_CPROXY_OFF, clear(),
-			CF_CPROXY_ON, clear(),
-			CF_CPROXY_FULL, clear(),
+			CF_CPROXY_OFF(), clear(),
+			CF_CPROXY_ON(), clear(),
+			CF_CPROXY_FULL(), clear(),
 		),
 
 		// 52
 		testgroup("CF_PROXY CNAME off to X",
-			//CF_CPROXY_OFF, CF_CPROXY_OFF, clear(),  // redundant
-			CF_CPROXY_OFF, CF_CPROXY_ON, clear(),
-			CF_CPROXY_OFF, CF_CPROXY_FULL, clear(),
+			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
+			CF_CPROXY_OFF(), CF_CPROXY_ON(), clear(),
+			CF_CPROXY_OFF(), CF_CPROXY_FULL(), clear(),
 		),
 
 		// 53
 		testgroup("CF_PROXY CNAME on to X",
-			CF_CPROXY_ON, CF_CPROXY_OFF, clear(),
-			//CF_CPROXY_ON, CF_CPROXY_ON, clear(), // redundant
-			//CF_CPROXY_ON, CF_CPROXY_FULL, clear(),  // BROKEN!!
+			CF_CPROXY_ON(), CF_CPROXY_OFF(), clear(),
+			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
+			//CF_CPROXY_ON(), CF_CPROXY_FULL(), clear(), // would have no changes
 		),
 
 		// 54
 		testgroup("CF_PROXY CNAME full to X",
-			CF_CPROXY_FULL, CF_CPROXY_OFF, clear(),
-			//CF_CPROXY_FULL, CF_CPROXY_ON, clear(),   // BROKEN!!
-			//CF_CPROXY_FULL, CF_CPROXY_FULL, clear(), // redundant
+			CF_CPROXY_FULL(), CF_CPROXY_OFF(), clear(),
+			//CF_CPROXY_FULL(), CF_CPROXY_ON(), clear(), // would have no changes
+			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",
