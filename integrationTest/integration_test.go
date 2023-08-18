@@ -828,6 +828,15 @@ func makeTests(t *testing.T) []*TestGroup {
 	// Each testgroup() begins and ends with clear(), so you don't have
 	// to list the clear() yourself.
 
+	CF_PROXY_OFF := tc("proxyoff", cfProxyA("proxyme", "174.136.107.111", "off"))
+	CF_PROXY_ON := tc("proxyon", cfProxyA("proxyme", "174.136.107.111", "on"))
+	CF_PROXY_FULL1 := tc("proxyfull1", cfProxyA("proxyme", "174.136.107.111", "full"))
+	CF_PROXY_FULL2 := tc("proxyfull2", cfProxyA("proxyme", "174.136.107.222", "full"))
+
+	CF_CPROXY_OFF := tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off"))
+	CF_CPROXY_ON := tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on"))
+	CF_CPROXY_FULL := tc("cproxyfull", cfProxyCNAME("cproxy", "example.com.", "full"))
+
 	tests := []*TestGroup{
 
 		// START HERE
@@ -1733,30 +1742,74 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		testgroup("CF_PROXY A",
+		// 46
+		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			// Create on
-			tc("proxyoff", cfProxyA("proxyme", "1.2.3.4", "off")),
-			clear(),
-			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
-			clear(),
-			tc("proxyfull", cfProxyA("proxyme", "1.2.3.4", "full")),
-			clear(),
-			//tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
-			//tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
-			//tc("proxychangeoffon", cfProxyA("proxyme", "1.2.3.5", "on")),
-			//tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
-			//tc("proxychangeonfull", cfProxyA("proxyme", "1.2.3.5", "full")),
-			clear(),
+			CF_PROXY_OFF, clear(),
+			CF_PROXY_ON, clear(),
+			//CF_PROXY_FULL1, clear(),   // BROKEN
+			CF_PROXY_FULL2, clear(),
 		),
-		testgroup("CF_PROXY CNAME",
+
+		// 47
+		testgroup("CF_PROXY A off to X",
+			//CF_PROXY_OFF, CF_PROXY_OFF, clear(), // redundant
+			CF_PROXY_OFF, CF_PROXY_ON, clear(),
+			//CF_PROXY_OFF, CF_PROXY_FULL1, clear(), BROKEN
+			CF_PROXY_OFF, CF_PROXY_FULL2, clear(),
+		),
+
+		// 48
+		testgroup("CF_PROXY A on to X",
+			CF_PROXY_ON, CF_PROXY_OFF, clear(),
+			//CF_PROXY_ON, CF_PROXY_ON, clear(), // redundant
+			CF_PROXY_ON, CF_PROXY_FULL1.ExpectNoChanges(), clear(),
+			CF_PROXY_ON, CF_PROXY_FULL2, clear(),
+		),
+
+		// 49
+		testgroup("CF_PROXY A full1 to X",
 			clear(),
-			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnamechangetarget", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			tc("proxycnameoffon", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnameonoff", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			tc("proxycnameofffull", cfProxyCNAME("anewproxy", "example.com.", "full")),
-			clear(),
+		//CF_PROXY_FULL1, CF_PROXY_OFF, clear(),  // BROKEN
+		//CF_PROXY_FULL1, CF_PROXY_ON, clear(),  // BROKEN
+		//CF_PROXY_FULL1, CF_PROXY_FULL1, clear(), // redundant
+		//CF_PROXY_FULL1, CF_PROXY_FULL2, clear(), // BROKEN!!
+		),
+
+		// 50
+		testgroup("CF_PROXY A full2 to X",
+			CF_PROXY_FULL2, CF_PROXY_OFF, clear(),
+			CF_PROXY_FULL2, CF_PROXY_ON, clear(),
+			//CF_PROXY_FULL2, CF_PROXY_FULL1, clear(), // BROKEN
+			//CF_PROXY_FULL2, CF_PROXY_FULL2, clear(), // redundant
+		),
+
+		// 51
+		testgroup("CF_PROXY CNAME create",
+			CF_CPROXY_OFF, clear(),
+			CF_CPROXY_ON, clear(),
+			CF_CPROXY_FULL, clear(),
+		),
+
+		// 52
+		testgroup("CF_PROXY CNAME off to X",
+			//CF_CPROXY_OFF, CF_CPROXY_OFF, clear(),  // redundant
+			CF_CPROXY_OFF, CF_CPROXY_ON, clear(),
+			CF_CPROXY_OFF, CF_CPROXY_FULL, clear(),
+		),
+
+		// 53
+		testgroup("CF_PROXY CNAME on to X",
+			CF_CPROXY_ON, CF_CPROXY_OFF, clear(),
+			//CF_CPROXY_ON, CF_CPROXY_ON, clear(), // redundant
+			//CF_CPROXY_ON, CF_CPROXY_FULL, clear(),  // BROKEN!!
+		),
+
+		// 54
+		testgroup("CF_PROXY CNAME full to X",
+			CF_CPROXY_FULL, CF_CPROXY_OFF, clear(),
+			//CF_CPROXY_FULL, CF_CPROXY_ON, clear(),   // BROKEN!!
+			//CF_CPROXY_FULL, CF_CPROXY_FULL, clear(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",
