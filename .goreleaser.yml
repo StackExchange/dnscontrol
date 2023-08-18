@@ -58,7 +58,7 @@ nfpms:
   - id: packages_rpm
     file_name_template: >-
       {{ .ProjectName }}-
-      {{ .Version }}.
+      {{- .Version }}.
       {{- if eq .Arch "386" }}i386
       {{- else if eq .Arch "amd64" }}x86_64
       {{- else }}{{ .Arch }}{{ end }}
