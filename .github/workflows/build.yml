@@ -21,8 +21,6 @@ jobs:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         path: ${{ env.go-mod-path }}
-    - name: Install goreleaser
-      run: go install github.com/goreleaser/goreleaser@latest
     - run: mkdir -p "$TEST_RESULTS"
     - name: Run unit tests
       run: |
@@ -44,15 +42,26 @@ jobs:
         echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
     - name: Reveal version
       run: echo ${{ steps.version.outputs.TAG_NAME }}
-
-    - name: Build binaries (if tagged)
+    -
+      id: build_binaries_tagged
+      name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
-      run: goreleaser build
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: build
       env:
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
-    - name: Build binaries (not tagged)
+    -
+      id: build_binaries_not_tagged
+      name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
-      run: goreleaser build --snapshot
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: build --snapshot
       env:
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
