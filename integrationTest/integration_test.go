@@ -37,23 +37,13 @@ func init() {
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-func CF_PROXY_OFF() *TestCase { return tc("proxyoff", cfProxyA("proxyme", "174.136.107.111", "off")) }
-func CF_PROXY_ON() *TestCase  { return tc("proxyon", cfProxyA("proxyme", "174.136.107.111", "on")) }
-
-// Return a singleton for the _FULL variables.
-func CF_PROXY_FULL1() *TestCase {
-	return tc("proxyfull1", cfProxyA("proxyme", "174.136.107.111", "full"))
-}
-func CF_PROXY_FULL2() *TestCase {
-	return tc("proxyfull2", cfProxyA("proxyme", "174.136.107.222", "full"))
-}
-
-func CF_CPROXY_OFF() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CF_CPROXY_ON() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-
-func CF_CPROXY_FULL() *TestCase {
-	return tc("cproxyfull", cfProxyCNAME("cproxy", "example.com.", "full"))
-}
+func CF_PROXY_OFF() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CF_PROXY_ON() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+func CF_PROXY_FULL1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
+func CF_PROXY_FULL2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
+func CF_CPROXY_OFF() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CF_CPROXY_ON() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+func CF_CPROXY_FULL() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
 
 // ---
 
@@ -1755,10 +1745,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		// These next testgroups attempt every combination of
-		// on/off/full1/full2
-
-		// 46
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
 			CF_PROXY_OFF(), clear(),
@@ -1767,7 +1753,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			CF_PROXY_FULL2(), clear(),
 		),
 
-		// 47
+		// These next testgroups attempt every possible transition between off, on, full1 and full2.
+		// "full1" simulates "full" without the IP being translated.
+		// "full2" simulates "full" WITH the IP translated.
+
 		testgroup("CF_PROXY A off to X",
 			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
 			CF_PROXY_OFF(), CF_PROXY_ON(), clear(),
@@ -1775,55 +1764,48 @@ func makeTests(t *testing.T) []*TestGroup {
 			CF_PROXY_OFF(), CF_PROXY_FULL2(), clear(),
 		),
 
-		// 48
 		testgroup("CF_PROXY A on to X",
 			CF_PROXY_ON(), CF_PROXY_OFF(), clear(),
 			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
-			//CF_PROXY_ON(), CF_PROXY_FULL1(), clear(), // would have no changes
+			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
 			CF_PROXY_ON(), CF_PROXY_FULL2(), clear(),
 		),
 
-		// 49
 		testgroup("CF_PROXY A full1 to X",
 			CF_PROXY_FULL1(), CF_PROXY_OFF(), clear(),
-			//CF_PROXY_FULL1(), CF_PROXY_ON(), clear(), // would have no changes
+			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
 			CF_PROXY_FULL1(), CF_PROXY_FULL2(), clear(),
 		),
 
-		// 50
 		testgroup("CF_PROXY A full2 to X",
 			CF_PROXY_FULL2(), CF_PROXY_OFF(), clear(),
 			CF_PROXY_FULL2(), CF_PROXY_ON(), clear(),
-			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(), // BROKEN
+			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(),
 			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
 		),
 
-		// 51
 		testgroup("CF_PROXY CNAME create",
 			CF_CPROXY_OFF(), clear(),
 			CF_CPROXY_ON(), clear(),
 			CF_CPROXY_FULL(), clear(),
 		),
 
-		// 52
 		testgroup("CF_PROXY CNAME off to X",
 			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
 			CF_CPROXY_OFF(), CF_CPROXY_ON(), clear(),
 			CF_CPROXY_OFF(), CF_CPROXY_FULL(), clear(),
 		),
 
-		// 53
 		testgroup("CF_PROXY CNAME on to X",
 			CF_CPROXY_ON(), CF_CPROXY_OFF(), clear(),
 			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
-			//CF_CPROXY_ON(), CF_CPROXY_FULL(), clear(), // would have no changes
+			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
 		),
 
-		// 54
 		testgroup("CF_PROXY CNAME full to X",
 			CF_CPROXY_FULL(), CF_CPROXY_OFF(), clear(),
-			//CF_CPROXY_FULL(), CF_CPROXY_ON(), clear(), // would have no changes
+			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
 		),
 
