@@ -1685,7 +1685,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 
-			// Removed these for speed.  They were testing if order matters,
+			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
 			//clear(),
 			//tc("multipleA",
@@ -1714,7 +1714,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
 
-			// Repeat the above using CF_TEMP_REDIR instead
+			// Repeat the above tests using CF_TEMP_REDIR instead
 			clear(),
 			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
@@ -1758,6 +1758,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		// "full2" simulates "full" WITH the IP translated.
 
 		testgroup("CF_PROXY A off to X",
+			only("CLOUDFLAREAPI"),
 			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
 			CF_PROXY_OFF(), CF_PROXY_ON(), clear(),
 			CF_PROXY_OFF(), CF_PROXY_FULL1(), clear(),
@@ -1765,6 +1766,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("CF_PROXY A on to X",
+			only("CLOUDFLAREAPI"),
 			CF_PROXY_ON(), CF_PROXY_OFF(), clear(),
 			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
 			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
@@ -1772,6 +1774,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("CF_PROXY A full1 to X",
+			only("CLOUDFLAREAPI"),
 			CF_PROXY_FULL1(), CF_PROXY_OFF(), clear(),
 			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
@@ -1779,6 +1782,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("CF_PROXY A full2 to X",
+			only("CLOUDFLAREAPI"),
 			CF_PROXY_FULL2(), CF_PROXY_OFF(), clear(),
 			CF_PROXY_FULL2(), CF_PROXY_ON(), clear(),
 			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(),
@@ -1786,24 +1790,28 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("CF_PROXY CNAME create",
+			only("CLOUDFLAREAPI"),
 			CF_CPROXY_OFF(), clear(),
 			CF_CPROXY_ON(), clear(),
 			CF_CPROXY_FULL(), clear(),
 		),
 
 		testgroup("CF_PROXY CNAME off to X",
+			only("CLOUDFLAREAPI"),
 			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
 			CF_CPROXY_OFF(), CF_CPROXY_ON(), clear(),
 			CF_CPROXY_OFF(), CF_CPROXY_FULL(), clear(),
 		),
 
 		testgroup("CF_PROXY CNAME on to X",
+			only("CLOUDFLAREAPI"),
 			CF_CPROXY_ON(), CF_CPROXY_OFF(), clear(),
 			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
 			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
 		),
 
 		testgroup("CF_PROXY CNAME full to X",
+			only("CLOUDFLAREAPI"),
 			CF_CPROXY_FULL(), CF_CPROXY_OFF(), clear(),
 			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
