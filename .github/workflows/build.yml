@@ -113,6 +113,7 @@ jobs:
         HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
         HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
         NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+        NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
         POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
         ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
         TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
@@ -155,6 +156,8 @@ jobs:
         NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
         NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+
+        NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
 
         POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
         POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
@@ -217,6 +220,7 @@ jobs:
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
@@ -259,6 +263,8 @@ jobs:
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+
+      NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
 
       POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
       POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
