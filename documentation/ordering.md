@@ -1,6 +1,7 @@
 # Ordering of DNS records
 
 DNSControl tries to automatically reorder the pending changes based on the dependencies of the records.
+For example, if an A record and a CNAME that points to the A record are created at the same time, some providers require the A record to be created before the CNAME.
 
 Some providers explicitly require the targets of certain records like CNAMEs to exist, and source records to be valid. This makes it not always possible to "just" apply the pending changes in any order. This is why reordering the records based on the dependencies and the type of operation is required.
 
