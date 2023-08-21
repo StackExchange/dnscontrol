@@ -3,11 +3,12 @@ package cloudflare
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/idna"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -389,7 +390,7 @@ func genComparable(rec *models.RecordConfig) string {
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
-			if proxy == "on" {
+			if proxy == "on" || proxy == "full" {
 				proxy = "true"
 			}
 			if proxy == "off" {
@@ -449,6 +450,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	default:
 		e := oldrec.Original.(cloudflare.DNSRecord)
 		proxy := e.Proxiable && newrec.Metadata[metaProxy] != "off"
+		//fmt.Fprintf(os.Stderr, "DEBUG: proxy := %v && %v != off is... %v\n", e.Proxiable, newrec.Metadata[metaProxy], proxy)
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, newrec) },
@@ -636,6 +638,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	// look for ip conversions and transform records
 	for _, rec := range dc.Records {
+		// Only transform A records
 		if rec.Type != "A" {
 			continue
 		}
