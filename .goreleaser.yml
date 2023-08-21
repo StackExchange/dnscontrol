@@ -12,11 +12,11 @@ builds:
 # List of combinations of GOOS + GOARCH + GOARM to ignore.
     ignore:
       - goos: linux
-        goarch: 386
+        goarch: "386"
       - goos: windows
-        goarch: 386
+        goarch: "386"
       - goos: freebsd
-        goarch: 386
+        goarch: "386"
     ldflags:
       - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
@@ -98,22 +98,6 @@ dockers:
     - "--label=org.opencontainers.image.source={{ .GitURL }}"
     - "--platform=linux/amd64"
   - image_templates:
-    - &386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-386"
-    - &386_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-386"
-    goos: linux
-    goarch: '386'
-    use: buildx
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--label=org.opencontainers.image.created={{ .Date }}"
-    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-    - "--label=org.opencontainers.image.version={{ .Version }}"
-    - "--label=org.opencontainers.image.source={{ .GitURL }}"
-    - "--platform=linux/i386"
-  - image_templates:
     - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
     - &arm_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
     goos: linux
@@ -133,24 +117,20 @@ docker_manifests:
   - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
     image_templates:
       - *amd_image
-      - *386_image
       - *arm_image
   - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
     image_templates:
       - *amd_image_ghcr
-      - *386_image_ghcr
       - *arm_image_ghcr
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     skip_push: auto
     image_templates:
       - *amd_image
-      - *386_image
       - *arm_image
   - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:latest"
     skip_push: auto
     image_templates:
       - *amd_image_ghcr
-      - *386_image_ghcr
       - *arm_image_ghcr
 checksum:
   name_template: 'checksums.txt'
