@@ -9,6 +9,14 @@ builds:
       - windows
       - darwin
       - freebsd
+# List of combinations of GOOS + GOARCH + GOARM to ignore.
+    ignore:
+      - goos: linux
+        goarch: 386
+      - goos: windows
+        goarch: 386
+      - goos: freebsd
+        goarch: 386
     ldflags:
       - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
