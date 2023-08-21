@@ -70,7 +70,7 @@ EXAMPLES:
    dnscontrol get-zones gmain GANDI_V5 example.com other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones --format=tsv bind BIND example.com
-   dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones --format=djs --out=draft.js gcloud GCLOUD example.com`,
 	}
 }())
 
