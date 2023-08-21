@@ -12,6 +12,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/urfave/cli/v2"
+
+	"github.com/fatih/color"
 )
 
 // categories of commands
@@ -72,6 +74,11 @@ func Run(v string) int {
 			Name:        "disableordering",
 			Usage:       "Disables the dns ordering part of the diff2 package",
 			Destination: &diff2.DisableOrdering,
+		},
+		&cli.BoolFlag{
+			Name:        "no-colors",
+			Usage:       "Disable colors",
+			Destination: &color.NoColor,
 			Value:       false,
 		},
 	}
