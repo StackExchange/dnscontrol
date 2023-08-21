@@ -41,7 +41,10 @@ Following metadata are available:
   <br>Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`.
   <br>Please see [PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.
   <br>**Note that these tokens are case-sensitive!**
-
+- `soa_edit_api` is the default SOA serial method that is used for zone created with the API
+  <br> Can be one of `DEFAULT`, `INCREASE`, `EPOCH`, `SOA-EDIT` or `SOA-EDIT-INCREASE`, default format is YYYYMMDD01.
+  <br>Please see [PowerDNS SOA-EDIT-DNSUPDATE documentation](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-edit-dnsupdate-settings) for explanation of the kinds.
+  <br>**Note that these tokens are case-sensitive!**
 
 ## Usage
 An example configuration:
