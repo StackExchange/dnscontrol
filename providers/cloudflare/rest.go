@@ -3,9 +3,10 @@ package cloudflare
 import (
 	"context"
 	"fmt"
-	"golang.org/x/net/idna"
 	"strconv"
 	"strings"
+
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/cloudflare/cloudflare-go"
@@ -196,7 +197,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	if msg == "" {
 		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
 	}
-	if rec.Metadata[metaProxy] == "on" {
+	if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
 	}
 	arr := []*models.Correction{{
@@ -232,7 +233,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			// Records are created with the proxy off. If proxy should be
 			// enabled, we do a second API call.
 			resultID := resp.ID
-			if rec.Metadata[metaProxy] == "on" {
+			if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 				return c.modifyRecord(domainID, resultID, true, rec)
 			}
 			return nil
