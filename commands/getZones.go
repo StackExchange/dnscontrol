@@ -172,7 +172,7 @@ func GetZone(args GetZoneArgs) error {
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
-			return fmt.Errorf("provider type %s:%s cannot list zones to use the \"all\" feature", args.CredName, args.ProviderName)
+			return fmt.Errorf("provider type %s:%s cannot list zones to use the 'all' feature", args.CredName, args.ProviderName)
 		}
 		zones, err = lister.ListZones()
 		if err != nil {
@@ -329,9 +329,9 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "CAA":
 		return makeCaa(rec, ttlop)
 	case "DS":
-		target = fmt.Sprintf("%d, %d, %d, \"%s\"", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	case "MX":
-		target = fmt.Sprintf("%d, \"%s\"", rec.MxPreference, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, "%s"`, rec.MxPreference, rec.GetTargetField())
 	case "NAPTR":
 		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
 			rec.NaptrOrder,                   // 1
@@ -342,14 +342,14 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 			jsonQuoted(rec.GetTargetField()), // .
 		)
 	case "SSHFP":
-		target = fmt.Sprintf("%d, %d, \"%s\"", rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, %d, "%s"`, rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":
 		rec.Type = "//SOA"
-		target = fmt.Sprintf("\"%s\", \"%s\", %d, %d, %d, %d, %d", rec.GetTargetField(), rec.SoaMbox, rec.SoaSerial, rec.SoaRefresh, rec.SoaRetry, rec.SoaExpire, rec.SoaMinttl)
+		target = fmt.Sprintf(`"%s", "%s", %d, %d, %d, %d, %d`, rec.GetTargetField(), rec.SoaMbox, rec.SoaSerial, rec.SoaRefresh, rec.SoaRetry, rec.SoaExpire, rec.SoaMinttl)
 	case "SRV":
-		target = fmt.Sprintf("%d, %d, %d, \"%s\"", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
 	case "TLSA":
-		target = fmt.Sprintf("%d, %d, %d, \"%s\"", rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
 		if len(rec.TxtStrings) == 1 {
 			target = `"` + rec.TxtStrings[0] + `"`
@@ -362,38 +362,38 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		// DnsControl uses the API to get this info. NAMESERVER() is just
 		// to override that when needed.
 		if rec.Name == "@" {
-			return fmt.Sprintf("//NAMESERVER(\"%s\")", target)
+			return fmt.Sprintf(`//NAMESERVER("%s")`, target)
 		}
-		target = "\"" + target + "\""
+		target = `"` + target + `"`
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
 	default:
-		target = "\"" + target + "\""
+		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf("%s(\"%s\", %s%s%s)", rec.Type, rec.Name, target, cfproxy, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s)`, rec.Type, rec.Name, target, cfproxy, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	var target string
 	if rec.CaaFlag == 128 {
-		target = fmt.Sprintf("\"%s\", \"%s\", CAA_CRITICAL", rec.CaaTag, rec.GetTargetField())
+		target = fmt.Sprintf(`"%s", "%s", CAA_CRITICAL`, rec.CaaTag, rec.GetTargetField())
 	} else {
-		target = fmt.Sprintf("\"%s\", \"%s\"", rec.CaaTag, rec.GetTargetField())
+		target = fmt.Sprintf(`"%s", "%s"`, rec.CaaTag, rec.GetTargetField())
 	}
-	return fmt.Sprintf("%s(\"%s\", %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s)`, rec.Type, rec.Name, target, ttlop)
 
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
 
 func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 	items := []string{
-		"\"" + rec.Name + "\"",
-		"\"" + rec.R53Alias["type"] + "\"",
-		"\"" + rec.GetTargetField() + "\"",
+		`"` + rec.Name + `"`,
+		`"` + rec.R53Alias["type"] + `"`,
+		`"` + rec.GetTargetField() + `"`,
 	}
 	if z, ok := rec.R53Alias["zone_id"]; ok {
-		items = append(items, "R53_ZONE(\""+z+"\")")
+		items = append(items, `R53_ZONE("`+z+`")`)
 	}
 	if ttl != 0 {
 		items = append(items, fmt.Sprintf("TTL(%d)", ttl))
