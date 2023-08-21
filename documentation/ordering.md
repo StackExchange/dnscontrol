@@ -19,7 +19,9 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 
 DNSControl can produce a warning stating it found `unresolved records` this is most likely because of a cycle in the targets of your records. For instance in the code sample below both `foo` and `bar` depend on each other and thus will produce the warning.
 
-But have no fear, DNSControl will still try to push both `foo` and `bar` to your provider, it just can't determine the order and thus will append all these unresolved records as last records to update.
+Such updates will be done after all other updates to that domain.
+
+In this (contrived) example, it is impossible to know which CNAME should be created first. Therefore they will be done in a non-deterministic order after all other updates to that domain:
 
 ```js
 D('example.com', REG_NONE, DnsProvider(DNS_BIND),
