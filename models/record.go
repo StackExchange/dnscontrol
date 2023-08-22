@@ -390,6 +390,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.CAA).Value = rc.GetTargetField()
 	case dns.TypeCNAME:
 		rr.(*dns.CNAME).Target = rc.GetTargetField()
+	case dns.TypeDHCID:
+		rr.(*dns.DHCID).Digest = rc.GetTargetField()
 	case dns.TypeDS:
 		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
 		rr.(*dns.DS).DigestType = rc.DsDigestType
@@ -446,8 +448,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = rc.TxtStrings
-	case dns.TypeDHCID:
-		rr.(*dns.DHCID).Digest = rc.GetTargetField()
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 		// We panic so that we quickly find any switch statements

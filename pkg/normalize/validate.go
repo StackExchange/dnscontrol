@@ -222,7 +222,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA", "DS", "DHCID":
+	case "CAA", "DHCID", "DS", "IMPORT_TRANSFORM", "SSHFP", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -689,6 +689,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
+	capabilityCheck("DHCID", providers.CanUseDHCID),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
@@ -697,7 +698,6 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
-	capabilityCheck("DHCID", providers.CanUseDHCID),
 
 	// DS needs special record-level checks
 	{

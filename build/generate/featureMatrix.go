@@ -183,6 +183,10 @@ func matrixData() *FeatureMatrix {
 			providers.CanUseCAA,
 		)
 		setCapability(
+			DomainModifierDhcid,
+			providers.CanUseDHCID,
+		)
+		setCapability(
 			DomainModifierDs,
 			providers.CanUseDS,
 		)
@@ -213,10 +217,6 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierTlsa,
 			providers.CanUseTLSA,
-		)
-		setCapability(
-			DomainModifierDhcid,
-			providers.CanUseDHCID,
 		)
 		setCapability(
 			GetZones,
