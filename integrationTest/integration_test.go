@@ -35,6 +35,18 @@ func init() {
 	flag.Parse()
 }
 
+// Helper constants/funcs for the CLOUDFLARE proxy testing:
+
+func CF_PROXY_OFF() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CF_PROXY_ON() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+func CF_PROXY_FULL1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
+func CF_PROXY_FULL2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
+func CF_CPROXY_OFF() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CF_CPROXY_ON() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+func CF_CPROXY_FULL() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
+
+// ---
+
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
@@ -1294,6 +1306,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
+				"GCLOUD",
 				"HEXONET",
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
@@ -1672,7 +1685,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 
-			// Removed these for speed.  They were testing if order matters,
+			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
 			//clear(),
 			//tc("multipleA",
@@ -1701,7 +1714,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
 
-			// Repeat the above using CF_TEMP_REDIR instead
+			// Repeat the above tests using CF_TEMP_REDIR instead
 			clear(),
 			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
@@ -1725,7 +1738,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
 			),
 			// TODO(tlim): Fix this test case:
-			//clear(),
 			//tc("tempmultiple3",
 			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
@@ -1733,18 +1745,76 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		testgroup("CF_PROXY",
+		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
-			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
-			tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
-			tc("proxychangeoffon", cfProxyA("proxyme", "1.2.3.5", "on")),
-			clear(),
-			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			tc("proxycnameoffon", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnameonoff", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			clear(),
+			CF_PROXY_OFF(), clear(),
+			CF_PROXY_ON(), clear(),
+			CF_PROXY_FULL1(), clear(),
+			CF_PROXY_FULL2(), clear(),
+		),
+
+		// These next testgroups attempt every possible transition between off, on, full1 and full2.
+		// "full1" simulates "full" without the IP being translated.
+		// "full2" simulates "full" WITH the IP translated.
+
+		testgroup("CF_PROXY A off to X",
+			only("CLOUDFLAREAPI"),
+			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
+			CF_PROXY_OFF(), CF_PROXY_ON(), clear(),
+			CF_PROXY_OFF(), CF_PROXY_FULL1(), clear(),
+			CF_PROXY_OFF(), CF_PROXY_FULL2(), clear(),
+		),
+
+		testgroup("CF_PROXY A on to X",
+			only("CLOUDFLAREAPI"),
+			CF_PROXY_ON(), CF_PROXY_OFF(), clear(),
+			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
+			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
+			CF_PROXY_ON(), CF_PROXY_FULL2(), clear(),
+		),
+
+		testgroup("CF_PROXY A full1 to X",
+			only("CLOUDFLAREAPI"),
+			CF_PROXY_FULL1(), CF_PROXY_OFF(), clear(),
+			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
+			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
+			CF_PROXY_FULL1(), CF_PROXY_FULL2(), clear(),
+		),
+
+		testgroup("CF_PROXY A full2 to X",
+			only("CLOUDFLAREAPI"),
+			CF_PROXY_FULL2(), CF_PROXY_OFF(), clear(),
+			CF_PROXY_FULL2(), CF_PROXY_ON(), clear(),
+			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(),
+			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
+		),
+
+		testgroup("CF_PROXY CNAME create",
+			only("CLOUDFLAREAPI"),
+			CF_CPROXY_OFF(), clear(),
+			CF_CPROXY_ON(), clear(),
+			CF_CPROXY_FULL(), clear(),
+		),
+
+		testgroup("CF_PROXY CNAME off to X",
+			only("CLOUDFLAREAPI"),
+			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
+			CF_CPROXY_OFF(), CF_CPROXY_ON(), clear(),
+			CF_CPROXY_OFF(), CF_CPROXY_FULL(), clear(),
+		),
+
+		testgroup("CF_PROXY CNAME on to X",
+			only("CLOUDFLAREAPI"),
+			CF_CPROXY_ON(), CF_CPROXY_OFF(), clear(),
+			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
+			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
+		),
+
+		testgroup("CF_PROXY CNAME full to X",
+			only("CLOUDFLAREAPI"),
+			CF_CPROXY_FULL(), CF_CPROXY_OFF(), clear(),
+			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
+			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",

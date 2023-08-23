@@ -16,8 +16,8 @@ parameter_types:
   overhead1: string?
   raw: string?
   ttl: Duration?
-  txtMaxSize: string[]
-  parts: number?
+  txtMaxSize: number?
+  parts: string[]
   flatten: string[]?
 ---
 

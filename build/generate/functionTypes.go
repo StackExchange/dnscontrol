@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"golang.org/x/text/cases"
@@ -186,6 +187,10 @@ func generateFunctionTypes() (string, error) {
 			})
 		}
 	}
+
+	sort.Slice(funcs, func(i, j int) bool {
+		return funcs[i].Name < funcs[j].Name
+	})
 
 	content := ""
 	for _, f := range funcs {

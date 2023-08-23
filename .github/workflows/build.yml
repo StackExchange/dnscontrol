@@ -21,8 +21,6 @@ jobs:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         path: ${{ env.go-mod-path }}
-    - name: Install goreleaser
-      run: go install github.com/goreleaser/goreleaser@latest
     - run: mkdir -p "$TEST_RESULTS"
     - name: Run unit tests
       run: |
@@ -44,15 +42,26 @@ jobs:
         echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
     - name: Reveal version
       run: echo ${{ steps.version.outputs.TAG_NAME }}
-
-    - name: Build binaries (if tagged)
+    -
+      id: build_binaries_tagged
+      name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
-      run: goreleaser build
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: build
       env:
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
-    - name: Build binaries (not tagged)
+    -
+      id: build_binaries_not_tagged
+      name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
-      run: goreleaser build --snapshot
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: build --snapshot
       env:
         GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
@@ -104,6 +113,7 @@ jobs:
         HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
         HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
         NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+        NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
         POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
         ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
         TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
@@ -146,6 +156,8 @@ jobs:
         NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
         NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+
+        NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
 
         POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
         POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
@@ -208,6 +220,7 @@ jobs:
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
@@ -250,6 +263,8 @@ jobs:
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+
+      NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
 
       POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
       POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}

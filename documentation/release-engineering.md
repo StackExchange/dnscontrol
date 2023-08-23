@@ -2,15 +2,15 @@
 
 These are the instructions for producing a release.
 
-CircleCI will do most of the work for you. You will need to edit the draft release notes.
+GitHub Actions (GHA) will do most of the work for you. You will need to edit the draft release notes and click a button to make the release public.
 
 Please change the version number as appropriate.  Substitute (for example)
-`v3.28.0` any place you see `$VERSION` in this doc.
+`v4.2.0` any place you see `$VERSION` in this doc.
 
 ## Step 1. Rebuild generated files
 
 ```shell
-export VERSION=v3.28.0
+export VERSION=v4.2.0
 git checkout master
 git pull
 go fmt ./...
@@ -22,26 +22,21 @@ git commit -a -m "Update generated files for $VERSION"
 ## Step 2. Tag the commit in master that you want to release
 
 ```shell
-export VERSION=v3.28.0
+export VERSION=v4.2.0
 git tag -m "Release $VERSION" -a $VERSION
 git push origin --tags
 ```
 
-See [Git Docs](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for more examples.
-
 Soon after
-CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol) Workflow and produce all of the artifacts for the release.
-
-![CircleCI Release Screenshot](assets/release-engineering/circleci_release.png)
+GitHub will start an [Action](https://github.com/StackExchange/dnscontrol/actions) Workflow called "draft release" which will build all release binaries and write the draft release notes.
 
 ## Step 3. Create the release notes
 
 The draft release notes are created for you. In this step you'll edit them.
 
-The CircleCI build uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/StackExchange/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
+The GHA workflow uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/StackExchange/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
 These notes are just a draft and needs considerable editing.
-You can also find a copy of the release notes in the CircleCI `release` job Artifacts.
-These release notes will be used in multiple places (release notes, email announcements, etc.)
+These release notes are used elsewhere, in particular the email step.
 
 Release notes style guide:
 
@@ -118,59 +113,38 @@ If you are at Stack Overflow:
 ## Tip: How to bump the major version
 
 If you bump the major version, you need to change all the source
-files.  The last time this was done (v2 -> v3) these two commands
+files.  The last time this was done (v3 -> v4) these two commands
 were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v3@github.com/StackExchange/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v3 *)
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
 
-## Tip: Configuring CircleCI integration tests
+## Tip: Configuring GHA integration tests
 
 ### Overview
 
-CircleCI is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the GCLOUD provider integration test is only run if `GCLOUD_DOMAIN` is set.
+GHA is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the Google Cloud provider integration test is only run if `GCLOUD_DOMAIN` is set.
 
 * Q: Where is the list of providers to run integration tests on?
-* A: In `.circleci/config.yml` look for the "provider" list:
-
-Example:
-
-```yaml
-workflows:
-  build:
-    jobs:
-      - integration-tests:
-          matrix:
-            parameters:
-              provider:
-                - GCLOUD
-```
+* A: In `.github/workflows/build.yml`: (1) the "PROVIDERS" list, (2) the `integrtests-diff1` section, (3) the `integrtests-diff2` section.
 
 * Q: Where are non-secret environment variables stored?
-* A: In `.circleci/config.yml` look for:
-
-```yaml
-jobs:
-  integration-tests:
-    environment: # environment variables for the build itself
-      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-      GCLOUD_PROJECT: dnscontrol-dev
-```
+* A: GHA calls them "Variables". Update them here: https://github.com/StackExchange/dnscontrol/settings/variables/actions
 
 * Q: Where are SECRET environment variables stored?
-* A: In the project: [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables)
+* A: GHA calls them "Secrets". Update them here: https://github.com/StackExchange/dnscontrol/settings/secrets/actions
 
 ### How do I add a single new integration test?
 
-1. Edit `.circleci/config.yml`
-2. Add the name of the provider (ALL CAPS) to the "provider" list.
-3. Any non-secret env variables needed? Add them to the "environment" section.
-4. Any secrets?  Add them to the [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables)
-5. Add the `_DOMAIN` environment variable to [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables). It is not secret, but must be set as part of the project.
+1. Edit `.github/workflows/build.yml`
+2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
+3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/StackExchange/dnscontrol/settings/variables/actions
+4. All other variables should be stored as secrets (for consistency).  Add them to both the `integrtests-diff1` section and the `integrtests-diff2` section.
+Set them in GHA via https://github.com/StackExchange/dnscontrol/settings/secrets/actions
 
 ### How do I add a "bring your own keys" integration test?
 
@@ -180,36 +154,12 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
     If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
 
-2. Create a CircleCI account
+2. In your fork, set the `${DOMAIN}_DOMAIN` variable in GHA via Settings :: Secrets and variables :: Actions :: Variables.
 
-    Go to [circleci.com](https://circleci.com/signup/) and follow the instructions.
-
-3. Set up a CircleCI project
-
-    On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file).
-
-    If you get the error message below, go to the "Organization Settings" (left nav). Then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
-
-    >"Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."
-
-4. Add the secret env variables:
-
-    Go to Project Settings (for this project), and "Environment Variables".
-
-   * Add env variable `provider_DOMAIN`  where "provider" is the all caps name of the provider. For example add `BIND_DOMAIN` with the value "example.com"
+3. In your fork, set any secrets in GHA via Settings :: Secrets and variables :: Actions :: Secrets.
 
 5. Start a build
 
-    From the pipelines page, you can trigger a build by setting the branch to "master" then click "trigger".
-
-    Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
-
-    Verify that your tests are working properly by making a branch.  You'll see on the `Run integration tests for _____ provider` step the results of the test.
-
-    Some notes:
-
-   * Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
-   * Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CircleCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 

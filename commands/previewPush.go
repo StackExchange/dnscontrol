@@ -181,7 +181,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 					if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
 						zones, err := lister.ListZones()
 						if err != nil {
-							out.Errorf("ERROR: %s", err.Error())
+							out.Errorf("ERROR: %s\n", err.Error())
 							return
 						}
 						aceZoneName, _ := idna.ToASCII(domain.Name)
@@ -208,7 +208,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 
 			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
 			if err != nil {
-				out.Errorf("ERROR: %s", err.Error())
+				out.Errorf("ERROR: %s\n", err.Error())
 				return
 			}
 			domain.Nameservers = nsList
