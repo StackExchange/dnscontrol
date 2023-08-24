@@ -104,7 +104,13 @@ Running `dnscontrol preview` will talk to the providers (here name.com as regist
 
 Running `dnscontrol push` will make those changes with the provider and my dns records will be correctly updated.
 
-See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site.
+The easiest way to run DNSControl is to use the Docker container:
+
+```
+docker run --rm -it -v "$(pwd):/dns"  ghcr.io/stackexchange/dnscontrol preview
+```
+
+See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site to get started!
 
 ## Benefits
 
