@@ -42,6 +42,7 @@ Currently supported DNS providers:
 - Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
+- Mythic Beasts
 - Namecheap
 - Name.com
 - Netcup
