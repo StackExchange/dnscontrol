@@ -20,7 +20,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
@@ -144,6 +144,13 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 										record.GetTargetField(),
 									)
 								}
+								if record.Type == "CAA" {
+									resourceRecord.Value = fmt.Sprintf("%d %s \"%s\"",
+										record.CaaFlag,
+										record.CaaTag,
+										record.GetTargetField(),
+									)
+								}
 
 								resourceRecords = append(resourceRecords, resourceRecord)
 							}
@@ -232,6 +239,14 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 					record.SrvPriority,
 					record.SrvWeight,
 					record.SrvPort,
+					record.GetTargetField(),
+				)
+			}
+
+			if record.Type == "CAA" {
+				resourceRecord.Value = fmt.Sprintf("%d %s \"%s\"",
+					record.CaaFlag,
+					record.CaaTag,
 					record.GetTargetField(),
 				)
 			}
