@@ -204,12 +204,6 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //
 // Example providers include: BIND, AUTODNS
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
-
-	if len(existing) == 0 {
-		// Nothing previously existed. No need to output a list of individual changes.
-		return nil, true, nil
-	}
-
 	// Only return the messages.  The caller has the list of records needed to build the new zone.
 	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
 	changes := false
