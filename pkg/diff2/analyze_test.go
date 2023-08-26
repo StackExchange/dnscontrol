@@ -297,29 +297,29 @@ ChangeList: len=3
 				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12},
 			},
 			wantMsgs: `
-± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 + CREATE labf.f.com TXT "foo" ttl=300
+± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)
 - DELETE labh.f.com CNAME labd.f.com. ttl=300
 + CREATE labh.f.com A 1.2.3.4 ttl=300
-+ CREATE laba.f.com A 1.2.3.5 ttl=300
 - DELETE labc.f.com CNAME laba.f.com. ttl=300
 ± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)
-± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)
+± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
++ CREATE laba.f.com A 1.2.3.5 ttl=300
 		`,
 			wantChangeRSet: `
 ChangeList: len=8
-00: Change: verb=CHANGE
-    key={laba.f.com MX}
-    old=[10 laba.f.com.]
-    new=[20 labb.f.com.]
-    msg=["± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
-01: Change: verb=CREATE
+00: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
+01: Change: verb=CHANGE
+    key={labg.f.com NS}
+    old=[laba.f.com. labb.f.com. labc.f.com. labe.f.com.]
+    new=[laba.f.com. labb.f.com. labe.f.com. labf.f.com.]
+    msg=["± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)"]
 02: Change: verb=DELETE
     key={labh.f.com CNAME}
     old=[labd.f.com.]
@@ -328,38 +328,38 @@ ChangeList: len=8
     key={labh.f.com A}
     new=[1.2.3.4]
     msg=["+ CREATE labh.f.com A 1.2.3.4 ttl=300"]
-04: Change: verb=CHANGE
-    key={laba.f.com A}
-    old=[1.2.3.4]
-    new=[1.2.3.4 1.2.3.5]
-    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
-05: Change: verb=DELETE
+04: Change: verb=DELETE
     key={labc.f.com CNAME}
     old=[laba.f.com.]
     msg=["- DELETE labc.f.com CNAME laba.f.com. ttl=300"]
-06: Change: verb=CHANGE
+05: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
     msg=["± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)" "± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)" "± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)" "± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
+06: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba.f.com.]
+    new=[20 labb.f.com.]
+    msg=["± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
 07: Change: verb=CHANGE
-    key={labg.f.com NS}
-    old=[laba.f.com. labb.f.com. labc.f.com. labe.f.com.]
-    new=[laba.f.com. labb.f.com. labe.f.com. labf.f.com.]
-    msg=["± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)"]
-		`,
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    new=[1.2.3.4 1.2.3.5]
+    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300"]
+	`,
 			wantMsgsLabel: `
 + CREATE labf.f.com TXT "foo" ttl=300
+± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)
 - DELETE labh.f.com CNAME labd.f.com. ttl=300
 + CREATE labh.f.com A 1.2.3.4 ttl=300
-+ CREATE laba.f.com A 1.2.3.5 ttl=300
-± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 - DELETE labc.f.com CNAME laba.f.com. ttl=300
 ± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)
-± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)
++ CREATE laba.f.com A 1.2.3.5 ttl=300
+± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 			`,
 			wantChangeLabel: `
 ChangeList: len=6
@@ -368,15 +368,15 @@ ChangeList: len=6
     new=["foo"]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
 01: Change: verb=CHANGE
+    key={labg.f.com }
+    old=[laba.f.com. labb.f.com. labc.f.com. labe.f.com.]
+    new=[laba.f.com. labb.f.com. labe.f.com. labf.f.com.]
+    msg=["± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)"]
+02: Change: verb=CHANGE
     key={labh.f.com }
     old=[labd.f.com.]
     new=[1.2.3.4]
     msg=["- DELETE labh.f.com CNAME labd.f.com. ttl=300" "+ CREATE labh.f.com A 1.2.3.4 ttl=300"]
-02: Change: verb=CHANGE
-    key={laba.f.com }
-    old=[1.2.3.4 10 laba.f.com.]
-    new=[1.2.3.4 1.2.3.5 20 labb.f.com.]
-    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300" "± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
 03: Change: verb=DELETE
     key={labc.f.com }
     old=[laba.f.com.]
@@ -387,13 +387,12 @@ ChangeList: len=6
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
     msg=["± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)" "± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)" "± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)" "± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
 05: Change: verb=CHANGE
-    key={labg.f.com }
-    old=[laba.f.com. labb.f.com. labc.f.com. labe.f.com.]
-    new=[laba.f.com. labb.f.com. labe.f.com. labf.f.com.]
-    msg=["± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)"]
-		`,
+    key={laba.f.com }
+    old=[1.2.3.4 10 laba.f.com.]
+    new=[1.2.3.4 1.2.3.5 20 labb.f.com.]
+    msg=["+ CREATE laba.f.com A 1.2.3.5 ttl=300" "± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
+        `,
 			wantMsgsRec: `
-± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 ± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)
 ± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)
@@ -403,56 +402,57 @@ ChangeList: len=6
 - DELETE labh.f.com CNAME labd.f.com. ttl=300
 + CREATE labh.f.com A 1.2.3.4 ttl=300
 - DELETE labc.f.com CNAME laba.f.com. ttl=300
+± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 + CREATE laba.f.com A 1.2.3.5 ttl=300
 		`,
 			wantChangeRec: `
 ChangeList: len=11
 00: Change: verb=CHANGE
-    key={laba.f.com MX}
-    old=[10 laba.f.com.]
-    new=[20 labb.f.com.]
-    msg=["± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
-01: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.15]
     new=[10.10.10.95]
     msg=["± MODIFY labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)"]
-02: Change: verb=CHANGE
+01: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.16]
     new=[10.10.10.96]
     msg=["± MODIFY labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)"]
-03: Change: verb=CHANGE
+02: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.17]
     new=[10.10.10.97]
     msg=["± MODIFY labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)"]
-04: Change: verb=CHANGE
+03: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.18]
     new=[10.10.10.98]
     msg=["± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
-05: Change: verb=CREATE
+04: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
-06: Change: verb=CHANGE
+05: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[labc.f.com.]
     new=[labf.f.com.]
     msg=["± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)"]
-07: Change: verb=DELETE
+06: Change: verb=DELETE
     key={labh.f.com CNAME}
     old=[labd.f.com.]
     msg=["- DELETE labh.f.com CNAME labd.f.com. ttl=300"]
-08: Change: verb=CREATE
+07: Change: verb=CREATE
     key={labh.f.com A}
     new=[1.2.3.4]
     msg=["+ CREATE labh.f.com A 1.2.3.4 ttl=300"]
-09: Change: verb=DELETE
+08: Change: verb=DELETE
     key={labc.f.com CNAME}
     old=[laba.f.com.]
     msg=["- DELETE labc.f.com CNAME laba.f.com. ttl=300"]
+09: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba.f.com.]
+    new=[20 labb.f.com.]
+    msg=["± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)"]
 10: Change: verb=CREATE
     key={laba.f.com A}
     new=[1.2.3.5]

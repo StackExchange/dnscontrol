@@ -27,23 +27,21 @@ func Test_CreateGraph(t *testing.T) {
 
 	nodes = graph.Tree.Get("someserver.example.com")
 	assert.Len(t, nodes, 1)
-	assert.Len(t, nodes[0].Edges, 3)
+	// *.hq.example.com is added once
+	assert.Len(t, nodes[0].Edges, 2)
 	assert.Equal(t, "mail.example.com", nodes[0].Edges[0].Node.Data.GetName())
 	assert.Equal(t, dnsgraph.IncomingEdge, nodes[0].Edges[0].Direction)
 	assert.Equal(t, "*.hq.example.com", nodes[0].Edges[1].Node.Data.GetName())
 	assert.Equal(t, dnsgraph.OutgoingEdge, nodes[0].Edges[1].Direction)
-	assert.Equal(t, "*.hq.example.com", nodes[0].Edges[2].Node.Data.GetName())
-	assert.Equal(t, dnsgraph.OutgoingEdge, nodes[0].Edges[2].Direction)
 
 	nodes = graph.Tree.Get("a.hq.example.com")
 	assert.Len(t, nodes, 1)
-	assert.Len(t, nodes[0].Edges, 3)
+	// someserver.example.com is added once
+	assert.Len(t, nodes[0].Edges, 2)
 	assert.Equal(t, "example.com", nodes[0].Edges[0].Node.Data.GetName())
 	assert.Equal(t, dnsgraph.OutgoingEdge, nodes[0].Edges[0].Direction)
 	assert.Equal(t, "someserver.example.com", nodes[0].Edges[1].Node.Data.GetName())
 	assert.Equal(t, dnsgraph.IncomingEdge, nodes[0].Edges[1].Direction)
-	assert.Equal(t, "someserver.example.com", nodes[0].Edges[2].Node.Data.GetName())
-	assert.Equal(t, dnsgraph.IncomingEdge, nodes[0].Edges[2].Direction)
 }
 
 func Test_RemoveNode(t *testing.T) {
@@ -65,7 +63,6 @@ func Test_RemoveNode(t *testing.T) {
 	nodes = graph.Tree.Get("a.hq.example.com")
 	assert.Len(t, nodes, 1)
 
-	assert.Len(t, nodes[0].Edges, 2)
+	assert.Len(t, nodes[0].Edges, 1)
 	assert.Equal(t, "someserver.example.com", nodes[0].Edges[0].Node.Data.GetName())
-	assert.Equal(t, "someserver.example.com", nodes[0].Edges[1].Node.Data.GetName())
 }

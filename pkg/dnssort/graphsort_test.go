@@ -73,21 +73,21 @@ func Test_graphsort(t *testing.T) {
 		),
 	)
 
-	t.Run("Self dependency added on the end",
+	t.Run("Dependency on the same named record resolves in correct order",
 		executeGraphSort(
 			[]testutils.StubRecord{
 				{NameFQDN: "a.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "a.example.com"}}},
 				{NameFQDN: "www.example.com", Dependencies: []dnsgraph.Dependency{{Type: dnsgraph.ForwardDependency, NameFQDN: "example.com"}}},
 				{NameFQDN: "example.com", Dependencies: []dnsgraph.Dependency{{}}},
+				{NameFQDN: "a.example.com", Dependencies: []dnsgraph.Dependency{}},
 			},
 			[]string{
 				"example.com",
+				"a.example.com",
+				"a.example.com",
 				"www.example.com",
-				"a.example.com",
 			},
-			[]string{
-				"a.example.com",
-			},
+			[]string{},
 		),
 	)
 
