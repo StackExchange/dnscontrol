@@ -457,17 +457,14 @@ func (rc *RecordConfig) ToRR() dns.RR {
 
 // GetDependencies returns the FQDNs on which this record dependents
 func (rc *RecordConfig) GetDependencies() []string {
-	rdtype, ok := dns.StringToType[rc.Type]
-	if !ok {
-		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
-	}
 
-	switch rdtype {
-	case dns.TypeNS, dns.TypeSRV, dns.TypeCNAME, dns.TypeMX:
+	switch rc.Type {
+	case "NS", "SRV", "CNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":
 		return []string{
 			rc.target,
 		}
 	}
+
 	return []string{}
 }
 
