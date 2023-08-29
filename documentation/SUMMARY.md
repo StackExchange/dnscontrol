@@ -8,6 +8,7 @@
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
 * [TypeScript autocomplete and type checking](typescript.md)
+* [Disabling Colors](colors.md)
 
 ## Language Reference
 
@@ -123,6 +124,7 @@
     * [Loopia](providers/loopia.md)
     * [LuaDNS](providers/luadns.md)
     * [Microsoft DNS Server on Microsoft Windows Server](providers/msdns.md)
+    * [Mythic Beasts](providers/mythicbeasts.md)
     * [Namecheap](providers/namecheap.md)
     * [Name.com](providers/namedotcom.md)
     * [Netcup](providers/netcup.md)

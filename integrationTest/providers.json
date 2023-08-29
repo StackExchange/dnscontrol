@@ -179,6 +179,12 @@
     "domain": "$MSDNS_DOMAIN",
     "pssession": "$MSDNS_PSSESSION"
   },
+  "MYTHICBEASTS": {
+    "TYPE": "MYTHICBEASTS",
+    "keyID": "$MYTHICBEASTS_KEYID",
+    "secret": "$MYTHICBEASTS_SECRET",
+    "domain": "$MYTHICBEASTS_DOMAIN"
+  },
   "NAMECHEAP": {
     "BaseURL": "$NAMECHEAP_BASEURL",
     "TYPE": "NAMECHEAP",

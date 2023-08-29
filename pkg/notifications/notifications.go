@@ -1,5 +1,7 @@
 package notifications
 
+import "regexp"
+
 // Notifier is a type that can send a notification
 type Notifier interface {
 	// Notify will be called after a correction is performed.
@@ -13,6 +15,9 @@ type Notifier interface {
 
 // new notification types should add themselves to this array
 var initers = []func(map[string]string) Notifier{}
+
+// matches ansi color codes
+var ansiColorRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // Init will take the given config map (from creds.json notifications key) and create a single Notifier with
 // all notifications it has full config for.
@@ -29,9 +34,20 @@ func Init(config map[string]string) Notifier {
 
 type multiNotifier []Notifier
 
+// removes any ansi color codes from a given string
+func stripAnsiColors(colored string) string {
+	return ansiColorRegex.ReplaceAllString(colored, "")
+}
+
 func (m multiNotifier) Notify(domain, provider string, message string, err error, preview bool) {
+
+	// force-remove ansi colors that might come with the message from dnscontrol.
+	// These usually don't render well in notifiers, outputting escape codes.
+	// If a notifier wants to output colors, they should probably implement
+	// them natively.
+	nMsg := stripAnsiColors(message)
 	for _, n := range m {
-		n.Notify(domain, provider, message, err, preview)
+		n.Notify(domain, provider, nMsg, err, preview)
 	}
 }
 func (m multiNotifier) Done() {
