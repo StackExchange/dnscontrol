@@ -58,8 +58,8 @@ ldata:
              tdata[2]: "CNAME" e(0, 0) d(1, 1)
 labelMap: len=1 map[labh.f.com:true]
 keyMap:   len=3 map[{labh.f.com A}:true {labh.f.com CNAME}:true {labh.f.com MX}:true]
-existing: ["22 ttt" "1.2.3.4"]
-desired: ["labd"]
+existing: ["22 ttt.f.com." "1.2.3.4"]
+desired: ["labd.f.com."]
 origin: f.com
 compFn: <nil>
 		`,
@@ -81,8 +81,8 @@ ldata:
              tdata[2]: "MX" e(0, 0) d(1, 1)
 labelMap: len=1 map[labh.f.com:true]
 keyMap:   len=3 map[{labh.f.com A}:true {labh.f.com CNAME}:true {labh.f.com MX}:true]
-existing: ["labd"]
-desired: ["1.2.3.4" "22 ttt"]
+existing: ["labd.f.com."]
+desired: ["1.2.3.4" "22 ttt.f.com."]
 origin: f.com
 compFn: <nil>
 		`,
@@ -104,7 +104,7 @@ ldata:
              tdata[0]: "CNAME" e(1, 1) d(0, 0)
 labelMap: len=2 map[laba.f.com:true labc.f.com:true]
 keyMap:   len=2 map[{laba.f.com A}:true {labc.f.com CNAME}:true]
-existing: ["1.2.3.4" "laba"]
+existing: ["1.2.3.4" "laba.f.com."]
 desired: ["1.2.3.4"]
 origin: f.com
 compFn: <nil>
@@ -127,8 +127,8 @@ ldata:
              tdata[0]: "A" e(1, 1) d(1, 1)
 labelMap: len=2 map[f.com:true laba.f.com:true]
 keyMap:   len=2 map[{f.com MX}:true {laba.f.com A}:true]
-existing: ["1.2.3.4" "1 aaa"]
-desired: ["1.2.3.4" "22 bbb"]
+existing: ["1.2.3.4" "1 aaa.f.com."]
+desired: ["1.2.3.4" "22 bbb.f.com."]
 origin: f.com
 compFn: <nil>
 `,
@@ -153,8 +153,8 @@ ldata:
              tdata[0]: "A" e(1, 1) d(2, 2)
 labelMap: len=3 map[laba.f.com:true labc.f.com:true labe.f.com:true]
 keyMap:   len=4 map[{laba.f.com A}:true {laba.f.com MX}:true {labc.f.com CNAME}:true {labe.f.com A}:true]
-existing: ["1.2.3.4" "10 laba" "laba" "10.10.10.15"]
-desired: ["1.2.3.4" "1.2.3.5" "20 labb" "10.10.10.95" "10.10.10.96"]
+existing: ["1.2.3.4" "10 laba.f.com." "laba.f.com." "10.10.10.15"]
+desired: ["1.2.3.4" "1.2.3.5" "20 labb.f.com." "10.10.10.95" "10.10.10.96"]
 origin: f.com
 compFn: <nil>
 `,
@@ -186,8 +186,8 @@ ldata:
              tdata[1]: "A" e(0, 0) d(1, 1)
 labelMap: len=6 map[laba.f.com:true labc.f.com:true labe.f.com:true labf.f.com:true labg.f.com:true labh.f.com:true]
 keyMap:   len=8 map[{laba.f.com A}:true {laba.f.com MX}:true {labc.f.com CNAME}:true {labe.f.com A}:true {labf.f.com TXT}:true {labg.f.com NS}:true {labh.f.com A}:true {labh.f.com CNAME}:true]
-existing: ["1.2.3.4" "10 laba" "laba" "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "labd"]
-desired: ["1.2.3.4" "1.2.3.5" "20 labb" "10.10.10.95" "10.10.10.96" "10.10.10.97" "10.10.10.98" "\"foo\"" "10.10.10.10" "10.10.10.15" "10.10.10.16" "10.10.10.97" "1.2.3.4"]
+existing: ["1.2.3.4" "10 laba.f.com." "laba.f.com." "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "laba.f.com." "labb.f.com." "labc.f.com." "labe.f.com." "labd.f.com."]
+desired: ["1.2.3.4" "1.2.3.5" "20 labb.f.com." "10.10.10.95" "10.10.10.96" "10.10.10.97" "10.10.10.98" "\"foo\"" "labf.f.com." "laba.f.com." "labe.f.com." "labb.f.com." "1.2.3.4"]
 origin: f.com
 compFn: <nil>
 `,
@@ -196,6 +196,10 @@ compFn: <nil>
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			models.CanonicalizeTargets(tt.args.desired, "f.com")
+			models.CanonicalizeTargets(tt.args.existing, "f.com")
+
 			cc := NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn)
 			got := strings.TrimSpace(cc.String())
 			tt.want = strings.TrimSpace(tt.want)
@@ -229,6 +233,7 @@ func Test_mkCompareBlobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			got, got1 := mkCompareBlobs(tt.args.rc, tt.args.f)
 			if got != tt.want {
 				t.Errorf("mkCompareBlobs() got = %q, want %q", got, tt.want)

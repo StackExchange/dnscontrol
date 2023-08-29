@@ -169,6 +169,7 @@
 * [Debugging with dlv](debugging-with-dlv.md)
 * [ALIAS Records](alias.md)
 * [TXT record testing](testing-txt-records.md)
+* [DNS records ordering](ordering.md)
 
 ## Release
 

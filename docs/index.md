@@ -206,6 +206,9 @@ title: DNSControl
                 <li>
                     <a href="https://docs.dnscontrol.org/developer-info/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
                 </li>
+                <li>
+                    <a href="https://docs.dnscontrol.org/developer-info/ordering">DNS reordering</a>: How DNSControl determines the order of the changes
+                </li>
             </ul>
         </div>
     </div>
