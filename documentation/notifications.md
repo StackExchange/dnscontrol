@@ -82,6 +82,12 @@ Please see the [Teams documentation](https://docs.microsoft.com/en-us/microsoftt
 
 Configure `teams_url` to this webhook.
 
+### Telegram
+
+If you want to use the [Telegram](https://telegram.org/) integration, you need to create a Telegram bot and obtain a Bot Token, as well as a Chat ID. Get a Bot Token by contacting [@BotFather](https://telegram.me/botfather), and a Chat ID by contacting [@myidbot](https://telegram.me/myidbot).
+
+Configure `telegram_bot_token` and `telegram_chat_id` to these values.
+
 ### Bonfire
 
 This is Stack Overflow's built in chat system. This is probably not useful for most people.
