@@ -20,7 +20,7 @@ require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.5
-	github.com/cloudflare/cloudflare-go v0.75.0
+	github.com/cloudflare/cloudflare-go v0.76.0
 	github.com/digitalocean/godo v1.100.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.2.0
