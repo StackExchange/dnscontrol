@@ -47,10 +47,10 @@ type PreviewArgs struct {
 }
 
 type ReportItem struct {
-	Domain      string
-	Corrections int
-	Provider    string
-	Registrar   string
+	Domain      string `json:"domain"`
+	Corrections int    `json:"corrections"`
+	Provider    string `json:"provider"`
+	Registrar   string `json:"registrar"`
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -296,7 +296,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 		return fmt.Errorf("there are pending changes")
 	}
 	if report != nil {
-		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY, 0644)
+		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
 			return err
 		}
