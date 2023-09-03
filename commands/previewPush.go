@@ -49,8 +49,8 @@ type PreviewArgs struct {
 type ReportItem struct {
 	Domain      string `json:"domain"`
 	Corrections int    `json:"corrections"`
-	Provider    string `json:"provider"`
-	Registrar   string `json:"registrar"`
+	Provider    string `json:"provider,omitempty"`
+	Registrar   string `json:"registrar,omitempty"`
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -250,7 +250,6 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 					Domain:      domain.Name,
 					Corrections: len(corrections),
 					Provider:    provider.Name,
-					Registrar:   domain.RegistrarName,
 				})
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
@@ -276,7 +275,6 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 			reportItems = append(reportItems, ReportItem{
 				Domain:      domain.Name,
 				Corrections: len(corrections),
-				Provider:    domain.RegistrarName,
 				Registrar:   domain.RegistrarName,
 			})
 			anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
