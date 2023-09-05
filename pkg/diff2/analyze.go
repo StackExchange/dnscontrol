@@ -32,6 +32,9 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			}
 		}
 	}
+
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 
@@ -74,6 +77,8 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		}
 	}
 
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 
@@ -89,6 +94,9 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 			instructions = append(instructions, cs...)
 		}
 	}
+
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 

@@ -455,6 +455,19 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	return rr
 }
 
+// GetDependencies returns the FQDNs on which this record dependents
+func (rc *RecordConfig) GetDependencies() []string {
+
+	switch rc.Type {
+	case "NS", "SRV", "CNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":
+		return []string{
+			rc.target,
+		}
+	}
+
+	return []string{}
+}
+
 // RecordKey represents a resource record in a format used by some systems.
 type RecordKey struct {
 	NameFQDN string
@@ -554,6 +567,16 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 	return order, groups
 }
 
+// GetAllDependencies concatinates all dependencies of all records
+func (recs Records) GetAllDependencies() []string {
+	var dependencies []string
+	for _, rec := range recs {
+		dependencies = append(dependencies, rec.GetDependencies()...)
+	}
+
+	return dependencies
+}
+
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 // Deprecated. zonerecords.CorrectZoneRecords() calls Downcase directly.
 func PostProcessRecords(recs []*RecordConfig) {
@@ -587,19 +610,21 @@ func Downcase(recs []*RecordConfig) {
 
 // CanonicalizeTargets turns Targets into FQDNs
 func CanonicalizeTargets(recs []*RecordConfig, origin string) {
+	originFQDN := origin + "."
+
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
 		case "AKAMAICDN", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
-			r.target = dnsutil.AddOrigin(r.target, origin)
+			r.target = dnsutil.AddOrigin(r.target, originFQDN)
 		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
-				r.target = dnsutil.AddOrigin(r.target, origin) // .target stores the Ns
+				r.target = dnsutil.AddOrigin(r.target, originFQDN) // .target stores the Ns
 			}
 			if r.SoaMbox != "DEFAULT_NOT_SET." {
-				r.SoaMbox = dnsutil.AddOrigin(r.SoaMbox, origin)
+				r.SoaMbox = dnsutil.AddOrigin(r.SoaMbox, originFQDN)
 			}
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.

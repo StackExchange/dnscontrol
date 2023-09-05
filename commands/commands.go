@@ -71,6 +71,11 @@ func Run(v string) int {
 			Value:       true,
 		},
 		&cli.BoolFlag{
+			Name:        "disableordering",
+			Usage:       "Disables the dns ordering part of the diff2 package",
+			Destination: &diff2.DisableOrdering,
+		},
+		&cli.BoolFlag{
 			Name:        "no-colors",
 			Usage:       "Disable colors",
 			Destination: &color.NoColor,

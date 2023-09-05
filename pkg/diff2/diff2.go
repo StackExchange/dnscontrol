@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsgraph"
 )
 
 // Verb indicates the Change's type (create, delete, etc.)
@@ -50,6 +51,31 @@ type Change struct {
 	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
 	// return exactly one record.
 	HintRecordSetLen1 bool
+}
+
+func (c Change) GetType() dnsgraph.NodeType {
+	if c.Type == REPORT {
+		return dnsgraph.Report
+	}
+
+	return dnsgraph.Change
+}
+
+func (c Change) GetName() string {
+	return c.Key.NameFQDN
+}
+
+func (c Change) GetDependencies() []dnsgraph.Dependency {
+	var dependencies []dnsgraph.Dependency
+
+	if c.Type == CHANGE || c.Type == DELETE {
+		dependencies = append(dependencies, dnsgraph.CreateDependencies(c.Old.GetAllDependencies(), dnsgraph.BackwardDependency)...)
+	}
+	if c.Type == CHANGE || c.Type == CREATE {
+		dependencies = append(dependencies, dnsgraph.CreateDependencies(c.New.GetAllDependencies(), dnsgraph.ForwardDependency)...)
+	}
+
+	return dependencies
 }
 
 /*
