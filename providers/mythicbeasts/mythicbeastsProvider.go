@@ -36,6 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through Web UI"),
@@ -121,8 +122,15 @@ func (n *mythicBeastsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig
 				Msg: strings.Join(msgs, "\n"),
 				F: func() error {
 					var b strings.Builder
-					for _, rr := range dc.Records {
-						fmt.Fprintf(&b, "%v\n", rr.ToRR().String())
+					for _, record := range dc.Records {
+						switch rr := record.ToRR().(type) {
+						case *dns.SSHFP:
+							// "Hex strings [for SSHFP] must be in lower-case", per Mythic Beasts API docs.
+							// miekg's DNS outputs uppercase: https://github.com/miekg/dns/blob/48f38ebef989eedc6b57f1869ae849ccc8f5fe29/types.go#L988
+							fmt.Fprintf(&b, "%s %d %d %s\n", rr.Header().String(), rr.Algorithm, rr.Type, strings.ToLower(rr.FingerPrint))
+						default:
+							fmt.Fprintf(&b, "%v\n", rr.String())
+						}
 					}
 
 					resp, err := n.httpRequest("PUT", "/zones/"+dc.Name+"/records", strings.NewReader(b.String()))
