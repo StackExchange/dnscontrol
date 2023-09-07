@@ -80,7 +80,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_R53),
 
 ## Split horizon
 
-This provider supports spilt horizons using the [`R53_ZONE()`](../functions/record/R53_ZONE.md) domain function.
+This provider supports split horizons using the [`R53_ZONE()`](../functions/record/R53_ZONE.md) domain function.
 
 In this example the domain `testzone.net` appears in the same account twice,
 each with different zone IDs specified using [`R53_ZONE()`](../functions/record/R53_ZONE.md).
