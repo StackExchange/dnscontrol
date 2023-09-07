@@ -118,6 +118,17 @@ func cfSshfpData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
+	return &cfNaptrRecData{
+		Flags:       rec.NaptrFlags,
+		Order:       rec.NaptrOrder,
+		Preference:  rec.NaptrPreference,
+		Regex:       rec.NaptrRegexp,
+		Replacement: rec.GetTargetField(),
+		Service:     rec.NaptrService,
+	}
+}
+
 func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	var id string
 	content := rec.GetTargetField()
@@ -159,6 +170,9 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
+			} else if rec.Type == "NAPTR" {
+				cf.Data = cfNaptrData(rec)
+				cf.Name = rec.GetLabelFQDN()
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -225,6 +239,9 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
+			} else if rec.Type == "NAPTR" {
+				cf.Data = cfNaptrData(rec)
+				cf.Name = rec.GetLabelFQDN()
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -275,6 +292,9 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	} else if rec.Type == "DS" {
 		r.Data = cfDSData(rec)
 		r.Content = ""
+	} else if rec.Type == "NAPTR" {
+		r.Data = cfNaptrData(rec)
+		r.Name = rec.GetLabelFQDN()
 	}
 	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 	return err

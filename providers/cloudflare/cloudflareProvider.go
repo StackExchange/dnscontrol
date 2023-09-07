@@ -45,6 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -791,6 +792,15 @@ func (c cfTarget) MarshalJSON() ([]byte, error) {
 // represented by a single period.
 func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
+}
+
+type cfNaptrRecData struct {
+	Flags       string `json:"flags"`
+	Order       uint16 `json:"order"`
+	Preference  uint16 `json:"preference"`
+	Regex       string `json:"regex"`
+	Replacement string `json:"replacement"`
+	Service     string `json:"service"`
 }
 
 // uint16Zero converts value to uint16 or returns 0.
