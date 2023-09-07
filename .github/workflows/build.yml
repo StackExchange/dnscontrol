@@ -14,7 +14,7 @@ jobs:
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
-    - uses: actions/checkout@v3.5.0
+    - uses: actions/checkout@v4
     - name: restore_cache
       uses: actions/cache@v3.3.1
       with:
@@ -175,7 +175,7 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v3.5.0
+    - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
       uses: actions/cache@v3.3.1
@@ -282,7 +282,7 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v3.5.0
+    - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
       uses: actions/cache@v3.3.1
@@ -314,7 +314,7 @@ jobs:
 #      DOCKERHUB_ACCESS_TOKEN:
 #      DOCKERHUB_USERNAME:
 #    steps:
-#    - uses: actions/checkout@v3.5.0
+#    - uses: actions/checkout@v4
 ##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
 #    - uses: "./.github/actions/docker_check"
 #      with:
