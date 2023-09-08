@@ -15,9 +15,9 @@ as JavaScript code, almost as though its contents had been included in
 the currently-executing file.  If  the path string ends with `.json`,
 `require()` returns the `JSON.parse()` of the file's contents.
 
-If the path string begins with a `.`, it is interpreted relative to
+If the path string begins with a `./`, it is interpreted relative to
 the currently-loading file (which may not be the file where the
-`require()` statement is, if called within a function), otherwise it
+`require()` statement is, if called within a function). Otherwise it
 is interpreted relative to the program's working directory at the time
 of the call.
 
@@ -83,7 +83,7 @@ function includeK8Sdev() {
 
 ### Example 3: JSON
 
-Requireing JSON files initializes variables:
+Requiring JSON files initializes variables:
 
 {% code title="dnsconfig.js" %}
 ```javascript
