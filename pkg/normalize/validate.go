@@ -61,6 +61,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"ALIAS":            false,
 		"CAA":              true,
 		"CNAME":            true,
+		"DHCID":            true,
 		"DS":               true,
 		"IMPORT_TRANSFORM": false,
 		"LOC":              true,
@@ -73,7 +74,6 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"SSHFP":            true,
 		"TLSA":             true,
 		"TXT":              true,
-		"DHCID":            true,
 	}
 	_, ok := validTypes[rec.Type]
 	if !ok {

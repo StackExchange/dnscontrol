@@ -272,6 +272,7 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`_443._tcp.bosun.org. 300 IN TLSA  3 1 1 abcdef0`)) // Label must be _port._proto
 	d = append(d, mustNewRR(`sub.bosun.org.       300 IN NS    bosun.org.`))    // Must be a label with no other records.
 	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
+	d = append(d, mustNewRR(`bosun.org.           300 IN DHCID   AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=`))
 	buf := &bytes.Buffer{}
 	WriteZoneFileRR(buf, d, "bosun.org")
 	if buf.String() != testdataZFEach {
@@ -289,6 +290,7 @@ var testdataZFEach = `$TTL 300
                  IN SRV   10 10 9999 foo.com.
                  IN TXT   "my text"
                  IN CAA   0 issue "letsencrypt.org"
+                 IN DHCID AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=
 4.5              IN PTR   y.bosun.org.
 _443._tcp        IN TLSA  3 1 1 abcdef0
 sub              IN NS    bosun.org.

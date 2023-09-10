@@ -536,6 +536,10 @@ func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
 
+func dhcid(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "DHCID")
+}
+
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.SetTargetDS(keyTag, algorithm, digestType, digest)
@@ -1553,6 +1557,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			//tc("delete all DS",
 			//	ns("another-child", "ns101.cloudns.net."),
 			//),
+		),
+		testgroup("PTR",
+			requires(providers.CanUsePTR),
+			tc("Create DHCPID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+			tc("Modify DHCPID record", dhcid("test", "Test/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 		),
 
 		//// Vendor-specific record types
