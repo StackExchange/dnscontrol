@@ -154,6 +154,7 @@
 * [Nameservers and Delegations](nameservers.md)
 * [Notifications](notifications.md)
 * [Useful code tricks](code-tricks.md)
+* [JSON Reports](json-reports.md)
 
 ## Developer info
 
