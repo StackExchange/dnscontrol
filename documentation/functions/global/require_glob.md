@@ -8,7 +8,7 @@ parameter_types:
   recursive: boolean
 ---
 
-`require_glob()` recursively loads `.js` files that match a glob (wildcard). The recursion can be disabled.
+`require_glob()` can recursively load `.js` files, optionally non-recursive as well.
 
 Possible parameters are:
 
@@ -31,13 +31,8 @@ require_glob("./domains/", false);
 ```
 {% endcode %}
 
-# Comparison to require()
-
-`require_glob()` and `require()` both use the same rules for determining which directory path is
-relative to.
-
-This will load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
-is called in the subfolder `domains/`.
+One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
+file where it's being executed in. Let's go with an example, as it describes it better:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -50,3 +45,6 @@ require("domains/index.js");
 require_glob("./user1/");
 ```
 {% endcode %}
+
+This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
+is called in the subfolder `domains/`.

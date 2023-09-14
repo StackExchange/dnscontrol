@@ -3,7 +3,6 @@ package porkbun
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -26,16 +25,8 @@ var defaultNS = []string{
 	"salvador.ns.porkbun.com",
 }
 
-func newReg(conf map[string]string) (providers.Registrar, error) {
-	return newPorkbun(conf, nil)
-}
-
-func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newPorkbun(conf, metadata)
-}
-
-// newPorkbun creates the provider.
-func newPorkbun(m map[string]string, metadata json.RawMessage) (*porkbunProvider, error) {
+// NewPorkbun creates the provider.
+func NewPorkbun(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &porkbunProvider{}
 
 	c.apiKey, c.secretKey = m["api_key"], m["secret_key"]
@@ -72,9 +63,8 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("PORKBUN", newReg)
 	fns := providers.DspFuncs{
-		Initializer:   newDsp,
+		Initializer:   NewPorkbun,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("PORKBUN", fns, features)
@@ -326,32 +316,4 @@ func fixTTL(ttl uint32) uint32 {
 		return ttl
 	}
 	return minimumTTL
-}
-
-func (c *porkbunProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	nss, err := c.getNameservers(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	foundNameservers := strings.Join(nss, ",")
-
-	expected := []string{}
-	for _, ns := range dc.Nameservers {
-		expected = append(expected, ns.Name)
-	}
-	sort.Strings(expected)
-	expectedNameservers := strings.Join(expected, ",")
-
-	if foundNameservers == expectedNameservers {
-		return nil, nil
-	}
-
-	return []*models.Correction{
-		{
-			Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
-			F: func() error {
-				return c.updateNameservers(expected, dc.Name)
-			},
-		},
-	}, nil
 }
