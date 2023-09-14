@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -43,6 +44,13 @@ type PreviewArgs struct {
 	WarnChanges bool
 	NoPopulate  bool
 	Full        bool
+}
+
+type ReportItem struct {
+	Domain      string `json:"domain"`
+	Corrections int    `json:"corrections"`
+	Provider    string `json:"provider,omitempty"`
+	Registrar   string `json:"registrar,omitempty"`
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -93,6 +101,7 @@ var _ = cmd(catMain, func() *cli.Command {
 type PushArgs struct {
 	PreviewArgs
 	Interactive bool
+	Report      string
 }
 
 func (args *PushArgs) flags() []cli.Flag {
@@ -102,21 +111,26 @@ func (args *PushArgs) flags() []cli.Flag {
 		Destination: &args.Interactive,
 		Usage:       "Interactive. Confirm or Exclude each correction before they run",
 	})
+	flags = append(flags, &cli.StringFlag{
+		Name:        "report",
+		Destination: &args.Report,
+		Usage:       `Generate a machine-parseable report of performed corrections.`,
+	})
 	return flags
 }
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.DefaultPrinter)
+	return run(args, false, false, printer.DefaultPrinter, nil)
 }
 
 // Push implements the push subcommand.
 func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter)
+	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
+func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
 	// This is a hack until we have the new printer replacement.
@@ -151,7 +165,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
 	var wg sync.WaitGroup
 	wg.Add(len(cfg.Domains))
-
+	var reportItems []ReportItem
 	// For each domain in dnsconfig.js...
 	for _, domain := range cfg.Domains {
 		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
@@ -232,6 +246,11 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				totalCorrections += len(corrections)
 				// When diff1 goes away, the call to printReports() should be moved to HERE.
 				//printReports(domain.Name, provider.Name, reports, out, push, notifier)
+				reportItems = append(reportItems, ReportItem{
+					Domain:      domain.Name,
+					Corrections: len(corrections),
+					Provider:    provider.Name,
+				})
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 			}
 
@@ -253,6 +272,11 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 				return
 			}
 			totalCorrections += len(corrections)
+			reportItems = append(reportItems, ReportItem{
+				Domain:      domain.Name,
+				Corrections: len(corrections),
+				Registrar:   domain.RegistrarName,
+			})
 			anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
 		}(domain)
 	}
@@ -268,6 +292,20 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	if totalCorrections != 0 && args.WarnChanges {
 		return fmt.Errorf("there are pending changes")
+	}
+	if report != nil {
+		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		b, err := json.MarshalIndent(reportItems, "", "  ")
+		if err != nil {
+			return err
+		}
+		if _, err := f.Write(b); err != nil {
+			return err
+		}
 	}
 	return nil
 }
