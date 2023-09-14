@@ -28,7 +28,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v3.1.2
+    - uses: actions/upload-artifact@v3.1.3
       with:
         path: "/tmp/test-results"
 
@@ -192,7 +192,7 @@ jobs:
           gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v3.1.2
+    - uses: actions/upload-artifact@v3.1.3
       with:
         path: "/tmp/test-results"
   integrtests-diff2:
@@ -299,7 +299,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v3.1.2
+    - uses: actions/upload-artifact@v3.1.3
       with:
         path: "/tmp/test-results"
 #  release:
@@ -328,10 +328,10 @@ jobs:
 #    - name: Install goreleaser
 #      run: go install github.com/goreleaser/goreleaser@latest
 #    - run: goreleaser release
-#    - uses: actions/upload-artifact@v3.1.2
+#    - uses: actions/upload-artifact@v3.1.3
 #      with:
 #        path: dist
-#    - uses: actions/upload-artifact@v3.1.2
+#    - uses: actions/upload-artifact@v3.1.3
 #      with:
 #        path: |-
 #          dist/*.rpm
