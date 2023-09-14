@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: restore_cache
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3.3.2
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -178,7 +178,7 @@ jobs:
     - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3.3.2
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -285,7 +285,7 @@ jobs:
     - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3.3.2
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -321,7 +321,7 @@ jobs:
 #        docker-password: "${{ secrets.DOCKER_PASSWORD }}"
 #        docker-username: "${{ env.DOCKER_LOGIN }}"
 #    - name: restore_cache
-#      uses: actions/cache@v3.3.1
+#      uses: actions/cache@v3.3.2
 #      with:
 #        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
 #        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
