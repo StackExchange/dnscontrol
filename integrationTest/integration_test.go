@@ -37,13 +37,13 @@ func init() {
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-func CF_PROXY_OFF() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
-func CF_PROXY_ON() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
-func CF_PROXY_FULL1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
-func CF_PROXY_FULL2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
-func CF_CPROXY_OFF() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CF_CPROXY_ON() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-func CF_CPROXY_FULL() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
+func CfProxyOff() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CfProxyOn() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+func CfProxyFull1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
+func CfProxyFull2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
+func CfCProxyOff() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CfCProxyOn() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
 
 // ---
 
@@ -1778,10 +1778,10 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			CF_PROXY_OFF(), clear(),
-			CF_PROXY_ON(), clear(),
-			CF_PROXY_FULL1(), clear(),
-			CF_PROXY_FULL2(), clear(),
+			CfProxyOff(), clear(),
+			CfProxyOn(), clear(),
+			CfProxyFull1(), clear(),
+			CfProxyFull2(), clear(),
 		),
 
 		// These next testgroups attempt every possible transition between off, on, full1 and full2.
@@ -1791,59 +1791,59 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("CF_PROXY A off to X",
 			only("CLOUDFLAREAPI"),
 			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
-			CF_PROXY_OFF(), CF_PROXY_ON(), clear(),
-			CF_PROXY_OFF(), CF_PROXY_FULL1(), clear(),
-			CF_PROXY_OFF(), CF_PROXY_FULL2(), clear(),
+			CfProxyOff(), CfProxyOn(), clear(),
+			CfProxyOff(), CfProxyFull1(), clear(),
+			CfProxyOff(), CfProxyFull2(), clear(),
 		),
 
 		testgroup("CF_PROXY A on to X",
 			only("CLOUDFLAREAPI"),
-			CF_PROXY_ON(), CF_PROXY_OFF(), clear(),
+			CfProxyOn(), CfProxyOff(), clear(),
 			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
 			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
-			CF_PROXY_ON(), CF_PROXY_FULL2(), clear(),
+			CfProxyOn(), CfProxyFull2(), clear(),
 		),
 
 		testgroup("CF_PROXY A full1 to X",
 			only("CLOUDFLAREAPI"),
-			CF_PROXY_FULL1(), CF_PROXY_OFF(), clear(),
+			CfProxyFull1(), CfProxyOff(), clear(),
 			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
-			CF_PROXY_FULL1(), CF_PROXY_FULL2(), clear(),
+			CfProxyFull1(), CfProxyFull2(), clear(),
 		),
 
 		testgroup("CF_PROXY A full2 to X",
 			only("CLOUDFLAREAPI"),
-			CF_PROXY_FULL2(), CF_PROXY_OFF(), clear(),
-			CF_PROXY_FULL2(), CF_PROXY_ON(), clear(),
-			CF_PROXY_FULL2(), CF_PROXY_FULL1(), clear(),
+			CfProxyFull2(), CfProxyOff(), clear(),
+			CfProxyFull2(), CfProxyOn(), clear(),
+			CfProxyFull2(), CfProxyFull1(), clear(),
 			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
 		),
 
 		testgroup("CF_PROXY CNAME create",
 			only("CLOUDFLAREAPI"),
-			CF_CPROXY_OFF(), clear(),
-			CF_CPROXY_ON(), clear(),
-			CF_CPROXY_FULL(), clear(),
+			CfCProxyOff(), clear(),
+			CfCProxyOn(), clear(),
+			CfCProxyFull(), clear(),
 		),
 
 		testgroup("CF_PROXY CNAME off to X",
 			only("CLOUDFLAREAPI"),
 			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
-			CF_CPROXY_OFF(), CF_CPROXY_ON(), clear(),
-			CF_CPROXY_OFF(), CF_CPROXY_FULL(), clear(),
+			CfCProxyOff(), CfCProxyOn(), clear(),
+			CfCProxyOff(), CfCProxyFull(), clear(),
 		),
 
 		testgroup("CF_PROXY CNAME on to X",
 			only("CLOUDFLAREAPI"),
-			CF_CPROXY_ON(), CF_CPROXY_OFF(), clear(),
+			CfCProxyOn(), CfCProxyOff(), clear(),
 			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
 			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
 		),
 
 		testgroup("CF_PROXY CNAME full to X",
 			only("CLOUDFLAREAPI"),
-			CF_CPROXY_FULL(), CF_CPROXY_OFF(), clear(),
+			CfCProxyFull(), CfCProxyOff(), clear(),
 			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
 			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
 		),

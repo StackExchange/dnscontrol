@@ -54,7 +54,7 @@ func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	ptr.addLeaf(domainParts[0], isWildcard, data)
 }
 
-// Retrieves the attached data from a given FQDN.
+// Get retrieves the attached data from a given FQDN.
 // The tree will return the data entry for the most specific FQDN entry.
 // If no entry is found Get will return the default value for the specific type.
 //
