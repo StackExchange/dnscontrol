@@ -3054,7 +3054,7 @@ declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainMod
 declare function getConfiguredDomains(): string[];
 
 /**
- * `require_glob()` can recursively load `.js` files, optionally non-recursive as well.
+ * `require_glob()` recursively loads `.js` files that match a glob (wildcard). The recursion can be disabled.
  *
  * Possible parameters are:
  *
@@ -3073,8 +3073,13 @@ declare function getConfiguredDomains(): string[];
  * require_glob("./domains/", false);
  * ```
  *
- * One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
- * file where it's being executed in. Let's go with an example, as it describes it better:
+ * # Comparison to require()
+ *
+ * `require_glob()` and `require()` both use the same rules for determining which directory path is
+ * relative to.
+ *
+ * This will load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
+ * is called in the subfolder `domains/`.
  *
  * ```javascript
  * require("domains/index.js");
@@ -3083,9 +3088,6 @@ declare function getConfiguredDomains(): string[];
  * ```javascript
  * require_glob("./user1/");
  * ```
- *
- * This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
- * is called in the subfolder `domains/`.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/require_glob
  */
