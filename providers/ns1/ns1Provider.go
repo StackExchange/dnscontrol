@@ -31,8 +31,8 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// Number of retries for API backend requests in case of StatusTooManyRequests responses
-const CLIENT_RETRIES = 10
+// clientRetries is the number of retries for API backend requests in case of StatusTooManyRequests responses
+const clientRetries = 10
 
 func init() {
 	fns := providers.DspFuncs{
@@ -69,7 +69,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
 	for rtr := 0; ; rtr++ {
 		z, httpResp, err := n.Zones.Get(domain, true)
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return z, err
@@ -87,7 +87,7 @@ func (n *nsone) EnsureZoneExists(domain string) error {
 			return nil
 		}
 		// too many requests - retry w/out waiting. We specified rate limit strategy creating the client
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return err
@@ -147,7 +147,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 		if err != nil && err == rest.ErrDNSECNotEnabled {
 			return false, nil
 		}
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		// any other errors not expected, let's surface them
@@ -278,7 +278,7 @@ func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecor
 func (n *nsone) add(recs models.Records, domain string) error {
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Records.Create(buildRecord(recs, domain, ""))
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return err
@@ -292,7 +292,7 @@ func (n *nsone) remove(key models.RecordKey, domain string) error {
 
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return err
@@ -302,7 +302,7 @@ func (n *nsone) remove(key models.RecordKey, domain string) error {
 func (n *nsone) modify(recs models.Records, domain string) error {
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Records.Update(buildRecord(recs, domain, ""))
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return err
@@ -325,7 +325,7 @@ func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
 	z.DNSSEC = &enabled
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Zones.Update(z)
-		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < CLIENT_RETRIES {
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
 			continue
 		}
 		return err

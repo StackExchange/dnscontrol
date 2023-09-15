@@ -17,6 +17,7 @@ func Create[T any]() *DomainTree[T] {
 	}
 }
 
+// DomainTree is a domain tree.
 type DomainTree[T any] domainNode[T]
 
 type domainNode[T any] struct {
@@ -47,14 +48,14 @@ func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	}
 
 	ptr := (*domainNode[T])(tree)
-	for iX := len(domainParts) - 1; iX > 0; iX -= 1 {
+	for iX := len(domainParts) - 1; iX > 0; iX-- {
 		ptr = ptr.addIntermediate(domainParts[iX])
 	}
 
 	ptr.addLeaf(domainParts[0], isWildcard, data)
 }
 
-// Retrieves the attached data from a given FQDN.
+// Get retrieves the attached data from a given FQDN.
 // The tree will return the data entry for the most specific FQDN entry.
 // If no entry is found Get will return the default value for the specific type.
 //
@@ -69,7 +70,7 @@ func (tree *DomainTree[T]) Get(fqdn string) T {
 	var mostSpecificNode *domainNode[T]
 	ptr := (*domainNode[T])(tree)
 
-	for iX := len(domainParts) - 1; iX >= 0; iX -= 1 {
+	for iX := len(domainParts) - 1; iX >= 0; iX-- {
 		node, ok := ptr.Children[domainParts[iX]]
 		if !ok {
 			if mostSpecificNode != nil {
@@ -103,7 +104,7 @@ func (tree *DomainTree[T]) Has(fqdn string) bool {
 	var mostSpecificNode *domainNode[T]
 	ptr := (*domainNode[T])(tree)
 
-	for iX := len(domainParts) - 1; iX >= 0; iX -= 1 {
+	for iX := len(domainParts) - 1; iX >= 0; iX-- {
 		node, ok := ptr.Children[domainParts[iX]]
 		if !ok {
 			return mostSpecificNode != nil

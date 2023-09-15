@@ -12,10 +12,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-var nameServerSuffixes = []string{
-	".nsone.net.",
-}
-
 var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
