@@ -293,7 +293,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 	if totalCorrections != 0 && args.WarnChanges {
 		return fmt.Errorf("there are pending changes")
 	}
-	if report != nil {
+	if report != nil && *report != "" {
 		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
 			return err
