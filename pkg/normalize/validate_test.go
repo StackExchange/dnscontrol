@@ -411,7 +411,7 @@ func TestCheckRecordSetHasMultipleTTLs_err_3type_2ttl(t *testing.T) {
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 0 {
-		t.Errorf("Expected 0 errors (differnt types, no errors), but got %d: %v", len(errs), errs)
+		t.Errorf("Expected 0 errors (different types, no errors), but got %d: %v", len(errs), errs)
 	}
 }
 
@@ -424,7 +424,7 @@ func TestCheckRecordSetHasMultipleTTLs_err_3type_3ttl(t *testing.T) {
 	}
 	errs := checkRecordSetHasMultipleTTLs(records)
 	if len(errs) != 1 {
-		t.Errorf("Expected 0 errors (differnt types, 1 error), but got %d: %v", len(errs), errs)
+		t.Errorf("Expected 0 errors (different types, 1 error), but got %d: %v", len(errs), errs)
 	}
 }
 

@@ -12,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"golang.org/x/exp/slices"
 )
 
 // Returns false if target does not validate.
@@ -620,13 +619,12 @@ func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error
 		labels[i] = k
 		i++
 	}
-
 	sort.Strings(labels)
-	slices.Compact(labels)
+	// NB(tlim): No need to de-dup labels. They come from map keys.
 
-	// Invert for a more clear error message:
 	for _, label := range labels {
 		if len(m[label]) > 1 {
+			// Invert for a more clear error message:
 			r := make(map[string]map[uint32]bool)
 			for ttl, rtypes := range m[label] {
 				for rtype := range rtypes {
