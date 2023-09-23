@@ -842,7 +842,7 @@ var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
 };
 
 // IGNORE(labelPattern, rtypePattern, targetPattern)
-function IGNORE(labelPattern, rtypePattern, targetPattern) {
+function IGNORE(labelPattern, rtypePattern, targetPattern, silently) {
     if (labelPattern === undefined) {
         labelPattern = '*';
     }
@@ -852,6 +852,9 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
     if (targetPattern === undefined) {
         targetPattern = '*';
     }
+    if (silently === undefined) {
+        silently = false;
+    }
     return function (d) {
         // diff1
         d.ignored_names.push({ pattern: labelPattern, types: rtypePattern });
@@ -860,6 +863,7 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
             label_pattern: labelPattern,
             rType_pattern: rtypePattern,
             target_pattern: targetPattern,
+            silence_reporting: silently,
         });
     };
 }

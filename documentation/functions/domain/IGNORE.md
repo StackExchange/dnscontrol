@@ -4,10 +4,12 @@ parameters:
     - labelSpec
     - typeSpec
     - targetSpec
+    - silent
 parameter_types:
     labelSpec: string
     typeSpec: string?
     targetSpec: string?
+    silent: bool?
 ---
 
 `IGNORE()` makes it possible for DNSControl to share management of a domain
@@ -24,9 +26,9 @@ To solve this problem simply include `IGNORE()` statements that identify which
 records are managed elsewhere.  DNSControl will not modify or delete those
 records.
 
-Technically `IGNORE_NAME` is a promise that DNSControl will not modify or
-delete existing records that match particular patterns. It is like
-[`NO_PURGE`](../domain/NO_PURGE.md) that matches only specific records.
+Technically `IGNORE` is a promise that DNSControl will not modify or
+delete existing records that match particular patterns. It is similar to
+[`NO_PURGE`](../domain/NO_PURGE.md) but it matches only specific records.
 
 Including a record that is ignored is considered an error and may have
 undefined behavior. This safety check can be disabled using the
@@ -38,6 +40,7 @@ The `IGNORE()` function can be used with up to 3 parameters:
 
 {% code %}
 ```javascript
+IGNORE(labelSpec, typeSpec, targetSpec, silent):
 IGNORE(labelSpec, typeSpec, targetSpec):
 IGNORE(labelSpec, typeSpec):
 IGNORE(labelSpec):
@@ -47,6 +50,7 @@ IGNORE(labelSpec):
 * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
 * `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).  
 * `targetSpec` is a glob that matches the DNS target. For example `"foo"` or `"foo*"`.  `"*"` matches all targets, as does the empty string (`""`).
+* `silent` is a bool that, when set to `true`, indicates that "ignored record reports" do not need to mention these records.  Use `--full` to list all records being ignored.  Note that if two or more `IGNORE()` statements both match the same record and have different `silent` settings, it is non-deterministic whether or not the report will include this record.
 
 `typeSpec` and `targetSpec` default to `"*"` if they are omitted.
 
@@ -78,6 +82,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
   IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
   IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
+  IGNORE("*", "A", "1\.2\.3\."), // Same as previous, but records will not be reported unless `--full`
 END);
 ```
 {% endcode %}

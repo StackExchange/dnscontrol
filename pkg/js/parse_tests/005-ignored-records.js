@@ -16,6 +16,8 @@ D("diff2.com", "none"
   , IGNORE("", "A,AAAA")
   , IGNORE("", "", "mytarget")
   , IGNORE("labelc", "CNAME", "targetc")
+  , IGNORE("silenttrue", "CNAME", "targetc", true)
+  , IGNORE("silentfalse", "CNAME", "targetc", false)
   // Compatibility mode:
   , IGNORE_NAME("nametest")
   , IGNORE_TARGET("targettest1")

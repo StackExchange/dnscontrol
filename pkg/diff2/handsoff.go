@@ -123,14 +123,14 @@ func handsoff(
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*():", len(ignorable)))
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE():", len(ignorable)))
 		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
+		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
 			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
@@ -148,15 +148,27 @@ func handsoff(
 
 // reportSkips reports records being skipped, if !full only the first maxReport are output.
 func reportSkips(recs models.Records, full bool) []string {
-	var msgs []string
 
-	shorten := (!full) && (len(recs) > maxReport)
-	last := len(recs)
+	var prints []*models.RecordConfig
+	if full {
+		prints = recs
+	} else {
+		for i := range recs {
+			fmt.Printf("DEBUG: silence=%v rec=%v\n", recs[i].SilenceReporting, *recs[i])
+			if !recs[i].SilenceReporting {
+				prints = append(prints, recs[i])
+			}
+		}
+	}
+
+	shorten := (len(recs) > maxReport)
+	last := len(prints)
 	if shorten {
 		last = maxReport
 	}
 
-	for _, r := range recs[:last] {
+	var msgs []string
+	for _, r := range prints[:last] {
 		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 	}
 	if shorten {
@@ -173,9 +185,10 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		isMatch := matchAny(unmanagedConfigs, rec)
+		isMatch, silence := matchAny(unmanagedConfigs, rec)
 		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
 		if isMatch {
+			rec.SilenceReporting = silence
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -197,7 +210,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
 	var conflicts models.Records
 	for _, rec := range recs {
-		if matchAny(uconfigs, rec) {
+		if ans, _ := matchAny(uconfigs, rec); ans {
 			conflicts = append(conflicts, rec)
 		}
 	}
@@ -241,16 +254,16 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 }
 
 // matchAny returns true if rec matches any of the uconfigs.
-func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) (bool, bool) {
 	//fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
 			matchTarget(uc.TargetGlob, rec.GetTargetField()) {
-			return true
+			return true, uc.SilenceReporting
 		}
 	}
-	return false
+	return false, false
 }
 func matchLabel(labelGlob glob.Glob, labelName string) bool {
 	if labelGlob == nil {

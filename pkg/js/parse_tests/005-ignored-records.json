@@ -1,12 +1,8 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         {
           "pattern": "testignore",
@@ -43,6 +39,9 @@
           "type": "CNAME"
         }
       ],
+      "name": "foo.com",
+      "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "testignore",
@@ -80,10 +79,7 @@
       ]
     },
     {
-      "name": "diff2.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         {
           "pattern": "mylabel",
@@ -114,6 +110,14 @@
           "types": "CNAME"
         },
         {
+          "pattern": "silenttrue",
+          "types": "CNAME"
+        },
+        {
+          "pattern": "silentfalse",
+          "types": "CNAME"
+        },
+        {
           "pattern": "nametest",
           "types": "*"
         }
@@ -128,6 +132,9 @@
           "type": "A"
         }
       ],
+      "name": "diff2.com",
+      "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "mylabel",
@@ -158,6 +165,17 @@
           "target_pattern": "targetc"
         },
         {
+          "label_pattern": "silenttrue",
+          "rType_pattern": "CNAME",
+          "silence_reporting": true,
+          "target_pattern": "targetc"
+        },
+        {
+          "label_pattern": "silentfalse",
+          "rType_pattern": "CNAME",
+          "target_pattern": "targetc"
+        },
+        {
           "label_pattern": "nametest",
           "rType_pattern": "*"
         },
@@ -170,5 +188,6 @@
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }
