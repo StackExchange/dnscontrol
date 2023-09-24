@@ -98,7 +98,7 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
-const maxReport = 5
+const defaultMaxReport = 5
 
 // handsoff processes the IGNORE*()//NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
@@ -120,11 +120,11 @@ func handsoff(
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
-		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
+		msgs = append(msgs, reportSkips(foreign, defaultMaxReport, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE():", len(ignorable)))
-		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE()", len(ignorable)))
+		msgs = append(msgs, reportSkips(ignorable, defaultMaxReport, !printer.SkinnyReport)...)
 	}
 
 	// Check for invalid use of IGNORE_*.
@@ -147,35 +147,35 @@ func handsoff(
 }
 
 // reportSkips reports records being skipped, if !full only the first maxReport are output.
-func reportSkips(recs models.Records, full bool) []string {
+func reportSkips(recs models.Records, maxReport int, full bool) (msgs []string) {
+	if len(recs) == 0 {
+		return nil
+	}
 
-	var prints []*models.RecordConfig
 	if full {
-		prints = recs
-	} else {
-		for i := range recs {
-			fmt.Printf("DEBUG: silence=%v rec=%v\n", recs[i].SilenceReporting, *recs[i])
-			if !recs[i].SilenceReporting {
-				prints = append(prints, recs[i])
+		for _, r := range recs {
+			msgs = append(msgs, genLine(r))
+		}
+		return msgs
+	}
+
+	for _, r := range recs {
+		//fmt.Printf("DEBUG: silence=%v rec=%v\n", recs[i].SilenceReporting, *recs[i])
+		if !r.SilenceReporting {
+			msgs = append(msgs, genLine(r))
+			if len(msgs) == maxReport {
+				break
 			}
 		}
 	}
-
-	shorten := (len(recs) > maxReport)
-	last := len(prints)
-	if shorten {
-		last = maxReport
+	if len(msgs) < len(recs) {
+		msgs = append(msgs, fmt.Sprintf("    ...%d records not displayed.", len(recs)-len(msgs)))
 	}
-
-	var msgs []string
-	for _, r := range prints[:last] {
-		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
-	}
-	if shorten {
-		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
-	}
-
 	return msgs
+}
+
+func genLine(r *models.RecordConfig) string {
+	return fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined())
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
