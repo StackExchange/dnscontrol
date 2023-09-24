@@ -118,14 +118,8 @@ func handsoff(
 
 	// Process IGNORE*() and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
-	if len(foreign) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
-		msgs = append(msgs, reportSkips(foreign, defaultMaxReport, !printer.SkinnyReport)...)
-	}
-	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE()", len(ignorable)))
-		msgs = append(msgs, reportSkips(ignorable, defaultMaxReport, !printer.SkinnyReport)...)
-	}
+	msgs = append(msgs, genReport(foreign, "NO_PURGE", defaultMaxReport)...)
+	msgs = append(msgs, genReport(ignorable, "IGNORE()", defaultMaxReport)...)
 
 	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
@@ -146,15 +140,78 @@ func handsoff(
 	return desired, msgs, nil
 }
 
-// reportSkips reports records being skipped, if !full only the first maxReport are output.
-func reportSkips(recs models.Records, maxReport int, full bool) (msgs []string) {
+// genReport generates a report of what records were not deleted with a human-readable header and footer.  Abides by maxReport.
+func genReport(recs models.Records, reason string, maxReport int) (msgs []string) {
+	if len(recs) == 0 {
+		return nil
+	}
+	visibleCount, hiddenCount := countVisibility(recs)
+	header, footer := makeHeaderFooter(reason, !printer.SkinnyReport, maxReport, len(recs), visibleCount, hiddenCount)
+	msgs = append(msgs, header)
+	msgs = append(msgs, reportMessages(recs, maxReport, !printer.SkinnyReport)...)
+	if footer != "" {
+		msgs = append(msgs, footer)
+	}
+
+	return msgs
+}
+
+// makeHeaderFooter generates fancy header and footer.
+func makeHeaderFooter(reason string, full bool, maxReport, recsCount, visibleCount, hiddenCount int) (header, footer string) {
+
+	if full {
+		// No maximum. Everything is shown.
+		header = fmt.Sprintf("%d records not deleted because of %s:", recsCount, reason)
+		footer = ""
+
+	} else if visibleCount > maxReport {
+		// We hit the maxReport limit:
+		if hiddenCount > 0 {
+			// Some were hidden intentionally.
+			header = fmt.Sprintf("%d records not deleted because of %s:", recsCount, reason)
+			footer = fmt.Sprintf("    ...plus %d others (use --full to reveal)", recsCount-maxReport)
+		} else {
+			// Nothing hidden.
+			header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
+			footer = fmt.Sprintf("    ...%d records not displayed (use --full to show all)", recsCount-maxReport)
+		}
+
+		// At this point we know that the number of items being reported is less than max.
+	} else if visibleCount == 0 && hiddenCount != 0 { // Everything is hidden
+		header = fmt.Sprintf("%d records not being deleted because of %s. (Add --full to reveal)", recsCount, reason)
+		footer = ""
+	} else if hiddenCount != 0 { // Some things are hidden
+		header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
+		footer = fmt.Sprintf("    ...and %d others (use --full to reveal)", hiddenCount)
+	} else { // Nothing hidden
+		header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
+		footer = ""
+	}
+
+	return header, footer
+}
+
+// countVisibility returns how many records are visible/hidden.
+func countVisibility(recs models.Records) (visibleCount, hiddenCount int) {
+	for _, r := range recs {
+		if r.SilenceReporting {
+			hiddenCount++
+		} else {
+			visibleCount++
+		}
+	}
+	return visibleCount, hiddenCount
+}
+
+// reportMessages generates one message for each record, abiding by maxReport limits.
+func reportMessages(recs models.Records, maxReport int, full bool) (msgs []string) {
 	if len(recs) == 0 {
 		return nil
 	}
 
 	if full {
 		for _, r := range recs {
-			msgs = append(msgs, genLine(r))
+			msgs = append(msgs, genRecordMessage(r))
 		}
 		return msgs
 	}
@@ -162,19 +219,18 @@ func reportSkips(recs models.Records, maxReport int, full bool) (msgs []string) 
 	for _, r := range recs {
 		//fmt.Printf("DEBUG: silence=%v rec=%v\n", recs[i].SilenceReporting, *recs[i])
 		if !r.SilenceReporting {
-			msgs = append(msgs, genLine(r))
+			msgs = append(msgs, genRecordMessage(r))
 			if len(msgs) == maxReport {
 				break
 			}
 		}
 	}
-	if len(msgs) < len(recs) {
-		msgs = append(msgs, fmt.Sprintf("    ...%d records not displayed.", len(recs)-len(msgs)))
-	}
+
 	return msgs
 }
 
-func genLine(r *models.RecordConfig) string {
+// genRecordMessage generate the message for one record.
+func genRecordMessage(r *models.RecordConfig) string {
 	return fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined())
 }
 

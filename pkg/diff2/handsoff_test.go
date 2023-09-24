@@ -247,22 +247,22 @@ func Test_reportSkips(t *testing.T) {
 		countNotFull int
 	}{
 		{"no2", models.Records{no, no}, 2},
-		{"yes2", models.Records{yes, yes}, 0 + 1},
+		{"yes2", models.Records{yes, yes}, 0},
 		{"noMax", models.Records{no, no, no, no, no}, maxReport},
-		{"no6", models.Records{no, no, no, no, no, no}, maxReport + 1},
-		{"noMaxyes2", models.Records{no, no, no, no, no, yes, yes}, maxReport + 1},
-		{"no6yes2", models.Records{no, no, no, no, no, no, yes, yes}, maxReport + 1},
-		{"no6yes2mixed", models.Records{yes, no, no, no, yes, no, no, no}, maxReport + 1},
-		{"yes8", models.Records{yes, yes, yes, yes, yes, yes, yes, yes}, 0 + 1},
+		{"no6", models.Records{no, no, no, no, no, no}, maxReport},
+		{"noMaxyes2", models.Records{no, no, no, no, no, yes, yes}, maxReport},
+		{"no6yes2", models.Records{no, no, no, no, no, no, yes, yes}, maxReport},
+		{"no6yes2mixed", models.Records{yes, no, no, no, yes, no, no, no}, maxReport},
+		{"yes8", models.Records{yes, yes, yes, yes, yes, yes, yes, yes}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// If full==true, there should be 1 msg for each item in tt.data:
-			if got := reportSkips(tt.data, maxReport, true); len(got) != len(tt.data) {
+			if got := reportMessages(tt.data, maxReport, true); len(got) != len(tt.data) {
 				t.Errorf("reportSkips(~, %d, true) = %v, want %v", len(got), maxReport, len(tt.data))
 			}
 			// If full==false, there should be 1 msg for the first maxReport no's:
-			if got := reportSkips(tt.data, maxReport, false); len(got) != tt.countNotFull {
+			if got := reportMessages(tt.data, maxReport, false); len(got) != tt.countNotFull {
 				fmt.Printf("MSGS=%v\n", strings.Join(got, ":\n"))
 				t.Errorf("reportSkips(-, false) = %v, want %v", len(got), tt.countNotFull)
 			}
