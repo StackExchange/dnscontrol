@@ -118,6 +118,10 @@
           "types": "CNAME"
         },
         {
+          "pattern": "silentnull",
+          "types": ""
+        },
+        {
           "pattern": "nametest",
           "types": "*"
         }
@@ -174,6 +178,10 @@
           "label_pattern": "silentfalse",
           "rType_pattern": "CNAME",
           "target_pattern": "targetc"
+        },
+        {
+          "label_pattern": "silentnull",
+          "silence_reporting": true
         },
         {
           "label_pattern": "nametest",

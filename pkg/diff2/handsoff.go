@@ -146,7 +146,7 @@ func genReport(recs models.Records, reason string, maxReport int) (msgs []string
 		return nil
 	}
 	visibleCount, hiddenCount := countVisibility(recs)
-	header, footer := makeHeaderFooter(reason, !printer.SkinnyReport, maxReport, len(recs), visibleCount, hiddenCount)
+	header, footer := makeHeaderFooter(reason, !printer.SkinnyReport, maxReport, visibleCount, hiddenCount)
 	msgs = append(msgs, header)
 	msgs = append(msgs, reportMessages(recs, maxReport, !printer.SkinnyReport)...)
 	if footer != "" {
@@ -157,35 +157,41 @@ func genReport(recs models.Records, reason string, maxReport int) (msgs []string
 }
 
 // makeHeaderFooter generates fancy header and footer.
-func makeHeaderFooter(reason string, full bool, maxReport, recsCount, visibleCount, hiddenCount int) (header, footer string) {
+func makeHeaderFooter(reason string, full bool, maxReport, visibleCount, hiddenCount int) (header, footer string) {
 
+	totalCount := visibleCount + hiddenCount
+
+	// With the --full flag, use a very simple header and no footer.
 	if full {
-		// No maximum. Everything is shown.
-		header = fmt.Sprintf("%d records not deleted because of %s:", recsCount, reason)
+		header = fmt.Sprintf("FYI: %d records NOT deleted due to %s:", totalCount, reason)
 		footer = ""
+		return header, footer
+	}
 
-	} else if visibleCount > maxReport {
-		// We hit the maxReport limit:
-		if hiddenCount > 0 {
-			// Some were hidden intentionally.
-			header = fmt.Sprintf("%d records not deleted because of %s:", recsCount, reason)
-			footer = fmt.Sprintf("    ...plus %d others (use --full to reveal)", recsCount-maxReport)
-		} else {
-			// Nothing hidden.
-			header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
-			footer = fmt.Sprintf("    ...%d records not displayed (use --full to show all)", recsCount-maxReport)
-		}
+	shownCount := visibleCount
+	if visibleCount > maxReport {
+		shownCount = maxReport
+	}
 
-		// At this point we know that the number of items being reported is less than max.
-	} else if visibleCount == 0 && hiddenCount != 0 { // Everything is hidden
-		header = fmt.Sprintf("%d records not being deleted because of %s. (Add --full to reveal)", recsCount, reason)
-		footer = ""
-	} else if hiddenCount != 0 { // Some things are hidden
-		header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
-		footer = fmt.Sprintf("    ...and %d others (use --full to reveal)", hiddenCount)
-	} else { // Nothing hidden
-		header = fmt.Sprintf("%d records not being deleted because of %s:", recsCount, reason)
-		footer = ""
+	punct := ":"
+	// If no records will be output, change the punctuation at the end to "."
+	if shownCount == 0 {
+		punct = "."
+	}
+
+	header = fmt.Sprintf("%d records NOT deleted due to %s%s (%d/%d/%d displayed/visible/hidden)",
+		totalCount, reason, punct,
+		shownCount, visibleCount, hiddenCount,
+	)
+	if (totalCount != shownCount) || (hiddenCount != 0) {
+		// Only add this if adding the flag would change the output.
+		header = header + " (--full shows all)"
+	}
+
+	// The footer visually indicates that we've hit the maxReport limit.
+	footer = ""
+	if visibleCount != shownCount {
+		footer = "     ..."
 	}
 
 	return header, footer
@@ -217,7 +223,6 @@ func reportMessages(recs models.Records, maxReport int, full bool) (msgs []strin
 	}
 
 	for _, r := range recs {
-		//fmt.Printf("DEBUG: silence=%v rec=%v\n", recs[i].SilenceReporting, *recs[i])
 		if !r.SilenceReporting {
 			msgs = append(msgs, genRecordMessage(r))
 			if len(msgs) == maxReport {

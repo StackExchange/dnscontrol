@@ -14,7 +14,7 @@ parameter_types:
 
 `IGNORE()` makes it possible for DNSControl to share management of a domain
 with an external system.  The parameters of `IGNORE()` indicate which records
-are managed elsewhere and should not be modified or deleted.
+are managed elsewhere and should not be modified or deleted by DNSControl.
 
 Use case: Suppose a domain is managed by both DNSControl and a third-party
 system. This creates a problem because DNSControl will try to delete records
@@ -23,20 +23,21 @@ those records.  The two systems will get into an endless update cycle where
 each will revert changes made by the other in an endless loop.
 
 To solve this problem simply include `IGNORE()` statements that identify which
-records are managed elsewhere.  DNSControl will not modify or delete those
+records (or patterns) are managed elsewhere.  DNSControl will not modify or delete those
 records.
 
 Technically `IGNORE` is a promise that DNSControl will not modify or
 delete existing records that match particular patterns. It is similar to
 [`NO_PURGE`](../domain/NO_PURGE.md) but it matches only specific records.
 
-Including a record that is ignored is considered an error and may have
-undefined behavior. This safety check can be disabled using the
-[`DISABLE_IGNORE_SAFETY_CHECK`](../domain/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
+It is considered to be an error if an`IGNORE()` pattern matches records in
+`dnsconfig.js`. This safety check can be disabled using the
+[`DISABLE_IGNORE_SAFETY_CHECK`](../domain/DISABLE_IGNORE_SAFETY_CHECK.md)
+feature. Behavior is undefined when the safety check is disabled.
 
 ## Syntax
 
-The `IGNORE()` function can be used with up to 3 parameters:
+The `IGNORE()` function can be used with up to 4 parameters:
 
 {% code %}
 ```javascript
@@ -48,9 +49,9 @@ IGNORE(labelSpec):
 {% endcode %}
 
 * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
-* `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).  
+* `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).
 * `targetSpec` is a glob that matches the DNS target. For example `"foo"` or `"foo*"`.  `"*"` matches all targets, as does the empty string (`""`).
-* `silent` is a bool that, when set to `true`, indicates that "ignored record reports" do not need to mention these records.  Use `--full` to list all records being ignored.  Note that if two or more `IGNORE()` statements both match the same record and have different `silent` settings, it is non-deterministic whether or not the report will include this record.
+* `silent` is a bool that, when set to `true`, indicates that records ignored using this rule do not need to be listed in `preview` and `push` when they announce ignored records.  Use the `--full` flag to show all records. If two or more `IGNORE()` statements match the same record and have different `silent` settings, results are undefined.
 
 `typeSpec` and `targetSpec` default to `"*"` if they are omitted.
 
@@ -68,9 +69,13 @@ following patterns will work:
 * `IGNORE("{bar,[fz]oo}")` will ignore `bar`, `foo` and `zoo`.
 * `IGNORE("\\*.foo")` will ignore the literal record `*.foo`.
 
+NOTE: `.` should not be escaped with a `\`.  These are globs (like filenames), not regular expressions.
+
 ## Typical Usage
 
 General examples:
+
+Here we should typical usage.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -81,8 +86,11 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("*", "CNAME", "dev-*"), // matches CNAMEs with targets prefixed `dev-*`
   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
   IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
-  IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
-  IGNORE("*", "A", "1\.2\.3\."), // Same as previous, but records will not be reported unless `--full`
+  IGNORE("*", "A", "10.2.3.*"), // Ignore targets in the 10.2.3.0/24 CIDR block
+  IGNORE("*", "A", "10.2.3.*", true), // Same as previous line, but records will not be reported unless `--full`
+  IGNORE("*", "A", "10.2.*"), // Ignore targets in the 10.2.0.0/16 CIDR block
+  IGNORE("foo", "", "", true), // Same as first example, with `silent` set to `true`.
+  IGNORE("foo", "*", "*", true), // Equivalent to the previous line.
 END);
 ```
 {% endcode %}
@@ -290,7 +298,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 
 {% hint style="info" %}
 FYI: Previously DNSControl permitted disabling this check on
-a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`:
+a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`. This is now a domain-level setting.
 {% endhint %}
 
 The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2
@@ -314,4 +322,4 @@ as a last resort. Even then, test extensively.
 * There is no locking.  If the external system and DNSControl make updates at the exact same time, the results are undefined.
 * IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
 * `targetSpec` does not match fields other than the primary target.  For example, `MX` records have a target hostname plus a priority. There is no way to match the priority.
-* The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external records.  It will seem like they were not ignored, but in reality BIND didn't have visibility to them so that they could be ignored.
+* The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external-created records.  It will seem like they were not ignored, but in reality BIND will simply create a new zone without those records.
