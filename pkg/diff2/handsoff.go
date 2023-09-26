@@ -248,19 +248,21 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	for _, rec := range existing {
 		isMatch, silence := matchAny(unmanagedConfigs, rec)
 		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
-		if isMatch {
-			rec.SilenceReporting = silence
-			ignorable = append(ignorable, rec)
-		} else {
-			if noPurge {
-				// Is this a candidate for purging?
-				if !desiredDB.ContainsLT(rec) {
-					// Yes, but not if it is an exception!
-					if !absentDB.ContainsLT(rec) {
-						foreign = append(foreign, rec)
-					}
+		if isMatch && silence { // Marked as silent?
+			rec.SilenceReporting = true
+		}
+
+		if noPurge { // Process NO_PURGE.
+			// Is this a candidate for purging?
+			if !desiredDB.ContainsLT(rec) {
+				// Yes, but not if it is an exception!
+				if !absentDB.ContainsLT(rec) {
+					foreign = append(foreign, rec)
 				}
 			}
+			//}
+		} else if isMatch { // Process IGNORE() matches.
+			ignorable = append(ignorable, rec)
 		}
 	}
 	return ignorable, foreign
