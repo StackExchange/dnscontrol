@@ -46,7 +46,7 @@ jobs:
       id: build_binaries_tagged
       name: Build binaries (if tagged)
       if: github.ref_type == 'tag'
-      uses: goreleaser/goreleaser-action@v4
+      uses: goreleaser/goreleaser-action@v5
       with:
         distribution: goreleaser
         version: latest
@@ -57,7 +57,7 @@ jobs:
       id: build_binaries_not_tagged
       name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
-      uses: goreleaser/goreleaser-action@v4
+      uses: goreleaser/goreleaser-action@v5
       with:
         distribution: goreleaser
         version: latest
