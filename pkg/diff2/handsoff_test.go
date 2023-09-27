@@ -164,7 +164,7 @@ D("f.com", "none",
 	A("foo3", "3.3.3.3", ENSURE_ABSENT_REC()),
 {})
 `
-	handsoffHelper(t, existingZone, desiredJs, true, `
+	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 FOREIGN:
 	`)
@@ -184,7 +184,7 @@ D("f.com", "none",
 	IGNORE_NAME("foo3"),
 {})
 `
-	handsoffHelper(t, existingZone, desiredJs, true, `
+	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 foo3 A 3.3.3.3
 foo3 MX 10 mymx.example.com.
@@ -207,7 +207,7 @@ D("f.com", "none",
 	IGNORE_NAME("foo3", "MX"),
 {})
 `
-	handsoffHelper(t, existingZone, desiredJs, true, `
+	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 foo3 MX 10 mymx.example.com.
 FOREIGN:
@@ -228,7 +228,7 @@ D("f.com", "none",
 	IGNORE_TARGET('**.acm-validations.aws.', 'CNAME'),
 {})
 `
-	handsoffHelper(t, existingZone, desiredJs, true, `
+	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 _2222222222222222.cr CNAME _333333.nnn.acm-validations.aws.
 FOREIGN:
