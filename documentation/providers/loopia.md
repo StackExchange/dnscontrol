@@ -6,7 +6,7 @@ They provide support in English and other regional variants (Norwegian, Serbian,
 
 This plugin is based on API documents found at 
 [https://www.loopia.com/api/](https://www.loopia.com/api/)
-and by observing API responses. Hat tip to Github @hazzeh whose code for the
+and by observing API responses. Hat tip to GitHub @hazzeh whose code for the
 LEGO Loopia implementation was helpful.
 
 Sadly the Loopia API has some problems:
@@ -70,7 +70,7 @@ There is no test endpoint. Fly free, grasshopper.
 
 Turning on debug will show the XML requests and responses, and include the
 username and password from your `creds.json` file. If you want to share these, 
-like for a Github issue, be sure to redact those from the XML.
+like for a GitHub issue, be sure to redact those from the XML.
 
 ### Fetch Apex NS Entries
 
