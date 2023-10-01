@@ -21,7 +21,7 @@ type Differ interface {
 	IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, create, toDelete, modify Changeset, err error)
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
-	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
+	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, error)
 }
 
 type differ struct {

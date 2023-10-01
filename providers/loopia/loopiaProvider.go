@@ -281,13 +281,13 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 	if err != nil {
 		return nil, err
 	}
-	keysToUpdate, err = differ.ChangedGroups(existingRecords)
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
+
+	keysToUpdate, _, err = differ.ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err
 	}
-
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, d := range create {
 		// fmt.Printf("a creation: subdomain: %+v, existingfqdn: %+v \n", d.Desired.Name, d.Desired.NameFQDN)

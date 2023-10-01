@@ -108,11 +108,12 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(existingRecords)
 
-	var corrections []*models.Correction
-	keysToUpdate, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
+	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	existingRecordsMap := make(map[models.RecordKey][]*models.RecordConfig)
 	for _, r := range existingRecords {

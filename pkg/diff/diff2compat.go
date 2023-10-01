@@ -74,11 +74,11 @@ func GenerateMessageCorrections(msgs []string) (corrections []*models.Correction
 }
 
 // ChangedGroups provides the same results as IncrementalDiff but grouped by key.
-func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
+func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
+	toReport, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for _, c := range toCreate {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
@@ -89,5 +89,5 @@ func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[model
 	for _, m := range toModify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
-	return changedKeys, nil
+	return changedKeys, toReport, nil
 }

@@ -163,13 +163,14 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 
-	var corrections []*models.Correction
-	keysToUpdate, err := diff.NewCompat(dc).ChangedGroups(existing)
+	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existing)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
-	if len(keysToUpdate) == 0 {
+	if len(corrections) == 0 && len(keysToUpdate) == 0 {
 		return nil, nil
 	}
 
