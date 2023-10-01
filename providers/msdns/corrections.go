@@ -9,7 +9,8 @@ import (
 )
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) (corrections []*models.Correction, err error) {
+func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)

@@ -276,35 +276,6 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 	return err
 }
 
-// func nativeToRecordType(recordType *string) (adns.RecordType, error) {
-// 	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
-// 	switch recordTypeStripped {
-// 	case "A", "AZURE_ALIAS_A":
-// 		return adns.RecordTypeA, nil
-// 	case "AAAA", "AZURE_ALIAS_AAAA":
-// 		return adns.RecordTypeAAAA, nil
-// 	case "CAA":
-// 		return adns.RecordTypeCAA, nil
-// 	case "CNAME", "AZURE_ALIAS_CNAME":
-// 		return adns.RecordTypeCNAME, nil
-// 	case "MX":
-// 		return adns.RecordTypeMX, nil
-// 	case "NS":
-// 		return adns.RecordTypeNS, nil
-// 	case "PTR":
-// 		return adns.RecordTypePTR, nil
-// 	case "SRV":
-// 		return adns.RecordTypeSRV, nil
-// 	case "TXT":
-// 		return adns.RecordTypeTXT, nil
-// 	case "SOA":
-// 		return adns.RecordTypeSOA, nil
-// 	default:
-// 		// Unimplemented type. Return adns.A as a decoy, but send an error.
-// 		return adns.RecordTypeA, fmt.Errorf("nativeToRecordType rtype %v unimplemented", *recordType)
-// 	}
-// }
-
 func nativeToRecordTypeDiff2(recordType *string) (adns.RecordType, error) {
 	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
 	switch recordTypeStripped {
@@ -482,74 +453,6 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	}
 	return results
 }
-
-// func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
-// 	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), Properties: &adns.RecordSetProperties{}}
-// 	for _, rec := range recordConfig {
-// 		switch recordKey.Type {
-// 		case "A":
-// 			if recordSet.Properties.ARecords == nil {
-// 				recordSet.Properties.ARecords = []*adns.ARecord{}
-// 			}
-// 			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
-// 		case "AAAA":
-// 			if recordSet.Properties.AaaaRecords == nil {
-// 				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
-// 			}
-// 			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
-// 		case "CNAME":
-// 			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
-// 		case "NS":
-// 			if recordSet.Properties.NsRecords == nil {
-// 				recordSet.Properties.NsRecords = []*adns.NsRecord{}
-// 			}
-// 			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
-// 		case "PTR":
-// 			if recordSet.Properties.PtrRecords == nil {
-// 				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
-// 			}
-// 			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
-// 		case "TXT":
-// 			if recordSet.Properties.TxtRecords == nil {
-// 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
-// 			}
-// 			// Empty TXT record needs to have no value set in it's properties
-// 			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
-// 				var txts []*string
-// 				for _, txt := range rec.TxtStrings {
-// 					txts = append(txts, to.StringPtr(txt))
-// 				}
-// 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
-// 			}
-// 		case "MX":
-// 			if recordSet.Properties.MxRecords == nil {
-// 				recordSet.Properties.MxRecords = []*adns.MxRecord{}
-// 			}
-// 			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
-// 		case "SRV":
-// 			if recordSet.Properties.SrvRecords == nil {
-// 				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
-// 			}
-// 			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
-// 		case "CAA":
-// 			if recordSet.Properties.CaaRecords == nil {
-// 				recordSet.Properties.CaaRecords = []*adns.CaaRecord{}
-// 			}
-// 			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
-// 		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
-// 			*recordSet.Type = rec.AzureAlias["type"]
-// 			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
-// 		default:
-// 			return nil, adns.RecordTypeA, fmt.Errorf("recordToNative rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
-// 		}
-// 	}
-
-// 	rt, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
-// 	if err != nil {
-// 		return nil, adns.RecordTypeA, err // adns.A is a placeholder
-// 	}
-// 	return recordSet, rt, nil
-// }
 
 // NOTE recordToNativeDiff2 is really "convert []RecordConfig to rrset".
 

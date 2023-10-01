@@ -265,7 +265,9 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) (corrections []*models.Correction, err error) {
+func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
 	}

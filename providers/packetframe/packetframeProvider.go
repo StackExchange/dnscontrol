@@ -100,7 +100,9 @@ func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]st
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) (corrections []*models.Correction, err error) {
+func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	zone, err := api.getZone(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)

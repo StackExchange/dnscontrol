@@ -94,7 +94,8 @@ func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) (corrections []*models.Correction, err error) {
+func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	checkNS(dc)
 

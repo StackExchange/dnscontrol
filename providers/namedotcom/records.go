@@ -27,7 +27,8 @@ func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) (corrections []*models.Correction, err error) {
+func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	checkNSModifications(dc)
 

@@ -139,7 +139,9 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) (corrections []*models.Correction, err error) {
+func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(records)
 	if err != nil {
 		return nil, err
