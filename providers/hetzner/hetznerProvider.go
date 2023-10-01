@@ -86,7 +86,6 @@ func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 		return nil, err
 	}
 
-	corrections = make([]*models.Correction, 0, len(del)+1+1)
 	for _, m := range del {
 		r := m.Existing.Original.(*record)
 		corr := &models.Correction{
