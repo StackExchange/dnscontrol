@@ -119,18 +119,18 @@ func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
 	return d
 }
 
-// IgnoreName describes an IGNORE_NAME rule.
-type IgnoreName struct {
-	Pattern string `json:"pattern"` // Glob pattern.
-	Types   string `json:"types"`   // All caps rtype names, comma separated.
-}
-
-// IgnoreTarget describes an IGNORE_TARGET rule.
-type IgnoreTarget struct {
-	Pattern string `json:"pattern"` // Glob pattern.
-	Type    string `json:"type"`    // All caps rtype name.
-}
-
-func (i *IgnoreTarget) String() string {
-	return i.Pattern
-}
+//// IgnoreName describes an IGNORE_NAME rule.
+//type IgnoreName struct {
+//	Pattern string `json:"pattern"` // Glob pattern.
+//	Types   string `json:"types"`   // All caps rtype names, comma separated.
+//}
+//
+//// IgnoreTarget describes an IGNORE_TARGET rule.
+//type IgnoreTarget struct {
+//	Pattern string `json:"pattern"` // Glob pattern.
+//	Type    string `json:"type"`    // All caps rtype name.
+//}
+//
+//func (i *IgnoreTarget) String() string {
+//	return i.Pattern
+//}

@@ -8,7 +8,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -77,18 +76,14 @@ func (s *softlayerProvider) GetZoneRecords(domainName string, meta map[string]st
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	domain, err := s.getDomain(&dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	var create, deletes, modify diff.Changeset
-	if !diff2.EnableDiff2 {
-		_, create, deletes, modify, err = diff.New(dc).IncrementalDiff(actual)
-	} else {
-		_, create, deletes, modify, err = diff.NewCompat(dc).IncrementalDiff(actual)
-	}
+	_, create, deletes, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}

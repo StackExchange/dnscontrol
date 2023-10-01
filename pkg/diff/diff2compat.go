@@ -24,9 +24,9 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 		panic("extraValues not supported")
 	}
 
-	d := New(dc)
+	//	d := New(dc)
 	return &differCompat{
-		OldDiffer: d.(*differ),
+		//OldDiffer: d.(*differ),
 
 		dc: dc,
 	}
@@ -35,8 +35,6 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 // differCompat meets the Differ interface but provides its service
 // using pkg/diff2 instead of pkg/diff.
 type differCompat struct {
-	OldDiffer *differ // Store the backwards-compatible "d" for pkg/diff
-
 	dc *models.DomainConfig
 }
 
@@ -57,7 +55,7 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 	}
 
 	for _, inst := range instructions {
-		cor := Correlation{d: d.OldDiffer}
+		cor := Correlation{}
 		switch inst.Type {
 		case diff2.REPORT:
 			// Sadly the NewCompat function doesn't have an equivalent. We

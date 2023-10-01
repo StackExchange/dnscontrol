@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
@@ -58,25 +57,11 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-
-	//	actual, err := n.GetZoneRecords(dc.Name)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-
-	//checkNSModifications(dc)
+func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) (corrections []*models.Correction, err error) {
 
 	txtutil.SplitSingleLongTxt(dc.Records)
 
-	var corrections []*models.Correction
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	_, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}

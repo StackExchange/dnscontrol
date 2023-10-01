@@ -7,42 +7,6 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_names": [
-        {
-          "pattern": "testignore",
-          "types": "*"
-        },
-        {
-          "pattern": "testignore2",
-          "types": "A"
-        },
-        {
-          "pattern": "testignore3",
-          "types": "A, CNAME, TXT"
-        },
-        {
-          "pattern": "testignore4",
-          "types": "*"
-        },
-        {
-          "pattern": "legacyignore",
-          "types": "*"
-        },
-        {
-          "pattern": "@",
-          "types": "*"
-        }
-      ],
-      "ignored_targets": [
-        {
-          "pattern": "testtarget",
-          "type": "CNAME"
-        },
-        {
-          "pattern": "@",
-          "type": "CNAME"
-        }
-      ],
       "unmanaged": [
         {
           "label_pattern": "testignore",
@@ -84,50 +48,6 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_names": [
-        {
-          "pattern": "mylabel",
-          "types": "*"
-        },
-        {
-          "pattern": "mylabel2",
-          "types": ""
-        },
-        {
-          "pattern": "mylabel3",
-          "types": ""
-        },
-        {
-          "pattern": "",
-          "types": "A"
-        },
-        {
-          "pattern": "",
-          "types": "A,AAAA"
-        },
-        {
-          "pattern": "",
-          "types": ""
-        },
-        {
-          "pattern": "labelc",
-          "types": "CNAME"
-        },
-        {
-          "pattern": "nametest",
-          "types": "*"
-        }
-      ],
-      "ignored_targets": [
-        {
-          "pattern": "targettest1",
-          "type": ""
-        },
-        {
-          "pattern": "targettest2",
-          "type": "A"
-        }
-      ],
       "unmanaged": [
         {
           "label_pattern": "mylabel",

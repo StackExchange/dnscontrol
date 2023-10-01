@@ -16,7 +16,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -195,48 +194,7 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 	// Normalize
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
-	if !diff2.EnableDiff2 {
-		return c.getDiff1DomainCorrections(dc, zoneID, prunedRecords)
-	}
 	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
-}
-
-func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
-	differ := diff.New(dc)
-	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, del := range toDelete {
-		recordID := del.Existing.Original.(Record).RecordID
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   func() error { return c.deleteZoneRecord(zoneID, recordID) },
-		})
-	}
-
-	for _, cre := range toCreate {
-		record := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   func() error { return c.createZoneRecord(zoneID, record) },
-		})
-	}
-
-	for _, mod := range toModify {
-		record := mod.Desired
-		recordID := mod.Existing.Original.(Record).RecordID
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   func() error { return c.changeZoneRecord(zoneID, recordID, record) },
-		})
-	}
-
-	return corrections, nil
 }
 
 func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {

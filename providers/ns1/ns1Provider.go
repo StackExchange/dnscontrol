@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
@@ -187,56 +186,12 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
+func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) (corrections []*models.Correction, err error) {
 	domain := dc.Name
 
 	// add DNSSEC-related corrections
 	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
 		corrections = append(corrections, dnssecCorrections)
-	}
-
-	if !diff2.EnableDiff2 {
-
-		existingGrouped := existingRecords.GroupedByKey()
-		desiredGrouped := dc.Records.GroupedByKey()
-
-		differ := diff.New(dc)
-		changedGroups, err := differ.ChangedGroups(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		// each name/type is given to the api as a unit.
-		for k, descs := range changedGroups {
-			key := k
-
-			desc := strings.Join(descs, "\n")
-
-			_, current := existingGrouped[k]
-			recs, wanted := desiredGrouped[k]
-
-			if wanted && !current {
-				// pure addition
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.add(recs, dc.Name) },
-				})
-			} else if current && !wanted {
-				// pure deletion
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.remove(key, dc.Name) },
-				})
-			} else {
-				// modification
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.modify(recs, dc.Name) },
-				})
-			}
-		}
-		return corrections, nil
 	}
 
 	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)

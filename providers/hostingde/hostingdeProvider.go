@@ -10,7 +10,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -138,12 +137,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		return nil, err
 	}
 
-	var create, del, mod diff.Changeset
-	if !diff2.EnableDiff2 {
-		_, create, del, mod, err = diff.New(dc).IncrementalDiff(records)
-	} else {
-		_, create, del, mod, err = diff.NewCompat(dc).IncrementalDiff(records)
-	}
+	_, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}

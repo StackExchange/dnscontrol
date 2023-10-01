@@ -5,7 +5,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -80,14 +79,7 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var err error
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	_, creates, dels, modifications, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}

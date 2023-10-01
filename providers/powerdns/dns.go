@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
 )
@@ -47,15 +46,8 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]strin
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-	// create record diff by group
-	var err error
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
-		corrections, err = dsp.getDiff1DomainCorrections(dc, existing)
-	} else {
-		corrections, err = dsp.getDiff2DomainCorrections(dc, existing)
-	}
+	corrections, err := dsp.getDiff2DomainCorrections(dc, existing)
 	if err != nil {
 		return nil, err
 	}
