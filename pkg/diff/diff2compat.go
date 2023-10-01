@@ -24,10 +24,7 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 		panic("extraValues not supported")
 	}
 
-	//	d := New(dc)
 	return &differCompat{
-		//OldDiffer: d.(*differ),
-
 		dc: dc,
 	}
 }

@@ -144,7 +144,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	// NOPURGE
 	if dc.KeepUnknown {
-		del = []diff.Correlation{}
+		del = nil
 	}
 
 	// remove SOA record from corrections as it is handled separately
