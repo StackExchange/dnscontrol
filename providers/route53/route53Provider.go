@@ -507,13 +507,6 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 	return results, nil
 }
 
-func getAliasMap(r *models.RecordConfig) map[string]string {
-	if r.Type != "R53_ALIAS" {
-		return nil
-	}
-	return r.R53Alias
-}
-
 func aliasToRRSet(zone r53Types.HostedZone, r *models.RecordConfig) *r53Types.ResourceRecordSet {
 	target := r.GetTargetField()
 	zoneID := getZoneID(zone, r)

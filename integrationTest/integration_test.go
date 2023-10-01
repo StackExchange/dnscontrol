@@ -531,26 +531,10 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 
 func ignoreName(labelSpec string) *models.RecordConfig {
 	return ignore(labelSpec, "*", "*")
-	// r := &models.RecordConfig{
-	// 	Type:     "IGNORE_NAME",
-	// 	Metadata: map[string]string{},
-	// }
-	// SetLabel(r, labelSpec, "**current-domain**")
-
-	// r.Metadata["ignore_LabelPattern"] = labelSpec
-	// return r
 }
 
 func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
 	return ignore("*", "*", targetSpec)
-	// r := &models.RecordConfig{
-	// 	Type:     "IGNORE_TARGET",
-	// 	Metadata: map[string]string{},
-	// }
-
-	// r.Metadata["ignore_RTypePattern"] = typeSpec
-	// r.Metadata["ignore_TargetPattern"] = typeSpec
-	// return r
 }
 
 func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
@@ -2001,9 +1985,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// https://github.com/StackExchange/dnscontrol/issues/2285
-		// IGNORE_TARGET for CNAMEs wasn't working for AZURE_DNS.
-		// Interestingly enough, this has never worked with
-		// GANDI_V5/diff1.  It works on all providers in diff2.
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),

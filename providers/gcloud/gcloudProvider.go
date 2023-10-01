@@ -60,7 +60,7 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
-	// diff1
+	// For use with diff / NewComnpat()
 	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
 	zoneNameMap map[string]string
 	// provider metadata fields

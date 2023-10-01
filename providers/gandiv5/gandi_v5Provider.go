@@ -296,19 +296,6 @@ func debugRecords(note string, recs []*models.RecordConfig) {
 	}
 }
 
-// gatherAffectedLabels takes the output of diff.ChangedGroups and
-// regroups it by FQDN of the label, not by Key. It also returns
-// a list of all the FQDNs.
-func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[string]bool, msgs map[string][]string) {
-	labels = map[string]bool{}
-	msgs = map[string][]string{}
-	for k, v := range groups {
-		labels[k.NameFQDN] = true
-		msgs[k.NameFQDN] = append(msgs[k.NameFQDN], v...)
-	}
-	return labels, msgs
-}
-
 // Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.

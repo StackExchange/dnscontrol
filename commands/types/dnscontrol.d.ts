@@ -1245,85 +1245,7 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
 /**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
  *
- * ## Legacy mode ("diff1")
- *
- * When `--diff2=false` is used to revert to the old "diff1" algorithm, `IGNORE_NAME()` behaves as follows:
- *
- * WARNING: The `IGNORE_*` family  of functions is risky to use. The code
- * is brittle and has subtle bugs. Use at your own risk. Do not use these
- * commands with `D_EXTEND()`.
- *
- * `IGNORE_NAME` can be used to ignore some records present in zone.
- * Records of that name will be completely ignored. An optional `rTypes` may be specified as a comma separated list to only ignore records of the given type, e.g. `"A"`, `"A,CNAME"`, `"A, MX, CNAME"`. If `rTypes` is omitted or is `"*"` all record types matching the name will be ignored.
- *
- * `IGNORE_NAME` is like `NO_PURGE` except it acts only on some specific records instead of the whole zone.
- *
- * Technically `IGNORE_NAME` is a promise that DNSControl will not add, change, or delete records at a given label.  This permits another entity to "own" that label.
- *
- * `IGNORE_NAME` is generally used in very specific situations:
- *
- * * Some records are managed by some other system and DNSControl is only used to manage some records and/or keep them updated. For example a DNS `A` record that is managed by a dynamic DNS client, or by Kubernetes External DNS, but DNSControl is used to manage the rest of the zone. In this case we don't want DNSControl to try to delete the externally managed record.
- * * To work-around a pseudo record type that is not supported by DNSControl. For example some providers have a fake DNS record type called "URL" which creates a redirect. DNSControl normally deletes these records because it doesn't understand them. `IGNORE_NAME` will leave those records alone.
- *
- * In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged the "foo.example.com" and "bar.example.com" ones.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   IGNORE_NAME("foo"), // ignore all record types for name foo
- *   IGNORE_NAME("baz", "*"), // ignore all record types for name baz
- *   IGNORE_NAME("bar", "A,MX"), // ignore only A and MX records for name bar
- *   CNAME("bar", "www"), // CNAME is not ignored
- *   A("baz", "1.2.3.4")
- * );
- * ```
- *
- * `IGNORE_NAME` also supports glob patterns in the style of the [gobwas/glob](https://github.com/gobwas/glob) library. All of
- * the following patterns will work:
- *
- * * `IGNORE_NAME("*.foo")` will ignore all records in the style of `bar.foo`, but will not ignore records using a double
- * subdomain, such as `foo.bar.foo`.
- * * `IGNORE_NAME("**.foo")` will ignore all subdomains of `foo`, including double subdomains.
- * * `IGNORE_NAME("?oo")` will ignore all records of three symbols ending in `oo`, for example `foo` and `zoo`. It will
- * not match `.`
- * * `IGNORE_NAME("[abc]oo")` will ignore records `aoo`, `boo` and `coo`. `IGNORE_NAME("[a-c]oo")` is equivalent.
- * * `IGNORE_NAME("[!abc]oo")` will ignore all three symbol records ending in `oo`, except for `aoo`, `boo`, `coo`. `IGNORE_NAME("[!a-c]oo")` is equivalent.
- * * `IGNORE_NAME("{bar,[fz]oo}")` will ignore `bar`, `foo` and `zoo`.
- * * `IGNORE_NAME("\\*.foo")` will ignore the literal record `*.foo`.
- *
- * # Caveats
- *
- * It is considered as an error to try to manage an ignored record.
- * Ignoring a label is a promise that DNSControl won't meddle with
- * anything at a particular label, therefore DNSControl prevents you from
- * adding records at a label that is `IGNORE_NAME`'ed.
- *
- * Use `IGNORE_NAME("@")` to ignore at the domain's apex. Most providers
- * insert magic or unchangeable records at the domain's apex; usually `NS`
- * and `SOA` records.  DNSControl treats them specially.
- *
- * # Errors
- *
- * * `trying to update/add IGNORE_NAME'd record: foo CNAME`
- *
- * This means you have both ignored `foo` and included a record (in this
- * case, a CNAME) to update it.  This is an error because `IGNORE_NAME`
- * is a promise not to modify records at a certain label so that others
- * may have free reign there.  Therefore, DNSControl prevents you from
- * modifying that label.
- *
- * The `foo CNAME` at the end of the message indicates the label name
- * (`foo`) and the type of record (`CNAME`) that your dnsconfig.js file
- * is trying to insert.
- *
- * You can override this error by adding the
- * `IGNORE_NAME_DISABLE_SAFETY_CHECK` flag to the record.
- *
- *     TXT("vpn", "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
- *
- * Disabling this safety check creates two risks:
- *
- * 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
- * 2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.
+ * `IGNORE_NAME(a, b)` is the same as `IGNORE(a, b, "*")`.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_name
  */
@@ -1333,40 +1255,6 @@ declare function IGNORE_NAME(pattern: string, rTypes?: string): DomainModifier;
  * `IGNORE_TARGET_NAME(target)` is the same as `IGNORE("*", "*", target)`.
  *
  * `IGNORE_TARGET_NAME(target, rtype)` is the same as `IGNORE("*", rtype, target)`.
- *
- * ## Legacy mode ("diff1")
- *
- * When `--diff2=false` is used to revert to the old "diff1" algorithm, `IGNORE_NAME()` behaves as follows:
- *
- * WARNING: The `IGNORE_*` family  of functions is risky to use. The code
- * is brittle and has subtle bugs. Use at your own risk. Do not use these
- * commands with `D_EXTEND()` or use it at the domain apex.
- *
- * IGNORE_TARGET can be used to ignore some records present in zone based on the record's target and type. IGNORE_TARGET currently only supports CNAME record types.
- *
- * IGNORE_TARGET is like NO_PURGE except it acts only on some specific records instead of the whole zone.
- *
- * IGNORE_TARGET is generally used in very specific situations:
- *
- * * Some records are managed by some other system and DNSControl is only used to manage some records and/or keep them updated. For example a DNS record that is created by AWS Certificate Manager for validation, but DNSControl is used to manage the rest of the zone. In this case we don't want DNSControl to try to delete the externally managed record.
- *
- * In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged a CNAME to "foo.acm-validations.aws" record.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   IGNORE_TARGET("**.acm-validations.aws.", "CNAME"),
- *   A("baz", "1.2.3.4")
- * );
- * ```
- *
- * IGNORE_TARGET also supports glob patterns in the style of the [gobwas/glob](https://github.com/gobwas/glob#example) library. Some example patterns:
- *
- * * `IGNORE_TARGET("example.com", "CNAME")` will ignore all CNAME records with targets of exactly `example.com`.
- * * `IGNORE_TARGET("*.foo", "CNAME")` will ignore all CNAME records with targets in the style of `bar.foo`, but will not ignore records with targets using a double subdomain, such as `foo.bar.foo`.
- * * `IGNORE_TARGET("**.bar", "CNAME")` will ignore all CNAME records with target subdomains of `bar`, including double subdomains such as `www.foo.bar`.
- * * `IGNORE_TARGET("dev.*.foo", "CNAME")` will ignore all CNAME records with targets in the style of `dev.bar.foo`, but will not ignore records with targets using a double subdomain, such as `dev.foo.bar.foo`.
- *
- * It is considered as an error to try to manage an ignored record.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_target
  */

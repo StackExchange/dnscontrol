@@ -853,24 +853,11 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
 
 // IGNORE_NAME(name, rTypes)
 function IGNORE_NAME(name, rTypes) {
-    if (rTypes === undefined) {
-        rTypes = '*';
-    }
-    return function (d) {
-        d.unmanaged.push({
-            label_pattern: name,
-            rType_pattern: rTypes,
-        });
-    };
+  return IGNORE(name, rTypes)
 }
 
 function IGNORE_TARGET(target, rType) {
-    return function (d) {
-        d.unmanaged.push({
-            rType_pattern: rType,
-            target_pattern: target,
-        });
-    };
+  return IGNORE("*", rType, target)
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)
