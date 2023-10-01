@@ -235,11 +235,12 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	_, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
+	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, d := range create {
 		des := d.Desired

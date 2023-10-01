@@ -76,17 +76,17 @@ func (s *softlayerProvider) GetZoneRecords(domainName string, meta map[string]st
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
 	domain, err := s.getDomain(&dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	_, create, deletes, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, create, deletes, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, del := range deletes {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)

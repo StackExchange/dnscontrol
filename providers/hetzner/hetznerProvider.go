@@ -70,15 +70,16 @@ func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 	domain := dc.Name
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	z, err := api.getZone(domain)
 	if err != nil {

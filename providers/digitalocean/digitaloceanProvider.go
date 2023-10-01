@@ -172,11 +172,12 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 
 	ctx := context.Background()
 
-	var corrections []*models.Correction
-	_, toCreate, toDelete, toModify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, toCreate, toDelete, toModify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Deletes first so changing type works etc.
 	for _, m := range toDelete {

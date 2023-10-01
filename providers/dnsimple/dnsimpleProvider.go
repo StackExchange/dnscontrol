@@ -139,20 +139,21 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 }
 
 func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
 	removeOtherApexNS(dc)
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
 	if err != nil {
 		return nil, err
 	}
-	corrections = append(corrections, dnssecFixes...)
 
-	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
+	// Next dnsSec fixes
+	corrections = append(corrections, dnssecFixes...)
 
 	for _, del := range del {
 		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)

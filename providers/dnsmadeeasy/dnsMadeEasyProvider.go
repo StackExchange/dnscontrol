@@ -117,11 +117,12 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		}
 	}
 
-	var corrections []*models.Correction
-	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	var deleteRecordIds []int
 	deleteDescription := []string{"Batch deletion of records:"}

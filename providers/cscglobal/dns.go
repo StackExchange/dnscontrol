@@ -78,11 +78,12 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	var corrections []*models.Correction
-	_, creates, dels, modifications, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
+	toReport, creates, dels, modifications, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// CSCGlobal has a unique API.  A list of edits is sent in one API
 	// call. Edits aren't permitted if an existing edit is being

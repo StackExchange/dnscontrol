@@ -58,14 +58,14 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
 	txtutil.SplitSingleLongTxt(dc.Records)
 
-	_, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone

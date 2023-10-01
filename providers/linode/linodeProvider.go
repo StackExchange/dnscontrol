@@ -126,7 +126,6 @@ func (api *linodeProvider) GetZoneRecords(domain string, meta map[string]string)
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get
 	// The documentation says that it will always round up to the next highest value: 300 -> 300, 301 -> 3600.
@@ -145,10 +144,12 @@ func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
-	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {

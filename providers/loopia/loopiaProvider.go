@@ -266,7 +266,6 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
@@ -278,7 +277,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 
 	var keysToUpdate map[models.RecordKey][]string
 	differ := diff.NewCompat(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -286,6 +285,9 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 	if err != nil {
 		return nil, err
 	}
+
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, d := range create {
 		// fmt.Printf("a creation: subdomain: %+v, existingfqdn: %+v \n", d.Desired.Name, d.Desired.NameFQDN)

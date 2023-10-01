@@ -69,7 +69,6 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 	domain := dc.Name
 
 	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
@@ -89,10 +88,12 @@ func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 	dc.Records = newRecords
 
-	_, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {

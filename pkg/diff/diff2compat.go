@@ -45,7 +45,7 @@ type differCompat struct {
 //   - The NewCompat() feature `extraValues` is not supported. That
 //     parameter must be set to nil.  If you use that feature, consider
 //     one of the pkg/diff2/By*() functions.
-func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, toCreate, toDelete, toModify Changeset, err error) {
+func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, toCreate, toDelete, toModify Changeset, err error) {
 	instructions, err := diff2.ByRecord(existing, d.dc, nil)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -55,15 +55,7 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		cor := Correlation{}
 		switch inst.Type {
 		case diff2.REPORT:
-			// Sadly the NewCompat function doesn't have an equivalent. We
-			// just output the messages now.
-			fmt.Print("INFO: ")
-			fmt.Println(inst.MsgsJoined)
-
-			// TODO(tlim): When diff1 is deleted, IncremtntalDiff should add a
-			// parameter to list the REPORT messages. It can also eliminate the
-			// first parameter (existing) since nobody uses that in the diff2
-			// world.
+			reportMsgs = append(reportMsgs, inst.Msgs...)
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			toCreate = append(toCreate, cor)
@@ -79,6 +71,13 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		}
 	}
 
+	return
+}
+
+func GenerateMessageCorrections(msgs []string) (corrections []*models.Correction) {
+	for _, msg := range msgs {
+		corrections = append(corrections, &models.Correction{Msg: msg})
+	}
 	return
 }
 

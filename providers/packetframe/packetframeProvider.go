@@ -101,17 +101,17 @@ func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]st
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
 	zone, err := api.getZone(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
-	_, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, m := range create {
 		req, err := toReq(zone.ID, dc, m.Desired)

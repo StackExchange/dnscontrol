@@ -39,11 +39,12 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	var corrections []*models.Correction
-	_, create, delete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, delete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Delete record
 	for _, r := range delete {

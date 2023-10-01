@@ -224,10 +224,12 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 	}
 
-	_, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	/*
 		Oracle's API doesn't have a way to update an existing record.
@@ -266,15 +268,17 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		desc = desc[:len(desc)-1]
 	}
 
+	// There were corrections. Send them as one big batch:
 	if len(createRecords) > 0 || len(deleteRecords) > 0 {
-		return []*models.Correction{{
+		corrections = append(corrections, &models.Correction{
 			Msg: desc,
 			F: func() error {
 				return o.patch(createRecords, deleteRecords, dc.Name)
 			},
-		}}, nil
+		})
 	}
-	return []*models.Correction{}, nil
+
+	return corrections, nil
 }
 
 func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, domain string) error {
