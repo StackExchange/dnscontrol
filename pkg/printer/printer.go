@@ -92,10 +92,7 @@ func (c ConsolePrinter) PrintCorrection(i int, correction *models.Correction) {
 
 // PrintReport is called to print/format each non-mutating correction (diff2.REPORT).
 func (c ConsolePrinter) PrintReport(i int, correction *models.Correction) {
-	// when diff1 is eliminated:
 	fmt.Fprintf(c.Writer, "INFO#%d: %s\n", i+1, correction.Msg)
-	// When diff1 exists:
-	//fmt.Fprintf(c.Writer, "INFO: %s\n", correction.Msg)
 }
 
 // PromptToRun prompts the user to see if they want to execute a correction.

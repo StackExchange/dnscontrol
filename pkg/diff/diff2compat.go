@@ -35,16 +35,8 @@ type differCompat struct {
 	dc *models.DomainConfig
 }
 
-// IncrementalDiff generates the diff using the pkg/diff2 code.
-// NOTE: While this attempts to be backwards compatible, it does not
-// support all features of the old system:
-//   - The IncrementalDiff() `unchanged` return value is always empty.
-//     Most providers ignore this return value. If a provider depends on
-//     that result, please consider one of the pkg/diff2/By*() functions
-//     instead.  (ByZone() is likely to be what you need)
-//   - The NewCompat() feature `extraValues` is not supported. That
-//     parameter must be set to nil.  If you use that feature, consider
-//     one of the pkg/diff2/By*() functions.
+// IncrementalDiff usees pkg/diff2 to generate output compatible with systems
+// still using NewCompat().
 func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, toCreate, toDelete, toModify Changeset, err error) {
 	instructions, err := diff2.ByRecord(existing, d.dc, nil)
 	if err != nil {
