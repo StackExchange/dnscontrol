@@ -263,7 +263,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			}
 			return rec2
 		}
-		switch rec.Type { // #rtype_variations
+		switch rec.Type {
 		case "A":
 			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
 			if err != nil {
@@ -278,14 +278,9 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "AKAMAICDN", "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
-			// Not imported.
-			continue
-		case "LOC":
-			continue
 		default:
-			return fmt.Errorf("import_transform: Unimplemented record type %v (%v)",
-				rec.Type, rec.GetLabel())
+			// Anything else is ignored.
+			continue
 		}
 	}
 	return nil
