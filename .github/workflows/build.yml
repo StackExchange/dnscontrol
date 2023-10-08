@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.20
+      image: golang:1.21
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
