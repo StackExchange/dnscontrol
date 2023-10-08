@@ -64,7 +64,7 @@ If your editor requires extra steps, please [file a bug](https://github.com/Stac
 
 ### Bug: `CLI_DEFAULTS` not implemented
 
-Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
+Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
 
 Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable).
 
@@ -79,4 +79,4 @@ This will tell TypeScript that the variable exists, and that it’s a string.
 
 ### Known issue: `FETCH` not always accurate
 
-Bug: `FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
+`FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
