@@ -409,9 +409,9 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * CAA("@", "issuewild", ";")
  * ```
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/caa_builder
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder
  */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): RecordModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): DomainModifier;
 
 /**
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
@@ -753,9 +753,9 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * * TXT records are automatically split using `AUTOSPLIT`.
  * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/dmarc_builder
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dmarc_builder
  */
-declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): RecordModifier;
+declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): DomainModifier;
 
 /**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
@@ -1449,9 +1449,9 @@ declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min
  *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dd
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dd
  */
-declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; alt?: number; ttl?: Duration }): RecordModifier;
+declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; alt?: number; ttl?: Duration }): DomainModifier;
 
 /**
  * `LOC_BUILDER_DMM({})` actually takes an object with the following properties:
@@ -1491,9 +1491,9 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dmm_str
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dmm_str
  */
-declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): DomainModifier;
 
 /**
  * `LOC_BUILDER_DMS_STR({})` actually takes an object with the following properties:
@@ -1534,9 +1534,9 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_dms_str
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dms_str
  */
-declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): DomainModifier;
 
 /**
  * `LOC_BUILDER_STR({})` actually takes an object with the following: properties.
@@ -1582,9 +1582,9 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/loc_builder_str
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_str
  */
-declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): RecordModifier;
+declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): DomainModifier;
 
 /**
  * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
@@ -1631,9 +1631,9 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  * * `domainGUID` The GUID of _this_ Microsoft 365 domain (default: `<label>.<context>` with `.` replaced by `-`, no default if domain contains dashes)
  * * `initialDomain` The initial domain of your Microsoft 365 tenant/account, ends in `onmicrosoft.com`
  *
- * @see https://docs.dnscontrol.org/language-reference/record-modifiers/m365_builder
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/m365_builder
  */
-declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): RecordModifier;
+declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): DomainModifier;
 
 /**
  * MX adds an MX record to the domain.
