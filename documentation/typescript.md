@@ -54,9 +54,9 @@ If your editor requires extra steps, please [file a bug](https://github.com/Stac
 
 **This is experimental.** This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
 
-## Known bugs
+## Known bugs/issue
 
-## Bug: `CLI_DEFAULTS` not implemented
+### Bug: `CLI_DEFAULTS` not implemented
 
 Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
 
@@ -71,7 +71,6 @@ declare const VARIABLE_NAME: string;
 
 This will tell TypeScript that the variable exists, and that it’s a string.
 
-## Known issue: `FETCH` not always accurate
+### Known issue: `FETCH` not always accurate
 
 Bug: `FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
-
