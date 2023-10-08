@@ -25,9 +25,11 @@ dnscontrol write-types
 
 This file has all the information your editor or IDE needs.  It must be in the same directory as the `dnsconfig.js` file you are editing.
 
-NOTE: Re-run the `dnscontrol write-types` command any time you upgrade
+{% hint style="info" %}
+**NOTE**: Re-run the `dnscontrol write-types` command any time you upgrade
 DNSControl. Because it is generated from the command, it will always be correct
 for the version of DNSControl you are using.
+{% endhint %}
 
 2. Tell your editor
 
@@ -50,9 +52,13 @@ If your editor requires extra steps, please [file a bug](https://github.com/Stac
 
 ### Bugs?
 
-**Bugs?**  Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/StackExchange/dnscontrol/issues
+{% hint style="warning" %}
+**BUGS**: Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/StackExchange/dnscontrol/issues
+{% endhint %}
 
-**This is experimental.** This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
+{% hint style="info" %}
+**NOTE**: This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
+{% endhint %}
 
 ## Known bugs/issue
 
