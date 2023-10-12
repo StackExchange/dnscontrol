@@ -401,7 +401,9 @@ func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 
 // fetchNameserverDomains returns the domains configured in INWX nameservers
 func (api *inwxAPI) fetchNameserverDomains() error {
-	info, err := api.client.Nameservers.List("")
+	request := &goinwx.NameserverListRequest{}
+	request.PageLimit = 2147483647 // int32 max value, highest number API accepts
+	info, err := api.client.Nameservers.ListWithParams(request)
 	if err != nil {
 		return err
 	}

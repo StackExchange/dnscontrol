@@ -335,6 +335,8 @@ github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32/go.mod h1:9wM+0iRr9ahx58uY
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nrdcg/goinwx v0.8.3 h1:ARgoqQ+HhKhOhsey1qwHfxBJ6tDfb42iHt3tqED6chU=
 github.com/nrdcg/goinwx v0.8.3/go.mod h1:mnMSTi7CXBu2io4DzdOBoGFA1XclD0sEPWJaDhNgkA4=
+github.com/nrdcg/goinwx v0.9.0 h1:oh+yPdRDwc1IWsAU2nfsNorI/fkR+Gxm4O7yS+0NnjM=
+github.com/nrdcg/goinwx v0.9.0/go.mod h1:mnMSTi7CXBu2io4DzdOBoGFA1XclD0sEPWJaDhNgkA4=
 github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d/go.mod h1:YUTz3bUH2ZwIWBy3CJBeOBEugqcmXREj14T+iG/4k4U=
 github.com/oracle/oci-go-sdk/v32 v32.0.0 h1:SSbzrQO3WRcPJEZ8+b3SFPYsPtkFM96clqrp03lrwbU=
 github.com/oracle/oci-go-sdk/v32 v32.0.0/go.mod h1:aZc4jC59IuNP3cr5y1nj555QvwojMX2nMJaBiozuuEs=

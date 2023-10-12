@@ -36,7 +36,7 @@ require (
 	github.com/miekg/dns v1.1.56
 	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/goinwx v0.8.3
+	github.com/nrdcg/goinwx v0.9.0
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
 	github.com/ovh/go-ovh v1.1.0
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
