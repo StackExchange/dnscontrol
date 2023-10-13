@@ -40,7 +40,12 @@ func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordCon
 				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
 			}
 
-		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
+		case "TXT": // Avoid double quoting for TXT records
+			if err := rc.SetTargetTXTs(convertSdkAnySliceToTxtSlice(value.Content)); err != nil {
+				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
+			}
+
+		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV"
 			if err := rc.PopulateFromString(recType, value.ContentToString(), zoneName); err != nil {
 				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
 			}
@@ -79,6 +84,12 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 				Meta:    nil,
 				Enabled: true,
 			}
+		case "TXT":	// Avoid double quoting for TXT records
+			rr = dnssdk.ResourceRecord{
+				Content: convertTxtSliceToSdkAnySlice(r.TxtStrings),
+				Meta:    nil,
+				Enabled: true,
+			}
 		default:
 			rr = dnssdk.ResourceRecord{
 				Content: dnssdk.ContentFromValue(key.Type, r.GetTargetCombined()),
@@ -105,5 +116,21 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 		}
 	}
 
+	return result
+}
+
+func convertTxtSliceToSdkAnySlice(records []string) []any {
+	result := []any{}
+	for _, record := range records {
+		result = append(result, record)
+	}
+	return result
+}
+
+func convertSdkAnySliceToTxtSlice(records []any) []string {
+	result := []string{}
+	for _, record := range records {
+		result = append(result, record.(string))
+	}
 	return result
 }
