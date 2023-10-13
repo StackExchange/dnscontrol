@@ -1,4 +1,4 @@
-name: StackExchange/dnscontrol/build
+name: "PR: Run all tests"
 on:
   pull_request:
 
