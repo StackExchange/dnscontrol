@@ -85,6 +85,24 @@ func Run(v string) int {
 	sort.Sort(cli.CommandsByName(commands))
 	app.Commands = commands
 	app.EnableBashCompletion = true
+	app.BashComplete = func(cCtx *cli.Context) {
+		// ripped from cli.DefaultCompleteWithFlags
+		var lastArg string
+
+		if len(os.Args) > 2 {
+			lastArg = os.Args[len(os.Args)-2]
+		}
+
+		if lastArg != "" {
+			if strings.HasPrefix(lastArg, "-") {
+				if !islastFlagComplete(lastArg, app.Flags) {
+					dnscontrolPrintFlagSuggestions(lastArg, app.Flags, cCtx.App.Writer)
+					return
+				}
+			}
+		}
+		dnscontrolPrintCommandSuggestions(app.Commands, cCtx.App.Writer)
+	}
 	if err := app.Run(os.Args); err != nil {
 		return 1
 	}
