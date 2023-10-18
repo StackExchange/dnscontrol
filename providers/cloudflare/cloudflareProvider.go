@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/net/idna"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -43,6 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -71,6 +74,7 @@ type cloudflareProvider struct {
 	ignoredLabels   []string
 	manageRedirects bool
 	manageWorkers   bool
+	accountID       string
 	cfClient        *cloudflare.API
 }
 
@@ -387,7 +391,7 @@ func genComparable(rec *models.RecordConfig) string {
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
-			if proxy == "on" {
+			if proxy == "on" || proxy == "full" {
 				proxy = "true"
 			}
 			if proxy == "off" {
@@ -447,6 +451,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	default:
 		e := oldrec.Original.(cloudflare.DNSRecord)
 		proxy := e.Proxiable && newrec.Metadata[metaProxy] != "off"
+		//fmt.Fprintf(os.Stderr, "DEBUG: proxy := %v && %v != off is... %v\n", e.Proxiable, newrec.Metadata[metaProxy], proxy)
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, newrec) },
@@ -485,8 +490,14 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+
+	punyRoot, err := idna.ToASCII(dc.Name)
+	if err != nil {
+		punyRoot = dc.Name
+	}
+
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
+		if rec.Type == "NS" && rec.GetLabelFQDN() == punyRoot {
 			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
 				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
 			}
@@ -628,6 +639,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	// look for ip conversions and transform records
 	for _, rec := range dc.Records {
+		// Only transform A records
 		if rec.Type != "A" {
 			continue
 		}
@@ -678,7 +690,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	// Check account data if set
 	if m["accountid"] != "" {
-		api.cfClient.AccountID = m["accountid"]
+		api.accountID = m["accountid"]
 	}
 
 	debug, err := strconv.ParseBool(os.Getenv("CLOUDFLAREAPI_DEBUG"))
@@ -780,6 +792,15 @@ func (c cfTarget) MarshalJSON() ([]byte, error) {
 // represented by a single period.
 func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
+}
+
+type cfNaptrRecData struct {
+	Flags       string `json:"flags"`
+	Order       uint16 `json:"order"`
+	Preference  uint16 `json:"preference"`
+	Regex       string `json:"regex"`
+	Replacement string `json:"replacement"`
+	Service     string `json:"service"`
 }
 
 // uint16Zero converts value to uint16 or returns 0.

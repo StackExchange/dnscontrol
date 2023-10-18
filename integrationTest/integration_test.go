@@ -35,6 +35,18 @@ func init() {
 	flag.Parse()
 }
 
+// Helper constants/funcs for the CLOUDFLARE proxy testing:
+
+func CfProxyOff() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CfProxyOn() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+func CfProxyFull1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
+func CfProxyFull2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
+func CfCProxyOff() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CfCProxyOn() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
+
+// ---
+
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
@@ -523,6 +535,10 @@ func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
 
+func dhcid(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "DHCID")
+}
+
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.SetTargetDS(keyTag, algorithm, digestType, digest)
@@ -637,6 +653,27 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
 	r.SetTargetSSHFP(algorithm, fingerprint, target)
+	return r
+}
+
+func ovhdkim(name, target string) *models.RecordConfig {
+	return makeOvhNativeRecord(name, target, "DKIM")
+}
+
+func ovhspf(name, target string) *models.RecordConfig {
+	return makeOvhNativeRecord(name, target, "SPF")
+}
+
+func ovhdmarc(name, target string) *models.RecordConfig {
+	return makeOvhNativeRecord(name, target, "DMARC")
+}
+
+func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
+	r := makeRec(name, "", "TXT")
+	r.Metadata = make(map[string]string)
+	r.Metadata["create_ovh_native_record"] = rType
+	r.TxtStrings = []string{target}
+	r.SetTarget(target)
 	return r
 }
 
@@ -1294,6 +1331,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
+				"GCLOUD",
 				"HEXONET",
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
@@ -1519,6 +1557,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	ns("another-child", "ns101.cloudns.net."),
 			//),
 		),
+		testgroup("DHCPID",
+			requires(providers.CanUseDHCID),
+			tc("Create DHCPID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+			tc("Modify DHCPID record", dhcid("test", "Test/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+		),
 
 		//// Vendor-specific record types
 
@@ -1672,7 +1715,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 
-			// Removed these for speed.  They were testing if order matters,
+			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
 			//clear(),
 			//tc("multipleA",
@@ -1701,7 +1744,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
 
-			// Repeat the above using CF_TEMP_REDIR instead
+			// Repeat the above tests using CF_TEMP_REDIR instead
 			clear(),
 			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
@@ -1725,7 +1768,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
 			),
 			// TODO(tlim): Fix this test case:
-			//clear(),
 			//tc("tempmultiple3",
 			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
@@ -1733,18 +1775,76 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		testgroup("CF_PROXY",
+		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
-			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
-			tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
-			tc("proxychangeoffon", cfProxyA("proxyme", "1.2.3.5", "on")),
-			clear(),
-			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			tc("proxycnameoffon", cfProxyCNAME("anewproxy", "example.com.", "on")),
-			tc("proxycnameonoff", cfProxyCNAME("anewproxy", "example.com.", "off")),
-			clear(),
+			CfProxyOff(), clear(),
+			CfProxyOn(), clear(),
+			CfProxyFull1(), clear(),
+			CfProxyFull2(), clear(),
+		),
+
+		// These next testgroups attempt every possible transition between off, on, full1 and full2.
+		// "full1" simulates "full" without the IP being translated.
+		// "full2" simulates "full" WITH the IP translated.
+
+		testgroup("CF_PROXY A off to X",
+			only("CLOUDFLAREAPI"),
+			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
+			CfProxyOff(), CfProxyOn(), clear(),
+			CfProxyOff(), CfProxyFull1(), clear(),
+			CfProxyOff(), CfProxyFull2(), clear(),
+		),
+
+		testgroup("CF_PROXY A on to X",
+			only("CLOUDFLAREAPI"),
+			CfProxyOn(), CfProxyOff(), clear(),
+			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
+			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
+			CfProxyOn(), CfProxyFull2(), clear(),
+		),
+
+		testgroup("CF_PROXY A full1 to X",
+			only("CLOUDFLAREAPI"),
+			CfProxyFull1(), CfProxyOff(), clear(),
+			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
+			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
+			CfProxyFull1(), CfProxyFull2(), clear(),
+		),
+
+		testgroup("CF_PROXY A full2 to X",
+			only("CLOUDFLAREAPI"),
+			CfProxyFull2(), CfProxyOff(), clear(),
+			CfProxyFull2(), CfProxyOn(), clear(),
+			CfProxyFull2(), CfProxyFull1(), clear(),
+			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
+		),
+
+		testgroup("CF_PROXY CNAME create",
+			only("CLOUDFLAREAPI"),
+			CfCProxyOff(), clear(),
+			CfCProxyOn(), clear(),
+			CfCProxyFull(), clear(),
+		),
+
+		testgroup("CF_PROXY CNAME off to X",
+			only("CLOUDFLAREAPI"),
+			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
+			CfCProxyOff(), CfCProxyOn(), clear(),
+			CfCProxyOff(), CfCProxyFull(), clear(),
+		),
+
+		testgroup("CF_PROXY CNAME on to X",
+			only("CLOUDFLAREAPI"),
+			CfCProxyOn(), CfCProxyOff(), clear(),
+			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
+			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
+		),
+
+		testgroup("CF_PROXY CNAME full to X",
+			only("CLOUDFLAREAPI"),
+			CfCProxyFull(), CfCProxyOff(), clear(),
+			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
+			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",
@@ -1894,15 +1994,15 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("IGNORE_TARGET function CNAME",
 			tc("Create some records",
 				cname("foo", "test.foo.com."),
-				cname("keep", "keep.example.com."),
+				cname("keep", "keeper.example.com."),
 			),
 			tc("ignoring CNAME=test.foo.com.",
 				ignoreTarget("test.foo.com.", "CNAME"),
-				cname("keep", "keep.example.com."),
+				cname("keep", "keeper.example.com."),
 			).ExpectNoChanges(),
 			tc("ignoring CNAME=test.foo.com. and add",
 				ignoreTarget("test.foo.com.", "CNAME"),
-				cname("keep", "keep.example.com."),
+				cname("keep", "keeper.example.com."),
 				a("adding", "1.2.3.4"),
 				cname("another", "www.example.com."),
 			),
@@ -1959,6 +2059,30 @@ func makeTests(t *testing.T) []*TestGroup {
 				ignoreTarget("**.acm-validations.aws.", "CNAME"),
 			).ExpectNoChanges(),
 		).Diff2Only(),
+
+		testgroup("structured TXT",
+			only("OVH"),
+			tc("Create TXT",
+				txt("spf", "v=spf1 ip4:99.99.99.99 -all"),
+				txt("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzwOUgwGWVIwQG8PBl89O37BdaoqEd/rT6r/Iot4PidtPJkPbVxWRi0mUgduAnsO8zHCz2QKAd5wPe9+l+Stwy6e0h27nAOkI/Edx3qwwWqWSUfwfIBWZG+lrFrhWgSIWCj2/TMkMMzBZJdhVszCzdGQiNPkGvKgjfqW5T0TZt0QIDAQAB"),
+				txt("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.com")),
+			tc("Update TXT",
+				txt("spf", "v=spf1 a mx -all"),
+				txt("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk72yk6UML8LGIXFobhvx6UDUntqGzmyie2FLMyrOYk1C7CVYR139VMbO9X1rFvZ8TaPnMCkMbuEGWGgWNc27MLYKfI+wP/SYGjRS98TNl9wXxP8tPfr6id5gks95sEMMaYTu8sctnN6sBOvr4hQ2oipVcBn/oxkrfhqvlcat5gQIDAQAB"),
+				txt("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
+		),
+
+		testgroup("structured TXT as native records",
+			only("OVH"),
+			tc("Create native OVH records",
+				ovhspf("spf", "v=spf1 ip4:99.99.99.99 -all"),
+				ovhdkim("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzwOUgwGWVIwQG8PBl89O37BdaoqEd/rT6r/Iot4PidtPJkPbVxWRi0mUgduAnsO8zHCz2QKAd5wPe9+l+Stwy6e0h27nAOkI/Edx3qwwWqWSUfwfIBWZG+lrFrhWgSIWCj2/TMkMMzBZJdhVszCzdGQiNPkGvKgjfqW5T0TZt0QIDAQAB"),
+				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.com")),
+			tc("Update native OVH records",
+				ovhspf("spf", "v=spf1 a mx -all"),
+				ovhdkim("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk72yk6UML8LGIXFobhvx6UDUntqGzmyie2FLMyrOYk1C7CVYR139VMbO9X1rFvZ8TaPnMCkMbuEGWGgWNc27MLYKfI+wP/SYGjRS98TNl9wXxP8tPfr6id5gks95sEMMaYTu8sctnN6sBOvr4hQ2oipVcBn/oxkrfhqvlcat5gQIDAQAB"),
+				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
+		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's

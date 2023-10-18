@@ -29,7 +29,7 @@ func Test_generatePSZoneAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generatePSZoneAll(tt.args.dnsserver); got != tt.want {
+			if got := generatePSZoneAll(tt.args.dnsserver); got != strings.TrimSpace(tt.want) {
 				t.Errorf("generatePSZoneAll() = got=(\n%s\n) want=(\n%s\n)", got, tt.want)
 			}
 		})
@@ -59,7 +59,7 @@ func Test_generatePSZoneDump(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname, "foo"); got != tt.want {
+			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname, "foo"); got != strings.TrimSpace(tt.want) {
 				t.Errorf("generatePSZoneDump() = got=(\n%s\n) want=(\n%s\n)", got, tt.want)
 			}
 		})

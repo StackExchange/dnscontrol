@@ -42,6 +42,7 @@ Currently supported DNS providers:
 - Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
+- Mythic Beasts
 - Namecheap
 - Name.com
 - Netcup
@@ -103,7 +104,13 @@ Running `dnscontrol preview` will talk to the providers (here name.com as regist
 
 Running `dnscontrol push` will make those changes with the provider and my dns records will be correctly updated.
 
-See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site.
+The easiest way to run DNSControl is to use the Docker container:
+
+```
+docker run --rm -it -v "$(pwd):/dns"  ghcr.io/stackexchange/dnscontrol preview
+```
+
+See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site to get started!
 
 ## Benefits
 
@@ -148,6 +155,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 
 ## Deprecation warnings (updated 2023-02-18)
 
+- **32-bit binaries will no longer be distributed after September 10, 2023.** There is a proposal to stop shipping 32-bit binaries (packages and containers).  If no objections are raised by Sept 10, 2023, new releases will not include them. See https://github.com/StackExchange/dnscontrol/issues/2461 for details.
 - **Call for new volunteer maintainers for NAMEDOTCOM and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 - **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 - **get-zones syntax changes in v3.16** Starting in [v3.16](documentation/v316.md), the command line arguments for `dnscontrol get-zones` changes. For backwards compatibility change `provider` to `-`. See documentation for details.

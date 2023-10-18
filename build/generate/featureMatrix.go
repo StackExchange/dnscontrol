@@ -87,6 +87,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierSshfp  = "[`SSHFP`](functions/domain/SSHFP.md)"
 		DomainModifierTlsa   = "[`TLSA`](functions/domain/TLSA.md)"
 		DomainModifierDs     = "[`DS`](functions/domain/DS.md)"
+		DomainModifierDhcid  = "[`DHCID`](functions/domain/DHCID.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
 		NoPurge              = "[`NO_PURGE`](functions/domain/NO_PURGE.md)"
@@ -110,6 +111,7 @@ func matrixData() *FeatureMatrix {
 			DomainModifierSshfp,
 			DomainModifierTlsa,
 			DomainModifierDs,
+			DomainModifierDhcid,
 			DualHost,
 			CreateDomains,
 			NoPurge,
@@ -179,6 +181,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierCaa,
 			providers.CanUseCAA,
+		)
+		setCapability(
+			DomainModifierDhcid,
+			providers.CanUseDHCID,
 		)
 		setCapability(
 			DomainModifierDs,

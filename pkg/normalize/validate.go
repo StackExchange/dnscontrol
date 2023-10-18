@@ -12,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"golang.org/x/exp/slices"
 )
 
 // Returns false if target does not validate.
@@ -61,6 +60,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"ALIAS":            false,
 		"CAA":              true,
 		"CNAME":            true,
+		"DHCID":            true,
 		"DS":               true,
 		"IMPORT_TRANSFORM": false,
 		"LOC":              true,
@@ -221,7 +221,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA", "DS":
+	case "CAA", "DHCID", "DS", "IMPORT_TRANSFORM", "SSHFP", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -263,7 +263,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			}
 			return rec2
 		}
-		switch rec.Type { // #rtype_variations
+		switch rec.Type {
 		case "A":
 			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
 			if err != nil {
@@ -278,14 +278,9 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "AKAMAICDN", "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
-			// Not imported.
-			continue
-		case "LOC":
-			continue
 		default:
-			return fmt.Errorf("import_transform: Unimplemented record type %v (%v)",
-				rec.Type, rec.GetLabel())
+			// Anything else is ignored.
+			continue
 		}
 	}
 	return nil
@@ -619,13 +614,12 @@ func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error
 		labels[i] = k
 		i++
 	}
-
 	sort.Strings(labels)
-	slices.Compact(labels)
+	// NB(tlim): No need to de-dup labels. They come from map keys.
 
-	// Invert for a more clear error message:
 	for _, label := range labels {
 		if len(m[label]) > 1 {
+			// Invert for a more clear error message:
 			r := make(map[string]map[uint32]bool)
 			for ttl, rtypes := range m[label] {
 				for rtype := range rtypes {
@@ -688,6 +682,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
+	capabilityCheck("DHCID", providers.CanUseDHCID),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),

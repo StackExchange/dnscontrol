@@ -36,6 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),

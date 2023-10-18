@@ -32,6 +32,9 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			}
 		}
 	}
+
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 
@@ -74,6 +77,8 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		}
 	}
 
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 
@@ -89,6 +94,9 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 			instructions = append(instructions, cs...)
 		}
 	}
+
+	instructions = orderByDependencies(instructions)
+
 	return instructions
 }
 
@@ -235,6 +243,8 @@ func humanDiff(a, b targetConfig) string {
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
+
+	//fmt.Printf("DEBUG: diffTargets(\nexisting=%v\ndesired=%v\nDEBUG.\n", existing, desired)
 
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {

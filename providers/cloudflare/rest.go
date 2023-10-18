@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/net/idna"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/cloudflare/cloudflare-go"
 )
@@ -20,6 +22,10 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	}
 
 	for _, zone := range zones {
+		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
+			c.domainIndex[encoded] = zone.ID
+			c.nameservers[encoded] = append(c.nameservers[encoded], zone.NameServers...)
+		}
 		c.domainIndex[zone.Name] = zone.ID
 		c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.NameServers...)
 	}
@@ -60,7 +66,7 @@ func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string
 }
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
-	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.cfClient.AccountID}, "full")
+	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.accountID}, "full")
 	return zone.ID, err
 }
 
@@ -112,6 +118,17 @@ func cfSshfpData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
+	return &cfNaptrRecData{
+		Flags:       rec.NaptrFlags,
+		Order:       rec.NaptrOrder,
+		Preference:  rec.NaptrPreference,
+		Regex:       rec.NaptrRegexp,
+		Replacement: rec.GetTargetField(),
+		Service:     rec.NaptrService,
+	}
+}
+
 func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	var id string
 	content := rec.GetTargetField()
@@ -153,6 +170,9 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
+			} else if rec.Type == "NAPTR" {
+				cf.Data = cfNaptrData(rec)
+				cf.Name = rec.GetLabelFQDN()
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -191,7 +211,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	if msg == "" {
 		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
 	}
-	if rec.Metadata[metaProxy] == "on" {
+	if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
 	}
 	arr := []*models.Correction{{
@@ -219,6 +239,9 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
+			} else if rec.Type == "NAPTR" {
+				cf.Data = cfNaptrData(rec)
+				cf.Name = rec.GetLabelFQDN()
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -227,7 +250,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			// Records are created with the proxy off. If proxy should be
 			// enabled, we do a second API call.
 			resultID := resp.ID
-			if rec.Metadata[metaProxy] == "on" {
+			if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 				return c.modifyRecord(domainID, resultID, true, rec)
 			}
 			return nil
@@ -269,6 +292,9 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	} else if rec.Type == "DS" {
 		r.Data = cfDSData(rec)
 		r.Content = ""
+	} else if rec.Type == "NAPTR" {
+		r.Data = cfNaptrData(rec)
+		r.Name = rec.GetLabelFQDN()
 	}
 	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 	return err
@@ -417,7 +443,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 			});`,
 	}
 
-	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.cfClient.AccountID), wp)
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountID), wp)
 	return err
 }
 

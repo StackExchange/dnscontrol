@@ -8,6 +8,7 @@
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
 * [TypeScript autocomplete and type checking](typescript.md)
+* [Disabling Colors](colors.md)
 
 ## Language Reference
 
@@ -34,11 +35,13 @@
     * [AUTODNSSEC_OFF](functions/domain/AUTODNSSEC_OFF.md)
     * [AUTODNSSEC_ON](functions/domain/AUTODNSSEC_ON.md)
     * [CAA](functions/domain/CAA.md)
+    * [CAA_BUILDER](functions/domain/CAA_BUILDER.md)
     * [CNAME](functions/domain/CNAME.md)
-    * [DefaultTTL](functions/domain/DefaultTTL.md)
     * [DISABLE_IGNORE_SAFETY_CHECK](functions/domain/DISABLE_IGNORE_SAFETY_CHECK.md)
-    * [DnsProvider](functions/domain/DnsProvider.md)
+    * [DMARC_BUILDER](functions/domain/DMARC_BUILDER.md)
     * [DS](functions/domain/DS.md)
+    * [DefaultTTL](functions/domain/DefaultTTL.md)
+    * [DnsProvider](functions/domain/DnsProvider.md)
     * [FRAME](functions/domain/FRAME.md)
     * [IGNORE](functions/domain/IGNORE.md)
     * [IGNORE_NAME](functions/domain/IGNORE_NAME.md)
@@ -46,6 +49,11 @@
     * [IMPORT_TRANSFORM](functions/domain/IMPORT_TRANSFORM.md)
     * [INCLUDE](functions/domain/INCLUDE.md)
     * [LOC](functions/domain/LOC.md)
+    * [LOC_BUILDER_DD](functions/domain/LOC_BUILDER_DD.md)
+    * [LOC_BUILDER_DMM_STR](functions/domain/LOC_BUILDER_DMM_STR.md)
+    * [LOC_BUILDER_DMS_STR](functions/domain/LOC_BUILDER_DMS_STR.md)
+    * [LOC_BUILDER_STR](functions/domain/LOC_BUILDER_STR.md)
+    * [M365_BUILDER](functions/domain/M365_BUILDER.md)
     * [MX](functions/domain/MX.md)
     * [NAMESERVER](functions/domain/NAMESERVER.md)
     * [NAMESERVER_TTL](functions/domain/NAMESERVER_TTL.md)
@@ -55,6 +63,7 @@
     * [PTR](functions/domain/PTR.md)
     * [PURGE](functions/domain/PURGE.md)
     * [SOA](functions/domain/SOA.md)
+    * [SPF_BUILDER](functions/domain/SPF_BUILDER.md)
     * [SRV](functions/domain/SRV.md)
     * [SSHFP](functions/domain/SSHFP.md)
     * [TLSA](functions/domain/TLSA.md)
@@ -77,14 +86,6 @@
         * NS1
             * [NS1_URLFWD](functions/domain/NS1_URLFWD.md)
 * Record Modifiers
-    * [CAA_BUILDER](functions/record/CAA_BUILDER.md)
-    * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
-    * [LOC_BUILDER_DD](functions/record/LOC_BUILDER_DD.md)
-    * [LOC_BUILDER_DMM_STR](functions/record/LOC_BUILDER_DMM_STR.md)
-    * [LOC_BUILDER_DMS_STR](functions/record/LOC_BUILDER_DMS_STR.md)
-    * [LOC_BUILDER_STR](functions/record/LOC_BUILDER_STR.md)
-    * [M365_BUILDER](functions/record/M365_BUILDER.md)
-    * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
     * [TTL](functions/record/TTL.md)
     * Service Provider specific
         * Amazon Route 53
@@ -123,6 +124,7 @@
     * [Loopia](providers/loopia.md)
     * [LuaDNS](providers/luadns.md)
     * [Microsoft DNS Server on Microsoft Windows Server](providers/msdns.md)
+    * [Mythic Beasts](providers/mythicbeasts.md)
     * [Namecheap](providers/namecheap.md)
     * [Name.com](providers/namedotcom.md)
     * [Netcup](providers/netcup.md)
@@ -152,6 +154,7 @@
 * [Nameservers and Delegations](nameservers.md)
 * [Notifications](notifications.md)
 * [Useful code tricks](code-tricks.md)
+* [JSON Reports](json-reports.md)
 
 ## Developer info
 
@@ -167,6 +170,7 @@
 * [Debugging with dlv](debugging-with-dlv.md)
 * [ALIAS Records](alias.md)
 * [TXT record testing](testing-txt-records.md)
+* [DNS records ordering](ordering.md)
 
 ## Release
 

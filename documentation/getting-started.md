@@ -23,19 +23,10 @@ sudo port install dnscontrol
 
 ### Docker
 
-You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) and the command below.
+You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol) and the command below.
 
 ```shell
-docker run --rm \
-  -it \
-  -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js \
-  -v $(pwd)/creds.json:/dns/creds.json \
-  -v $(pwd)/spfcache.updated.json:/dns/spfcache.updated.json \
-  -v $(pwd)/spfcache.json:/dns/spfcache.json \
-  -v $(pwd)/zones/:/dns/zones/ \
-  -u $(id -u ${USER}):$(id -g ${USER}) \
-  stackexchange/dnscontrol \
-  preview
+docker run --rm -it -v "$(pwd):/dns"  ghcr.io/stackexchange/dnscontrol preview
 ```
 
 ### Binaries

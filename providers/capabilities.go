@@ -32,6 +32,9 @@ const (
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
 
+	// CanUseDHCID indicates the provider can handle DHCID records
+	CanUseDHCID
+
 	// CanUseDS indicates that the provider can handle DS record types. This
 	// implies CanUseDSForChildren without specifying the latter explicitly.
 	CanUseDS

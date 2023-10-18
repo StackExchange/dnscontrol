@@ -3,7 +3,6 @@ package ovh
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
@@ -109,17 +108,30 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		recordType := rc.Type
+		if nativeType, ok := rc.Metadata["create_ovh_native_record"]; ok {
+			recordType = nativeType
+		}
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
-			FieldType: rc.Type,
+			FieldType: recordType,
 			Target:    rc.GetTargetCombined(),
 			TTL:       rc.TTL,
 		}
 		if record.SubDomain == "@" {
 			record.SubDomain = ""
 		}
+
+		// note that we never create OVH custom TXT records such as DKIM, SPF or DMARC, instead we prefer to
+		// use regular TXT records, unless the record is anotated with the `create_ovh_native_record` metadata
+
+		err := adaptNativeRecord(&record)
+		if err != nil {
+			return err
+		}
+
 		var response Record
-		err := c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/record", fqdn), &record, &response, true)
+		err = c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/record", fqdn), &record, &response, true)
 		return err
 	}
 }
@@ -127,9 +139,19 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		recordType := rc.Type
+
+		if rc.Type != "TXT" && (old.FieldType == "DKIM" || old.FieldType == "SPF" || old.FieldType == "DMARC") {
+			return fmt.Errorf("OVH doesn't allow to change %s native type to a non TXT type - delete the record manually and run dnscontrol again", old.FieldType)
+		}
+
+		if old.FieldType == "DKIM" || old.FieldType == "SPF" || old.FieldType == "DMARC" {
+			recordType = old.FieldType
+		}
+
 		record := Record{
 			SubDomain: rc.GetLabel(),
-			FieldType: rc.Type,
+			FieldType: recordType,
 			Target:    rc.GetTargetCombined(),
 			TTL:       rc.TTL,
 			Zone:      fqdn,
@@ -139,21 +161,36 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		// We do this last just right before the final API call
-		if c.isDKIMRecord(rc) {
-			// When DKIM value is longer than 255, the MODIFY fails with "Try to alter read-only properties: fieldType"
-			// Setting FieldType to empty string results in the property not being altered, hence error does not occur.
+		err := adaptNativeRecord(&record)
+		if err != nil {
+			return err
+		}
+
+		// Native DKIM, SPF or DMARC record field type created through the OVH UI shouldn't be updated
+		// or  we get the "Try to alter read-only properties: fieldType" error
+		switch old.FieldType {
+		case "DKIM", "SPF", "DMARC":
 			record.FieldType = ""
 		}
-		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
+
+		err = c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
 
 		return err
 	}
 }
 
-// Check if provided record is DKIM
-func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
-	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
+// adaptNativeRecord adapts the record for native OVH types such as DMARC or DKIM
+func adaptNativeRecord(r *Record) error {
+	// OVH needs DMARC and DKIM to be "unquoted"
+	if r.FieldType == "DMARC" || r.FieldType == "DKIM" {
+		// make sure target is fully unquoted to prevent "Invalid subfield found in DMARC" error
+		r.Target = models.StripQuotes(r.Target)
+	}
+	// DMARC record can be created only for `_dmarc` subdomain
+	if r.FieldType == "DMARC" && r.SubDomain != "_dmarc" {
+		return fmt.Errorf("native OVH DMARC record requires subdomain to always be _dmarc, %s given", r.SubDomain)
+	}
+	return nil
 }
 
 // refreshZone initiates a refresh task on OVHs backend

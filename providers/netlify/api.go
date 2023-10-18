@@ -48,7 +48,7 @@ type dnsRecordCreate struct {
 	Flag     int64  `json:"flag"`
 	Hostname string `json:"hostname,omitempty"`
 	Port     int64  `json:"port,omitempty"`
-	Priority int64  `json:"priority,omitempty"`
+	Priority int64  `json:"priority"`
 	Tag      string `json:"tag,omitempty"`
 	TTL      int64  `json:"ttl,omitempty"`
 	Type     string `json:"type,omitempty"`

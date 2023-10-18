@@ -642,6 +642,12 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 	req.Header.Add("Authorization", "Bearer "+client.token)
 	req.Header.Add("Accept", "application/json")
 
+	// Default CSCGlobal rate limit is twenty requests per second
+	var backoff = time.Second
+
+	const maxBackoff = time.Second * 15
+
+retry:
 	resp, err := hclient.Do(req)
 	if err != nil {
 		return nil, err
@@ -654,6 +660,26 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
+		// Apparently CSCGlobal uses status code 400 for rate limit, grump
+
+		if string(bodyString) == "Requests exceeded API Rate limit." {
+			// a simple exponential back-off with a 3-minute max.
+			if backoff > 10 {
+				// With this provider backups seem to be pretty common. Only
+				// announce it when the problem gets really bad.
+				printer.Printf("Delaying %v due to ratelimit (CSCGLOBAL)\n", backoff)
+			}
+			time.Sleep(backoff)
+			backoff = backoff + (backoff / 2)
+			if backoff > maxBackoff {
+				return nil, fmt.Errorf("CSC Global API timeout max backoff (geturl): %s URL: %s%s",
+					bodyString,
+					req.Host, req.URL.RequestURI())
+			}
+
+			goto retry
+		}
+
 		return nil, fmt.Errorf("CSC Global API error (geturl): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())

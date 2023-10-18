@@ -1,6 +1,6 @@
 # TXT record testing
 
-We recently discovered a strange but with processing TXT records and
+We recently discovered a strange bug with processing TXT records and
 double-quotes. Sadly we haven't been able to determine a way to test this
 automatically. Therefore, I've written up this methodology.
 
