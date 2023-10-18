@@ -138,7 +138,12 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		typeStr := rr.Type
 
 		// the remaining line
-		target := rr.GetTargetCombined()
+		var target string
+		if typeStr == "TXT" {
+			target = rr.GetTargetRFC1035Quoted()
+		} else {
+			target = rr.GetTargetCombined()
+		}
 
 		// comment
 		comment := ""
