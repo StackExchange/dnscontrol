@@ -672,7 +672,6 @@ func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
 	r := makeRec(name, "", "TXT")
 	r.Metadata = make(map[string]string)
 	r.Metadata["create_ovh_native_record"] = rType
-	r.TxtStrings = []string{target}
 	r.SetTarget(target)
 	return r
 }
