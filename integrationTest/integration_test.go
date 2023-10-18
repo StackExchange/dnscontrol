@@ -348,7 +348,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 func TestDualProviders(t *testing.T) {
-	t.Skip()
 	p, domain, _, _ := getProvider(t)
 	if p == nil {
 		return

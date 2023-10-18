@@ -4,7 +4,7 @@ on:
     - v[0-9]+.[0-9]+.[0-9]+
     - v[0-9]+.[0-9]+.[0-9]+-*
 
-name: draft release
+name: "Release: Make release candidate"
 jobs:
   draft_release:
     name: draft release
@@ -42,7 +42,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: ^1.20
+        go-version: ^1.21
 
 # For some reason goreleaser isn't correctly setting the version
 # string used by "dnscontrol version".  Therefore, we're forcing the

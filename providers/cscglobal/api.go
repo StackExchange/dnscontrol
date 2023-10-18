@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -665,7 +664,11 @@ retry:
 
 		if string(bodyString) == "Requests exceeded API Rate limit." {
 			// a simple exponential back-off with a 3-minute max.
-			log.Printf("Delaying %v due to ratelimit\n", backoff)
+			if backoff > 10 {
+				// With this provider backups seem to be pretty common. Only
+				// announce it when the problem gets really bad.
+				printer.Printf("Delaying %v due to ratelimit (CSCGLOBAL)\n", backoff)
+			}
 			time.Sleep(backoff)
 			backoff = backoff + (backoff / 2)
 			if backoff > maxBackoff {
