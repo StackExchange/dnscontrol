@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/transip/gotransip/v6"
@@ -102,16 +101,13 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 
 	removeOtherNS(dc)
 
-	if !diff2.EnableDiff2 {
-		corrections, err := n.getCorrectionsUsingOldDiff(dc, curRecords)
-		return corrections, err
-	}
 	corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
 	return corrections, err
 }
 
 func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
+
 	instructions, err := diff2.ByRecordSet(records, dc, nil)
 	if err != nil {
 		return nil, err
@@ -241,76 +237,6 @@ func canDirectApplyDNSEntries(change diff2.Change) bool {
 	}
 
 	return true
-}
-
-func (n *transipProvider) getCorrectionsUsingOldDiff(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(records)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, del := range del {
-		entry, err := recordToNative(del.Existing, true)
-		if err != nil {
-			return nil, err
-		}
-
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, entry) },
-		})
-	}
-
-	for _, cre := range create {
-		entry, err := recordToNative(cre.Desired, false)
-		if err != nil {
-			return nil, err
-		}
-
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
-		})
-	}
-
-	for _, mod := range modify {
-		targetEntry, err := recordToNative(mod.Desired, false)
-		if err != nil {
-			return nil, err
-		}
-
-		// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
-		// has changed. Otherwise we delete the old record and create the new one
-		if canUpdateDNSEntry(mod.Desired, mod.Existing) {
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
-			})
-		} else {
-			oldEntry, err := recordToNative(mod.Existing, true)
-			if err != nil {
-				return nil, err
-			}
-
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: mod.String() + "[1/2]",
-					F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
-				},
-				&models.Correction{
-					Msg: mod.String() + "[2/2]",
-					F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
-				},
-			)
-		}
-
-	}
-
-	return corrections, nil
 }
 
 func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConfig) bool {

@@ -30,8 +30,6 @@ type DomainConfig struct {
 	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
 
-	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
-	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
 	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 

@@ -16,7 +16,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -109,17 +108,12 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(existingRecords)
 
-	var corrections []*models.Correction
-	var keysToUpdate map[models.RecordKey][]string
-	var err error
-	if !diff2.EnableDiff2 {
-		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
-	} else {
-		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(existingRecords)
-	}
+	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	existingRecordsMap := make(map[models.RecordKey][]*models.RecordConfig)
 	for _, r := range existingRecords {

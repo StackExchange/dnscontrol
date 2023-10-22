@@ -12,7 +12,6 @@ axfrddns -
 */
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -24,7 +23,6 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -458,108 +456,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
 		return nil, err
-	}
-
-	if !diff2.EnableDiff2 {
-
-		// Legacy code with the old `diff`
-
-		differ := diff.New(dc)
-		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		changes := false
-		buf := &bytes.Buffer{}
-		buf2 := &bytes.Buffer{}
-
-		// See comment below about hasNSDeletion.
-		hasNSDeletion := false
-		for _, c := range create {
-			if c.Desired.Type == "NS" && c.Desired.Name == "@" {
-				hasNSDeletion = true
-				continue
-			}
-		}
-		for _, c := range del {
-			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
-				hasNSDeletion = true
-				continue
-			}
-		}
-		for _, c := range mod {
-			if c.Existing.Type == "NS" && c.Existing.Name == "@" {
-				hasNSDeletion = true
-				continue
-			}
-		}
-
-		if hasNSDeletion {
-			update.Insert([]dns.RR{dummyNs1})
-		}
-
-		for _, change := range del {
-			changes = true
-			fmt.Fprintln(buf, change)
-			update.Remove([]dns.RR{change.Existing.ToRR()})
-		}
-		for _, change := range mod {
-			changes = true
-			if c.serverHasBuggyCNAME && change.Desired.Type == "CNAME" {
-				fmt.Fprintln(buf, change.String()+color.RedString(" (delete)"))
-				update.Remove([]dns.RR{change.Existing.ToRR()})
-				hasTwoCorrections = true
-				fmt.Fprintln(buf2, change.String()+color.GreenString(" (create)"))
-				update2.Insert([]dns.RR{change.Desired.ToRR()})
-			} else {
-				fmt.Fprintln(buf, change)
-				update.Remove([]dns.RR{change.Existing.ToRR()})
-				update.Insert([]dns.RR{change.Desired.ToRR()})
-			}
-		}
-		for _, change := range create {
-			changes = true
-			splitted := false
-			if c.serverHasBuggyCNAME && change.Desired.Type == "CNAME" {
-				for _, change2 := range del {
-					if change2.Existing.Name == change.Desired.Name {
-						splitted = true
-						break
-					}
-				}
-			}
-			if splitted {
-				hasTwoCorrections = true
-				fmt.Fprintln(buf2, change)
-				update2.Insert([]dns.RR{change.Desired.ToRR()})
-			} else {
-				fmt.Fprintln(buf, change)
-				update.Insert([]dns.RR{change.Desired.ToRR()})
-			}
-		}
-
-		if hasNSDeletion {
-			update.Remove([]dns.RR{dummyNs2})
-		}
-
-		if !changes {
-			return nil, nil
-		}
-
-		if hasTwoCorrections {
-
-			return []*models.Correction{
-				c.BuildCorrection(dc, []string{buf.String()}, update),
-				c.BuildCorrection(dc, []string{buf2.String()}, update2),
-			}, nil
-
-		}
-
-		return []*models.Correction{
-			c.BuildCorrection(dc, []string{buf.String()}, update),
-		}, nil
-
 	}
 
 	changes, err := diff2.ByRecord(foundRecords, dc, nil)

@@ -11,7 +11,6 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/vultr/govultr/v2"
@@ -111,6 +110,7 @@ func (api *vultrProvider) GetZoneRecords(domain string, meta map[string]string) 
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	for _, rec := range dc.Records {
 		switch rec.Type { // #rtype_variations
@@ -124,48 +124,6 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 		default:
 			// Nothing to do.
 		}
-	}
-
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, toDelete, modify, err := differ.IncrementalDiff(curRecords)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, mod := range toDelete {
-			id := mod.Existing.Original.(govultr.DomainRecord).ID
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),
-				F: func() error {
-					return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
-				},
-			})
-		}
-
-		for _, mod := range modify {
-			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
-				F: func() error {
-					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-				},
-			})
-		}
-
-		for _, mod := range create {
-			r := toVultrRecord(dc, mod.Desired, "0")
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F: func() error {
-					_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-					return err
-				},
-			})
-		}
-		return corrections, nil
 	}
 
 	changes, err := diff2.ByRecord(curRecords, dc, nil)

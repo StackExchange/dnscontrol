@@ -24,10 +24,7 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 		panic("extraValues not supported")
 	}
 
-	d := New(dc)
 	return &differCompat{
-		OldDiffer: d.(*differ),
-
 		dc: dc,
 	}
 }
@@ -35,40 +32,22 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 // differCompat meets the Differ interface but provides its service
 // using pkg/diff2 instead of pkg/diff.
 type differCompat struct {
-	OldDiffer *differ // Store the backwards-compatible "d" for pkg/diff
-
 	dc *models.DomainConfig
 }
 
-// IncrementalDiff generates the diff using the pkg/diff2 code.
-// NOTE: While this attempts to be backwards compatible, it does not
-// support all features of the old system:
-//   - The IncrementalDiff() `unchanged` return value is always empty.
-//     Most providers ignore this return value. If a provider depends on
-//     that result, please consider one of the pkg/diff2/By*() functions
-//     instead.  (ByZone() is likely to be what you need)
-//   - The NewCompat() feature `extraValues` is not supported. That
-//     parameter must be set to nil.  If you use that feature, consider
-//     one of the pkg/diff2/By*() functions.
-func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, toCreate, toDelete, toModify Changeset, err error) {
+// IncrementalDiff usees pkg/diff2 to generate output compatible with systems
+// still using NewCompat().
+func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, toCreate, toDelete, toModify Changeset, err error) {
 	instructions, err := diff2.ByRecord(existing, d.dc, nil)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 
 	for _, inst := range instructions {
-		cor := Correlation{d: d.OldDiffer}
+		cor := Correlation{}
 		switch inst.Type {
 		case diff2.REPORT:
-			// Sadly the NewCompat function doesn't have an equivalent. We
-			// just output the messages now.
-			fmt.Print("INFO: ")
-			fmt.Println(inst.MsgsJoined)
-
-			// TODO(tlim): When diff1 is deleted, IncremtntalDiff should add a
-			// parameter to list the REPORT messages. It can also eliminate the
-			// first parameter (existing) since nobody uses that in the diff2
-			// world.
+			reportMsgs = append(reportMsgs, inst.Msgs...)
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			toCreate = append(toCreate, cor)
@@ -87,12 +66,19 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 	return
 }
 
+func GenerateMessageCorrections(msgs []string) (corrections []*models.Correction) {
+	for _, msg := range msgs {
+		corrections = append(corrections, &models.Correction{Msg: msg})
+	}
+	return
+}
+
 // ChangedGroups provides the same results as IncrementalDiff but grouped by key.
-func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
+func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
+	toReport, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for _, c := range toCreate {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
@@ -103,5 +89,5 @@ func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[model
 	for _, m := range toModify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
-	return changedKeys, nil
+	return changedKeys, toReport, nil
 }

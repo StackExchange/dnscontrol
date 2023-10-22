@@ -831,16 +831,6 @@ function DISABLE_IGNORE_SAFETY_CHECK(d) {
     d.unmanaged_disable_safety_check = true;
 }
 
-var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
-    ignore_name_disable_safety_check: 'true',
-    // (NOTE: diff1 only.)
-    // This disables a safety check intended to prevent:
-    // 1. Two owners toggling a record between two settings.
-    // 2. The other owner wiping all records at this label, which won't
-    // be noticed until the next time dnscontrol is run.
-    // See https://github.com/StackExchange/dnscontrol/issues/1106
-};
-
 // IGNORE(labelPattern, rtypePattern, targetPattern)
 function IGNORE(labelPattern, rtypePattern, targetPattern) {
     if (labelPattern === undefined) {
@@ -853,9 +843,6 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
         targetPattern = '*';
     }
     return function (d) {
-        // diff1
-        d.ignored_names.push({ pattern: labelPattern, types: rtypePattern });
-        // diff2
         d.unmanaged.push({
             label_pattern: labelPattern,
             rType_pattern: rtypePattern,
@@ -866,30 +853,11 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
 
 // IGNORE_NAME(name, rTypes)
 function IGNORE_NAME(name, rTypes) {
-    if (rTypes === undefined) {
-        rTypes = '*';
-    }
-    return function (d) {
-        // diff1
-        d.ignored_names.push({ pattern: name, types: rTypes });
-        // diff2
-        d.unmanaged.push({
-            label_pattern: name,
-            rType_pattern: rTypes,
-        });
-    };
+  return IGNORE(name, rTypes)
 }
 
 function IGNORE_TARGET(target, rType) {
-    return function (d) {
-        // diff1
-        d.ignored_targets.push({ pattern: target, type: rType });
-        // diff2
-        d.unmanaged.push({
-            rType_pattern: rType,
-            target_pattern: target,
-        });
-    };
+  return IGNORE("*", rType, target)
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)

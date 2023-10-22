@@ -11,7 +11,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -61,7 +60,7 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
-	// diff1
+	// For use with diff / NewComnpat()
 	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
 	zoneNameMap map[string]string
 	// provider metadata fields
@@ -260,7 +259,6 @@ type correctionValues struct {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	oldRRs, ok := g.oldRRsMap[dc.Name]
@@ -273,22 +271,20 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	}
 
 	// first collect keys that have changed
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	toReport, create, toDelete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
+
+	// Now generate all other corrections
 
 	changedKeys := map[key]string{}
 	for _, c := range create {
 		changedKeys[keyForRec(c.Desired)] = fmt.Sprintln(c)
 	}
-	for _, d := range delete {
+	for _, d := range toDelete {
 		changedKeys[keyForRec(d.Existing)] = fmt.Sprintln(d)
 	}
 	for _, m := range modify {
@@ -373,7 +369,6 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	}
 	// create a Correction for each gdns.Change
 	// that needs to be executed
-	corrections := []*models.Correction{}
 	makeCorrection := func(chg *gdns.Change, msgs string) {
 		runChange := func() error {
 		retry:
