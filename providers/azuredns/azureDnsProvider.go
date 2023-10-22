@@ -255,6 +255,11 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
+	if err != nil {
+		fmt.Printf("DEBUG: cou: err s=%s\n", err)
+		fmt.Printf("DEBUG: cou: err v=%+v\n", err)
+	}
+
 	return err
 }
 
