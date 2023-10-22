@@ -238,7 +238,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 }
 
 func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
-	printer.Printf("DEBUG: recordCreate %s\n", zoneName)
 
 	rrset, azRecType, err := a.recordToNativeDiff2(reckey, recs)
 	if err != nil {
@@ -276,7 +275,6 @@ retry:
 }
 
 func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey, recs models.Records) error {
-	printer.Printf("DEBUG: recordDelete %s\n", zoneName)
 
 	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
 	if shortName == zoneName {
@@ -569,7 +567,6 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 }
 
 func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {
-	printer.Printf("DEBUG: fetchRecordSets\n")
 	if zoneName == "" {
 		return nil, nil
 	}
