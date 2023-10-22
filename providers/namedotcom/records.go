@@ -91,7 +91,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	heapr := r // NB(tlim): Unsure if this is actually needed.
 	rc := &models.RecordConfig{
 		Type:     r.Type,
-		TTL:      r.TTL,
+		TTL:      models.NewTTL(r.TTL),
 		Original: heapr,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
@@ -154,7 +154,7 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 		Host:       rc.GetLabel(),
 		Type:       rc.Type,
 		Answer:     rc.GetTargetField(),
-		TTL:        rc.TTL,
+		TTL:        rc.TTL.Value(),
 		Priority:   uint32(rc.MxPreference),
 	}
 	switch rc.Type { // #rtype_variations

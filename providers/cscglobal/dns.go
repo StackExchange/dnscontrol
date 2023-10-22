@@ -176,7 +176,7 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 		RecordType: rec.Type,
 		NewKey:     rec.Name,
 		NewValue:   recTarget,
-		NewTTL:     rec.TTL,
+		NewTTL:     rec.TTL.Value(),
 	}
 
 	switch rec.Type {
@@ -225,7 +225,7 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 		zer.NewValue = recTarget
 	}
 	if old.TTL != rec.TTL {
-		zer.NewTTL = rec.TTL
+		zer.NewTTL = rec.TTL.Value()
 	}
 
 	switch old.Type {

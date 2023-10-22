@@ -106,7 +106,7 @@ function newDomain(name, registrar) {
         records: [],
         recordsabsent: [],
         dnsProviders: {},
-        defaultTTL: 0,
+        defaultTTL: null,
         nameservers: [],
         ignored_names: [],
         ignored_targets: [],
@@ -1313,7 +1313,7 @@ function LOC_builder_push(value, dms) {
     // rawloc = "";
 
     // Generate a LOC record with the metaparameters.
-    if (value.ttl) {
+    if (value.ttl !== null) {
         if (value.alt)
             r.push(
                 LOC(
@@ -1429,7 +1429,7 @@ function SPF_BUILDER(value) {
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
             rp = {};
-            if (value.ttl) {
+            if (value.ttl !== null) {
                 r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
                 r.push(TXT(value.raw, rawspf, rp));
@@ -1451,7 +1451,7 @@ function SPF_BUILDER(value) {
     }
 
     // Generate a TXT record with the metaparameters.
-    if (value.ttl) {
+    if (value.ttl !== null) {
         r.push(TXT(value.label, rawspf, p, TTL(value.ttl)));
     } else {
         r.push(TXT(value.label, rawspf, p));
@@ -1652,7 +1652,7 @@ function DMARC_BUILDER(value) {
         record.push('ri=' + value.reportInterval);
     }
 
-    if (value.ttl) {
+    if (value.ttl !== null) {
         return TXT(label, record.join('; '), TTL(value.ttl));
     }
     return TXT(label, record.join('; '));

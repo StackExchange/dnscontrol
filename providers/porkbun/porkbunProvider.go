@@ -93,7 +93,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = models.NewTTL(fixTTL(record.TTL.Value()))
 	}
 
 	var corrections []*models.Correction
@@ -220,7 +220,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
-		TTL:          uint32(ttl),
+		TTL:          models.NewTTL(uint32(ttl)),
 		MxPreference: uint16(priority),
 		SrvPriority:  uint16(priority),
 		Original:     r,
@@ -277,7 +277,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		"type":    rc.Type,
 		"name":    rc.GetLabel(),
 		"content": rc.GetTargetField(),
-		"ttl":     strconv.Itoa(int(rc.TTL)),
+		"ttl":     strconv.Itoa(int(rc.TTL.Value())),
 	}
 
 	// porkbun doesn't use "@", it uses an empty name

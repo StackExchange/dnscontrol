@@ -62,7 +62,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		Original: nr,
 	}
 	rc.SetLabel(nr.HostName, origin)
-	rc.TTL = uint32(nr.TimeToLive.TotalSeconds)
+	rc.TTL = models.NewTTL(uint32(nr.TimeToLive.TotalSeconds))
 
 	sprops, uprops, err := extractProps(nr.RecordData.CimInstanceProperties)
 	if err != nil {

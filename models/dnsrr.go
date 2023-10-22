@@ -61,7 +61,7 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	header := rr.Header()
 	rc := new(RecordConfig)
 	rc.Type = dns.TypeToString[header.Rrtype]
-	rc.TTL = header.Ttl
+	rc.TTL = NewTTL(header.Ttl)
 	rc.Original = rr
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	var err error

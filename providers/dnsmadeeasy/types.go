@@ -126,7 +126,7 @@ type recordRequestData struct {
 func toRecordConfig(domain string, record *recordResponseDataEntry) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
-		TTL:      uint32(record.TTL),
+		TTL:      models.NewTTL(uint32(record.TTL)),
 		Original: record,
 	}
 
@@ -162,7 +162,7 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 
 	record := &recordRequestData{
 		Type:        rc.Type,
-		TTL:         int(rc.TTL),
+		TTL:         int(rc.TTL.Value()),
 		GtdLocation: "DEFAULT",
 		Name:        label,
 		Value:       rc.GetTargetCombined(),

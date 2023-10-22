@@ -139,11 +139,11 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 			printer.Warnf("deSEC does not support alias records\n")
 			continue
 		}
-		if rec.TTL < minTTL {
+		if rec.TTL.Value() < minTTL {
 			if rec.Type != "NS" {
 				printer.Warnf("Please contact support@desec.io if you need TTLs < %d. Setting TTL of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
 			}
-			rec.TTL = minTTL
+			rec.TTL = models.NewTTL(minTTL)
 		}
 		recordsToKeep = append(recordsToKeep, rec)
 	}

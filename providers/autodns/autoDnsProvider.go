@@ -118,11 +118,11 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 									Name: strings.TrimSuffix(record.GetTargetField(), "."),
 								})
 
-								zoneTTL = record.TTL
+								zoneTTL = record.TTL.Value()
 							} else {
 								resourceRecord := &ResourceRecord{
 									Name:  record.Name,
-									TTL:   int64(record.TTL),
+									TTL:   int64(record.TTL.Value()),
 									Type:  record.Type,
 									Value: record.GetTargetField(),
 								}
@@ -217,11 +217,11 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 				Name: strings.TrimSuffix(record.GetTargetField(), "."),
 			})
 
-			zoneTTL = record.TTL
+			zoneTTL = record.TTL.Value()
 		} else {
 			resourceRecord := &ResourceRecord{
 				Name:  record.Name,
-				TTL:   int64(record.TTL),
+				TTL:   int64(record.TTL.Value()),
 				Type:  record.Type,
 				Value: record.GetTargetField(),
 			}
@@ -276,15 +276,15 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 		existingRecords[i] = toRecordConfig(domain, resourceRecord)
 
 		// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
-		if existingRecords[i].TTL == 0 {
-			existingRecords[i].TTL = zone.Soa.TTL
+		if !existingRecords[i].TTL.IsSet() {
+			existingRecords[i].TTL = models.NewTTL(zone.Soa.TTL)
 		}
 	}
 
 	// AutoDNS doesn't respond with APEX nameserver records as regular RR but rather as a zone property
 	for _, nameServer := range zone.NameServers {
 		nameServerRecord := &models.RecordConfig{
-			TTL: zone.Soa.TTL,
+			TTL: models.NewTTL(zone.Soa.TTL),
 		}
 
 		nameServerRecord.SetLabel("", domain)
@@ -297,12 +297,12 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 
 	if zone.MainRecord != nil && zone.MainRecord.Value != "" {
 		addressRecord := &models.RecordConfig{
-			TTL: uint32(zone.MainRecord.TTL),
+			TTL: models.NewTTL(uint32(zone.MainRecord.TTL)),
 		}
 
 		// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
-		if addressRecord.TTL == 0 {
-			addressRecord.TTL = zone.Soa.TTL
+		if !addressRecord.TTL.IsSet() {
+			addressRecord.TTL = models.NewTTL(zone.Soa.TTL)
 		}
 
 		addressRecord.SetLabel("", domain)
@@ -313,12 +313,12 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 
 		if zone.IncludeWwwForMain {
 			prefixedAddressRecord := &models.RecordConfig{
-				TTL: uint32(zone.MainRecord.TTL),
+				TTL: models.NewTTL(uint32(zone.MainRecord.TTL)),
 			}
 
 			// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
-			if prefixedAddressRecord.TTL == 0 {
-				prefixedAddressRecord.TTL = zone.Soa.TTL
+			if !prefixedAddressRecord.TTL.IsSet() {
+				prefixedAddressRecord.TTL = models.NewTTL(zone.Soa.TTL)
 			}
 
 			prefixedAddressRecord.SetLabel("www", domain)
@@ -335,7 +335,7 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
-		TTL:      uint32(record.TTL),
+		TTL:      models.NewTTL(uint32(record.TTL)),
 		Original: record,
 	}
 	rc.SetLabel(record.Name, domain)

@@ -194,7 +194,7 @@ func rcToRs(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody,
 	akaRecord := &dnsv2.RecordBody{
 		Name:       records[0].NameFQDN,
 		RecordType: records[0].Type,
-		TTL:        int(records[0].TTL),
+		TTL:        int(records[0].TTL.Value()),
 	}
 
 	for _, r := range records {
@@ -290,7 +290,7 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 		for _, r := range akarecset.Rdata {
 			rc := &models.RecordConfig{
 				Type: akatype,
-				TTL:  uint32(akattl),
+				TTL:  models.NewTTL(uint32(akattl)),
 			}
 			rc.SetLabelFromFQDN(akaname, zonename)
 			err = rc.PopulateFromString(akatype, r, zonename)

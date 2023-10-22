@@ -14,7 +14,7 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	name = strings.TrimSuffix(name, ".")
 
 	rc := &models.RecordConfig{
-		TTL:      uint32(ttl),
+		TTL:      models.NewTTL(uint32(ttl)),
 		Original: r,
 		Type:     rtype,
 	}

@@ -114,7 +114,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 			rec.Type = "ANAME"
 		} else if rec.Type == "NS" {
 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
-			rec.TTL = fixedNameServerRecordTTL
+			rec.TTL = models.NewTTL(fixedNameServerRecordTTL)
 		}
 	}
 

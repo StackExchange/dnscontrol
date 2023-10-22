@@ -9,6 +9,7 @@ import (
 	"testing"
 	"unicode"
 
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -107,7 +108,7 @@ func TestParsedFiles(t *testing.T) {
 
 				// Generate the zonefile
 				var buf bytes.Buffer
-				err = prettyzone.WriteZoneFileRC(&buf, dc.Records, dc.Name, 300, nil)
+				err = prettyzone.WriteZoneFileRC(&buf, dc.Records, dc.Name, models.NewTTL(300), nil)
 				if err != nil {
 					t.Fatal(err)
 				}

@@ -81,7 +81,7 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
-		TTL:          uint32(0),
+		TTL:          models.NewTTL(uint32(0)),
 		MxPreference: uint16(priority),
 		SrvPriority:  uint16(priority),
 		SrvWeight:    uint16(0),

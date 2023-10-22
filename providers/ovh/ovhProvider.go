@@ -221,7 +221,7 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 		return nil, nil
 	}
 	rec := &models.RecordConfig{
-		TTL:      uint32(r.TTL),
+		TTL:      models.NewTTL(uint32(r.TTL)),
 		Original: r,
 	}
 
@@ -238,8 +238,8 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 	}
 
 	// ovh default is 3600
-	if rec.TTL == 0 {
-		rec.TTL = 3600
+	if rec.TTL.Value() == 0 {
+		rec.TTL = models.NewTTL(3600)
 	}
 
 	return rec, nil

@@ -20,8 +20,8 @@ func init() {
 
 var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               // [ 0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
-var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
-var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
+var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", models.NewTTL(700)) //
+var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", models.NewTTL(700)) //
 var testDataAMX10a = makeRec("laba", "MX", "10 laba")              // [ 1]
 var testDataCCa = makeRec("labc", "CNAME", "laba")                 // [ 2]
 var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             // [ 3]

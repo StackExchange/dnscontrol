@@ -210,7 +210,7 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 func nativeToRecord(domain string, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
-		TTL:      r.TTL,
+		TTL:      models.NewTTL(r.TTL),
 		Original: r,
 	}
 	rc.SetLabelFromFQDN(r.Name, domain)
@@ -242,8 +242,8 @@ func checkNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		// LuaDNS does not support changing the TTL of the default nameservers, so forcefully change the TTL to 86400.
-		if rec.Type == "NS" && strings.HasSuffix(rec.GetTargetField(), ".luadns.net.") && rec.TTL != 86400 {
-			rec.TTL = 86400
+		if rec.Type == "NS" && strings.HasSuffix(rec.GetTargetField(), ".luadns.net.") && rec.TTL.Value() != 86400 {
+			rec.TTL = models.NewTTL(86400)
 		}
 		newList = append(newList, rec)
 	}

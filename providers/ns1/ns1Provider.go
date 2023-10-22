@@ -338,7 +338,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		Domain:  r.GetLabelFQDN(),
 		Type:    r.Type,
 		ID:      id,
-		TTL:     int(r.TTL),
+		TTL:     int(r.TTL.Value()),
 		Zone:    domain,
 		Filters: []*filter.Filter{}, // Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type array)
 	}
@@ -384,7 +384,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 	found := []*models.RecordConfig{}
 	for _, ans := range zr.ShortAns {
 		rec := &models.RecordConfig{
-			TTL:      uint32(zr.TTL),
+			TTL:      models.NewTTL(uint32(zr.TTL)),
 			Original: zr,
 		}
 		rec.SetLabelFromFQDN(zr.Domain, domain)

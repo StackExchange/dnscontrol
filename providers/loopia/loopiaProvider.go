@@ -232,14 +232,14 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			// Therefore, we change this to a CNAME.
 			rec.Type = "CNAME"
 		}
-		if rec.TTL < 300 {
+		if rec.TTL.Value() < 300 {
 			/* you can submit TTL lower than 300 but the dig results are normalized to 300 */
 			printer.Warnf("Loopia does not support TTL < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
-			rec.TTL = 300
-		} else if rec.TTL > 2147483647 {
+			rec.TTL = models.NewTTL(300)
+		} else if rec.TTL.Value() > 2147483647 {
 			/* you can submit a TTL higher than 4294967296 but Loopia shortens it to 2147483647. 68 year timeout tho. */
 			printer.Warnf("Loopia does not support TTL > 68 years. Setting %s from %d to 2147483647\n", rec.GetLabelFQDN(), rec.TTL)
-			rec.TTL = 2147483647
+			rec.TTL = models.NewTTL(2147483647)
 		}
 		// if rec.Type == "NS" && rec.GetLabel() == "@" {
 		// 	if !strings.HasSuffix(rec.GetTargetField(), ".loopia.se.") {

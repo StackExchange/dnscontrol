@@ -1,6 +1,8 @@
 package models
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
@@ -8,7 +10,7 @@ func TestRR(t *testing.T) {
 		Name:         "foo",
 		NameFQDN:     "foo.example.com",
 		target:       "1.2.3.4",
-		TTL:          0,
+		TTL:          EmptyTTL(),
 		MxPreference: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
@@ -22,7 +24,7 @@ func TestRR(t *testing.T) {
 		Name:     "@",
 		NameFQDN: "example.com",
 		target:   "mailto:test@example.com",
-		TTL:      300,
+		TTL:      NewTTL(300),
 		CaaTag:   "iodef",
 		CaaFlag:  1,
 	}
@@ -37,7 +39,7 @@ func TestRR(t *testing.T) {
 		Name:             "@",
 		NameFQDN:         "_443._tcp.example.com",
 		target:           "abcdef0123456789",
-		TTL:              300,
+		TTL:              NewTTL(300),
 		TlsaUsage:        0,
 		TlsaSelector:     0,
 		TlsaMatchingType: 1,

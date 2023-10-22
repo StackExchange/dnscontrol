@@ -106,7 +106,7 @@ func (client *msdnsProvider) modifyOneRecord(dnsserver, zonename string, oldrec,
 }
 
 func (client *msdnsProvider) modifyRecordTTL(dnsserver, zonename string, oldrec, newrec *models.RecordConfig) error {
-	return client.shell.RecordModifyTTL(dnsserver, zonename, oldrec, newrec.TTL)
+	return client.shell.RecordModifyTTL(dnsserver, zonename, oldrec, newrec.TTL.Value())
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {

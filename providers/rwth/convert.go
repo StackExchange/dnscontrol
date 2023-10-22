@@ -22,7 +22,7 @@ func (api *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 
 	// ttl
 	ttl := ""
-	if rr.TTL != 172800 && rr.TTL != 0 {
+	if rr.TTL.Value() != 172800 && rr.TTL.IsSet() {
 		ttl = fmt.Sprint(rr.TTL)
 	}
 

@@ -123,11 +123,11 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
 	for _, r := range dc.Records {
-		if r.TTL < 60 {
-			r.TTL = 60
+		if r.TTL.Value() < 60 {
+			r.TTL = models.NewTTL(60)
 		}
-		if r.TTL > 31556926 {
-			r.TTL = 31556926
+		if r.TTL.Value() > 31556926 {
+			r.TTL = models.NewTTL(31556926)
 		}
 	}
 
@@ -186,12 +186,17 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		defaultSoa = &soaValues{}
 	}
 
+	defaultSoaTTL := models.EmptyTTL()
+	if defaultSoa.TTL != 0 {
+		defaultSoaTTL = models.NewTTL(defaultSoa.TTL)
+	}
+
 	newSOA := soaValues{
 		Refresh:     firstNonZero(desiredSoa.SoaRefresh, defaultSoa.Refresh, 86400),
 		Retry:       firstNonZero(desiredSoa.SoaRetry, defaultSoa.Retry, 7200),
 		Expire:      firstNonZero(desiredSoa.SoaExpire, defaultSoa.Expire, 3600000),
 		NegativeTTL: firstNonZero(desiredSoa.SoaMinttl, defaultSoa.NegativeTTL, 900),
-		TTL:         firstNonZero(desiredSoa.TTL, defaultSoa.TTL, 86400),
+		TTL:         firstSet(desiredSoa.TTL, defaultSoaTTL, models.NewTTL(86400)).Value(),
 	}
 
 	if zone.ZoneConfig.SOAValues != newSOA {
@@ -314,6 +319,15 @@ func firstNonZero(items ...uint32) uint32 {
 		}
 	}
 	return 999
+}
+
+func firstSet(items ...models.TTL) models.TTL {
+	for _, item := range items {
+		if item.IsSet() {
+			return item
+		}
+	}
+	return models.EmptyTTL()
 }
 
 func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

@@ -116,7 +116,7 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: recordType,
 			Target:    rc.GetTargetCombined(),
-			TTL:       rc.TTL,
+			TTL:       rc.TTL.Value(),
 		}
 		if record.SubDomain == "@" {
 			record.SubDomain = ""
@@ -153,7 +153,7 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			SubDomain: rc.GetLabel(),
 			FieldType: recordType,
 			Target:    rc.GetTargetCombined(),
-			TTL:       rc.TTL,
+			TTL:       rc.TTL.Value(),
 			Zone:      fqdn,
 			ID:        old.ID,
 		}

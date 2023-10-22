@@ -10,7 +10,7 @@ import (
 func TestRecordToNative_1(t *testing.T) {
 
 	rc := &models.RecordConfig{
-		TTL: 3600,
+		TTL: models.NewTTL(3600),
 	}
 	rc.SetLabel("foo", "example.com")
 	rc.SetTarget("1.2.3.4")
@@ -37,7 +37,7 @@ func TestNativeToRecord_1(t *testing.T) {
 
 	if rc.Type != "A" {
 		t.Errorf("nativeToRecord produced unexpected type")
-	} else if rc.TTL != 300 {
+	} else if rc.TTL.Value() != 300 {
 		t.Errorf("nativeToRecord produced unexpected TTL")
 	} else if rc.GetTargetCombined() != "1.2.3.4" {
 		t.Errorf("nativeToRecord produced unexpected Rdata")

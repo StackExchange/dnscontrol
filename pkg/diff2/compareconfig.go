@@ -216,7 +216,7 @@ func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string
 	}
 
 	lenWithoutTTL := len(comp)
-	compFull := comp + fmt.Sprintf(" ttl=%d", rc.TTL)
+	compFull := comp + fmt.Sprintf(" ttl=%d", rc.TTL.Value())
 
 	return compFull[:lenWithoutTTL], compFull
 }
@@ -230,7 +230,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 	// of the same label+rtype are grouped. We use PrettySort because it works,
 	// has been extensively tested, and assures that the ChangeList will
 	// be in an order that is pretty to look at.
-	z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
+	z := prettyzone.PrettySort(recs, cc.origin, models.EmptyTTL(), nil)
 
 	for _, rec := range z.Records {
 

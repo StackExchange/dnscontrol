@@ -14,7 +14,7 @@ func myRecord(s string) *models.RecordConfig {
 	ttl, _ := strconv.ParseUint(parts[2], 10, 32)
 	r := &models.RecordConfig{
 		Type:     parts[1],
-		TTL:      uint32(ttl),
+		TTL:      models.NewTTL(uint32(ttl)),
 		Metadata: map[string]string{},
 	}
 	r.SetLabel(parts[0], "example.com")
@@ -72,7 +72,7 @@ func TestUnchangedWithAddition(t *testing.T) {
 
 // s stringifies a RecordConfig for testing purposes.
 func s(rc *models.RecordConfig) string {
-	return fmt.Sprintf("%s %s %d %s", rc.GetLabel(), rc.Type, rc.TTL, rc.GetTargetCombined())
+	return fmt.Sprintf("%s %s %d %s", rc.GetLabel(), rc.Type, rc.TTL.Value(), rc.GetTargetCombined())
 }
 
 func TestOutOfOrderRecords(t *testing.T) {

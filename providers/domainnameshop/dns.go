@@ -37,7 +37,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 
 	// Domainnameshop doesn't allow arbitrary TTLs they must be a multiple of 60.
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = models.NewTTL(fixTTL(record.TTL.Value()))
 	}
 
 	var corrections []*models.Correction
