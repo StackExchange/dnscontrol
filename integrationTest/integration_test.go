@@ -1180,105 +1180,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		// Make sure we can manipulate one DNS record when there is
-		// another at the same RecordSet.
-		testgroup("testByRecordSet",
-			tc("initial",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "3.4.5.6"),
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("changeOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Change
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("deleteOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				//a("foo", "8.8.8.8"),  // Delete
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("addOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Add
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-		),
-
-		// Make sure we can manipulate one DNS record when there is
-		// another at the same RecordSet.
-		testgroup("testByRecordSet",
-			tc("initial",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "3.4.5.6"),
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("changeOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Change
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("deleteOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				//a("foo", "8.8.8.8"),  // Delete
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("addOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Add
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-		),
-
-		// Make sure we can manipulate one DNS record when there is
-		// another at the same RecordSet.
-		testgroup("testByRecordSet",
-			tc("initial",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "3.4.5.6"),
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("changeOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Change
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("deleteOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				//a("foo", "8.8.8.8"),  // Delete
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-			tc("addOne",
-				a("bar", "1.2.3.4"),
-				a("foo", "2.3.4.5"),
-				a("foo", "8.8.8.8"), // Add
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
-			),
-		),
-
 		// Narrative: Here we test the IDNA (internationalization)
 		// features.  But first a joke:
 		// Q: What do you call someone that speaks 2 languages?
@@ -1326,7 +1227,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
-				//"AZURE_DNS",     // Removed because it is too slow
+				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"DIGITALOCEAN",  // No paging. Why bother?
 				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
@@ -1345,7 +1246,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				"AZURE_DNS", // Removed because it is too slow
+				//"AZURE_DNS",     // Removed because it is too slow
 				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
@@ -1361,7 +1262,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			only(
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
-				"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
