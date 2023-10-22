@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -225,7 +226,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					//return a.recordDelete(dc.Name, change.Key, change.Old)
 					return a.recordDelete(dcn, chaKey, change.Old)
 				},
 			})
@@ -252,9 +252,25 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	}
 	rrset.Properties.TTL = &i
 
+	waitTime := 1
+retry:
+
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
+
+	if e, ok := err.(*azcore.ResponseError); ok {
+		if e.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		}
+	}
+
 	return err
 }
 
@@ -270,9 +286,25 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 		return nil
 	}
 
+	waitTime := 1
+retry:
+
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
+
+	if e, ok := err.(*azcore.ResponseError); ok {
+		if e.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		}
+	}
+
 	return err
 }
 
@@ -544,10 +576,28 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	recordsPager := a.recordsClient.NewListAllByDNSZonePager(*a.resourceGroup, zoneName, nil)
 
 	for recordsPager.More() {
+
+		waitTime := 1
+	retry:
+
 		nextResult, recordsErr := recordsPager.NextPage(ctx)
+
 		if recordsErr != nil {
-			return nil, recordsErr
+			err := recordsErr
+			if e, ok := err.(*azcore.ResponseError); ok {
+
+				if e.StatusCode == 429 {
+					waitTime = waitTime * 2
+					if waitTime > 300 {
+						return nil, err
+					}
+					printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+					time.Sleep(time.Duration(waitTime+1) * time.Second)
+					goto retry
+				}
+			}
 		}
+
 		records = append(records, nextResult.Value...)
 	}
 
