@@ -225,7 +225,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					//return a.recordDelete(dc.Name, change.Key, change.Old)
 					return a.recordDelete(dcn, chaKey, change.Old)
 				},
 			})
