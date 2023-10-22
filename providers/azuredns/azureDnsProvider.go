@@ -257,6 +257,7 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	if err != nil {
 		fmt.Printf("DEBUG: cou: err s=%s\n", err)
 		fmt.Printf("DEBUG: cou: err v=%+v\n", err)
+		fmt.Printf("DEBUG: cou: err T=%T\n", err)
 	}
 
 	return err
@@ -277,6 +278,12 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
+	if err != nil {
+		fmt.Printf("DEBUG: cou: err s=%s\n", err)
+		fmt.Printf("DEBUG: cou: err v=%+v\n", err)
+		fmt.Printf("DEBUG: cou: err T=%T\n", err)
+	}
+
 	return err
 }
 

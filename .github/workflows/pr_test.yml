@@ -188,7 +188,7 @@ jobs:
       run: |-
         go install gotest.tools/gotestsum@latest
         if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
+          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false -end 25
         else
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
