@@ -7,60 +7,29 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_names": [
-        {
-          "pattern": "testignore",
-          "types": "*"
-        },
-        {
-          "pattern": "testignore2",
-          "types": "A"
-        },
-        {
-          "pattern": "testignore3",
-          "types": "A, CNAME, TXT"
-        },
-        {
-          "pattern": "testignore4",
-          "types": "*"
-        },
-        {
-          "pattern": "legacyignore",
-          "types": "*"
-        },
-        {
-          "pattern": "@",
-          "types": "*"
-        }
-      ],
-      "ignored_targets": [
-        {
-          "pattern": "testtarget",
-          "type": "CNAME"
-        },
-        {
-          "pattern": "@",
-          "type": "CNAME"
-        }
-      ],
       "unmanaged": [
         {
           "label_pattern": "testignore",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
           "label_pattern": "testignore2",
-          "rType_pattern": "A"
+          "rType_pattern": "A",
+          "target_pattern": "*"
         },
         {
           "label_pattern": "testignore3",
-          "rType_pattern": "A, CNAME, TXT"
+          "rType_pattern": "A, CNAME, TXT",
+          "target_pattern": "*"
         },
         {
           "label_pattern": "testignore4",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
+          "label_pattern": "*",
           "rType_pattern": "CNAME",
           "target_pattern": "testtarget"
         },
@@ -71,9 +40,11 @@
         },
         {
           "label_pattern": "@",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
+          "label_pattern": "*",
           "rType_pattern": "CNAME",
           "target_pattern": "@"
         }
@@ -84,50 +55,6 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_names": [
-        {
-          "pattern": "mylabel",
-          "types": "*"
-        },
-        {
-          "pattern": "mylabel2",
-          "types": ""
-        },
-        {
-          "pattern": "mylabel3",
-          "types": ""
-        },
-        {
-          "pattern": "",
-          "types": "A"
-        },
-        {
-          "pattern": "",
-          "types": "A,AAAA"
-        },
-        {
-          "pattern": "",
-          "types": ""
-        },
-        {
-          "pattern": "labelc",
-          "types": "CNAME"
-        },
-        {
-          "pattern": "nametest",
-          "types": "*"
-        }
-      ],
-      "ignored_targets": [
-        {
-          "pattern": "targettest1",
-          "type": ""
-        },
-        {
-          "pattern": "targettest2",
-          "type": "A"
-        }
-      ],
       "unmanaged": [
         {
           "label_pattern": "mylabel",
@@ -159,12 +86,16 @@
         },
         {
           "label_pattern": "nametest",
-          "rType_pattern": "*"
+          "rType_pattern": "*",
+          "target_pattern": "*"
         },
         {
+          "label_pattern": "*",
+          "rType_pattern": "*",
           "target_pattern": "targettest1"
         },
         {
+          "label_pattern": "*",
           "rType_pattern": "A",
           "target_pattern": "targettest2"
         }

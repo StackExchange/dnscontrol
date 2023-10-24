@@ -11,7 +11,6 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
@@ -227,106 +226,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	checkNSModifications(dc)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
-
-		differ := diff.New(dc, getProxyMetadata)
-		_, create, del, mod, err := differ.IncrementalDiff(records)
-		if err != nil {
-			return nil, err
-		}
-
-		corrections := []*models.Correction{}
-
-		for _, d := range del {
-			ex := d.Existing
-			if ex.Type == "PAGE_RULE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, domainID) },
-				})
-			} else if ex.Type == "WORKER_ROUTE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, domainID) },
-				})
-			} else {
-				corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), domainID)
-				// DS records must always have a corresponding NS record.
-				// Therefore, we remove DS records before any NS records.
-				if d.Existing.Type == "DS" {
-					corrections = append([]*models.Correction{corr}, corrections...)
-				} else {
-					corrections = append(corrections, corr)
-				}
-			}
-		}
-		for _, d := range create {
-			des := d.Desired
-			if des.Type == "PAGE_RULE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F:   func() error { return c.createPageRule(domainID, des.GetTargetField()) },
-				})
-			} else if des.Type == "WORKER_ROUTE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F:   func() error { return c.createWorkerRoute(domainID, des.GetTargetField()) },
-				})
-			} else {
-				corr := c.createRec(des, domainID)
-				// DS records must always have a corresponding NS record.
-				// Therefore, we create NS records before any DS records.
-				if d.Desired.Type == "NS" {
-					corrections = append(corr, corrections...)
-				} else {
-					corrections = append(corrections, corr...)
-				}
-			}
-		}
-
-		for _, d := range mod {
-			rec := d.Desired
-			ex := d.Existing
-			if rec.Type == "PAGE_RULE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F: func() error {
-						return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, domainID, rec.GetTargetField())
-					},
-				})
-			} else if rec.Type == "WORKER_ROUTE" {
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F: func() error {
-						return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, domainID, rec.GetTargetField())
-					},
-				})
-			} else {
-				e := ex.Original.(cloudflare.DNSRecord)
-				proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
-				corrections = append(corrections, &models.Correction{
-					Msg: d.String(),
-					F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, rec) },
-				})
-			}
-		}
-
-		// Add universalSSL change to corrections when needed
-		if changed, newState, err := c.checkUniversalSSL(dc, domainID); err == nil && changed {
-			var newStateString string
-			if newState {
-				newStateString = "enabled"
-			} else {
-				newStateString = "disabled"
-			}
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
-				F:   func() error { return c.changeUniversalSSL(domainID, newState) },
-			})
-		}
-
-		return corrections, nil
-	}
 
 	// Cloudflare is a "ByRecord" API.
 	instructions, err := diff2.ByRecord(records, dc, genComparable)

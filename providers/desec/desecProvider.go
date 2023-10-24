@@ -8,7 +8,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -164,20 +163,14 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 
-	var corrections []*models.Correction
-	var err error
-	var keysToUpdate map[models.RecordKey][]string
-	if !diff2.EnableDiff2 {
-		// diff existing vs. current.
-		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existing)
-	} else {
-		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(existing)
-	}
+	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existing)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
-	if len(keysToUpdate) == 0 {
+	if len(corrections) == 0 && len(keysToUpdate) == 0 {
 		return nil, nil
 	}
 

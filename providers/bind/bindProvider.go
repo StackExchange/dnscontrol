@@ -14,7 +14,6 @@ bind -
 */
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -23,7 +22,6 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
@@ -213,6 +211,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 	txtutil.SplitSingleLongTxt(dc.Records)
+	var corrections []*models.Correction
 
 	changes := false
 	var msg string
@@ -241,110 +240,67 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		c.skipNextSoaIncrease = true
 	}
 
-	if !diff2.EnableDiff2 {
+	var msgs []string
+	var err error
+	msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	if !changes {
+		return nil, nil
+	}
+	msg = strings.Join(msgs, "\n")
 
-		differ := diff.New(dc)
-		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		buf := &bytes.Buffer{}
-		// Print a list of changes. Generate an actual change that is the zone
-
-		for _, i := range create {
-			changes = true
-			if c.zoneFileFound {
-				fmt.Fprintln(buf, i)
-			}
-		}
-		for _, i := range del {
-			changes = true
-			if c.zoneFileFound {
-				fmt.Fprintln(buf, i)
-			}
-		}
-		for _, i := range mod {
-			changes = true
-			if c.zoneFileFound {
-				fmt.Fprintln(buf, i)
-			}
-		}
-
-		if c.zoneFileFound {
-			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
-		} else {
-			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
-		}
-
-	} else {
-
-		var msgs []string
-		var err error
-		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
-		if err != nil {
-			return nil, err
-		}
-		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
-		msg = strings.Join(msgs, "\n")
-
+	comments := make([]string, 0, 5)
+	comments = append(comments,
+		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
+	)
+	if dc.AutoDNSSEC == "on" {
+		// This does nothing but reminds the user to add the correct
+		// auto-dnssecc zone statement to named.conf.
+		// While it is a no-op, it is useful for situations where a zone
+		// has multiple providers.
+		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
-	var corrections []*models.Correction
-	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
-	if changes {
+	c.zonefile = filepath.Join(c.directory,
+		makeFileName(c.filenameformat,
+			dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
+	)
 
-		comments := make([]string, 0, 5)
-		comments = append(comments,
-			fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
-		)
-		if dc.AutoDNSSEC == "on" {
-			// This does nothing but reminds the user to add the correct
-			// auto-dnssecc zone statement to named.conf.
-			// While it is a no-op, it is useful for situations where a zone
-			// has multiple providers.
-			comments = append(comments, "Automatic DNSSEC signing requested")
-		}
-
-		c.zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat,
-				dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
-		)
-
-		// We only change the serial number if there is a change.
-		if !c.skipNextSoaIncrease {
-			desiredSoa.SoaSerial = nextSerial
-		}
-
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
-					fname, err := preprocessFilename(c.zonefile)
-					if err != nil {
-						return fmt.Errorf("could not create zonefile: %w", err)
-					}
-					zf, err := os.Create(fname)
-					if err != nil {
-						return fmt.Errorf("could not create zonefile: %w", err)
-					}
-					// Beware that if there are any fake types, then they will
-					// be commented out on write, but we don't reverse that when
-					// reading, so there will be a diff on every invocation.
-					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
-
-					if err != nil {
-						return fmt.Errorf("failed WriteZoneFile: %w", err)
-					}
-					err = zf.Close()
-					if err != nil {
-						return fmt.Errorf("closing: %w", err)
-					}
-					return nil
-				},
-			})
+	// We only change the serial number if there is a change.
+	if !c.skipNextSoaIncrease {
+		desiredSoa.SoaSerial = nextSerial
 	}
+
+	corrections = append(corrections,
+		&models.Correction{
+			Msg: msg,
+			F: func() error {
+				printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+				fname, err := preprocessFilename(c.zonefile)
+				if err != nil {
+					return fmt.Errorf("could not create zonefile: %w", err)
+				}
+				zf, err := os.Create(fname)
+				if err != nil {
+					return fmt.Errorf("could not create zonefile: %w", err)
+				}
+				// Beware that if there are any fake types, then they will
+				// be commented out on write, but we don't reverse that when
+				// reading, so there will be a diff on every invocation.
+				err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
+
+				if err != nil {
+					return fmt.Errorf("failed WriteZoneFile: %w", err)
+				}
+				err = zf.Close()
+				if err != nil {
+					return fmt.Errorf("closing: %w", err)
+				}
+				return nil
+			},
+		})
 
 	return corrections, nil
 }

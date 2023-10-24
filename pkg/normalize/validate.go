@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
@@ -424,11 +423,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			// Populate FQDN:
 			rec.SetLabel(rec.GetLabel(), domain.Name)
 
-			// Warn if a diff1-only feature is used in diff2 mode.
-			if diff2.EnableDiff2 {
-				if _, ok := rec.Metadata["ignore_name_disable_safety_check"]; ok {
-					errs = append(errs, fmt.Errorf("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
-				}
+			if _, ok := rec.Metadata["ignore_name_disable_safety_check"]; ok {
+				errs = append(errs, fmt.Errorf("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
 			}
 
 		}

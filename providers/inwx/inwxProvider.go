@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -235,17 +234,12 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, d := range create {
 		des := d.Desired

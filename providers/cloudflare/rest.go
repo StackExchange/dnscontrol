@@ -54,17 +54,6 @@ func (c *cloudflareProvider) deleteDNSRecord(rec cloudflare.DNSRecord, domainID 
 	return c.cfClient.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), rec.ID)
 }
 
-// create a correction to delete a record
-func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
-	return &models.Correction{
-		Msg: fmt.Sprintf("DELETE record: %s %s %d %q (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
-		F: func() error {
-			err := c.cfClient.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), rec.ID)
-			return err
-		},
-	}
-}
-
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
 	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.accountID}, "full")
 	return zone.ID, err
@@ -127,69 +116,6 @@ func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
 		Replacement: rec.GetTargetField(),
 		Service:     rec.NaptrService,
 	}
-}
-
-func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
-	var id string
-	content := rec.GetTargetField()
-	if rec.Metadata[metaOriginalIP] != "" {
-		content = rec.Metadata[metaOriginalIP]
-	}
-	prio := ""
-	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.MxPreference)
-	}
-	if rec.Type == "TXT" {
-		content = rec.GetTargetTXTJoined()
-	}
-	if rec.Type == "DS" {
-		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
-	}
-	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
-		F: func() error {
-			cf := cloudflare.CreateDNSRecordParams{
-				Name:     rec.GetLabel(),
-				Type:     rec.Type,
-				TTL:      int(rec.TTL),
-				Content:  content,
-				Priority: &rec.MxPreference,
-			}
-			if rec.Type == "SRV" {
-				cf.Data = cfSrvData(rec)
-				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "CAA" {
-				cf.Data = cfCaaData(rec)
-				cf.Name = rec.GetLabelFQDN()
-				cf.Content = ""
-			} else if rec.Type == "TLSA" {
-				cf.Data = cfTlsaData(rec)
-				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "SSHFP" {
-				cf.Data = cfSshfpData(rec)
-				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "DS" {
-				cf.Data = cfDSData(rec)
-			} else if rec.Type == "NAPTR" {
-				cf.Data = cfNaptrData(rec)
-				cf.Name = rec.GetLabelFQDN()
-			}
-			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
-			if err != nil {
-				return err
-			}
-			// Updating id (from the outer scope) by side-effect, required for updating proxy mode
-			id = resp.ID
-			return nil
-		},
-	}}
-	if rec.Metadata[metaProxy] != "off" {
-		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
-			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
-		})
-	}
-	return arr
 }
 
 func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {

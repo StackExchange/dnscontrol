@@ -7,7 +7,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -141,17 +140,12 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, del, modify, err := differ.IncrementalDiff(records)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	zone, err := n.getZone(dc.Name)
 	if err != nil {
