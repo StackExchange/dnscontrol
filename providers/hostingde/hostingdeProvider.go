@@ -10,7 +10,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -138,19 +137,16 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		return nil, err
 	}
 
-	var create, del, mod diff.Changeset
-	if !diff2.EnableDiff2 {
-		_, create, del, mod, err = diff.New(dc).IncrementalDiff(records)
-	} else {
-		_, create, del, mod, err = diff.NewCompat(dc).IncrementalDiff(records)
-	}
+	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// NOPURGE
 	if dc.KeepUnknown {
-		del = []diff.Correlation{}
+		del = nil
 	}
 
 	// remove SOA record from corrections as it is handled separately
@@ -267,31 +263,30 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		return nil, nil
 	}
 
-	corrections := []*models.Correction{
-		{
-			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
-			F: func() error {
-				for i := 0; i < 10; i++ {
-					err := hp.updateZone(&zone.ZoneConfig, DNSSecOptions, create, del, mod)
-					if err == nil {
-						return nil
-					}
-					// Code:10205 indicates the zone is currently blocked due to a running zone update.
-					if !strings.Contains(err.Error(), "Code:10205") {
-						return err
-					}
-
-					// Exponential back-off retry.
-					// Base of 1.8 seemed like a good trade-off, retrying for approximately 45 seconds.
-					time.Sleep(time.Duration(math.Pow(1.8, float64(i))) * 100 * time.Millisecond)
+	corrections = append(corrections, &models.Correction{
+		Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
+		F: func() error {
+			for i := 0; i < 10; i++ {
+				err := hp.updateZone(&zone.ZoneConfig, DNSSecOptions, create, del, mod)
+				if err == nil {
+					return nil
 				}
-				return fmt.Errorf("retry exhaustion: zone blocked for 10 attempts")
-			},
+				// Code:10205 indicates the zone is currently blocked due to a running zone update.
+				if !strings.Contains(err.Error(), "Code:10205") {
+					return err
+				}
+
+				// Exponential back-off retry.
+				// Base of 1.8 seemed like a good trade-off, retrying for approximately 45 seconds.
+				time.Sleep(time.Duration(math.Pow(1.8, float64(i))) * 100 * time.Millisecond)
+			}
+			return fmt.Errorf("retry exhaustion: zone blocked for 10 attempts")
 		},
-	}
+	},
+	)
 
 	if removeDNSSecEntries != nil {
-		correction := models.Correction{
+		correction := &models.Correction{
 			Msg: "Removing AutoDNSSEC Keys from Domain",
 			F: func() error {
 				err := hp.dnsSecKeyModify(dc.Name, nil, removeDNSSecEntries)
@@ -301,7 +296,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 				return nil
 			},
 		}
-		corrections = append(corrections, &correction)
+		corrections = append(corrections, correction)
 	}
 
 	return corrections, nil

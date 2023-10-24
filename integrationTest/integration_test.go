@@ -12,7 +12,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -31,7 +30,6 @@ var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF work
 func init() {
 	testing.Init()
 
-	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
 	flag.Parse()
 }
 
@@ -139,11 +137,6 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 // error explaining why it is not.
 func testPermitted(t *testing.T, p string, f TestGroup) error {
 
-	// Does this test require "diff2"?
-	if f.diff2only && !diff2.EnableDiff2 {
-		return fmt.Errorf("test for diff2 only")
-	}
-
 	// not() and only() can't be mixed.
 	if len(f.only) != 0 && len(f.not) != 0 {
 		return fmt.Errorf("invalid filter: can't mix not() and only()")
@@ -223,8 +216,6 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			// records (A or AAAA)
 			dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
 		}
-		dom.IgnoredNames = tst.IgnoredNames
-		dom.IgnoredTargets = tst.IgnoredTargets
 		dom.Unmanaged = tst.Unmanaged
 		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
 		models.PostProcessRecords(dom.Records)
@@ -348,7 +339,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 func TestDualProviders(t *testing.T) {
-	t.Skip()
 	p, domain, _, _ := getProvider(t)
 	if p == nil {
 		return
@@ -443,14 +433,11 @@ type TestGroup struct {
 	not       []string
 	trueflags []bool
 	tests     []*TestCase
-	diff2only bool
 }
 
 type TestCase struct {
 	Desc            string
 	Records         []*models.RecordConfig
-	IgnoredNames    []*models.IgnoreName
-	IgnoredTargets  []*models.IgnoreTarget
 	Unmanaged       []*models.UnmanagedConfig
 	UnmanagedUnsafe bool // DISABLE_IGNORE_SAFETY_CHECK
 	Changeless      bool // set to true if any changes would be an error
@@ -466,11 +453,6 @@ func (tc *TestCase) ExpectNoChanges() *TestCase {
 func (tc *TestCase) UnsafeIgnore() *TestCase {
 	tc.UnmanagedUnsafe = true
 	return tc
-}
-
-func (tg *TestGroup) Diff2Only() *TestGroup {
-	tg.diff2only = true
-	return tg
 }
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
@@ -547,29 +529,11 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 }
 
 func ignoreName(labelSpec string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type:     "IGNORE_NAME",
-		Metadata: map[string]string{},
-	}
-	// diff1
-	SetLabel(r, labelSpec, "**current-domain**")
-	// diff2
-	r.Metadata["ignore_LabelPattern"] = labelSpec
-	return r
+	return ignore(labelSpec, "*", "*")
 }
 
 func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type:     "IGNORE_TARGET",
-		Metadata: map[string]string{},
-	}
-	// diff1
-	r.SetTarget(typeSpec)
-	SetLabel(r, targetSpec, "**current-domain**")
-	// diff2
-	r.Metadata["ignore_RTypePattern"] = typeSpec
-	r.Metadata["ignore_TargetPattern"] = typeSpec
-	return r
+	return ignore("*", "*", targetSpec)
 }
 
 func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
@@ -577,9 +541,7 @@ func ignore(labelSpec string, typeSpec string, targetSpec string) *models.Record
 		Type:     "IGNORE",
 		Metadata: map[string]string{},
 	}
-	if r.Metadata == nil {
-		r.Metadata = map[string]string{}
-	}
+
 	r.Metadata["ignore_LabelPattern"] = labelSpec
 	r.Metadata["ignore_RTypePattern"] = typeSpec
 	r.Metadata["ignore_TargetPattern"] = targetSpec
@@ -717,50 +679,24 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 
 func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
-	var ignoredNames []*models.IgnoreName
-	var ignoredTargets []*models.IgnoreTarget
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
 		switch r.Type {
 		case "IGNORE":
-			// diff1:
-			ignoredNames = append(ignoredNames, &models.IgnoreName{
-				Pattern: r.Metadata["ignore_LabelPattern"],
-				Types:   r.Metadata["ignore_RTypePattern"],
-			})
-			// diff2:
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
 				LabelPattern:  r.Metadata["ignore_LabelPattern"],
 				RTypePattern:  r.Metadata["ignore_RTypePattern"],
 				TargetPattern: r.Metadata["ignore_TargetPattern"],
 			})
 			continue
-		case "IGNORE_NAME":
-			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
-			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
-				LabelPattern: r.GetLabel(),
-				RTypePattern: r.GetTargetField(),
-			})
-			continue
-		case "IGNORE_TARGET":
-			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
-				Pattern: r.GetLabel(),
-				Type:    r.GetTargetField(),
-			})
-			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
-				RTypePattern:  r.GetTargetField(),
-				TargetPattern: r.GetLabel(),
-			})
 		default:
 			records = append(records, r)
 		}
 	}
 	return &TestCase{
-		Desc:           desc,
-		Records:        records,
-		IgnoredNames:   ignoredNames,
-		IgnoredTargets: ignoredTargets,
-		Unmanaged:      unmanagedItems,
+		Desc:      desc,
+		Records:   records,
+		Unmanaged: unmanagedItems,
 	}
 }
 
@@ -1915,7 +1851,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ignore manytypes",
 				ignore("", "A,TXT", ""),
 			).ExpectNoChanges(),
-		).Diff2Only(),
+		),
 
 		testgroup("IGNORE apex",
 			tc("Create some records",
@@ -1936,7 +1872,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ignore manytypes",
 				ignore("", "A,TXT", ""),
 			).ExpectNoChanges().UnsafeIgnore(),
-		).Diff2Only(),
+		),
 
 		// Legacy IGNORE_NAME and IGNORE_TARGET tests.
 
@@ -1969,7 +1905,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				ignoreName("*.foo"),
 				a("bar", "1.2.3.4"),
 			),
-		).Diff2Only(),
+		),
 
 		testgroup("IGNORE_NAME apex",
 			tc("Create some records",
@@ -1990,7 +1926,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("bar", "2.4.6.8"),
 				a("added", "4.6.8.9"),
 			).UnsafeIgnore(),
-		).Diff2Only(),
+		),
 
 		testgroup("IGNORE_TARGET function CNAME",
 			tc("Create some records",
@@ -2048,9 +1984,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// https://github.com/StackExchange/dnscontrol/issues/2285
-		// IGNORE_TARGET for CNAMEs wasn't working for AZURE_DNS.
-		// Interestingly enough, this has never worked with
-		// GANDI_V5/diff1.  It works on all providers in diff2.
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),
@@ -2059,7 +1992,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add a new record - ignoring test.foo.com.",
 				ignoreTarget("**.acm-validations.aws.", "CNAME"),
 			).ExpectNoChanges(),
-		).Diff2Only(),
+		),
 
 		testgroup("structured TXT",
 			only("OVH"),

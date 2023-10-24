@@ -25,9 +25,11 @@ dnscontrol write-types
 
 This file has all the information your editor or IDE needs.  It must be in the same directory as the `dnsconfig.js` file you are editing.
 
-NOTE: Re-run the `dnscontrol write-types` command any time you upgrade
+{% hint style="info" %}
+**NOTE**: Re-run the `dnscontrol write-types` command any time you upgrade
 DNSControl. Because it is generated from the command, it will always be correct
 for the version of DNSControl you are using.
+{% endhint %}
 
 2. Tell your editor
 
@@ -50,15 +52,19 @@ If your editor requires extra steps, please [file a bug](https://github.com/Stac
 
 ### Bugs?
 
-**Bugs?**  Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/StackExchange/dnscontrol/issues
+{% hint style="warning" %}
+**BUGS**: Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/StackExchange/dnscontrol/issues
+{% endhint %}
 
-**This is experimental.** This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
+{% hint style="info" %}
+**NOTE**: This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
+{% endhint %}
 
-## Known bugs
+## Known bugs/issue
 
-## Bug: `CLI_DEFAULTS` not implemented
+### Bug: `CLI_DEFAULTS` not implemented
 
-Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
+Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
 
 Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable).
 
@@ -71,7 +77,6 @@ declare const VARIABLE_NAME: string;
 
 This will tell TypeScript that the variable exists, and that it’s a string.
 
-## Known issue: `FETCH` not always accurate
+### Known issue: `FETCH` not always accurate
 
-Bug: `FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
-
+`FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.

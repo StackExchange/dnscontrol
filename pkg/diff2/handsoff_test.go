@@ -164,7 +164,7 @@ D("f.com", "none",
 	A("foo3", "3.3.3.3", ENSURE_ABSENT_REC()),
 {})
 `
-	handsoffHelper(t, existingZone, desiredJs, true, `
+	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 FOREIGN:
 	`)

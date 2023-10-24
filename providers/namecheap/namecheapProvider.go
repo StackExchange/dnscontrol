@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	nc "github.com/billputer/go-namecheap"
@@ -245,16 +244,12 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 		return true
 	})
 
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, delete, modify, err := differ.IncrementalDiff(actual)
+	toReport, create, delete, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// because namecheap doesn't have selective create, delete, modify,
 	// we bundle them all up to send at once.  We *do* want to see the
@@ -271,11 +266,9 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 		desc = append(desc, "\n"+i.String())
 	}
 
-	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
-	var corrections []*models.Correction
-
 	// only create corrections if there are changes
 	if len(desc) > 0 {
+		msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,

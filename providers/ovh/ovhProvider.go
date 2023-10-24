@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/ovh/go-ovh/ovh"
@@ -122,14 +121,7 @@ func (c *ovhProvider) GetZoneRecords(domain string, meta map[string]string) (mod
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
-	var corrections []*models.Correction
-	var err error
-	if !diff2.EnableDiff2 {
-		corrections, err = c.getDiff1DomainCorrections(dc, actual)
-	} else {
-		corrections, err = c.getDiff2DomainCorrections(dc, actual)
-	}
-
+	corrections, err := c.getDiff2DomainCorrections(dc, actual)
 	if err != nil {
 		return nil, err
 	}
@@ -143,42 +135,6 @@ func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual 
 		})
 	}
 
-	return corrections, nil
-}
-
-func (c *ovhProvider) getDiff1DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, del := range delete {
-		rec := del.Existing.Original.(*Record)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(rec.ID, dc.Name),
-		})
-	}
-
-	for _, cre := range create {
-		rec := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rec, dc.Name),
-		})
-	}
-
-	for _, mod := range modify {
-		oldR := mod.Existing.Original.(*Record)
-		newR := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(oldR, newR, dc.Name),
-		})
-	}
 	return corrections, nil
 }
 

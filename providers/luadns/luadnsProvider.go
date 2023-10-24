@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
@@ -96,6 +95,7 @@ func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	checkNS(dc)
 
@@ -104,33 +104,7 @@ func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, reco
 		return nil, err
 	}
 
-	var corrections []*models.Correction
 	var corrs []*models.Correction
-	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err := differ.IncrementalDiff(records)
-		if err != nil {
-			return nil, err
-		}
-
-		corrections := []*models.Correction{}
-		for _, d := range del {
-			corrs := l.makeDeleteCorrection(d.Existing, domainID, d.String())
-			corrections = append(corrections, corrs...)
-		}
-
-		for _, d := range create {
-			corrs := l.makeCreateCorrection(d.Desired, domainID, d.String())
-			corrections = append(corrections, corrs...)
-		}
-
-		for _, d := range mod {
-			corrs := l.makeChangeCorrection(d.Existing, d.Desired, domainID, d.String())
-			corrections = append(corrections, corrs...)
-		}
-
-		return corrections, nil
-	}
 
 	changes, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -87,6 +86,7 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 
 	// Block changes to NS records for base domain
 	checkNSModifications(dc)
@@ -94,61 +94,6 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
-	}
-
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
-
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		// Deletes first so changing type works etc.
-		for _, m := range del {
-			id := m.Existing.Original.(*domainRecord).ID
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, porkbun ID: %s", m.String(), id),
-				F: func() error {
-					return c.deleteRecord(dc.Name, id)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		for _, m := range create {
-			req, err := toReq(m.Desired)
-			if err != nil {
-				return nil, err
-			}
-
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-					return c.createRecord(dc.Name, req)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		for _, m := range modify {
-			id := m.Existing.Original.(*domainRecord).ID
-			req, err := toReq(m.Desired)
-			if err != nil {
-				return nil, err
-			}
-
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, porkbun ID: %s", m.String(), id),
-				F: func() error {
-					return c.modifyRecord(dc.Name, id, req)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		return corrections, nil
 	}
 
 	changes, err := diff2.ByRecord(existingRecords, dc, nil)

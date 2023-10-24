@@ -50,7 +50,7 @@ only run if they have access to the secrets they will need.
 # How it works
 
 Tests are executed if `*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
-unset, the test is skipped.  
+unset, the test is skipped.
 For example, if a provider is called `FANCYDNS`, there must
 be a secret called `FANCYDNS_DOMAIN`.
 
@@ -79,7 +79,7 @@ The line looks something like:
 
 2. Add your providers `_DOMAIN` env variable:
 
-Add it to the `env` section of `integrtests-diff1` and again in `integrtests-diff2`.
+Add it to the `env` section of `integrtests-diff2`.
 
 For example, the entry for BIND looks like:
 

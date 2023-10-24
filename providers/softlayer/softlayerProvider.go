@@ -8,7 +8,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -82,16 +81,12 @@ func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	var create, deletes, modify diff.Changeset
-	if !diff2.EnableDiff2 {
-		_, create, deletes, modify, err = diff.New(dc).IncrementalDiff(actual)
-	} else {
-		_, create, deletes, modify, err = diff.NewCompat(dc).IncrementalDiff(actual)
-	}
+	toReport, create, deletes, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, del := range deletes {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
