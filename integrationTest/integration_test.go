@@ -1073,29 +1073,20 @@ func makeTests(t *testing.T) []*TestGroup {
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
 
-			//clear(),
-			//tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
-			//clear(),
-			//tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
-			//clear(),
-			//tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
-			//clear(),
-			//tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
-			//clear(),
+			tc("a 0-byte TXT", txt("foo0", "")),
+
+			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
-			//clear(),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
-			//clear(),
 			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
-			//clear(),
 			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
-			//clear(),
 
 			tc("a TXT with interior ws", txt("foosp", "with spaces")),
-			//clear(),
 			tc("TXT with ws at end", txt("foows1", "with space at end ")),
-			//clear(),
 
 			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 			// This was added because Vultr syntax-checks TXT records with SPF contents.
