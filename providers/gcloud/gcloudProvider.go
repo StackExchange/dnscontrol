@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
@@ -303,7 +304,12 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
+				if ck.Type == "TXT" {
+					chunks := txtutil.ToChunks(r.GetTargetField())
+					newRRs.Rrdatas = append(newRRs.Rrdatas, chunks...)
+				} else {
+					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
+				}
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
