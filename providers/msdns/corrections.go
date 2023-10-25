@@ -5,7 +5,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -14,7 +13,6 @@ func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	changes, err := diff2.ByRecord(foundRecords, dc, nil)
 	if err != nil {

@@ -25,7 +25,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/fatih/color"
 	"github.com/miekg/dns"
@@ -409,7 +408,6 @@ func hasNSDeletion(changes diff2.ChangeList) bool {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
 
 	// Ignoring the SOA, others providers don't manage it either.
 	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {

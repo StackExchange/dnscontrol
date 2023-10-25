@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -278,8 +277,6 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err

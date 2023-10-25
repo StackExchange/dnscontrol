@@ -25,7 +25,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -272,7 +271,6 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 	}
 
 	// Normalize
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	PrepDesiredRecords(dc)
 
 	var keysToUpdate map[models.RecordKey][]string

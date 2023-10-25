@@ -10,7 +10,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/digitalocean/godo"
 	"github.com/miekg/dns/dnsutil"
@@ -168,8 +167,6 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]s
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	ctx := context.Background()
 
 	toReport, toCreate, toDelete, toModify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)

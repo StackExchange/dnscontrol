@@ -17,7 +17,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/pquerna/otp/totp"
 )
@@ -190,9 +189,6 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 			prunedRecords = append(prunedRecords, r)
 		}
 	}
-
-	// Normalize
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }

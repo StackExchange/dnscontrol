@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -58,8 +57,6 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(dc.Records)
-
 	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
