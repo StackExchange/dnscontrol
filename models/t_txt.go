@@ -42,21 +42,13 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 		panic("assertion failed: SetTargetTXT called when .Type is not TXT or compatible type")
 	}
 
-	rc.SetTarget(s)
-	return nil
+	return rc.SetTarget(s)
 }
 
 // SetTargetTXTs sets the TXT fields when there are many strings.
 // The individual strings are stored in .TxtStrings, and joined to make .Target.
 func (rc *RecordConfig) SetTargetTXTs(s []string) error {
-	// if rc.Type == "" {
-	// 	rc.Type = "TXT"
-	// } else if !rc.HasFormatIdenticalToTXT() {
-	// 	panic("assertion failed: SetTargetTXTs called when .Type is not TXT or compatible type")
-	// }
-
-	rc.SetTargetTXT(strings.Join(s, ""))
-	return nil
+	return rc.SetTargetTXT(strings.Join(s, ""))
 }
 
 // GetTargetTXTJoined returns the TXT target as one string. If it was stored as multiple strings, concatenate them.
