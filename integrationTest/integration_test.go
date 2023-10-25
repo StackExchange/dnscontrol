@@ -1073,7 +1073,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
 
-			tc("a 0-byte TXT", txt("foo0", "")),
+			// Commented this one out. Nobody supports this or needs it.
+			//tc("a 0-byte TXT", txt("foo0", "")),
 
 			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
