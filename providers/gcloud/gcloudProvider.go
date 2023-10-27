@@ -305,6 +305,9 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
 				if ck.Type == "TXT" {
+					// NB(tlim): These next two lines should not be merged. The
+					// chunks need to be allocated in a way that the memory is
+					// not re-used in the next iteration.
 					chunks := txtutil.ToChunks(r.GetTargetField())
 					newRRs.Rrdatas = append(newRRs.Rrdatas, chunks...)
 				} else {
