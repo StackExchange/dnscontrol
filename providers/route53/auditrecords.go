@@ -14,7 +14,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
 	a.Add("R53_ALIAS", rejectifTargetEqualsLabel) // Last verified 2023-03-01
-	a.Add("TXT", rejectif.TxtIsEmpty)             // Last verified 2023-10-28
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-10-28
 
 	return a.Audit(records)
 }
