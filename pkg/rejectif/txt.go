@@ -50,8 +50,8 @@ func TxtHasSegmentLen256orLonger(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtHasMultipleSegments audits TXT records for multiple strings
-func TxtHasMultipleSegments(rc *models.RecordConfig) error {
+// TxtLongerThan255 audits TXT records for multiple strings
+func TxtLongerThan255(rc *models.RecordConfig) error {
 	if len(rc.GetTargetField()) > 255 {
 		return fmt.Errorf("multiple strings in one txt")
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -340,10 +341,22 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				}
 
 				for _, r := range inst.New {
-					rr := r53Types.ResourceRecord{
-						Value: aws.String(r.GetTargetCombined()),
+
+					var rr r53Types.ResourceRecord
+					if instType == "TXT" {
+						//printer.Printf("DEBUG: txt=%q\n", r.GetTargetField())
+						t := txtutil.RFC1035ChunkedAndQuoted(r.GetTargetField())
+						//printer.Printf("DEBUG:   t=%s\n", t)
+						rr = r53Types.ResourceRecord{
+							Value: aws.String(t),
+						}
+					} else {
+						rr = r53Types.ResourceRecord{
+							Value: aws.String(r.GetTargetCombined()),
+						}
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
+
 					i := int64(r.TTL)
 					rrset.TTL = &i
 				}

@@ -1074,20 +1074,24 @@ func makeTests(t *testing.T) []*TestGroup {
 			// update the AuditRecords().
 
 			// Commented this one out. Nobody supports this or needs it.
-			//tc("a 0-byte TXT", txt("foo0", "")),
+			tc("a 0-byte TXT", txt("foo0", "")),
 
+			tc("a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
-			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
-			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			tc("a 510-byte TXT", txt("foo510", strings.Repeat("E", 510))),
+			tc("a 511-byte TXT", txt("foo511", strings.Repeat("F", 511))),
+			tc("a 765-byte TXT", txt("foo765", strings.Repeat("G", 765))),
+			tc("a 766-byte TXT", txt("foo766", strings.Repeat("H", 766))),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
 			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
 			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
+			tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
 
-			tc("a TXT with interior ws", txt("foosp", "with spaces")),
-			tc("TXT with ws at end", txt("foows1", "with space at end ")),
+			tc("TXT interior ws", txt("foosp", "with spaces")),
+			tc("TXT trailing ws", txt("foows1", "with space at end ")),
 
 			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 			// This was added because Vultr syntax-checks TXT records with SPF contents.
