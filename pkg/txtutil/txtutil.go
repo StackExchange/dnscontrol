@@ -6,6 +6,7 @@ import "github.com/StackExchange/dnscontrol/v4/models"
 // into 255-octet chunks. This is used by providers that, when a user specifies
 // one long TXT string, split it into smaller strings behind the scenes.
 // This should be called from GetZoneRecordsCorrections().
+// Deprecated. Use GetTargetTXTChunked() when you want individual substrings or GetTargetTXTJoined() when you want the entire string.
 func SplitSingleLongTxt(records []*models.RecordConfig) {
 	for _, rc := range records {
 		if rc.HasFormatIdenticalToTXT() {
