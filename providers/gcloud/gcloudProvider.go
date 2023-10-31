@@ -352,14 +352,14 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	chgSet := []correctionValues{}
 	for len(chg.Change.Deletions) > 0 {
 		b := setBatchLen(len(chg.Change.Deletions))
-		chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Deletions: chg.Change.Deletions[:b:b], Kind: "dns#change"}, Msgs: "\n" + strings.Join(chg.Msgs.Deletions[:b:b], "")})
+		chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Deletions: chg.Change.Deletions[:b:b], Kind: "dns#change"}, Msgs: strings.Join(chg.Msgs.Deletions[:b:b], "")})
 		chg.Change.Deletions = chg.Change.Deletions[b:]
 		chg.Msgs.Deletions = chg.Msgs.Deletions[b:]
 	}
 	for i := 0; len(chg.Change.Additions) > 0; i++ {
 		b := setBatchLen(len(chg.Change.Additions))
 		if len(chgSet) == i {
-			chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Additions: chg.Change.Additions[:b:b], Kind: "dns#change"}, Msgs: "\n" + strings.Join(chg.Msgs.Additions[:b:b], "")})
+			chgSet = append(chgSet, correctionValues{Change: &gdns.Change{Additions: chg.Change.Additions[:b:b], Kind: "dns#change"}, Msgs: strings.Join(chg.Msgs.Additions[:b:b], "")})
 		} else {
 			chgSet[i].Change.Additions = chg.Change.Additions[:b:b]
 			chgSet[i].Msgs += strings.Join(chg.Msgs.Additions[:b:b], "")
