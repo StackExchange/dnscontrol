@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 
@@ -137,119 +136,46 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	var deletions []*models.Correction
 	var reports []*models.Correction
 
-	if !diff2.EnableDiff2 {
+	changes, err := diff2.ByRecordSet(existing, dc, nil)
+	if err != nil {
+		return nil, err
+	}
 
-		// diff existing vs. current.
-		differ := diff.New(dc)
-		keysToUpdate, err := differ.ChangedGroups(existing)
-		if err != nil {
-			return nil, err
-		}
-		if len(keysToUpdate) == 0 {
-			return nil, nil
-		}
+	for _, change := range changes {
+		record := recordsToNative(change.New, change.Key)
 
-		desiredRecords := dc.Records.GroupedByKey()
-		existingRecords := existing.GroupedByKey()
+		// Copy all params to avoid overwrites
+		zone := dc.Name
+		name := change.Key.NameFQDN
+		typ := change.Key.Type
+		msg := generateChangeMsg(change.Msgs)
 
-		for label := range keysToUpdate {
-			if _, ok := desiredRecords[label]; !ok {
-				// record deleted in update
-				// Copy all params to avoid overwrites
-				zone := dc.Name
-				name := label.NameFQDN
-				typ := label.Type
-				msg := generateChangeMsg(keysToUpdate[label])
-				deletions = append(deletions, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
-					},
-				})
-
-			} else if _, ok := existingRecords[label]; !ok {
-				// record created in update
-				record := recordsToNative(desiredRecords[label], label)
-				if record == nil {
-					panic("No records matching label")
-				}
-
-				// Copy all params to avoid overwrites
-				zone := dc.Name
-				name := label.NameFQDN
-				typ := label.Type
-				msg := generateChangeMsg(keysToUpdate[label])
-				corrections = append(corrections, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
-					},
-				})
-
-			} else {
-				// record modified in update
-				record := recordsToNative(desiredRecords[label], label)
-				if record == nil {
-					panic("No records matching label")
-				}
-
-				// Copy all params to avoid overwrites
-				zone := dc.Name
-				name := label.NameFQDN
-				typ := label.Type
-				msg := generateChangeMsg(keysToUpdate[label])
-				corrections = append(corrections, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, *record)
-					},
-				})
-			}
-		}
-
-	} else {
-		// Diff2 version
-		changes, err := diff2.ByRecordSet(existing, dc, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, change := range changes {
-			record := recordsToNative(change.New, change.Key)
-
-			// Copy all params to avoid overwrites
-			zone := dc.Name
-			name := change.Key.NameFQDN
-			typ := change.Key.Type
-			msg := generateChangeMsg(change.Msgs)
-
-			switch change.Type {
-			case diff2.REPORT:
-				corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-			case diff2.CREATE:
-				corrections = append(corrections, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
-					},
-				})
-			case diff2.CHANGE:
-				corrections = append(corrections, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, *record)
-					},
-				})
-			case diff2.DELETE:
-				deletions = append(deletions, &models.Correction{
-					Msg: msg,
-					F: func() error {
-						return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
-					},
-				})
-			default:
-				panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
-			}
+		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+		case diff2.CREATE:
+			corrections = append(corrections, &models.Correction{
+				Msg: msg,
+				F: func() error {
+					return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
+				},
+			})
+		case diff2.CHANGE:
+			corrections = append(corrections, &models.Correction{
+				Msg: msg,
+				F: func() error {
+					return c.provider.UpdateRRSet(c.ctx, zone, name, typ, *record)
+				},
+			})
+		case diff2.DELETE:
+			deletions = append(deletions, &models.Correction{
+				Msg: msg,
+				F: func() error {
+					return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
+				},
+			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 

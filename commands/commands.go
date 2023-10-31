@@ -65,14 +65,17 @@ func Run(v string) int {
 			Destination: &js.EnableFetch,
 		},
 		&cli.BoolFlag{
-			Name:        "diff2",
-			Usage:       "Enable replacement diff algorithm",
-			Destination: &diff2.EnableDiff2,
-			Value:       true,
+			Name:   "diff2",
+			Usage:  "Obsolete flag. Will be removed in v5 or later",
+			Hidden: true,
+			Action: func(ctx *cli.Context, v bool) error {
+				obsoleteDiff2FlagUsed = true
+				return nil
+			},
 		},
 		&cli.BoolFlag{
 			Name:        "disableordering",
-			Usage:       "Disables the dns ordering part of the diff2 package",
+			Usage:       "Disables update reordering",
 			Destination: &diff2.DisableOrdering,
 		},
 		&cli.BoolFlag{

@@ -1,14 +1,8 @@
 package diff
 
 import (
-	"fmt"
-	"regexp"
-	"sort"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/fatih/color"
-	"github.com/gobwas/glob"
 )
 
 // Correlation stores a difference between two records.
@@ -24,235 +18,18 @@ type Changeset []Correlation
 // Differ is an interface for computing the difference between two zones.
 type Differ interface {
 	// IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
-	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error)
+	IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, create, toDelete, modify Changeset, err error)
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
-	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
-}
-
-// New is a constructor for a Differ.
-func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
-	return &differ{
-		dc:          dc,
-		extraValues: extraValues,
-
-		// compile IGNORE_NAME glob patterns
-		compiledIgnoredNames: compileIgnoredNames(dc.IgnoredNames),
-
-		// compile IGNORE_TARGET glob patterns
-		compiledIgnoredTargets: compileIgnoredTargets(dc.IgnoredTargets),
-	}
-}
-
-// An ignoredName must match both the name glob and one of the recordTypes in rTypes. If rTypes is empty, any
-// record type will match.
-type ignoredName struct {
-	nameGlob glob.Glob
-	rTypes   []string
+	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, error)
 }
 
 type differ struct {
-	dc          *models.DomainConfig
-	extraValues []func(*models.RecordConfig) map[string]string
-
-	compiledIgnoredNames   []ignoredName
-	compiledIgnoredTargets []glob.Glob
 }
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-
-	// get the extra values maps to add to the comparison.
-	var allMaps []map[string]string
-	for _, f := range d.extraValues {
-		valueMap := f(r)
-		allMaps = append(allMaps, valueMap)
-	}
-
-	return r.ToDiffable(allMaps...)
-}
-
-func apexException(rec *models.RecordConfig) bool {
-	// Providers often add NS and SOA records at the apex. These
-	// should not be included in certain checks.
-	return (rec.Type == "NS" || rec.Type == "SOA") && rec.GetLabel() == "@"
-}
-
-func ignoreNameException(rec *models.RecordConfig) bool {
-	// People wanted it to be possible to disable this safety check.
-	// Ok, here it is.  You now have two risks:
-	// 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
-	// 2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.
-	//fmt.Printf("********** DEBUG IGNORE %v %v %q\n", rec.GetLabel(), rec.Type, rec.Metadata["ignore_name_disable_safety_check"])
-	// See https://github.com/StackExchange/dnscontrol/issues/1106
-	_, ok := rec.Metadata["ignore_name_disable_safety_check"]
-	return ok
-}
-
-func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
-	unchanged = Changeset{}
-	create = Changeset{}
-	toDelete = Changeset{}
-	modify = Changeset{}
-	desired := d.dc.Records
-
-	//fmt.Printf("********** DEBUG: STARTING IncrementalDiff\n")
-
-	// sort existing and desired by name
-
-	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
-	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
-
-	//fmt.Printf("********** DEBUG: existing list %+v\n", existing)
-
-	// Gather the existing records. Skip over any that should be ignored.
-	for _, e := range existing {
-		//fmt.Printf("********** DEBUG: existing %v %v %v\n", e.GetLabel(), e.Type, e.GetTargetCombined())
-		if d.matchIgnoredName(e.GetLabel(), e.Type) {
-			//fmt.Printf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
-			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
-		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
-			//fmt.Printf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
-			printer.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
-		} else {
-			k := e.Key()
-			existingByNameAndType[k] = append(existingByNameAndType[k], e)
-		}
-	}
-
-	// Review the desired records. If we're modifying one that should be ignored, that's an error.
-	//fmt.Printf("********** DEBUG: desired list %+v\n", desired)
-	for _, dr := range desired {
-		//fmt.Printf("********** DEBUG: desired %v %v %v -- %v %v\n", dr.GetLabel(), dr.Type, dr.GetTargetCombined(), apexException(dr), d.matchIgnoredName(dr.GetLabel()))
-		if d.matchIgnoredName(dr.GetLabel(), dr.Type) {
-			//if !apexException(dr) || !ignoreNameException(dr) {
-			if (!ignoreNameException(dr)) && (!apexException(dr)) {
-				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
-				//} else {
-				//	fmt.Printf("********** DEBUG: desired EXCEPTION\n")
-			}
-		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
-			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
-		} else {
-			k := dr.Key()
-			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
-		}
-	}
-	// if NO_PURGE is set, just remove anything that is only in existing.
-	if d.dc.KeepUnknown {
-		for k := range existingByNameAndType {
-			if _, ok := desiredByNameAndType[k]; !ok {
-				printer.Debugf("Ignoring record set %s %s due to NO_PURGE\n", k.Type, k.NameFQDN)
-				delete(existingByNameAndType, k)
-			}
-		}
-	}
-	// Look through existing records. This will give us changes and deletions and some additions.
-	// Each iteration is only for a single type/name record set
-	for key, existingRecords := range existingByNameAndType {
-		desiredRecords := desiredByNameAndType[key]
-
-		// Very first, get rid of any identical records. Easy.
-		for i := len(existingRecords) - 1; i >= 0; i-- {
-			ex := existingRecords[i]
-			for j, de := range desiredRecords {
-				if d.content(de) != d.content(ex) {
-					continue
-				}
-				unchanged = append(unchanged, Correlation{d, ex, de})
-				existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
-				desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
-				break
-			}
-		}
-
-		// Next, match by target. This will give the most natural modifications.
-		for i := len(existingRecords) - 1; i >= 0; i-- {
-			ex := existingRecords[i]
-			for j, de := range desiredRecords {
-				if de.GetTargetField() == ex.GetTargetField() {
-					// two records share a target, but different content (ttl or metadata changes)
-					modify = append(modify, Correlation{d, ex, de})
-					// remove from both slices by index
-					existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
-					desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
-					break
-				}
-			}
-		}
-
-		desiredLookup := map[string]*models.RecordConfig{}
-		existingLookup := map[string]*models.RecordConfig{}
-		// build index based on normalized content data
-		for _, ex := range existingRecords {
-			normalized := d.content(ex)
-			//fmt.Printf("DEBUG: normalized: %v\n", normalized)
-			// NB(tlim): Commenting this out. If the provider is returning
-			// records that are exact duplicates, that's bad and against the
-			// RFCs. However, we shouldn't error out. Instead, we should
-			// continue so that we can delete them.  Experience shows one
-			// record will be deleted per iteration but at least the problem
-			// will fix itself that way. Erroring out means it will require
-			// manually fixing (going to the control panel, deleting
-			// individual records, etc.)
-			//if existingLookup[normalized] != nil {
-			//	return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
-			//}
-			existingLookup[normalized] = ex
-		}
-		for _, de := range desiredRecords {
-			normalized := d.content(de)
-			if desiredLookup[normalized] != nil {
-				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE D_RECORD FOUND: %s %s", key, normalized)
-			}
-			desiredLookup[normalized] = de
-		}
-		// if a record is in both, it is unchanged
-		for norm, ex := range existingLookup {
-			if de, ok := desiredLookup[norm]; ok {
-				unchanged = append(unchanged, Correlation{d, ex, de})
-				delete(existingLookup, norm)
-				delete(desiredLookup, norm)
-			}
-		}
-		// sort records by normalized text. Keeps behaviour deterministic
-		existingStrings, desiredStrings := sortedKeys(existingLookup), sortedKeys(desiredLookup)
-		// Modifications. Take 1 from each side.
-		for len(desiredStrings) > 0 && len(existingStrings) > 0 {
-			modify = append(modify, Correlation{d, existingLookup[existingStrings[0]], desiredLookup[desiredStrings[0]]})
-			existingStrings = existingStrings[1:]
-			desiredStrings = desiredStrings[1:]
-		}
-		// If desired still has things they are additions
-		for _, norm := range desiredStrings {
-			rec := desiredLookup[norm]
-			create = append(create, Correlation{d, nil, rec})
-		}
-		// if found, but not desired, delete it
-		for _, norm := range existingStrings {
-			rec := existingLookup[norm]
-			toDelete = append(toDelete, Correlation{d, rec, nil})
-		}
-		// remove this set from the desired list to indicate we have processed it.
-		delete(desiredByNameAndType, key)
-	}
-
-	// any name/type sets not already processed are pure additions
-	for name := range existingByNameAndType {
-		delete(desiredByNameAndType, name)
-	}
-	for _, desiredList := range desiredByNameAndType {
-		for _, rec := range desiredList {
-			create = append(create, Correlation{d, nil, rec})
-		}
-	}
-
-	// Sort the lists. This is purely cosmetic.
-	sort.Slice(unchanged, func(i, j int) bool { return ChangesetLess(unchanged, i, j) })
-	sort.Slice(create, func(i, j int) bool { return ChangesetLess(create, i, j) })
-	sort.Slice(toDelete, func(i, j int) bool { return ChangesetLess(toDelete, i, j) })
-
-	return
+	return r.ToDiffable()
 }
 
 // ChangesetLess returns true if c[i] < c[j].
@@ -291,50 +68,6 @@ func CorrectionLess(c []*models.Correction, i, j int) bool {
 	return c[i].Msg < c[j].Msg
 }
 
-func (d *differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
-	changedKeys := map[models.RecordKey][]string{}
-	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
-	if err != nil {
-		return nil, err
-	}
-	for _, c := range create {
-		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
-	}
-	for _, d := range toDelete {
-		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
-	}
-	for _, m := range modify {
-		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
-	}
-	return changedKeys, nil
-}
-
-// DebugKeyMapMap debug prints the results from ChangedGroups.
-func DebugKeyMapMap(note string, m map[models.RecordKey][]string) {
-	// The output isn't pretty but it is useful.
-	fmt.Println("DEBUG:", note)
-
-	// Extract the keys
-	var keys []models.RecordKey
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.SliceStable(keys, func(i, j int) bool {
-		if keys[i].NameFQDN == keys[j].NameFQDN {
-			return keys[i].Type < keys[j].Type
-		}
-		return keys[i].NameFQDN < keys[j].NameFQDN
-	})
-
-	// Pretty print the map:
-	for _, k := range keys {
-		fmt.Printf("   %v %v:\n", k.Type, k.NameFQDN)
-		for _, s := range m[k] {
-			fmt.Printf("      -- %q\n", s)
-		}
-	}
-}
-
 func (c Correlation) String() string {
 	if c.Existing == nil {
 		return color.GreenString("+ CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
@@ -343,86 +76,4 @@ func (c Correlation) String() string {
 		return color.RedString("- DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
 	}
 	return color.YellowString("± MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
-}
-
-func sortedKeys(m map[string]*models.RecordConfig) []string {
-	s := []string{}
-	for v := range m {
-		s = append(s, v)
-	}
-	sort.Strings(s)
-	return s
-}
-
-var spaceCommaTokenizerRegexp = regexp.MustCompile(`\s*,\s*`)
-
-func compileIgnoredNames(ignoredNames []*models.IgnoreName) []ignoredName {
-	result := make([]ignoredName, 0, len(ignoredNames))
-
-	for _, tst := range ignoredNames {
-		g, err := glob.Compile(tst.Pattern, '.')
-		if err != nil {
-			panic(fmt.Sprintf("Failed to compile IGNORE_NAME pattern %q: %v", tst.Pattern, err))
-		}
-
-		t := []string{}
-		if tst.Types != "" {
-			t = spaceCommaTokenizerRegexp.Split(tst.Types, -1)
-		}
-
-		result = append(result, ignoredName{nameGlob: g, rTypes: t})
-	}
-
-	return result
-}
-
-func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
-	result := make([]glob.Glob, 0, len(ignoredTargets))
-
-	for _, tst := range ignoredTargets {
-		if tst.Type != "CNAME" {
-			panic(fmt.Sprintf("Invalid rType for IGNORE_TARGET %v", tst.Type))
-		}
-
-		g, err := glob.Compile(tst.Pattern, '.')
-		if err != nil {
-			panic(fmt.Sprintf("Failed to compile IGNORE_TARGET pattern %q: %v", tst, err))
-		}
-
-		result = append(result, g)
-	}
-
-	return result
-}
-
-func (d *differ) matchIgnoredName(name string, rType string) bool {
-	for _, tst := range d.compiledIgnoredNames {
-		//fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v %v\n", name, rType, tst, tst.nameGlob.Match(name))
-		if tst.nameGlob.Match(name) {
-			if tst.rTypes == nil {
-				return true
-			}
-
-			for _, rt := range tst.rTypes {
-				if rt == "*" || rt == rType {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func (d *differ) matchIgnoredTarget(target string, rType string) bool {
-	if rType != "CNAME" {
-		return false
-	}
-
-	for _, tst := range d.compiledIgnoredTargets {
-		if tst.Match(target) {
-			return true
-		}
-	}
-
-	return false
 }

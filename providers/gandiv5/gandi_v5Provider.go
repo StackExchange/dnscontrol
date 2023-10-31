@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -193,123 +192,13 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
 	if client.debug {
 		debugRecords("GenDC input", existing)
 	}
 
 	PrepDesiredRecords(dc)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
-
-		// diff existing vs. current.
-		differ := diff.New(dc)
-		keysToUpdate, err := differ.ChangedGroups(existing)
-		if err != nil {
-			return nil, err
-		}
-		if client.debug {
-			diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
-		}
-		if len(keysToUpdate) == 0 {
-			return nil, nil
-		}
-
-		// Regroup data by FQDN.  ChangedGroups returns data grouped by label:RType tuples.
-		affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
-		_, desiredRecords := dc.Records.GroupedByFQDN()
-		doesLabelExist := existing.FQDNMap()
-
-		g := gandi.NewLiveDNSClient(config.Config{
-			APIKey:    client.apikey,
-			SharingID: client.sharingid,
-			Debug:     client.debug,
-		})
-
-		// For any key with an update, delete or replace those records.
-		for label := range affectedLabels {
-			if len(desiredRecords[label]) == 0 {
-				// No records matching this key?  This can only mean that all
-				// the records were deleted. Delete them.
-
-				msgs := strings.Join(msgsForLabel[label], "\n")
-				domain := dc.Name
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: msgs,
-						F: func() error {
-							err := g.DeleteDomainRecordsByName(domain, shortname)
-							if err != nil {
-								return err
-							}
-							return nil
-						},
-					})
-
-			} else {
-				// Replace all the records at a label with our new records.
-
-				// Generate the new data in Gandi's format.
-				ns := recordsToNative(desiredRecords[label], dc.Name)
-
-				if doesLabelExist[label] {
-					// Records exist for this label. Replace them with what we have.
-
-					msg := strings.Join(msgsForLabel[label], "\n")
-					domain := dc.Name
-					shortname := dnsutil.TrimDomainName(label, dc.Name)
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
-								if err != nil {
-									return fmt.Errorf("%+v: %w", res, err)
-								}
-								return nil
-							},
-						})
-
-				} else {
-					// First time putting data on this label. Create it.
-
-					// We have to create the label one rtype at a time.
-					ns := recordsToNative(desiredRecords[label], dc.Name)
-					for _, n := range ns {
-						msg := strings.Join(msgsForLabel[label], "\n")
-						domain := dc.Name
-						shortname := dnsutil.TrimDomainName(label, dc.Name)
-						rtype := n.RrsetType
-						ttl := n.RrsetTTL
-						values := n.RrsetValues
-						corrections = append(corrections,
-							&models.Correction{
-								Msg: msg,
-								F: func() error {
-									res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
-									if err != nil {
-										return fmt.Errorf("%+v: %w", res, err)
-									}
-									return nil
-								},
-							})
-					}
-				}
-			}
-		}
-
-		// NB(tlim): This sort is just to make updates look pretty. It is
-		// cosmetic.  The risk here is that there may be some updates that
-		// require a specific order (for example a delete before an add).
-		// However the code doesn't seem to have such situation.  All tests
-		// pass.  That said, if this breaks anything, the easiest fix might
-		// be to just remove the sort.
-		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
-
-		return corrections, nil
-	}
 
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,
@@ -406,19 +295,6 @@ func debugRecords(note string, recs []*models.RecordConfig) {
 	for k, v := range recs {
 		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}
-}
-
-// gatherAffectedLabels takes the output of diff.ChangedGroups and
-// regroups it by FQDN of the label, not by Key. It also returns
-// a list of all the FQDNs.
-func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[string]bool, msgs map[string][]string) {
-	labels = map[string]bool{}
-	msgs = map[string][]string{}
-	for k, v := range groups {
-		labels[k.NameFQDN] = true
-		msgs[k.NameFQDN] = append(msgs[k.NameFQDN], v...)
-	}
-	return labels, msgs
 }
 
 // Section 3: Registrar-related functions

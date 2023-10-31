@@ -92,14 +92,12 @@ func (c ConsolePrinter) PrintCorrection(i int, correction *models.Correction) {
 
 // PrintReport is called to print/format each non-mutating correction (diff2.REPORT).
 func (c ConsolePrinter) PrintReport(i int, correction *models.Correction) {
-	// When diff1 is eliminated:
-	//fmt.Fprintf(c.Writer, "INFO#%d: %s\n", i+1, correction.Msg)
-	fmt.Fprintf(c.Writer, "INFO: %s\n", correction.Msg)
+	fmt.Fprintf(c.Writer, "INFO#%d: %s\n", i+1, correction.Msg)
 }
 
 // PromptToRun prompts the user to see if they want to execute a correction.
 func (c ConsolePrinter) PromptToRun() bool {
-	fmt.Fprint(c.Writer, "Run? (Y/n): ")
+	fmt.Fprint(c.Writer, "Run? (y/N): ")
 	txt, err := c.Reader.ReadString('\n')
 	run := true
 	if err != nil {

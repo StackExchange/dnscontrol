@@ -11,7 +11,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
@@ -135,9 +134,8 @@ func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	var err error
 	if api.domainIndex == nil {
-		if err = api.fetchDomainList(); err != nil {
+		if err := api.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}
@@ -146,17 +144,12 @@ func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
-	var corrections []*models.Correction
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {

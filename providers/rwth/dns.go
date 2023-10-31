@@ -5,7 +5,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
@@ -35,17 +34,12 @@ func (api *rwthProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	domain := dc.Name
 
-	var corrections []*models.Correction
-	var differ diff.Differ
-	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
-	} else {
-		differ = diff.NewCompat(dc)
-	}
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
+	// Start corrections with the reports
+	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, d := range create {
 		des := d.Desired

@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -197,145 +196,8 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 {
 
-		records := a.rawRecords[dc.Name]
-		zoneName := a.zoneName[dc.Name]
-
-		differ := diff.New(dc)
-		namesToUpdate, err := differ.ChangedGroups(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(namesToUpdate) == 0 {
-			return nil, nil
-		}
-
-		updates := map[models.RecordKey][]*models.RecordConfig{}
-
-		for k := range namesToUpdate {
-			updates[k] = nil
-			for _, rc := range dc.Records {
-				if rc.Key() == k {
-					updates[k] = append(updates[k], rc)
-				}
-			}
-		}
-
-		for k, recs := range updates {
-			if len(recs) == 0 {
-				var rrset *adns.RecordSet
-				for _, r := range records {
-					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN {
-						n1, err := nativeToRecordType(r.Type)
-						if err != nil {
-							return nil, err
-						}
-						n2, err := nativeToRecordType(to.StringPtr(k.Type))
-						if err != nil {
-							return nil, err
-						}
-						if n1 == n2 {
-							rrset = r
-							break
-						}
-					}
-				}
-				if rrset != nil {
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: strings.Join(namesToUpdate[k], "\n"),
-							F: func() error {
-								ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-								defer cancel()
-								rt, err := nativeToRecordType(rrset.Type)
-								if err != nil {
-									return err
-								}
-								//fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
-								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
-								if err != nil {
-									return err
-								}
-								return nil
-							},
-						})
-				} else {
-					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
-				}
-			} else {
-				rrset, recordType, err := a.recordToNative(k, recs)
-				if err != nil {
-					return nil, err
-				}
-				var recordName string
-				for _, r := range recs {
-					i := int64(r.TTL)
-					rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
-					recordName = r.Name
-				}
-
-				for _, r := range records {
-					existingRecordType, err := nativeToRecordType(r.Type)
-					if err != nil {
-						return nil, err
-					}
-					changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
-					if err != nil {
-						return nil, err
-					}
-					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.RecordTypeCNAME || existingRecordType == adns.RecordTypeCNAME) {
-						if existingRecordType == adns.RecordTypeA || existingRecordType == adns.RecordTypeAAAA || changedRecordType == adns.RecordTypeA || changedRecordType == adns.RecordTypeAAAA { //CNAME cannot coexist with an A or AA
-							corrections = append(corrections,
-								&models.Correction{
-									Msg: strings.Join(namesToUpdate[k], "\n"),
-									F: func() error {
-										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-										defer cancel()
-										//fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
-										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
-										if err != nil {
-											return err
-										}
-										return nil
-									},
-								})
-						}
-					}
-				}
-
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: strings.Join(namesToUpdate[k], "\n"),
-						F: func() error {
-							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-							defer cancel()
-							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
-							if err != nil {
-								return err
-							}
-							return nil
-						},
-					})
-			}
-		}
-
-		// Sort the records for cosmetic reasons: It just makes a long list
-		// of deletes or adds easier to read if they are in sorted order.
-		// That said, it may be risky to sort them (sort key is the text
-		// message "Msg") if there are deletes that must happen before adds.
-		// Reading the above code it isn't clear that any of the updates are
-		// order-dependent.  That said, all the tests pass.
-		// If in the future this causes a bug, we can either just remove
-		// this next line, or (even better) put any order-dependent
-		// operations in a single models.Correction{}.
-		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
-
-		return corrections, nil
-	}
-
-	// Azure is a "ByRSet" API.
+	// Azure is a "ByRecordSet" API.
 
 	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
@@ -364,7 +226,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					//return a.recordDelete(dc.Name, change.Key, change.Old)
 					return a.recordDelete(dcn, chaKey, change.Old)
 				},
 			})
@@ -391,9 +252,25 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	}
 	rrset.Properties.TTL = &i
 
+	waitTime := 1
+retry:
+
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
+
+	if e, ok := err.(*azcore.ResponseError); ok {
+		if e.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		}
+	}
+
 	return err
 }
 
@@ -409,39 +286,26 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 		return nil
 	}
 
+	waitTime := 1
+retry:
+
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
-	return err
-}
 
-func nativeToRecordType(recordType *string) (adns.RecordType, error) {
-	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
-	switch recordTypeStripped {
-	case "A", "AZURE_ALIAS_A":
-		return adns.RecordTypeA, nil
-	case "AAAA", "AZURE_ALIAS_AAAA":
-		return adns.RecordTypeAAAA, nil
-	case "CAA":
-		return adns.RecordTypeCAA, nil
-	case "CNAME", "AZURE_ALIAS_CNAME":
-		return adns.RecordTypeCNAME, nil
-	case "MX":
-		return adns.RecordTypeMX, nil
-	case "NS":
-		return adns.RecordTypeNS, nil
-	case "PTR":
-		return adns.RecordTypePTR, nil
-	case "SRV":
-		return adns.RecordTypeSRV, nil
-	case "TXT":
-		return adns.RecordTypeTXT, nil
-	case "SOA":
-		return adns.RecordTypeSOA, nil
-	default:
-		// Unimplemented type. Return adns.A as a decoy, but send an error.
-		return adns.RecordTypeA, fmt.Errorf("nativeToRecordType rtype %v unimplemented", *recordType)
+	if e, ok := err.(*azcore.ResponseError); ok {
+		if e.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		}
 	}
+
+	return err
 }
 
 func nativeToRecordTypeDiff2(recordType *string) (adns.RecordType, error) {
@@ -622,74 +486,6 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	return results
 }
 
-func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
-	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), Properties: &adns.RecordSetProperties{}}
-	for _, rec := range recordConfig {
-		switch recordKey.Type {
-		case "A":
-			if recordSet.Properties.ARecords == nil {
-				recordSet.Properties.ARecords = []*adns.ARecord{}
-			}
-			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
-		case "AAAA":
-			if recordSet.Properties.AaaaRecords == nil {
-				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
-			}
-			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
-		case "CNAME":
-			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
-		case "NS":
-			if recordSet.Properties.NsRecords == nil {
-				recordSet.Properties.NsRecords = []*adns.NsRecord{}
-			}
-			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
-		case "PTR":
-			if recordSet.Properties.PtrRecords == nil {
-				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
-			}
-			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
-		case "TXT":
-			if recordSet.Properties.TxtRecords == nil {
-				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
-			}
-			// Empty TXT record needs to have no value set in it's properties
-			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
-				var txts []*string
-				for _, txt := range rec.TxtStrings {
-					txts = append(txts, to.StringPtr(txt))
-				}
-				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
-			}
-		case "MX":
-			if recordSet.Properties.MxRecords == nil {
-				recordSet.Properties.MxRecords = []*adns.MxRecord{}
-			}
-			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
-		case "SRV":
-			if recordSet.Properties.SrvRecords == nil {
-				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
-			}
-			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
-		case "CAA":
-			if recordSet.Properties.CaaRecords == nil {
-				recordSet.Properties.CaaRecords = []*adns.CaaRecord{}
-			}
-			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
-		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
-			*recordSet.Type = rec.AzureAlias["type"]
-			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
-		default:
-			return nil, adns.RecordTypeA, fmt.Errorf("recordToNative rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
-		}
-	}
-
-	rt, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
-	if err != nil {
-		return nil, adns.RecordTypeA, err // adns.A is a placeholder
-	}
-	return recordSet, rt, nil
-}
-
 // NOTE recordToNativeDiff2 is really "convert []RecordConfig to rrset".
 
 func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
@@ -780,10 +576,28 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	recordsPager := a.recordsClient.NewListAllByDNSZonePager(*a.resourceGroup, zoneName, nil)
 
 	for recordsPager.More() {
+
+		waitTime := 1
+	retry:
+
 		nextResult, recordsErr := recordsPager.NextPage(ctx)
+
 		if recordsErr != nil {
-			return nil, recordsErr
+			err := recordsErr
+			if e, ok := err.(*azcore.ResponseError); ok {
+
+				if e.StatusCode == 429 {
+					waitTime = waitTime * 2
+					if waitTime > 300 {
+						return nil, err
+					}
+					printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+					time.Sleep(time.Duration(waitTime+1) * time.Second)
+					goto retry
+				}
+			}
 		}
+
 		records = append(records, nextResult.Value...)
 	}
 
