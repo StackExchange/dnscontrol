@@ -106,7 +106,7 @@
     * [CSC Global](providers/cscglobal.md)
     * [deSEC](providers/desec.md)
     * [DigitalOcean](providers/digitalocean.md)
-    * [DNS Made Simple](providers/dnsmadeeasy.md)
+    * [DNS Made Easy](providers/dnsmadeeasy.md)
     * [DNSimple](providers/dnsimple.md)
     * [DNS-over-HTTPS](providers/dnsoverhttps.md)
     * [DOMAINNAMESHOP](providers/domainnameshop.md)
