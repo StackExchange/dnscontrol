@@ -207,7 +207,7 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 	return req, nil
 }
 
-// DNS Made Simple only allows 150 request / 5 minutes
+// DNS Made Easy only allows 150 request / 5 minutes
 // backoff is the amount of time to sleep if a "Rate limit exceeded" error is received
 // It is increased up to maxBackoff after each use
 // It is reset after successful request
