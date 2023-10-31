@@ -97,7 +97,7 @@ func (c ConsolePrinter) PrintReport(i int, correction *models.Correction) {
 
 // PromptToRun prompts the user to see if they want to execute a correction.
 func (c ConsolePrinter) PromptToRun() bool {
-	fmt.Fprint(c.Writer, "Run? (Y/n): ")
+	fmt.Fprint(c.Writer, "Run? (y/N): ")
 	txt, err := c.Reader.ReadString('\n')
 	run := true
 	if err != nil {
