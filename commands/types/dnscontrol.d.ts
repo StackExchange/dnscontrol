@@ -822,7 +822,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere_auto
  */
-declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: string, dnsProvider: string): void;
+declare function DOMAIN_ELSEWHERE_AUTO(name: string, registrar: string, dnsProvider: string): void;
 
 /**
  * DS adds a DS record to the domain.
