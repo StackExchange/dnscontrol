@@ -48,7 +48,7 @@ const stateRegistered = "registered"
 
 var defaultNameServerNames = []string{
 	"ns1.dnsimple.com",
-	"ns2.dnsimple.com",
+	"ns2.dnsimple-edge.net",
 	"ns3.dnsimple.com",
 	"ns4.dnsimple-edge.org",
 }
@@ -533,7 +533,6 @@ func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) f
 		}
 
 		return nil
-
 	}
 }
 
