@@ -308,9 +308,13 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 					// NB(tlim): These next two lines should not be merged. The
 					// chunks need to be allocated in a way that the memory is
 					// not re-used in the next iteration.
-					chunks := txtutil.ToChunks(r.GetTargetField())
-					printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
-					newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
+					//chunks := txtutil.ToChunks(r.GetTargetField())
+					//printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
+					//newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
+					t := r.GetTargetField()
+					tc := txtutil.RFC1035ChunkedAndQuoted(t)
+					printer.Printf("DEBUG: gcloud txt chunks=%q\n", tc)
+					newRRs.Rrdatas = append(newRRs.Rrdatas, tc)
 				} else {
 					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
 				}
@@ -413,6 +417,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	var err error
 	switch rtype {
 	case "TXT":
+		printer.Printf("DEBUG: gcloud nativeToRecord txt=%q\n", rec)
 		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
 	default:
 		err = r.PopulateFromString(rtype, rec, origin)
