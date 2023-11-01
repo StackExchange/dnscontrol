@@ -109,9 +109,3 @@ D("example.com", REG_INWX, DnsProvider(DSP_CF),
 );
 ```
 {% endcode %}
-
-{% hint style="info" %}
-**NOTE**: The INWX provider implementation currently only supports up to 2,147,483,647 domains. If you exceed
-this limit, it is expected that DNSControl will fail to recognize some domains. Should you exceed this
-limit, please [open an issue on GitHub](https://github.com/StackExchange/dnscontrol/issues/new/choose).
-{% endhint %}
