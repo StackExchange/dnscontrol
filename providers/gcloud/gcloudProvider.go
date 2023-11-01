@@ -310,7 +310,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 					// not re-used in the next iteration.
 					chunks := txtutil.ToChunks(r.GetTargetField())
 					printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
-					newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[:]...)
+					newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
 				} else {
 					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
 				}

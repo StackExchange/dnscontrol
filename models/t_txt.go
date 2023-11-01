@@ -54,7 +54,7 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 // GetTargetTXTJoined returns the TXT target as one string. If it was stored as multiple strings, concatenate them.
 // Deprecated: GetTargetTXTJoined is deprecated. Use GetTargetField()
 func (rc *RecordConfig) GetTargetTXTJoined() string {
-	return rc.GetTargetField()
+	return rc.target
 }
 
 // SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
