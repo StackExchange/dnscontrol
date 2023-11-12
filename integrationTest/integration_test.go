@@ -1074,7 +1074,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// update the AuditRecords().
 
 			// Commented this one out. Nobody supports this or needs it.
-			//tc("a 0-byte TXT", txt("foo0", "")),
+			tc("a 0-byte TXT", txt("foo0", "")),
 
 			tc("a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
@@ -1098,7 +1098,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//clear(),
 
 			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
-			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 			//clear(),
 		),
 

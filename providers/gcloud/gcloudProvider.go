@@ -12,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
@@ -311,9 +310,11 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 					//chunks := txtutil.ToChunks(r.GetTargetField())
 					//printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
 					//newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
-					t := r.GetTargetField()
-					tc := txtutil.RFC1035ChunkedAndQuoted(t)
-					printer.Printf("DEBUG: gcloud txt chunks=%q\n", tc)
+					t := r.GetTargetTXTChunked255()
+					printer.Printf("DEBUG: gcloud outboundv=%v\n", t)
+					//tc := txtutil.RFC1035ChunkedAndQuoted(t)
+					tc := txtEncode(t)
+					printer.Printf("DEBUG: gcloud  encodedv=%v\n", tc)
 					newRRs.Rrdatas = append(newRRs.Rrdatas, tc)
 				} else {
 					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
@@ -417,8 +418,17 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	var err error
 	switch rtype {
 	case "TXT":
-		printer.Printf("DEBUG: gcloud nativeToRecord txt=%q\n", rec)
-		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
+		//t := r
+		//te := models.ParseQuotedTxt(rec)
+		t := rec
+		td, err := txtDecode(t)
+		if err != nil {
+			return nil, fmt.Errorf("gcloud TXT parse error: %w", err)
+		}
+		printer.Printf("DEBUG: gcloud txt  inboundv=%v\n", t)
+		printer.Printf("DEBUG: gcloud txt  decodedv=%v\n", td)
+		err = r.SetTargetTXT(td)
+		//err = r.SetTargetTXTs(te)
 	default:
 		err = r.PopulateFromString(rtype, rec, origin)
 	}
