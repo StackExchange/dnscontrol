@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -314,13 +316,18 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // ToDiffable returns a string that is comparable by a differ.
 // extraMaps: a list of maps that should be included in the comparison.
 // NB(tlim): This will be deprecated when pkg/diff is replaced by pkg/diff2.
-// Use // ToComparableNoTTL() instead.
+// Use ToComparableNoTTL() instead.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	var content string
 	switch rc.Type {
 	case "SOA":
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
+	case "TXT":
+		fmt.Fprintf(os.Stdout, "DEBUG: XXXXXXXXXXXXXXXX\n")
+		t := rc.GetTargetField()
+		te := txtutil.EncodeQuoted(t)
+		content = fmt.Sprintf("%v ttl=%d", te, rc.TTL)
 	default:
 		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
 	}
@@ -352,6 +359,10 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // pseudo-records like ANAME or R53_ALIAS
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if rc.Type == "TXT" {
+		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL txts=%s q=%q\n", rc.target, rc.target)
+		return txtutil.EncodeQuoted(rc.target)
+	}
 	return rc.GetTargetCombined()
 }
 

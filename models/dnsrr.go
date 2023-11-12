@@ -4,6 +4,7 @@ package models
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -97,6 +98,7 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	case *dns.TLSA:
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
+		fmt.Fprintf(os.Stdout, "DEBUG: RRtoRC TXT inboundv=%v\n", v.Txt)
 		err = rc.SetTargetTXTs(v.Txt)
 	default:
 		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)", rc.Type, rr)

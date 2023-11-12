@@ -1,6 +1,6 @@
 //go:generate stringer -type=State
 
-package gcloud
+package txtutil
 
 import (
 	"bytes"
@@ -18,6 +18,14 @@ const (
 	StateWantSpace                     // expect space after closing quote
 	StateWantSpaceOrQuote              // expect open quote after `" `
 )
+
+func ParseQuoted(s string) (string, error) {
+	return txtDecode(s)
+}
+
+func EncodeQuoted(t string) string {
+	return txtEncode(ToChunks(t))
+}
 
 func isRemaining(s string, i, r int) bool {
 	return (len(s) - 1 - i) > r

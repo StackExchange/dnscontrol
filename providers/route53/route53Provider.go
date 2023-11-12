@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -356,7 +357,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 						// t := `"` + strings.Join(ts, `" "`) + `"`
 						// printer.Printf("DEBUG: txt outboundv=%v\n", t)
 
-						t := txtEncode(r.GetTargetTXTChunked255())
+						t := txtutil.EncodeQuoted(r.GetTargetField())
 						//printer.Printf("XXXXXXXXX %v\n", t)
 
 						rr = r53Types.ResourceRecord{
@@ -523,7 +524,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 					//err = rc.SetTargetTXTs(dt)
 
 					var t string
-					t, err = txtDecode(val)
+					t, err = txtutil.ParseQuoted(val)
 					if err == nil {
 						err = rc.SetTargetTXT(t)
 					}
