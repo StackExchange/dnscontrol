@@ -172,7 +172,7 @@ func GetZone(args GetZoneArgs) error {
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
-			return fmt.Errorf("provider type %s:%s cannot list zones to use the \"all\" feature", args.CredName, args.ProviderName)
+			return fmt.Errorf("provider type %s:%s cannot list zones to use the 'all' feature", args.CredName, args.ProviderName)
 		}
 		zones, err = lister.ListZones()
 		if err != nil {
@@ -351,7 +351,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "TLSA":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
-		target = jsonQuoted(rec.GetTargetField())
+		target = jsonQuoted(rec.GetTargetTXTJoined())
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
