@@ -31,7 +31,7 @@ func isRemaining(s string, i, r int) bool {
 	return (len(s) - 1 - i) > r
 }
 
-// txtDecode decodes TXT strings received from ROUTE53.
+// txtDecode decodes TXT strings received from ROUTE53 and GCLOUD.
 func txtDecode(s string) (string, error) {
 	// Parse according to RFC1035 zonefile specifications.
 	// "foo"  -> one string: `foo``
@@ -111,7 +111,7 @@ func txtDecode(s string) (string, error) {
 	return r, nil
 }
 
-// txtEncode encodes TXT strings as expected by ROUTE53.
+// txtEncode encodes TXT strings as expected by ROUTE53 and GCLOUD.
 func txtEncode(ts []string) string {
 	//printer.Printf("DEBUG: route53 txt outboundv=%v\n", ts)
 
