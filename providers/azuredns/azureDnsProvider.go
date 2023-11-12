@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -523,10 +522,9 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			tt := rec.GetTargetField()
-			if tt != "" {
+			if rec.GetTargetField() != "" {
 				var txts []*string
-				for _, t := range txtutil.ToChunks(tt) {
+				for _, t := range rec.GetTargetTXTChunked255() {
 					txts = append(txts, to.StringPtr(t))
 				}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
