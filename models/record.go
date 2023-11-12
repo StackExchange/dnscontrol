@@ -360,8 +360,10 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
 	if rc.Type == "TXT" {
-		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL txts=%s q=%q\n", rc.target, rc.target)
-		return txtutil.EncodeQuoted(rc.target)
+		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
+		r := txtutil.EncodeQuoted(rc.target)
+		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
+		return r
 	}
 	return rc.GetTargetCombined()
 }

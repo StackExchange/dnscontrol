@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/go-gandi/go-gandi/livedns"
 )
 
@@ -30,7 +31,15 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 			rc.Type = "ALIAS"
 			err = rc.SetTarget(value)
 		case "TXT":
-			err = rc.SetTargetTXTfromRFC1035Quoted(value)
+			//err = rc.SetTargetTXTfromRFC1035Quoted(value)
+			t := value
+			printer.Printf("DEBUG gandi txt  inbounds=%s q=%q\n", t, t)
+			td, err := txtutil.ParseQuoted(t)
+			if err != nil {
+				return nil, err
+			}
+			printer.Printf("DEBUG gandi txt  decodeds=%s q=%q\n", td, td)
+			_ = rc.SetTargetTXT(td)
 		default:
 			err = rc.PopulateFromString(rtype, value, origin)
 		}
@@ -60,13 +69,21 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 		key := r.Key()
 
 		if zr, ok := keys[key]; !ok {
+			var vals []string
 			// Allocate a new ZoneRecord:
 			zr := livedns.DomainRecord{
-				RrsetType:   r.Type,
-				RrsetTTL:    int(r.TTL),
-				RrsetName:   label,
-				RrsetValues: []string{r.GetTargetCombined()},
+				RrsetType: r.Type,
+				RrsetTTL:  int(r.TTL),
+				RrsetName: label,
+				//RrsetValues: []string{r.GetTargetCombined()},
 			}
+			if r.Type == "TXT" {
+				vals = r.GetTargetTXTChunked255()
+				printer.Printf("DEBUG: gandi TXT  outbounds=%s q=%q\n", vals, vals)
+			} else {
+				vals = []string{r.GetTargetCombined()}
+			}
+			zr.RrsetValues = vals
 			keys[key] = &zr
 		} else {
 			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())

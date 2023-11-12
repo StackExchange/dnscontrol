@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
 )
@@ -351,7 +352,9 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "TLSA":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
+		printer.Printf("DEBUG: gz raw s=%s q=%q\n", rec.GetTargetTXTJoined(), rec.GetTargetTXTJoined())
 		target = jsonQuoted(rec.GetTargetTXTJoined())
+		printer.Printf("DEBUG: gz qtd s=%s q=%q\n", target, target)
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
