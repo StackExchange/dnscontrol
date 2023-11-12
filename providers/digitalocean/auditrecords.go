@@ -19,9 +19,11 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", MaxLengthDO) // Last verified 2021-03-01
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-01
-	// Double-quotes not permitted in TXT strings. I have a hunch that
-	// this is due to a broken parser on the DO side.
+	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2023-11-12
+	// The web portal rejects blackslashes too
+
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2023-11-12
+	// The web portal rejects double quotes
 
 	return a.Audit(records)
 }
@@ -47,7 +49,6 @@ func MaxLengthDO(rc *models.RecordConfig) error {
 	if len(rc.GetTargetField()) > 509 {
 		return fmt.Errorf("encoded txt too long")
 	}
-	// FIXME(tlim): Try replacing GetTargetField() with (2 + (3*len(rc.TxtStrings) - 1))
 
 	return nil
 }

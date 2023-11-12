@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/digitalocean/godo"
 	"github.com/miekg/dns/dnsutil"
@@ -297,6 +298,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetLabelFromFQDN(name, domain)
 	switch rtype := r.Type; rtype {
 	case "TXT":
+		printer.Printf("DEBUG: DIGITAL TXT inbounds=%s q=%q\n", target, target)
 		t.SetTargetTXT(target)
 	default:
 		t.SetTarget(target)
@@ -322,6 +324,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
 		target = rc.GetTargetTXTJoined()
+		printer.Printf("DEBUG: DIGITAL TXT outbounds=%s q=%q\n", target, target)
 	default:
 		// no action required
 	}

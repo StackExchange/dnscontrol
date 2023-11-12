@@ -9,18 +9,18 @@ import (
 
 // Keep these in alphabetical order.
 
-// TxtHasBackticks audits TXT records for strings that contain backticks.
-func TxtHasBackticks(rc *models.RecordConfig) error {
-	if strings.Contains(rc.GetTargetField(), "`") {
-		return fmt.Errorf("txtstring contains backtick")
+// TxtHasBackslash audits TXT records for strings that contains one or more backslashes.
+func TxtHasBackslash(rc *models.RecordConfig) error {
+	if strings.Contains(rc.GetTargetField(), `\`) {
+		return fmt.Errorf("txtstring contains backslashes")
 	}
 	return nil
 }
 
-// TxtHasSingleQuotes audits TXT records for strings that contain single-quotes.
-func TxtHasSingleQuotes(rc *models.RecordConfig) error {
-	if strings.Contains(rc.GetTargetField(), "'") {
-		return fmt.Errorf("txtstring contains single-quotes")
+// TxtHasBackticks audits TXT records for strings that contain backticks.
+func TxtHasBackticks(rc *models.RecordConfig) error {
+	if strings.Contains(rc.GetTargetField(), "`") {
+		return fmt.Errorf("txtstring contains backtick")
 	}
 	return nil
 }
@@ -33,15 +33,6 @@ func TxtHasDoubleQuotes(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtIsExactlyLen255 audits TXT records for strings exactly 255 octets long.
-// This is rare; you probably want to use TxtNoStringsLen256orLonger() instead.
-func TxtIsExactlyLen255(rc *models.RecordConfig) error {
-	if len(rc.GetTargetField()) == 255 {
-		return fmt.Errorf("txtstring length is 255")
-	}
-	return nil
-}
-
 // TxtHasSegmentLen256orLonger audits TXT records for strings that are >255 octets.
 func TxtHasSegmentLen256orLonger(rc *models.RecordConfig) error {
 	if len(rc.GetTargetField()) > 255 {
@@ -50,10 +41,10 @@ func TxtHasSegmentLen256orLonger(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtLongerThan255 audits TXT records for multiple strings
-func TxtLongerThan255(rc *models.RecordConfig) error {
-	if len(rc.GetTargetField()) > 255 {
-		return fmt.Errorf("multiple strings in one txt")
+// TxtHasSingleQuotes audits TXT records for strings that contain single-quotes.
+func TxtHasSingleQuotes(rc *models.RecordConfig) error {
+	if strings.Contains(rc.GetTargetField(), "'") {
+		return fmt.Errorf("txtstring contains single-quotes")
 	}
 	return nil
 }
@@ -67,6 +58,14 @@ func TxtHasTrailingSpace(rc *models.RecordConfig) error {
 	return nil
 }
 
+// TxtHasUnpairedDoubleQuotes audits TXT records for strings that contain unpaired doublequotes.
+func TxtHasUnpairedDoubleQuotes(rc *models.RecordConfig) error {
+	if strings.Count(rc.GetTargetField(), `"`)%2 == 1 {
+		return fmt.Errorf("txtstring contains unpaired doublequotes")
+	}
+	return nil
+}
+
 // TxtIsEmpty audits TXT records for empty strings.
 func TxtIsEmpty(rc *models.RecordConfig) error {
 	if len(rc.GetTargetField()) == 0 {
@@ -75,10 +74,19 @@ func TxtIsEmpty(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtHasUnpairedDoubleQuotes audits TXT records for strings that contain unpaired doublequotes.
-func TxtHasUnpairedDoubleQuotes(rc *models.RecordConfig) error {
-	if strings.Count(rc.GetTargetField(), `"`)%2 == 1 {
-		return fmt.Errorf("txtstring contains unpaired doublequotes")
+// TxtIsExactlyLen255 audits TXT records for strings exactly 255 octets long.
+// This is rare; you probably want to use TxtNoStringsLen256orLonger() instead.
+func TxtIsExactlyLen255(rc *models.RecordConfig) error {
+	if len(rc.GetTargetField()) == 255 {
+		return fmt.Errorf("txtstring length is 255")
+	}
+	return nil
+}
+
+// TxtLongerThan255 audits TXT records for multiple strings
+func TxtLongerThan255(rc *models.RecordConfig) error {
+	if len(rc.GetTargetField()) > 255 {
+		return fmt.Errorf("multiple strings in one txt")
 	}
 	return nil
 }
