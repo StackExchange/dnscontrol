@@ -39,7 +39,16 @@ func TestTxtDecode(t *testing.T) {
 		{"\"blah`blah\"", []string{"blah`blah"}},
 		{"\"quo\\\"te\"", []string{`quo"te`}},
 		{"\"q\\\"uo\\\"te\"", []string{`q"uo"te`}},
-		{"\"backs\\\\lash\"", []string{`backs\lash`}},
+		/// Backslashes are meaningless in unquoted strings. Unquoted strings run until they hit a space.
+		{`1backs\lash`, []string{`1backs\lash`}},
+		{`2backs\\lash`, []string{`2backs\\lash`}},
+		{`3backs\\\lash`, []string{`3backs\\\lash`}},
+		{`4backs\\\\lash`, []string{`4backs\\\\lash`}},
+		/// Inside quotes, a backlash means take the next byte literally.
+		{`"q1backs\lash"`, []string{`q1backslash`}},
+		{`"q2backs\\lash"`, []string{`q2backs\lash`}},
+		{`"q3backs\\\lash"`, []string{`q3backs\lash`}},
+		{`"q4backs\\\\lash"`, []string{`q4backs\\lash`}},
 	}
 	for i, test := range tests {
 		got, err := txtDecode(test.data)
@@ -68,7 +77,9 @@ func TestTxtEncode(t *testing.T) {
 		{[]string{"blah`blah"}, "\"blah`blah\""},
 		{[]string{`quo"te`}, "\"quo\\\"te\""},
 		{[]string{`q"uo"te`}, "\"q\\\"uo\\\"te\""},
-		{[]string{`backs\lash`}, "\"backs\\\\lash\""},
+		{[]string{`1backs\lash`}, `"1backs\\lash"`},
+		{[]string{`2backs\\lash`}, `"2backs\\\\lash"`},
+		{[]string{`3backs\\\lash`}, `"3backs\\\\\\lash"`},
 	}
 	for i, test := range tests {
 		got := txtEncode(test.data)

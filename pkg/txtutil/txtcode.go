@@ -8,17 +8,6 @@ import (
 	"strings"
 )
 
-type State int
-
-const (
-	StateStart            State = iota // Normal text
-	StateQuoted                        // Quoted text
-	StateBackslash                     // last char was backslash
-	StateQuotedBackslash               // last char was backlash in a quoted string
-	StateWantSpace                     // expect space after closing quote
-	StateWantSpaceOrQuote              // expect open quote after `" `
-)
-
 func ParseQuoted(s string) (string, error) {
 	return txtDecode(s)
 }
@@ -26,6 +15,16 @@ func ParseQuoted(s string) (string, error) {
 func EncodeQuoted(t string) string {
 	return txtEncode(ToChunks(t))
 }
+
+type State int
+
+const (
+	StateStart     State = iota // Looking for a non-space
+	StateUnquoted               // A run of unquoted text
+	StateQuoted                 // Quoted text
+	StateBackslash              // last char was backlash in a quoted string
+	StateWantSpace              // expect space after closing quote
+)
 
 func isRemaining(s string, i, r int) bool {
 	return (len(s) - 1 - i) > r
@@ -49,30 +48,28 @@ func txtDecode(s string) (string, error) {
 		switch state {
 
 		case StateStart:
-
-			if c == '"' {
+			if c == ' ' {
+				// skip whitespace
+			} else if c == '"' {
 				state = StateQuoted
-			} else if c == ' ' {
-				state = StateQuoted
-			} else if c == '\\' {
-				if isRemaining(s, i, 1) {
-					state = StateBackslash
-				} else {
-					return "", fmt.Errorf("txtDecode string ends with backslash q(%q)", s)
-				}
 			} else {
+				state = StateUnquoted
 				b.WriteRune(c)
 			}
 
-		case StateBackslash:
-			b.WriteRune(c)
-			state = StateStart
+		case StateUnquoted:
+
+			if c == ' ' {
+				state = StateStart
+			} else {
+				b.WriteRune(c)
+			}
 
 		case StateQuoted:
 
 			if c == '\\' {
 				if isRemaining(s, i, 1) {
-					state = StateQuotedBackslash
+					state = StateBackslash
 				} else {
 					return "", fmt.Errorf("txtDecode quoted string ends with backslash q(%q)", s)
 				}
@@ -82,25 +79,15 @@ func txtDecode(s string) (string, error) {
 				b.WriteRune(c)
 			}
 
-		case StateQuotedBackslash:
+		case StateBackslash:
 			b.WriteRune(c)
 			state = StateQuoted
 
 		case StateWantSpace:
 			if c == ' ' {
-				state = StateWantSpaceOrQuote
+				state = StateStart
 			} else {
 				return "", fmt.Errorf("txtDecode expected whitespace after close quote q(%q)", s)
-			}
-
-		case StateWantSpaceOrQuote:
-			if c == ' ' {
-				state = StateWantSpaceOrQuote
-			} else if c == '"' {
-				state = StateQuoted
-			} else {
-				state = StateStart
-				b.WriteRune(c)
 			}
 
 		}
