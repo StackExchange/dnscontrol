@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -344,9 +343,22 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 					var rr r53Types.ResourceRecord
 					if instType == "TXT" {
-						//printer.Printf("DEBUG: txt=%q\n", r.GetTargetField())
-						t := txtutil.RFC1035ChunkedAndQuoted(r.GetTargetField())
-						//printer.Printf("DEBUG:   t=%s\n", t)
+						// //printer.Printf("DEBUG: txt originalv=%v\n", r.GetTargetField())
+						// //t := txtutil.RFC1035ChunkedAndQuoted(r.GetTargetField())
+						// //printer.Printf("DEBUG: txt outbound=%q\n", t)
+						// ts := r.GetTargetTXTChunked255()
+						// //t = strings.ReplaceAll(t, `\`, `\\`)
+						// //t = strings.ReplaceAll(t, `"`, `\"`)
+						// for i := range ts {
+						// 	ts[i] = strings.ReplaceAll(ts[i], `\`, `\\`)
+						// 	ts[i] = strings.ReplaceAll(ts[i], `"`, `\"`)
+						// }
+						// t := `"` + strings.Join(ts, `" "`) + `"`
+						// printer.Printf("DEBUG: txt outboundv=%v\n", t)
+
+						t := txtEncode(r.GetTargetTXTChunked255())
+						//printer.Printf("XXXXXXXXX %v\n", t)
+
 						rr = r53Types.ResourceRecord{
 							Value: aws.String(t),
 						}
@@ -502,7 +514,20 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rc.Original = set
 				switch rtypeString {
 				case "TXT":
-					err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
+					//printer.Printf("DEBUG: txt inboundv=%v\n", val)
+					//printer.Printf("DEBUG: txt decoded=%v\n", models.ParseQuotedTxt(val)[0])
+					//err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
+
+					//dt, _ := models.ParseQuotedFields(val)
+					//printer.Printf("DEBUG: txt decodedv=%v\n", dt)
+					//err = rc.SetTargetTXTs(dt)
+
+					var t string
+					t, err = txtDecode(val)
+					if err == nil {
+						err = rc.SetTargetTXT(t)
+					}
+
 				default:
 					err = rc.PopulateFromString(rtypeString, val, origin)
 				}
