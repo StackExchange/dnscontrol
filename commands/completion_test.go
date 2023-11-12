@@ -3,10 +3,11 @@ package commands
 import (
 	"bytes"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"strings"
 	"testing"
 	"text/template"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
@@ -178,7 +179,7 @@ func TestShellCompletionCommand(t *testing.T) {
 
 		for _, tt := range shellsAndCompletionScripts {
 			testCases[0].expected = append(testCases[0].expected, tt.shellName)
-			for i, _ := range tt.shellName {
+			for i := range tt.shellName {
 				testCases = append(testCases, testCase{
 					shellArg: tt.shellName[:i+1],
 					expected: []string{tt.shellName},
