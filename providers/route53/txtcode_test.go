@@ -12,6 +12,8 @@ func TestTxtDecode(t *testing.T) {
 		data     string
 		expected []string
 	}{
+		{``, []string{``}},
+		{`""`, []string{``}},
 		{`foo`, []string{`foo`}},
 		{`"foo"`, []string{`foo`}},
 		{`"foo bar"`, []string{`foo bar`}},
@@ -48,6 +50,32 @@ func TestTxtDecode(t *testing.T) {
 		want := strings.Join(test.expected, "")
 		if got != want {
 			t.Errorf("%v: expected TxtStrings=(%q) got (%q)", i, want, got)
+		}
+	}
+}
+
+func TestTxtEncode(t *testing.T) {
+	tests := []struct {
+		data     []string
+		expected string
+	}{
+		{[]string{``}, `""`},
+		{[]string{`foo`}, `"foo"`},
+		{[]string{`aaa`, `bbb`}, `"aaa" "bbb"`},
+		{[]string{`ccc`, `ddd`, `eee`}, `"ccc" "ddd" "eee"`},
+		{[]string{`a"a`, `bbb`}, `"a\"a" "bbb"`},
+		{[]string{`quo'te`}, "\"quo'te\""},
+		{[]string{"blah`blah"}, "\"blah`blah\""},
+		{[]string{`quo"te`}, "\"quo\\\"te\""},
+		{[]string{`q"uo"te`}, "\"q\\\"uo\\\"te\""},
+		{[]string{`backs\lash`}, "\"backs\\\\lash\""},
+	}
+	for i, test := range tests {
+		got := txtEncode(test.data)
+
+		want := test.expected
+		if got != want {
+			t.Errorf("%v: expected TxtStrings=v(%v) got (%v)", i, want, got)
 		}
 	}
 }

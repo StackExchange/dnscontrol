@@ -6,8 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 type State int
@@ -25,19 +23,14 @@ func isRemaining(s string, i, r int) bool {
 	return (len(s) - 1 - i) > r
 }
 
-// txtDecode is like strings.Fields except individual fields
-// might be quoted using `"`.
+// txtDecode decodes TXT strings received from ROUTE53.
 func txtDecode(s string) (string, error) {
-	printer.Printf("DEBUG: route53 txt inboundv=%v\n", s)
 	// Parse according to RFC1035 zonefile specifications.
 	// "foo"  -> one string: `foo``
 	// "foo" "bar"  -> two strings: `foo` and `bar`
+	// quotes and backslashes are escaped using \
 
-	// if s == `""` {
-	// 	r := []string{}
-	// 	printer.Printf("DEBUG: route53 txt Z decodedv=%v\n", r)
-	// 	return r, nil
-	// }
+	//printer.Printf("DEBUG: route53 txt inboundv=%v\n", s)
 
 	b := &bytes.Buffer{}
 	state := StateStart
@@ -106,18 +99,13 @@ func txtDecode(s string) (string, error) {
 	}
 
 	r := b.String()
-	printer.Printf("DEBUG: route53 txt decodedv=%v\n", r)
+	//printer.Printf("DEBUG: route53 txt decodedv=%v\n", r)
 	return r, nil
 }
 
+// txtEncode encodes TXT strings as expected by ROUTE53.
 func txtEncode(ts []string) string {
-	printer.Printf("DEBUG: route53 txt outboundv=%v\n", ts)
-
-	if len(ts) == 0 {
-		t := `""`
-		printer.Printf("DEBUG: route53 txt Z  encodedv=%v\n", t)
-		return t
-	}
+	//printer.Printf("DEBUG: route53 txt outboundv=%v\n", ts)
 
 	for i := range ts {
 		ts[i] = strings.ReplaceAll(ts[i], `\`, `\\`)
@@ -125,6 +113,6 @@ func txtEncode(ts []string) string {
 	}
 	t := `"` + strings.Join(ts, `" "`) + `"`
 
-	printer.Printf("DEBUG: route53 txt  encodedv=%v\n", t)
+	//printer.Printf("DEBUG: route53 txt  encodedv=%v\n", t)
 	return t
 }
