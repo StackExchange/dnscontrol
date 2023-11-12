@@ -109,8 +109,6 @@ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/exoscale/egoscale v0.90.2 h1:oGSJy5Dxbcn5m5F0/DcnU4WXJg+2j3g+UgEu4yyKG9M=
 github.com/exoscale/egoscale v0.90.2/go.mod h1:NDhQbdGNKwnLVC2YGTB6ds9WIPw+V5ckvEEV8ho7pFE=
-github.com/facebook/dns/dnsrocks v0.0.0-20231026153830-f5723c53d019 h1:E5EK2U44s+IN0XyfROZbBgXcATpaWplY4USE87HKPDI=
-github.com/facebook/dns/dnsrocks v0.0.0-20231026153830-f5723c53d019/go.mod h1:SaniBA3PvQwaMy8tglIAmz+hoKIwfROpxoEAnfJe8L0=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
