@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 /*
@@ -51,10 +53,15 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	return rc.SetTargetTXT(strings.Join(s, ""))
 }
 
-// GetTargetTXTJoined returns the TXT target as one string. If it was stored as multiple strings, concatenate them.
+// GetTargetTXTJoined returns the TXT target as one string.
 // Deprecated: GetTargetTXTJoined is deprecated. Use GetTargetField()
 func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return rc.target
+}
+
+// GetTargetTXTChunked255 returns the TXT target as a list of strings, 255 octets each with the remainder on the last string.
+func (rc *RecordConfig) GetTargetTXTChunked255() []string {
+	return txtutil.ToChunks(rc.target)
 }
 
 // SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
@@ -67,7 +74,7 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 //	"foo" "bar"  << 2 strings
 //	foo          << error. No quotes! Did you intend to use SetTargetTXT?
 //
-// Deprecated: GetTargetTXTJoined is deprecated. ...or should be.
+// Deprecated: each providers should include its own txtParse and txtEscape functions with their own unit tests. No two providers are the same.
 func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
 	if s != "" && s[0] != '"' {
 		// If you get this error, it is likely that you should use

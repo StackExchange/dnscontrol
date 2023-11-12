@@ -140,7 +140,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		// the remaining line
 		var target string
 		if typeStr == "TXT" {
-			target = rr.GetTargetRFC1035Quoted()
+			target = txtToNative(rr.GetTargetTXTChunked255())
 		} else {
 			target = rr.GetTargetCombined()
 		}

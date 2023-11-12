@@ -13,15 +13,8 @@ If an rType has more than one field, one field goes in .target and the remaining
 Not the best design, but we're stuck with it until we re-do RecordConfig, possibly using generics.
 */
 
-// Set debugWarnTxtField to true if you want a warning when
-// GetTargetField is called on a TXT record.
-// GetTargetField works fine on TXT records for casual output but it
-// is often better to access .TxtStrings directly or call
-// GetTargetRFC1035Quoted() for nicely quoted text.
-var debugWarnTxtField = false
-
 // GetTargetField returns the target. There may be other fields (for example
-// an MX record also has a .MxPreference field; they are not included.
+// an MX record also has a .MxPreference field) they are not included.
 func (rc *RecordConfig) GetTargetField() string {
 	return rc.target
 }
