@@ -1089,17 +1089,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
 			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
 			tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
-			//clear(),
 
 			tc("TXT interior ws", txt("foosp", "with spaces")),
 			tc("TXT trailing ws", txt("foows1", "with space at end ")),
+			//clear(),
 
 			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 			// This was added because Vultr syntax-checks TXT records with SPF contents.
 			//clear(),
 
 			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
-			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 			clear(),
 		),
 

@@ -17,20 +17,21 @@ func TestToRecordConfig(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "test.example.com", recordConfig.NameFQDN)
-	assert.Equal(t, "\"simple\"", recordConfig.String())
+	assert.Equal(t, "simple", recordConfig.GetTargetTXTJoined())
 	assert.Equal(t, uint32(120), recordConfig.TTL)
 	assert.Equal(t, "TXT", recordConfig.Type)
 
-	largeContent := fmt.Sprintf("\"%s\" \"%s\"", strings.Repeat("A", 300), strings.Repeat("B", 300))
+	largeContent := fmt.Sprintf(`"%s" "%s"`, strings.Repeat("A", 300), strings.Repeat("B", 300))
 	largeRecord := zones.Record{
 		Content: largeContent,
 	}
 	recordConfig, err = toRecordConfig("example.com", largeRecord, 5, "large", "TXT")
-	largeJoined := `"` + strings.Repeat("A", 300) + strings.Repeat("B", 300) + `"`
+	//largeJoined := `"` + strings.Repeat("A", 300) + strings.Repeat("B", 300) + `"`
+	largeJoined := strings.Repeat("A", 300) + strings.Repeat("B", 300)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "large.example.com", recordConfig.NameFQDN)
-	assert.Equal(t, largeJoined, recordConfig.String())
+	assert.Equal(t, largeJoined, recordConfig.GetTargetTXTJoined())
 	assert.Equal(t, uint32(5), recordConfig.TTL)
 	assert.Equal(t, "TXT", recordConfig.Type)
 }
