@@ -41,6 +41,23 @@ type recordResponse struct {
 	Records []domainRecord `json:"records"`
 }
 
+type domainListRecord struct {
+	Domain       string `json:"domain"`
+	Status       string `json:"status"`
+	TLD          string `json:"tld"`
+	CreateDate   string `json:"createDate"`
+	ExpireDate   string `json:"expireDate"`
+	SecurityLock string `json:"securityLock"`
+	WhoisPrivacy string `json:"whoisPrivacy"`
+	AutoRenew    string `json:"autoRenew"`
+	NotLocal     string `json:"notLocal"`
+}
+
+type domainListResponse struct {
+	Status  string             `json:"status"`
+	Domains []domainListRecord `json:"domains"`
+}
+
 type nsResponse struct {
 	Status      string   `json:"status"`
 	Nameservers []string `json:"ns"`
@@ -149,4 +166,22 @@ func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
 		return fmt.Errorf("failed NS update (porkbun): %w", err)
 	}
 	return nil
+}
+
+func (c *porkbunProvider) listAllDomains() ([]string, error) {
+	params := requestParams{}
+	var bodyString, err = c.post("/domain/listAll", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed listing all domains from porkbun: %w", err)
+	}
+
+	var dlr domainListResponse
+	json.Unmarshal(bodyString, &dlr)
+
+	var domains []string
+	for _, domain := range dlr.Domains {
+		domains = append(domains, domain.Domain)
+	}
+	sort.Strings(domains)
+	return domains, nil
 }
