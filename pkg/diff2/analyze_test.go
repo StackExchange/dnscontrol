@@ -313,7 +313,7 @@ ChangeList: len=3
 ChangeList: len=8
 00: Change: verb=CREATE
     key={labf.f.com TXT}
-    new=["foo"]
+    new=[foo]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
 01: Change: verb=CHANGE
     key={labg.f.com NS}
@@ -365,7 +365,7 @@ ChangeList: len=8
 ChangeList: len=6
 00: Change: verb=CREATE
     key={labf.f.com }
-    new=["foo"]
+    new=[foo]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
 01: Change: verb=CHANGE
     key={labg.f.com }
@@ -429,7 +429,7 @@ ChangeList: len=11
     msg=["± MODIFY labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
 04: Change: verb=CREATE
     key={labf.f.com TXT}
-    new=["foo"]
+    new=[foo]
     msg=["+ CREATE labf.f.com TXT \"foo\" ttl=300"]
 05: Change: verb=CHANGE
     key={labg.f.com NS}

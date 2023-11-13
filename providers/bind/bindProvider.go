@@ -199,10 +199,10 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		if rtype == "TXT" {
 			v := rr.(*dns.TXT)
 			t := strings.Join(v.Txt, "")
-			fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents inbounds=%s\n", t)
+			//fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents inbounds=%s\n", t)
 			td := strings.ReplaceAll(t, `\"`, `"`)
 			td = strings.ReplaceAll(td, `\\`, `\`)
-			fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents decodeds=%s\n", td)
+			//fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents decodeds=%s\n", td)
 
 			rec := models.RecordConfig{Type: "TXT"}
 			rec.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), zoneName)

@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/miekg/dns"
 )
@@ -144,8 +143,8 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		if typeStr == "TXT" {
 			t := rr.GetTargetField()
 			target = txtutil.EncodeQuoted(t)
-			printer.Printf("DEBUG: pretty txt outbounds=%s\n", t)
-			printer.Printf("DEBUG: pretty txt  encodedv=%v\n", target)
+			//printer.Printf("DEBUG: pretty txt outbounds=%s\n", t)
+			//printer.Printf("DEBUG: pretty txt  encodedv=%v\n", target)
 		} else {
 			target = rr.GetTargetCombined()
 		}
