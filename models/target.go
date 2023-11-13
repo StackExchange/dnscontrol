@@ -74,22 +74,13 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	return full[len(header):]
 }
 
-// GetTargetRFC1035Quoted returns the target as it would be in an
-// RFC1035-style zonefile.
-// Do not use this function if RecordConfig might be a pseudo-rtype
-// such as R53_ALIAS.  Use GetTargetCombined() instead.
-func (rc *RecordConfig) GetTargetRFC1035Quoted() string {
-	return rc.zoneFileQuoted()
-}
-
-// GetTargetSortable returns a string that is sortable.
-func (rc *RecordConfig) GetTargetSortable() string {
-	return rc.GetTargetDebug()
-}
-
 // GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
-	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
+	target := rc.target
+	if rc.Type == "TXT" {
+		target = fmt.Sprintf("%q", target)
+	}
+	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, target, rc.TTL)
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
 		// Nothing special.

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"sort"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -234,7 +233,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	// However the code doesn't seem to have such situation.  All tests
 	// pass.  That said, if this breaks anything, the easiest fix might
 	// be to just remove the sort.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	//sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, nil
 }

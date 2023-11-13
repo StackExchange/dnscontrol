@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -268,14 +267,6 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
-// UnsafeSetLabelNull sets the label to "". Normally the FQDN is denoted by .Name being
-// "@" however this can be used to violate that assertion. It should only be used
-// on copies of a RecordConfig that is being used for non-standard things like
-// Marshalling yaml.
-func (rc *RecordConfig) UnsafeSetLabelNull() {
-	rc.Name = ""
-}
-
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
@@ -312,53 +303,17 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 	return rc.NameFQDN
 }
 
-// ToDiffable returns a string that is comparable by a differ.
-// extraMaps: a list of maps that should be included in the comparison.
-// NB(tlim): This will be deprecated when pkg/diff is replaced by pkg/diff2.
-// Use ToComparableNoTTL() instead.
-func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
-	var content string
-	switch rc.Type {
-	case "SOA":
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
-		// SoaSerial is not used in comparison
-	case "TXT":
-		//fmt.Fprintf(os.Stdout, "DEBUG: XXXXXXXXXXXXXXXX\n")
-		t := rc.GetTargetField()
-		te := txtutil.EncodeQuoted(t)
-		content = fmt.Sprintf("%v ttl=%d", te, rc.TTL)
-	default:
-		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
-	}
-	for _, valueMap := range extraMaps {
-		// sort the extra values map keys to perform a deterministic
-		// comparison since Golang maps iteration order is not guaranteed
-
-		// FIXME(tlim) The keys of each map is sorted per-map, not across
-		// all maps. This may be intentional since we'd have no way to
-		// deal with duplicates.
-
-		keys := make([]string, 0)
-		for k := range valueMap {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			v := valueMap[k]
-			content += fmt.Sprintf(" %s=%s", k, v)
-		}
-	}
-	return content
-}
-
 // ToComparableNoTTL returns a comparison string. If you need to compare two
 // RecordConfigs, you can simply compare the string returned by this function.
 // The comparison includes all fields except TTL and any provider-specific
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
-// This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
-	if rc.Type == "TXT" {
+	switch rc.Type {
+	case "SOA":
+		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+		// SoaSerial is not included because it isn't used in comparisons.
+	case "TXT":
 		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
 		r := txtutil.EncodeQuoted(rc.target)
 		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
@@ -408,7 +363,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DS).Digest = rc.DsDigest
 		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeLOC:
-		//this is for records from .js files and read from API
 		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
 		// fmt.Printf("ToRR rc: %+v\n", *rc)
 		rr.(*dns.LOC).Version = rc.LocVersion
@@ -522,16 +476,6 @@ func (recs Records) HasRecordTypeName(rtype, name string) bool {
 	return false
 }
 
-// FQDNMap returns a map of all LabelFQDNs. Useful for making a
-// truthtable of labels that exist in Records.
-func (recs Records) FQDNMap() (m map[string]bool) {
-	m = map[string]bool{}
-	for _, rec := range recs {
-		m[rec.GetLabelFQDN()] = true
-	}
-	return m
-}
-
 // GetByType returns the records that match rtype typeName.
 func (recs Records) GetByType(typeName string) Records {
 	results := Records{}
@@ -550,19 +494,6 @@ func (recs Records) GroupedByKey() map[RecordKey]Records {
 		groups[rec.Key()] = append(groups[rec.Key()], rec)
 	}
 	return groups
-}
-
-// GroupedByLabel returns a map of keys to records, and their original key order.
-func (recs Records) GroupedByLabel() ([]string, map[string]Records) {
-	order := []string{}
-	groups := map[string]Records{}
-	for _, rec := range recs {
-		if _, found := groups[rec.Name]; !found {
-			order = append(order, rec.Name)
-		}
-		groups[rec.Name] = append(groups[rec.Name], rec)
-	}
-	return order, groups
 }
 
 // GroupedByFQDN returns a map of keys to records, grouped by FQDN.

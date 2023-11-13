@@ -31,7 +31,6 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 			rc.Type = "ALIAS"
 			err = rc.SetTarget(value)
 		case "TXT":
-			//err = rc.SetTargetTXTfromRFC1035Quoted(value)
 			t := value
 			//printer.Printf("DEBUG gandi txt  inbounds=%s q=%q\n", t, t)
 			td, err := txtutil.ParseQuoted(t)

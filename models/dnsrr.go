@@ -9,7 +9,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-//// Header Header returns the header of an resource record.
+//// Header returns the header of an resource record.
 //func (rc *RecordConfig) Header() *dns.RR_Header {
 //	log.Fatal("Header not implemented")
 //	return nil

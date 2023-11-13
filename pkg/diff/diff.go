@@ -1,6 +1,8 @@
 package diff
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/fatih/color"
 )
@@ -29,44 +31,13 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	return r.ToDiffable()
+	return fmt.Sprintf("%s ttl=%d", r.ToComparableNoTTL(), r.TTL)
 }
 
-// ChangesetLess returns true if c[i] < c[j].
-func ChangesetLess(c Changeset, i, j int) bool {
-	var a, b string
-	// Which fields are we comparing?
-	// Usually only Desired OR Existing content exists (we're either
-	// adding or deleting records).  In those cases, just use whichever
-	// isn't nil.
-	// In the case where both Desired AND Existing exist, it doesn't
-	// matter which we use as long as we are consistent.  I flipped a
-	// coin and picked to use Desired in that case.
-
-	if c[i].Desired != nil {
-		a = c[i].Desired.NameFQDN
-	} else {
-		a = c[i].Existing.NameFQDN
-	}
-
-	if c[j].Desired != nil {
-		b = c[j].Desired.NameFQDN
-	} else {
-		b = c[j].Existing.NameFQDN
-	}
-
-	return a < b
-
-	// TODO(tlim): This won't correctly sort:
-	// []string{"example.com", "foo.example.com", "bar.example.com"}
-	// A simple way to do that correctly is to split on ".", reverse the
-	// elements, and sort on the result.
-}
-
-// CorrectionLess returns true when comparing corrections.
-func CorrectionLess(c []*models.Correction, i, j int) bool {
-	return c[i].Msg < c[j].Msg
-}
+// // CorrectionLess returns true when comparing corrections.
+// func CorrectionLess(c []*models.Correction, i, j int) bool {
+// 	return c[i].Msg < c[j].Msg
+// }
 
 func (c Correlation) String() string {
 	if c.Existing == nil {

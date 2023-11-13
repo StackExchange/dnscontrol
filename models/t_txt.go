@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -35,8 +34,6 @@ func (rc *RecordConfig) HasFormatIdenticalToTXT() bool {
 }
 
 // SetTargetTXT sets the TXT fields when there is 1 string.
-// The string is stored in .Target, and split into 255-octet chunks
-// for .TxtStrings.
 func (rc *RecordConfig) SetTargetTXT(s string) error {
 	if rc.Type == "" {
 		rc.Type = "TXT"
@@ -47,14 +44,12 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 	return rc.SetTarget(s)
 }
 
-// SetTargetTXTs sets the TXT fields when there are many strings.
-// The individual strings are stored in .TxtStrings, and joined to make .Target.
+// SetTargetTXTs sets the TXT fields when there are many strings. They are stored concatenated.
 func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	return rc.SetTargetTXT(strings.Join(s, ""))
 }
 
 // GetTargetTXTJoined returns the TXT target as one string.
-// Deprecated: GetTargetTXTJoined is deprecated. Use GetTargetField()
 func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return rc.target
 }
@@ -63,29 +58,3 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 func (rc *RecordConfig) GetTargetTXTChunked255() []string {
 	return txtutil.ToChunks(rc.target)
 }
-
-// SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
-// and sets .TxtStrings based on the result.
-// Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
-// Ex:
-//
-//	"foo"        << 1 string
-//	"foo bar"    << 1 string
-//	"foo" "bar"  << 2 strings
-//	foo          << error. No quotes! Did you intend to use SetTargetTXT?
-//
-// Deprecated: each providers should include its own txtParse and txtEscape functions with their own unit tests. No two providers are the same.
-func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
-	if s != "" && s[0] != '"' {
-		// If you get this error, it is likely that you should use
-		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
-		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
-	}
-	many, err := ParseQuotedFields(s)
-	if err != nil {
-		return err
-	}
-	return rc.SetTargetTXTs(many)
-}
-
-// There is no GetTargetTXTfromRFC1025Quoted(). Use GetTargetRFC1035Quoted()
