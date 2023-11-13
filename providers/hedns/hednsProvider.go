@@ -17,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/pquerna/otp/totp"
 )
@@ -322,7 +323,10 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 			rc.Type = "TXT"
 			fallthrough
 		case "TXT":
-			err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
+			//err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
+			var t string
+			t, err = txtutil.ParseQuoted(data)
+			err = rc.SetTargetTXT(t)
 		default:
 			err = rc.PopulateFromString(rc.Type, data, domain)
 		}

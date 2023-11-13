@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	"net"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 // PopulateFromString populates a RecordConfig given a type and string.  Many
@@ -70,10 +72,11 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
-		// Parsing the contents may be unexpected. If your provider gives you a
-		// string that needs no further parsing, special case TXT and use
-		// rc.SetTargetTXT(target) like in the example above.
-		return rc.SetTargetTXTs(ParseQuotedTxt(contents))
+		t, err := txtutil.ParseQuoted(contents)
+		if err != nil {
+			return err
+		}
+		return rc.SetTargetTXT(t)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
 	case "SSHFP":

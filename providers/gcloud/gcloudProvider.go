@@ -312,10 +312,10 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 					//printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
 					//newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
 					t := r.GetTargetField()
-					printer.Printf("DEBUG: gcloud outboundv=%v\n", t)
+					//printer.Printf("DEBUG: gcloud outboundv=%v\n", t)
 					//tc := txtutil.RFC1035ChunkedAndQuoted(t)
 					tc := txtutil.EncodeQuoted(t)
-					printer.Printf("DEBUG: gcloud  encodedv=%v\n", tc)
+					//printer.Printf("DEBUG: gcloud  encodedv=%v\n", tc)
 					newRRs.Rrdatas = append(newRRs.Rrdatas, tc)
 				} else {
 					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
@@ -416,23 +416,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	rtype := set.Type
-	var err error
-	switch rtype {
-	case "TXT":
-		//t := r
-		//te := models.ParseQuotedTxt(rec)
-		t := rec
-		td, err := txtutil.ParseQuoted(t)
-		if err != nil {
-			return nil, fmt.Errorf("gcloud TXT parse error: %w", err)
-		}
-		printer.Printf("DEBUG: gcloud txt  inboundv=%v\n", t)
-		printer.Printf("DEBUG: gcloud txt  decodedv=%v\n", td)
-		err = r.SetTargetTXT(td)
-		//err = r.SetTargetTXTs(te)
-	default:
-		err = r.PopulateFromString(rtype, rec, origin)
-	}
+	err := r.PopulateFromString(rtype, rec, origin)
 	if err != nil {
 		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
 	}
