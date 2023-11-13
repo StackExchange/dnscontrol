@@ -45,7 +45,10 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		}
 	}
 
-	if rc.Type == "SOA" {
+	switch rc.Type {
+	case "TXT":
+		return rc.target
+	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	}
 

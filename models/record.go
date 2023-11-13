@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"sort"
 	"strings"
 
@@ -324,7 +323,7 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
 	case "TXT":
-		fmt.Fprintf(os.Stdout, "DEBUG: XXXXXXXXXXXXXXXX\n")
+		//fmt.Fprintf(os.Stdout, "DEBUG: XXXXXXXXXXXXXXXX\n")
 		t := rc.GetTargetField()
 		te := txtutil.EncodeQuoted(t)
 		content = fmt.Sprintf("%v ttl=%d", te, rc.TTL)
@@ -360,9 +359,9 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 // This replaces ToDiff()
 func (rc *RecordConfig) ToComparableNoTTL() string {
 	if rc.Type == "TXT" {
-		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
+		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
 		r := txtutil.EncodeQuoted(rc.target)
-		fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
+		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
 	}
 	return rc.GetTargetCombined()

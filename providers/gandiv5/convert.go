@@ -33,13 +33,17 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 		case "TXT":
 			//err = rc.SetTargetTXTfromRFC1035Quoted(value)
 			t := value
-			printer.Printf("DEBUG gandi txt  inbounds=%s q=%q\n", t, t)
+			//printer.Printf("DEBUG gandi txt  inbounds=%s q=%q\n", t, t)
 			td, err := txtutil.ParseQuoted(t)
 			if err != nil {
 				return nil, err
 			}
-			printer.Printf("DEBUG gandi txt  decodeds=%s q=%q\n", td, td)
-			_ = rc.SetTargetTXT(td)
+			//td := t
+			//printer.Printf("DEBUG gandi txt  decodeds=%s q=%q\n", td, td)
+			err = rc.SetTargetTXT(td)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			err = rc.PopulateFromString(rtype, value, origin)
 		}
@@ -68,25 +72,27 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 		}
 		key := r.Key()
 
+		var val string
+		if r.Type == "TXT" {
+			t := r.GetTargetTXTJoined()
+			//printer.Printf("DEBUG: txt outbounds=%s q=%q\n", t, t)
+			val = txtutil.EncodeQuoted(t)
+			//printer.Printf("DEBUG: txt  encodeds=%s q=%q\n", val, val)
+		} else {
+			val = r.GetTargetCombined()
+		}
+
 		if zr, ok := keys[key]; !ok {
-			var vals []string
 			// Allocate a new ZoneRecord:
 			zr := livedns.DomainRecord{
-				RrsetType: r.Type,
-				RrsetTTL:  int(r.TTL),
-				RrsetName: label,
-				//RrsetValues: []string{r.GetTargetCombined()},
+				RrsetType:   r.Type,
+				RrsetTTL:    int(r.TTL),
+				RrsetName:   label,
+				RrsetValues: []string{val},
 			}
-			if r.Type == "TXT" {
-				vals = r.GetTargetTXTChunked255()
-				printer.Printf("DEBUG: gandi TXT  outbounds=%s q=%q\n", vals, vals)
-			} else {
-				vals = []string{r.GetTargetCombined()}
-			}
-			zr.RrsetValues = vals
 			keys[key] = &zr
 		} else {
-			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
+			zr.RrsetValues = append(zr.RrsetValues, val)
 
 			if r.TTL != uint32(zr.RrsetTTL) {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
@@ -94,7 +100,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 					zr.RrsetTTL = int(r.TTL)
 				}
 			}
-
 		}
 	}
 
