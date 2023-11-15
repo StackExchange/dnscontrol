@@ -18,6 +18,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`AUTODNS`](providers/autodns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](providers/axfrddns.md) | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](providers/azure_dns.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
+| [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | ✅ | ❌ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`BIND`](providers/bind.md) | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](providers/cloudns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
@@ -76,6 +77,7 @@ Providers in this category and their maintainers are:
 |Name|Maintainer|
 |---|---|
 |[`AZURE_DNS`](providers/azure_dns.md)|@vatsalyagoel|
+[[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble]
 |[`BIND`](providers/bind.md)|@tlimoncelli|
 |[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](providers/cscglobal.md)|@mikenz|

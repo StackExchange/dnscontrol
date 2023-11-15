@@ -100,6 +100,7 @@
     * [AutoDNS](providers/autodns.md)
     * [AXFR+DDNS](providers/axfrddns.md)
     * [Azure DNS](providers/azure_dns.md)
+    * [Azure Private DNS](providers/azure_private_dns.md)
     * [BIND](providers/bind.md)
     * [Cloudflare](providers/cloudflareapi.md)
     * [ClouDNS](providers/cloudns.md)

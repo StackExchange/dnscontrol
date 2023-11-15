@@ -2,6 +2,7 @@ providers/akamaiedgedns @svernick
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
+providers/azure_private_dns @matthewmgamble
 providers/bind @tlimoncelli
 providers/cloudflare @tresni
 providers/cloudns @pragmaton

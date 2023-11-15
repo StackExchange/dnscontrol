@@ -67,7 +67,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseCAA:              providers.Cannot("Azure Private DNS does not support CAA records"),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
@@ -130,7 +130,11 @@ func (e errNoExist) Error() string {
 
 func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	// Azure DNS doesn't do "nameservers"
-	return nil, errNoExist{domain}
+	var nss []string
+	return models.ToNameserversStripTD(nss)
+
+	//fmt.Println("getNameServers called, returning error")
+	//return nil, errNoExist{domain}
 	/*
 		zone, ok := a.zones[domain]
 		if !ok {
@@ -353,7 +357,7 @@ func safeTarget(t *string) string {
 func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig {
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
-	case "Microsoft.Network/dnszones/A":
+	case "Microsoft.Network/privateDnsZones/A":
 		if set.Properties.ARecords != nil {
 			// This is an A recordset. Process all the targets there.
 			for _, rec := range set.Properties.ARecords {
@@ -380,7 +384,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				results = append(results, rc)
 			*/
 		}
-	case "Microsoft.Network/dnszones/AAAA":
+	case "Microsoft.Network/privateDnsZones/AAAA":
 		if set.Properties.AaaaRecords != nil {
 			// This is an AAAA recordset. Process all the targets there.
 			for _, rec := range set.Properties.AaaaRecords {
@@ -407,7 +411,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				results = append(results, rc)
 			*/
 		}
-	case "Microsoft.Network/dnszones/CNAME":
+	case "Microsoft.Network/privateDnsZones/CNAME":
 		if set.Properties.CnameRecord != nil {
 			// This is a CNAME recordset. Process the targets. (there can only be one)
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
@@ -443,7 +447,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 					results = append(results, rc)
 				}
 		*/
-	case "Microsoft.Network/dnszones/PTR":
+	case "Microsoft.Network/privateDnsZones/PTR":
 		for _, rec := range set.Properties.PtrRecords {
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -451,7 +455,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			_ = rc.SetTarget(*rec.Ptrdname)
 			results = append(results, rc)
 		}
-	case "Microsoft.Network/dnszones/TXT":
+	case "Microsoft.Network/privateDnsZones/TXT":
 		if len(set.Properties.TxtRecords) == 0 { // Empty String Record Parsing
 			// This is a null TXT record.
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
@@ -473,7 +477,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				results = append(results, rc)
 			}
 		}
-	case "Microsoft.Network/dnszones/MX":
+	case "Microsoft.Network/privateDnsZones/MX":
 		for _, rec := range set.Properties.MxRecords {
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -481,7 +485,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			_ = rc.SetTargetMX(uint16(*rec.Preference), *rec.Exchange)
 			results = append(results, rc)
 		}
-	case "Microsoft.Network/dnszones/SRV":
+	case "Microsoft.Network/privateDnsZones/SRV":
 		for _, rec := range set.Properties.SrvRecords {
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -499,7 +503,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 					results = append(results, rc)
 				}
 		*/
-	case "Microsoft.Network/dnszones/SOA":
+	case "Microsoft.Network/privateDnsZones/SOA":
 	default:
 		panic(fmt.Errorf("nativeToRecords rtype %v unimplemented", *set.Type))
 	}
