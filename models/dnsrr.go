@@ -97,9 +97,6 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	case *dns.TLSA:
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
-		//fmt.Fprintf(os.Stdout, "DEBUG: RRtoRC TXT inbounds=%s q=%q\n", v.Txt, v.Txt)
-		//d := strings.ReplaceAll(strings.Join(v.Txt, ""), `\"`, `"`)
-		//fmt.Fprintf(os.Stdout, "DEBUG: RRtoRC TXT decodeds=%s q=%q\n", d, d)
 		err = rc.SetTargetTXTs(v.Txt)
 	default:
 		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)", rc.Type, rr)

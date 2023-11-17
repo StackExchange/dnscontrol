@@ -395,7 +395,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SOA).Expire = rc.SoaExpire
 		rr.(*dns.SOA).Minttl = rc.SoaMinttl
 	case dns.TypeSPF:
-		rr.(*dns.SPF).Txt = []string{rc.target}
+		rr.(*dns.SPF).Txt = rc.GetTargetTXTChunked255()
 	case dns.TypeSRV:
 		rr.(*dns.SRV).Priority = rc.SrvPriority
 		rr.(*dns.SRV).Weight = rc.SrvWeight
@@ -411,7 +411,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
 	case dns.TypeTXT:
-		rr.(*dns.TXT).Txt = []string{rc.target}
+		rr.(*dns.TXT).Txt = rc.GetTargetTXTChunked255()
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 		// We panic so that we quickly find any switch statements
