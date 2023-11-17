@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -39,6 +40,23 @@ type domainRecord struct {
 type recordResponse struct {
 	Status  string         `json:"status"`
 	Records []domainRecord `json:"records"`
+}
+
+type domainListRecord struct {
+	Domain       string `json:"domain"`
+	Status       string `json:"status"`
+	TLD          string `json:"tld"`
+	CreateDate   string `json:"createDate"`
+	ExpireDate   string `json:"expireDate"`
+	SecurityLock string `json:"securityLock"`
+	WhoisPrivacy string `json:"whoisPrivacy"`
+	AutoRenew    string `json:"autoRenew"`
+	NotLocal     string `json:"notLocal"`
+}
+
+type domainListResponse struct {
+	Status  string             `json:"status"`
+	Domains []domainListRecord `json:"domains"`
 }
 
 type nsResponse struct {
@@ -139,7 +157,15 @@ func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
 	json.Unmarshal(bodyString, &ns)
 
 	sort.Strings(ns.Nameservers)
-	return ns.Nameservers, nil
+
+	var nameservers []string
+	for _, nameserver := range ns.Nameservers {
+		// Remove the trailing dot only if it exists.
+		// This provider seems to add the trailing dot to some domains but not others.
+		// The .DE domains seem to always include the dot, others don't.
+		nameservers = append(nameservers, strings.TrimSuffix(nameserver, "."))
+	}
+	return nameservers, nil
 }
 
 func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
@@ -149,4 +175,22 @@ func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
 		return fmt.Errorf("failed NS update (porkbun): %w", err)
 	}
 	return nil
+}
+
+func (c *porkbunProvider) listAllDomains() ([]string, error) {
+	params := requestParams{}
+	var bodyString, err = c.post("/domain/listAll", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed listing all domains from porkbun: %w", err)
+	}
+
+	var dlr domainListResponse
+	json.Unmarshal(bodyString, &dlr)
+
+	var domains []string
+	for _, domain := range dlr.Domains {
+		domains = append(domains, domain.Domain)
+	}
+	sort.Strings(domains)
+	return domains, nil
 }
