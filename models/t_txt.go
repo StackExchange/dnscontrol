@@ -152,8 +152,8 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return strings.Join(rc.TxtStrings, "")
 }
 
-// GetTargetTXTChunked255 returns the TXT target as 255-octet segments, with the remainder in the last segment.
-func (rc *RecordConfig) GetTargetTXTChunked255() []string {
+// GetTargetTXTSegmented returns the TXT target as 255-octet segments, with the remainder in the last segment.
+func (rc *RecordConfig) GetTargetTXTSegmented() []string {
 	return splitChunks(strings.Join(rc.TxtStrings, ""), 255)
 }
 
