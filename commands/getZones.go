@@ -286,8 +286,15 @@ func GetZone(args GetZoneArgs) error {
 					}
 				}
 
+				var targ string
+				if rec.Type == "TXT" {
+					targ = rec.GetTargetTXTJoined()
+				} else {
+					targ = rec.GetTargetCombined()
+				}
+
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined(), cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, targ, cfproxy)
 			}
 
 		default:

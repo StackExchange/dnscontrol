@@ -187,7 +187,7 @@ ldata:
 labelMap: len=6 map[laba.f.com:true labc.f.com:true labe.f.com:true labf.f.com:true labg.f.com:true labh.f.com:true]
 keyMap:   len=8 map[{laba.f.com A}:true {laba.f.com MX}:true {labc.f.com CNAME}:true {labe.f.com A}:true {labf.f.com TXT}:true {labg.f.com NS}:true {labh.f.com A}:true {labh.f.com CNAME}:true]
 existing: ["1.2.3.4" "10 laba.f.com." "laba.f.com." "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "laba.f.com." "labb.f.com." "labc.f.com." "labe.f.com." "labd.f.com."]
-desired: ["1.2.3.4" "1.2.3.5" "20 labb.f.com." "10.10.10.95" "10.10.10.96" "10.10.10.97" "10.10.10.98" "foo" "labf.f.com." "laba.f.com." "labe.f.com." "labb.f.com." "1.2.3.4"]
+desired: ["1.2.3.4" "1.2.3.5" "20 labb.f.com." "10.10.10.95" "10.10.10.96" "10.10.10.97" "10.10.10.98" "\"foo\"" "labf.f.com." "laba.f.com." "labe.f.com." "labb.f.com." "1.2.3.4"]
 origin: f.com
 compFn: <nil>
 `,

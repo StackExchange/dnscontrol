@@ -1,6 +1,0 @@
-$TTL 300
-a                IN TXT   "simple"
-b                IN TXT   "ws at end "
-c                IN TXT   "one"
-d                IN TXT   "bonieclyde"
-e                IN TXT   "strawwoodbrick"
