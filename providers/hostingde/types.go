@@ -193,8 +193,9 @@ func recordToNative(rc *models.RecordConfig) *record {
 	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA":
 		// Nothing special.
 	case "TXT":
-		txtStrings := make([]string, len(rc.TxtStrings))
-		copy(txtStrings, rc.TxtStrings)
+		// TODO(tlim): Move this to a function with unit tests.
+		txtStrings := make([]string, rc.GetTargetTXTSegmentCount())
+		copy(txtStrings, rc.GetTargetTXTSegmented())
 
 		// Escape quotes
 		for i := range txtStrings {

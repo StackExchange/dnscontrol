@@ -242,7 +242,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 	case "CAA":
 		record.Answer = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, record.Answer)
 	case "TXT":
-		record.Answer = encodeTxt(rc.TxtStrings)
+		record.Answer = encodeTxt(rc.GetTargetTXTSegmented())
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
@@ -267,7 +267,7 @@ func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
 	return record.Raw
 }
 
-// encodeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+// encodeTxt encodes []string for sending in the CREATE/MODIFY API:
 func encodeTxt(txts []string) string {
 	var r []string
 	for _, txt := range txts {
