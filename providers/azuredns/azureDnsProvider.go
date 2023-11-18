@@ -521,8 +521,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if recordSet.Properties.TxtRecords == nil {
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
-			// Empty TXT record needs to have no value set in it's properties
-			if !(rec.GetTargetTXTSegmentCount() == 1 && rec.GetTargetTXTSegmented()[0] == "") {
+			if rec.GetTargetTXTJoined() != "" { // Empty TXT record needs to have no value set in it's properties
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
 					txts = append(txts, to.StringPtr(txt))

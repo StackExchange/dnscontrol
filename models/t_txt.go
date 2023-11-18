@@ -69,6 +69,10 @@ func (rc *RecordConfig) GetTargetTXTSegmentCount() int {
 }
 
 func splitChunks(buf string, lim int) []string {
+	if len(buf) == 0 {
+		return nil
+	}
+
 	var chunk string
 	chunks := make([]string, 0, len(buf)/lim+1)
 	for len(buf) >= lim {
