@@ -33,7 +33,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 func MaxLengthNDC(rc *models.RecordConfig) error {
 	txtStrings := rc.GetTargetTXTSegmented()
 
-	if len(rc.GetTargetTXTJoined()) == 0 {
+	if rc.GetTargetTXTJoined() == "" {
 		return nil
 	}
 

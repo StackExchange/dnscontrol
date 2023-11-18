@@ -184,6 +184,8 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 		zer.NewPriority = rec.SrvPriority
 		zer.NewWeight = rec.SrvWeight
 		zer.NewPort = rec.SrvPort
+	case "TXT":
+		zer.NewValue = rec.GetTargetTXTJoined()
 	default: // "A", "CNAME", "NS"
 		// Nothing to do.
 	}
