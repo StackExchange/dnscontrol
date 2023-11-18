@@ -316,7 +316,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		//printer.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		//printer.Printf("DEBUG TXT len = %v\n", rec.GetTargetTXTSegmentCount())
 		//printer.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText %q`, rec.GetTargetTXTJoined())
 	//case "RT":
