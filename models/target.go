@@ -61,6 +61,8 @@ func (rc *RecordConfig) GetTargetCombined() string {
 
 	if rc.Type == "SOA" {
 		return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+	} else if rc.Type == "TXT" {
+		return rc.target // It is already zoneFileQuoted()
 	}
 
 	return rc.zoneFileQuoted()
