@@ -17,6 +17,11 @@ func SplitSingleLongTxt(records []*models.RecordConfig) {
 	}
 }
 
+// ToChunks returns the string as chunks of 255-octet strings (the last string being the remainder).
+func ToChunks(s string) []string {
+	return splitChunks(s, 255)
+}
+
 func splitChunks(buf string, lim int) []string {
 	var chunk string
 	chunks := make([]string, 0, len(buf)/lim+1)
