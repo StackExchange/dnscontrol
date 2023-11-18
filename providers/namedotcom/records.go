@@ -154,7 +154,7 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 	// nothing
 	case "TXT":
-	// 	record.Answer = encodeTxt(rc.TxtStrings)
+	// nothing
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")

@@ -58,6 +58,16 @@ func (rc *RecordConfig) GetTargetTXTSegmented() []string {
 	return splitChunks(rc.target, 255)
 }
 
+// GetTargetTXTSegmentCount returns the number of 255-octet segments required to store TXT target.
+func (rc *RecordConfig) GetTargetTXTSegmentCount() int {
+	total := len(rc.target)
+	segs := total / 255 // integer division, decimals are truncated
+	if (total % 255) > 0 {
+		return segs + 1
+	}
+	return segs
+}
+
 func splitChunks(buf string, lim int) []string {
 	var chunk string
 	chunks := make([]string, 0, len(buf)/lim+1)

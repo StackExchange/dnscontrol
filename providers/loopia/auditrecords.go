@@ -23,11 +23,6 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 // TxtHasSegmentLen450orLonger audits TXT records for strings that are >450 octets.
 func TxtHasSegmentLen450orLonger(rc *models.RecordConfig) error {
-	// This is no longer needed.  The provider can simply generate segments of 255-octets or less.
-	//for _, txt := range rc.TxtStrings {
-	//	if len(txt) > 450 {
-	//		return fmt.Errorf("%q txtstring length > 450", rc.GetLabel())
-	//	}
-	//}
+	// No longer needed. We always generate segments that are 255 octets or fewer.
 	return nil
 }

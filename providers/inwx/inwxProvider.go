@@ -212,6 +212,7 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 
 // checkRecords ensures that there is no single-quote inside TXT records which would be ignored by INWX.
 func checkRecords(records models.Records) error {
+	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
 	for _, r := range records {
 		if r.Type == "TXT" {
 			target := r.GetTargetField()

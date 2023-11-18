@@ -173,8 +173,10 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			}
 			recConfig.SetLabel(fmt.Sprintf("%s.%s", service, strings.ToLower(protocol)), *domain.Name)
 		case "TXT":
-			//recConfig.TxtStrings = append(recConfig.TxtStrings, *record.Data)
-			recConfig.SetTargetTXT(*record.Data)
+			// OLD: recConfig.TxtStrings = append(recConfig.TxtStrings, *record.Data)
+			recConfig.SetTargetTXTs(append(recConfig.GetTargetTXTSegmented(), *record.Data))
+			// NB(tlim) The above code seems too complex.  Can it be simplied to this?
+			// recConfig.SetTargetTXT(*record.Data)
 			fallthrough
 		case "MX":
 			if record.MxPriority != nil {

@@ -86,7 +86,7 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 			}
 		case "TXT": // Avoid double quoting for TXT records
 			rr = dnssdk.ResourceRecord{
-				Content: convertTxtSliceToSdkAnySlice([]string{r.GetTargetField()}),
+				Content: convertTxtSliceToSdkAnySlice([]string{r.GetTargetCombined()}),
 				Meta:    nil,
 				Enabled: true,
 			}

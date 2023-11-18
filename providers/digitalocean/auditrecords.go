@@ -46,7 +46,7 @@ func MaxLengthDO(rc *models.RecordConfig) error {
 	// In other words, they're doing the checking on the API protocol
 	// encoded data instead of on on the resulting TXT record.  Sigh.
 
-	if len(rc.GetTargetField()) > 509 {
+	if len(rc.GetTargetTXTJoined()) > 509 {
 		return fmt.Errorf("encoded txt too long")
 	}
 

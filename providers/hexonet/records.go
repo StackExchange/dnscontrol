@@ -264,7 +264,7 @@ func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
 	return record.Raw
 }
 
-// encodeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+// encodeTxt encodes []string for sending in the CREATE/MODIFY API:
 func encodeTxt(txts []string) string {
 	var r []string
 	for _, txt := range txts {

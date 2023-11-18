@@ -128,7 +128,14 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 }
 
 func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
-	existingTarget := cor.Existing.GetTargetField()
+	var existingTarget string
+
+	switch cor.Existing.Type {
+	case "TXT":
+		existingTarget = cor.Existing.GetTargetTXTJoined()
+	default:
+		existingTarget = cor.Existing.GetTargetField()
+	}
 
 	zer := zoneResourceRecordEdit{
 		Action:       "PURGE",
@@ -149,11 +156,19 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	rec := cre.Desired
 
+	var recTarget string
+	switch rec.Type {
+	case "TXT":
+		recTarget = rec.GetTargetTXTJoined()
+	default:
+		recTarget = rec.GetTargetField()
+	}
+
 	zer := zoneResourceRecordEdit{
 		Action:     "ADD",
 		RecordType: rec.Type,
 		NewKey:     rec.Name,
-		NewValue:   rec.GetTargetField(),
+		NewValue:   recTarget,
 		NewTTL:     rec.TTL,
 	}
 
@@ -169,8 +184,6 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 		zer.NewPriority = rec.SrvPriority
 		zer.NewWeight = rec.SrvWeight
 		zer.NewPort = rec.SrvPort
-	case "TXT":
-		zer.NewValue = rec.GetTargetField()
 	default: // "A", "CNAME", "NS"
 		// Nothing to do.
 	}
@@ -183,8 +196,15 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 	// TODO: Assert that old.Type == rec.Type
 	// TODO: Assert that old.Name == rec.Name
 
-	oldTarget := old.GetTargetField()
-	recTarget := rec.GetTargetField()
+	var oldTarget, recTarget string
+	switch old.Type {
+	case "TXT":
+		oldTarget = old.GetTargetTXTJoined()
+		recTarget = rec.GetTargetTXTJoined()
+	default:
+		oldTarget = old.GetTargetField()
+		recTarget = rec.GetTargetField()
+	}
 
 	zer := zoneResourceRecordEdit{
 		Action:       "EDIT",
