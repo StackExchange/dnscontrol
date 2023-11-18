@@ -67,6 +67,7 @@ func testFormat(t *testing.T, domain, format string) {
 	}
 
 	if w, g := string(want), string(got); w != g {
+		// If the test fails, output a file showing "got"
 		err = os.WriteFile(expectedFilename+".ACTUAL", got, 0644)
 		if err != nil {
 			log.Fatal(err)
