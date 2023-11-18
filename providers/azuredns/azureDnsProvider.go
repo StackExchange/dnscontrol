@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -192,6 +193,8 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
+
 	var corrections []*models.Correction
 
 	// Azure is a "ByRecordSet" API.
@@ -521,7 +524,8 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if recordSet.Properties.TxtRecords == nil {
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
-			if rec.GetTargetTXTJoined() != "" { // Empty TXT record needs to have no value set in it's properties
+			// Empty TXT record needs to have no value set in it's properties
+			if !(rec.GetTargetTXTSegmentCount() == 1 && rec.GetTargetTXTSegmented()[0] == "") {
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
 					txts = append(txts, to.StringPtr(txt))

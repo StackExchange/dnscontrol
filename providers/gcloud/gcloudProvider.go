@@ -259,6 +259,8 @@ type correctionValues struct {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	oldRRs, ok := g.oldRRsMap[dc.Name]
 	if !ok {
 		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)
@@ -304,22 +306,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				if ck.Type == "TXT" {
-					// NB(tlim): These next two lines should not be merged. The
-					// chunks need to be allocated in a way that the memory is
-					// not re-used in the next iteration.
-					//chunks := txtutil.ToChunks(r.GetTargetField())
-					//printer.Printf("DEBUG: gcloud txt chunks=%+v\n", chunks)
-					//newRRs.Rrdatas = append(newRRs.Rrdatas, chunks[0:]...)
-					t := r.GetTargetField()
-					//printer.Printf("DEBUG: gcloud outboundv=%v\n", t)
-					//tc := txtutil.RFC1035ChunkedAndQuoted(t)
-					tc := txtutil.EncodeQuoted(t)
-					//printer.Printf("DEBUG: gcloud  encodedv=%v\n", tc)
-					newRRs.Rrdatas = append(newRRs.Rrdatas, tc)
-				} else {
-					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
-				}
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
@@ -416,7 +403,13 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	rtype := set.Type
-	err := r.PopulateFromString(rtype, rec, origin)
+	var err error
+	switch rtype {
+	case "TXT":
+		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
+	default:
+		err = r.PopulateFromString(rtype, rec, origin)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
 	}

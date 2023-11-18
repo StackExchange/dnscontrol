@@ -24,6 +24,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
@@ -175,6 +176,9 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			printer.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 2592000
 		}
+		if rec.Type == "TXT" {
+			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
+		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
 				printer.Warnf("Gandi does not support changing apex NS records. Ignoring %s\n", rec.GetTargetField())
@@ -194,6 +198,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 	}
 
 	PrepDesiredRecords(dc)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,

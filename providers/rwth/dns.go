@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 // RWTHDefaultNs is the default DNS NS for this provider.
@@ -30,6 +31,7 @@ func (api *rwthProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *rwthProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	domain := dc.Name
 
 	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)

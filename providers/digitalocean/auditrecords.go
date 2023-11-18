@@ -19,11 +19,9 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", MaxLengthDO) // Last verified 2021-03-01
 
-	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2023-11-12
-	// The web portal rejects blackslashes too
-
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2023-11-12
-	// The web portal rejects double quotes
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-01
+	// Double-quotes not permitted in TXT strings. I have a hunch that
+	// this is due to a broken parser on the DO side.
 
 	return a.Audit(records)
 }
@@ -46,7 +44,7 @@ func MaxLengthDO(rc *models.RecordConfig) error {
 	// In other words, they're doing the checking on the API protocol
 	// encoded data instead of on on the resulting TXT record.  Sigh.
 
-	if len(rc.GetTargetTXTJoined()) > 509 {
+	if len(rc.GetTargetRFC1035Quoted()) > 509 {
 		return fmt.Errorf("encoded txt too long")
 	}
 

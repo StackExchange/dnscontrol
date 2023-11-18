@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -57,6 +58,8 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records)
+
 	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
@@ -239,7 +242,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 	case "CAA":
 		record.Answer = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, record.Answer)
 	case "TXT":
-		record.Answer = encodeTxt([]string{rc.GetTargetField()})
+		record.Answer = encodeTxt(rc.GetTargetTXTSegmented())
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")

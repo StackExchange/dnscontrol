@@ -1,5 +1,10 @@
 package txtutil
 
+// SplitSingleLongTxt does nothing.
+// Deprecated: This is a no-op for backwards compatibility.
+func SplitSingleLongTxt(records any) {
+}
+
 // ToChunks returns the string as chunks of 255-octet strings (the last string being the remainder).
 func ToChunks(s string) []string {
 	return splitChunks(s, 255)

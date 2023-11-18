@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
@@ -215,9 +216,10 @@ func checkRecords(records models.Records) error {
 	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
 	for _, r := range records {
 		if r.Type == "TXT" {
-			target := r.GetTargetField()
-			if strings.ContainsAny(target, "`") {
-				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+			for _, target := range r.GetTargetTXTSegmented() {
+				if strings.ContainsAny(target, "`") {
+					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+				}
 			}
 		}
 	}
@@ -226,6 +228,9 @@ func checkRecords(records models.Records) error {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	err := checkRecords(dc.Records)
 	if err != nil {
 		return nil, err

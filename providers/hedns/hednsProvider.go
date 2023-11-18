@@ -191,6 +191,9 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 		}
 	}
 
+	// Normalize
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }
 
@@ -323,10 +326,7 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 			rc.Type = "TXT"
 			fallthrough
 		case "TXT":
-			//err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
-			var t string
-			t, err = txtutil.ParseQuoted(data)
-			err = rc.SetTargetTXT(t)
+			err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
 		default:
 			err = rc.PopulateFromString(rc.Type, data, domain)
 		}

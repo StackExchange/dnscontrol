@@ -278,6 +278,8 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err
@@ -341,35 +343,10 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				}
 
 				for _, r := range inst.New {
-
-					var rr r53Types.ResourceRecord
-					if instType == "TXT" {
-						// //printer.Printf("DEBUG: txt originalv=%v\n", r.GetTargetField())
-						// //t := txtutil.RFC1035ChunkedAndQuoted(r.GetTargetField())
-						// //printer.Printf("DEBUG: txt outbound=%q\n", t)
-						// ts := r.GetTargetTXTChunked255()
-						// //t = strings.ReplaceAll(t, `\`, `\\`)
-						// //t = strings.ReplaceAll(t, `"`, `\"`)
-						// for i := range ts {
-						// 	ts[i] = strings.ReplaceAll(ts[i], `\`, `\\`)
-						// 	ts[i] = strings.ReplaceAll(ts[i], `"`, `\"`)
-						// }
-						// t := `"` + strings.Join(ts, `" "`) + `"`
-						// printer.Printf("DEBUG: txt outboundv=%v\n", t)
-
-						t := txtutil.EncodeQuoted(r.GetTargetField())
-						//printer.Printf("XXXXXXXXX %v\n", t)
-
-						rr = r53Types.ResourceRecord{
-							Value: aws.String(t),
-						}
-					} else {
-						rr = r53Types.ResourceRecord{
-							Value: aws.String(r.GetTargetCombined()),
-						}
+					rr := r53Types.ResourceRecord{
+						Value: aws.String(r.GetTargetCombined()),
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-
 					i := int64(r.TTL)
 					rrset.TTL = &i
 				}
@@ -515,20 +492,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rc.Original = set
 				switch rtypeString {
 				case "TXT":
-					//printer.Printf("DEBUG: txt inboundv=%v\n", val)
-					//printer.Printf("DEBUG: txt decoded=%v\n", models.ParseQuotedTxt(val)[0])
-					//err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
-
-					//dt, _ := models.ParseQuotedFields(val)
-					//printer.Printf("DEBUG: txt decodedv=%v\n", dt)
-					//err = rc.SetTargetTXTs(dt)
-
-					var t string
-					t, err = txtutil.ParseQuoted(val)
-					if err == nil {
-						err = rc.SetTargetTXT(t)
-					}
-
+					err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
 				default:
 					err = rc.PopulateFromString(rtypeString, val, origin)
 				}

@@ -25,6 +25,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -194,32 +195,11 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		header := rr.Header()
-		rtype := dns.TypeToString[header.Rrtype]
-		if rtype == "TXT" {
-			v := rr.(*dns.TXT)
-			t := strings.Join(v.Txt, "")
-			//fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents inbounds=%s\n", t)
-			td := strings.ReplaceAll(t, `\"`, `"`)
-			td = strings.ReplaceAll(td, `\\`, `\`)
-			//fmt.Fprintf(os.Stdout, "DEBUG: ParseZoneContents decodeds=%s\n", td)
-
-			rec := models.RecordConfig{Type: "TXT"}
-			rec.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), zoneName)
-			rec.TTL = header.Ttl
-			rec.Original = rr
-			err := rec.SetTargetTXT(td)
-			if err != nil {
-				return nil, err
-			}
-			foundRecords = append(foundRecords, &rec)
-		} else {
-			rec, err := models.RRtoRC(rr, zoneName)
-			if err != nil {
-				return nil, err
-			}
-			foundRecords = append(foundRecords, &rec)
+		rec, err := models.RRtoRC(rr, zoneName)
+		if err != nil {
+			return nil, err
 		}
+		foundRecords = append(foundRecords, &rec)
 	}
 
 	if err := zp.Err(); err != nil {
@@ -230,6 +210,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records)
 	var corrections []*models.Correction
 
 	changes := false

@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/oracle/oci-go-sdk/v32/common"
 	"github.com/oracle/oci-go-sdk/v32/dns"
@@ -203,6 +204,7 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	var err error
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
 	for _, rec := range dc.Records {

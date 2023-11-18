@@ -17,7 +17,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	// Needs investigation. Could be a dnscontrol issue or
 	// the provider doesn't support double quotes.
 
-	a.Add("TXT", rejectif.TxtLongerThan255)
+	a.Add("TXT", rejectif.TxtHasMultipleSegments)
 
 	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2023-01-19
 

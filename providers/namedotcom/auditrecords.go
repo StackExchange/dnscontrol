@@ -14,15 +14,13 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("MX", rejectif.MxNull) // Last verified 2023-10-25
+	a.Add("MX", rejectif.MxNull) // Last verified 2020-12-28
 
-	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2023-10-25
+	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2020-12-28
 
-	a.Add("TXT", MaxLengthNDC) // Last verified 2023-10-25
+	a.Add("TXT", MaxLengthNDC) // Last verified 2021-03-01
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-10-25
-
-	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-10-25
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
 
 	return a.Audit(records)
 }
@@ -32,8 +30,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 // length limit is undocumented. This seems to work.
 func MaxLengthNDC(rc *models.RecordConfig) error {
 	txtStrings := rc.GetTargetTXTSegmented()
-
-	if rc.GetTargetTXTJoined() == "" {
+	if len(txtStrings) == 0 {
 		return nil
 	}
 
