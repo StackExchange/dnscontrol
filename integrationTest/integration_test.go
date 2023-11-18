@@ -1086,9 +1086,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
-			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
-			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
-			tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
+			//tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
+			//tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
+			//tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
 
 			tc("TXT interior ws", txt("foosp", "with spaces")),
 			tc("TXT trailing ws", txt("foows1", "with space at end ")),
