@@ -88,11 +88,11 @@ func TestParseQuotedTxt(t *testing.T) {
 	for i, test := range tests {
 		ls := ParseQuotedTxt(test.d1)
 		if len(ls) != len(test.e2) {
-			t.Errorf("%v: expected TxtStringsLEN=(%q) got (%q)", i, test.e2, ls)
+			t.Errorf("%v: expected LEN TxtStrings=q(%q) got q(%q)", i, test.e2, ls)
 		}
 		for i := range ls {
 			if ls[i] != test.e2[i] {
-				t.Errorf("%v: expected TxtStrings=(%q) got (%q)", i, test.e2, ls)
+				t.Errorf("%v: expected TxtStrings=q(%q) got q(%q)", i, test.e2, ls)
 			}
 		}
 	}

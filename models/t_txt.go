@@ -1,9 +1,8 @@
 package models
 
 import (
+	"fmt"
 	"strings"
-
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 /*
@@ -54,7 +53,42 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return rc.target
 }
 
-// GetTargetTXTChunked255 returns the TXT target as a list of strings, 255 octets each with the remainder on the last string.
-func (rc *RecordConfig) GetTargetTXTChunked255() []string {
-	return txtutil.ToChunks(rc.target)
+// GetTargetTXTSegmented returns the TXT target as 255-octet segments, with the remainder in the last segment.
+func (rc *RecordConfig) GetTargetTXTSegmented() []string {
+	return splitChunks(rc.target, 255)
+}
+
+func splitChunks(buf string, lim int) []string {
+	var chunk string
+	chunks := make([]string, 0, len(buf)/lim+1)
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:])
+	}
+	return chunks
+}
+
+// SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
+// and sets .TxtStrings based on the result.
+// Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
+// Ex:
+//
+//	"foo"        << 1 string
+//	"foo bar"    << 1 string
+//	"foo" "bar"  << 2 strings
+//	foo          << error. No quotes! Did you intend to use SetTargetTXT?
+func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
+	if s != "" && s[0] != '"' {
+		// If you get this error, it is likely that you should use
+		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
+		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
+	}
+	many, err := ParseQuotedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(many)
 }

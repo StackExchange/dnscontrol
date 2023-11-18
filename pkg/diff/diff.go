@@ -34,11 +34,6 @@ func (d *differ) content(r *models.RecordConfig) string {
 	return fmt.Sprintf("%s ttl=%d", r.ToComparableNoTTL(), r.TTL)
 }
 
-// // CorrectionLess returns true when comparing corrections.
-// func CorrectionLess(c []*models.Correction, i, j int) bool {
-// 	return c[i].Msg < c[j].Msg
-// }
-
 func (c Correlation) String() string {
 	if c.Existing == nil {
 		return color.GreenString("+ CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
