@@ -47,7 +47,7 @@ func (rc *RecordConfig) GetTargetCombined() string {
 
 	switch rc.Type {
 	case "TXT":
-		return rc.target
+		return rc.zoneFileQuoted()
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	}
