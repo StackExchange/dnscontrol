@@ -9,6 +9,16 @@ import (
 
 // Keep these in alphabetical order.
 
+// TxtHasBackslash audits TXT records for strings that contains one or more backslashes.
+func TxtHasBackslash(rc *models.RecordConfig) error {
+	for _, txt := range rc.TxtStrings {
+		if strings.Contains(txt, `\`) {
+			return fmt.Errorf("txtstring contains backslash")
+		}
+	}
+	return nil
+}
+
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
 	for _, txt := range rc.TxtStrings {

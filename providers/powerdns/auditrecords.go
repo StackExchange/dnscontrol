@@ -1,6 +1,9 @@
 package powerdns
 
-import "github.com/StackExchange/dnscontrol/v4/models"
+import (
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
+)
 
 // AuditRecords returns a list of errors corresponding to the records
 // that aren't supported by this provider.  If all records are
