@@ -49,6 +49,8 @@ func TestTxtDecode(t *testing.T) {
 		{`"q2backs\\lash"`, []string{`q2backs\lash`}},
 		{`"q3backs\\\lash"`, []string{`q3backs\lash`}},
 		{`"q4backs\\\\lash"`, []string{`q4backs\\lash`}},
+		// HETZNER includes a space after the last quote. Make sure we handle that.
+		{`"one" "more" `, []string{`one`, `more`}},
 	}
 	for i, test := range tests {
 		got, err := txtDecode(test.data)

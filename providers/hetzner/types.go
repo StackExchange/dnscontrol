@@ -1,9 +1,8 @@
 package hetzner
 
 import (
-	"strings"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 type bulkCreateRecordsRequest struct {
@@ -58,7 +57,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
 	r := record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
-		Value:  in.GetTargetCombined(),
+		Value:  in.GetTargetCombinedFunc(txtutil.EncodeQuoted),
 		TTL:    &in.TTL,
 		ZoneID: zone.ID,
 	}
@@ -88,13 +87,9 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	}
 	rc.SetLabel(r.Name, domain)
 
-	value := r.Value
 	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
 	// NOTE: The actual DNS answer does not contain the space.
+	// NOTE: The txtutil.ParseQuoted parser handles this just fine.
 	// Last checked: 2023-04-01
-	if r.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
-		// Per RFC 1035 spaces outside quoted values are irrelevant.
-		value = strings.TrimRight(value, " ")
-	}
-	return &rc, rc.PopulateFromString(r.Type, value, domain)
+	return &rc, rc.PopulateFromStringFunc(r.Type, r.Value, domain, txtutil.ParseQuoted)
 }
