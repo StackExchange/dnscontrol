@@ -13,7 +13,7 @@ import (
 // It is for backwards compatibility only. New providers should use pkg/diff2.
 //
 // To use this simply change New() to NewCompat(). If that doesn't
-// work please report a bug.  The "extraValues" parameter is not supported.
+// work please report a bug. The extraValues parameter is not supported.
 func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	if len(extraValues) != 0 {
 		panic("extraValues not supported")

@@ -19,6 +19,16 @@ func TxtHasBackslash(rc *models.RecordConfig) error {
 
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
+	for _, txt := range rc.TxtStrings {
+		if strings.Contains(txt, "`") {
+			return fmt.Errorf("txtstring contains backtick")
+		}
+	}
+	return nil
+}
+
+// TxtHasBackticks audits TXT records for strings that contain backticks.
+func TxtHasBackticks(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "`") {
 		return fmt.Errorf("txtstring contains backtick")
 	}

@@ -13,5 +13,11 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("MX", rejectif.MxNull) // Last verified 2023-01-28
 
+	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2023-01-28
+
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-01-28
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-01-28
+
 	return a.Audit(records)
 }
