@@ -325,10 +325,8 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
-		case "TXT":
-			err = rc.SetTargetTXTs(models.ParseQuotedTxt(data))
 		default:
-			err = rc.PopulateFromString(rc.Type, data, domain)
+			err = rc.PopulateFromStringFunc(rc.Type, data, domain, txtutil.ParseQuoted)
 		}
 
 		if err != nil {
@@ -563,7 +561,7 @@ func (c *hednsProvider) editZoneRecord(zoneID uint64, recordID uint64, rc *model
 		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
 		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
 	default:
-		values.Set("Content", rc.GetTargetCombined())
+		values.Set("Content", rc.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 	}
 
 	response, err := c.httpClient.PostForm(apiEndpoint, values)
