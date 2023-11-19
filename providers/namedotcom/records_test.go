@@ -17,6 +17,9 @@ var txtData = []struct {
 	{[]string{"eh", "bee", "cee"}, `"eh""bee""cee"`},
 	{[]string{"o\"ne", "tw\"o"}, `"o\"ne""tw\"o"`},
 	{[]string{"dimple"}, `dimple`},
+	//{[]string{`back\slash`}, `"back\\slash"`}, // Not yet supported
+	//{[]string{`back\\slash`}, `"back\\\\slash"`}, // Not yet supported
+	//{[]string{`back\\\slash`}, `"back\\\\\\slash"`}, // Not yet supported
 	{[]string{"fun", "two"}, `"fun""two"`},
 	{[]string{"eh", "bzz", "cee"}, `"eh""bzz""cee"`},
 }
