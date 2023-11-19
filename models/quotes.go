@@ -47,6 +47,11 @@ func ParseQuotedTxt(s string) []string {
 	return strings.Split(StripQuotes(s), `" "`)
 }
 
+func ParseQuotedTxtString(s string) (string, error) {
+	ts := ParseQuotedTxt(s)
+	return strings.Join(ts, ""), nil
+}
+
 // ParseQuotedFields is like strings.Fields except individual fields
 // might be quoted using `"`.
 func ParseQuotedFields(s string) ([]string, error) {
