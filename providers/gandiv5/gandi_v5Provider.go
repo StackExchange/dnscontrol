@@ -176,9 +176,6 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			printer.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 2592000
 		}
-		// if rec.Type == "TXT" {
-		// 	rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
-		// }
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
 				printer.Warnf("Gandi does not support changing apex NS records. Ignoring %s\n", rec.GetTargetField())

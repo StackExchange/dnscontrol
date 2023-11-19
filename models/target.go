@@ -27,6 +27,13 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 	return net.ParseIP(rc.target)
 }
 
+func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) string {
+	if rc.Type == "TXT" {
+		return encodeFn(rc.target)
+	}
+	return rc.GetTargetCombined()
+}
+
 // GetTargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
 func (rc *RecordConfig) GetTargetCombined() string {

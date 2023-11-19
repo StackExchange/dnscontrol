@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, txtFn func(s string) string) error {
+func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, txtFn func(s string) (string, error)) error {
 	if rc.Type != "" && rc.Type != rtype {
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
@@ -43,7 +43,11 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		if txtFn == nil {
 			return rc.SetTargetTXT(contents)
 		} else {
-			return rc.SetTargetTXT(txtFn(contents))
+			t, err := txtFn(contents)
+			if err != nil {
+				return fmt.Errorf("invalid TXT record: %s", contents)
+			}
+			return rc.SetTargetTXT(t)
 		}
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
