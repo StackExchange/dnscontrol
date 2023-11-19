@@ -1067,14 +1067,19 @@ func makeTests(t *testing.T) []*TestGroup {
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
-			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
-			// of record. When the provider fixes the bug or changes behavior,
-			// update the AuditRecords().
+			// of record.
+			// Do not use only()/not()/requires() in this section.
 
-			// Commented this one out. Nobody supports this or needs it.
-			tc("a 0-byte TXT", txt("foo0", "")),
+			// Some of these test cases are commented out because they test
+			// something that isn't wildly needed and many APIs don't
+			// support. For example many APIs don't support a backslack
+			// (`\`) in a TXT record; luckily we've never seen an appliation
+			// that needed that character.
+
+			// Nobody needs this and many APIs don't allow it.
+			//tc("a 0-byte TXT", txt("foo0", "")),
 
 			tc("a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
@@ -1083,24 +1088,24 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("a 511-byte TXT", txt("foo511", strings.Repeat("F", 511))),
 			tc("a 765-byte TXT", txt("foo765", strings.Repeat("G", 765))),
 			tc("a 766-byte TXT", txt("foo766", strings.Repeat("H", 766))),
+			//clear(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
 			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
 			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
-			tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
 
 			tc("TXT interior ws", txt("foosp", "with spaces")),
 			tc("TXT trailing ws", txt("foows1", "with space at end ")),
-			//clear(),
 
-			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
-			// This was added because Vultr syntax-checks TXT records with SPF contents.
-			//clear(),
+			// Vultr syntax-checks TXT records with SPF contents.
+			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 
-			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
+			// Nobody needs this and many APIs don't allow it.
+			//tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
+
+			// Nobody needs this and many APIs don't allow it.
 			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
-			clear(),
 		),
 
 		//
