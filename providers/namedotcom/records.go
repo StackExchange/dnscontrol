@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -154,7 +155,7 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 	// nothing
 	case "TXT":
-	// nothing
+		record.Answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -168,6 +169,19 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	}
 	_, err := n.client.CreateRecord(record)
 	return err
+}
+
+// makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+func encodeTxt(txts []string) string {
+	ans := txts[0]
+
+	if len(txts) > 1 {
+		ans = ""
+		for _, t := range txts {
+			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+		}
+	}
+	return ans
 }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.

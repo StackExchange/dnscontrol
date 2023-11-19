@@ -20,7 +20,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", MaxLengthNDC) // Last verified 2021-03-01
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-11-18
 
 	return a.Audit(records)
 }
