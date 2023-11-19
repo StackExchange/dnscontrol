@@ -68,7 +68,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 			}
 			keys[key] = &zr
 		} else {
-			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
+			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 
 			if r.TTL != uint32(zr.RrsetTTL) {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
