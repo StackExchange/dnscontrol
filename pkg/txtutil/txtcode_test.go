@@ -70,6 +70,7 @@ func TestTxtEncode(t *testing.T) {
 		data     []string
 		expected string
 	}{
+		{[]string{}, `""`},
 		{[]string{``}, `""`},
 		{[]string{`foo`}, `"foo"`},
 		{[]string{`aaa`, `bbb`}, `"aaa" "bbb"`},
@@ -78,10 +79,12 @@ func TestTxtEncode(t *testing.T) {
 		{[]string{`quo'te`}, "\"quo'te\""},
 		{[]string{"blah`blah"}, "\"blah`blah\""},
 		{[]string{`quo"te`}, "\"quo\\\"te\""},
+		{[]string{`quo"te`}, `"quo\"te"`},
 		{[]string{`q"uo"te`}, "\"q\\\"uo\\\"te\""},
 		{[]string{`1backs\lash`}, `"1backs\\lash"`},
 		{[]string{`2backs\\lash`}, `"2backs\\\\lash"`},
 		{[]string{`3backs\\\lash`}, `"3backs\\\\\\lash"`},
+		{[]string{strings.Repeat("M", 26), `quo"te`}, `"MMMMMMMMMMMMMMMMMMMMMMMMMM" "quo\"te"`},
 	}
 	for i, test := range tests {
 		got := txtEncode(test.data)

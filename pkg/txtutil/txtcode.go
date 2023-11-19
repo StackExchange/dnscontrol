@@ -101,12 +101,20 @@ func txtDecode(s string) (string, error) {
 // txtEncode encodes TXT strings as expected by ROUTE53 and GCLOUD.
 func txtEncode(ts []string) string {
 	//printer.Printf("DEBUG: route53 txt outboundv=%v\n", ts)
+	if (len(ts) == 0) || (strings.Join(ts, "") == "") {
+		return `""`
+	}
+
+	var r []string
 
 	for i := range ts {
-		ts[i] = strings.ReplaceAll(ts[i], `\`, `\\`)
-		ts[i] = strings.ReplaceAll(ts[i], `"`, `\"`)
+		tx := ts[i]
+		tx = strings.ReplaceAll(tx, `\`, `\\`)
+		tx = strings.ReplaceAll(tx, `"`, `\"`)
+		tx = `"` + tx + `"`
+		r = append(r, tx)
 	}
-	t := `"` + strings.Join(ts, `" "`) + `"`
+	t := strings.Join(r, ` `)
 
 	//printer.Printf("DEBUG: route53 txt  encodedv=%v\n", t)
 	return t
