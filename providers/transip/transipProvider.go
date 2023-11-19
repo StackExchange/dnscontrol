@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
@@ -296,7 +297,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 		Original: entry,
 	}
 	rc.SetLabel(entry.Name, origin)
-	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
+	if err := rc.PopulateFromStringFunc(entry.Type, entry.Content, origin, txtutil.ParseQuoted); err != nil {
 		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
@@ -325,6 +326,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
-		return models.StripQuotes(rc.GetTargetCombined())
+		return models.StripQuotes(rc.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 	}
 }
