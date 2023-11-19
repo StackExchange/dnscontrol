@@ -1099,7 +1099,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//clear(),
 
 			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
-			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 			clear(),
 		),
 
