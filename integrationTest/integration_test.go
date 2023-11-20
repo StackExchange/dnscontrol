@@ -1119,7 +1119,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 4 backslash", txt("fooosbs4", `4back\\\\slash`)),
 
 			// Nobody needs this and many APIs don't allow it.
-			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			//tc("Create TXT with frequently difficult characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		testgroup("TXT backslashes",
