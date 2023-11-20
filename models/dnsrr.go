@@ -35,12 +35,12 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	return helperRRtoRC(rr, origin, false)
 }
 
-// RRtoRC converts dns.RR to RecordConfig. Compensates for the backslash bug in github.com/miekg/dns/issues/1384.
+// RRtoRCTxtBug converts dns.RR to RecordConfig. Compensates for the backslash bug in github.com/miekg/dns/issues/1384.
 func RRtoRCTxtBug(rr dns.RR, origin string) (RecordConfig, error) {
 	return helperRRtoRC(rr, origin, true)
 }
 
-// RRtoRC converts dns.RR to RecordConfig. If fixBug is true, replaces `\\` to `\` in TXT records to compensate for github.com/miekg/dns/issues/1384.
+// helperRRtoRC converts dns.RR to RecordConfig. If fixBug is true, replaces `\\` to `\` in TXT records to compensate for github.com/miekg/dns/issues/1384.
 func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
@@ -84,7 +84,13 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
 		if fixBug {
-			err = rc.SetTargetTXT(strings.ReplaceAll(strings.Join(v.Txt, ""), `\\`, `\`))
+			t := strings.Join(v.Txt, "")
+			te := t
+			te = strings.ReplaceAll(te, `\\`, `\`)
+			te = strings.ReplaceAll(te, `\"`, `"`)
+			//fmt.Fprintf(os.Stderr, "DEBUG: RRtoRC inboundv=%v\n", t)
+			//fmt.Fprintf(os.Stderr, "DEBUG: RRtoRC decodedv=%v\n", te)
+			err = rc.SetTargetTXT(te)
 		} else {
 			err = rc.SetTargetTXTs(v.Txt)
 		}
