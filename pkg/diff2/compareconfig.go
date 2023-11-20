@@ -103,7 +103,6 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
-	//printer.Printf("DEBUG: EXISTING:\n")
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
 	cc.addRecords(desired, false)
 	cc.verifyCNAMEAssertions()
