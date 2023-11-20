@@ -33,26 +33,10 @@ func TxtHasDoubleQuotes(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtHasSegmentLen256orLonger audits TXT records for strings that are >255 octets.
-func TxtHasSegmentLen256orLonger(rc *models.RecordConfig) error {
-	if len(rc.GetTargetTXTJoined()) > 255 {
-		return fmt.Errorf("%q txtstring length > 255", rc.GetLabel())
-	}
-	return nil
-}
-
 // TxtHasSingleQuotes audits TXT records for strings that contain single-quotes.
 func TxtHasSingleQuotes(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "'") {
 		return fmt.Errorf("txtstring contains single-quotes")
-	}
-	return nil
-}
-
-// TxtHasMultipleSegments audits TXT records for multiple strings
-func TxtHasMultipleSegments(rc *models.RecordConfig) error {
-	if len(rc.GetTargetTXTSegmented()) > 1 {
-		return fmt.Errorf("multiple strings in one txt")
 	}
 	return nil
 }
