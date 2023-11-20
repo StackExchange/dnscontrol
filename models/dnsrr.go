@@ -88,8 +88,6 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 			te := t
 			te = strings.ReplaceAll(te, `\\`, `\`)
 			te = strings.ReplaceAll(te, `\"`, `"`)
-			//fmt.Fprintf(os.Stderr, "DEBUG: RRtoRC inboundv=%v\n", t)
-			//fmt.Fprintf(os.Stderr, "DEBUG: RRtoRC decodedv=%v\n", te)
 			err = rc.SetTargetTXT(te)
 		} else {
 			err = rc.SetTargetTXTs(v.Txt)
