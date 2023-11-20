@@ -195,7 +195,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRC(rr, zoneName)
+		rec, err := models.RRtoRCTxtBug(rr, zoneName)
 		if err != nil {
 			return nil, err
 		}

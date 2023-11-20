@@ -1077,9 +1077,15 @@ func makeTests(t *testing.T) []*TestGroup {
 			// support. For example many APIs don't support a backslack
 			// (`\`) in a TXT record; luckily we've never seen an appliation
 			// that needed that character.
+			// If you want to future-proof your provider, temporarily
+			// remove the comments and get those tests working, or add
+			// to recordaudit.go.
+			// ProTip: Unsure how the API escapes something? Try adding
+			// the TXT record via the Web UI and watch how the string is
+			// escaped when you download the records.
 
 			// Nobody needs this and many APIs don't allow it.
-			//tc("a 0-byte TXT", txt("foo0", "")),
+			tc("a 0-byte TXT", txt("foo0", "")),
 
 			tc("a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
@@ -1095,17 +1101,33 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
 			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
 
+			// Semicolons don't need special treatment.
+			// https://serverfault.com/questions/743789
+			tc("TXT with semicolon", txt("foosc1", `semi;colon`)),
+			tc("TXT with semicolon ws", txt("foosc2", `wssemi ; colon`)),
+
 			tc("TXT interior ws", txt("foosp", "with spaces")),
 			tc("TXT trailing ws", txt("foows1", "with space at end ")),
 
 			// Vultr syntax-checks TXT records with SPF contents.
-			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 
 			// Nobody needs this and many APIs don't allow it.
-			//tc("TXT with 1 backslash", txt("fooosbs", `back\slash`)),
+			tc("TXT with 1 backslash", txt("fooosbs1", `1back\slash`)),
+			tc("TXT with 2 backslash", txt("fooosbs2", `2back\\slash`)),
+			tc("TXT with 3 backslash", txt("fooosbs3", `3back\\\slash`)),
+			tc("TXT with 4 backslash", txt("fooosbs4", `4back\\\\slash`)),
 
 			// Nobody needs this and many APIs don't allow it.
-			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+		),
+
+		testgroup("TXT backslashes",
+			tc("TXT with backslashs",
+				txt("fooosbs1", `1back\slash`),
+				txt("fooosbs2", `2back\\slash`),
+				txt("fooosbs3", `3back\\\slash`),
+				txt("fooosbs4", `4back\\\\slash`)),
 		),
 
 		//
