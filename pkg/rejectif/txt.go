@@ -11,9 +11,9 @@ import (
 
 // TxtHasBackslash audits TXT records for strings that contains one or more backslashes.
 func TxtHasBackslash(rc *models.RecordConfig) error {
-	// if strings.Contains(rc.GetTargetTXTJoined(), `\`) {
-	// 	return fmt.Errorf("txtstring contains backslashes")
-	// }
+	if strings.Contains(rc.GetTargetTXTJoined(), `\`) {
+		return fmt.Errorf("txtstring contains backslashes")
+	}
 	return nil
 }
 
