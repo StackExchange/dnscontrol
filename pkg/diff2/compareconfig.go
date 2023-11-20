@@ -105,7 +105,6 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	}
 	//printer.Printf("DEBUG: EXISTING:\n")
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
-	//printer.Printf("DEBUG: DESIRED:\n")
 	cc.addRecords(desired, false)
 	cc.verifyCNAMEAssertions()
 	sort.Slice(cc.ldata, func(i, j int) bool {
