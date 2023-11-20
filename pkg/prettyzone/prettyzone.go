@@ -141,13 +141,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// the remaining line
 		var target string
-		if typeStr == "TXT" {
-			target = rr.GetTargetCombinedFunc(txtutil.EncodeQuoted)
-			printer.Printf("DEBUG: pretty txt outbounds=%s\n", rr.GetTargetField())
-			printer.Printf("DEBUG: pretty txt  encodedv=%v\n", target)
-		} else {
-			target = rr.GetTargetCombined()
-		}
+		target = rr.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 
 		// comment
 		comment := ""
