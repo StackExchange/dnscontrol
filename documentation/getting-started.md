@@ -60,16 +60,19 @@ Shell completion is available for `zsh` and `bash`.
 
 ### zsh
 
+Enable the required completion in zsh. A good tutorial for this is available at [The Valuable Dev](https://thevaluable.dev/zsh-completion-guide-examples/) <sup>[[archived](https://web.archive.org/web/20231015083946/https://thevaluable.dev/zsh-completion-guide-examples/)]</sup>.
+
 Add `eval "$(dnscontrol shell-completion zsh)"` to your `~/.zshrc` file.
 
-This requires completion to be enabled in zsh. A good tutorial for this is available at
-[The Valuable Dev](https://thevaluable.dev/zsh-completion-guide-examples/) <sup>[[archived](https://web.archive.org/web/20231015083946/https://thevaluable.dev/zsh-completion-guide-examples/)]</sup>.
+Or run `dnscontrol shell-completion zsh > /usr/share/zsh/site-functions/_dnscontrol"`.
 
 ### bash
 
+Install the required `bash-completion` package. See [scop/bash-completion](https://github.com/scop/bash-completion/) for instructions.
+
 Add `eval "$(dnscontrol shell-completion bash)"` to your `~/.bashrc` file.
 
-This requires the `bash-completion` package to be installed. See [scop/bash-completion](https://github.com/scop/bash-completion/) for instructions.
+Or run `dnscontrol shell-completion bash > /usr/share/bash-completion/completions/dnscontrol`.
 
 ## 2. Create a place for the config files
 
