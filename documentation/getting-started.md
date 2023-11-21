@@ -57,18 +57,18 @@ If these don't work, more info is in [#805](https://github.com/StackExchange/dns
 ## 1.1. Shell Completion
 
 Shell completion is available for `zsh` and `bash`.
+It works out of the box if zsh completion is set up. A good tutorial for this is available at [The Valuable Dev](https://thevaluable.dev/zsh-completion-guide-examples/) <sup>[[archived](https://web.archive.org/web/20231015083946/https://thevaluable.dev/zsh-completion-guide-examples/)]</sup>.
+For bash install the required `bash-completion` package. See [scop/bash-completion](https://github.com/scop/bash-completion/) for instructions.
+
+If shell completion is not availiable the completion can be installed manually:
 
 ### zsh
-
-Enable the required completion in zsh. A good tutorial for this is available at [The Valuable Dev](https://thevaluable.dev/zsh-completion-guide-examples/) <sup>[[archived](https://web.archive.org/web/20231015083946/https://thevaluable.dev/zsh-completion-guide-examples/)]</sup>.
 
 Add `eval "$(dnscontrol shell-completion zsh)"` to your `~/.zshrc` file.
 
 Or run `dnscontrol shell-completion zsh > /usr/share/zsh/site-functions/_dnscontrol"`.
 
 ### bash
-
-Install the required `bash-completion` package. See [scop/bash-completion](https://github.com/scop/bash-completion/) for instructions.
 
 Add `eval "$(dnscontrol shell-completion bash)"` to your `~/.bashrc` file.
 
