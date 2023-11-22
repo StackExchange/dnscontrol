@@ -53,7 +53,7 @@ require (
 	golang.org/x/net v0.18.0
 	golang.org/x/oauth2 v0.14.0
 	google.golang.org/api v0.151.0
-	gopkg.in/ns1/ns1-go.v2 v2.7.13
+	gopkg.in/ns1/ns1-go.v2 v2.7.11
 )
 
 require (
