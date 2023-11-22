@@ -197,8 +197,7 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
-will *not* automatically add it. You'll need to do that via the
-control panel manually or via the `dnscontrol create-domains` command.
+will automatically add it when `dnscontrol push` is executed.
 
 
 ## Redirects
