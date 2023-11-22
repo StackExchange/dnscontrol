@@ -2,6 +2,7 @@ package loopia
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
@@ -24,7 +25,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 // TxtHasSegmentLen450orLonger audits TXT records for strings that are >450 octets.
 func TxtHasSegmentLen450orLonger(rc *models.RecordConfig) error {
-	for _, txt := range rc.TxtStrings {
+	for _, txt := range rc.GetTargetTXTSegmented() {
 		if len(txt) > 450 {
 			return fmt.Errorf("%q txtstring length > 450", rc.GetLabel())
 		}

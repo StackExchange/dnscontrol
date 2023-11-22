@@ -45,6 +45,8 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 ```
 {% endcode %}
 
+NOTE: The ResourceGroup is case sensitive.
+
 ## Metadata
 This provider does not recognize any special metadata fields unique to Azure DNS.
 

@@ -314,7 +314,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 		// Vultr doesn't permit TXT strings to include double-quotes
 		// therefore, we don't have to escape interior double-quotes.
 		// Vultr's API requires the string to begin and end with double-quotes.
-		r.Data = `"` + strings.Join(rc.TxtStrings, "") + `"`
+		r.Data = `"` + strings.Join(rc.GetTargetTXTSegmented(), "") + `"`
 	default:
 	}
 

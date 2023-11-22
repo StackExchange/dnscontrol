@@ -44,10 +44,9 @@ func MaxLengthDO(rc *models.RecordConfig) error {
 	// In other words, they're doing the checking on the API protocol
 	// encoded data instead of on on the resulting TXT record.  Sigh.
 
-	if len(rc.GetTargetField()) > 509 {
+	if len(rc.GetTargetRFC1035Quoted()) > 509 {
 		return fmt.Errorf("encoded txt too long")
 	}
-	// FIXME(tlim): Try replacing GetTargetField() with (2 + (3*len(rc.TxtStrings) - 1))
 
 	return nil
 }

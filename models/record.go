@@ -269,14 +269,6 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
-// UnsafeSetLabelNull sets the label to "". Normally the FQDN is denoted by .Name being
-// "@" however this can be used to violate that assertion. It should only be used
-// on copies of a RecordConfig that is being used for non-standard things like
-// Marshalling yaml.
-func (rc *RecordConfig) UnsafeSetLabelNull() {
-	rc.Name = ""
-}
-
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
@@ -512,16 +504,6 @@ func (recs Records) HasRecordTypeName(rtype, name string) bool {
 	return false
 }
 
-// FQDNMap returns a map of all LabelFQDNs. Useful for making a
-// truthtable of labels that exist in Records.
-func (recs Records) FQDNMap() (m map[string]bool) {
-	m = map[string]bool{}
-	for _, rec := range recs {
-		m[rec.GetLabelFQDN()] = true
-	}
-	return m
-}
-
 // GetByType returns the records that match rtype typeName.
 func (recs Records) GetByType(typeName string) Records {
 	results := Records{}
@@ -540,19 +522,6 @@ func (recs Records) GroupedByKey() map[RecordKey]Records {
 		groups[rec.Key()] = append(groups[rec.Key()], rec)
 	}
 	return groups
-}
-
-// GroupedByLabel returns a map of keys to records, and their original key order.
-func (recs Records) GroupedByLabel() ([]string, map[string]Records) {
-	order := []string{}
-	groups := map[string]Records{}
-	for _, rec := range recs {
-		if _, found := groups[rec.Name]; !found {
-			order = append(order, rec.Name)
-		}
-		groups[rec.Name] = append(groups[rec.Name], rec)
-	}
-	return order, groups
 }
 
 // GroupedByFQDN returns a map of keys to records, grouped by FQDN.

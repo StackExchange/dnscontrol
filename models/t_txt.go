@@ -147,9 +147,40 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	return nil
 }
 
-// GetTargetTXTJoined returns the TXT target as one string. If it was stored as multiple strings, concatenate them.
+// GetTargetTXTJoined returns the TXT target as one string.
 func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return strings.Join(rc.TxtStrings, "")
+}
+
+// GetTargetTXTSegmented returns the TXT target as 255-octet segments, with the remainder in the last segment.
+func (rc *RecordConfig) GetTargetTXTSegmented() []string {
+	return splitChunks(strings.Join(rc.TxtStrings, ""), 255)
+}
+
+// GetTargetTXTSegmentCount returns the number of 255-octet segments required to store TXT target.
+func (rc *RecordConfig) GetTargetTXTSegmentCount() int {
+	var total int
+	for i := range rc.TxtStrings {
+		total = len(rc.TxtStrings[i])
+	}
+	segs := total / 255 // integer division, decimals are truncated
+	if (total % 255) > 0 {
+		return segs + 1
+	}
+	return segs
+}
+
+func splitChunks(buf string, lim int) []string {
+	var chunk string
+	chunks := make([]string, 0, len(buf)/lim+1)
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:])
+	}
+	return chunks
 }
 
 // SetTargetTXTfromRFC1035Quoted parses a series of quoted strings

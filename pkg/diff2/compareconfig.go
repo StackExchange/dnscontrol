@@ -215,6 +215,7 @@ func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string
 		}
 	}
 
+	// We do this to save memory. This assures the first return value uses the same memory as the second.
 	lenWithoutTTL := len(comp)
 	compFull := comp + fmt.Sprintf(" ttl=%d", rc.TTL)
 

@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"net"
+	"runtime/debug"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -26,7 +27,7 @@ func (rc *RecordConfig) GetTargetField() string {
 	if debugWarnTxtField {
 		if rc.Type == "TXT" {
 			fmt.Printf("DEBUG: WARNING: GetTargetField called on TXT record is frequently wrong: %q\n", rc.target)
-			//debug.PrintStack()
+			debug.PrintStack()
 		}
 	}
 	return rc.target

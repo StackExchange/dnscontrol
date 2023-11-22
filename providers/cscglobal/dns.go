@@ -132,7 +132,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 
 	switch cor.Existing.Type {
 	case "TXT":
-		existingTarget = strings.Join(cor.Existing.TxtStrings, "")
+		existingTarget = cor.Existing.GetTargetTXTJoined()
 	default:
 		existingTarget = cor.Existing.GetTargetField()
 	}
@@ -159,7 +159,7 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	var recTarget string
 	switch rec.Type {
 	case "TXT":
-		recTarget = strings.Join(rec.TxtStrings, "")
+		recTarget = rec.GetTargetTXTJoined()
 	default:
 		recTarget = rec.GetTargetField()
 	}
@@ -185,7 +185,7 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 		zer.NewWeight = rec.SrvWeight
 		zer.NewPort = rec.SrvPort
 	case "TXT":
-		zer.NewValue = strings.Join(rec.TxtStrings, "")
+		zer.NewValue = rec.GetTargetTXTJoined()
 	default: // "A", "CNAME", "NS"
 		// Nothing to do.
 	}
@@ -201,8 +201,8 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 	var oldTarget, recTarget string
 	switch old.Type {
 	case "TXT":
-		oldTarget = strings.Join(old.TxtStrings, "")
-		recTarget = strings.Join(rec.TxtStrings, "")
+		oldTarget = old.GetTargetTXTJoined()
+		recTarget = rec.GetTargetTXTJoined()
 	default:
 		oldTarget = old.GetTargetField()
 		recTarget = rec.GetTargetField()

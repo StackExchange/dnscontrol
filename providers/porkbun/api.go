@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -156,7 +157,15 @@ func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
 	json.Unmarshal(bodyString, &ns)
 
 	sort.Strings(ns.Nameservers)
-	return ns.Nameservers, nil
+
+	var nameservers []string
+	for _, nameserver := range ns.Nameservers {
+		// Remove the trailing dot only if it exists.
+		// This provider seems to add the trailing dot to some domains but not others.
+		// The .DE domains seem to always include the dot, others don't.
+		nameservers = append(nameservers, strings.TrimSuffix(nameserver, "."))
+	}
+	return nameservers, nil
 }
 
 func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {

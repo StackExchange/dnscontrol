@@ -324,7 +324,7 @@ func TestCheckDuplicates(t *testing.T) {
 	}
 	errs := checkDuplicates(records)
 	if len(errs) != 0 {
-		t.Errorf("Expect duplicate NOT found but found %q", errs)
+		t.Errorf("Expected duplicate NOT found but found %q", errs)
 	}
 }
 

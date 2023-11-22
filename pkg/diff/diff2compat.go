@@ -10,15 +10,10 @@ import (
 // NewCompat is a constructor that uses the new pkg/diff2 system
 // instead of pkg/diff.
 //
-// It is for backwards compatibility only. New providers should use
-// pkg/diff2.  Older providers should use this to reduce their
-// dependency on pkg/diff2 until they can move to the pkg/diff2/By*()
-// functions.
+// It is for backwards compatibility only. New providers should use pkg/diff2.
 //
 // To use this simply change New() to NewCompat(). If that doesn't
-// work please report a bug. The only exception is if you depend on
-// the extraValues feature, which will not be supported. That
-// parameter must be set to nil.
+// work please report a bug. The extraValues parameter is not supported.
 func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	if len(extraValues) != 0 {
 		panic("extraValues not supported")

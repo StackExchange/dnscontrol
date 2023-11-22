@@ -66,13 +66,12 @@ func testFormat(t *testing.T, domain, format string) {
 		log.Fatal(fmt.Errorf("can't read expected %q: %w", outfile.Name(), err))
 	}
 
-	//	// Update got -> want
-	//	err = os.WriteFile(expectedFilename, got, 0644)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-
 	if w, g := string(want), string(got); w != g {
+		// If the test fails, output a file showing "got"
+		err = os.WriteFile(expectedFilename+".ACTUAL", got, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
 		t.Errorf("testFormat mismatch (-got +want):\n%s", diff.LineDiff(g, w))
 	}
 }
