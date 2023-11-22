@@ -25,7 +25,6 @@ func shellCompletionCommand() *cli.Command {
 	return &cli.Command{
 		Name:        "shell-completion",
 		Usage:       "generate shell completion scripts",
-		Hidden:      true,
 		ArgsUsage:   fmt.Sprintf("[ %s ]", strings.Join(supportedShells, " | ")),
 		Description: fmt.Sprintf("Generate shell completion script for [ %s ]", strings.Join(supportedShells, " | ")),
 		BashComplete: func(ctx *cli.Context) {
