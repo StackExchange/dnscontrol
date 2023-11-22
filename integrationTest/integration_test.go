@@ -464,6 +464,10 @@ func a(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "A")
 }
 
+func aaaa(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "AAAA")
+}
+
 func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
 }
@@ -873,7 +877,10 @@ func makeTests(t *testing.T) []*TestGroup {
 		// Narrative: That wasn't as hard as expected, eh?  Let's test the
 		// other basic record types like AAAA, CNAME, MX and TXT.
 
-		// AAAA: TODO(tlim) Add AAAA test.
+		testgroup("AAAA",
+			tc("Create AAAA", aaaa("testaaaa", "2607:f8b0:4006:820::2006")),
+			tc("Change AAAA target", aaaa("testaaaa", "2607:f8b0:4006:820::2013")),
+		),
 
 		// CNAME
 
