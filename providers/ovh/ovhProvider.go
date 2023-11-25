@@ -34,7 +34,7 @@ var features = providers.DocumentationNotes{
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
-	c, err := ovh.NewClient(ovh.OvhEU, appKey, appSecretKey, consumerKey)
+	c, err := ovh.NewClient(getOVHEndpoint(m), appKey, appSecretKey, consumerKey)
 	if c == nil {
 		return nil, err
 	}
@@ -44,6 +44,22 @@ func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error)
 		return nil, err
 	}
 	return ovh, nil
+}
+
+func getOVHEndpoint(params map[string]string) string {
+	if ep, ok := params["endpoint"]; ok && ep != "" {
+		switch strings.ToLower(ep) {
+		case "eu":
+			return ovh.OvhEU
+		case "ca":
+			return ovh.OvhCA
+		case "us":
+			return ovh.OvhUS
+		default:
+			return ep
+		}
+	}
+	return ovh.OvhEU
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
