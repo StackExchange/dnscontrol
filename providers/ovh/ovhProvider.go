@@ -142,7 +142,16 @@ func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual 
 		return nil, err
 	}
 
-	if len(corrections) > 0 {
+	// Only refresh zone if there's a real modification
+	reportOnlyCorrections := true
+	for _, c := range corrections {
+		if c.F != nil {
+			reportOnlyCorrections = false
+			break
+		}
+	}
+
+	if !reportOnlyCorrections {
 		corrections = append(corrections, &models.Correction{
 			Msg: "REFRESH zone " + dc.Name,
 			F: func() error {
