@@ -94,8 +94,6 @@ jobs:
   integrtests-diff2:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ matrix.provider }}
     container:
       image: golang:1.21
     needs:
@@ -174,6 +172,7 @@ jobs:
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
 
     concurrency: ${{ matrix.provider }}
+      group: ${{ github.workflow }}-${{ matrix.provider }}
     strategy:
       fail-fast: false
       matrix:
