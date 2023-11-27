@@ -4,10 +4,12 @@ parameters:
   - name
   - target
   - ZONE_ID modifier
+  - EvaluateTargetHealth modifier
 parameter_types:
   name: string
   target: string
   ZONE_ID modifier: DomainModifier & RecordModifier
+  EvaluateTargetHealth modifier: RecordModifier
 provider: ROUTE53
 ---
 
@@ -37,12 +39,14 @@ The zone id can be found depending on the target type:
 * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
 
+Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record/R53_EVALUATE_TARGET_HEALTH.md) record modifier.
+
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
   R53_ALIAS("foo", "A", "bar"),                              // record in same zone
   R53_ALIAS("foo", "A", "bar", R53_ZONE("Z35SXDOTRQ7X7K")),  // record in same zone, zone specified
-  R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com.", R53_ZONE("Z368ELLRRE2KJ0")),     // a classic ELB in us-west-1
+  R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com.", R53_ZONE("Z368ELLRRE2KJ0"), R53_EVALUATE_TARGET_HEALTH(true)),     // a classic ELB in us-west-1 with target health evaluation enabled
   R53_ALIAS("foo", "A", "blahblah.elasticbeanstalk.us-west-2.amazonaws.com.", R53_ZONE("Z38NKT9BP95V3O")),     // an Elastic Beanstalk environment in us-west-2
   R53_ALIAS("foo", "A", "blahblah-bucket.s3-website-us-west-1.amazonaws.com.", R53_ZONE("Z2F56UZL2M1ACD")),     // a website S3 Bucket in us-west-1
 );

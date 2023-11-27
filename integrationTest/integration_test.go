@@ -597,10 +597,11 @@ func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
 
-func r53alias(name, aliasType, target string) *models.RecordConfig {
+func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordConfig {
 	r := makeRec(name, target, "R53_ALIAS")
 	r.R53Alias = map[string]string{
-		"type": aliasType,
+		"type":                   aliasType,
+		"evaluate_target_health": evalTargetHealth,
 	}
 	return r
 }
@@ -1581,12 +1582,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to A record in same zone",
 				a("kyle", "1.2.3.4"),
 				a("cartman", "2.3.4.5"),
-				r53alias("kenny", "A", "kyle.**current-domain**"),
+				r53alias("kenny", "A", "kyle.**current-domain**", "false"),
 			),
 			tc("modify an r53 alias",
 				a("kyle", "1.2.3.4"),
 				a("cartman", "2.3.4.5"),
-				r53alias("kenny", "A", "cartman.**current-domain**"),
+				r53alias("kenny", "A", "cartman.**current-domain**", "false"),
 			),
 		),
 
@@ -1599,12 +1600,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("add an alias to 18",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
 			),
 			tc("modify alias to 19",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
 			),
 			tc("remove alias",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1613,17 +1614,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("add an alias back",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
 			),
 			tc("remove cnames",
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
 			),
 		),
 
 		testgroup("R53_ALIAS_CNAME",
 			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
@@ -1634,7 +1635,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// See https://github.com/StackExchange/dnscontrol/issues/2107
 			requires(providers.CanUseRoute53Alias),
 			tc("loop should fail",
-				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**"),
+				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**", "false"),
 			),
 		),
 
@@ -1642,12 +1643,24 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("R53_alias pre-existing",
 			requires(providers.CanUseRoute53Alias),
 			tc("Create some records",
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 			tc("Add a new record - ignoring foo",
 				a("bar", "1.2.3.4"),
 				ignoreName("dev-system*"),
+			),
+		),
+
+		testgroup("R53_alias evaluate_target_health",
+			requires(providers.CanUseRoute53Alias),
+			tc("Create alias and cname",
+				r53alias("test-record", "CNAME", "test-record-1.**current-domain**", "false"),
+				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			tc("modify evaluate target health",
+				r53alias("test-record", "CNAME", "test-record-1.**current-domain**", "true"),
+				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
 

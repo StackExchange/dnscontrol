@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -435,8 +436,9 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 			Type: "R53_ALIAS",
 			TTL:  300,
 			R53Alias: map[string]string{
-				"type":    string(set.Type),
-				"zone_id": aws.ToString(set.AliasTarget.HostedZoneId),
+				"type":                   string(set.Type),
+				"zone_id":                aws.ToString(set.AliasTarget.HostedZoneId),
+				"evaluate_target_health": strconv.FormatBool(set.AliasTarget.EvaluateTargetHealth),
 			},
 		}
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
@@ -510,12 +512,16 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 func aliasToRRSet(zone r53Types.HostedZone, r *models.RecordConfig) *r53Types.ResourceRecordSet {
 	target := r.GetTargetField()
 	zoneID := getZoneID(zone, r)
+	evalTargetHealth, err := strconv.ParseBool(r.R53Alias["evaluate_target_health"])
+	if err != nil {
+		evalTargetHealth = false
+	}
 	rrset := &r53Types.ResourceRecordSet{
 		Type: r53Types.RRType(r.R53Alias["type"]),
 		AliasTarget: &r53Types.AliasTarget{
 			DNSName:              &target,
 			HostedZoneId:         aws.String(zoneID),
-			EvaluateTargetHealth: false,
+			EvaluateTargetHealth: evalTargetHealth,
 		},
 	}
 	return rrset
