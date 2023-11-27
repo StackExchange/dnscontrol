@@ -181,7 +181,7 @@ Integration tests use a test account and a real domain.
 For example, this will run the tests using BIND:
 
 ```shell
-cd integrationTest/
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider BIND
 ```
 
@@ -193,6 +193,7 @@ This will run the tests on Amazon AWS Route53:
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider ROUTE53
 ```
 
