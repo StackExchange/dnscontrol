@@ -197,8 +197,7 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
-will *not* automatically add it. You'll need to do that via the
-control panel manually or via the `dnscontrol create-domains` command.
+will automatically add it when `dnscontrol push` is executed.
 
 
 ## Redirects
@@ -266,6 +265,7 @@ This flag is intended for use with legacy domains where the integration test cre
 have access to read/edit Workers. This flag will eventually go away.
 
 ```shell
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
 ```
 

@@ -12,15 +12,8 @@
           "name": "mxtest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "MX"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
-          "name": "atest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "A"
+            "type": "MX",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -29,15 +22,26 @@
           "target": "foo.com.",
           "r53_alias": {
             "type": "A",
-            "zone_id": "Z2FTEDLFRTF"
+            "evaluate_target_health": "false"
           }
         },
         {
           "type": "R53_ALIAS",
-          "name": "aaaatest",
+          "name": "atest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "AAAA"
+            "type": "A",
+            "zone_id": "Z2FTEDLFRTF",
+            "evaluate_target_health": "false"
+          }
+        },
+        {
+          "type": "R53_ALIAS",
+          "name": "aevaltargethealthtest",
+          "target": "foo.com.",
+          "r53_alias": {
+            "type": "A",
+            "evaluate_target_health": "true"
           }
         },
         {
@@ -46,7 +50,17 @@
           "target": "foo.com.",
           "r53_alias": {
             "type": "AAAA",
-            "zone_id": "ERERTFGFGF"
+            "evaluate_target_health": "false"
+          }
+        },
+        {
+          "type": "R53_ALIAS",
+          "name": "aaaatest",
+          "target": "foo.com.",
+          "r53_alias": {
+            "type": "AAAA",
+            "zone_id": "ERERTFGFGF",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -54,7 +68,8 @@
           "name": "cnametest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "CNAME"
+            "type": "CNAME",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -62,7 +77,8 @@
           "name": "ptrtest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "PTR"
+            "type": "PTR",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -70,7 +86,8 @@
           "name": "txttest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "TXT"
+            "type": "TXT",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -78,7 +95,8 @@
           "name": "srvtest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "SRV"
+            "type": "SRV",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -86,7 +104,8 @@
           "name": "spftest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "SPF"
+            "type": "SPF",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -94,7 +113,8 @@
           "name": "caatest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "CAA"
+            "type": "CAA",
+            "evaluate_target_health": "false"
           }
         },
         {
@@ -102,7 +122,8 @@
           "name": "naptrtest",
           "target": "foo.com.",
           "r53_alias": {
-            "type": "NAPTR"
+            "type": "NAPTR",
+            "evaluate_target_health": "false"
           }
         }
       ]

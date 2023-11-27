@@ -400,6 +400,9 @@ func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 	if z, ok := rec.R53Alias["zone_id"]; ok {
 		items = append(items, `R53_ZONE("`+z+`")`)
 	}
+	if e, ok := rec.R53Alias["evaluate_target_health"]; ok && e == "true" {
+		items = append(items, "R53_EVALUATE_TARGET_HEALTH(true)")
+	}
 	if ttl != 0 {
 		items = append(items, fmt.Sprintf("TTL(%d)", ttl))
 	}

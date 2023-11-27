@@ -12,8 +12,9 @@ For each step, it will run the config once and expect changes. It will run it ag
 
 ## Running a test
 
-1. Define all environment variables expected for the provider you wish to run. I setup a local `.env` file with the appropriate values and use [zoo](https://github.com/jsonmaur/zoo) to run my commands.
-2. run `go test -v -provider $NAME` where $NAME is the name of the provider you wish to run.
+1. The integration tests need a test domain to run on. All the records of this domain will be deleted!
+2. Define all environment variables expected for the provider you wish to run. I setup a local `.env` file with the appropriate values and use [zoo](https://github.com/jsonmaur/zoo) to run my commands.
+3. run `cd integrationTest && go test -v -provider $NAME` where $NAME is the name of the provider you wish to run.
 
 Example:
 
@@ -34,11 +35,26 @@ export ROUTE53_DOMAIN="testdomain.tld"
 ```
 
 ```shell
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider ROUTE53
 ```
 
+The `-start` and `-end` flags allow you to run just a portion of the tests.
+
+```shell
+go test -v -verbose -provider ROUTE53 -start 16
+go test -v -verbose -provider ROUTE53 -end 5
+go test -v -verbose -provider ROUTE53 -start 16 -end 20
+```
+
+The actual tests are in the file `integrationTest/integration_test.go`.  The
+tests are in a little language which can be used to describe just about any
+interaction with the API.  Look for the comment `START HERE` or the line
+`func makeTests` for instructions.
+
+
 {% hint style="warning" %}
-**WARNING**: The records in the test domain will be deleted.  Only use
+**WARNING**: THE RECORDS IN THE TEST DOMAIN WILL BE DELETED.  Only use
 a domain that is not used in production. Some providers have a way
 to run tests on domains that aren't registered (often a test
 environment or a side-effect of the company not being a registrar).

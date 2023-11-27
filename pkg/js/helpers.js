@@ -328,8 +328,14 @@ var R53_ALIAS = recordBuilder('R53_ALIAS', {
         record.target = args.target;
         if (_.isObject(record.r53_alias)) {
             record.r53_alias['type'] = args.type;
+            if (!_.isString(record.r53_alias['evaluate_target_health'])) {
+                record.r53_alias['evaluate_target_health'] = 'false';
+            }
         } else {
-            record.r53_alias = { type: args.type };
+            record.r53_alias = {
+                type: args.type,
+                evaluate_target_health: 'false',
+            };
         }
     },
 });
@@ -343,6 +349,17 @@ function R53_ZONE(zone_id) {
             r.r53_alias['zone_id'] = zone_id;
         } else {
             r.r53_alias = { zone_id: zone_id };
+        }
+    };
+}
+
+// R53_EVALUATE_TARGET_HEALTH(enabled)
+function R53_EVALUATE_TARGET_HEALTH(enabled) {
+    return function (r) {
+        if (_.isObject(r.r53_alias)) {
+            r.r53_alias['evaluate_target_health'] = enabled.toString();
+        } else {
+            r.r53_alias = { evaluate_target_health: enabled.toString() };
         }
     };
 }
