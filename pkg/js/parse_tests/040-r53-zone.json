@@ -21,7 +21,8 @@
           "name": "atest",
           "r53_alias": {
             "type": "A",
-            "zone_id": "Z2FTEDLFRTZ"
+            "zone_id": "Z2FTEDLFRTZ",
+            "evaluate_target_health": "false"
           },
           "target": "foo.com."
         }

@@ -57,11 +57,11 @@ dnscontrol get-zones --format=nameonly hexonet HEXONET  all
 ```
 ```shell
 # Review the output.  Pick one domain and set HEXONET_DOMAIN.
-cd integrationTest/
 export HEXONET_DOMAIN=yodream.com            # Pick a domain name.
 export HEXONET_ENTITY=OTE
 export HEXONET_UID=test.user
 export HEXONET_PW=test.passw0rd
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider HEXONET
 ```
 
