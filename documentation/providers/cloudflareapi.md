@@ -265,6 +265,7 @@ This flag is intended for use with legacy domains where the integration test cre
 have access to read/edit Workers. This flag will eventually go away.
 
 ```shell
+cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
 ```
 
