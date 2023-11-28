@@ -21,6 +21,7 @@ Currently supported DNS providers:
 - AWS Route 53
 - AXFR+DDNS
 - Azure DNS
+- Azure Private DNS
 - BIND
 - Cloudflare
 - ClouDNS

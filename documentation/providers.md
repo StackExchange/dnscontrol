@@ -76,6 +76,7 @@ Providers in this category and their maintainers are:
 |Name|Maintainer|
 |---|---|
 |[`AZURE_DNS`](providers/azure_dns.md)|@vatsalyagoel|
+[[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble]
 |[`BIND`](providers/bind.md)|@tlimoncelli|
 |[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](providers/cscglobal.md)|@mikenz|
