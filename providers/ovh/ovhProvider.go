@@ -34,7 +34,7 @@ var features = providers.DocumentationNotes{
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
-	c, err := ovh.NewClient(ovh.OvhEU, appKey, appSecretKey, consumerKey)
+	c, err := ovh.NewClient(getOVHEndpoint(m), appKey, appSecretKey, consumerKey)
 	if c == nil {
 		return nil, err
 	}
@@ -44,6 +44,22 @@ func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error)
 		return nil, err
 	}
 	return ovh, nil
+}
+
+func getOVHEndpoint(params map[string]string) string {
+	if ep, ok := params["endpoint"]; ok && ep != "" {
+		switch strings.ToLower(ep) {
+		case "eu":
+			return ovh.OvhEU
+		case "ca":
+			return ovh.OvhCA
+		case "us":
+			return ovh.OvhUS
+		default:
+			return ep
+		}
+	}
+	return ovh.OvhEU
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -126,7 +142,16 @@ func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual 
 		return nil, err
 	}
 
-	if len(corrections) > 0 {
+	// Only refresh zone if there's a real modification
+	reportOnlyCorrections := true
+	for _, c := range corrections {
+		if c.F != nil {
+			reportOnlyCorrections = false
+			break
+		}
+	}
+
+	if !reportOnlyCorrections {
 		corrections = append(corrections, &models.Correction{
 			Msg: "REFRESH zone " + dc.Name,
 			F: func() error {

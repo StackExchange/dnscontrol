@@ -171,7 +171,8 @@ jobs:
       TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
 
-    concurrency: ${{ matrix.provider }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.provider }}
     strategy:
       fail-fast: false
       matrix:
