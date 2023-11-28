@@ -455,9 +455,9 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
+			if rec.GetTargetTXTJoined() == "" {
 				var txts []*string
-				for _, txt := range rec.TxtStrings {
+				for _, txt := range rec.GetTargetTXTSegmented() {
 					txts = append(txts, to.StringPtr(txt))
 				}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
