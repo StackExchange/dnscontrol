@@ -491,8 +491,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				rc.Original = set
-				err := rc.PopulateFromStringFunc(rtypeString, val, origin, txtutil.ParseQuoted)
-				if err != nil {
+				if err := rc.PopulateFromStringFunc(rtypeString, val, origin, txtutil.ParseQuoted); err != nil {
 					return nil, fmt.Errorf("unparsable record type=%q received from ROUTE53: %w", rtypeString, err)
 				}
 

@@ -5,6 +5,56 @@ import (
 	"net"
 )
 
+// PopulateFromStringFunc populates a RecordConfig by parsing a common RFC1035-like format.
+//
+//	rtype: the resource record type (rtype)
+//	contents: a string that contains all parameters of the record's rdata (see below)
+//	txtFn: If rtype == "TXT", this function is used to parse contents, or nil if no parsing is needed.
+//
+// The "contents" field is the format used in RFC1035 zonefiles. It is the text
+// after the rtype.  For example, in the line: foo IN MX 10 mx.example.com.
+// contents stores everything after the "MX" (not including the space).
+//
+// Typical values for txtFn include:
+//
+//	nil:  no parsing required.
+//	txtutil.ParseQuoted: Parse via Tom's interpretation of RFC1035.
+//	txtutil.ParseCombined: Backwards compatible with Parse via miekg's interpretation of RFC1035.
+//
+// Many providers deliver record data in this format, thus this function.  If a
+// particular rtype is not handled properly by this function, simply handle it
+// beforehand as a special case.
+//
+// Example 1: Normal use.
+//
+//	rtype := FILL_IN_RTYPE
+//	rc := &models.RecordConfig{Type: rtype}
+//	rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
+//	rc.TTL = uint32(FILL_IN_TTL)
+//	rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
+//	if err = rc.PopulateFromStringFunc(rtype, target, origin, nil); err != nil {
+//		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
+//	}
+//	return rc, nil
+//
+// Example 2: Use your own MX parser.
+//
+//	rtype := FILL_IN_RTYPE
+//	rc := &models.RecordConfig{Type: rtype}
+//	rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
+//	rc.TTL = uint32(FILL_IN_TTL)
+//	rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
+//	switch rtype {
+//	case "MX":
+//		// MX priority in a separate field.
+//		err = rc.SetTargetMX(cr.Priority, target)
+//	default:
+//		err = rc.PopulateFromString(rtype, target, origin)
+//	}
+//	if err != nil {
+//		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
+//	}
+//	return rc, nil
 func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, txtFn func(s string) (string, error)) error {
 	if rc.Type != "" && rc.Type != rtype {
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
