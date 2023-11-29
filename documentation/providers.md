@@ -109,7 +109,7 @@ Providers in this category and their maintainers are:
 |[`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)|@svernick|
 |[`AXFRDDNS`](providers/axfrddns.md)|@hnrgrgr|
 |[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
-|[`CLOUDNS`](providers/CLOUDNS.md)|@pragmaton|
+|[`CLOUDNS`](providers/cloudns.md)|@pragmaton|
 |[`CSCGLOBAL`](providers/cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](providers/desec.md)|@D3luxee|
 |[`DIGITALOCEAN`](providers/digitalocean.md)|@Deraen|
