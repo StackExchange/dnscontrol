@@ -29,6 +29,9 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 
 func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) string {
 	if rc.Type == "TXT" {
+		if encodeFn == nil {
+			return rc.target
+		}
 		return encodeFn(rc.target)
 	}
 	return rc.GetTargetCombined()

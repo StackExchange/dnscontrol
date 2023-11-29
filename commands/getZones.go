@@ -286,15 +286,10 @@ func GetZone(args GetZoneArgs) error {
 					}
 				}
 
-				var targ string
-				if rec.Type == "TXT" {
-					targ = rec.GetTargetTXTJoined()
-				} else {
-					targ = rec.GetTargetCombined()
-				}
-
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, targ, cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, rec.Type,
+					rec.GetTargetCombinedFunc(nil),
+					cfproxy)
 			}
 
 		default:
@@ -358,9 +353,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "TLSA":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
-		//printer.Printf("DEBUG: gz raw s=%s q=%q\n", rec.GetTargetTXTJoined(), rec.GetTargetTXTJoined())
 		target = jsonQuoted(rec.GetTargetTXTJoined())
-		//printer.Printf("DEBUG: gz qtd s=%s q=%q\n", target, target)
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
