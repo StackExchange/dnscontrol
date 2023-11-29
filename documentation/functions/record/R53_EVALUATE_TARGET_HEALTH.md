@@ -3,7 +3,7 @@ name: R53_EVALUATE_TARGET_HEALTH
 parameters:
   - enabled
 parameter_types:
-  enabled: bool
+  enabled: boolean
 ts_return: RecordModifier
 provider: ROUTE53
 ---

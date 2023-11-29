@@ -2300,7 +2300,7 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
  *
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_evaluate_target_health
  */
-declare function R53_EVALUATE_TARGET_HEALTH(enabled: bool): RecordModifier;
+declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 
 /**
  * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../global/D.md)) or a specific [`R53_ALIAS()`](../domain/R53_ALIAS.md) record.

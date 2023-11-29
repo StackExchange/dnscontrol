@@ -94,20 +94,22 @@ provided to help community members support their code independently.
 
 Expectations of maintainers:
 
-* Maintainers are expected to support their provider and/or find a new maintainer.
+* Maintainers are expected to support their provider and/or help find a new maintainer.
 * Maintainers should set up test accounts and periodically verify that all tests pass (`pkg/js/parse_tests` and `integrationTest`).
 * Contributors are encouraged to add new tests and refine old ones. (Test-driven development is encouraged.)
 * Bugs will be referred to the maintainer or their designate.
-* Maintainers must be responsible to bug reports and PRs.  If a maintainer is unresponsive for more than 2 months, we will consider disabling the provider.  First we will put out a call for new maintainer. If noboby volunteers, the provider will be disabled.
+* Maintainers must be responsible to bug reports and PRs.  If a maintainer is unresponsive for more than 2 months, we will consider disabling the provider.  First we will put out a call for new maintainer. If nobody volunteers, the provider may be disabled.
+* Tom needs to know your real email address.  Please email tlimoncelli at stack over flow dot com so he has it.
 
 Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
+|[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)|@svernick|
 |[`AXFRDDNS`](providers/axfrddns.md)|@hnrgrgr|
 |[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
-|[`CLOUDNS`](providers/CLOUDNS.md)|@pragmaton|
+|[`CLOUDNS`](providers/cloudns.md)|@pragmaton|
 |[`CSCGLOBAL`](providers/cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](providers/desec.md)|@D3luxee|
 |[`DIGITALOCEAN`](providers/digitalocean.md)|@Deraen|
@@ -132,7 +134,7 @@ Providers in this category and their maintainers are:
 |[`NETCUP`](providers/netcup.md)|@kordianbruck|
 |[`NETLIFY`](providers/netlify.md)|@SphericalKat|
 |[`NS1`](providers/ns1.md)|@costasd|
-|[`OPENSRS`](providers/opensrs.md)|@pierre-emmanuelJ|
+|[`OPENSRS`](providers/opensrs.md)|@philhug|
 |[`ORACLE`](providers/oracle.md)|@kallsyms|
 |[`OVH`](providers/ovh.md)|@masterzen|
 |[`PACKETFRAME`](providers/packetframe.md)|@hamptonmoore|
