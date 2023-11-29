@@ -105,7 +105,7 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
-[[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble]
+|[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)|@svernick|
 |[`AXFRDDNS`](providers/axfrddns.md)|@hnrgrgr|
 |[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
