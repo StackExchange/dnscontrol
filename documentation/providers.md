@@ -134,7 +134,7 @@ Providers in this category and their maintainers are:
 |[`NETCUP`](providers/netcup.md)|@kordianbruck|
 |[`NETLIFY`](providers/netlify.md)|@SphericalKat|
 |[`NS1`](providers/ns1.md)|@costasd|
-|[`OPENSRS`](providers/opensrs.md)|@pierre-emmanuelJ|
+|[`OPENSRS`](providers/opensrs.md)|@philhug|
 |[`ORACLE`](providers/oracle.md)|@kallsyms|
 |[`OVH`](providers/ovh.md)|@masterzen|
 |[`PACKETFRAME`](providers/packetframe.md)|@hamptonmoore|
