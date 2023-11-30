@@ -13,8 +13,8 @@ If an rType has more than one field, one field goes in .target and the remaining
 Not the best design, but we're stuck with it until we re-do RecordConfig, possibly using generics.
 */
 
-// GetTargetField returns the target. There may be other fields (for example
-// an MX record also has a .MxPreference field) they are not included.
+// GetTargetField returns the target. There may be other fields, but they are
+// not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
 	return rc.target
 }
@@ -27,6 +27,9 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 	return net.ParseIP(rc.target)
 }
 
+// GetTargetCombinedFunc returns all the rdata fields of a RecordConfig as one
+// string. How TXT records are encoded is defined by encodeFn.  If encodeFn is
+// nil the TXT data is returned unaltered.
 func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) string {
 	if rc.Type == "TXT" {
 		if encodeFn == nil {
@@ -39,6 +42,8 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 
 // GetTargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
+// WARNING: How TXT records are handled is buggy but we can't change it because
+// code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {

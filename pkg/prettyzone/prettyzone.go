@@ -139,8 +139,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		typeStr := rr.Type
 
 		// the remaining line
-		var target string
-		target = rr.GetTargetCombinedFunc(txtutil.EncodeQuoted)
+		target := rr.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 
 		// comment
 		comment := ""

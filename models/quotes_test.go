@@ -19,7 +19,7 @@ func TestIsQuoted(t *testing.T) {
 		{`"aaa" "bbb"`, true},
 	}
 	for i, test := range tests {
-		r := IsQuoted(test.d1)
+		r := isQuoted(test.d1)
 		if r != test.e1 {
 			t.Errorf("%v: expected (%v) got (%v)", i, test.e1, r)
 		}
