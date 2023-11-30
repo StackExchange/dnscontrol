@@ -61,6 +61,8 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportM
 	return
 }
 
+// GenerateMessageCorrections turns a list of strings into a list of corrections
+// that output those messages (and are otherwise a no-op).
 func GenerateMessageCorrections(msgs []string) (corrections []*models.Correction) {
 	for _, msg := range msgs {
 		corrections = append(corrections, &models.Correction{Msg: msg})

@@ -8,10 +8,30 @@ import (
 	"strings"
 )
 
+// ParseQuoted parses a string of RFC1035-style quoted items. The resulting
+// items are then joined into one string. This is useful for parsing TXT
+// records.
+// Examples:
+// `foo` => foo
+// `"foo"` => foo
+// `"f\"oo"` => f"oo
+// `"f\\oo"` => f\oo
+// `"foo" "bar"` => foobar
+// `"foo" bar` => foobar
 func ParseQuoted(s string) (string, error) {
 	return txtDecode(s)
 }
 
+// EncodeQuoted encodes a string into a series of quoted 255-octet chunks. That
+// is, when decoded each chunk would be 255-octets with the remainder in the
+// last chunk.
+//
+// The output looks like:
+//
+//	`""`                                      empty
+//	`"255\"octets"`                           quotes are escaped
+//	`"255\\octets"`                           backslashes are escaped
+//	`"255octets" "255octets" "remainder"`     long strings are chunked
 func EncodeQuoted(t string) string {
 	return txtEncode(ToChunks(t))
 }
