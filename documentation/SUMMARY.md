@@ -90,7 +90,7 @@
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](functions/record/R53_ZONE.md)
-            * [R53_EVALUATE_TARGET_HEALTH](functions/record/R53_EVALUATE_TARGET_HEALTH.md)
+            * [R53_EVALUATE_TARGET_HEALTH](functions/record/R53\_EVALUATE\_TARGET\_HEALTH.md)
 * [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
 ## Service Providers
