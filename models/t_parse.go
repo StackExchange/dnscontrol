@@ -91,13 +91,12 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "SPF", "TXT":
 		if txtFn == nil {
 			return rc.SetTargetTXT(contents)
-		} else {
-			t, err := txtFn(contents)
-			if err != nil {
-				return fmt.Errorf("invalid TXT record: %s", contents)
-			}
-			return rc.SetTargetTXT(t)
 		}
+		t, err := txtFn(contents)
+		if err != nil {
+			return fmt.Errorf("invalid TXT record: %s", contents)
+		}
+		return rc.SetTargetTXT(t)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
 	case "SSHFP":
@@ -105,9 +104,9 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "TLSA":
 		return rc.SetTargetTLSAString(contents)
 	default:
+		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
+			rtype, contents, origin)
 	}
-	return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
-		rtype, contents, origin)
 }
 
 // PopulateFromString populates a RecordConfig given a type and string.  Many
