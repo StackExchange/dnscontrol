@@ -2279,7 +2279,7 @@ declare const PURGE: DomainModifier;
  * * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
  * * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
  *
- * Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record/R53_EVALUATE_TARGET_HEALTH.md) record modifier.
+ * Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record/R53\_EVALUATE\_TARGET\_HEALTH.md) record modifier.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
