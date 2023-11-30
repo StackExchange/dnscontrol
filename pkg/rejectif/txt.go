@@ -69,7 +69,7 @@ func TxtIsEmpty(rc *models.RecordConfig) error {
 // TxtLongerThan255 audits TXT records for multiple strings
 func TxtLongerThan255(rc *models.RecordConfig) error {
 	if len(rc.GetTargetTXTJoined()) > 255 {
-		return fmt.Errorf("multiple strings in one txt")
+		return fmt.Errorf("TXT records longer than 255 octets (chars)")
 	}
 	return nil
 }
