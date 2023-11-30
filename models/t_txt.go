@@ -1,12 +1,11 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 )
 
 /*
-Sadly many providers handle TXT records in strange and non-compliant
+Sadly many providers handle TXT records in strange and unexpeected
 ways.  DNSControl has to handle all of them.  Over the years we've
 tried many things.  This explain the current state of the code.
 
@@ -22,6 +21,14 @@ If a provider doesn't support certain charactors in a TXT record, use
 the providers/$PROVIDER/auditrecords.go file to indicate this.
 DNSControl uses this information to warn users of unsupporrted input,
 and to skip related integration tests.
+
+There are 2 ways to create a TXT record:
+	SetTargetTXT():  Create from a string.
+	SetTargetTXTs(): Create from an array of strings that need to be joined.
+
+There are 2 ways to get the value (target) of a TXT record:
+	GetTargetTXTJoined(): Returns one big string
+	GetTargetTXTSegmented(): Returns an array 255-octet segments.
 
 */
 
@@ -83,26 +90,4 @@ func splitChunks(buf string, lim int) []string {
 		chunks = append(chunks, buf[:])
 	}
 	return chunks
-}
-
-// SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
-// and sets .TxtStrings based on the result.
-// Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
-// Ex:
-//
-//	"foo"        << 1 string
-//	"foo bar"    << 1 string
-//	"foo" "bar"  << 2 strings
-//	foo          << error. No quotes! Did you intend to use SetTargetTXT?
-func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
-	if s != "" && s[0] != '"' {
-		// If you get this error, it is likely that you should use
-		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
-		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
-	}
-	many, err := ParseQuotedFields(s)
-	if err != nil {
-		return err
-	}
-	return rc.SetTargetTXTs(many)
 }

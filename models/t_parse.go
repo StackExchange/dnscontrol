@@ -16,21 +16,20 @@ import (
 // contents stores everything after the "MX" (not including the space).
 //
 // Typical values for txtFn include:
+//		nil:  no parsing required.
+//		txtutil.ParseQuoted: Parse via Tom's interpretation of RFC1035.
+//		txtutil.ParseCombined: Backwards compatible with Parse via miekg's interpretation of RFC1035.
 //
-//	nil:  no parsing required.
-//	txtutil.ParseQuoted: Parse via Tom's interpretation of RFC1035.
-//	txtutil.ParseCombined: Backwards compatible with Parse via miekg's interpretation of RFC1035.
-//
-// Many providers deliver record data in this format, thus this function.  If a
-// particular rtype is not handled properly by this function, simply handle it
-// beforehand as a special case.
+// Many providers deliver record data in this format or something close to it.
+// This function is provided to reduce the amount of duplicate code across
+// providers.  If a particular rtype is not handled as a particular provider
+// expects, simply handle it beforehand as a special case.
 //
 // Example 1: Normal use.
 //
 //	rtype := FILL_IN_RTYPE
-//	rc := &models.RecordConfig{Type: rtype}
+//	rc := &models.RecordConfig{Type: rtype, TTL: FILL_IN_TTL}
 //	rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
-//	rc.TTL = uint32(FILL_IN_TTL)
 //	rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
 //	if err = rc.PopulateFromStringFunc(rtype, target, origin, nil); err != nil {
 //		return nil, fmt.Errorf("unparsable record type=%q received from PROVDER_NAME: %w", rtype, err)
@@ -40,9 +39,8 @@ import (
 // Example 2: Use your own MX parser.
 //
 //	rtype := FILL_IN_RTYPE
-//	rc := &models.RecordConfig{Type: rtype}
+//	rc := &models.RecordConfig{Type: rtype, TTL: FILL_IN_TTL}
 //	rc.SetLabelFromFQDN(FILL_IN_NAME, origin)
-//	rc.TTL = uint32(FILL_IN_TTL)
 //	rc.Original = FILL_IN_ORIGINAL // The raw data received from provider (if needed later)
 //	switch rtype {
 //	case "MX":

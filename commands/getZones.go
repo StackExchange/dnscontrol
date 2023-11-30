@@ -287,9 +287,7 @@ func GetZone(args GetZoneArgs) error {
 				}
 
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type,
-					rec.GetTargetCombinedFunc(nil),
-					cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombinedFunc(nil), cfproxy)
 			}
 
 		default:

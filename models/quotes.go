@@ -7,6 +7,10 @@ import (
 	"github.com/miekg/dns"
 )
 
+/*
+TODO(tlim): Move this file to pkgs/txtutil. It doesn't need to be part
+*/
+
 // IsQuoted returns true if the string starts and ends with a double quote.
 func IsQuoted(s string) bool {
 	if s == "" {

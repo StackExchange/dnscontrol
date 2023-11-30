@@ -1075,33 +1075,36 @@ func makeTests(t *testing.T) []*TestGroup {
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
+			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
 			// of record.
-			// Do not use only()/not()/requires() in this section.
 
 			// Some of these test cases are commented out because they test
-			// something that isn't wildly needed and many APIs don't
-			// support. For example many APIs don't support a backslack
-			// (`\`) in a TXT record; luckily we've never seen an appliation
-			// that needed that character.
-			// If you want to future-proof your provider, temporarily
-			// remove the comments and get those tests working, or add
-			// to recordaudit.go.
-			// ProTip: Unsure how the API escapes something? Try adding
-			// the TXT record via the Web UI and watch how the string is
-			// escaped when you download the records.
+			// something that isn't widely used or supported.  For example
+			// many APIs don't support a backslack (`\`) in a TXT record;
+			// luckily we've never seen a need for that "in the wild".  If
+			// you want to future-proof your provider, temporarily remove
+			// the comments and get those tests working, or reject it using
+			// auditrecords.go.
+
+			// ProTip: Unsure how a provider's API escapes something? Try
+			// adding the TXT record via the Web UI and watch how the string
+			// is escaped when you download the records.
 
 			// Nobody needs this and many APIs don't allow it.
 			tc("a 0-byte TXT", txt("foo0", "")),
 
-			tc("a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
-			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
-			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
-			tc("a 510-byte TXT", txt("foo510", strings.Repeat("E", 510))),
-			tc("a 511-byte TXT", txt("foo511", strings.Repeat("F", 511))),
-			tc("a 765-byte TXT", txt("foo765", strings.Repeat("G", 765))),
-			tc("a 766-byte TXT", txt("foo766", strings.Repeat("H", 766))),
+			// Test edge cases around 255, 255*2, 255*3:
+			tc("a 254-byte TXT", txt("foo254", strings.Repeat("A", 254))), // 255-1
+			tc("a 255-byte TXT", txt("foo255", strings.Repeat("B", 255))), // 255
+			tc("a 256-byte TXT", txt("foo256", strings.Repeat("C", 256))), // 255+1
+			tc("a 509-byte TXT", txt("foo509", strings.Repeat("D", 509))), // 255*2-1
+			tc("a 510-byte TXT", txt("foo510", strings.Repeat("E", 510))), // 255*2
+			tc("a 511-byte TXT", txt("foo511", strings.Repeat("F", 511))), // 255*2+1
+			tc("a 764-byte TXT", txt("foo764", strings.Repeat("G", 764))), // 255*3-1
+			tc("a 765-byte TXT", txt("foo765", strings.Repeat("H", 765))), // 255*3
+			tc("a 766-byte TXT", txt("foo766", strings.Repeat("J", 766))), // 255*3+1
 			//clear(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
