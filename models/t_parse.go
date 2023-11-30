@@ -16,9 +16,10 @@ import (
 // contents stores everything after the "MX" (not including the space).
 //
 // Typical values for txtFn include:
-//		nil:  no parsing required.
-//		txtutil.ParseQuoted: Parse via Tom's interpretation of RFC1035.
-//		txtutil.ParseCombined: Backwards compatible with Parse via miekg's interpretation of RFC1035.
+//
+//	nil:  no parsing required.
+//	txtutil.ParseQuoted: Parse via Tom's interpretation of RFC1035.
+//	txtutil.ParseCombined: Backwards compatible with Parse via miekg's interpretation of RFC1035.
 //
 // Many providers deliver record data in this format or something close to it.
 // This function is provided to reduce the amount of duplicate code across
