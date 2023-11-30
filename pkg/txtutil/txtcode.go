@@ -30,14 +30,28 @@ func isRemaining(s string, i, r int) bool {
 	return (len(s) - 1 - i) > r
 }
 
-// txtDecode decodes TXT strings received from ROUTE53 and GCLOUD.
+// txtDecode decodes TXT strings quoted/escaped as Tom interprets RFC10225.
 func txtDecode(s string) (string, error) {
 	// Parse according to RFC1035 zonefile specifications.
 	// "foo"  -> one string: `foo``
 	// "foo" "bar"  -> two strings: `foo` and `bar`
 	// quotes and backslashes are escaped using \
 
-	//printer.Printf("DEBUG: route53 txt inboundv=%v\n", s)
+	/*
+
+		BNF:
+			txttarget := `""`` | item | item ` ` item*
+			item := quoteditem | unquoteditem
+			quoteditem := quote innertxt quote
+			quote := `"`
+			innertxt := (escaped | printable )*
+			escaped := `\\` | `\"`
+			printable := (printable ASCII chars)
+			unquoteditem := (printable ASCII chars but not `"` nor ' ')
+
+	*/
+
+	//printer.Printf("DEBUG: txtDecode txt inboundv=%v\n", s)
 
 	b := &bytes.Buffer{}
 	state := StateStart
@@ -94,13 +108,13 @@ func txtDecode(s string) (string, error) {
 	}
 
 	r := b.String()
-	//printer.Printf("DEBUG: route53 txt decodedv=%v\n", r)
+	//printer.Printf("DEBUG: txtDecode txt decodedv=%v\n", r)
 	return r, nil
 }
 
-// txtEncode encodes TXT strings as expected by ROUTE53 and GCLOUD.
+// txtEncode encodes TXT strings in RFC1035 format as interpreted by Tom.
 func txtEncode(ts []string) string {
-	//printer.Printf("DEBUG: route53 txt outboundv=%v\n", ts)
+	//printer.Printf("DEBUG: txtEncode txt outboundv=%v\n", ts)
 	if (len(ts) == 0) || (strings.Join(ts, "") == "") {
 		return `""`
 	}
@@ -116,6 +130,6 @@ func txtEncode(ts []string) string {
 	}
 	t := strings.Join(r, ` `)
 
-	//printer.Printf("DEBUG: route53 txt  encodedv=%v\n", t)
+	//printer.Printf("DEBUG: txtEncode txt  encodedv=%v\n", t)
 	return t
 }

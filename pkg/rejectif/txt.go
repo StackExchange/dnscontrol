@@ -66,15 +66,6 @@ func TxtIsEmpty(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtIsExactlyLen255 audits TXT records for strings exactly 255 octets long.
-// This is rare; you probably want to use TxtNoStringsLen256orLonger() instead.
-func TxtIsExactlyLen255(rc *models.RecordConfig) error {
-	if len(rc.GetTargetTXTJoined()) == 255 {
-		return fmt.Errorf("txtstring length is 255")
-	}
-	return nil
-}
-
 // TxtLongerThan255 audits TXT records for multiple strings
 func TxtLongerThan255(rc *models.RecordConfig) error {
 	if len(rc.GetTargetTXTJoined()) > 255 {

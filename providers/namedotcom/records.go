@@ -171,24 +171,12 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	return err
 }
 
-// makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-func encodeTxt(txts []string) string {
-	ans := txts[0]
-
-	if len(txts) > 1 {
-		ans = ""
-		for _, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-		}
-	}
-	return ans
-}
-
 // finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
 // decodeTxt decodes the TXT record as received from name.com and
 // returns the list of strings.
+// NB(tlim): This is very similar to txtutil.ParseQuoted. Maybe replace it some day?
 func decodeTxt(s string) []string {
 
 	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
