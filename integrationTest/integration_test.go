@@ -1035,11 +1035,17 @@ func makeTests(t *testing.T) []*TestGroup {
 		// that.
 
 		testgroup("CNAME",
-			tc("Record pointing to @", cname("foo", "**current-domain**")),
+			tc("Record pointing to @",
+				cname("foo", "**current-domain**"),
+				a("@", "1.2.3.4"),
+			),
 		),
 
 		testgroup("MX",
-			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+			tc("Record pointing to @",
+				mx("foo", 8, "**current-domain**"),
+				a("@", "1.2.3.4"),
+			),
 			tc("Null MX", mx("@", 0, ".")), // RFC 7505
 		),
 
@@ -1246,6 +1252,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
+				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),

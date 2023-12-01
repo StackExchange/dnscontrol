@@ -325,6 +325,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
-		return models.StripQuotes(rc.GetTargetCombined())
+		return models.RemoveSlashes(models.StripQuotes(rc.GetTargetCombined()))
 	}
 }
