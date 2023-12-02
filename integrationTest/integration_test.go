@@ -1522,10 +1522,15 @@ func makeTests(t *testing.T) []*TestGroup {
 		// them here. If you are writing a new provider, I have some good
 		// news: These don't apply to you!
 
-		testgroup("ALIAS",
+		testgroup("ALIAS on apex",
 			requires(providers.CanUseAlias),
 			tc("ALIAS at root", alias("@", "foo.com.")),
 			tc("change it", alias("@", "foo2.com.")),
+		),
+
+		testgroup("ALIAS on subdomain",
+			requires(providers.CanUseAlias),
+			not("TRANSIP"), // TransIP does support ALIAS records, but only for apex records (@)
 			tc("ALIAS at subdomain", alias("test", "foo.com.")),
 			tc("change it", alias("test", "foo2.com.")),
 		),
