@@ -173,15 +173,6 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff2.Change) []*models.Correction {
 	var corrections []*models.Correction
 
-	for _, rec := range change.New {
-		if existsInRecords(rec, change.Old) {
-			continue
-		}
-
-		nativeRec, _ := recordToNative(rec, false)
-		createCorrection := change.CreateCorrectionWithMessage("[1/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
-		corrections = append(corrections, createCorrection)
-	}
 	for _, rec := range change.Old {
 		if existsInRecords(rec, change.New) {
 			continue
@@ -189,6 +180,16 @@ func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff
 
 		nativeRec, _ := recordToNative(rec, true)
 		createCorrection := change.CreateCorrectionWithMessage("[2/2] delete", func() error { return n.domains.RemoveDNSEntry(dc.Name, nativeRec) })
+		corrections = append(corrections, createCorrection)
+	}
+
+	for _, rec := range change.New {
+		if existsInRecords(rec, change.Old) {
+			continue
+		}
+
+		nativeRec, _ := recordToNative(rec, false)
+		createCorrection := change.CreateCorrectionWithMessage("[1/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
 		corrections = append(corrections, createCorrection)
 	}
 
