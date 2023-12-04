@@ -487,6 +487,8 @@ func (client *providerClient) clearRequests(domain string) error {
 	json.Unmarshal(bodyString, &dr)
 
 	// TODO(tlim): Ignore what's beyond the first page.
+	// It is unlikely that there are active jobs beyond the first page.
+	// If there are, the next edit will just wait.
 	//if dr.Meta.Pages > 1 {
 	//	return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	//}

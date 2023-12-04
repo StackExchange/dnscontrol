@@ -15,15 +15,13 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2020-12-28
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-12-03
-
 	//a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2022-08-08
-
-	//a.Add("TXT", rejectif.TxtLongerThan255) // Last verified 2022-06-10
 
 	//a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2022-06-10
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2022-06-10
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-12-03
+
+	//a.Add("TXT", rejectif.TxtLongerThan255) // Last verified 2022-06-10
 
 	return a.Audit(records)
 }
