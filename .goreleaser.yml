@@ -35,11 +35,20 @@ changelog:
     - title: 'Provider-specific changes:'
       regexp: "(?i)((akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|cloudflare|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|easyname|exoscale|gandi|gcloud|gcore|hedns|hetzner|hexonet|hostingde|inwx|linode|loopia|luadns|msdns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|route53|rwth|softlayer|transip|vultr).*:)+.*"
       order: 2
+    - title: 'Documentation:'
+      regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
+      order: 3
+    - title: 'CI/CD:'
+      regexp: "(?i)^.*(build|ci|cicd)[(\\w)]*:+.*$"
+      order: 4
+    - title: 'Dependencies:'
+      regexp: "(?i)^.*Build\(deps\)*:+.*$|(?i)^.*update deps+.*$"
+      order: 5
+    - title: 'Other changes and improvements:'
+      order: 9
     - title: 'Deprecation warnings:'
       regexp: "(?i)^.*Deprecate[(\\w)]*:+.*$"
       order: 10
-    - title: 'Other changes and improvements:'
-      order: 9
   filters:
     exclude:
     - '^test:'
