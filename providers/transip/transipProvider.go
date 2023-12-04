@@ -347,7 +347,9 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
 		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+	case "TXT":
+		return removeSlashes(models.StripQuotes(rc.GetTargetCombined()))
 	default:
-		return models.RemoveSlashes(models.StripQuotes(rc.GetTargetCombined()))
+		return models.StripQuotes(rc.GetTargetCombined())
 	}
 }
