@@ -4,7 +4,8 @@ import (
 	"regexp"
 )
 
+var removeSlashesRegexp = regexp.MustCompile(`(?:\\(\\)+)|(?:\\)`)
+
 func removeSlashes(s string) string {
-	m := regexp.MustCompile("(?:\\\\(\\\\)+)|(?:\\\\)")
-	return m.ReplaceAllString(s, "$1")
+	return removeSlashesRegexp.ReplaceAllString(s, "$1")
 }
