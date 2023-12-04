@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -154,7 +155,7 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 	// nothing
 	case "TXT":
-	// nothing
+		record.Answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -175,6 +176,7 @@ var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
 // decodeTxt decodes the TXT record as received from name.com and
 // returns the list of strings.
+// NB(tlim): This is very similar to txtutil.ParseQuoted. Maybe replace it some day?
 func decodeTxt(s string) []string {
 
 	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {

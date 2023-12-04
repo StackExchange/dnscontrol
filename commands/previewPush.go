@@ -45,6 +45,7 @@ type PreviewArgs struct {
 	Full        bool
 }
 
+// ReportItem is a record of corrections for a particular domain/provider/registrar.
 type ReportItem struct {
 	Domain      string `json:"domain"`
 	Corrections int    `json:"corrections"`

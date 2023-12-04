@@ -216,10 +216,8 @@ func checkRecords(records models.Records) error {
 	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
 	for _, r := range records {
 		if r.Type == "TXT" {
-			for _, target := range r.GetTargetTXTSegmented() {
-				if strings.ContainsAny(target, "`") {
-					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
-				}
+			if strings.ContainsAny(r.GetTargetTXTJoined(), "`") {
+				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
 			}
 		}
 	}

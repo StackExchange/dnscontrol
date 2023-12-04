@@ -306,7 +306,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
@@ -403,13 +403,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	rtype := set.Type
-	var err error
-	switch rtype {
-	case "TXT":
-		err = r.SetTargetTXTs(models.ParseQuotedTxt(rec))
-	default:
-		err = r.PopulateFromString(rtype, rec, origin)
-	}
+	err := r.PopulateFromStringFunc(rtype, rec, origin, txtutil.ParseQuoted)
 	if err != nil {
 		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
 	}
