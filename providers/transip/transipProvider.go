@@ -157,22 +157,9 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 				)
 				corrections = append(corrections, correction)
 			} else {
-
-				oldEntries, err := recordsToNative(change.Old, true)
-				if err != nil {
-					return corrections, err
-				}
-				newEntries, err := recordsToNative(change.New, false)
-				if err != nil {
-					return corrections, err
-				}
-
-				deleteCorrection := wrapChangeFunction(oldEntries, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
-				createCorrection := wrapChangeFunction(newEntries, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
 				corrections = append(
 					corrections,
-					change.CreateCorrectionWithMessage("[1/2] delete", deleteCorrection),
-					change.CreateCorrectionWithMessage("[2/2] create", createCorrection),
+					n.recreateRecordSet(dc, change)...,
 				)
 			}
 		case diff2.REPORT:
@@ -182,6 +169,42 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	}
 
 	return corrections, nil
+}
+
+func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff2.Change) []*models.Correction {
+	var corrections []*models.Correction
+
+	for _, rec := range change.Old {
+		if existsInRecords(rec, change.New) {
+			continue
+		}
+
+		nativeRec, _ := recordToNative(rec, true)
+		createCorrection := change.CreateCorrectionWithMessage("[2/2] delete", func() error { return n.domains.RemoveDNSEntry(dc.Name, nativeRec) })
+		corrections = append(corrections, createCorrection)
+	}
+
+	for _, rec := range change.New {
+		if existsInRecords(rec, change.Old) {
+			continue
+		}
+
+		nativeRec, _ := recordToNative(rec, false)
+		createCorrection := change.CreateCorrectionWithMessage("[1/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
+		corrections = append(corrections, createCorrection)
+	}
+
+	return corrections
+}
+
+func existsInRecords(rec *models.RecordConfig, set models.Records) bool {
+	for _, existing := range set {
+		if rec.ToComparableNoTTL() == existing.ToComparableNoTTL() && rec.TTL == existing.TTL {
+			return true
+		}
+	}
+
+	return false
 }
 
 func recordsToNative(records models.Records, useOriginal bool) ([]domain.DNSEntry, error) {
@@ -325,6 +348,8 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
 		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+	case "TXT":
+		return removeSlashes(models.StripQuotes(rc.GetTargetCombined()))
 	default:
 		return models.StripQuotes(rc.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 	}
