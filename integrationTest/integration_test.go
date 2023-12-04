@@ -1273,13 +1273,13 @@ func makeTests(t *testing.T) []*TestGroup {
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"DIGITALOCEAN",  // No paging. Why bother?
-				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
-				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
-				"HEDNS",         // Doesn't page. Works fine.  Due to the slow API we skip.
-				"LOOPIA",        // Their API is so damn slow. Plus, no paging.
-				"MSDNS",         // No paging done. No need to test.
-				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
-				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
+				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
+				"MSDNS",      // No paging done. No need to test.
+				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
+				"NS1",        // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 			),
