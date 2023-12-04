@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 // nativeToRecordA takes an A record from DNS and returns a native RecordConfig struct.
@@ -64,6 +65,7 @@ func nativeToRecordTXT(nr nativeRecordTXT, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
+	printer.Printf("DEBUG: inbound raw s=%s\n", nr.Value)
 	rc.SetTargetTXT(nr.Value)
 	return rc
 }
