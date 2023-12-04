@@ -478,7 +478,7 @@ func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
 		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
 	}
-	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
+	var bodyString, err = client.get(`/zones/edits?size=99999&filter=zoneName==` + domain)
 	if err != nil {
 		return err
 	}
@@ -486,10 +486,10 @@ func (client *providerClient) clearRequests(domain string) error {
 	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
 
-	// TODO(tlim): Properly handle paganation.
-	if dr.Meta.Pages > 1 {
-		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
-	}
+	// TODO(tlim): Ignore what's beyond the first page.
+	//if dr.Meta.Pages > 1 {
+	//	return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
+	//}
 
 	for i, ze := range dr.ZoneEdits {
 		if cscDebug {
