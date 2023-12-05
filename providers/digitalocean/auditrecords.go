@@ -17,11 +17,12 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("MX", rejectif.MxNull) // Last verified 2020-12-28
 
-	a.Add("TXT", MaxLengthDO) // Last verified 2021-03-01
+	//a.Add("TXT", MaxLengthDO) // Last verified 2021-03-01
+	a.Add("TXT", rejectif.TxtLongerThan(511)) // Last verified 2021-03-01
 
 	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2023-11-11
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-01
+	//a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-01
 	// Double-quotes not permitted in TXT strings. I have a hunch that
 	// this is due to a broken parser on the DO side.
 

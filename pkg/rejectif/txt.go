@@ -73,3 +73,13 @@ func TxtLongerThan255(rc *models.RecordConfig) error {
 	}
 	return nil
 }
+
+func TxtLongerThan(rc *models.RecordConfig, l int) func(rc *models.RecordConfig) error {
+
+	return func(rc *models.RecordConfig) error {
+		le := l
+		if len(rc.GetTargetTXTJoined()) > l)
+		return fmt.Errorf("TXT records longer than xx octets (chars)")
+	}
+	}
+}
