@@ -78,12 +78,12 @@ Others, the only change they permit is to upload the entire zone even if only on
 Others are somewhere in between: all records at a label must be updated at once, or all records
 in a RecordSet (the label + rType).
 
-In summary, provider APIs basically fall into three general categories:
+In summary, provider APIs basically fall into four general categories:
 
-* Updates are one label at a time.
-* Updates are one label+type at a time.
-* Updates are one by label+type at a time.
-* Updates require the entire zone to be uploaded.
+* Updates are done one record at a time (Record)
+* Updates are done one label at a time (Label)
+* Updates are done one label+type at a time (RecordSet)
+* Updates require the entire zone to be uploaded (Zone).
 
 To determine your provider's category, review your API documentation.
 
@@ -91,7 +91,7 @@ To determine an existing provider's category, see which `diff2.By*()` function i
 
 DNSControl provides 4 helper functions that do all the hard work for
 you.  As input, they take the existing zone (what was downloaded via
-the API) and the desired zone (what was in `dnsconfig.js`).  They
+the API) and the desired zone (what is in `dnsconfig.js`).  They
 return a list of instructions. Implement handlers for the instructions
 and DNSControl is able to perform `dnscontrol push`.
 
