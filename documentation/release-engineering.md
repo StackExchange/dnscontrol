@@ -130,7 +130,7 @@ find * -name \*.bak -delete
 GHA is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the Google Cloud provider integration test is only run if `GCLOUD_DOMAIN` is set.
 
 * Q: Where is the list of providers to run integration tests on?
-* A: In `.github/workflows/build.yml`: (1) the "PROVIDERS" list, (2) the `integration-tests` section.
+* A: In `.github/workflows/pr_test.yml`: (1) the "PROVIDERS" list, (2) the `integrtests-diff2` section.
 
 * Q: Where are non-secret environment variables stored?
 * A: GHA calls them "Variables". Update them here: https://github.com/StackExchange/dnscontrol/settings/variables/actions
@@ -140,7 +140,7 @@ GHA is configured to run an integration test for any provider listed in the "pro
 
 ### How do I add a single new integration test?
 
-1. Edit `.github/workflows/build.yml`
+1. Edit `.github/workflows/pr_test.yml`
 2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
 3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/StackExchange/dnscontrol/settings/variables/actions
 4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section.

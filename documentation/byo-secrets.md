@@ -62,16 +62,16 @@ Step 1: Create a branch
 
 Create a branch as you normally would to submit a PR to the project.
 
-Step 2: Update `build.yml`
+Step 2: Update `pr_test.yml`
 
-In this branch, edit `.github/workflows/build.yml`:
+In this branch, edit `.github/workflows/pr_test.yml`:
 
 1. In the `integration-test-providers` section, the name of the provider.
 
 Add your provider's name (alphabetically).
 The line looks something like:
 
-{% code title=".github/workflows/build.yml" %}
+{% code title=".github/workflows/pr_test.yml" %}
 ```
         PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
 ```
@@ -83,7 +83,7 @@ Add it to the `env` section of `integration-tests`.
 
 For example, the entry for BIND looks like:
 
-{% code title=".github/workflows/build.yml" %}
+{% code title=".github/workflows/pr_test.yml" %}
 ```
         BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
 ```
@@ -95,7 +95,7 @@ If there are other env variables (for example, for an API key), add that as a "s
 
 For example, the entry for CLOUDFLAREAPI looks like this:
 
-{% code title=".github/workflows/build.yml" %}
+{% code title=".github/workflows/pr_test.yml" %}
 ```
         CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
         CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
