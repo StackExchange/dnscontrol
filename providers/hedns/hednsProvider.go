@@ -191,9 +191,6 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 		}
 	}
 
-	// Normalize
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }
 
