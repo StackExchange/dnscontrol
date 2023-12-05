@@ -79,7 +79,7 @@ The line looks something like:
 
 2. Add your providers `_DOMAIN` env variable:
 
-Add it to the `env` section of `integrtests-diff2`.
+Add it to the `env` section of `integration-tests`.
 
 For example, the entry for BIND looks like:
 

@@ -143,7 +143,7 @@ GHA is configured to run an integration test for any provider listed in the "pro
 1. Edit `.github/workflows/pr_test.yml`
 2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
 3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/StackExchange/dnscontrol/settings/variables/actions
-4. All other variables should be stored as secrets (for consistency).  Add them to the `integrtests-diff2` section.
+4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section.
 Set them in GHA via https://github.com/StackExchange/dnscontrol/settings/secrets/actions
 
 ### How do I add a "bring your own keys" integration test?
