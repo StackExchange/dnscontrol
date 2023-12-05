@@ -71,9 +71,6 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
 
-	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
-	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	// Setting the TTL is not supported for netcup
 	for _, r := range dc.Records {
 		r.TTL = 0
