@@ -74,12 +74,14 @@ func TxtLongerThan255(rc *models.RecordConfig) error {
 	return nil
 }
 
-func TxtLongerThan(rc *models.RecordConfig, l int) func(rc *models.RecordConfig) error {
-
+// TxtLongerThan returns a function that audits TXT records for length
+// greater than maxLength.
+func TxtLongerThan(maxLength int) func(rc *models.RecordConfig) error {
 	return func(rc *models.RecordConfig) error {
-		le := l
-		if len(rc.GetTargetTXTJoined()) > l)
-		return fmt.Errorf("TXT records longer than xx octets (chars)")
-	}
+		m := maxLength
+		if len(rc.GetTargetTXTJoined()) > m {
+			return fmt.Errorf("TXT records longer than %d octets (chars)", m)
+		}
+		return nil
 	}
 }
