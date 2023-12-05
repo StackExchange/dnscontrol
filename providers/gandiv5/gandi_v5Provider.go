@@ -24,7 +24,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
@@ -195,7 +194,6 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 	}
 
 	PrepDesiredRecords(dc)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,

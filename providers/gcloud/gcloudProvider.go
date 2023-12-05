@@ -259,8 +259,6 @@ type correctionValues struct {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	oldRRs, ok := g.oldRRsMap[dc.Name]
 	if !ok {
 		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)
