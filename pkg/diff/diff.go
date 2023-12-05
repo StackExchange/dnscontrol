@@ -1,6 +1,8 @@
 package diff
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/fatih/color"
 )
@@ -29,12 +31,7 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	return r.ToDiffable()
-}
-
-// CorrectionLess returns true when comparing corrections.
-func CorrectionLess(c []*models.Correction, i, j int) bool {
-	return c[i].Msg < c[j].Msg
+	return fmt.Sprintf("%s ttl=%d", r.ToComparableNoTTL(), r.TTL)
 }
 
 func (c Correlation) String() string {

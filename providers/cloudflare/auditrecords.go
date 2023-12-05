@@ -11,8 +11,6 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtHasMultipleSegments) // Last verified 2022-06-18
-
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2022-06-18
 
 	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2022-06-18

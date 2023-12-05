@@ -640,7 +640,6 @@ func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
 	r := makeRec(name, "", "TXT")
 	r.Metadata = make(map[string]string)
 	r.Metadata["create_ovh_native_record"] = rType
-	r.TxtStrings = []string{target}
 	r.SetTarget(target)
 	return r
 }
@@ -1085,39 +1084,69 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
-			// of record. When the provider fixes the bug or changes behavior,
-			// update the AuditRecords().
+			// of record.
 
-			//clear(),
-			//tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
-			//clear(),
-			//tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
-			//clear(),
-			//tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
-			//clear(),
-			//tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			// Some of these test cases are commented out because they test
+			// something that isn't widely used or supported.  For example
+			// many APIs don't support a backslack (`\`) in a TXT record;
+			// luckily we've never seen a need for that "in the wild".  If
+			// you want to future-proof your provider, temporarily remove
+			// the comments and get those tests working, or reject it using
+			// auditrecords.go.
+
+			// ProTip: Unsure how a provider's API escapes something? Try
+			// adding the TXT record via the Web UI and watch how the string
+			// is escaped when you download the records.
+
+			// Nobody needs this and many APIs don't allow it.
+			tc("a 0-byte TXT", txt("foo0", "")),
+
+			// Test edge cases around 255, 255*2, 255*3:
+			tc("a 254-byte TXT", txt("foo254", strings.Repeat("A", 254))), // 255-1
+			tc("a 255-byte TXT", txt("foo255", strings.Repeat("B", 255))), // 255
+			tc("a 256-byte TXT", txt("foo256", strings.Repeat("C", 256))), // 255+1
+			tc("a 509-byte TXT", txt("foo509", strings.Repeat("D", 509))), // 255*2-1
+			tc("a 510-byte TXT", txt("foo510", strings.Repeat("E", 510))), // 255*2
+			tc("a 511-byte TXT", txt("foo511", strings.Repeat("F", 511))), // 255*2+1
+			tc("a 764-byte TXT", txt("foo764", strings.Repeat("G", 764))), // 255*3-1
+			tc("a 765-byte TXT", txt("foo765", strings.Repeat("H", 765))), // 255*3
+			tc("a 766-byte TXT", txt("foo766", strings.Repeat("J", 766))), // 255*3+1
 			//clear(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
-			//clear(),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
-			//clear(),
-			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
-			//clear(),
-			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
-			//clear(),
+			tc("TXT with 1 dq-1interior", txt("foodq", `in"side`)),
+			tc("TXT with 2 dq-2interior", txt("foodqs", `in"ter"ior`)),
+			tc("TXT with 1 dq-left", txt("foodqs", `"left`)),
+			tc("TXT with 1 dq-right", txt("foodqs", `right"`)),
 
-			tc("a TXT with interior ws", txt("foosp", "with spaces")),
-			//clear(),
-			tc("TXT with ws at end", txt("foows1", "with space at end ")),
-			//clear(),
+			// Semicolons don't need special treatment.
+			// https://serverfault.com/questions/743789
+			tc("TXT with semicolon", txt("foosc1", `semi;colon`)),
+			tc("TXT with semicolon ws", txt("foosc2", `wssemi ; colon`)),
 
-			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
-			// This was added because Vultr syntax-checks TXT records with SPF contents.
-			//clear(),
+			tc("TXT interior ws", txt("foosp", "with spaces")),
+			tc("TXT trailing ws", txt("foows1", "with space at end ")),
 
-			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
-			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			// Vultr syntax-checks TXT records with SPF contents.
+			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+
+			// Nobody needs this and many APIs don't allow it.
+			tc("TXT with 1 backslash", txt("fooosbs1", `1back\slash`)),
+			tc("TXT with 2 backslash", txt("fooosbs2", `2back\\slash`)),
+			tc("TXT with 3 backslash", txt("fooosbs3", `3back\\\slash`)),
+			tc("TXT with 4 backslash", txt("fooosbs4", `4back\\\\slash`)),
+
+			// Nobody needs this and many APIs don't allow it.
+			//tc("Create TXT with frequently difficult characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+		),
+
+		testgroup("TXT backslashes",
+			tc("TXT with backslashs",
+				txt("fooosbs1", `1back\slash`),
+				txt("fooosbs2", `2back\\slash`),
+				txt("fooosbs3", `3back\\\slash`),
+				txt("fooosbs4", `4back\\\\slash`)),
 		),
 
 		//
@@ -1244,13 +1273,13 @@ func makeTests(t *testing.T) []*TestGroup {
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"DIGITALOCEAN",  // No paging. Why bother?
-				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
-				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
-				"HEDNS",         // Doesn't page. Works fine.  Due to the slow API we skip.
-				"LOOPIA",        // Their API is so damn slow. Plus, no paging.
-				"MSDNS",         // No paging done. No need to test.
-				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
-				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
+				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
+				"MSDNS",      // No paging done. No need to test.
+				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
+				"NS1",        // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 			),

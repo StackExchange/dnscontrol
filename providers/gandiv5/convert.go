@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/go-gandi/go-gandi/livedns"
 )
 
@@ -29,10 +30,8 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 		case "ALIAS":
 			rc.Type = "ALIAS"
 			err = rc.SetTarget(value)
-		case "TXT":
-			err = rc.SetTargetTXTfromRFC1035Quoted(value)
 		default:
-			err = rc.PopulateFromString(rtype, value, origin)
+			err = rc.PopulateFromStringFunc(rtype, value, origin, txtutil.ParseQuoted)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
@@ -65,11 +64,11 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 				RrsetType:   r.Type,
 				RrsetTTL:    int(r.TTL),
 				RrsetName:   label,
-				RrsetValues: []string{r.GetTargetCombined()},
+				RrsetValues: []string{r.GetTargetCombinedFunc(txtutil.EncodeQuoted)},
 			}
 			keys[key] = &zr
 		} else {
-			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
+			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombinedFunc(txtutil.EncodeQuoted))
 
 			if r.TTL != uint32(zr.RrsetTTL) {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)

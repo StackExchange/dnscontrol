@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -246,6 +247,46 @@ var testdataZFCAA = `$TTL 300
                  IN CAA   0 issue "letsencrypt.org"
                  IN CAA   0 issuewild ";"
 `
+
+// r is shorthand for strings.Repeat()
+func r(s string, c int) string { return strings.Repeat(s, c) }
+
+func TestWriteZoneFileTxt(t *testing.T) {
+	// Do round-trip tests on various length TXT records.
+	t10 := `t10              IN TXT   "ten4567890"`
+	t254 := `t254             IN TXT   "` + r("a", 254) + `"`
+	t255 := `t255             IN TXT   "` + r("b", 255) + `"`
+	t256 := `t256             IN TXT   "` + r("c", 255) + `" "` + r("D", 1) + `"`
+	t509 := `t509             IN TXT   "` + r("e", 255) + `" "` + r("F", 254) + `"`
+	t510 := `t510             IN TXT   "` + r("g", 255) + `" "` + r("H", 255) + `"`
+	t511 := `t511             IN TXT   "` + r("i", 255) + `" "` + r("J", 255) + `" "` + r("k", 1) + `"`
+	t512 := `t511             IN TXT   "` + r("L", 255) + `" "` + r("M", 255) + `" "` + r("n", 2) + `"`
+	t513 := `t511             IN TXT   "` + r("o", 255) + `" "` + r("P", 255) + `" "` + r("q", 3) + `"`
+	for i, d := range []string{t10, t254, t255, t256, t509, t510, t511, t512, t513} {
+		// Make the rr:
+		rr, err := dns.NewRR(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Make the expected zonefile:
+		ez := "$TTL 3600\n" + d + "\n"
+
+		// Generate the zonefile:
+		buf := &bytes.Buffer{}
+		WriteZoneFileRR(buf, []dns.RR{rr}, "bosun.org")
+		gz := buf.String()
+		if gz != ez {
+			t.Log("got: " + gz)
+			t.Log("wnt: " + ez)
+			t.Fatalf("Zone file %d does not match.", i)
+		}
+
+		// Reverse the process. Turn the zonefile into a list of records
+		parseAndRegen(t, buf, ez)
+	}
+
+}
 
 // Test 1 of each record type
 
