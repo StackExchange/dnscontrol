@@ -19,7 +19,5 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2023-12-04
 
-	//a.Add("TXT", rejectif.TxtHasTrailingSpace)    // Last verified 2023-01-28
-
 	return a.Audit(records)
 }
