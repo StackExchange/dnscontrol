@@ -1,4 +1,4 @@
-package azure_private_dns
+package azureprivatedns
 
 import (
 	"context"
