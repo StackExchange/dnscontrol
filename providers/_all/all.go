@@ -6,6 +6,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/akamaiedgedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/axfrddns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/azure_private_dns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/azuredns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
