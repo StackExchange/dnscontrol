@@ -13,7 +13,7 @@ For each step, it will run the config once and expect changes. It will run it ag
 ## Running a test
 
 1. The integration tests need a test domain to run on. All the records of this domain will be deleted!
-2. Define all environment variables expected for the provider you wish to run. I setup a local `.env` file with the appropriate values and use [zoo](https://github.com/jsonmaur/zoo) to run my commands.
+2. Define all environment variables expected for the provider you wish to run.
 3. run `cd integrationTest && go test -v -provider $NAME` where $NAME is the name of the provider you wish to run.
 
 Example:

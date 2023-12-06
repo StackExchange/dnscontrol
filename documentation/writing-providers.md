@@ -203,11 +203,11 @@ an automated way to test for this bug.  The manual steps are here in
 
 ## Step 9: Update docs
 
-* Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [documentation/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/providers.md): Add the provider to the provider list.
-* Edit [documentation/SUMMARY.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/SUMMARY.md): Add the provider to the provider list.
+* Edit `README.md`: Add the provider to the bullet list.
+* Edit `documentation/providers.md`: Add the provider to the provider list.
+* Edit `documentation/SUMMARY.md`: Add the provider to the provider list.
 * Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
-* Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
+* Edit `OWNERS`: Add the directory name and your GitHub username.
 
 ## Step 10: Submit a PR
 
