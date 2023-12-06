@@ -1,4 +1,4 @@
-package azure_private_dns
+package azureprivatedns
 
 import (
 	"github.com/StackExchange/dnscontrol/v4/models"
