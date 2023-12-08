@@ -180,7 +180,11 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 		req.Content = content[:len(content)-1]
 	case "MX":
 		req.Priority = int(rec.MxPreference)
-		req.Content = content[:len(content)-1]
+		if content == "." {
+			req.Content = content
+		} else {
+			req.Content = content[:len(content)-1]
+		}
 	case "SRV":
 		req.Priority = int(rec.SrvPriority)
 		req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content[:len(content)-1])
@@ -305,7 +309,11 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 			"PTR":   true,
 		}
 		if rtypeAddDot[record.Type] {
-			record.Content = record.Content + "."
+			if record.Type == "MX" && record.Content == "." {
+				// null records don't need to be modified
+			} else {
+				record.Content = record.Content + "."
+			}
 		}
 
 		rc := &models.RecordConfig{
