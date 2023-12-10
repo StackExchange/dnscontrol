@@ -1125,9 +1125,9 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with semicolon", txt("foosc1", `semi;colon`)),
 			tc("TXT with semicolon ws", txt("foosc2", `wssemi ; colon`)),
 
-			tc("TXT interior ws", txt("foosp", "with spaces")),
-			// Some providers trim spaces
-			tc("TXT trailing ws", txt("foows1", "with space at end ")),
+			tc("TXT interior ws", txt("foosp", "interior spaces")),
+			tc("TXT leading ws", txt("foows2", " startspace")),
+			tc("TXT trailing ws", txt("foows1", "endspace ")),
 
 			// Vultr syntax-checks TXT records with SPF contents.
 			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
