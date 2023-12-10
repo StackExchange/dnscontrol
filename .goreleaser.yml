@@ -21,7 +21,9 @@ builds:
       - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
   hooks:
-  - go mod tidy
+    - go fmt ./...
+    - go mod tidy
+    - go generate ./...
 changelog:
   sort: asc
   use: github
