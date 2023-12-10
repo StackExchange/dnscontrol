@@ -211,6 +211,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 						// this is the actual push, ensure domain exists at DSP
 						if err := creator.EnsureZoneExists(domain.Name); err != nil {
 							out.Warnf("Error creating domain: %s\n", err)
+							anyErrors = true
 							continue // continue with next provider, as we couldn't create this one
 						}
 					}
