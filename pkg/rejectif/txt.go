@@ -17,6 +17,15 @@ func TxtHasBackslash(rc *models.RecordConfig) error {
 	return nil
 }
 
+// TxtStartsOrEndsWithSpaces audits TXT records that starts or ends with spaces
+func TxtStartsOrEndsWithSpaces(rc *models.RecordConfig) error {
+	txt := rc.GetTargetTXTJoined()
+	if len(txt) > 0 && (txt[0] == ' ' || txt[len(txt)-1] == ' ') {
+		return fmt.Errorf("txtstring starts or ends with spaces")
+	}
+	return nil
+}
+
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "`") {
