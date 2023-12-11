@@ -1539,10 +1539,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	ns("another-child", "ns101.cloudns.net."),
 			//),
 		),
-		testgroup("DHCPID",
+		testgroup("DHCID",
 			requires(providers.CanUseDHCID),
-			tc("Create DHCPID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
-			tc("Modify DHCPID record", dhcid("test", "Test/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+			tc("Create DHCID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+			tc("Modify DHCID record", dhcid("test", "Test/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 		),
 
 		//// Vendor-specific record types

@@ -133,7 +133,7 @@ func (dc *DomainConfig) Punycode() error {
 			rec.SetTarget(t)
 		case "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			rec.SetTarget(rec.GetTargetField())
-		case "A", "AAAA", "CAA", "DHCPID", "DS", "LOC", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
+		case "A", "AAAA", "CAA", "DHCID", "DS", "LOC", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
 			return fmt.Errorf("Punycode rtype %v unimplemented", rec.Type)
