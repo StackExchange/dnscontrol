@@ -5,18 +5,23 @@ import "github.com/StackExchange/dnscontrol/v4/pkg/dnstree"
 type edgeDirection uint8
 
 const (
+	// IncomingEdge is an edge inbound.
 	IncomingEdge edgeDirection = iota
+	// OutgoingEdge is an edge outbound.
 	OutgoingEdge
 )
 
+// DNSGraphEdge an edge on the graph.
 type DNSGraphEdge[T Graphable] struct {
 	Dependency Dependency
 	Node       *DNSGraphNode[T]
 	Direction  edgeDirection
 }
 
+// DNSGraphEdges a list of edges.
 type DNSGraphEdges[T Graphable] []DNSGraphEdge[T]
 
+// DNSGraphNode a node in the graph.
 type DNSGraphNode[T Graphable] struct {
 	Data  T
 	Edges DNSGraphEdges[T]
@@ -24,11 +29,13 @@ type DNSGraphNode[T Graphable] struct {
 
 type dnsGraphNodes[T Graphable] []*DNSGraphNode[T]
 
+// DNSGraph a graph.
 type DNSGraph[T Graphable] struct {
 	All  dnsGraphNodes[T]
 	Tree *dnstree.DomainTree[dnsGraphNodes[T]]
 }
 
+// CreateGraph returns a graph.
 func CreateGraph[T Graphable](entries []T) *DNSGraph[T] {
 	graph := &DNSGraph[T]{
 		All:  dnsGraphNodes[T]{},
@@ -48,6 +55,7 @@ func CreateGraph[T Graphable](entries []T) *DNSGraph[T] {
 	return graph
 }
 
+// RemoveNode removes a node from a graph.
 func (graph *DNSGraph[T]) RemoveNode(toRemove *DNSGraphNode[T]) {
 	for _, edge := range toRemove.Edges {
 		edge.Node.Edges = edge.Node.Edges.RemoveNode(toRemove)
@@ -62,6 +70,7 @@ func (graph *DNSGraph[T]) RemoveNode(toRemove *DNSGraphNode[T]) {
 	}
 }
 
+// AddNode adds a node to a graph.
 func (graph *DNSGraph[T]) AddNode(data T) {
 	nodes := graph.Tree.Get(data.GetName())
 	node := &DNSGraphNode[T]{
@@ -77,6 +86,7 @@ func (graph *DNSGraph[T]) AddNode(data T) {
 	graph.Tree.Set(data.GetName(), nodes)
 }
 
+// AddEdge adds an edge to a graph.
 func (graph *DNSGraph[T]) AddEdge(sourceNode *DNSGraphNode[T], dependency Dependency) {
 	destinationNodes := graph.Tree.Get(dependency.NameFQDN)
 
@@ -107,6 +117,7 @@ func (graph *DNSGraph[T]) AddEdge(sourceNode *DNSGraphNode[T], dependency Depend
 	}
 }
 
+// RemoveNode removes a node from a graph.
 func (nodes dnsGraphNodes[T]) RemoveNode(toRemove *DNSGraphNode[T]) dnsGraphNodes[T] {
 	var newNodes dnsGraphNodes[T]
 
@@ -119,6 +130,7 @@ func (nodes dnsGraphNodes[T]) RemoveNode(toRemove *DNSGraphNode[T]) dnsGraphNode
 	return newNodes
 }
 
+// RemoveNode removes a node from a graph.
 func (edges DNSGraphEdges[T]) RemoveNode(toRemove *DNSGraphNode[T]) DNSGraphEdges[T] {
 	var newEdges DNSGraphEdges[T]
 
@@ -131,6 +143,7 @@ func (edges DNSGraphEdges[T]) RemoveNode(toRemove *DNSGraphNode[T]) DNSGraphEdge
 	return newEdges
 }
 
+// Contains returns true if a node is in the graph AND is in that direction.
 func (edges DNSGraphEdges[T]) Contains(toFind *DNSGraphNode[T], direction edgeDirection) bool {
 
 	for _, edge := range edges {

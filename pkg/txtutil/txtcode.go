@@ -36,14 +36,24 @@ func EncodeQuoted(t string) string {
 	return txtEncode(ToChunks(t))
 }
 
+// State denotes the parser state.
 type State int
 
 const (
-	StateStart     State = iota // Looking for a non-space
-	StateUnquoted               // A run of unquoted text
-	StateQuoted                 // Quoted text
-	StateBackslash              // last char was backlash in a quoted string
-	StateWantSpace              // expect space after closing quote
+	// StateStart indicates parser is looking for a non-space
+	StateStart State = iota
+
+	// StateUnquoted indicates parser is in a run of unquoted text
+	StateUnquoted
+
+	// StateQuoted indicates parser is in quoted text
+	StateQuoted
+
+	// StateBackslash indicates the last char was backlash in a quoted string
+	StateBackslash
+
+	// StateWantSpace indicates parser expects a space (the previous token was a closing quote)
+	StateWantSpace
 )
 
 func isRemaining(s string, i, r int) bool {
