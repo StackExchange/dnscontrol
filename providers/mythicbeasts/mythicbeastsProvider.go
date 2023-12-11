@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -85,7 +84,7 @@ func (n *mythicBeastsProvider) GetZoneRecords(domain string, meta map[string]str
 		return nil, err
 	}
 	if got, want := resp.StatusCode, 200; got != want {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("got HTTP %v, want %v: %v", got, want, string(body))
 	}
 	return zoneFileToRecords(resp.Body, domain)
@@ -138,7 +137,7 @@ func (n *mythicBeastsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig
 						return err
 					}
 					if got, want := resp.StatusCode, 200; got != want {
-						body, _ := ioutil.ReadAll(resp.Body)
+						body, _ := io.ReadAll(resp.Body)
 						return fmt.Errorf("got HTTP %v, want %v: %v", got, want, string(body))
 					}
 					return nil
