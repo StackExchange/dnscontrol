@@ -643,6 +643,21 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
 declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 
 /**
+ * DHCID adds a DHCID record to the domain.
+ *
+ * Digest should be a string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DHCID("example.com", "ABCDEFG")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dhcid
+ */
+declare function DHCID(name: string, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an
  * error to insert records that match an `IGNORE()` pattern. This disables that
  * safety check for the entire domain.
