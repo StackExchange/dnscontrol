@@ -1127,8 +1127,8 @@ func makeTests(t *testing.T) []*TestGroup {
 
 			tc("TXT interior ws", txt("foosp", "with spaces")),
 
+			tc("TXT leading ws", txt("foowsb", " leadingspace")),
 
-				tc("TXT leading ws", txt("foowsb", " leadingspace")),
 			tc("TXT trailing ws", txt("foows1", "with space at end ")),
 
 			// Vultr syntax-checks TXT records with SPF contents.
