@@ -49,7 +49,7 @@ func SortUsingGraph[T dnsgraph.Graphable](records []T) SortResult[T] {
 }
 
 type directedSortState[T dnsgraph.Graphable] struct {
-	graph                *dnsgraph.DNSGraph[T]
+	graph                *dnsgraph.Graph[T]
 	sortedRecords        []T
 	unresolvedRecords    []T
 	hasResolvedLastRound bool
@@ -106,7 +106,7 @@ func (sortState *directedSortState[T]) finalize() {
 	}
 }
 
-func hasUnmetDependencies[T dnsgraph.Graphable](node *dnsgraph.DNSGraphNode[T]) bool {
+func hasUnmetDependencies[T dnsgraph.Graphable](node *dnsgraph.Node[T]) bool {
 	for _, edge := range node.Edges {
 		if edge.Dependency.Type == dnsgraph.BackwardDependency && edge.Direction == dnsgraph.IncomingEdge {
 			return true
