@@ -1,5 +1,5 @@
 ---
-name: DHCPID
+name: DHCID
 parameters:
   - name
   - digest
