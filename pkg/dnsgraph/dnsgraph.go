@@ -11,33 +11,33 @@ const (
 	OutgoingEdge
 )
 
-// DNSGraphEdge an edge on the graph.
-type DNSGraphEdge[T Graphable] struct {
+// Edge an edge on the graph.
+type Edge[T Graphable] struct {
 	Dependency Dependency
-	Node       *DNSGraphNode[T]
+	Node       *Node[T]
 	Direction  edgeDirection
 }
 
-// DNSGraphEdges a list of edges.
-type DNSGraphEdges[T Graphable] []DNSGraphEdge[T]
+// Edges a list of edges.
+type Edges[T Graphable] []Edge[T]
 
-// DNSGraphNode a node in the graph.
-type DNSGraphNode[T Graphable] struct {
+// Node a node in the graph.
+type Node[T Graphable] struct {
 	Data  T
-	Edges DNSGraphEdges[T]
+	Edges Edges[T]
 }
 
-type dnsGraphNodes[T Graphable] []*DNSGraphNode[T]
+type dnsGraphNodes[T Graphable] []*Node[T]
 
-// DNSGraph a graph.
-type DNSGraph[T Graphable] struct {
+// Graph a graph.
+type Graph[T Graphable] struct {
 	All  dnsGraphNodes[T]
 	Tree *dnstree.DomainTree[dnsGraphNodes[T]]
 }
 
 // CreateGraph returns a graph.
-func CreateGraph[T Graphable](entries []T) *DNSGraph[T] {
-	graph := &DNSGraph[T]{
+func CreateGraph[T Graphable](entries []T) *Graph[T] {
+	graph := &Graph[T]{
 		All:  dnsGraphNodes[T]{},
 		Tree: dnstree.Create[dnsGraphNodes[T]](),
 	}
@@ -56,7 +56,7 @@ func CreateGraph[T Graphable](entries []T) *DNSGraph[T] {
 }
 
 // RemoveNode removes a node from a graph.
-func (graph *DNSGraph[T]) RemoveNode(toRemove *DNSGraphNode[T]) {
+func (graph *Graph[T]) RemoveNode(toRemove *Node[T]) {
 	for _, edge := range toRemove.Edges {
 		edge.Node.Edges = edge.Node.Edges.RemoveNode(toRemove)
 	}
@@ -71,11 +71,11 @@ func (graph *DNSGraph[T]) RemoveNode(toRemove *DNSGraphNode[T]) {
 }
 
 // AddNode adds a node to a graph.
-func (graph *DNSGraph[T]) AddNode(data T) {
+func (graph *Graph[T]) AddNode(data T) {
 	nodes := graph.Tree.Get(data.GetName())
-	node := &DNSGraphNode[T]{
+	node := &Node[T]{
 		Data:  data,
-		Edges: DNSGraphEdges[T]{},
+		Edges: Edges[T]{},
 	}
 	if nodes == nil {
 		nodes = dnsGraphNodes[T]{}
@@ -87,7 +87,7 @@ func (graph *DNSGraph[T]) AddNode(data T) {
 }
 
 // AddEdge adds an edge to a graph.
-func (graph *DNSGraph[T]) AddEdge(sourceNode *DNSGraphNode[T], dependency Dependency) {
+func (graph *Graph[T]) AddEdge(sourceNode *Node[T], dependency Dependency) {
 	destinationNodes := graph.Tree.Get(dependency.NameFQDN)
 
 	if destinationNodes == nil {
@@ -103,13 +103,13 @@ func (graph *DNSGraph[T]) AddEdge(sourceNode *DNSGraphNode[T], dependency Depend
 			continue
 		}
 
-		sourceNode.Edges = append(sourceNode.Edges, DNSGraphEdge[T]{
+		sourceNode.Edges = append(sourceNode.Edges, Edge[T]{
 			Dependency: dependency,
 			Node:       destinationNode,
 			Direction:  OutgoingEdge,
 		})
 
-		destinationNode.Edges = append(destinationNode.Edges, DNSGraphEdge[T]{
+		destinationNode.Edges = append(destinationNode.Edges, Edge[T]{
 			Dependency: dependency,
 			Node:       sourceNode,
 			Direction:  IncomingEdge,
@@ -118,7 +118,7 @@ func (graph *DNSGraph[T]) AddEdge(sourceNode *DNSGraphNode[T], dependency Depend
 }
 
 // RemoveNode removes a node from a graph.
-func (nodes dnsGraphNodes[T]) RemoveNode(toRemove *DNSGraphNode[T]) dnsGraphNodes[T] {
+func (nodes dnsGraphNodes[T]) RemoveNode(toRemove *Node[T]) dnsGraphNodes[T] {
 	var newNodes dnsGraphNodes[T]
 
 	for _, node := range nodes {
@@ -131,8 +131,8 @@ func (nodes dnsGraphNodes[T]) RemoveNode(toRemove *DNSGraphNode[T]) dnsGraphNode
 }
 
 // RemoveNode removes a node from a graph.
-func (edges DNSGraphEdges[T]) RemoveNode(toRemove *DNSGraphNode[T]) DNSGraphEdges[T] {
-	var newEdges DNSGraphEdges[T]
+func (edges Edges[T]) RemoveNode(toRemove *Node[T]) Edges[T] {
+	var newEdges Edges[T]
 
 	for _, edge := range edges {
 		if edge.Node != toRemove {
@@ -144,7 +144,7 @@ func (edges DNSGraphEdges[T]) RemoveNode(toRemove *DNSGraphNode[T]) DNSGraphEdge
 }
 
 // Contains returns true if a node is in the graph AND is in that direction.
-func (edges DNSGraphEdges[T]) Contains(toFind *DNSGraphNode[T], direction edgeDirection) bool {
+func (edges Edges[T]) Contains(toFind *Node[T], direction edgeDirection) bool {
 
 	for _, edge := range edges {
 		if edge.Node == toFind && edge.Direction == direction {
