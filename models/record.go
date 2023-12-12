@@ -129,6 +129,7 @@ type RecordConfig struct {
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+	SilenceReporting bool              `json:"silence_reporting,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.

@@ -26,6 +26,9 @@ type UnmanagedConfig struct {
 	// Glob pattern for matching targets.
 	TargetPattern string    `json:"target_pattern,omitempty"`
 	TargetGlob    glob.Glob `json:"-"` // Compiled version
+
+	// Output warnings about this ignore?
+	SilenceReporting bool `json:"silence_reporting,omitempty"`
 }
 
 // DebugUnmanagedConfig returns a string version of an []*UnmanagedConfig for debugging purposes.

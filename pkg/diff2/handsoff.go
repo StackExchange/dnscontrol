@@ -98,7 +98,7 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
-const maxReport = 5
+const defaultMaxReport = 5
 
 // handsoff processes the IGNORE*()//NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
@@ -118,19 +118,13 @@ func handsoff(
 
 	// Process IGNORE*() and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
-	if len(foreign) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
-		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
-	}
-	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*():", len(ignorable)))
-		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
-	}
+	msgs = append(msgs, genReport(foreign, "NO_PURGE", defaultMaxReport)...)
+	msgs = append(msgs, genReport(ignorable, "IGNORE()", defaultMaxReport)...)
 
 	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
+		msgs = append(msgs, fmt.Sprintf("%d records that are both IGNORE()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
 			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
@@ -146,24 +140,103 @@ func handsoff(
 	return desired, msgs, nil
 }
 
-// reportSkips reports records being skipped, if !full only the first maxReport are output.
-func reportSkips(recs models.Records, full bool) []string {
-	var msgs []string
-
-	shorten := (!full) && (len(recs) > maxReport)
-	last := len(recs)
-	if shorten {
-		last = maxReport
+// genReport generates a report of what records were not deleted with a human-readable header and footer.  Abides by maxReport.
+func genReport(recs models.Records, reason string, maxReport int) (msgs []string) {
+	if len(recs) == 0 {
+		return nil
 	}
-
-	for _, r := range recs[:last] {
-		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
-	}
-	if shorten {
-		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
+	visibleCount, hiddenCount := countVisibility(recs)
+	header, footer := makeHeaderFooter(reason, !printer.SkinnyReport, maxReport, visibleCount, hiddenCount)
+	msgs = append(msgs, header)
+	msgs = append(msgs, reportMessages(recs, maxReport, !printer.SkinnyReport)...)
+	if footer != "" {
+		msgs = append(msgs, footer)
 	}
 
 	return msgs
+}
+
+// makeHeaderFooter generates fancy header and footer.
+func makeHeaderFooter(reason string, full bool, maxReport, visibleCount, hiddenCount int) (header, footer string) {
+
+	totalCount := visibleCount + hiddenCount
+
+	// With the --full flag, use a very simple header and no footer.
+	if full {
+		header = fmt.Sprintf("FYI: %d records NOT deleted due to %s:", totalCount, reason)
+		footer = ""
+		return header, footer
+	}
+
+	shownCount := visibleCount
+	if visibleCount > maxReport {
+		shownCount = maxReport
+	}
+
+	punct := ":"
+	// If no records will be output, change the punctuation at the end to "."
+	if shownCount == 0 {
+		punct = "."
+	}
+
+	header = fmt.Sprintf("%d records NOT deleted due to %s%s (%d/%d/%d displayed/visible/hidden)",
+		totalCount, reason, punct,
+		shownCount, visibleCount, hiddenCount,
+	)
+	if (totalCount != shownCount) || (hiddenCount != 0) {
+		// Only add this if adding the flag would change the output.
+		header = header + " (--full shows all)"
+	}
+
+	// The footer visually indicates that we've hit the maxReport limit.
+	footer = ""
+	if visibleCount != shownCount {
+		footer = "     ..."
+	}
+
+	return header, footer
+}
+
+// countVisibility returns how many records are visible/hidden.
+func countVisibility(recs models.Records) (visibleCount, hiddenCount int) {
+	for _, r := range recs {
+		if r.SilenceReporting {
+			hiddenCount++
+		} else {
+			visibleCount++
+		}
+	}
+	return visibleCount, hiddenCount
+}
+
+// reportMessages generates one message for each record, abiding by maxReport limits.
+func reportMessages(recs models.Records, maxReport int, full bool) (msgs []string) {
+	if len(recs) == 0 {
+		return nil
+	}
+
+	if full {
+		for _, r := range recs {
+			msgs = append(msgs, genRecordMessage(r))
+		}
+		return msgs
+	}
+
+	for _, r := range recs {
+		if !r.SilenceReporting {
+			msgs = append(msgs, genRecordMessage(r))
+			if len(msgs) == maxReport {
+				break
+			}
+		}
+	}
+
+	return msgs
+}
+
+// genRecordMessage generate the message for one record.
+func genRecordMessage(r *models.RecordConfig) string {
+	return fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined())
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
@@ -173,20 +246,23 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		isMatch := matchAny(unmanagedConfigs, rec)
+		isMatch, silence := matchAny(unmanagedConfigs, rec)
 		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
-		if isMatch {
-			ignorable = append(ignorable, rec)
-		} else {
-			if noPurge {
-				// Is this a candidate for purging?
-				if !desiredDB.ContainsLT(rec) {
-					// Yes, but not if it is an exception!
-					if !absentDB.ContainsLT(rec) {
-						foreign = append(foreign, rec)
-					}
+		if isMatch && silence { // Marked as silent?
+			rec.SilenceReporting = true
+		}
+
+		if noPurge { // Process NO_PURGE.
+			// Is this a candidate for purging?
+			if !desiredDB.ContainsLT(rec) {
+				// Yes, but not if it is an exception!
+				if !absentDB.ContainsLT(rec) {
+					foreign = append(foreign, rec)
 				}
 			}
+			//}
+		} else if isMatch { // Process IGNORE() matches.
+			ignorable = append(ignorable, rec)
 		}
 	}
 	return ignorable, foreign
@@ -197,7 +273,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
 	var conflicts models.Records
 	for _, rec := range recs {
-		if matchAny(uconfigs, rec) {
+		if ans, _ := matchAny(uconfigs, rec); ans {
 			conflicts = append(conflicts, rec)
 		}
 	}
@@ -241,16 +317,16 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 }
 
 // matchAny returns true if rec matches any of the uconfigs.
-func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) (bool, bool) {
 	//fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
 			matchTarget(uc.TargetGlob, rec.GetTargetField()) {
-			return true
+			return true, uc.SilenceReporting
 		}
 	}
-	return false
+	return false, false
 }
 func matchLabel(labelGlob glob.Glob, labelName string) bool {
 	if labelGlob == nil {

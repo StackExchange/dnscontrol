@@ -847,7 +847,7 @@ function DISABLE_IGNORE_SAFETY_CHECK(d) {
 }
 
 // IGNORE(labelPattern, rtypePattern, targetPattern)
-function IGNORE(labelPattern, rtypePattern, targetPattern) {
+function IGNORE(labelPattern, rtypePattern, targetPattern, silently) {
     if (labelPattern === undefined) {
         labelPattern = '*';
     }
@@ -857,11 +857,15 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
     if (targetPattern === undefined) {
         targetPattern = '*';
     }
+    if (silently === undefined) {
+        silently = false;
+    }
     return function (d) {
         d.unmanaged.push({
             label_pattern: labelPattern,
             rType_pattern: rtypePattern,
             target_pattern: targetPattern,
+            silence_reporting: silently,
         });
     };
 }
