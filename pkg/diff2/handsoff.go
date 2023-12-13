@@ -98,8 +98,6 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
-const maxReport = 5
-
 // handsoff processes the IGNORE*()//NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
@@ -116,14 +114,19 @@ func handsoff(
 		return nil, nil, err
 	}
 
+	var punct = ":"
+	if printer.MaxReport == 0 {
+		punct = "."
+	}
+
 	// Process IGNORE*() and NO_PURGE features:
 	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE:", len(foreign)))
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE%s", len(foreign), punct))
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
 	}
 	if len(ignorable) != 0 {
-		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*():", len(ignorable)))
+		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE*()%s", len(ignorable), punct))
 		msgs = append(msgs, reportSkips(ignorable, !printer.SkinnyReport)...)
 	}
 
@@ -146,21 +149,23 @@ func handsoff(
 	return desired, msgs, nil
 }
 
-// reportSkips reports records being skipped, if !full only the first maxReport are output.
+// reportSkips reports records being skipped, if !full only the first
+// printer.MaxReport are output.
 func reportSkips(recs models.Records, full bool) []string {
 	var msgs []string
 
-	shorten := (!full) && (len(recs) > maxReport)
+	shorten := (!full) && (len(recs) > printer.MaxReport)
+
 	last := len(recs)
 	if shorten {
-		last = maxReport
+		last = printer.MaxReport
 	}
 
 	for _, r := range recs[:last] {
 		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 	}
-	if shorten {
-		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-maxReport))
+	if shorten && printer.MaxReport != 0 {
+		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-printer.MaxReport))
 	}
 
 	return msgs

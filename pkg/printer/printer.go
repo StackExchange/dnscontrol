@@ -72,6 +72,9 @@ var (
 // variable name is easy to grep for when we make the conversion.
 var SkinnyReport = true
 
+// MaxReport represents how many records to show if SkinnyReport == true
+var MaxReport = 5
+
 // ConsolePrinter is a handle for the console printer.
 type ConsolePrinter struct {
 	Reader *bufio.Reader
