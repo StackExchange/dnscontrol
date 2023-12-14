@@ -1683,7 +1683,7 @@ function M365_BUILDER(name, value) {
         );
     }
 
-    r = [];
+    var r = [];
 
     // MX (default: true)
     if (value.mx) {
