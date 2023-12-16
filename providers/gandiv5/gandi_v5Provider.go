@@ -76,6 +76,7 @@ type gandiv5Provider struct {
 	token     string
 	sharingid string
 	debug     bool
+	apiurl    string
 }
 
 // newDsp generates a DNS Service Provider client handle.
@@ -97,6 +98,7 @@ func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error)
 		return nil, fmt.Errorf("missing Gandi personal access token (or apikey - deprecated)")
 	}
 	api.sharingid = m["sharing_id"]
+	api.apiurl = m["apiurl"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
 	if err == nil {
 		api.debug = debug
@@ -115,6 +117,7 @@ func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 		PersonalAccessToken: client.token,
 		SharingID:           client.sharingid,
 		Debug:               client.debug,
+		APIURL:              client.apiurl,
 	})
 	return g
 }

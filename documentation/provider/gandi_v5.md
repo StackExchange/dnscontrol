@@ -4,6 +4,8 @@ migrated to the new LiveDNS API, which should be all domains.
 
 * API Documentation: https://api.gandi.net/docs
 * API Endpoint: https://api.gandi.net/
+* Sandbox API Documentation: https://api.sandbox.gandi.net/docs/
+* Sandbox API Endpoint: https://api.sandbox.gandi.net/
 
 ## Configuration
 
@@ -13,6 +15,8 @@ along with other settings:
 * (mandatory, string) your Gandi.net access credentials (see below) - one of:
   * `token`: Personal Access Token (PAT)
   * `apikey` API Key (deprecated)
+* `apiurl`: (optional, string) the endpoint of the API. When empty or absent the production
+endpoint is used (default) ; you can use it to select the Sandbox API Endpoint instead.
 * `sharing_id`: (optional, string) let you scope to a specific organization. When empty or absent
 calls are not scoped to a specific organization.
 
@@ -130,3 +134,6 @@ organization or no organization.  The solution is to set `sharing_id` in
 
 ### Debugging
 Set `GANDI_V5_DEBUG` environment variable to a [boolean-compatible](https://pkg.go.dev/strconv#ParseBool) value to dump all API calls made by this provider.
+
+### Testing
+Set `apiurl` key to the endpoint url for the sandbox (https://api.sandbox.gandi.net/), along with corresponding `token` (or (deprecated) `apikey`) created in this sandbox environment (Cf https://api.sandbox.gandi.net/docs/sandbox/) to make all API calls against Gandi sandbox environment.
