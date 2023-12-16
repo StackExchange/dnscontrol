@@ -124,3 +124,9 @@ If a `dnscontrol get-zones --format=nameonly CredId - all` returns nothing,
 this is usually because your `creds.json`  information is pointing at an empty
 organization or no organization.  The solution is to set `sharing_id` in
 `creds.json`.
+
+
+## Development
+
+### Debugging
+Set `GANDI_V5_DEBUG` environment variable to a [boolean-compatible](https://pkg.go.dev/strconv#ParseBool) value to dump all API calls made by this provider.
