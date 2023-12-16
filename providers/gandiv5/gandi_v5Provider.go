@@ -73,6 +73,7 @@ var features = providers.DocumentationNotes{
 // gandiv5Provider is the gandiv5Provider handle used to store any client-related state.
 type gandiv5Provider struct {
 	apikey    string
+	token     string
 	sharingid string
 	debug     bool
 }
@@ -91,8 +92,9 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error) {
 	api := &gandiv5Provider{}
 	api.apikey = m["apikey"]
-	if api.apikey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+	api.token = m["token"]
+	if (api.apikey == "") && (api.token == "") {
+		return nil, fmt.Errorf("missing Gandi personal access token (or apikey - deprecated)")
 	}
 	api.sharingid = m["sharing_id"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
@@ -109,9 +111,10 @@ func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error)
 // It expects an API key, available from https://account.gandi.net/en/
 func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
+		APIKey:              client.apikey,
+		PersonalAccessToken: client.token,
+		SharingID:           client.sharingid,
+		Debug:               client.debug,
 	})
 	return g
 }
@@ -312,9 +315,11 @@ func (client *gandiv5Provider) GetNameservers(domain string) ([]*models.Nameserv
 // GetRegistrarCorrections returns a list of corrections for this registrar.
 func (client *gandiv5Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	gd := gandi.NewDomainClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
+		APIKey:              client.apikey,
+		PersonalAccessToken: client.token,
+		SharingID:           client.sharingid,
+		Debug:               client.debug,
+		APIURL:              client.apiurl,
 	})
 
 	existingNs, err := gd.GetNameServers(dc.Name)
