@@ -98,7 +98,7 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
             "ns4.example.com."
         ]
     }
-}
+)
 ```
 {% endcode %}
 
@@ -107,7 +107,7 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
 {
   "axfrddns": {
     "TYPE": "AXFRDDNS",
-    "nameservers": "ns1.example.com.,ns2.example.com.,ns3.example.com.,ns4.example.com."
+    "nameservers": "ns1.example.com,ns2.example.com,ns3.example.com,ns4.example.com"
   }
 }
 ```
@@ -143,6 +143,24 @@ the following error message:
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
 ```
+
+### Transfer/AXFR server
+
+As mentioned above, the AXFR+DDNS provider will send AXFR requests to the
+primary master for the zone. On some networks, the AXFR requests are handled
+by a separate server to DDNS requests. Use the `transfer-server` option in
+`creds.json`. If not specified, it falls back to the primary master.
+
+{% code title="creds.json" %}
+```json
+{
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "transfer-server": "233.252.0.0"
+  }
+}
+```
+{% endcode %}
 
 ### Buggy DNS servers regarding CNAME updates
 
