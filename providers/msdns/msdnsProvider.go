@@ -21,7 +21,7 @@ type msdnsProvider struct {
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseCAA:              providers.Cannot(),
 	providers.CanUseDS:               providers.Unimplemented(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
