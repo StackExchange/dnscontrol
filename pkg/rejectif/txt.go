@@ -26,6 +26,14 @@ func TxtStartsOrEndsWithSpaces(rc *models.RecordConfig) error {
 	return nil
 }
 
+// TxtHasSemicolon audits TXT records for strings that contain backticks.
+func TxtHasSemicolon(rc *models.RecordConfig) error {
+	if strings.Contains(rc.GetTargetTXTJoined(), ";") {
+		return fmt.Errorf("txtstring contains semicolon")
+	}
+	return nil
+}
+
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "`") {
