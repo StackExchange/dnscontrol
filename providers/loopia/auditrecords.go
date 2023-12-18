@@ -1,8 +1,6 @@
 package loopia
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
@@ -15,20 +13,10 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-03-10: Loopia returns 404
 
-	//Loopias TXT length limit appears to be 450 octets
-	a.Add("TXT", TxtHasSegmentLen450orLonger)
+	// Loopias TXT length limit appears to be 450 octets
+	a.Add("TXT", rejectif.TxtLongerThan(450)) // Last verified 2023-03-10
 
 	a.Add("MX", rejectif.MxNull) // Last verified 2023-03-23
 
 	return a.Audit(records)
-}
-
-// TxtHasSegmentLen450orLonger audits TXT records for strings that are >450 octets.
-func TxtHasSegmentLen450orLonger(rc *models.RecordConfig) error {
-	for _, txt := range rc.GetTargetTXTSegmented() {
-		if len(txt) > 450 {
-			return fmt.Errorf("%q txtstring length > 450", rc.GetLabel())
-		}
-	}
-	return nil
 }

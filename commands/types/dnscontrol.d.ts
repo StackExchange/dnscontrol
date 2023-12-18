@@ -411,7 +411,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder
  */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): DomainModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string[] }): DomainModifier;
 
 /**
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
@@ -641,6 +641,21 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/defaults
  */
 declare function DEFAULTS(...modifiers: DomainModifier[]): void;
+
+/**
+ * DHCID adds a DHCID record to the domain.
+ *
+ * Digest should be a string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DHCID("example.com", "ABCDEFG")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dhcid
+ */
+declare function DHCID(name: string, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an

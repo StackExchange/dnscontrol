@@ -279,8 +279,6 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err
@@ -345,7 +343,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 				for _, r := range inst.New {
 					rr := r53Types.ResourceRecord{
-						Value: aws.String(r.GetTargetCombined()),
+						Value: aws.String(r.GetTargetCombinedFunc(txtutil.EncodeQuoted)),
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
 					i := int64(r.TTL)
@@ -488,17 +486,10 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 					}
 				}
 
-				var err error
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				rc.Original = set
-				switch rtypeString {
-				case "TXT":
-					err = rc.SetTargetTXTs(models.ParseQuotedTxt(val))
-				default:
-					err = rc.PopulateFromString(rtypeString, val, origin)
-				}
-				if err != nil {
+				if err := rc.PopulateFromStringFunc(rtypeString, val, origin, txtutil.ParseQuoted); err != nil {
 					return nil, fmt.Errorf("unparsable record type=%q received from ROUTE53: %w", rtypeString, err)
 				}
 

@@ -17,13 +17,12 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
-	// See providers/capabilities.go for the entire list of capabilties.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Can(),
@@ -106,8 +105,6 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(existingRecords)
-
 	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err

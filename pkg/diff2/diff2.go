@@ -53,6 +53,7 @@ type Change struct {
 	HintRecordSetLen1 bool
 }
 
+// GetType returns the type of a change.
 func (c Change) GetType() dnsgraph.NodeType {
 	if c.Type == REPORT {
 		return dnsgraph.Report
@@ -61,10 +62,12 @@ func (c Change) GetType() dnsgraph.NodeType {
 	return dnsgraph.Change
 }
 
+// GetName returns the FQDN of the host being changed.
 func (c Change) GetName() string {
 	return c.Key.NameFQDN
 }
 
+// GetDependencies returns the depenencies of a change.
 func (c Change) GetDependencies() []dnsgraph.Dependency {
 	var dependencies []dnsgraph.Dependency
 

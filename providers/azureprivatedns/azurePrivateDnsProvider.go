@@ -1,4 +1,4 @@
-package azure_private_dns
+package azureprivatedns
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -183,8 +182,6 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
-
 	var corrections []*models.Correction
 
 	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)

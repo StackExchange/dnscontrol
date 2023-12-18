@@ -13,8 +13,6 @@ DNSControl will use `New-PSSession` to execute the commands remotely if
   DNS and DNSControl are both updating a zone, there will be
   unhappiness.  DNSControl will blindly remove the dynamic records
   unless precautions such as `IGNORE*` and `NO_PURGE` are in use.
-* This is a new provider and has not been tested extensively,
-  especially the `pssession` feature.
 
 # Running on Non-Windows systems
 
@@ -30,7 +28,6 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `MSDNS`
 along with other settings:
 
 * `dnsserver`: (optional) the name of the Microsoft DNS Server to communicate with.
-* `pssession`: (optional) the name of the PowerShell PSSession host to run commands on.
 * `psusername`: (optional) the username to connect to the PowerShell PSSession host.
 * `pspassword`: (optional) the password to connect to the PowerShell PSSession host.
 
@@ -42,7 +39,6 @@ Example:
   "msdns": {
     "TYPE": "MSDNS",
     "dnsserver": "ny-dc01",
-    "pssession": "mywindowshost",
     "psusername": "mywindowsusername",
     "pspassword": "mysupersecurepassword"
   }

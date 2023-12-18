@@ -37,6 +37,7 @@
     * [CAA](functions/domain/CAA.md)
     * [CAA_BUILDER](functions/domain/CAA_BUILDER.md)
     * [CNAME](functions/domain/CNAME.md)
+    * [DHCID](functions/domain/DHCID.md)
     * [DISABLE_IGNORE_SAFETY_CHECK](functions/domain/DISABLE_IGNORE_SAFETY_CHECK.md)
     * [DMARC_BUILDER](functions/domain/DMARC_BUILDER.md)
     * [DS](functions/domain/DS.md)

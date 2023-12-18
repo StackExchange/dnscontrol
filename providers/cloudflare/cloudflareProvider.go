@@ -823,6 +823,7 @@ func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	var id string
 	id, err := c.createZone(domain)
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	c.domainIndex = nil // clear the index to let the following functions get a fresh list with nameservers etc..
 	return err
 }
 

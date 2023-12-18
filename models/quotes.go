@@ -7,8 +7,12 @@ import (
 	"github.com/miekg/dns"
 )
 
-// IsQuoted returns true if the string starts and ends with a double quote.
-func IsQuoted(s string) bool {
+/*
+TODO(tlim): Move this file to pkgs/txtutil. It doesn't need to be part
+*/
+
+// isQuoted returns true if the string starts and ends with a double quote.
+func isQuoted(s string) bool {
 	if s == "" {
 		return false
 	}
@@ -24,7 +28,7 @@ func IsQuoted(s string) bool {
 // StripQuotes returns the string with the starting and ending quotes removed.
 // If it is not quoted, the original string is returned.
 func StripQuotes(s string) string {
-	if IsQuoted(s) {
+	if isQuoted(s) {
 		return s[1 : len(s)-1]
 	}
 	return s
@@ -41,7 +45,7 @@ func StripQuotes(s string) string {
 // NOTE: This doesn't handle escaped quotes.
 // NOTE: You probably want to use ParseQuotedFields() for RFC 1035-compliant quoting.
 func ParseQuotedTxt(s string) []string {
-	if !IsQuoted(s) {
+	if !isQuoted(s) {
 		return []string{s}
 	}
 	return strings.Split(StripQuotes(s), `" "`)

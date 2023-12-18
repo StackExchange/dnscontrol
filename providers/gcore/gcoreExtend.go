@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"path"
@@ -69,7 +69,7 @@ func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= http.StatusMultipleChoices {
-		all, _ := ioutil.ReadAll(resp.Body)
+		all, _ := io.ReadAll(resp.Body)
 		e := dnssdk.APIError{
 			StatusCode: resp.StatusCode,
 		}

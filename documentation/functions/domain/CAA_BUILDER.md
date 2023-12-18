@@ -12,7 +12,7 @@ parameter_types:
   iodef: string
   iodef_critical: boolean?
   issue: string[]
-  issuewild: string
+  issuewild: string[]
 ---
 
 DNSControl contains a `CAA_BUILDER` which can be used to simply create

@@ -18,6 +18,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`AUTODNS`](providers/autodns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](providers/axfrddns.md) | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](providers/azure_dns.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
+| [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | ✅ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`BIND`](providers/bind.md) | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](providers/cloudns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
@@ -168,7 +169,7 @@ code to support this provider, we'd be glad to help in any way.
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
-A: Following [the bug triage process](/developer-info/bug-triage), the request
+A: Following [the bug triage process](bug-triage.md), the request
 is closed once it is added to this list. If someone chooses to implement the
 provider, they re-open the issue.
 

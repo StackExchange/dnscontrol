@@ -299,6 +299,7 @@ func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserve
 	return models.ToNameservers(nss)
 }
 
+// recordToNative convrts RecordConfig TO Native.
 func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEntry, error) {
 	if useOriginal && config.Original != nil {
 		return config.Original.(domain.DNSEntry), nil
@@ -308,10 +309,11 @@ func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEn
 		Name:    config.Name,
 		Expire:  int(config.TTL),
 		Type:    config.Type,
-		Content: getTargetRecordContent(config),
+		Content: config.GetTargetCombinedFunc(nil),
 	}, nil
 }
 
+// nativeToRecord converts native to RecordConfig.
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		TTL:      uint32(entry.Expire),
@@ -319,7 +321,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 		Original: entry,
 	}
 	rc.SetLabel(entry.Name, origin)
-	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
+	if err := rc.PopulateFromStringFunc(entry.Type, entry.Content, origin, nil); err != nil {
 		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
@@ -337,19 +339,4 @@ func removeOtherNS(dc *models.DomainConfig) {
 		newList = append(newList, rec)
 	}
 	dc.Records = newList
-}
-
-func getTargetRecordContent(rc *models.RecordConfig) string {
-	switch rtype := rc.Type; rtype {
-	case "SSHFP":
-		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
-	case "DS":
-		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
-	case "SRV":
-		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
-	case "TXT":
-		return removeSlashes(models.StripQuotes(rc.GetTargetCombined()))
-	default:
-		return models.StripQuotes(rc.GetTargetCombined())
-	}
 }

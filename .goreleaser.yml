@@ -21,7 +21,9 @@ builds:
       - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 before:
   hooks:
-  - go mod tidy
+    - go fmt ./...
+    - go mod tidy
+    - go generate ./...
 changelog:
   sort: asc
   use: github
@@ -42,7 +44,7 @@ changelog:
       regexp: "(?i)^.*(build|ci|cicd)[(\\w)]*:+.*$"
       order: 4
     - title: 'Dependencies:'
-      regexp: "(?i)^.*Build\(deps\)*:+.*$|(?i)^.*update deps+.*$"
+      regexp: "(?i)^.*Build\\(deps\\)*:+.*$|(?i)^.*update deps+.*$"
       order: 5
     - title: 'Other changes and improvements:'
       order: 9

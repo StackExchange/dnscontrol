@@ -32,7 +32,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 		// flatten all spf records that have the "flatten" metadata
 		for _, txt := range txtRecords {
 			var rec *spflib.SPFRecord
-			txtTarget := strings.Join(txt.TxtStrings, "")
+			txtTarget := txt.GetTargetTXTJoined()
 			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {
 				if cache == nil {
 					cache, err = spflib.NewCache("spfcache.json")

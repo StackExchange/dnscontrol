@@ -76,7 +76,6 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	toReport, creates, dels, modifications, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {

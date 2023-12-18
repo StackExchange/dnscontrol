@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"net"
-	"runtime/debug"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -14,22 +13,9 @@ If an rType has more than one field, one field goes in .target and the remaining
 Not the best design, but we're stuck with it until we re-do RecordConfig, possibly using generics.
 */
 
-// Set debugWarnTxtField to true if you want a warning when
-// GetTargetField is called on a TXT record.
-// GetTargetField works fine on TXT records for casual output but it
-// is often better to access .TxtStrings directly or call
-// GetTargetRFC1035Quoted() for nicely quoted text.
-var debugWarnTxtField = false
-
-// GetTargetField returns the target. There may be other fields (for example
-// an MX record also has a .MxPreference field.
+// GetTargetField returns the target. There may be other fields, but they are
+// not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
-	if debugWarnTxtField {
-		if rc.Type == "TXT" {
-			fmt.Printf("DEBUG: WARNING: GetTargetField called on TXT record is frequently wrong: %q\n", rc.target)
-			debug.PrintStack()
-		}
-	}
 	return rc.target
 }
 
@@ -41,8 +27,23 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 	return net.ParseIP(rc.target)
 }
 
+// GetTargetCombinedFunc returns all the rdata fields of a RecordConfig as one
+// string. How TXT records are encoded is defined by encodeFn.  If encodeFn is
+// nil the TXT data is returned unaltered.
+func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) string {
+	if rc.Type == "TXT" {
+		if encodeFn == nil {
+			return rc.target
+		}
+		return encodeFn(rc.target)
+	}
+	return rc.GetTargetCombined()
+}
+
 // GetTargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
+// WARNING: How TXT records are handled is buggy but we can't change it because
+// code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
@@ -59,7 +60,10 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		}
 	}
 
-	if rc.Type == "SOA" {
+	switch rc.Type {
+	case "TXT":
+		return rc.zoneFileQuoted()
+	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	}
 
@@ -93,14 +97,13 @@ func (rc *RecordConfig) GetTargetRFC1035Quoted() string {
 	return rc.zoneFileQuoted()
 }
 
-// GetTargetSortable returns a string that is sortable.
-func (rc *RecordConfig) GetTargetSortable() string {
-	return rc.GetTargetDebug()
-}
-
 // GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
-	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
+	target := rc.target
+	if rc.Type == "TXT" {
+		target = fmt.Sprintf("%q", target)
+	}
+	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, target, rc.TTL)
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
 		// Nothing special.

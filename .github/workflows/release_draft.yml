@@ -40,9 +40,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: ^1.21
+
+# Stringer is needed because .goreleaser includes "go generate ./..."
+    - name: Install stringer
+      run: |
+        go install golang.org/x/tools/cmd/stringer@latest
 
 # For some reason goreleaser isn't correctly setting the version
 # string used by "dnscontrol version".  Therefore, we're forcing the

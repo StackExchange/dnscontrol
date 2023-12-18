@@ -7,6 +7,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/axfrddns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/azuredns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/azureprivatedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cloudns"

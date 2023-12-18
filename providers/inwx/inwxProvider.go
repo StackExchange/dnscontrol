@@ -10,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
@@ -181,7 +180,11 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 		req.Content = content[:len(content)-1]
 	case "MX":
 		req.Priority = int(rec.MxPreference)
-		req.Content = content[:len(content)-1]
+		if content == "." {
+			req.Content = content
+		} else {
+			req.Content = content[:len(content)-1]
+		}
 	case "SRV":
 		req.Priority = int(rec.SrvPriority)
 		req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content[:len(content)-1])
@@ -216,10 +219,8 @@ func checkRecords(records models.Records) error {
 	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
 	for _, r := range records {
 		if r.Type == "TXT" {
-			for _, target := range r.GetTargetTXTSegmented() {
-				if strings.ContainsAny(target, "`") {
-					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
-				}
+			if strings.ContainsAny(r.GetTargetTXTJoined(), "`") {
+				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
 			}
 		}
 	}
@@ -228,9 +229,6 @@ func checkRecords(records models.Records) error {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
-
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
 	err := checkRecords(dc.Records)
 	if err != nil {
 		return nil, err
@@ -311,7 +309,11 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 			"PTR":   true,
 		}
 		if rtypeAddDot[record.Type] {
-			record.Content = record.Content + "."
+			if record.Type == "MX" && record.Content == "." {
+				// null records don't need to be modified
+			} else {
+				record.Content = record.Content + "."
+			}
 		}
 
 		rc := &models.RecordConfig{

@@ -478,7 +478,7 @@ func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
 		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
 	}
-	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
+	var bodyString, err = client.get(`/zones/edits?size=99999&filter=zoneName==` + domain)
 	if err != nil {
 		return err
 	}
@@ -486,10 +486,12 @@ func (client *providerClient) clearRequests(domain string) error {
 	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
 
-	// TODO(tlim): Properly handle paganation.
-	if dr.Meta.Pages > 1 {
-		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
-	}
+	// TODO(tlim): Ignore what's beyond the first page.
+	// It is unlikely that there are active jobs beyond the first page.
+	// If there are, the next edit will just wait.
+	//if dr.Meta.Pages > 1 {
+	//	return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
+	//}
 
 	for i, ze := range dr.ZoneEdits {
 		if cscDebug {
@@ -645,7 +647,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 	// Default CSCGlobal rate limit is twenty requests per second
 	var backoff = time.Second
 
-	const maxBackoff = time.Second * 15
+	const maxBackoff = time.Second * 25
 
 retry:
 	resp, err := hclient.Do(req)
@@ -664,9 +666,9 @@ retry:
 
 		if string(bodyString) == "Requests exceeded API Rate limit." {
 			// a simple exponential back-off with a 3-minute max.
-			if backoff > 10 {
+			if backoff > (time.Second * 10) {
 				// With this provider backups seem to be pretty common. Only
-				// announce it when the problem gets really bad.
+				// announce it for long delays.
 				printer.Printf("Delaying %v due to ratelimit (CSCGLOBAL)\n", backoff)
 			}
 			time.Sleep(backoff)
