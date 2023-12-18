@@ -363,6 +363,8 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		target = `"` + target + `"`
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
+	case "UNKNOWN":
+		return makeUknown(rec, ttl)
 	default:
 		target = `"` + target + `"`
 	}
@@ -398,4 +400,8 @@ func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 		items = append(items, fmt.Sprintf("TTL(%d)", ttl))
 	}
 	return rec.Type + "(" + strings.Join(items, ", ") + ")"
+}
+
+func makeUknown(rec *models.RecordConfig, ttl uint32) string {
+	return ""
 }

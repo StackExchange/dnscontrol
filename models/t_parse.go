@@ -104,8 +104,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "TLSA":
 		return rc.SetTargetTLSAString(contents)
 	default:
-		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
-			rtype, contents, origin)
+		//return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)", rtype, contents, origin)
+		return MakeUnknown(rc, rtype, contents, origin)
 	}
 }
 
