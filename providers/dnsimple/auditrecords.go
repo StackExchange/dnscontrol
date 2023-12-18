@@ -13,7 +13,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("MX", rejectif.MxNull) // Last verified 2023-03
 
-	a.Add("TXT", rejectif.TxtLongerThan255) // Last verified 2023-03
+	a.Add("TXT", rejectif.TxtLongerThan(255)) // Last verified 2023-03
 
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-03
 
