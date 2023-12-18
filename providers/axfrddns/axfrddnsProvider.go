@@ -58,6 +58,7 @@ type axfrddnsProvider struct {
 	rand                *rand.Rand
 	master              string
 	updateMode          string
+	transferServer      string
 	transferMode        string
 	nameservers         []*models.Nameserver
 	transferKey         *Key
@@ -125,6 +126,14 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	} else {
 		return nil, fmt.Errorf("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
 	}
+	if config["transfer-server"] != "" {
+		api.transferServer = config["transfer-server"]
+		if !strings.Contains(api.transferServer, ":") {
+			api.transferServer = api.transferServer + ":53"
+		}
+	} else {
+		api.transferServer = api.master
+	}
 	api.updateKey, err = readKey(config["update-key"], "update-key")
 	if err != nil {
 		return nil, err
@@ -145,6 +154,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"nameservers",
 			"update-key",
 			"transfer-key",
+			"transfer-server",
 			"update-mode",
 			"transfer-mode",
 			"domain",
@@ -214,9 +224,9 @@ func (c *axfrddnsProvider) getAxfrConnection() (*dns.Transfer, error) {
 	var con net.Conn = nil
 	var err error = nil
 	if c.transferMode == "tcp-tls" {
-		con, err = tls.Dial("tcp", c.master, &tls.Config{})
+		con, err = tls.Dial("tcp", c.transferServer, &tls.Config{})
 	} else {
-		con, err = net.Dial("tcp", c.master)
+		con, err = net.Dial("tcp", c.transferServer)
 	}
 	if err != nil {
 		return nil, err
@@ -247,7 +257,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 		}
 	}
 
-	envelope, err := transfer.In(request, c.master)
+	envelope, err := transfer.In(request, c.transferServer)
 	if err != nil {
 		return nil, err
 	}
