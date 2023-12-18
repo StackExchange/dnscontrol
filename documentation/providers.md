@@ -158,6 +158,7 @@ code to support this provider, we'd be glad to help in any way.
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
+* [GoDaddy](https://github.com/StackExchange/dnscontrol/issues/2596) (#2596)
 * [Imperva](https://github.com/StackExchange/dnscontrol/issues/1484) (#1484)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
