@@ -129,7 +129,7 @@ func (c ConsolePrinter) EndCorrection(err error) {
 func (c ConsolePrinter) StartDNSProvider(provider string, skip bool) {
 	lbl := ""
 	if skip {
-		lbl = " (skipping)\n"
+		lbl = " (skipping)"
 	}
 	if !SkinnyReport {
 		fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s\n", provider, lbl)
@@ -140,7 +140,7 @@ func (c ConsolePrinter) StartDNSProvider(provider string, skip bool) {
 func (c ConsolePrinter) StartRegistrar(provider string, skip bool) {
 	lbl := ""
 	if skip {
-		lbl = " (skipping)\n"
+		lbl = " (skipping)"
 	}
 	if !SkinnyReport {
 		fmt.Fprintf(c.Writer, "----- Registrar: %s...%s\n", provider, lbl)
