@@ -21,7 +21,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2023-02-02
 
-	a.Add("TXT", rejectif.TxtLongerThan(255)) // Last verified 2023-02-02
+	a.Add("TXT", rejectif.TxtLongerThan(254)) // Last verified 2023-02-02
 
 	a.Add("TXT", rejectif.TxtHasSingleQuotes) // Last verified 2023-02-02
 
