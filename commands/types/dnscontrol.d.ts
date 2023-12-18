@@ -398,7 +398,9 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * * `iodef:` Report all violation to configured mail address.
  * * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
  * * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
+ * * `issue_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
  * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
+ * * `issuewild_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
  *
  * `CAA_BUILDER()` returns multiple records (when configured as example above):
  *
@@ -411,7 +413,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder
  */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string[] }): DomainModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issue_critical?: boolean; issuewild: string[]; issuewild_critical?: boolean }): DomainModifier;
 
 /**
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
