@@ -23,9 +23,6 @@ var (
 )
 
 func main() {
-	version.SHA = SHA
-	version.Semver = Version
-	version.BuildTime = BuildTime
 	if os.Getenv("CI") == "true" {
 		color.NoColor = false
 	}
