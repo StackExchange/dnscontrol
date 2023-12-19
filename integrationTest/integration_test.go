@@ -288,12 +288,8 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		lastGroup = len(testGroups)
 	}
 
-	// Start the zone with a clean slate.
-	makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
-
 	curGroup := -1
 	for gIdx, group := range testGroups {
-		start := time.Now()
 
 		// Abide by -start -end flags
 		curGroup++
@@ -308,7 +304,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			continue
 		}
 
+		// Start the testgroup with a clean slate.
+		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
+
 		// Run the tests.
+		start := time.Now()
 
 		for _, tst := range group.tests {
 
@@ -325,9 +325,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			}
 
 		}
-
-		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
@@ -800,11 +797,9 @@ func makeTests(t *testing.T) []*TestGroup {
 	// whether or not a certain kind of record can be created and
 	// deleted.
 
-	// clear() is the same as tc("Empty").  It removes all records.  You
-	// can use this to verify a provider can delete all the records in
-	// the last tc(), or to provide a clean slate for the next tc().
-	// Each testgroup() begins and ends with clear(), so you don't have
-	// to list the clear() yourself.
+	// clear() is the same as tc("Empty").  It removes all records.
+	// Each testgroup() begins with clear() automagically. You do not
+	// have to include the clear() in teach testgroup().
 
 	tests := []*TestGroup{
 
@@ -2078,6 +2073,11 @@ func makeTests(t *testing.T) []*TestGroup {
 				ovhspf("spf", "v=spf1 a mx -all"),
 				ovhdkim("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk72yk6UML8LGIXFobhvx6UDUntqGzmyie2FLMyrOYk1C7CVYR139VMbO9X1rFvZ8TaPnMCkMbuEGWGgWNc27MLYKfI+wP/SYGjRS98TNl9wXxP8tPfr6id5gks95sEMMaYTu8sctnN6sBOvr4hQ2oipVcBn/oxkrfhqvlcat5gQIDAQAB"),
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
+		),
+
+		// This MUST be the last test.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
 		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
