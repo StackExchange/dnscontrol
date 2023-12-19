@@ -47,7 +47,7 @@ func Run(v string) int {
 	app.Version = version
 	app.Name = "dnscontrol"
 	app.HideVersion = true
-	app.Usage = "dnscontrol is a compiler and DSL for managing dns zones"
+	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "v",
