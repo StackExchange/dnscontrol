@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime/debug"
 
@@ -30,7 +29,6 @@ func main() {
 	if os.Getenv("CI") == "true" {
 		color.NoColor = false
 	}
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
 		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://docs.dnscontrol.org/getting-started/getting-started#source for more information on how to build dnscontrol correctly.\n\n")
 	}
