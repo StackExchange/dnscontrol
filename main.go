@@ -18,8 +18,6 @@ import (
 // GoReleaser: version
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
 )
 
 func main() {

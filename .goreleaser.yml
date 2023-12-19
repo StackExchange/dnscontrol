@@ -20,8 +20,6 @@ builds:
     ldflags:
       - -linkmode=internal -s -w
       - -X main.version={{ .Version }}
-      - -X main.commit={{ .Commit }}
-      - -X main.date={{ .Date }}
 before:
   hooks:
     - go fmt ./...
