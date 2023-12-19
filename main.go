@@ -18,9 +18,9 @@ import (
 // 1. Someone who just does "go get" has at least some information.
 // 2. If built with build/build.go, more specific build information gets put in.
 var (
-	SHA       = ""
-	Version   = ""
-	BuildTime = ""
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 func main() {

@@ -19,9 +19,9 @@ builds:
         goarch: "386"
     ldflags:
       - -linkmode=internal -s -w
-      - -X main.Version="{{ .Version }}"
-      - -X main.SHA="{{ .FullCommit }}"
-      - -X main.BuildTime={{ .Timestamp }}
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
 before:
   hooks:
     - go fmt ./...
