@@ -18,7 +18,10 @@ builds:
       - goos: freebsd
         goarch: "386"
     ldflags:
-      - -linkmode=internal -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
+      - -linkmode=internal -s -w
+      - -X main.Version="{{ .Version }}"
+      - -X main.SHA="{{ .FullCommit }}"
+      - -X main.BuildTime={{ .Timestamp }}
 before:
   hooks:
     - go fmt ./...
