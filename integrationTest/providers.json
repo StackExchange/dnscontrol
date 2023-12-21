@@ -253,6 +253,12 @@
     "domain": "$POWERDNS_DOMAIN",
     "serverName": "$POWERDNS_SERVERNAME"
   },
+  "REALTIMEREGISTER": {
+    "TYPE": "REALTIMEREGISTER",
+    "apikey": "$REALTIMEREGISTER_APIKEY",
+    "sandbox" : "$REALTIMEREGISTER_SANDBOX",
+    "domain": "$REALTIMEREGISTER_DOMAIN"
+  },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",
     "SecretKey": "$ROUTE53_KEY",

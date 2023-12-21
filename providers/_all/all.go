@@ -45,6 +45,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/packetframe"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/porkbun"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/powerdns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/realtimeregister"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/route53"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/rwth"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/softlayer"
