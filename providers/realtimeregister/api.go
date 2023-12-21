@@ -1,12 +1,11 @@
 package realtimeregister
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"strings"
 )
 
 type realtimeregisterApi struct {
@@ -28,7 +27,7 @@ type Record struct {
 
 const (
 	endpoint        = "https://api.yoursrs.com/v2/domains/%s/zone"
-	endpointSandbox = "http://localhost:8080/srs/services/domains/%s/zone"
+	endpointSandbox = "https://api.yoursrs-ote.com/v2/domains/%s/zone"
 )
 
 func (api *realtimeregisterApi) get(domain string) (*Zone, error) {
@@ -72,12 +71,13 @@ func (api *realtimeregisterApi) post(domain string, body *Zone) error {
 		return err
 	}
 
-	fmt.Fprint(os.Stdout, string(bodyBytes)+"\n")
+	//Ugly hack
+	requestBody := strings.Replace(string(bodyBytes), "\"prio\":-1", "\"prio\":0", -1)
 
 	req, err := http.NewRequest(
 		"POST",
 		fmt.Sprintf(api.endpoint, domain)+"/update",
-		bytes.NewReader(bodyBytes),
+		strings.NewReader(requestBody),
 	)
 
 	if err != nil {

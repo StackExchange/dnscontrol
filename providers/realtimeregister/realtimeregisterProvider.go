@@ -28,7 +28,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot("Only for subdomains"),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Can("Getting invalid LOC format from API"),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
@@ -130,43 +130,20 @@ func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 	case "NS", "ALIAS", "CNAME", "MX":
 		_ = recordConfig.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
 	case "NAPTR":
-		parts := strings.Split(record.Content, " ")
-		order, _ := strconv.ParseUint(parts[0], 10, 16)
-		preference, _ := strconv.ParseUint(parts[1], 10, 16)
-		_ = recordConfig.SetTargetNAPTR(
-			uint16(order),
-			uint16(preference),
-			strings.Trim(parts[2], "\""),
-			strings.Trim(parts[3], "\""),
-			strings.Trim(parts[4], "\""),
-			strings.Trim(parts[5], "\""),
-		)
+		_ = recordConfig.SetTargetNAPTRString(record.Content)
 	case "SRV":
 		parts := strings.Fields(record.Content)
 		weight, _ := strconv.ParseUint(parts[0], 10, 16)
 		port, _ := strconv.ParseUint(parts[1], 10, 16)
 		_ = recordConfig.SetTargetSRV(uint16(record.Priority), uint16(weight), uint16(port), addTrailingDot(parts[2]))
 	case "CAA":
-		parts := strings.Fields(record.Content)
-		caaFlag, _ := strconv.ParseUint(parts[0], 10, 8)
-		_ = recordConfig.SetTargetCAA(uint8(caaFlag), parts[1], strings.Trim(strings.Join(parts[2:], " "), "\""))
+		_ = recordConfig.SetTargetCAAString(record.Content)
 	case "SSHFP":
-		parts := strings.Fields(record.Content)
-		algorithm, _ := strconv.ParseUint(parts[0], 10, 8)
-		fingerprint, _ := strconv.ParseUint(parts[1], 10, 8)
-		_ = recordConfig.SetTargetSSHFP(uint8(algorithm), uint8(fingerprint), parts[2])
+		_ = recordConfig.SetTargetSSHFPString(record.Content)
 	case "TLSA":
-		parts := strings.Fields(record.Content)
-		usage, _ := strconv.ParseUint(parts[0], 10, 8)
-		selector, _ := strconv.ParseUint(parts[1], 10, 8)
-		matchingtype, _ := strconv.ParseUint(parts[2], 10, 8)
-		_ = recordConfig.SetTargetTLSA(uint8(usage), uint8(selector), uint8(matchingtype), parts[3])
+		_ = recordConfig.SetTargetTLSAString(record.Content)
 	case "DS":
-		parts := strings.Fields(record.Content)
-		keytag, _ := strconv.ParseUint(parts[0], 10, 16)
-		algorithm, _ := strconv.ParseUint(parts[1], 10, 8)
-		digesttype, _ := strconv.ParseUint(parts[2], 10, 8)
-		_ = recordConfig.SetTargetDS(uint16(keytag), uint8(algorithm), uint8(digesttype), parts[3])
+		_ = recordConfig.SetTargetDSString(record.Content)
 	case "LOC":
 		_ = recordConfig.SetTargetLOCString(domain, record.Content)
 	default:
@@ -187,13 +164,8 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 	switch rtype := recordConfig.Type; rtype {
 	case "SRV":
 		record.Priority = int(recordConfig.SrvPriority)
-		if record.Content == "" {
-			record.Content = "."
-		}
 		record.Content = fmt.Sprintf("%d %d %s", recordConfig.SrvWeight, recordConfig.SrvPort, record.Content)
-	case "CAA":
-		record.Content = fmt.Sprintf("%d %s \"%s\"", recordConfig.CaaFlag, recordConfig.CaaTag, record.Content)
-	case "NAPTR", "SSHFP", "TLSA":
+	case "NAPTR", "SSHFP", "TLSA", "CAA":
 		record.Content = recordConfig.GetTargetCombined()
 	case "TXT":
 		record.Content = fixBackslashesAndDoubleQuotes(record.Content, false)
@@ -201,8 +173,7 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 		record.Content = fmt.Sprintf("%d %d %d %s", recordConfig.DsKeyTag, recordConfig.DsAlgorithm,
 			recordConfig.DsDigestType, strings.ToUpper(recordConfig.DsDigest))
 	case "MX":
-		if record.Content == "" {
-			record.Content = "."
+		if record.Content == "." {
 			record.Priority = -1
 		}
 	case "LOC":
@@ -225,6 +196,9 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 }
 
 func removeTrailingDot(record string) string {
+	if record == "." {
+		return record
+	}
 	return strings.TrimSuffix(record, ".")
 }
 
