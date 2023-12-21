@@ -28,7 +28,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot("Only for subdomains"),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented("Getting invalid LOC format from API"),
+	providers.CanUseLOC:              providers.Can("Getting invalid LOC format from API"),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
@@ -40,115 +40,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-func toRecordConfig(domain string, record *Record) *models.RecordConfig {
-
-	rc := &models.RecordConfig{
-		Type:         record.Type,
-		TTL:          uint32(record.TTL),
-		MxPreference: uint16(record.Priority),
-		SrvPriority:  uint16(record.Priority),
-		SrvWeight:    uint16(0),
-		SrvPort:      uint16(0),
-		Original:     record,
-	}
-
-	rc.SetLabelFromFQDN(record.Name, domain)
-
-	switch rtype := record.Type; rtype { // #rtype_variations
-	case "TXT":
-		_ = rc.SetTargetTXT(fixBackslashesAndDoubleQuotes(record.Content, true))
-	case "NS", "ALIAS", "CNAME", "MX":
-		_ = rc.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
-		//if record.Content == "." {
-		//	_ = rc.SetTarget(dnsutil.AddOrigin(".", domain))
-		//} else {
-		//	_ = rc.SetTarget(dnsutil.AddOrigin(record.Content+".", domain))
-		//}
-	case "NAPTR":
-		parts := strings.Split(record.Content, " ")
-		order, _ := strconv.ParseUint(parts[0], 10, 16)
-		preference, _ := strconv.ParseUint(parts[1], 10, 16)
-		_ = rc.SetTargetNAPTR(
-			uint16(order),
-			uint16(preference),
-			strings.Trim(parts[2], "\""),
-			strings.Trim(parts[3], "\""),
-			strings.Trim(parts[4], "\""),
-			strings.Trim(parts[5], "\""),
-		)
-	case "SRV":
-		parts := strings.Split(record.Content, " ")
-		weight, _ := strconv.ParseUint(parts[0], 10, 16)
-		port, _ := strconv.ParseUint(parts[1], 10, 16)
-		rc.SrvWeight = uint16(weight)
-		rc.SrvPort = uint16(port)
-		_ = rc.SetTarget(addTrailingDot(parts[2]))
-	case "CAA":
-		parts := strings.Split(record.Content, " ")
-		caaFlag, _ := strconv.ParseUint(parts[0], 10, 8)
-		rc.CaaFlag = uint8(caaFlag)
-		rc.CaaTag = parts[1]
-		_ = rc.SetTarget(strings.Trim(strings.Join(parts[2:], " "), "\""))
-	case "SSHFP":
-		parts := strings.Split(record.Content, " ")
-		algorithm, _ := strconv.ParseUint(parts[0], 10, 8)
-		fingerprint, _ := strconv.ParseUint(parts[1], 10, 8)
-		_ = rc.SetTargetSSHFP(uint8(algorithm), uint8(fingerprint), parts[2])
-	case "TLSA":
-		parts := strings.Split(record.Content, " ")
-		usage, _ := strconv.ParseUint(parts[0], 10, 8)
-		selector, _ := strconv.ParseUint(parts[1], 10, 8)
-		matchingtype, _ := strconv.ParseUint(parts[2], 10, 8)
-		_ = rc.SetTargetTLSA(uint8(usage), uint8(selector), uint8(matchingtype), parts[3])
-	case "DS":
-		parts := strings.Split(record.Content, " ")
-		keytag, _ := strconv.ParseUint(parts[0], 10, 16)
-		algorithm, _ := strconv.ParseUint(parts[1], 10, 8)
-		digesttype, _ := strconv.ParseUint(parts[2], 10, 8)
-		_ = rc.SetTargetDS(uint16(keytag), uint8(algorithm), uint8(digesttype), parts[3])
-	default:
-		_ = rc.SetTarget(record.Content)
-	}
-	return rc
-}
-
-func toRecord(recordConfig *models.RecordConfig) Record {
-
-	record := &Record{
-		Type:     recordConfig.Type,
-		Name:     recordConfig.NameFQDN,
-		Content:  removeTrailingDot(recordConfig.GetTargetField()),
-		TTL:      int(recordConfig.TTL),
-		Priority: int(recordConfig.MxPreference),
-	}
-
-	switch rtype := recordConfig.Type; rtype {
-	case "SRV":
-		record.Priority = int(recordConfig.SrvPriority)
-		if record.Content == "" {
-			record.Content = "."
-		}
-		record.Content = fmt.Sprintf("%d %d %s", recordConfig.SrvWeight, recordConfig.SrvPort, record.Content)
-	case "CAA":
-		record.Content = fmt.Sprintf("%d %s \"%s\"", recordConfig.CaaFlag, recordConfig.CaaTag, record.Content)
-	case "LOC", "NAPTR", "SSHFP", "TLSA":
-		record.Content = recordConfig.GetTargetCombined()
-	case "TXT":
-		record.Content = fixBackslashesAndDoubleQuotes(record.Content, false)
-	case "DS":
-		record.Content = fmt.Sprintf("%d %d %d %s", recordConfig.DsKeyTag, recordConfig.DsAlgorithm,
-			recordConfig.DsDigestType, strings.ToUpper(recordConfig.DsDigest))
-	case "MX":
-		if record.Content == "" {
-			record.Content = "."
-			record.Priority = -1
-		}
-	}
-
-	return *record
-}
-
-// init registers the registrar and the domain service provider with dnscontrol.
+// init registers the domain service provider with dnscontrol.
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newRtrDsp,
@@ -157,15 +49,15 @@ func init() {
 	providers.RegisterDomainServiceProviderType("REALTIMEREGISTER", fns, features)
 }
 
-func newRtrDsp(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	apikey := m["apikey"]
-	sandbox := m["sandbox"] == "1"
+func newRtrDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	apikey := config["apikey"]
+	sandbox := config["sandbox"] == "1"
 
 	if apikey == "" {
-		return nil, fmt.Errorf("RTR: apikey must be provided")
+		return nil, fmt.Errorf("realtime register: apikey must be provided")
 	}
 
-	api := &realtimeregisterApi{apikey: apikey, sandbox: sandbox}
+	api := &realtimeregisterApi{apikey: apikey, endpoint: getEndpoint(sandbox)}
 
 	return api, nil
 }
@@ -181,12 +73,12 @@ func (api *realtimeregisterApi) GetZoneRecords(domain string, meta map[string]st
 		return nil, err
 	}
 	records := response.Records
-	recordsConfigs := make([]*models.RecordConfig, len(records))
+	recordConfigs := make([]*models.RecordConfig, len(records))
 	for i := range records {
-		recordsConfigs[i] = toRecordConfig(domain, &records[i])
+		recordConfigs[i] = toRecordConfig(domain, &records[i])
 	}
 
-	return recordsConfigs, nil
+	return recordConfigs, nil
 }
 
 func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
@@ -194,10 +86,6 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 	if err != nil {
 		return nil, err
 	}
-
-	//for _, r := range existing {
-	//	fmt.Fprint(os.Stdout, r.Name+"\n")
-	//}
 
 	var corrections []*models.Correction
 	if changes {
@@ -223,6 +111,119 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 	return corrections, nil
 }
 
+func toRecordConfig(domain string, record *Record) *models.RecordConfig {
+
+	recordConfig := &models.RecordConfig{
+		Type:         record.Type,
+		TTL:          uint32(record.TTL),
+		MxPreference: uint16(record.Priority),
+		SrvWeight:    uint16(0),
+		SrvPort:      uint16(0),
+		Original:     record,
+	}
+
+	recordConfig.SetLabelFromFQDN(record.Name, domain)
+
+	switch rtype := record.Type; rtype { // #rtype_variations
+	case "TXT":
+		_ = recordConfig.SetTargetTXT(fixBackslashesAndDoubleQuotes(record.Content, true))
+	case "NS", "ALIAS", "CNAME", "MX":
+		_ = recordConfig.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
+	case "NAPTR":
+		parts := strings.Split(record.Content, " ")
+		order, _ := strconv.ParseUint(parts[0], 10, 16)
+		preference, _ := strconv.ParseUint(parts[1], 10, 16)
+		_ = recordConfig.SetTargetNAPTR(
+			uint16(order),
+			uint16(preference),
+			strings.Trim(parts[2], "\""),
+			strings.Trim(parts[3], "\""),
+			strings.Trim(parts[4], "\""),
+			strings.Trim(parts[5], "\""),
+		)
+	case "SRV":
+		parts := strings.Fields(record.Content)
+		weight, _ := strconv.ParseUint(parts[0], 10, 16)
+		port, _ := strconv.ParseUint(parts[1], 10, 16)
+		_ = recordConfig.SetTargetSRV(uint16(record.Priority), uint16(weight), uint16(port), addTrailingDot(parts[2]))
+	case "CAA":
+		parts := strings.Fields(record.Content)
+		caaFlag, _ := strconv.ParseUint(parts[0], 10, 8)
+		_ = recordConfig.SetTargetCAA(uint8(caaFlag), parts[1], strings.Trim(strings.Join(parts[2:], " "), "\""))
+	case "SSHFP":
+		parts := strings.Fields(record.Content)
+		algorithm, _ := strconv.ParseUint(parts[0], 10, 8)
+		fingerprint, _ := strconv.ParseUint(parts[1], 10, 8)
+		_ = recordConfig.SetTargetSSHFP(uint8(algorithm), uint8(fingerprint), parts[2])
+	case "TLSA":
+		parts := strings.Fields(record.Content)
+		usage, _ := strconv.ParseUint(parts[0], 10, 8)
+		selector, _ := strconv.ParseUint(parts[1], 10, 8)
+		matchingtype, _ := strconv.ParseUint(parts[2], 10, 8)
+		_ = recordConfig.SetTargetTLSA(uint8(usage), uint8(selector), uint8(matchingtype), parts[3])
+	case "DS":
+		parts := strings.Fields(record.Content)
+		keytag, _ := strconv.ParseUint(parts[0], 10, 16)
+		algorithm, _ := strconv.ParseUint(parts[1], 10, 8)
+		digesttype, _ := strconv.ParseUint(parts[2], 10, 8)
+		_ = recordConfig.SetTargetDS(uint16(keytag), uint8(algorithm), uint8(digesttype), parts[3])
+	case "LOC":
+		_ = recordConfig.SetTargetLOCString(domain, record.Content)
+	default:
+		_ = recordConfig.SetTarget(record.Content)
+	}
+	return recordConfig
+}
+
+func toRecord(recordConfig *models.RecordConfig) Record {
+	record := &Record{
+		Type:     recordConfig.Type,
+		Name:     recordConfig.NameFQDN,
+		Content:  removeTrailingDot(recordConfig.GetTargetField()),
+		TTL:      int(recordConfig.TTL),
+		Priority: int(recordConfig.MxPreference),
+	}
+
+	switch rtype := recordConfig.Type; rtype {
+	case "SRV":
+		record.Priority = int(recordConfig.SrvPriority)
+		if record.Content == "" {
+			record.Content = "."
+		}
+		record.Content = fmt.Sprintf("%d %d %s", recordConfig.SrvWeight, recordConfig.SrvPort, record.Content)
+	case "CAA":
+		record.Content = fmt.Sprintf("%d %s \"%s\"", recordConfig.CaaFlag, recordConfig.CaaTag, record.Content)
+	case "NAPTR", "SSHFP", "TLSA":
+		record.Content = recordConfig.GetTargetCombined()
+	case "TXT":
+		record.Content = fixBackslashesAndDoubleQuotes(record.Content, false)
+	case "DS":
+		record.Content = fmt.Sprintf("%d %d %d %s", recordConfig.DsKeyTag, recordConfig.DsAlgorithm,
+			recordConfig.DsDigestType, strings.ToUpper(recordConfig.DsDigest))
+	case "MX":
+		if record.Content == "" {
+			record.Content = "."
+			record.Priority = -1
+		}
+	case "LOC":
+		parts := strings.Fields(recordConfig.GetTargetCombined())
+		degrees1, _ := strconv.ParseUint(parts[0], 10, 32)
+		minutes1, _ := strconv.ParseUint(parts[1], 10, 32)
+		degrees2, _ := strconv.ParseUint(parts[4], 10, 32)
+		minutes2, _ := strconv.ParseUint(parts[5], 10, 32)
+		altitude, _ := strconv.ParseFloat(strings.Split(parts[8], "m")[0], 64)
+		size, _ := strconv.ParseFloat(strings.Split(parts[9], "m")[0], 64)
+		hp, _ := strconv.ParseFloat(strings.Split(parts[10], "m")[0], 64)
+		vp, _ := strconv.ParseFloat(strings.Split(parts[11], "m")[0], 64)
+		record.Content = fmt.Sprintf("%d %d %s %s %d %d %s %s %.2fm %.2fm %.2fm %.2fm",
+			degrees1, minutes1, parts[2], parts[3], degrees2, minutes2,
+			parts[6], parts[7], altitude, size, hp, vp,
+		)
+	}
+
+	return *record
+}
+
 func removeTrailingDot(record string) string {
 	return strings.TrimSuffix(record, ".")
 }
@@ -239,4 +240,11 @@ func addTrailingDot(record string) string {
 		return record
 	}
 	return record + "."
+}
+
+func getEndpoint(sandbox bool) string {
+	if sandbox {
+		return endpointSandbox
+	}
+	return endpoint
 }

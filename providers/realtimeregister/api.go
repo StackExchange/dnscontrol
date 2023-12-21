@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 type realtimeregisterApi struct {
-	apikey  string
-	sandbox bool
+	apikey   string
+	endpoint string
 }
 
 type Zone struct {
@@ -26,12 +27,13 @@ type Record struct {
 }
 
 const (
-	endpoint = "http://localhost:8080/srs/services/domains/%s/zone"
+	endpoint        = "https://api.yoursrs.com/v2/domains/%s/zone"
+	endpointSandbox = "http://localhost:8080/srs/services/domains/%s/zone"
 )
 
 func (api *realtimeregisterApi) get(domain string) (*Zone, error) {
 	client := &http.Client{}
-	url := fmt.Sprintf(endpoint, domain)
+	url := fmt.Sprintf(api.endpoint, domain)
 	req, _ := http.NewRequest(
 		"GET",
 		url,
@@ -70,9 +72,11 @@ func (api *realtimeregisterApi) post(domain string, body *Zone) error {
 		return err
 	}
 
+	fmt.Fprint(os.Stdout, string(bodyBytes)+"\n")
+
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf(endpoint, domain)+"/update",
+		fmt.Sprintf(api.endpoint, domain)+"/update",
 		bytes.NewReader(bodyBytes),
 	)
 
