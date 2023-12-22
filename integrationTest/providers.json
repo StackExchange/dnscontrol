@@ -257,7 +257,8 @@
     "TYPE": "REALTIMEREGISTER",
     "apikey": "$REALTIMEREGISTER_APIKEY",
     "sandbox" : "$REALTIMEREGISTER_SANDBOX",
-    "domain": "$REALTIMEREGISTER_DOMAIN"
+    "domain": "$REALTIMEREGISTER_DOMAIN",
+    "premium": "$REALTIMEREGISTER_PREMIUM"
   },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",

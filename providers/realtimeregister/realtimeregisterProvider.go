@@ -7,6 +7,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/exp/slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -16,6 +18,7 @@ Realtime Register DNS provider
 
 Info required in `creds.json`:
   - apikey
+  - premium: (0 for BASIC or 1 for PREMIUM)
 
 Additional settings available in `creds.json`:
   - sandbox (set to 1 to use the sandbox API from realtime register)
@@ -35,7 +38,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
@@ -47,9 +50,10 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("REALTIMEREGISTER", fns, features)
+	providers.RegisterRegistrarType("REALTIMEREGISTER", newRtrReg)
 }
 
-func newRtrDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newRtr(config map[string]string, metadata json.RawMessage) (*realtimeregisterApi, error) {
 	apikey := config["apikey"]
 	sandbox := config["sandbox"] == "1"
 
@@ -57,9 +61,22 @@ func newRtrDsp(config map[string]string, metadata json.RawMessage) (providers.DN
 		return nil, fmt.Errorf("realtime register: apikey must be provided")
 	}
 
-	api := &realtimeregisterApi{apikey: apikey, endpoint: getEndpoint(sandbox)}
+	api := &realtimeregisterApi{
+		apikey:      apikey,
+		endpoint:    getEndpoint(sandbox),
+		Zones:       make(map[string]*Zone),
+		ServiceType: getServiceType(config["premium"] == "1"),
+	}
 
 	return api, nil
+}
+
+func newRtrDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newRtr(config, metadata)
+}
+
+func newRtrReg(config map[string]string) (providers.Registrar, error) {
+	return newRtr(config, nil)
 }
 
 // GetNameservers Default name servers can not be changed, and should not be included in the update
@@ -68,7 +85,7 @@ func (api *realtimeregisterApi) GetNameservers(domain string) ([]*models.Nameser
 }
 
 func (api *realtimeregisterApi) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	response, err := api.get(domain)
+	response, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +104,40 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 		return nil, err
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	var corrections []*models.Correction
+
+	if !changes {
+		return corrections, nil
+	}
+
+	dnssec := api.Zones[dc.Name].Dnssec
+
+	if api.Zones[dc.Name].Dnssec && dc.AutoDNSSEC == "off" {
+		dnssec = false
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: "Update DNSSEC on -> off",
+				F: func() error {
+					return nil
+				},
+			})
+	}
+
+	if !api.Zones[dc.Name].Dnssec && dc.AutoDNSSEC == "on" {
+		dnssec = true
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: "Update DNSSEC on -> off",
+				F: func() error {
+					return nil
+				},
+			})
+	}
+
 	if changes {
 		corrections = append(corrections,
 			&models.Correction{
@@ -97,9 +147,9 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 					for i, r := range dc.Records {
 						records[i] = toRecord(r)
 					}
-					zone := &Zone{Records: records}
+					zone := &Zone{Records: records, Dnssec: dnssec}
 
-					err := api.post(dc.Name, zone)
+					err := api.updateZone(dc.Name, zone)
 					if err != nil {
 						return err
 					}
@@ -109,6 +159,41 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 	}
 
 	return corrections, nil
+}
+
+func (api *realtimeregisterApi) ListZones() ([]string, error) {
+	zones, err := api.getAllZones()
+	if err != nil {
+		return nil, err
+	}
+	return zones, nil
+}
+
+func (api *realtimeregisterApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	nameservers, err := api.getDomainNameservers(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	expected := make([]string, len(dc.Nameservers))
+	for i, ns := range dc.Nameservers {
+		expected[i] = removeTrailingDot(ns.Name)
+	}
+
+	sort.Strings(nameservers)
+	sort.Strings(expected)
+
+	if !slices.Equal(nameservers, expected) {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Update nameservers %s -> %s",
+					strings.Join(nameservers, ", "), strings.Join(expected, ", ")),
+				F: func() error { return api.updateNameservers(dc.Name, expected) },
+			},
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func toRecordConfig(domain string, record *Record) *models.RecordConfig {
@@ -195,6 +280,18 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 	return *record
 }
 
+func (api *realtimeregisterApi) EnsureZoneExists(domain string) error {
+	exists, err := api.zoneExists(domain)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	return api.createZone(domain)
+}
+
 func removeTrailingDot(record string) string {
 	if record == "." {
 		return record
@@ -221,4 +318,11 @@ func getEndpoint(sandbox bool) string {
 		return endpointSandbox
 	}
 	return endpoint
+}
+
+func getServiceType(premium bool) string {
+	if premium {
+		return "PREMIUM"
+	}
+	return "BASIC"
 }
