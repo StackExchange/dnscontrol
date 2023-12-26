@@ -96,7 +96,13 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 
 		// DNSimple adds TXT records that mirror the alias records.
 		// They manage them on ALIAS updates, so pretend they don't exist
-		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, `"ALIAS for `) {
+			continue
+		}
+		// This second check is the same of before, but it exists for compatibility purpose.
+		// Until Nov 2023 DNSimple did not normalize TXT records, and they used to store TXT records without quotes.
+		// This section will eventually go away after they normalize their database.
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, `ALIAS for `) {
 			continue
 		}
 
