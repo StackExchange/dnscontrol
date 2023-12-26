@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
@@ -126,7 +127,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		case "SRV":
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
-			err = rec.SetTargetTXT(r.Content)
+			err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
