@@ -102,7 +102,8 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		}
 		// This second check is the same of before, but it exists for compatibility purpose.
 		// Until Nov 2023 DNSimple did not normalize TXT records, and they used to store TXT records without quotes.
-		// This section will eventually go away after they normalize their database.
+		//
+		// This is a backward-compatible function to facilitate the TXT transition.
 		if r.Type == "TXT" && strings.HasPrefix(r.Content, `ALIAS for `) {
 			continue
 		}
@@ -127,7 +128,12 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		case "SRV":
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
-			err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
+			// This is a backward-compatible function to facilitate the TXT transition.
+			if isQuotedTXT(r.Content) {
+				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
+			} else {
+				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, nil)
+			}
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
@@ -639,8 +645,10 @@ func newProvider(m map[string]string, _ json.RawMessage) (*dnsimpleProvider, err
 	return api, nil
 }
 
-// remove all non-dnsimple NS records from our desired state.
-// if any are found, print a warning
+// utilities
+
+// Removes all non-dnsimple NS records from our desired state.
+// If any are found, print a warning.
 func removeOtherApexNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
@@ -683,7 +691,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	}
 }
 
-// Return the correct priority for the record type, 0 for records without priority
+// Returns the correct priority for the record type, 0 for records without priority
 func getTargetRecordPriority(rc *models.RecordConfig) int {
 	switch rtype := rc.Type; rtype {
 	case "MX":
@@ -717,4 +725,12 @@ func isDnsimpleNameServerDomain(name string) bool {
 		}
 	}
 	return false
+}
+
+// Tests if the content is encoded, performing a naive check on the presence of quotes
+// at the beginning and end of the string.
+//
+// This is a backward-compatible function to facilitate the TXT transition.
+func isQuotedTXT(content string) bool {
+	return content[0:1] == `"` && content[len(content)-1:] == `"`
 }
