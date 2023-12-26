@@ -132,7 +132,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 			if isQuotedTXT(r.Content) {
 				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
 			} else {
-				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, nil)
+				err = rec.SetTargetTXT(fmt.Sprintf("legacy: %s", r.Content))
 			}
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
@@ -668,7 +668,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-// Return the correct combined content for all special record types, Target for everything else
+// Returns the correct combined content for all special record types, Target for everything else
 // Using RecordConfig.GetTargetCombined returns priority in the string, which we do not allow
 func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
@@ -685,7 +685,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
-		return rc.GetTargetTXTJoined()
+		return rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	default:
 		return rc.GetTargetField()
 	}
