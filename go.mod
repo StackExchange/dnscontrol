@@ -26,7 +26,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.83.0
 	github.com/digitalocean/godo v1.107.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
-	github.com/dnsimple/dnsimple-go v1.2.0
+	github.com/dnsimple/dnsimple-go v1.5.1
 	github.com/exoscale/egoscale v0.90.2
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/go-gandi/go-gandi v0.7.0
@@ -135,6 +135,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
