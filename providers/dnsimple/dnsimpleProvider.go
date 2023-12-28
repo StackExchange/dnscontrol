@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
@@ -280,7 +279,7 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 
 	// new client
 	client := dnsimpleapi.NewClient(tc)
-	client.SetUserAgent(fmt.Sprintf("%s/%s", "dnscontrol", version.Banner()))
+	client.SetUserAgent("DNSControl")
 
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
