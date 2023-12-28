@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -268,6 +269,10 @@ func (c *dnsimpleProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*mod
 
 // DNSimple calls
 
+// Initializes a new DNSimple API client.
+//
+// - if BaseURL is present, the provided BaseURL is used. Useful to switch to DNSimple sandbox site. It defaults to production otherwise.
+// - if "DNSIMPLE_DEBUG_HTTP" is set to "1", it enables the API client logging.
 func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccountToken})
 	tc := oauth2.NewClient(context.Background(), ts)
@@ -278,6 +283,9 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
+	}
+	if os.Getenv("DNSIMPLE_DEBUG_HTTP") == "1" {
+		client.Debug = true
 	}
 	return client
 }
