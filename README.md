@@ -64,6 +64,7 @@ Currently supported Domain Registrars:
 - AWS Route 53
 - CSC Global
 - DNSOVERHTTPS
+- Dynadot
 - easyname
 - Gandi
 - HEXONET
