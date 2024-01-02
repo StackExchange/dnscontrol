@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	hxcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/apiclient"
+)
+
+// GoReleaser: version
+var (
+	version = "dev"
 )
 
 // HXClient describes a connection to the hexonet API.
@@ -36,7 +40,7 @@ func newProvider(conf map[string]string) (*HXClient, error) {
 	api := &HXClient{
 		client: hxcl.NewAPIClient(),
 	}
-	api.client.SetUserAgent("DNSControl", version.Banner())
+	api.client.SetUserAgent("DNSControl", version)
 	api.APILogin, api.APIPassword, api.APIEntity = conf["apilogin"], conf["apipassword"], conf["apientity"]
 	if conf["debugmode"] == "1" {
 		api.client.EnableDebugMode()
