@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 var sha = flag.String("sha", "", "SHA of current commit")
@@ -15,7 +16,7 @@ var goos = flag.String("os", "", "OS to build (linux, windows, or darwin) Defaul
 
 func main() {
 	flag.Parse()
-	flags := fmt.Sprintf(`-s -w -X "main.version=%s"`, getVersion())
+	flags := fmt.Sprintf(`-s -w -X "main.SHA=%s" -X main.BuildTime=%d`, getVersion(), time.Now().Unix())
 	pkg := "github.com/StackExchange/dnscontrol/v4"
 
 	build := func(out, goos string) {

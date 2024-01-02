@@ -25,6 +25,11 @@ const (
 
 var commands = []*cli.Command{}
 
+// These are set by/for goreleaser
+var (
+	version = "dev"
+)
+
 func cmd(cat string, c *cli.Command) bool {
 	c.Category = cat
 	commands = append(commands, c)
@@ -47,7 +52,7 @@ func Run(v string) int {
 	app.Version = version
 	app.Name = "dnscontrol"
 	app.HideVersion = true
-	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
+	app.Usage = "dnscontrol is a compiler and DSL for managing dns zones"
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "v",
