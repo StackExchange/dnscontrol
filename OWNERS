@@ -13,6 +13,7 @@ providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
 providers/domainnameshop @SimenBai
+providers/dynadot @e-im
 providers/easyname @tresni
 providers/exoscale @pierre-emmanuelJ
 providers/gandiv5 @TomOnTime
