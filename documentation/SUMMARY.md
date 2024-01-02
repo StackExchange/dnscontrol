@@ -113,6 +113,7 @@
     * [DNSimple](providers/dnsimple.md)
     * [DNS-over-HTTPS](providers/dnsoverhttps.md)
     * [DOMAINNAMESHOP](providers/domainnameshop.md)
+    * [Dynadot](providers/dynadot.md)
     * [easyname](providers/easyname.md)
     * [Exoscale](providers/exoscale.md)
     * [Gandi_v5](providers/gandi_v5.md)
