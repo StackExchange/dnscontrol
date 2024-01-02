@@ -18,6 +18,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/doh"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/domainnameshop"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/dynadot"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/easyname"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gandiv5"
