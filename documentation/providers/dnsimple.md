@@ -24,9 +24,11 @@ Examples:
 {% endcode %}
 
 ## Metadata
+
 This provider does not recognize any special metadata fields unique to DNSimple.
 
 ## Usage
+
 An example configuration:
 
 {% code title="dnsconfig.js" %}
@@ -41,8 +43,20 @@ D("example.com", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
 {% endcode %}
 
 ## Activation
+
 DNSControl depends on a DNSimple account access token.
 
 ## Caveats
 
-None at this time
+### TXT record length
+
+The DNSimple API supports TXT records of up to 1000 "characters" (assumed to
+be octets, per DNS norms, not Unicode characters in an encoding).
+
+See https://support.dnsimple.com/articles/txt-record/
+
+## Development
+
+### Debugging
+
+Set `DNSIMPLE_DEBUG_HTTP` environment variable to `1` to dump all API calls made by this provider.

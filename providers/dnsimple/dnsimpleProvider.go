@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
@@ -96,7 +98,14 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 
 		// DNSimple adds TXT records that mirror the alias records.
 		// They manage them on ALIAS updates, so pretend they don't exist
-		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, `"ALIAS for `) {
+			continue
+		}
+		// This second check is the same of before, but it exists for compatibility purpose.
+		// Until Nov 2023 DNSimple did not normalize TXT records, and they used to store TXT records without quotes.
+		//
+		// This is a backward-compatible function to facilitate the TXT transition.
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, `ALIAS for `) {
 			continue
 		}
 
@@ -120,7 +129,12 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		case "SRV":
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
-			err = rec.SetTargetTXT(r.Content)
+			// This is a backward-compatible function to facilitate the TXT transition.
+			if isQuotedTXT(r.Content) {
+				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
+			} else {
+				err = rec.SetTargetTXT(fmt.Sprintf("legacy: %s", r.Content))
+			}
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
@@ -255,6 +269,10 @@ func (c *dnsimpleProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*mod
 
 // DNSimple calls
 
+// Initializes a new DNSimple API client.
+//
+// - if BaseURL is present, the provided BaseURL is used. Useful to switch to DNSimple sandbox site. It defaults to production otherwise.
+// - if "DNSIMPLE_DEBUG_HTTP" is set to "1", it enables the API client logging.
 func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccountToken})
 	tc := oauth2.NewClient(context.Background(), ts)
@@ -265,6 +283,9 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
+	}
+	if os.Getenv("DNSIMPLE_DEBUG_HTTP") == "1" {
+		client.Debug = true
 	}
 	return client
 }
@@ -632,8 +653,10 @@ func newProvider(m map[string]string, _ json.RawMessage) (*dnsimpleProvider, err
 	return api, nil
 }
 
-// remove all non-dnsimple NS records from our desired state.
-// if any are found, print a warning
+// utilities
+
+// Removes all non-dnsimple NS records from our desired state.
+// If any are found, print a warning.
 func removeOtherApexNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
@@ -653,7 +676,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-// Return the correct combined content for all special record types, Target for everything else
+// Returns the correct combined content for all special record types, Target for everything else
 // Using RecordConfig.GetTargetCombined returns priority in the string, which we do not allow
 func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
@@ -670,13 +693,13 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
-		return rc.GetTargetTXTJoined()
+		return rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	default:
 		return rc.GetTargetField()
 	}
 }
 
-// Return the correct priority for the record type, 0 for records without priority
+// Returns the correct priority for the record type, 0 for records without priority
 func getTargetRecordPriority(rc *models.RecordConfig) int {
 	switch rtype := rc.Type; rtype {
 	case "MX":
@@ -710,4 +733,12 @@ func isDnsimpleNameServerDomain(name string) bool {
 		}
 	}
 	return false
+}
+
+// Tests if the content is encoded, performing a naive check on the presence of quotes
+// at the beginning and end of the string.
+//
+// This is a backward-compatible function to facilitate the TXT transition.
+func isQuotedTXT(content string) bool {
+	return content[0:1] == `"` && content[len(content)-1:] == `"`
 }
