@@ -23,7 +23,7 @@ require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.6
-	github.com/cloudflare/cloudflare-go v0.83.0
+	github.com/cloudflare/cloudflare-go v0.84.0
 	github.com/digitalocean/godo v1.107.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.2.0
@@ -44,7 +44,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.4.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/robertkrimen/otto v0.2.1
+	github.com/robertkrimen/otto v0.3.0
 	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.4
 	github.com/transip/gotransip/v6 v6.23.0
@@ -54,7 +54,7 @@ require (
 	golang.org/x/net v0.19.0
 	golang.org/x/oauth2 v0.15.0
 	google.golang.org/api v0.154.0
-	gopkg.in/ns1/ns1-go.v2 v2.7.13
+	gopkg.in/ns1/ns1-go.v2 v2.7.11
 )
 
 require (
