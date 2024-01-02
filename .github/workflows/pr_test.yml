@@ -6,6 +6,7 @@ on:
 env:
   cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
   go-mod-path: /go/pkg/mod
+  BIND_DOMAIN: example.com
 
 jobs:
   build:
