@@ -56,7 +56,6 @@ jobs:
       if: github.ref_type != 'tag'
       uses: goreleaser/goreleaser-action@v5
       with:
-        version: latest
         args: build --snapshot
   integration-test-providers:
     needs: build
