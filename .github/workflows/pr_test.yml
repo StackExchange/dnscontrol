@@ -17,6 +17,8 @@ jobs:
       TEST_RESULTS: "/tmp/test-results"
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: restore_cache
       uses: actions/cache@v3.3.2
       with:
