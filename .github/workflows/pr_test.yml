@@ -11,14 +11,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.21
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: stable
     - name: restore_cache
       uses: actions/cache@v3.3.2
       with:
