@@ -280,13 +280,25 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 	changedKeys := map[key]string{}
 	for _, c := range create {
-		changedKeys[keyForRec(c.Desired)] = fmt.Sprintln(c)
+		msg := fmt.Sprintln(c)
+		if k, ok := changedKeys[keyForRec(c.Desired)]; ok {
+			msg = strings.Join([]string{k, msg}, "")
+		}
+		changedKeys[keyForRec(c.Desired)] = msg
 	}
 	for _, d := range toDelete {
-		changedKeys[keyForRec(d.Existing)] = fmt.Sprintln(d)
+		msg := fmt.Sprintln(d)
+		if k, ok := changedKeys[keyForRec(d.Existing)]; ok {
+			msg = strings.Join([]string{k, msg}, "")
+		}
+		changedKeys[keyForRec(d.Existing)] = msg
 	}
 	for _, m := range modify {
-		changedKeys[keyForRec(m.Existing)] = fmt.Sprintln(m)
+		msg := fmt.Sprintln(m)
+		if k, ok := changedKeys[keyForRec(m.Existing)]; ok {
+			msg = strings.Join([]string{k, msg}, "")
+		}
+		changedKeys[keyForRec(m.Existing)] = msg
 	}
 	if len(changedKeys) == 0 {
 		return nil, nil
