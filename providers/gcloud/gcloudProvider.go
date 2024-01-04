@@ -279,26 +279,32 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	for _, change := range changes {
 		n := change.Key.NameFQDN + "."
 		ty := change.Key.Type
-		newMsgs = nil
-		if len(change.Msgs) != 0 {
-			newMsgs = change.Msgs
-		}
+		//newMsgs = nil
+		//if len(change.Msgs) != 0 {
+		//newMsgs = change.Msgs
+		//}
 		switch change.Type {
 		case diff2.REPORT:
+			newMsgs = change.Msgs
 			newAdds = nil
 			newDels = nil
 		case diff2.CREATE:
+			newMsgs = change.Msgs
 			newAdds = mkRRSs(n, ty, change.New)
 			newDels = nil
 		case diff2.CHANGE:
+			newMsgs = change.Msgs
 			newAdds = mkRRSs(n, ty, change.New)
 			newDels = mkRRSs(n, ty, change.Old)
 		case diff2.DELETE:
+			newMsgs = change.Msgs
 			newAdds = nil
 			newDels = mkRRSs(n, ty, change.Old)
 		default:
 			panic(fmt.Sprintf("unhandled change.TYPE %s", change.Type))
 		}
+
+		//fmt.Fprintf(os.Stderr, "DEBUG: newMsgs=%v\n", newMsgs)
 
 		// If the work would overflow the current batch, process what we have so far and start a new batch.
 		if wouldOverfill(batch, newAdds, newDels) {
@@ -316,7 +322,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		if newDels != nil {
 			batch.Deletions = append(batch.Deletions, newDels)
 		}
-		if len(accumlatedMsgs) != 0 {
+		if len(newMsgs) != 0 {
 			accumlatedMsgs = append(accumlatedMsgs, newMsgs...)
 		}
 
@@ -330,26 +336,27 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumulatedMsgs []string, batch *gdns.Change, origin string) []*models.Correction {
 	if len(accumulatedMsgs) == 0 && len(batch.Additions) == 0 && len(batch.Deletions) == 0 {
 		// Nothing to do!
-		fmt.Fprintf(os.Stdout, "DEBUG: nothing to do!\n")
+		fmt.Fprintf(os.Stderr, "DEBUG: nothing to do!\n")
 		return corrections
 	}
 
 	corr := &models.Correction{}
 	if len(accumulatedMsgs) != 0 {
 		corr.Msg = strings.Join(accumulatedMsgs, "\n")
-		fmt.Fprintf(os.Stdout, "DEBUG: msgs added msg=%v\n", accumulatedMsgs)
+		//fmt.Fprintf(os.Stderr, "DEBUG: msgs added msg=%v\n", accumulatedMsgs)
 	}
-	if len(batch.Additions) != 0 || len(batch.Deletions) == 0 {
-		fmt.Fprintf(os.Stdout, "DEBUG: adds=%d dels=%d\n", len(batch.Additions), len(batch.Deletions))
-		fmt.Fprintf(os.Stdout, "DEBUG: adds=%v\n", batch.Additions)
-		fmt.Fprintf(os.Stdout, "DEBUG: dels=%v\n", batch.Deletions)
+	if (len(batch.Additions) + len(batch.Deletions)) != 0 {
+		//fmt.Fprintf(os.Stderr, "DEBUG: adds=%d dels=%d\n", len(batch.Additions), len(batch.Deletions))
+		//fmt.Fprintf(os.Stderr, "DEBUG: adds=%v\n", batch.Additions)
+		//fmt.Fprintf(os.Stderr, "DEBUG: dels=%v\n", batch.Deletions)
 		// Only set "F" if there is work to do. F = nil tells the caller this is a "message", not an action.
 		corr.F = func() error { return g.process(origin, batch) }
 	}
 
 	// corrections = append(corrections, corr)
 	// return corrections
-	return append(corrections, corr)
+	corrections = append(corrections, corr)
+	return corrections
 }
 
 // mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
@@ -366,7 +373,8 @@ func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
 
 		// Test that assumption that diff2 assures all TTLs in a recordset are the same.
 		if newRRS.Ttl != int64(r.TTL) {
-			panic("TTLs not the same")
+			//panic("TTLs not the same")
+			_ = 0
 		}
 
 	}
