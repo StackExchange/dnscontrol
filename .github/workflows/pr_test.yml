@@ -11,12 +11,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.21
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: stable
     - name: restore_cache
       uses: actions/cache@v3.3.2
       with:
@@ -39,16 +43,6 @@ jobs:
       run: |
         go install golang.org/x/tools/cmd/stringer@latest
 
-# For some reason goreleaser isn't correctly setting the version
-# string used by "dnscontrol version".  Therefore, we're forcing the
-# string using the GORELEASER_CURRENT_TAG feature.
-# TODO(tlim): Use the native gorelease version mechanism.
-    - name: Retrieve version
-      id: version
-      run: |
-        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
-    - name: Reveal version
-      run: echo ${{ steps.version.outputs.TAG_NAME }}
     -
       id: build_binaries_tagged
       name: Build binaries (if tagged)
@@ -58,19 +52,13 @@ jobs:
         distribution: goreleaser
         version: latest
         args: build
-      env:
-        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
     -
       id: build_binaries_not_tagged
       name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
       uses: goreleaser/goreleaser-action@v5
       with:
-        distribution: goreleaser
-        version: latest
         args: build --snapshot
-      env:
-        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
