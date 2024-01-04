@@ -60,8 +60,6 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
-	// For use with diff / NewComnpat()
-	zoneNameMap map[string]string
 	// provider metadata fields
 	Visibility string   `json:"visibility"`
 	Networks   []string `json:"networks"`
@@ -111,7 +109,6 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
-		zoneNameMap:   map[string]string{},
 	}
 	if len(metadata) != 0 {
 		err := json.Unmarshal(metadata, g)
@@ -213,7 +210,7 @@ func (g *gcloudProvider) GetZoneRecords(domain string, meta map[string]string) (
 }
 
 func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
-	rrs, zoneName, err := g.getRecords(domain)
+	rrs, err := g.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +228,6 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 			existingRecords = append(existingRecords, rt)
 		}
 	}
-
-	g.zoneNameMap[domain] = zoneName
 
 	return existingRecords, err
 }
@@ -255,6 +250,8 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	var newAdds, newDels *gdns.ResourceRecordSet
 
 	for _, change := range changes {
+
+		// Determine the work to be done.
 		n := change.Key.NameFQDN + "."
 		ty := change.Key.Type
 		switch change.Type {
@@ -301,26 +298,9 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 	}
 
+	// Process the remaining work.
 	corrections = g.mkCorrection(corrections, accumlatedMsgs, batch, dc.Name)
 	return corrections, nil
-}
-
-func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumulatedMsgs []string, batch *gdns.Change, origin string) []*models.Correction {
-	if len(accumulatedMsgs) == 0 && len(batch.Additions) == 0 && len(batch.Deletions) == 0 {
-		// Nothing to do!
-		return corrections
-	}
-
-	corr := &models.Correction{}
-	if len(accumulatedMsgs) != 0 {
-		corr.Msg = strings.Join(accumulatedMsgs, "\n")
-	}
-	if (len(batch.Additions) + len(batch.Deletions)) != 0 {
-		corr.F = func() error { return g.process(origin, batch) }
-	}
-
-	corrections = append(corrections, corr)
-	return corrections
 }
 
 // mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
@@ -356,25 +336,43 @@ func wouldOverfill(batch *gdns.Change, adds, dels *gdns.ResourceRecordSet) bool 
 		delCount = len(dels.Rrdatas)
 	}
 
-	if (len(batch.Additions) + addCount) > batchMax {
+	if (len(batch.Additions) + addCount) > batchMax { // Would additions push us over the limit?
 		return true
 	}
-	if (len(batch.Deletions) + delCount) > batchMax {
+	if (len(batch.Deletions) + delCount) > batchMax { // Would deletions push us over the limit?
 		return true
 	}
 	return false
 }
 
+func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumulatedMsgs []string, batch *gdns.Change, origin string) []*models.Correction {
+	if len(accumulatedMsgs) == 0 && len(batch.Additions) == 0 && len(batch.Deletions) == 0 {
+		// Nothing to do!
+		return corrections
+	}
+
+	corr := &models.Correction{}
+	if len(accumulatedMsgs) != 0 {
+		corr.Msg = strings.Join(accumulatedMsgs, "\n")
+	}
+	if (len(batch.Additions) + len(batch.Deletions)) != 0 {
+		corr.F = func() error { return g.process(origin, batch) }
+	}
+
+	corrections = append(corrections, corr)
+	return corrections
+}
+
 // process calls the Google DNS API to process a Change and re-tries if needed.
 func (g *gcloudProvider) process(origin string, batch *gdns.Change) error {
 
-	zoneName, ok := g.zoneNameMap[origin]
-	if !ok {
+	zoneName, err := g.getZone(origin)
+	if err != nil || zoneName == nil {
 		return fmt.Errorf("zoneNameMap: no zone named %q", origin)
 	}
 
 retry:
-	resp, err := g.client.Changes.Create(g.project, zoneName, batch).Do()
+	resp, err := g.client.Changes.Create(g.project, zoneName.Name, batch).Do()
 	var check *googleapi.ServerResponse
 	if resp != nil {
 		check = &resp.ServerResponse
@@ -400,10 +398,10 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	return r, nil
 }
 
-func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	pageToken := ""
 	sets := []*gdns.ResourceRecordSet{}
@@ -422,7 +420,7 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, s
 			goto retry
 		}
 		if err != nil {
-			return nil, "", err
+			return nil, err
 		}
 		for _, rrs := range resp.Rrsets {
 			if rrs.Type == "SOA" {
@@ -434,7 +432,7 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, s
 			break
 		}
 	}
-	return sets, zone.Name, nil
+	return sets, nil
 }
 
 func (g *gcloudProvider) EnsureZoneExists(domain string) error {
