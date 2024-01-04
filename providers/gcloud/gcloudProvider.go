@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -259,6 +261,165 @@ type correctionValues struct {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	if len(changes) == 0 {
+		return nil, nil
+	}
+
+	var corrections []*models.Correction
+	batch := &gdns.Change{Kind: "dns#change"}
+	var accumlatedMsgs []string
+	var newMsgs []string
+	var newAdds, newDels *gdns.ResourceRecordSet
+
+	for _, change := range changes {
+		n := change.Key.NameFQDN + "."
+		ty := change.Key.Type
+		newMsgs = nil
+		if len(change.Msgs) != 0 {
+			newMsgs = change.Msgs
+		}
+		switch change.Type {
+		case diff2.REPORT:
+			newAdds = nil
+			newDels = nil
+		case diff2.CREATE:
+			newAdds = mkRRSs(n, ty, change.New)
+			newDels = nil
+		case diff2.CHANGE:
+			newAdds = mkRRSs(n, ty, change.New)
+			newDels = mkRRSs(n, ty, change.Old)
+		case diff2.DELETE:
+			newAdds = nil
+			newDels = mkRRSs(n, ty, change.Old)
+		default:
+			panic(fmt.Sprintf("unhandled change.TYPE %s", change.Type))
+		}
+
+		// If the work would overflow the current batch, process what we have so far and start a new batch.
+		if wouldOverfill(batch, newAdds, newDels) {
+			corrections = g.mkCorrection(corrections, accumlatedMsgs, batch, dc.Name)
+
+			// Start a new batch.
+			batch = &gdns.Change{Kind: "dns#change"}
+			accumlatedMsgs = nil
+		}
+
+		// Add the new work to the batch.
+		if newAdds != nil {
+			batch.Additions = append(batch.Additions, newAdds)
+		}
+		if newDels != nil {
+			batch.Deletions = append(batch.Deletions, newDels)
+		}
+		if len(accumlatedMsgs) != 0 {
+			accumlatedMsgs = append(accumlatedMsgs, newMsgs...)
+		}
+
+	}
+
+	corrections = g.mkCorrection(corrections, accumlatedMsgs, batch, dc.Name)
+
+	return corrections, nil
+}
+
+func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumulatedMsgs []string, batch *gdns.Change, origin string) []*models.Correction {
+	if len(accumulatedMsgs) == 0 && len(batch.Additions) == 0 && len(batch.Deletions) == 0 {
+		// Nothing to do!
+		fmt.Fprintf(os.Stdout, "DEBUG: nothing to do!\n")
+		return corrections
+	}
+
+	corr := &models.Correction{}
+	if len(accumulatedMsgs) != 0 {
+		corr.Msg = strings.Join(accumulatedMsgs, "\n")
+		fmt.Fprintf(os.Stdout, "DEBUG: msgs added msg=%v\n", accumulatedMsgs)
+	}
+	if len(batch.Additions) != 0 || len(batch.Deletions) == 0 {
+		fmt.Fprintf(os.Stdout, "DEBUG: adds=%d dels=%d\n", len(batch.Additions), len(batch.Deletions))
+		fmt.Fprintf(os.Stdout, "DEBUG: adds=%v\n", batch.Additions)
+		fmt.Fprintf(os.Stdout, "DEBUG: dels=%v\n", batch.Deletions)
+		// Only set "F" if there is work to do. F = nil tells the caller this is a "message", not an action.
+		corr.F = func() error { return g.process(origin, batch) }
+	}
+
+	// corrections = append(corrections, corr)
+	// return corrections
+	return append(corrections, corr)
+}
+
+// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
+func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
+	newRRS := &gdns.ResourceRecordSet{
+		Name: name,
+		Type: rType,
+		Kind: "dns#resourceRecordSet",
+	}
+
+	newRRS.Ttl = int64(recs[0].TTL) // Assume all TTLs are the same. diff2 assures they are.
+	for _, r := range recs {
+		newRRS.Rrdatas = append(newRRS.Rrdatas, r.GetTargetCombinedFunc(txtutil.EncodeQuoted))
+
+		// Test that assumption that diff2 assures all TTLs in a recordset are the same.
+		if newRRS.Ttl != int64(r.TTL) {
+			panic("TTLs not the same")
+		}
+
+	}
+
+	return newRRS
+}
+
+func wouldOverfill(batch *gdns.Change, adds, dels *gdns.ResourceRecordSet) bool {
+	const batchMax = 1000
+
+	addCount := 0
+	if adds != nil {
+		addCount = len(adds.Rrdatas)
+	}
+	delCount := 0
+	if dels != nil {
+		delCount = len(dels.Rrdatas)
+	}
+
+	if (len(batch.Additions) + addCount) > batchMax {
+		return true
+	}
+	if (len(batch.Deletions) + delCount) > batchMax {
+		return true
+	}
+	return false
+}
+
+func (g *gcloudProvider) process(origin string, batch *gdns.Change) error {
+
+	zoneName, ok := g.zoneNameMap[origin]
+	if !ok {
+		return fmt.Errorf("zoneNameMap: no zone named %q", origin)
+	}
+
+retry:
+	resp, err := g.client.Changes.Create(g.project, zoneName, batch).Do()
+	var check *googleapi.ServerResponse
+	if resp != nil {
+		check = &resp.ServerResponse
+	}
+	if retryNeeded(check, err) {
+		goto retry
+	}
+	if err != nil {
+		return fmt.Errorf("runChange error: %w", err)
+	}
+	return nil
+}
+
+// OLDGetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
+func (g *gcloudProvider) OLDGetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
 	oldRRs, ok := g.oldRRsMap[dc.Name]
 	if !ok {
 		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)

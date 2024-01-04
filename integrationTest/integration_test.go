@@ -232,14 +232,14 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
 		if tst.Changeless {
-			if count := len(corrections); count != 0 {
+			if count := countActions(corrections); count != 0 {
 				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
 				for i, c := range corrections {
-					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
+					t.Logf("UNEXPECTED a #%d: %s", i, c.Msg)
 				}
 				t.FailNow()
 			}
-		} else if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
+		} else if (countActions(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
@@ -264,15 +264,27 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count := len(corrections); count != 0 {
+		if count := countActions(corrections); count != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", count)
 			for i, c := range corrections {
-				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED b #%d: %+v", i, *c)
 			}
 			t.FailNow()
 		}
 
 	})
+}
+
+// countActions returns the number of non-REPORT corrections.
+func countActions(corrections []*models.Correction) int {
+	var c int
+	for i, corr := range corrections {
+		fmt.Fprintf(os.Stderr, "DEBUG: countActions %d: F=%v MSG=%s\n", i, corr.F != nil, corr.Msg)
+		if corr.F != nil {
+			c++
+		}
+	}
+	return c
 }
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
