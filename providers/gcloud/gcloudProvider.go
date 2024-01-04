@@ -61,7 +61,6 @@ type gcloudProvider struct {
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
 	// For use with diff / NewComnpat()
-	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
 	zoneNameMap map[string]string
 	// provider metadata fields
 	Visibility string   `json:"visibility"`
@@ -112,7 +111,6 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
-		oldRRsMap:     map[string]map[key]*gdns.ResourceRecordSet{},
 		zoneNameMap:   map[string]string{},
 	}
 	if len(metadata) != 0 {
@@ -234,7 +232,6 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 		}
 	}
 
-	g.oldRRsMap[domain] = oldRRs
 	g.zoneNameMap[domain] = zoneName
 
 	return existingRecords, err
