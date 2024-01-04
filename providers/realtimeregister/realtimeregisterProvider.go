@@ -79,7 +79,7 @@ func newRtrReg(config map[string]string) (providers.Registrar, error) {
 	return newRtr(config, nil)
 }
 
-// GetNameservers Default name servers can not be changed, and should not be included in the update
+// GetNameservers Default name servers should not be included in the update
 func (api *realtimeregisterApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
@@ -100,10 +100,6 @@ func (api *realtimeregisterApi) GetZoneRecords(domain string, meta map[string]st
 
 func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	msgs, changes, err := diff2.ByZone(existing, dc, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +127,7 @@ func (api *realtimeregisterApi) GetZoneRecordsCorrections(dc *models.DomainConfi
 		dnssec = true
 		corrections = append(corrections,
 			&models.Correction{
-				Msg: "Update DNSSEC on -> off",
+				Msg: "Update DNSSEC off -> on",
 				F: func() error {
 					return nil
 				},
@@ -187,7 +183,7 @@ func (api *realtimeregisterApi) GetRegistrarCorrections(dc *models.DomainConfig)
 		return []*models.Correction{
 			{
 				Msg: fmt.Sprintf("Update nameservers %s -> %s",
-					strings.Join(nameservers, ", "), strings.Join(expected, ", ")),
+					strings.Join(nameservers, ","), strings.Join(expected, ",")),
 				F: func() error { return api.updateNameservers(dc.Name, expected) },
 			},
 		}, nil
@@ -211,16 +207,26 @@ func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 
 	switch rtype := record.Type; rtype { // #rtype_variations
 	case "TXT":
-		_ = recordConfig.SetTargetTXT(fixBackslashesAndDoubleQuotes(record.Content, true))
-	case "NS", "ALIAS", "CNAME", "MX":
+		_ = recordConfig.SetTargetTXT(removeEscapeChars(record.Content))
+	case "NS", "ALIAS", "CNAME":
 		_ = recordConfig.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
+	case "MX":
+		content := record.Content
+		if content != "." {
+			content = addTrailingDot(content)
+		}
+		_ = recordConfig.SetTarget(dnsutil.AddOrigin(content, domain))
 	case "NAPTR":
 		_ = recordConfig.SetTargetNAPTRString(record.Content)
 	case "SRV":
 		parts := strings.Fields(record.Content)
 		weight, _ := strconv.ParseUint(parts[0], 10, 16)
 		port, _ := strconv.ParseUint(parts[1], 10, 16)
-		_ = recordConfig.SetTargetSRV(uint16(record.Priority), uint16(weight), uint16(port), addTrailingDot(parts[2]))
+		content := parts[2]
+		if content != "." {
+			content = addTrailingDot(content)
+		}
+		_ = recordConfig.SetTargetSRV(uint16(record.Priority), uint16(weight), uint16(port), content)
 	case "CAA":
 		_ = recordConfig.SetTargetCAAString(record.Content)
 	case "SSHFP":
@@ -239,27 +245,32 @@ func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 
 func toRecord(recordConfig *models.RecordConfig) Record {
 	record := &Record{
-		Type:     recordConfig.Type,
-		Name:     recordConfig.NameFQDN,
-		Content:  removeTrailingDot(recordConfig.GetTargetField()),
-		TTL:      int(recordConfig.TTL),
-		Priority: int(recordConfig.MxPreference),
+		Type:    recordConfig.Type,
+		Name:    recordConfig.NameFQDN,
+		Content: removeTrailingDot(recordConfig.GetTargetField()),
+		TTL:     int(recordConfig.TTL),
 	}
 
 	switch rtype := recordConfig.Type; rtype {
 	case "SRV":
+		if record.Content == "" {
+			record.Content = "."
+		}
 		record.Priority = int(recordConfig.SrvPriority)
 		record.Content = fmt.Sprintf("%d %d %s", recordConfig.SrvWeight, recordConfig.SrvPort, record.Content)
 	case "NAPTR", "SSHFP", "TLSA", "CAA":
 		record.Content = recordConfig.GetTargetCombined()
 	case "TXT":
-		record.Content = fixBackslashesAndDoubleQuotes(record.Content, false)
+		record.Content = addEscapeChars(record.Content)
 	case "DS":
 		record.Content = fmt.Sprintf("%d %d %d %s", recordConfig.DsKeyTag, recordConfig.DsAlgorithm,
 			recordConfig.DsDigestType, strings.ToUpper(recordConfig.DsDigest))
 	case "MX":
-		if record.Content == "." {
+		if record.Content == "" {
+			record.Content = "."
 			record.Priority = -1
+		} else {
+			record.Priority = int(recordConfig.MxPreference)
 		}
 	case "LOC":
 		parts := strings.Fields(recordConfig.GetTargetCombined())
@@ -293,24 +304,19 @@ func (api *realtimeregisterApi) EnsureZoneExists(domain string) error {
 }
 
 func removeTrailingDot(record string) string {
-	if record == "." {
-		return record
-	}
 	return strings.TrimSuffix(record, ".")
 }
 
-func fixBackslashesAndDoubleQuotes(name string, inverse bool) string {
-	if inverse {
-		return strings.Replace(strings.Replace(name, "\\\"", "\"", -1), "\\\\", "\\", -1)
-	}
-	return strings.Replace(strings.Replace(name, "\\", "\\\\", -1), "\"", "\\\"", -1)
+func addTrailingDot(record string) string {
+	return record + "."
 }
 
-func addTrailingDot(record string) string {
-	if strings.HasSuffix(record, ".") {
-		return record
-	}
-	return record + "."
+func removeEscapeChars(name string) string {
+	return strings.Replace(strings.Replace(name, "\\\"", "\"", -1), "\\\\", "\\", -1)
+}
+
+func addEscapeChars(name string) string {
+	return strings.Replace(strings.Replace(name, "\\", "\\\\", -1), "\"", "\\\"", -1)
 }
 
 func getEndpoint(sandbox bool) string {
