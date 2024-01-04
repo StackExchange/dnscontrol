@@ -1,5 +1,11 @@
 name: "PR: Run all tests"
 on:
+  # git push origin master:tlim_testpr --force
+  # will trigger a full PR test on the master branch:
+  # https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  push:
+    branches:
+      - 'tlim_testpr'
   pull_request:
   workflow_dispatch:
 
