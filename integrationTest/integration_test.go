@@ -1319,6 +1319,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Test the boundaries of Google' batch system.
 		// 1200 is used because it is larger than batchMax.
+		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
 				"GCLOUD",
