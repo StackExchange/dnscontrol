@@ -1317,6 +1317,23 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
 
+		// Test the boundaries of Google' batch system.
+		// 1200 is used because it is larger than batchMax.
+		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
+		testgroup("batchRecordswithOthers",
+			only(
+				"GCLOUD",
+			),
+			tc("1200 records",
+				manyA("rec%04d", "1.2.3.4", 1200)...),
+			tc("Update 1200 records and Create others", append(
+				manyA("arec%04d", "1.2.3.4", 1200),
+				manyA("rec%04d", "1.2.3.5", 1200)...)...),
+			tc("Update 1200 records and Create and Delete others", append(
+				manyA("rec%04d", "1.2.3.4", 1200),
+				manyA("zrec%04d", "1.2.3.4", 1200)...)...),
+		),
+
 		//// CanUse* types:
 
 		// Narrative: Many DNS record types are optional.  If the provider
