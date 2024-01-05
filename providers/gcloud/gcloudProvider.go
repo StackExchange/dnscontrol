@@ -326,6 +326,9 @@ func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
 // wouldOverfill returns true if adding this work would overflow the batch.
 func wouldOverfill(batch *gdns.Change, adds, dels *gdns.ResourceRecordSet) bool {
 	const batchMax = 1000
+	// Google used to document the max is 1000.  As of 2024-01 the max isn't
+	// documented but testing shows it rejects if either Additions or Deletions
+	// are >3000.
 
 	addCount := 0
 	if adds != nil {
