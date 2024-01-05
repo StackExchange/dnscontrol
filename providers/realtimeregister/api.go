@@ -42,7 +42,7 @@ type Record struct {
 
 const (
 	endpoint        = "https://api.yoursrs.com/v2"
-	endpointSandbox = "http://localhost:8080/srs/services"
+	endpointSandbox = "https://api.yoursrs-ote.com/v2"
 )
 
 func (api *realtimeregisterAPI) request(method string, url string, body io.Reader) ([]byte, error) {
