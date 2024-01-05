@@ -329,7 +329,4 @@ Here are some last-minute things to check before you submit your PR.
 
 1. Remove the "provider-request" label from the PR.
 2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
-3. If you'd like to have the automated integration tests run for your provider
-   with every PR (a very good thing!), you'll need to contribute a test account
-   and test domain to the project.  Open a Github issue "Add PROVIDERNAME to
-   CI/CD testing" to find out more.
+3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
