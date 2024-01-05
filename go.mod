@@ -4,6 +4,8 @@ go 1.21
 
 toolchain go1.21.1
 
+retract v4.8.0
+
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
