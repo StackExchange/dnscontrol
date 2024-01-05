@@ -114,7 +114,7 @@ The main driver should be called `providers/name/nameProvider.go`.
 The API abstraction is usually in a separate file (often called
 `api.go`).
 
-Directory names should be consitent.  It should be all lowercase and match the ALLCAPS provider name.
+Directory names should be consitent.  It should be all lowercase and match the ALLCAPS provider name. Avoid `_`s.
 
 ## Step 4: Activate the driver
 
@@ -157,16 +157,24 @@ Run the unit tests with this command:
 This is the most important kind of testing when adding a new provider.
 Integration tests use a test account and a real domain.
 
-* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json): Add the `creds.json` info required for this provider.
+* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json):
+  * Add the `creds.json` info required for this provider in the form of environment variables.
 
-For example, this will run the tests using BIND:
+WARNING: The integration test requires a DNS zone it can update.  All records
+will be removed so please use a OTE domain, or a real domain that isn't
+otherwise in use and can be destroyed.
+
+Now you can run the integration tests.
+
+For example, test BIND:
 
 ```shell
-cd integrationTest              # NOTE: Not needed if already in that subdirectory
+cd integrationTest              # NOTE: Not needed if already there
+export BIND_DOMAIN='example.com'
 go test -v -verbose -provider BIND
 ```
 
-(BIND is a good place to  start since it doesn't require any API keys.)
+(BIND is a good place to start since it doesn't require API keys.)
 
 This will run the tests on Amazon AWS Route53:
 
@@ -174,16 +182,12 @@ This will run the tests on Amazon AWS Route53:
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
-cd integrationTest              # NOTE: Not needed if already in that subdirectory
+cd integrationTest              # NOTE: Not needed if already there
 go test -v -verbose -provider ROUTE53
 ```
 
 Some useful `go test` flags:
 
-* Slow tests? Add `-timeout n` to increase the timeout for tests
-  * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
-  * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
-  * Example:  `go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
 * Run only certain tests using the `-start` and `-end` flags.
   * Rather than running all the tests, run just the tests you want.
   * These flags must be *after* the `-provider FOO` flag.
@@ -191,6 +195,10 @@ Some useful `go test` flags:
   * Example: `go test -v -verbose -provider ROUTE53 -start 5 -end 5` runs only test 5.
   * Example: `go test -v -verbose -provider ROUTE53 -start 20` skip the first 19 tests.
   * Example: `go test -v -verbose -provider ROUTE53 -end 20` only run the first 20 tests.
+* Slow tests? Add `-timeout n` to increase the timeout for tests
+  * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
+  * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
+  * Example:  `go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
 * If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
 
 
@@ -200,14 +208,21 @@ There is a potential bug in how TXT records are handled. Sadly we haven't found
 an automated way to test for this bug.  The manual steps are here in
 [documentation/testing-txt-records.md](testing-txt-records.md)
 
+## Step 9: Update docs, CICD and other files
 
-## Step 9: Update docs
-
-* Edit `README.md`: Add the provider to the bullet list.
-* Edit `documentation/providers.md`: Add the provider to the provider list.
-* Edit `documentation/SUMMARY.md`: Add the provider to the provider list.
+* Edit `README.md`:
+  * Add the provider to the bullet list.
+* Edit `.github/workflows/pr_test.yml`
+  * Add the name of the provider to the PROVIDERS list.
+* Edit `documentation/providers.md`:
+  * Remove the provider from the `Requested providers` list (near the end of thedoc) (if needed).
+  * Add the new provider to the `Providers with "contributor support"` section.
+* Edit `documentation/SUMMARY.md`:
+  * This file is used to create the Table Of Contents on https://docs.dnscontrol.org
+  * Add the provider to the "Providers" list.
 * Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
-* Edit `OWNERS`: Add the directory name and your GitHub username.
+* Edit `OWNERS`:
+  * Add the directory name and your GitHub username.
 
 ## Step 10: Submit a PR
 
@@ -293,13 +308,28 @@ In the repo root, open `.goreleaser.yml` and add the provider to `Provider-speci
 
 Here are some last-minute things to check before you submit your PR.
 
-1. Run `go generate` to make sure all generated files are fresh.
-2. Make sure all appropriate documentation is current. (See [Step 8](#step-8-manual-tests))
-3. Check that dependencies are current (See [Step 13](#step-13-dependencies))
-4. Re-run the integration test one last time (See [Step 7](#step-7-integration-test))
+1. Run `go generate ./...` to make sure all generated files are fresh.
+2. Make sure the following files were created and/or updated:
+  * `OWNERS`
+  * `README.md`
+  * `.github/workflows/pr_test.yml` (The PROVIDERS list)
+  * `.goreleaser.yml` (Search for "Provider-specific changes")
+  * `documentation/SUMMARY.md`
+  * `documentation/providers.md` (the autogenerated table + the second one; make sure it is removed from the "requested" list)
+  * `documentation/providers/`PROVIDERNAME`.md`
+  * `integrationTest/providers.json`
+  * `providers/_all/all.go`
+3. Verify you're using the most recent version of anything you import.  (See [Step 13](#step-13-dependencies))
+4. Re-run the integration test one last time.
+  * (See [Step 7](#step-7-integration-test)).
+  * Post the results as a comment to your PR.
 5. Re-read the [maintainer's responsibilities](providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
 ## Step 16: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
 2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
+3. If you'd like to have the automated integration tests run for your provider
+   with every PR (a very good thing!), you'll need to contribute a test account
+   and test domain to the project.  Open a Github issue "Add PROVIDERNAME to
+   CI/CD testing" to find out more.
