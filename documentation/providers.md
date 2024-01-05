@@ -56,6 +56,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`PACKETFRAME`](providers/packetframe.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ |
 | [`PORKBUN`](providers/porkbun.md) | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`POWERDNS`](providers/powerdns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
+| [`REALTIMEREGISTER`](providers/realtimeregister.md) | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❔ | ❌ | ✅ | ✅ | ✅ |
 | [`ROUTE53`](providers/route53.md) | ✅ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`RWTH`](providers/rwth.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](providers/softlayer.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
@@ -104,47 +105,48 @@ Expectations of maintainers:
 
 Providers in this category and their maintainers are:
 
-|Name|Maintainer|
-|---|---|
-|[`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md)|@matthewmgamble|
-|[`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)|@svernick|
-|[`AXFRDDNS`](providers/axfrddns.md)|@hnrgrgr|
-|[`CLOUDFLAREAPI`](providers/cloudflareapi.md)|@tresni|
-|[`CLOUDNS`](providers/cloudns.md)|@pragmaton|
-|[`CSCGLOBAL`](providers/cscglobal.md)|@Air-New-Zealand|
-|[`DESEC`](providers/desec.md)|@D3luxee|
-|[`DIGITALOCEAN`](providers/digitalocean.md)|@Deraen|
-|[`DNSIMPLE`](providers/dnsimple.md)|@onlyhavecans|
-|[`DNSMADEEASY`](providers/dnsmadeeasy.md)|@vojtad|
-|[`DNSOVERHTTPS`](providers/dnsoverhttps.md)|@mikenz|
-|[`DOMAINNAMESHOP`](providers/domainnameshop.md)|@SimenBai|
-|[`EASYNAME`](providers/easyname.md)|@tresni|
-|[`EXOSCALE`](providers/exoscale.md)|@pierre-emmanuelJ|
-|[`GANDI_V5`](providers/gandi_v5.md)|@TomOnTime|
-|[`GCORE`](providers/gcore.md)|@xddxdd|
-|[`HEDNS`](providers/hedns.md)|@rblenkinsopp|
-|[`HETZNER`](providers/hetzner.md)|@das7pad|
-|[`HEXONET`](providers/hexonet.md)|@KaiSchwarz-cnic|
-|[`HOSTINGDE`](providers/hostingde.md)|@membero|
-|[`INTERNETBS`](providers/internetbs.md)|@pragmaton|
-|[`INWX`](providers/inwx.md)|@patschi|
-|[`LINODE`](providers/linode.md)|@koesie10|
-|[`LOOPIA`](providers/loopia.md)|@systemcrash|
-|[`LUADNS`](providers/luadns.md)|@riku22|
-|[`NAMECHEAP`](providers/namecheap.md)|@willpower232|
-|[`NETCUP`](providers/netcup.md)|@kordianbruck|
-|[`NETLIFY`](providers/netlify.md)|@SphericalKat|
-|[`NS1`](providers/ns1.md)|@costasd|
-|[`OPENSRS`](providers/opensrs.md)|@philhug|
-|[`ORACLE`](providers/oracle.md)|@kallsyms|
-|[`OVH`](providers/ovh.md)|@masterzen|
-|[`PACKETFRAME`](providers/packetframe.md)|@hamptonmoore|
-|[`POWERDNS`](providers/powerdns.md)|@jpbede|
-|[`ROUTE53`](providers/route53.md)|@tresni|
-|[`RWTH`](providers/rwth.md)|@MisterErwin|
-|[`SOFTLAYER`](providers/softlayer.md)|@jamielennox|
-|[`TRANSIP`](providers/transip.md)|@blackshadev|
-|[`VULTR`](providers/vultr.md)|@pgaskin|
+| Name                                                  | Maintainer        |
+|-------------------------------------------------------|-------------------|
+| [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | @matthewmgamble   |
+| [`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)         | @svernick         |
+| [`AXFRDDNS`](providers/axfrddns.md)                   | @hnrgrgr          |
+| [`CLOUDFLAREAPI`](providers/cloudflareapi.md)         | @tresni           |
+| [`CLOUDNS`](providers/cloudns.md)                     | @pragmaton        |
+| [`CSCGLOBAL`](providers/cscglobal.md)                 | @Air-New-Zealand  |
+| [`DESEC`](providers/desec.md)                         | @D3luxee          |
+| [`DIGITALOCEAN`](providers/digitalocean.md)           | @Deraen           |
+| [`DNSIMPLE`](providers/dnsimple.md)                   | @onlyhavecans     |
+| [`DNSMADEEASY`](providers/dnsmadeeasy.md)             | @vojtad           |
+| [`DNSOVERHTTPS`](providers/dnsoverhttps.md)           | @mikenz           |
+| [`DOMAINNAMESHOP`](providers/domainnameshop.md)       | @SimenBai         |
+| [`EASYNAME`](providers/easyname.md)                   | @tresni           |
+| [`EXOSCALE`](providers/exoscale.md)                   | @pierre-emmanuelJ |
+| [`GANDI_V5`](providers/gandi_v5.md)                   | @TomOnTime        |
+| [`GCORE`](providers/gcore.md)                         | @xddxdd           |
+| [`HEDNS`](providers/hedns.md)                         | @rblenkinsopp     |
+| [`HETZNER`](providers/hetzner.md)                     | @das7pad          |
+| [`HEXONET`](providers/hexonet.md)                     | @KaiSchwarz-cnic  |
+| [`HOSTINGDE`](providers/hostingde.md)                 | @membero          |
+| [`INTERNETBS`](providers/internetbs.md)               | @pragmaton        |
+| [`INWX`](providers/inwx.md)                           | @patschi          |
+| [`LINODE`](providers/linode.md)                       | @koesie10         |
+| [`LOOPIA`](providers/loopia.md)                       | @systemcrash      |
+| [`LUADNS`](providers/luadns.md)                       | @riku22           |
+| [`NAMECHEAP`](providers/namecheap.md)                 | @willpower232     |
+| [`NETCUP`](providers/netcup.md)                       | @kordianbruck     |
+| [`NETLIFY`](providers/netlify.md)                     | @SphericalKat     |
+| [`NS1`](providers/ns1.md)                             | @costasd          |
+| [`OPENSRS`](providers/opensrs.md)                     | @philhug          |
+| [`ORACLE`](providers/oracle.md)                       | @kallsyms         |
+| [`OVH`](providers/ovh.md)                             | @masterzen        |
+| [`PACKETFRAME`](providers/packetframe.md)             | @hamptonmoore     |
+| [`POWERDNS`](providers/powerdns.md)                   | @jpbede           |
+| [`REALTIMEREGISTER`](providers/realtimeregister.md)   | @PJEilers         |
+| [`ROUTE53`](providers/route53.md)                     | @tresni           |
+| [`RWTH`](providers/rwth.md)                           | @MisterErwin      |
+| [`SOFTLAYER`](providers/softlayer.md)                 | @jamielennox      |
+| [`TRANSIP`](providers/transip.md)                     | @blackshadev      |
+| [`VULTR`](providers/vultr.md)                         | @pgaskin          |
 
 ### Requested providers
 

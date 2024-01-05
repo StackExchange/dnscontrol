@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type realtimeregisterApi struct {
+type realtimeregisterAPI struct {
 	apikey      string
 	endpoint    string
 	Zones       map[string]*Zone //cache
@@ -27,7 +27,7 @@ type Domain struct {
 type Zone struct {
 	Name    string   `json:"name,omitempty"`
 	Service string   `json:"service,omitempty"`
-	Id      int      `json:"id,omitempty"`
+	ID      int      `json:"id,omitempty"`
 	Records []Record `json:"records"`
 	Dnssec  bool     `json:"dnssec"`
 }
@@ -42,10 +42,10 @@ type Record struct {
 
 const (
 	endpoint        = "https://api.yoursrs.com/v2"
-	endpointSandbox = "https://api.yoursrs-ote.com/v2"
+	endpointSandbox = "http://localhost:8080/srs/services"
 )
 
-func (api *realtimeregisterApi) request(method string, url string, body io.Reader) ([]byte, error) {
+func (api *realtimeregisterAPI) request(method string, url string, body io.Reader) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest(
 		method,
@@ -65,14 +65,14 @@ func (api *realtimeregisterApi) request(method string, url string, body io.Reade
 	bodyString, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("realtime Register API error on request: %d, %s, %s", resp.StatusCode,
-			url, string(bodyString))
+		return nil, fmt.Errorf("realtime Register API error on request to %s: %d, %s", url, resp.StatusCode,
+			string(bodyString))
 	}
 
 	return bodyString, nil
 }
 
-func (api *realtimeregisterApi) getZone(domain string) (*Zone, error) {
+func (api *realtimeregisterAPI) getZone(domain string) (*Zone, error) {
 	zones, err := api.getDomainZones(domain)
 	if err != nil {
 		return nil, err
@@ -87,16 +87,15 @@ func (api *realtimeregisterApi) getZone(domain string) (*Zone, error) {
 	return &zones.Entities[0], nil
 }
 
-func (api *realtimeregisterApi) getDomainZones(domain string) (*Zones, error) {
+func (api *realtimeregisterAPI) getDomainZones(domain string) (*Zones, error) {
 
 	url := fmt.Sprintf(api.endpoint+"/dns/zones?name=%s&service=%s", domain, api.ServiceType)
 
 	return api.getZones(url)
 }
 
-func (api *realtimeregisterApi) getAllZones() ([]string, error) {
-
-	url := api.endpoint + "/dns/zones?export=true&fields=id,name"
+func (api *realtimeregisterAPI) getAllZones() ([]string, error) {
+	url := fmt.Sprintf(api.endpoint+"/dns/zones?service=%s&export=true&fields=id,name", api.ServiceType)
 
 	zones, err := api.getZones(url)
 	if err != nil {
@@ -112,12 +111,16 @@ func (api *realtimeregisterApi) getAllZones() ([]string, error) {
 	return zoneNames, nil
 }
 
-func (api *realtimeregisterApi) getZones(url string) (*Zones, error) {
+func (api *realtimeregisterAPI) getZones(url string) (*Zones, error) {
 	bodyBytes, err := api.request(
 		"GET",
 		url,
 		nil,
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	respData := &Zones{}
 	err = json.Unmarshal(bodyBytes, &respData)
@@ -128,7 +131,7 @@ func (api *realtimeregisterApi) getZones(url string) (*Zones, error) {
 	return respData, nil
 }
 
-func (api *realtimeregisterApi) createZone(domain string) error {
+func (api *realtimeregisterAPI) createZone(domain string) error {
 	zone := &Zone{
 		Records: []Record{},
 		Name:    domain,
@@ -143,7 +146,7 @@ func (api *realtimeregisterApi) createZone(domain string) error {
 	return nil
 }
 
-func (api *realtimeregisterApi) zoneExists(domain string) (bool, error) {
+func (api *realtimeregisterAPI) zoneExists(domain string) (bool, error) {
 	if api.Zones[domain] != nil {
 		return true, nil
 	}
@@ -154,7 +157,7 @@ func (api *realtimeregisterApi) zoneExists(domain string) (bool, error) {
 	return len(zones.Entities) > 0, nil
 }
 
-func (api *realtimeregisterApi) getDomainNameservers(domainName string) ([]string, error) {
+func (api *realtimeregisterAPI) getDomainNameservers(domainName string) ([]string, error) {
 	respData, err := api.request(
 		"GET",
 		fmt.Sprintf(api.endpoint+"/domains/%s", domainName),
@@ -171,14 +174,14 @@ func (api *realtimeregisterApi) getDomainNameservers(domainName string) ([]strin
 	return domain.Nameservers, nil
 }
 
-func (api *realtimeregisterApi) updateZone(domain string, body *Zone) error {
+func (api *realtimeregisterAPI) updateZone(domain string, body *Zone) error {
 	return api.createOrUpdateZone(
 		body,
-		fmt.Sprintf(api.endpoint+"/dns/zones/%d/update", api.Zones[domain].Id),
+		fmt.Sprintf(api.endpoint+"/dns/zones/%d/update", api.Zones[domain].ID),
 	)
 }
 
-func (api *realtimeregisterApi) updateNameservers(domainName string, nameservers []string) error {
+func (api *realtimeregisterAPI) updateNameservers(domainName string, nameservers []string) error {
 	domain := &Domain{
 		Nameservers: nameservers,
 	}
@@ -200,7 +203,7 @@ func (api *realtimeregisterApi) updateNameservers(domainName string, nameservers
 	return nil
 }
 
-func (api *realtimeregisterApi) createOrUpdateZone(body *Zone, url string) error {
+func (api *realtimeregisterAPI) createOrUpdateZone(body *Zone, url string) error {
 	bodyBytes, err := json.Marshal(body)
 
 	if err != nil {

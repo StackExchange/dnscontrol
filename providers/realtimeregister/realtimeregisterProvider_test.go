@@ -11,6 +11,6 @@ func TestRemoveEscapeChars(t *testing.T) {
 }
 
 func TestAddEscapeChars(t *testing.T) {
-	cleanedString := addEscapeChars("\\\"")
-	assert.Equal(t, "\\\\\\\"", cleanedString)
+	addedString := addEscapeChars("\\\"")
+	assert.Equal(t, "\\\\\\\"", addedString)
 }

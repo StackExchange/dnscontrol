@@ -140,6 +140,7 @@
     * [Packetframe](providers/packetframe.md)
     * [Porkbun](providers/porkbun.md)
     * [PowerDNS](providers/powerdns.md)
+    * [Realtime Register](providers/realtimeregister.md)
     * [RWTH DNS-Admin](providers/rwth.md)
     * [SoftLayer DNS](providers/softlayer.md)
     * [TransIP](providers/transip.md)
