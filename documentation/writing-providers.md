@@ -122,7 +122,7 @@ Directory names should be consitent.  It should be all lowercase and match the A
 ## Step 4: Activate the driver
 
 Edit
-[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/master/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
@@ -163,7 +163,7 @@ Integration tests use a test account and a test domain.
 All records will be deleted from the test domain!  Use a OTE domain or a real domain that isn't otherwise in use and can be destroyed.
 {% endhint %}
 
-* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json):
+* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/main/integrationTest/providers.json):
   * Add the `creds.json` info required for this provider in the form of environment variables.
 
 Now you can run the integration tests.
