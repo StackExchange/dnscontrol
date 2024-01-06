@@ -2,18 +2,18 @@
 
 ## Where are the docs?
 
-TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
+TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
 
 **The two websites**
 
 1. <https://dnscontrol.org/>
    * The main website
-   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
+   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs)
    * Mostly "marketing" for the project.
    * Rarely changes.  Updated via GitHub "pages" feature.
 2. <https://docs.dnscontrol.org/>
    * Project documentation
-   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
+   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation)
    * Users and developer documentation
    * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
@@ -21,10 +21,10 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
 
 Within the git repo, docs are grouped:
 
-* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation): general docs
-* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/providers/): One file per provider
-* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/functions/): One file per `dnsconfig.js` language feature
-* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/assets/): Images for page FOO(PNGs only, please!)
+* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation): general docs
+* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/providers/): One file per provider
+* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/functions/): One file per `dnsconfig.js` language feature
+* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
 
 ## How to add a new page?
 
