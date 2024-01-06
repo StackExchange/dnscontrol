@@ -38,6 +38,11 @@
     "TYPE": "BIND",
     "domain": "$BIND_DOMAIN"
   },
+  "BUNNY_DNS": {
+    "TYPE": "BUNNY_DNS",
+    "domain": "$BUNNY_DNS_DOMAIN",
+    "api_key": "$BUNNY_DNS_API_KEY"
+  },
   "CLOUDFLAREAPI": {
     "TYPE": "CLOUDFLAREAPI",
     "accountid": "$CLOUDFLAREAPI_ACCOUNTID",

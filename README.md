@@ -23,6 +23,7 @@ Currently supported DNS providers:
 - Azure DNS
 - Azure Private DNS
 - BIND
+- Bunny DNS
 - Cloudflare
 - ClouDNS
 - deSEC
