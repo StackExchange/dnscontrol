@@ -197,7 +197,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
-		UnknownType      string            `json:"unknown_type,omitempty"`
+		UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 
 		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
 
