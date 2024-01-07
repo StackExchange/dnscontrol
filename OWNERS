@@ -4,6 +4,7 @@ providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/azureprivatedns @matthewmgamble
 providers/bind @tlimoncelli
+providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton
 providers/cscglobal @mikenz
@@ -13,6 +14,7 @@ providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
 providers/domainnameshop @SimenBai
+providers/dynadot @e-im
 providers/easyname @tresni
 providers/exoscale @pierre-emmanuelJ
 providers/gandiv5 @TomOnTime

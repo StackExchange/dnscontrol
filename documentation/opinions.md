@@ -37,17 +37,17 @@ coworkers who aren't DNS experts.
 
 Things your coworkers should not have to know:
 
-Your coworkers should not have to know obscure DNS technical
+- Your coworkers should not have to know obscure DNS technical
 knowledge.  That's your job.
 
-Your coworkers should not have to know what happens in ambiguous
+- Your coworkers should not have to know what happens in ambiguous
 situations.  That's your job.
 
-Your coworkers should be able to submit PRs to `dnsconfig.js` for you
+- Your coworkers should be able to submit PRs to `dnsconfig.js` for you
 to approve; preferably via a CI system that does rudimentary checks
 before you even have to see the PR.
 
-Your coworkers should be able to figure out the language without
+- Your coworkers should be able to figure out the language without
 much training. The system should block them from doing dangerous
 things (even if they are technically legal).
 

@@ -23,6 +23,7 @@ Currently supported DNS providers:
 - Azure DNS
 - Azure Private DNS
 - BIND
+- Bunny DNS
 - Cloudflare
 - ClouDNS
 - deSEC
@@ -64,6 +65,7 @@ Currently supported Domain Registrars:
 - AWS Route 53
 - CSC Global
 - DNSOVERHTTPS
+- Dynadot
 - easyname
 - Gandi
 - HEXONET
