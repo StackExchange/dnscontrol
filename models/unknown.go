@@ -6,5 +6,4 @@ func MakeUnknown(rc *RecordConfig, rtype string, contents string, origin string)
 	rc.target = contents
 
 	return nil
-	//return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)", rtype, contents, origin)
 }
