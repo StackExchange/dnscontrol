@@ -129,7 +129,7 @@ type RecordConfig struct {
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
-	UnknownType      string            `json:"unknown_type,omitempty"`
+	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -320,6 +320,8 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		r := txtutil.EncodeQuoted(rc.target)
 		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
+	case "UNKNOWN":
+		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	}
 	return rc.GetTargetCombined()
 }

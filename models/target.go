@@ -45,6 +45,7 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
+
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
@@ -60,7 +61,10 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		}
 	}
 
+	// Everything else
 	switch rc.Type {
+	case "UNKNOWN":
+		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	case "TXT":
 		return rc.zoneFileQuoted()
 	case "SOA":

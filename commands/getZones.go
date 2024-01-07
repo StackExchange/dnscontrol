@@ -286,8 +286,12 @@ func GetZone(args GetZoneArgs) error {
 					}
 				}
 
+				ty := rec.Type
+				if rec.Type == "UNKNOWN" {
+					ty = rec.UnknownTypeName
+				}
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombinedFunc(nil), cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfproxy)
 			}
 
 		default:
@@ -402,6 +406,6 @@ func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 	return rec.Type + "(" + strings.Join(items, ", ") + ")"
 }
 
-func makeUknown(rec *models.RecordConfig, ttl uint32) string {
-	return ""
+func makeUknown(rc *models.RecordConfig, ttl uint32) string {
+	return fmt.Sprintf(`// %s("%s")`, rc.UnknownTypeName, rc.GetTargetField())
 }
