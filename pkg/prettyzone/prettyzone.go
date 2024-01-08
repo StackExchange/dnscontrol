@@ -137,6 +137,9 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// type
 		typeStr := rr.Type
+		if rr.Type == "UNKNOWN" {
+			typeStr = rr.UnknownTypeName
+		}
 
 		// the remaining line
 		target := rr.GetTargetCombinedFunc(txtutil.EncodeQuoted)
