@@ -114,12 +114,14 @@ The `*_DOMAIN` variable is stored as a "variable" while the others are stored as
 2. On the "Variables" tab, add `*_DOMAIN` with the name of a test domain. This domain must already exist in the account. The DNS records of the domain will be deleted, so please use a test domain or other disposable domain.
 
 {% hint style="info" %}
-For the main project, variables are added here: [https://github.com/StackExchange/dnscontrol/settings/variables/actions](https://github.com/StackExchange/dnscontrol/settings/variables/actions)
+For the main project, **variables** are added here: [https://github.com/StackExchange/dnscontrol/settings/variables/actions](https://github.com/StackExchange/dnscontrol/settings/variables/actions)
 {% endhint %}
 
 3. On the "Secrets" tab, add the other env variables.
 
-Note: For the main project, secrets are added here: https://github.com/StackExchange/dnscontrol/settings/secrets/actions
+{% hint style="info" %}
+For the main project, **secrets** are added here: [https://github.com/StackExchange/dnscontrol/settings/secrets/actions](https://github.com/StackExchange/dnscontrol/settings/secrets/actions)
+{% endhint %}
 
 If you have forked the project, add these to the settings of that fork.
 
