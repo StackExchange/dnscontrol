@@ -322,7 +322,7 @@ Here are some last-minute things to check before you submit your PR.
 4. Re-run the integration test one last time.
     * (See [Step 7](#step-7-integration-test)).
   * Post the results as a comment to your PR.
-5. Re-read the [maintainer's responsibilities](providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
+5. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
 ## Step 16: After the PR is merged
 
