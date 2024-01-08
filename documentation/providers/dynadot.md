@@ -10,7 +10,7 @@ Example:
 {% code title="creds.json" %}
 ```json
 {
-  "easyname": {
+  "dynadot": {
     "TYPE": "DYNADOT",
     "key": "API Key",
   }
