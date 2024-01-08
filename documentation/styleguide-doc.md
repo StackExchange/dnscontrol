@@ -218,6 +218,12 @@ Blah blah blah <https://www.google.com> blah blah.
 Blah blah blah [a search engine](https://www.google.com) blah blah.
 ```
 
+## Other notes
+
+* Capitalization matters:
+  * GitHub
+  * DNSControl
+
 ## Proofreading
 
 Please spellcheck documents before submitting a PR.
