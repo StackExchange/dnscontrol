@@ -115,7 +115,7 @@ The `*_DOMAIN` variable is stored as a "variable" while the others are stored as
 
 Note: For the main project, variables are added here: https://github.com/StackExchange/dnscontrol/settings/variables/actions
 
-2. On the "Secrets" tab, add the other env variables.
+3. On the "Secrets" tab, add the other env variables.
 
 Note: For the main project, secrets are added here: https://github.com/StackExchange/dnscontrol/settings/secrets/actions
 
