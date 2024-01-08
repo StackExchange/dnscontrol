@@ -218,7 +218,6 @@ an automated way to test for this bug.  The manual steps are here in
   * Remove the provider from the `Requested providers` list (near the end of the doc) (if needed).
   * Add the new provider to the [Providers with "contributor support"](providers.md#providers-with-contributor-support) section.
 * Edit `documentation/SUMMARY.md`:
-  * This file is used to create the Table Of Contents on https://docs.dnscontrol.org
   * Add the provider to the "Providers" list.
 * Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit `OWNERS`:
