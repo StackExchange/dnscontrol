@@ -20,6 +20,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`AZURE_DNS`](providers/azure_dns.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | ✅ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`BIND`](providers/bind.md) | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| [`BUNNY_DNS`](providers/bunny_dns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](providers/cloudns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`CSCGLOBAL`](providers/cscglobal.md) | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ✅ |
@@ -29,6 +30,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`DNSMADEEASY`](providers/dnsmadeeasy.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](providers/dnsoverhttps.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](providers/domainnameshop.md) | ❌ | ✅ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ |
+| [`DYNADOT`](providers/dynadot.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | [`EASYNAME`](providers/easyname.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | [`EXOSCALE`](providers/exoscale.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ |
 | [`GANDI_V5`](providers/gandi_v5.md) | ❌ | ✅ | ✅ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ |
@@ -110,6 +112,7 @@ Providers in this category and their maintainers are:
 | [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | @matthewmgamble   |
 | [`AKAMAIEDGEDNS`](providers/akamaiedgedns.md)         | @svernick         |
 | [`AXFRDDNS`](providers/axfrddns.md)                   | @hnrgrgr          |
+| [`BUNNY_DNS`](providers/bunny_dns.md)                 | @ppmathis         |
 | [`CLOUDFLAREAPI`](providers/cloudflareapi.md)         | @tresni           |
 | [`CLOUDNS`](providers/cloudns.md)                     | @pragmaton        |
 | [`CSCGLOBAL`](providers/cscglobal.md)                 | @Air-New-Zealand  |
@@ -155,11 +158,11 @@ code to support this provider, we'd be glad to help in any way.
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
-* [BunnyDNS](https://github.com/StackExchange/dnscontrol/issues/2265)(#2265)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
+* [GoDaddy](https://github.com/StackExchange/dnscontrol/issues/2596) (#2596)
 * [Imperva](https://github.com/StackExchange/dnscontrol/issues/1484) (#1484)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)

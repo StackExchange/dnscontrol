@@ -1,4 +1,4 @@
-package dnsimple
+package bunnydns
 
 import (
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -10,16 +10,8 @@ import (
 // supported, an empty list is returned.
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
-
-	a.Add("MX", rejectif.MxNull) // Last verified 2023-03
-
-	a.Add("TXT", rejectif.TxtLongerThan(1000)) // Last verified 2023-12
-
-	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-03
-
-	a.Add("TXT", rejectif.TxtHasUnpairedDoubleQuotes) // Last verified 2023-03
-
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-03
+	a.Add("TXT", rejectif.TxtIsEmpty)       // Last verified 2024-01-02
+	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2024-01-02
 
 	return a.Audit(records)
 }
