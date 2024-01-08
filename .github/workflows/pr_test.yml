@@ -102,6 +102,7 @@ jobs:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
 
+      # PROVIDER DOMAIN LIST
       # These providers will be tested if the env variable is set.
       # Set it to the domain name to use during the test.
       AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
@@ -121,6 +122,7 @@ jobs:
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
+      # PROVIDER SECRET LIST
       # The above providers have additional env variables they
       # need for credentials and such.
 
