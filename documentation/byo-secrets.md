@@ -41,7 +41,7 @@ gets its secrets from TomOnTime's secrets.
 Our automated integration tests leverages this info to have tests
 only run if they have access to the secrets they will need.
 
-# How tests are selected.
+# How tests are selected
 
 Tests are executed if the env variable`*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
 unset, the test is skipped.
