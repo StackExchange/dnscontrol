@@ -123,7 +123,7 @@ If you have forked the project, add these to the settings of that fork.
 
 Step 4. Submit this PR like any other.
 
-Github Actions should kick and and run the tests.
+GitHub Actions should kick and and run the tests.
 
 The tests will fail if a secret is wrong or missing.  It may take a few iterations to get everything working because... computers.
 
