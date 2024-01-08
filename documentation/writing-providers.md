@@ -10,6 +10,8 @@ assigned bugs related to the provider in the future (unless
 you designate someone else as the maintainer). More details
 [here](providers.md).
 
+Please follow the [DNSControl Code Style Guide](https://docs.dnscontrol.org/developer-info/styleguide-code) and the [DNSControl Documentation Style Guide](https://docs.dnscontrol.org/developer-info/styleguide-doc).
+
 ## Overview
 
 I'll ignore all the small stuff and get to the point.
@@ -62,10 +64,11 @@ you write the DnsProvider first, release it, and then write the
 Registrar if needed.
 
 If you have any questions, please discuss them in the GitHub issue
-related to the request for this provider. Please let us know what
+related to the request for this provider.
+
+This document is constantly being updated.  Please let us know what
 was confusing so we can update this document with advice for future
-authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/documentation/writing-providers.md)
-yourself.)
+authors (or even better send a PR!).
 
 ## Step 2: Pick a base provider
 
@@ -151,18 +154,17 @@ Run the unit tests with this command:
 
     go test ./...
 
-
 ## Step 7: Integration Test
 
 This is the most important kind of testing when adding a new provider.
-Integration tests use a test account and a real domain.
+Integration tests use a test account and a test domain.
+
+{% hint style="danger" %}
+All records will be deleted from the test domain!  Use a OTE domain or a real domain that isn't otherwise in use and can be destroyed.
+{% endhint %}
 
 * Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json):
   * Add the `creds.json` info required for this provider in the form of environment variables.
-
-WARNING: The integration test requires a DNS zone it can update.  All records
-will be removed so please use a OTE domain, or a real domain that isn't
-otherwise in use and can be destroyed.
 
 Now you can run the integration tests.
 
@@ -179,7 +181,7 @@ go test -v -verbose -provider BIND
 This will run the tests on Amazon AWS Route53:
 
 ```shell
-export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
+export R53_DOMAIN='dnscontroltest-r53.com'    # Use a test domain.
 export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
 cd integrationTest              # NOTE: Not needed if already there
@@ -201,8 +203,9 @@ Some useful `go test` flags:
   * Example:  `go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
 * If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
 
-
 ## Step 8: Manual tests
+
+This is optional.
 
 There is a potential bug in how TXT records are handled. Sadly we haven't found
 an automated way to test for this bug.  The manual steps are here in
@@ -219,20 +222,17 @@ an automated way to test for this bug.  The manual steps are here in
   * Add the new provider to the [Providers with "contributor support"](providers.md#providers-with-contributor-support) section.
 * Edit `documentation/SUMMARY.md`:
   * Add the provider to the "Providers" list.
-* Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
+* Create `documentation/providers/PROVIDERNAME.md`:
+  * Use one of the other files in that directory as a base.
 * Edit `OWNERS`:
   * Add the directory name and your GitHub username.
 
-## Step 10: Submit a PR
+{% hint style="success" %}
+**Need feedback?** Submit a draft PR!  It's a great way to get early feedback, ask about fixing
+a particular integration test, or request feedback.
+{% endhint %}
 
-At this point you can submit a PR.
-
-Actually you can submit the PR even earlier if you just want feedback,
-input, or have questions.  This is just a good stopping place to
-submit a PR if you haven't already.
-
-
-## Step 11: Capabilities
+## Step 9: Capabilities
 
 Some DNS providers have features that others do not.  For example some
 support the SRV record.  A provider announces what it can do using
@@ -265,10 +265,9 @@ you want to implement.
 FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
+## Step 10: Automated code tests
 
-## Step 12: Clean up
-
-Run "go vet" and ["staticcheck"](https://staticcheck.io/) and clean up any errors found.
+Run `go vet` and [`staticcheck`](https://staticcheck.io/) and clean up any errors found.
 
 ```shell
 go vet ./...
@@ -290,42 +289,46 @@ go install golang.org/x/lint/golint
 golint ./...
 ```
 
-
-## Step 13: Dependencies
+## Step 11: Dependencies
 
 See [documentation/release-engineering.md](release-engineering.md)
 for tips about managing modules and checking for outdated
 dependencies.
 
-
-## Step 14: Modify the release regexp
+## Step 12: Modify the release regexp
 
 In the repo root, open `.goreleaser.yml` and add the provider to `Provider-specific changes` regexp.
 
+## Step 13: Check your work
 
-## Step 15: Check your work
-
-Here are some last-minute things to check before you submit your PR.
+These are the things we'll be checking when you submit the PR.  Please try to complete all or as many of these as possible.
 
 1. Run `go generate ./...` to make sure all generated files are fresh.
 2. Make sure the following files were created and/or updated:
   * `OWNERS`
   * `README.md`
   * `.github/workflows/pr_test.yml` (The PROVIDERS list)
-  * `.goreleaser.yml` (Search for "Provider-specific changes")
+  * `.goreleaser.yml` (Search for `Provider-specific changes`)
   * `documentation/SUMMARY.md`
-  * `documentation/providers.md` (the autogenerated table + the second one; make sure it is removed from the "requested" list)
+  * `documentation/providers.md` (the autogenerated table + the second one; make sure it is removed from the `requested` list)
   * `documentation/providers/`PROVIDERNAME`.md`
   * `integrationTest/providers.json`
     * `providers/_all/all.go`
-3. Verify you're using the most recent version of anything you import.  (See [Step 13](#step-13-dependencies))
-4. Re-run the integration test one last time.
-    * (See [Step 7](#step-7-integration-test)).
+3. Review the code for style issues, remove debug statements, make sure all exported functions have a comment, and generally tighten up the code.
+4. Verify you're using the most recent version of anything you import.  (See [Step 13](#step-11-dependencies))
+5. Re-run the [integration test](#step-7-integration-test) one last time.
   * Post the results as a comment to your PR.
-5. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
+6. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
-## Step 16: After the PR is merged
+## Step 14: Submit a PR
 
-1. Remove the "provider-request" label from the PR.
-2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
+At this point you can submit a PR.
+
+Actually you can submit the PR even earlier if you just want feedback,
+input, or have questions.  This is just a good stopping place to
+submit a PR if you haven't already.
+
+## Step 15: After the PR is merged
+
+1. Close any related GitHub issues.
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)

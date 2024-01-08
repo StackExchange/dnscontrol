@@ -70,7 +70,7 @@ Break lines every 80 chars.
 
 Include a blank line between paragraphs.
 
-Leave one blank line before and after a heading.
+Leave exactly one blank line before and after a heading.
 
 JavaScript code should use double quotes (`"`) for strings, not single quotes
 (`'`).  They are equivalent but consistency is good.
@@ -218,11 +218,12 @@ Blah blah blah <https://www.google.com> blah blah.
 Blah blah blah [a search engine](https://www.google.com) blah blah.
 ```
 
-## Other notes
+## Capitalization matters
 
-* Capitalization matters:
-  * GitHub
+Please capitalize these terms as you see them here:
+
   * DNSControl
+  * GitHub
 
 ## Proofreading
 

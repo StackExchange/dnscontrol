@@ -41,7 +41,7 @@ gets its secrets from TomOnTime's secrets.
 Our automated integration tests leverages this info to have tests
 only run if they have access to the secrets they will need.
 
-# How tests are selected
+# Which providers are selected for testing?
 
 Tests are executed if the env variable`*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
 unset, the test is skipped.
@@ -113,7 +113,9 @@ The `*_DOMAIN` variable is stored as a "variable" while the others are stored as
 
 2. On the "Variables" tab, add `*_DOMAIN` with the name of a test domain. This domain must already exist in the account. The DNS records of the domain will be deleted, so please use a test domain or other disposable domain.
 
-Note: For the main project, variables are added here: https://github.com/StackExchange/dnscontrol/settings/variables/actions
+{% hint style="info" %}
+For the main project, variables are added here: [https://github.com/StackExchange/dnscontrol/settings/variables/actions](https://github.com/StackExchange/dnscontrol/settings/variables/actions)
+{% endhint %}
 
 3. On the "Secrets" tab, add the other env variables.
 
@@ -147,17 +149,19 @@ For actual DNS domains, please select the "private registration" option if it
 is available. Otherwise you will get spam phones calls and emails. The phone
 calls will make you wish you didn't own a phone.
 
+{% hint style="danger" %}
 Some rules:
 
 * The account/credentials should only access the test domain. Don't send your company's actual credentials and trust us to only touch the test domain. (this hasn't happened yet, thankfully!)
 * Renew the domain in a timely manner. This may be monitoring an email inbox you don't normally monitor.
 * Don't do anything that will get you in trouble with your employer, like charging it to your employer without permission. (this hasn't happend yet either, thankfully!)
+{% endhint %}
 
 Now that we've covered all that...
 
 Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  Write that you understand the above rules and would like to volunteer to maintain the credentials and account.
 
-To securely send the credentials to the project, use this link: https://transfer.secretoverflow.com/u/tlimoncelli
+To securely send the credentials to the project, use this link: [https://transfer.secretoverflow.com/u/tlimoncelli](https://transfer.secretoverflow.com/u/tlimoncelli)
 
 You'll hear back within a week.
 
