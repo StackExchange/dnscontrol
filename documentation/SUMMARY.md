@@ -104,7 +104,7 @@
     * [Azure DNS](providers/azure_dns.md)
     * [Azure Private DNS](providers/azure_private_dns.md)
     * [BIND](providers/bind.md)
-    * [Bunny DNS](providers/bunny_dns.md)
+    * [Bunny DNS](providers/bunny\_dns.md)
     * [Cloudflare](providers/cloudflareapi.md)
     * [ClouDNS](providers/cloudns.md)
     * [CSC Global](providers/cscglobal.md)
