@@ -170,3 +170,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 The website: [https://docs.dnscontrol.org/](https://docs.dnscontrol.org/)
 
 The getting started guide: [https://docs.dnscontrol.org/getting-started/getting-started](https://docs.dnscontrol.org/getting-started/getting-started)
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/StackExchange/dnscontrol.svg?variant=adaptive)](https://starchart.cc/StackExchange/dnscontrol)
