@@ -55,6 +55,7 @@ Currently supported DNS providers:
 - Packetframe
 - Porkbun
 - PowerDNS
+- Realtime Register
 - RWTH DNS-Admin
 - SoftLayer
 - TransIP
@@ -76,6 +77,7 @@ Currently supported Domain Registrars:
 - Name.com
 - OpenSRS
 - OVH
+- Realtime Register
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
