@@ -21,8 +21,8 @@ indicating the use of the sandbox environment
 ```
 {% endcode %}
 
-If sandbox is omitted or set to any other value than 1 the production API will be used.
-If premiunm is set to "1", you will only be able to update zones using Premium DNS. If it is set to any other value, you
+If sandbox is omitted or set to any other value than "1" the production API will be used.
+If premium is set to "1", you will only be able to update zones using Premium DNS. If it is omitted or set to any other value, you
 will only be able to update zones using Basic DNS.
 
 **Important Notes**:

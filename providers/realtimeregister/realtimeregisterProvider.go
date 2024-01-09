@@ -29,6 +29,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Cannot(),
 	providers.CanUseDS:               providers.Cannot("Only for subdomains"),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
