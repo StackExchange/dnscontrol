@@ -1,23 +1,17 @@
 # Bring-Your-Own-Secrets for automated testing
 
 Goal: Enable automated integration testing without accidentally
-leaking our API keys and other secrets; at the same time permit anyone
-to automate their own tests without having to share their API keys and
-secrets.
+leaking credentials (API keys and other secrets); at the same time permit everyone
+to automate their own tests without having to share their credentials.
+
+The instructions in this document will enable automated tests to run in these situations:
 
 * PR from a project member:
-  * Automated tests run for a long list of providers. All officially supported
-    providers have automated tests, plus a few others too.
-* PR from an external person
-  * Automated tests run for a short list of providers. Any test that
-    requires secrets are skipped in the fork. They will run after the fact though
-    once the PR has been merged to into the `master` branch of StackExchange/dnscontrol.
-* PR from an external person that wants automated tests for their
-  provider.
-  * They can set up secrets in their own GitHub account for any tests
-    they'd like to automate without sharing their secrets.
-  * Note: These tests can always be run outside of GitHub at the
-    command line.
+  * All officially supported providers plus many others too.
+* PR from an external people:
+  * Automated tests run for providers that don't require secrets, which is currently only `BIND`.
+* PR on a fork of DNSControl:
+  * The forker can set up secrets in their fork and only those providers with secrets will be tested. They can "set it and forget it" and all their future PRs will receive all the benefits of automated testing.
 
 # Background: How GitHub Actions protects secrets
 
@@ -47,16 +41,16 @@ gets its secrets from TomOnTime's secrets.
 Our automated integration tests leverages this info to have tests
 only run if they have access to the secrets they will need.
 
-# How it works
+# Which providers are selected for testing?
 
-Tests are executed if `*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
+Tests are executed if the env variable`*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
 unset, the test is skipped.
 For example, if a provider is called `FANCYDNS`, there must
-be a secret called `FANCYDNS_DOMAIN`.
+be a variable called `FANCYDNS_DOMAIN`.
 
 # Bring your own secrets
 
-This section describes how to add a provider to the testing system.
+This section describes how to add a provider to the "Actions" part of GitHub.
 
 Step 1: Create a branch
 
@@ -64,22 +58,27 @@ Create a branch as you normally would to submit a PR to the project.
 
 Step 2: Update `pr_test.yml`
 
-In this branch, edit `.github/workflows/pr_test.yml`:
+Edit `.github/workflows/pr_test.yml`
 
-1. In the `integration-test-providers` section, the name of the provider.
+1. Add the provider to the `PROVIDERS` list.
 
-Add your provider's name (alphabetically).
+* Add the name of the provider to the PROVIDERS list.
+* Please keep this list sorted alphabetically.
+
 The line looks something like:
 
 {% code title=".github/workflows/pr_test.yml" %}
 ```
-        PROVIDERS: "['BIND','HEXONET','AZURE_DNS','CLOUDFLAREAPI','GCLOUD','NAMEDOTCOM','ROUTE53','CLOUDNS','DIGITALOCEAN','GANDI_V5','HEDNS','INWX','NS1','POWERDNS','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
 ```
 {% endcode %}
 
 2. Add your providers `_DOMAIN` env variable:
 
-Add it to the `env` section of `integration-tests`.
+* Add it to the `env` section of `integration-tests`.
+* Please keep this list sorted alphabetically.
+
+To find this section, search for `PROVIDER SECRET LIST`.
 
 For example, the entry for BIND looks like:
 
@@ -91,7 +90,11 @@ For example, the entry for BIND looks like:
 
 3. Add your providers other ENV variables:
 
-If there are other env variables (for example, for an API key), add that as a "secret".
+Every provider requires different variables set to perform the integration tests.  The list of such variables is in `integrationTest/providers.json`.
+
+You've already added `*_DOMAIN` to `pr_test.yml`. Now we're going to add the remaining ones.
+
+To find this section, search for `PROVIDER SECRET LIST`.
 
 For example, the entry for CLOUDFLAREAPI looks like this:
 
@@ -102,15 +105,66 @@ For example, the entry for CLOUDFLAREAPI looks like this:
 ```
 {% endcode %}
 
-Step 3. Submit this PR like any other.
+Step 3. Add the secrets to the repo.
 
+The `*_DOMAIN` variable is stored as a "variable" while the others are stored as "secrets".
 
-# Caveats
+1. Go to Settings -> Secrets and variables -> Actions.
 
-Sadly there is no locking to prevent two PRs from running the same
-test on the same domain at the same time.  When that happens, both PRs
-running the tests fail. In the future we hope to add some locking.
+2. On the "Variables" tab, add `*_DOMAIN` with the name of a test domain. This domain must already exist in the account. The DNS records of the domain will be deleted, so please use a test domain or other disposable domain.
 
-Also, maintaining a fork requires keeping it up to date. That's a bit
-more Git knowledge than I can describe here.  (I'm not a Git expert by
-any stretch of the imagination!)
+{% hint style="info" %}
+For the main project, **variables** are added here: [https://github.com/StackExchange/dnscontrol/settings/variables/actions](https://github.com/StackExchange/dnscontrol/settings/variables/actions)
+{% endhint %}
+
+3. On the "Secrets" tab, add the other env variables.
+
+{% hint style="info" %}
+For the main project, **secrets** are added here: [https://github.com/StackExchange/dnscontrol/settings/secrets/actions](https://github.com/StackExchange/dnscontrol/settings/secrets/actions)
+{% endhint %}
+
+If you have forked the project, add these to the settings of that fork.
+
+Step 4. Submit this PR like any other.
+
+GitHub Actions should kick and and run the tests.
+
+The tests will fail if a secret is wrong or missing.  It may take a few iterations to get everything working because... computers.
+
+# Donate secrets to the project
+
+The DNSControl project would like to have all providers automatically tested.
+However, we can't fund purchasing domains or maintaining credentials at every
+provider. Instead we depend on volunteers to maintain (and pay for) such
+accounts.
+
+We recommend the domain be named `dnscontroltest-PROVIDER.com` (or similar)
+where PROVIDER is replaced by the name of your provider or an abbreviation. For
+example `dnscontroltest-r53.com` and `dnscontroltest-gcloud.com`.
+
+When possible, use an OTE or free domain. Don't spend money if you don't have
+to. This isn't just to be thrifty! It avoids renewals and other hassles too.
+You'd be surprised at how many providers (such as Google and Azure) permit DNS
+zones to be created in your account without registering them.
+
+For actual DNS domains, please select the "private registration" option if it
+is available. Otherwise you will get spam phones calls and emails. The phone
+calls will make you wish you didn't own a phone.
+
+{% hint style="danger" %}
+Some rules:
+
+* The account/credentials should only access the test domain. Don't send your company's actual credentials and trust us to only touch the test domain. (this hasn't happened yet, thankfully!)
+* Renew the domain in a timely manner. This may be monitoring an email inbox you don't normally monitor.
+* Don't do anything that will get you in trouble with your employer, like charging it to your employer without permission. (this hasn't happend yet either, thankfully!)
+{% endhint %}
+
+Now that we've covered all that...
+
+Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  Write that you understand the above rules and would like to volunteer to maintain the credentials and account.
+
+To securely send the credentials to the project, use this link: [https://transfer.secretoverflow.com/u/tlimoncelli](https://transfer.secretoverflow.com/u/tlimoncelli)
+
+You'll hear back within a week.
+
+Thank you for contributing credentials. The more providers we can test automatically with each PR, the better. It "shifts left" finding bugs and API changes and makes less work for everyone.
