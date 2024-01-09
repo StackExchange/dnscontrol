@@ -93,7 +93,7 @@ type RecordConfig struct {
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
-	// If you add a field to this struct, also add it to the list on MarshalJSON.
+	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -129,6 +129,7 @@ type RecordConfig struct {
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -196,6 +197,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+		UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 
 		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
 
@@ -318,6 +320,8 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		r := txtutil.EncodeQuoted(rc.target)
 		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
+	case "UNKNOWN":
+		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	}
 	return rc.GetTargetCombined()
 }

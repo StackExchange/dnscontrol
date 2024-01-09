@@ -58,6 +58,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`PACKETFRAME`](providers/packetframe.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ |
 | [`PORKBUN`](providers/porkbun.md) | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`POWERDNS`](providers/powerdns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
+| [`REALTIMEREGISTER`](providers/realtimeregister.md) | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
 | [`ROUTE53`](providers/route53.md) | ✅ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | [`RWTH`](providers/rwth.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](providers/softlayer.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
@@ -143,6 +144,7 @@ Providers in this category and their maintainers are:
 |[`OVH`](providers/ovh.md)|@masterzen|
 |[`PACKETFRAME`](providers/packetframe.md)|@hamptonmoore|
 |[`POWERDNS`](providers/powerdns.md)|@jpbede|
+|[`REALTIMEREGISTER`](providers/realtimeregister.md)|@PJEilers|
 |[`ROUTE53`](providers/route53.md)|@tresni|
 |[`RWTH`](providers/rwth.md)|@MisterErwin|
 |[`SOFTLAYER`](providers/softlayer.md)|@jamielennox|

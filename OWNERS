@@ -42,6 +42,7 @@ providers/ovh @masterzen
 providers/packetframe @hamptonmoore
 providers/porkbun @imlonghao
 providers/powerdns @jpbede
+providers/realtimeregister @PJEilers
 providers/route53 @tresni
 providers/rwth @mistererwin
 # providers/softlayer NEEDS VOLUNTEER

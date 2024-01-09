@@ -24,7 +24,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: stable
     - name: restore_cache
@@ -102,6 +102,7 @@ jobs:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
 
+      # PROVIDER DOMAIN LIST
       # These providers will be tested if the env variable is set.
       # Set it to the domain name to use during the test.
       AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
@@ -121,6 +122,7 @@ jobs:
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
+      # PROVIDER SECRET LIST
       # The above providers have additional env variables they
       # need for credentials and such.
 
@@ -201,99 +203,3 @@ jobs:
     - uses: actions/upload-artifact@v3.1.3
       with:
         path: "/tmp/test-results"
-#  release:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: golang:${{ env.gover }}
-#    needs:
-#    - build
-#    env:
-#      DOCKERHUB_ACCESS_TOKEN:
-#      DOCKERHUB_USERNAME:
-#    steps:
-#    - uses: actions/checkout@v4
-##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
-#    - uses: "./.github/actions/docker_check"
-#      with:
-#        docker-password: "${{ secrets.DOCKER_PASSWORD }}"
-#        docker-username: "${{ env.DOCKER_LOGIN }}"
-#    - name: restore_cache
-#      uses: actions/cache@v3.3.2
-#      with:
-#        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-#        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-#    - name: Install goreleaser
-#      run: go install github.com/goreleaser/goreleaser@latest
-#    - run: goreleaser release
-#    - uses: actions/upload-artifact@v3.1.3
-#      with:
-#        path: dist
-#    - uses: actions/upload-artifact@v3.1.3
-#      with:
-#        path: |-
-#          dist/*.rpm
-#          dist/*.deb
-#  upload:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: python:3.10
-#    needs:
-#    - release
-#    env:
-#      CLOUDSMITH_API_KEY:
-#      CLOUDSMITH_USERNAME:
-#      DOCKER_LOGIN:
-#      DOCKER_PASSWORD:
-#    strategy:
-#      matrix:
-#        arch:
-#        - i386
-#        - x86_64
-#        - arm64
-#        format:
-#        distro:
-#    steps:
-#    - uses: actions/download-artifact@v3.0.1
-#      with:
-#        path: "."
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_ensure_api_key:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_install_cli:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_publish:
-#  upload_1:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: python:3.10
-#    needs:
-#    - release
-#    env:
-#      CLOUDSMITH_API_KEY:
-#      CLOUDSMITH_USERNAME:
-#      DOCKER_LOGIN:
-#      DOCKER_PASSWORD:
-#    strategy:
-#      matrix:
-#        arch:
-#        - i386
-#        - amd64
-#        - arm64
-#        format:
-#        distro:
-#    steps:
-#    - uses: actions/download-artifact@v3.0.1
-#      with:
-#        path: "."
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_ensure_api_key:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_install_cli:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_publish:
