@@ -114,7 +114,7 @@ indent_size = 2
 indent_style = space
 
 # Svelte
-# https://github.com/sveltejs/svelte/blob/master/.editorconfig
+# https://github.com/sveltejs/svelte/blob/main/.editorconfig
 [*.svelte]
 indent_size = 2
 indent_style = tab

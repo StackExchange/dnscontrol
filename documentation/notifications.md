@@ -2,7 +2,7 @@
 
 DNSControl has build in support for notifications when changes are made. This allows you to post messages in team chat, or send emails when dns changes are made.
 
-Notifications are written in the [notifications package](https://github.com/StackExchange/dnscontrol/tree/master/pkg/notifications), and is a really simple interface to implement if you want to add
+Notifications are written in the [notifications package](https://github.com/StackExchange/dnscontrol/tree/main/pkg/notifications), and is a really simple interface to implement if you want to add
 new types or destinations.
 
 ## Configuration
