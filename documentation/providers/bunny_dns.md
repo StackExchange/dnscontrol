@@ -19,7 +19,7 @@ Example:
 You can also use environment variables:
 
 ```shell
-export BUNNY_API_KEY=XXXXXXXXX
+export BUNNY_DNS_API_KEY=XXXXXXXXX
 ```
 
 {% code title="creds.json" %}
@@ -27,7 +27,7 @@ export BUNNY_API_KEY=XXXXXXXXX
 {
   "bunny_dns": {
     "TYPE": "BUNNY_DNS",
-    "api_key": "$BUNNY_API_KEY"
+    "api_key": "$BUNNY_DNS_API_KEY"
   }
 }
 ```
