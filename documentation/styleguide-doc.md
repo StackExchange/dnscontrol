@@ -58,9 +58,19 @@ parameter_types:
 * `parameter_types`: The typescript type for each parameter. This is used when generating `types-dnscontrol.d.ts`
 * `provider`: If a feature is only available for one provider
 
-## Documentation previews
+## GitHub pull request preview
 
-> "Preview links are only accessible by GitBook users. We're working on a feature that will allow preview links to be viewable by anyone who accesses the PR." — _[GitBook](https://docs.gitbook.com/product-tour/git-sync/github-pull-request-preview#how-to-access-preview-links)_
+When you submit a GitHub pull request, you can view the result in advance. This allows you to check the impact of changes.
+
+![](assets/styleguide-doc/pull-request-preview.webp)
+
+### How to access preview links
+
+For every pull request, you’ll see a status added to the GitHub pull request with a unique preview URL. Clicking the **Details** link on the status will take you to the preview URL for your content. You can then make sure the content is as expected.
+
+{% hint style="info" %}
+**NOTE**: A new preview URL is created for every git update. Please check the GitHub status for the most up to date URL.
+{% endhint %}
 
 ## Formatting tips
 
