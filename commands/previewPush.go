@@ -77,6 +77,15 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
+	flags = append(flags, &cli.IntFlag{
+		Name:   "reportmax",
+		Hidden: true,
+		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
+		Action: func(ctx *cli.Context, max int) error {
+			printer.MaxReport = max
+			return nil
+		},
+	})
 	flags = append(flags, &cli.Int64Flag{
 		Name:        "bindserial",
 		Destination: &bindserial.ForcedValue,
@@ -211,6 +220,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 						// this is the actual push, ensure domain exists at DSP
 						if err := creator.EnsureZoneExists(domain.Name); err != nil {
 							out.Warnf("Error creating domain: %s\n", err)
+							anyErrors = true
 							continue // continue with next provider, as we couldn't create this one
 						}
 					}

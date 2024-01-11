@@ -2,18 +2,18 @@
 
 ## Where are the docs?
 
-TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
+TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
 
 **The two websites**
 
 1. <https://dnscontrol.org/>
    * The main website
-   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/docs)
+   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs)
    * Mostly "marketing" for the project.
    * Rarely changes.  Updated via GitHub "pages" feature.
 2. <https://docs.dnscontrol.org/>
    * Project documentation
-   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/master/documentation)
+   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation)
    * Users and developer documentation
    * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
@@ -21,10 +21,10 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/master/
 
 Within the git repo, docs are grouped:
 
-* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation): general docs
-* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/providers/): One file per provider
-* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/functions/): One file per `dnsconfig.js` language feature
-* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/master/documentation/assets/): Images for page FOO(PNGs only, please!)
+* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation): general docs
+* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/providers/): One file per provider
+* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/functions/): One file per `dnsconfig.js` language feature
+* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
 
 ## How to add a new page?
 
@@ -58,9 +58,19 @@ parameter_types:
 * `parameter_types`: The typescript type for each parameter. This is used when generating `types-dnscontrol.d.ts`
 * `provider`: If a feature is only available for one provider
 
-## Documentation previews
+## GitHub pull request preview
 
-> "Preview links are only accessible by GitBook users. We're working on a feature that will allow preview links to be viewable by anyone who accesses the PR." — _[GitBook](https://docs.gitbook.com/product-tour/git-sync/github-pull-request-preview#how-to-access-preview-links)_
+When you submit a GitHub pull request, you can view the result in advance. This allows you to check the impact of changes.
+
+![](assets/styleguide-doc/pull-request-preview.webp)
+
+### How to access preview links
+
+For every pull request, you’ll see a status added to the GitHub pull request with a unique preview URL. Clicking the **Details** link on the status will take you to the preview URL for your content. You can then make sure the content is as expected.
+
+{% hint style="info" %}
+**NOTE**: A new preview URL is created for every git update. Please check the GitHub status for the most up to date URL.
+{% endhint %}
 
 ## Formatting tips
 
@@ -70,7 +80,7 @@ Break lines every 80 chars.
 
 Include a blank line between paragraphs.
 
-Leave one blank line before and after a heading.
+Leave exactly one blank line before and after a heading.
 
 JavaScript code should use double quotes (`"`) for strings, not single quotes
 (`'`).  They are equivalent but consistency is good.
@@ -217,6 +227,13 @@ Blah blah blah <https://www.google.com> blah blah.
 ```markdown
 Blah blah blah [a search engine](https://www.google.com) blah blah.
 ```
+
+## Capitalization matters
+
+Please capitalize these terms as you see them here:
+
+  * DNSControl
+  * GitHub
 
 ## Proofreading
 

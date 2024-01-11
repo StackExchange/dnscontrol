@@ -1,21 +1,32 @@
 name: "PR: Run all tests"
 on:
+  # git push origin main:tlim_testpr --force
+  # will trigger a full PR test on the main branch:
+  # https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  push:
+    branches:
+      - 'tlim_testpr'
   pull_request:
   workflow_dispatch:
 
 env:
   cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
   go-mod-path: /go/pkg/mod
+  BIND_DOMAIN: example.com
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.21
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: stable
     - name: restore_cache
       uses: actions/cache@v3.3.2
       with:
@@ -33,16 +44,11 @@ jobs:
       with:
         path: "/tmp/test-results"
 
-# For some reason goreleaser isn't correctly setting the version
-# string used by "dnscontrol version".  Therefore, we're forcing the
-# string using the GORELEASER_CURRENT_TAG feature.
-# TODO(tlim): Use the native gorelease version mechanism.
-    - name: Retrieve version
-      id: version
+# Stringer is needed because .goreleaser includes "go generate ./..."
+    - name: Install stringer
       run: |
-        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe)" >> $GITHUB_OUTPUT
-    - name: Reveal version
-      run: echo ${{ steps.version.outputs.TAG_NAME }}
+        go install golang.org/x/tools/cmd/stringer@latest
+
     -
       id: build_binaries_tagged
       name: Build binaries (if tagged)
@@ -52,19 +58,13 @@ jobs:
         distribution: goreleaser
         version: latest
         args: build
-      env:
-        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
     -
       id: build_binaries_not_tagged
       name: Build binaries (not tagged)
       if: github.ref_type != 'tag'
       uses: goreleaser/goreleaser-action@v5
       with:
-        distribution: goreleaser
-        version: latest
         args: build --snapshot
-      env:
-        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -102,10 +102,12 @@ jobs:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
 
+      # PROVIDER DOMAIN LIST
       # These providers will be tested if the env variable is set.
       # Set it to the domain name to use during the test.
       AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
       BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
+      BUNNY_DNS_DOMAIN: ${{ vars.BUNNY_DNS_DOMAIN }}
       CLOUDFLAREAPI_DOMAIN: ${{ vars.CLOUDFLAREAPI_DOMAIN }}
       CLOUDNS_DOMAIN: ${{ vars.CLOUDNS_DOMAIN }}
       CSCGLOBAL_DOMAIN: ${{ vars.CSCGLOBAL_DOMAIN }}
@@ -120,6 +122,7 @@ jobs:
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
+      # PROVIDER SECRET LIST
       # The above providers have additional env variables they
       # need for credentials and such.
 
@@ -128,6 +131,8 @@ jobs:
       AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP }}
       AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
       AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+
+      BUNNY_DNS_API_KEY: ${{ secrets.BUNNY_DNS_API_KEY }}
 
       CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
       CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
@@ -198,99 +203,3 @@ jobs:
     - uses: actions/upload-artifact@v3.1.3
       with:
         path: "/tmp/test-results"
-#  release:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: golang:${{ env.gover }}
-#    needs:
-#    - build
-#    env:
-#      DOCKERHUB_ACCESS_TOKEN:
-#      DOCKERHUB_USERNAME:
-#    steps:
-#    - uses: actions/checkout@v4
-##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
-#    - uses: "./.github/actions/docker_check"
-#      with:
-#        docker-password: "${{ secrets.DOCKER_PASSWORD }}"
-#        docker-username: "${{ env.DOCKER_LOGIN }}"
-#    - name: restore_cache
-#      uses: actions/cache@v3.3.2
-#      with:
-#        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-#        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-#    - name: Install goreleaser
-#      run: go install github.com/goreleaser/goreleaser@latest
-#    - run: goreleaser release
-#    - uses: actions/upload-artifact@v3.1.3
-#      with:
-#        path: dist
-#    - uses: actions/upload-artifact@v3.1.3
-#      with:
-#        path: |-
-#          dist/*.rpm
-#          dist/*.deb
-#  upload:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: python:3.10
-#    needs:
-#    - release
-#    env:
-#      CLOUDSMITH_API_KEY:
-#      CLOUDSMITH_USERNAME:
-#      DOCKER_LOGIN:
-#      DOCKER_PASSWORD:
-#    strategy:
-#      matrix:
-#        arch:
-#        - i386
-#        - x86_64
-#        - arm64
-#        format:
-#        distro:
-#    steps:
-#    - uses: actions/download-artifact@v3.0.1
-#      with:
-#        path: "."
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_ensure_api_key:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_install_cli:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_publish:
-#  upload_1:
-#    if: # GitHub does not currently support regular expressions inside if conditions
-##         (github.ref == 'refs/tags//v[0-9]+(\.[0-9]+)*(-.*)*/') && (github.ref != 'refs/heads//.*/')
-#    runs-on: ubuntu-latest
-#    container:
-#      image: python:3.10
-#    needs:
-#    - release
-#    env:
-#      CLOUDSMITH_API_KEY:
-#      CLOUDSMITH_USERNAME:
-#      DOCKER_LOGIN:
-#      DOCKER_PASSWORD:
-#    strategy:
-#      matrix:
-#        arch:
-#        - i386
-#        - amd64
-#        - arm64
-#        format:
-#        distro:
-#    steps:
-#    - uses: actions/download-artifact@v3.0.1
-#      with:
-#        path: "."
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_ensure_api_key:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_install_cli:
-##     # This item has no matching transformer
-##     - cloudsmith_cloudsmith_publish:

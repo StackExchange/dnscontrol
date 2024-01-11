@@ -377,7 +377,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *
  * ## Example
  *
- * For example you can use:
+ * ### Simple example
  *
  * ```javascript
  * CAA_BUILDER({
@@ -392,15 +392,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * })
  * ```
  *
- * The parameters are:
- *
- * * `label:` The label of the CAA record. (Optional. Default: `"@"`)
- * * `iodef:` Report all violation to configured mail address.
- * * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
- * * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
- * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
- *
- * `CAA_BUILDER()` returns multiple records (when configured as example above):
+ * `CAA_BUILDER()` builds multiple records:
  *
  * ```javascript
  * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
@@ -409,9 +401,65 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * CAA("@", "issuewild", ";")
  * ```
  *
+ * which in turns yield the following records:
+ *
+ * ```text
+ * @ 300 IN CAA 128 iodef "mailto:test@example.com"
+ * @ 300 IN CAA 0 issue "letsencrypt.org"
+ * @ 300 IN CAA 0 issue "comodoca.com"
+ * @ 300 IN CAA 0 issuewild ";"
+ * ```
+ *
+ * ### Example with CAA_CRITICAL flag on all records
+ *
+ * The same example can be enriched with CAA_CRITICAL on all records:
+ *
+ * ```javascript
+ * CAA_BUILDER({
+ *   label: "@",
+ *   iodef: "mailto:test@example.com",
+ *   iodef_critical: true,
+ *   issue: [
+ *     "letsencrypt.org",
+ *     "comodoca.com",
+ *   ],
+ *   issue_critical: true,
+ *   issuewild: "none",
+ *   issuewild_critical: true,
+ * })
+ * ```
+ *
+ * `CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
+ *
+ * ```javascript
+ * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
+ * CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL)
+ * CAA("@", "issue", "comodoca.com", CAA_CRITICAL)
+ * CAA("@", "issuewild", ";", CAA_CRITICAL)
+ * ```
+ *
+ * which in turns yield the following records:
+ *
+ * ```text
+ * @ 300 IN CAA 128 iodef "mailto:test@example.com"
+ * @ 300 IN CAA 128 issue "letsencrypt.org"
+ * @ 300 IN CAA 128 issue "comodoca.com"
+ * @ 300 IN CAA 128 issuewild ";"
+ * ```
+ *
+ * ### Parameters
+ *
+ * * `label:` The label of the CAA record. (Optional. Default: `"@"`)
+ * * `iodef:` Report all violation to configured mail address.
+ * * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ * * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
+ * * `issue_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
+ * * `issuewild_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder
  */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): DomainModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issue_critical?: boolean; issuewild: string[]; issuewild_critical?: boolean }): DomainModifier;
 
 /**
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
@@ -641,6 +689,21 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/defaults
  */
 declare function DEFAULTS(...modifiers: DomainModifier[]): void;
+
+/**
+ * DHCID adds a DHCID record to the domain.
+ *
+ * Digest should be a string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DHCID("example.com", "ABCDEFG")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dhcid
+ */
+declare function DHCID(name: string, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an

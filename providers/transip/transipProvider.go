@@ -8,7 +8,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
@@ -310,7 +309,7 @@ func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEn
 		Name:    config.Name,
 		Expire:  int(config.TTL),
 		Type:    config.Type,
-		Content: config.GetTargetCombinedFunc(txtutil.EncodeQuoted),
+		Content: config.GetTargetCombinedFunc(nil),
 	}, nil
 }
 
@@ -322,7 +321,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 		Original: entry,
 	}
 	rc.SetLabel(entry.Name, origin)
-	if err := rc.PopulateFromStringFunc(entry.Type, entry.Content, origin, txtutil.ParseQuoted); err != nil {
+	if err := rc.PopulateFromStringFunc(entry.Type, entry.Content, origin, nil); err != nil {
 		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 

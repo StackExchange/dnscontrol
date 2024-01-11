@@ -1,7 +1,7 @@
 package porkbun
 
-func (client *porkbunProvider) ListZones() ([]string, error) {
-	zones, err := client.listAllDomains()
+func (c *porkbunProvider) ListZones() ([]string, error) {
+	zones, err := c.listAllDomains()
 	if err != nil {
 		return nil, err
 	}

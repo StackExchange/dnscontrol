@@ -1478,13 +1478,23 @@ function CAA_BUILDER(value) {
         }
     }
 
-    if (value.issue)
+    if (value.issue) {
+        var flag = function() {};
+        if (value.issue_critical) {
+          flag = CAA_CRITICAL;
+        }
         for (var i = 0, len = value.issue.length; i < len; i++)
-            r.push(CAA(value.label, 'issue', value.issue[i]));
+            r.push(CAA(value.label, 'issue', value.issue[i], flag));
+    }
 
-    if (value.issuewild)
+    if (value.issuewild) {
+        var flag = function() {};
+        if (value.issuewild_critical) {
+          flag = CAA_CRITICAL;
+        }
         for (var i = 0, len = value.issuewild.length; i < len; i++)
-            r.push(CAA(value.label, 'issuewild', value.issuewild[i]));
+            r.push(CAA(value.label, 'issuewild', value.issuewild[i], flag));
+    }
 
     return r;
 }
@@ -1683,7 +1693,7 @@ function M365_BUILDER(name, value) {
         );
     }
 
-    r = [];
+    var r = [];
 
     // MX (default: true)
     if (value.mx) {

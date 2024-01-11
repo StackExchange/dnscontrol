@@ -144,7 +144,7 @@ func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
 	return nil
 }
 
-// Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
+// Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/main/fetch_zone.py#L13)
 func (c *desecProvider) convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
 	printer.Debugf("Header: %s\n", links)

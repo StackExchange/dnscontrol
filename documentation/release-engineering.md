@@ -11,7 +11,7 @@ Please change the version number as appropriate.  Substitute (for example)
 
 ```shell
 export VERSION=v4.2.0
-git checkout master
+git checkout main
 git pull
 go fmt ./...
 go generate ./...
@@ -19,7 +19,7 @@ go mod tidy
 git commit -a -m "Update generated files for $VERSION"
 ```
 
-## Step 2. Tag the commit in master that you want to release
+## Step 2. Tag the commit in main that you want to release
 
 ```shell
 export VERSION=v4.2.0
@@ -152,7 +152,7 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 1. [Fork StackExchange/dnscontrol](https://github.com/StackExchange/dnscontrol/fork) in GitHub.
 
-    If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
+    If you already have a fork, be sure to use the "sync fork" button on the main page to sync with the upstream.
 
 2. In your fork, set the `${DOMAIN}_DOMAIN` variable in GHA via Settings :: Secrets and variables :: Actions :: Variables.
 

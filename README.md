@@ -23,6 +23,7 @@ Currently supported DNS providers:
 - Azure DNS
 - Azure Private DNS
 - BIND
+- Bunny DNS
 - Cloudflare
 - ClouDNS
 - deSEC
@@ -54,6 +55,7 @@ Currently supported DNS providers:
 - Packetframe
 - Porkbun
 - PowerDNS
+- Realtime Register
 - RWTH DNS-Admin
 - SoftLayer
 - TransIP
@@ -64,6 +66,7 @@ Currently supported Domain Registrars:
 - AWS Route 53
 - CSC Global
 - DNSOVERHTTPS
+- Dynadot
 - easyname
 - Gandi
 - HEXONET
@@ -74,6 +77,7 @@ Currently supported Domain Registrars:
 - Name.com
 - OpenSRS
 - OVH
+- Realtime Register
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
@@ -166,3 +170,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 The website: [https://docs.dnscontrol.org/](https://docs.dnscontrol.org/)
 
 The getting started guide: [https://docs.dnscontrol.org/getting-started/getting-started](https://docs.dnscontrol.org/getting-started/getting-started)
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/StackExchange/dnscontrol.svg?variant=adaptive)](https://starchart.cc/StackExchange/dnscontrol)

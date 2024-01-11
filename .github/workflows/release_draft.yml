@@ -40,22 +40,15 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: ^1.21
 
-# For some reason goreleaser isn't correctly setting the version
-# string used by "dnscontrol version".  Therefore, we're forcing the
-# string using the GORELEASER_CURRENT_TAG feature.
-# TODO(tlim): Use the native gorelease version mechanism.
-
-    - name: Retrieve version
-      id: version
+# Stringer is needed because .goreleaser includes "go generate ./..."
+    - name: Install stringer
       run: |
-        echo "TAG_NAME=$(git config --global --add safe.directory /__w/dnscontrol/dnscontrol ; git describe --tags)" >> $GITHUB_OUTPUT
+        go install golang.org/x/tools/cmd/stringer@latest
 
-    - name: Reveal version
-      run: echo ${{ steps.version.outputs.TAG_NAME }}
     -
       id: release
       name: Goreleaser release
@@ -66,4 +59,3 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.TAG_NAME }}

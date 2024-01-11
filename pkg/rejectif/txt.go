@@ -33,6 +33,14 @@ func TxtHasDoubleQuotes(rc *models.RecordConfig) error {
 	return nil
 }
 
+// TxtHasSemicolon audits TXT records for strings that contain backticks.
+func TxtHasSemicolon(rc *models.RecordConfig) error {
+	if strings.Contains(rc.GetTargetTXTJoined(), ";") {
+		return fmt.Errorf("txtstring contains semicolon")
+	}
+	return nil
+}
+
 // TxtHasSingleQuotes audits TXT records for strings that contain single-quotes.
 func TxtHasSingleQuotes(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "'") {
@@ -66,14 +74,6 @@ func TxtIsEmpty(rc *models.RecordConfig) error {
 	return nil
 }
 
-// TxtLongerThan255 audits TXT records for multiple strings
-func TxtLongerThan255(rc *models.RecordConfig) error {
-	if len(rc.GetTargetTXTJoined()) > 255 {
-		return fmt.Errorf("TXT records longer than 255 octets (chars)")
-	}
-	return nil
-}
-
 // TxtLongerThan returns a function that audits TXT records for length
 // greater than maxLength.
 func TxtLongerThan(maxLength int) func(rc *models.RecordConfig) error {
@@ -84,4 +84,13 @@ func TxtLongerThan(maxLength int) func(rc *models.RecordConfig) error {
 		}
 		return nil
 	}
+}
+
+// TxtStartsOrEndsWithSpaces audits TXT records that starts or ends with spaces
+func TxtStartsOrEndsWithSpaces(rc *models.RecordConfig) error {
+	txt := rc.GetTargetTXTJoined()
+	if len(txt) > 0 && (txt[0] == ' ' || txt[len(txt)-1] == ' ') {
+		return fmt.Errorf("txtstring starts or ends with spaces")
+	}
+	return nil
 }
