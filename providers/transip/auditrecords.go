@@ -11,6 +11,8 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
+	a.Add("ALIAS", rejectif.LabelNotApex) // Last verified 2024-01-11
+
 	a.Add("MX", rejectif.MxNull) // Last verified 2023-12-04
 
 	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2023-12-04
