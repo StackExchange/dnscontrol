@@ -179,7 +179,7 @@ func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff
 		}
 
 		nativeRec, _ := recordToNative(rec, true)
-		createCorrection := change.CreateCorrectionWithMessage("[2/2] delete", func() error { return n.domains.RemoveDNSEntry(dc.Name, nativeRec) })
+		createCorrection := change.CreateCorrectionWithMessage("[1/2] delete", func() error { return n.domains.RemoveDNSEntry(dc.Name, nativeRec) })
 		corrections = append(corrections, createCorrection)
 	}
 
@@ -189,7 +189,7 @@ func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff
 		}
 
 		nativeRec, _ := recordToNative(rec, false)
-		createCorrection := change.CreateCorrectionWithMessage("[1/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
+		createCorrection := change.CreateCorrectionWithMessage("[2/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
 		corrections = append(corrections, createCorrection)
 	}
 

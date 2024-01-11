@@ -59,3 +59,39 @@ D("example.com", REG_NONE, DnsProvider(DSP_TRANSIP),
 ## Activation
 
 TransIP depends on a TransIP personal access token.
+
+## Limitations
+
+> "When multiple or none of the current DNS entries matches, the response will be an error with http status code 406." — _[TransIP - REST API - Update single DNS entry](https://api.transip.nl/rest/docs.html#domains-dns-patch)_
+
+This makes it not possible, for example, to update a [`CAA()`](../functions/domain/CAA.md) record in one update. Instead, the old DNS entry is deleted and the replacement is added. You'll see `[1/2]` and `[2/2]` in the DNSControl output whenever this happens.
+
+### Example with a `CAA_BUILDER()`
+
+{% code title="dnsconfig.js" %}
+```diff
+CAA_BUILDER({
+    label: '@',
+    iodef: 'mailto:info@cafferata.dev',
++   iodef_critical: true,
+    issue: [
+        'letsencrypt.org',
+    ],
+    issuewild: 'none',
+}),
+```
+{% endcode %}
+
+```shell
+dnscontrol push --domains cafferata.dev
+```
+
+```shell
+******************** Domain: cafferata.dev
+2 corrections (transip)
+#1: [2/2] delete: ± MODIFY cafferata.dev CAA (0 iodef "mailto:info@cafferata.dev" ttl=86400) -> (128 iodef "mailto:info@cafferata.dev" ttl=86400)
+SUCCESS!
+#2: [1/2] create: ± MODIFY cafferata.dev CAA (0 iodef "mailto:info@cafferata.dev" ttl=86400) -> (128 iodef "mailto:info@cafferata.dev" ttl=86400)
+SUCCESS!
+Done. 2 corrections.
+```
