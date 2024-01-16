@@ -68,6 +68,25 @@ func cfDSData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfLocData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		LatDegrees: rec.LocLatDegrees,
+		LatMinutes: rec.LocLatMinutes,
+		LatSeconds: rec.LocLatSeconds,
+		LatDirection: rec.LocLatDirection,
+
+		LongDegrees: rec.LocLongDegrees,
+		LongMinutes: rec.LocLongMinutes,
+		LongSeconds: rec.LocLongSeconds,
+		LongDirection: rec.LocLongDirection,
+
+		PrecisionHorz: rec.LocOrigHorizPre,
+		PrecisionVert: rec.LocOrigVertPre,
+		Altitude: rec.LocOrigAltitude,
+		Size: rec.LocOrigSize,
+	}
+}
+
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
 	c := &cfRecData{
@@ -168,6 +187,8 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			} else if rec.Type == "NAPTR" {
 				cf.Data = cfNaptrData(rec)
 				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "LOC" {
+				cf.Data = cfLocData(rec)
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {

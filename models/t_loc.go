@@ -107,6 +107,22 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 	const LOCDegrees = 60 * LOCHours
 	const LOCAltitudeBase int32 = 100000
 
+	// Some providers want the original values, so we should keep them around
+	rc.LocLatDegrees = d1
+	rc.LocLatMinutes = m1
+	rc.LocLatSeconds = s1
+	rc.LocLatDirection = ns
+	
+	rc.LocLongDegrees = d2
+	rc.LocLongMinutes = m2
+	rc.LocLongSeconds = s2
+	rc.LocLongDirection = ew
+
+	rc.LocOrigAltitude = al
+	rc.LocOrigSize = sz
+	rc.LocOrigHorizPre = hp
+	rc.LocOrigVertPre = vp
+
 	lat := uint64((uint32(d1) * LOCDegrees) + (uint32(m1) * LOCHours) + uint32(s1*1000))
 	lon := uint64((uint32(d2) * LOCDegrees) + (uint32(m2) * LOCHours) + uint32(s2*1000))
 	if strings.ToUpper(ns) == "N" {
