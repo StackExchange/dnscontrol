@@ -70,20 +70,20 @@ func cfDSData(rec *models.RecordConfig) *cfRecData {
 
 func cfLocData(rec *models.RecordConfig) *cfRecData {
 	return &cfRecData{
-		LatDegrees: rec.LocLatDegrees,
-		LatMinutes: rec.LocLatMinutes,
-		LatSeconds: rec.LocLatSeconds,
-		LatDirection: rec.LocLatDirection,
+		LatDegrees:    rec.LocLatDegrees,
+		LatMinutes:    rec.LocLatMinutes,
+		LatSeconds:    rec.LocLatSeconds,
+		LatDirection:  rec.LocLatDirection,
 
-		LongDegrees: rec.LocLongDegrees,
-		LongMinutes: rec.LocLongMinutes,
-		LongSeconds: rec.LocLongSeconds,
+		LongDegrees:   rec.LocLongDegrees,
+		LongMinutes:   rec.LocLongMinutes,
+		LongSeconds:   rec.LocLongSeconds,
 		LongDirection: rec.LocLongDirection,
 
 		PrecisionHorz: rec.LocOrigHorizPre,
 		PrecisionVert: rec.LocOrigVertPre,
-		Altitude: rec.LocOrigAltitude,
-		Size: rec.LocOrigSize,
+		Altitude:      rec.LocOrigAltitude,
+		Size:          rec.LocOrigSize,
 	}
 }
 
