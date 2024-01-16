@@ -43,7 +43,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
