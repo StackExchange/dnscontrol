@@ -1044,27 +1044,33 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// RFC 7505 NullMX
 		testgroup("NullMX",
-			tc("create",
-				mx("nmx", 0, "."), // Install a Null MX.
+			tc("create", // Install a Null MX.
+				mx("nmx", 0, "."),
 			),
-			tc("unnull",
-				mx("nmx", 9, "www.example.com."), // Change to regular MX.
+			tc("unnull", // Change to regular MX.
+				a("nmx", "1.2.3.9"),
+				a("www", "1.2.3.3"),
+				mx("nmx", 9, "**current-domain**"),
+				mx("nmx", 3, "www.**current-domain**"),
 			),
-			tc("renull",
-				mx("nmx", 0, "."), // Change back to Null MX.
+			tc("renull", // Change back to Null MX.
+				mx("nmx", 0, "."),
 			),
 		),
 
 		// RFC 7505 NullMX at Apex
 		testgroup("NullMXApex",
-			tc("create",
-				mx("@", 0, "."), // Install a Null MX.
+			tc("create", // Install a Null MX.
+				mx("@", 0, "."),
 			),
-			tc("unnull",
-				mx("@", 8, "**current-domain**"), // Change to regular MX.
+			tc("unnull", // Change to regular MX.
+				a("@", "1.2.3.4"),
+				a("www", "1.2.3.8"),
+				mx("@", 8, "**current-domain**"),
+				mx("@", 4, "www.**current-domain**"),
 			),
-			tc("renull",
-				mx("@", 0, "."), // Change back to Null MX.
+			tc("renull", // Change back to Null MX.
+				mx("@", 0, "."),
 			),
 		),
 
