@@ -1050,7 +1050,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("unnull", // Change to regular MX.
 				a("nmx", "1.2.3.9"),
 				a("www", "1.2.3.3"),
-				mx("nmx", 9, "**current-domain**"),
+				mx("nmx", 9, "wmx.**current-domain**"),
 				mx("nmx", 3, "www.**current-domain**"),
 			),
 			tc("renull", // Change back to Null MX.
