@@ -1035,12 +1035,37 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		testgroup("MX",
+		testgroup("ApexMX",
 			tc("Record pointing to @",
 				mx("foo", 8, "**current-domain**"),
 				a("@", "1.2.3.4"),
 			),
-			tc("Null MX", mx("@", 0, ".")), // RFC 7505
+		),
+
+		// RFC 7505 NullMX
+		testgroup("NullMX",
+			tc("create",
+				mx("nmx", 0, "."), // Install a Null MX.
+			),
+			tc("unnull",
+				mx("nmx", 9, "www.example.com."), // Change to regular MX.
+			),
+			tc("renull",
+				mx("nmx", 0, "."), // Change back to Null MX.
+			),
+		),
+
+		// RFC 7505 NullMX at Apex
+		testgroup("NullMXApex",
+			tc("create",
+				mx("@", 0, "."), // Install a Null MX.
+			),
+			tc("unnull",
+				mx("@", 8, "**current-domain**"), // Change to regular MX.
+			),
+			tc("renull",
+				mx("@", 0, "."), // Change back to Null MX.
+			),
 		),
 
 		testgroup("NS",
