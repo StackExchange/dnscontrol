@@ -1043,13 +1043,42 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// RFC 7505 NullMX
+		/*
+			$ go test -v -verbose -provider TRANSIP -start 16 -end 17
+			=== RUN   TestDNSProviders
+			=== RUN   TestDNSProviders/dnscontrol.nl
+			=== RUN   TestDNSProviders/dnscontrol.nl/Clean_Slate:Empty
+			=== RUN   TestDNSProviders/dnscontrol.nl/16:NullMX:create
+			    integration_test.go:225: ***SKIPPED(PROVIDER DOES NOT SUPPORT '[mx has null target]' ::"16:NullMX")
+			=== RUN   TestDNSProviders/dnscontrol.nl/16:NullMX:unnull
+			    integration_test.go:247:
+			        + CREATE nmx.dnscontrol.nl A 1.2.3.9 ttl=300
+			    integration_test.go:247:
+			        + CREATE www.dnscontrol.nl A 1.2.3.3 ttl=300
+			    integration_test.go:247:
+			        + CREATE nmx.dnscontrol.nl MX 3 www.dnscontrol.nl. ttl=300
+			        + CREATE nmx.dnscontrol.nl MX 9 wmx.dnscontrol.nl. ttl=300
+			    integration_test.go:252: A hostname for a CNAME, NS, MX or SRV record was not found (external hostnames need a trailing dot, eg. "example.com."): nmx 300 MX 9 wmx.dnscontrol.nl.
+			=== RUN   TestDNSProviders/dnscontrol.nl/17:NullMXApex_***SKIPPED(excluded_by_not("TRANSIP"))***:Empty
+			    integration_test.go:247:
+			        - DELETE nmx.dnscontrol.nl A 1.2.3.9 ttl=300
+			    integration_test.go:247:
+			        - DELETE nmx.dnscontrol.nl MX 3 www.dnscontrol.nl. ttl=300
+			    integration_test.go:247:
+			        - DELETE www.dnscontrol.nl A 1.2.3.3 ttl=300
+			--- FAIL: TestDNSProviders (21.15s)
+			    --- FAIL: TestDNSProviders/dnscontrol.nl (21.15s)
+			        --- PASS: TestDNSProviders/dnscontrol.nl/Clean_Slate:Empty (0.37s)
+			        --- SKIP: TestDNSProviders/dnscontrol.nl/16:NullMX:create (0.00s)
+			        --- FAIL: TestDNSProviders/dnscontrol.nl/16:NullMX:unnull (9.44s)
+		*/
 		testgroup("NullMX",
 			not(
 				"TRANSIP", // Fails with odd error message.
 			),
 			tc("create", // Install a Null MX.
-				a("nmx", "1.2.3.9"),
-				a("www", "1.2.3.3"),
+				a("nmx", "1.2.3.9"), // Install this so it is ready for the next tc()
+				a("www", "1.2.3.3"), // Install this so it is ready for the next tc()
 				mx("nmx", 0, "."),
 			),
 			tc("unnull", // Change to regular MX.
@@ -1066,9 +1095,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		// RFC 7505 NullMX at Apex
 		testgroup("NullMXApex",
 			not(
-				"TRANSIP", // Fails with odd error message.
+				"TRANSIP", // TRANSIP is slow and doesn't support NullMX. Skip to save time.
 			),
 			tc("create", // Install a Null MX.
+				a("nmx", "1.2.3.9"), // Install this so it is ready for the next tc()
+				a("www", "1.2.3.3"), // Install this so it is ready for the next tc()
 				mx("@", 0, "."),
 			),
 			tc("unnull", // Change to regular MX.
