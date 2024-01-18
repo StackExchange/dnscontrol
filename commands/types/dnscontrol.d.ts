@@ -2230,9 +2230,9 @@ declare function PANIC(message: string): never;
  * of `REV("1.2.3.4")` is `4.3.2.1.in-addr.arpa.`, which means the following
  * are all equivalent:
  *
- * * `PTR(REV("1.2.3.4"), `
- * * `PTR("4.3.2.1.in-addr.arpa."), `
- * * `PTR("4.3",`    // Assuming the domain is `2.1.in-addr.arpa`
+ * * `PTR(REV("1.2.3.4", ...`
+ * * `PTR("4.3.2.1.in-addr.arpa.", ...`
+ * * `PTR("4.3", ...`    // Assuming the domain is `2.1.in-addr.arpa`
  *
  * All magic is RFC2317-aware. We use the first format listed in the
  * RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
