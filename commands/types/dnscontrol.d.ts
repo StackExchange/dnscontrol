@@ -363,7 +363,7 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
  * );
  * ```
  *
- * DNSControl contains a [`CAA_BUILDER`](../record/CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.
+ * DNSControl contains a [`CAA_BUILDER`](CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa
  */
@@ -2230,9 +2230,9 @@ declare function PANIC(message: string): never;
  * of `REV("1.2.3.4")` is `4.3.2.1.in-addr.arpa.`, which means the following
  * are all equivalent:
  *
- * * `PTR(REV("1.2.3.4"), `
- * * `PTR("4.3.2.1.in-addr.arpa."), `
- * * `PTR("4.3",`    // Assuming the domain is `2.1.in-addr.arpa`
+ * * `PTR(REV("1.2.3.4", ...`
+ * * `PTR("4.3.2.1.in-addr.arpa.", ...`
+ * * `PTR("4.3", ...`    // Assuming the domain is `2.1.in-addr.arpa`
  *
  * All magic is RFC2317-aware. We use the first format listed in the
  * RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
