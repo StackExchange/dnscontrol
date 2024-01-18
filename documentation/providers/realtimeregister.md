@@ -26,8 +26,9 @@ If premium is set to "1", you will only be able to update zones using Premium DN
 will only be able to update zones using Basic DNS.
 
 **Important Notes**:
-* It is recommended to create a 'DNScontrol' user in your account settings with limited permissions, otherwise anyone with
-access to this `creds.json` file might have *full* access to your RTR account and will be able to transfer or delete your domains
+* It is recommended to create a 'DNSControl' user in your account settings with limited permissions
+(i.e. VIEW_DNS_ZONE, CREATE_DNS_ZONE, UPDATE_DNS_ZONE, VIEW_DOMAIN, UPDATE_DOMAIN), otherwise anyone with
+access to this `creds.json` file might have *full* access to your RTR account and will be able to transfer or delete your domains.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Realtime Register.
