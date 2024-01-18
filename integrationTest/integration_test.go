@@ -1035,12 +1035,57 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		testgroup("MX",
+		testgroup("ApexMX",
 			tc("Record pointing to @",
 				mx("foo", 8, "**current-domain**"),
 				a("@", "1.2.3.4"),
 			),
-			tc("Null MX", mx("@", 0, ".")), // RFC 7505
+		),
+
+		// RFC 7505 NullMX
+		testgroup("NullMX",
+			not(
+				"TRANSIP", // TRANSIP is slow and doesn't support NullMX. Skip to save time.
+			),
+			tc("create", // Install a Null MX.
+				a("nmx", "1.2.3.3"), // Install this so it is ready for the next tc()
+				a("www", "1.2.3.9"), // Install this so it is ready for the next tc()
+				mx("nmx", 0, "."),
+			),
+			tc("unnull", // Change to regular MX.
+				a("nmx", "1.2.3.3"),
+				a("www", "1.2.3.9"),
+				mx("nmx", 3, "nmx.**current-domain**"),
+				mx("nmx", 9, "www.**current-domain**"),
+			),
+			tc("renull", // Change back to Null MX.
+				a("nmx", "1.2.3.3"),
+				a("www", "1.2.3.9"),
+				mx("nmx", 0, "."),
+			),
+		),
+
+		// RFC 7505 NullMX at Apex
+		testgroup("NullMXApex",
+			not(
+				"TRANSIP", // TRANSIP is slow and doesn't support NullMX. Skip to save time.
+			),
+			tc("create", // Install a Null MX.
+				a("@", "1.2.3.2"),   // Install this so it is ready for the next tc()
+				a("www", "1.2.3.8"), // Install this so it is ready for the next tc()
+				mx("@", 0, "."),
+			),
+			tc("unnull", // Change to regular MX.
+				a("@", "1.2.3.2"),
+				a("www", "1.2.3.8"),
+				mx("@", 2, "**current-domain**"),
+				mx("@", 8, "www.**current-domain**"),
+			),
+			tc("renull", // Change back to Null MX.
+				a("@", "1.2.3.2"),
+				a("www", "1.2.3.8"),
+				mx("@", 0, "."),
+			),
 		),
 
 		testgroup("NS",
