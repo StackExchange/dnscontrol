@@ -1044,12 +1044,17 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// RFC 7505 NullMX
 		testgroup("NullMX",
+			not(
+				"TRANSIP", // Fails with odd error message.
+			),
 			tc("create", // Install a Null MX.
+				a("nmx", "1.2.3.9"),
+				a("www", "1.2.3.3"),
 				mx("nmx", 0, "."),
 			),
 			tc("unnull", // Change to regular MX.
-				a("nmx", "1.2.3.9"),
 				a("www", "1.2.3.3"),
+				a("nmx", "1.2.3.9"),
 				mx("nmx", 9, "wmx.**current-domain**"),
 				mx("nmx", 3, "www.**current-domain**"),
 			),
@@ -1060,6 +1065,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// RFC 7505 NullMX at Apex
 		testgroup("NullMXApex",
+			not(
+				"TRANSIP", // Fails with odd error message.
+			),
 			tc("create", // Install a Null MX.
 				mx("@", 0, "."),
 			),
@@ -1071,6 +1079,30 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("renull", // Change back to Null MX.
 				mx("@", 0, "."),
+			),
+		),
+
+		// Make TransIP fail in a weird way.
+		/*
+			=== RUN   TestDNSProviders/dnscontrol.nl/18:NullMX:unnull
+			  integration_test.go:247:
+			      + CREATE nmx.dnscontrol.nl A 1.2.3.9 ttl=300
+			  integration_test.go:247:
+			      + CREATE www.dnscontrol.nl A 1.2.3.3 ttl=300
+			  integration_test.go:247:
+			      + CREATE nmx.dnscontrol.nl MX 3 www.dnscontrol.nl. ttl=300
+			      + CREATE nmx.dnscontrol.nl MX 9 wmx.dnscontrol.nl. ttl=300
+			  integration_test.go:252: A hostname for a CNAME, NS, MX or SRV record was not found (external hostnames need a trailing dot, eg. "example.com."): nmx 300 MX 9 wmx.dnscontrol.nl.
+		*/
+		testgroup("TIPfail1",
+			only(
+				"TRANSIP", // Fails with odd error message.
+			),
+			tc("step1", // Change to regular MX.
+				//a("www", "1.2.3.3"),
+				a("nmx", "1.2.3.9"),
+				mx("nmx", 9, "wmx.**current-domain**"),
+				mx("nmx", 3, "www.**current-domain**"),
 			),
 		),
 
