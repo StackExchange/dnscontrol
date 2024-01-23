@@ -43,7 +43,7 @@ func NewGCore(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -135,6 +135,13 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	var corrections []*models.Correction
 	var deletions []*models.Correction
 	var reports []*models.Correction
+
+	// Gcore auto uses ALIAS for apex zone CNAME records, just like CloudFlare
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
+	}
 
 	changes, err := diff2.ByRecordSet(existing, dc, nil)
 	if err != nil {
