@@ -17,7 +17,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/aws/aws-sdk-go-v2 v1.24.1
-	github.com/aws/aws-sdk-go-v2/config v1.26.5
+	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.16
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.37.0
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.20.6
@@ -55,7 +55,7 @@ require (
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/net v0.20.0
 	golang.org/x/oauth2 v0.16.0
-	google.golang.org/api v0.156.0
+	google.golang.org/api v0.157.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.11
 )
 
@@ -69,7 +69,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3
+	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -84,7 +84,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.11 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.10 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.10 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.18.7 // indirect
@@ -153,7 +153,7 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240116215550-a9fa1716bcac // indirect
 	google.golang.org/grpc v1.60.1 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
