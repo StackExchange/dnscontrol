@@ -24,7 +24,7 @@ git commit -a -m "Update generated files for $VERSION"
 ```shell
 export VERSION=v4.2.0
 git tag -m "Release $VERSION" -a $VERSION
-git push origin --tags
+git push origin HEAD --tags
 ```
 
 Soon after
