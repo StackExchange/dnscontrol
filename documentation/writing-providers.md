@@ -232,7 +232,7 @@ an automated way to test for this bug.  The manual steps are here in
 a particular integration test, or request feedback.
 {% endhint %}
 
-## Step 9: Capabilities
+## Step 10: Capabilities
 
 Some DNS providers have features that others do not.  For example some
 support the SRV record.  A provider announces what it can do using
@@ -265,7 +265,7 @@ you want to implement.
 FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
-## Step 10: Automated code tests
+## Step 11: Automated code tests
 
 Run `go vet` and [`staticcheck`](https://staticcheck.io/) and clean up any errors found.
 
@@ -289,17 +289,17 @@ go install golang.org/x/lint/golint
 golint ./...
 ```
 
-## Step 11: Dependencies
+## Step 12: Dependencies
 
 See [documentation/release-engineering.md](release-engineering.md)
 for tips about managing modules and checking for outdated
 dependencies.
 
-## Step 12: Modify the release regexp
+## Step 13: Modify the release regexp
 
 In the repo root, open `.goreleaser.yml` and add the provider to `Provider-specific changes` regexp.
 
-## Step 13: Check your work
+## Step 14: Check your work
 
 These are the things we'll be checking when you submit the PR.  Please try to complete all or as many of these as possible.
 
@@ -320,7 +320,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
   * Post the results as a comment to your PR.
 6. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
-## Step 14: Submit a PR
+## Step 15: Submit a PR
 
 At this point you can submit a PR.
 
@@ -328,7 +328,7 @@ Actually you can submit the PR even earlier if you just want feedback,
 input, or have questions.  This is just a good stopping place to
 submit a PR if you haven't already.
 
-## Step 15: After the PR is merged
+## Step 16: After the PR is merged
 
 1. Close any related GitHub issues.
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
