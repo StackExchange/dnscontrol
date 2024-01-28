@@ -1,0 +1,26 @@
+name: "PR: Check git status"
+on:
+  push:
+    branches:
+      - 'tlim_testpr'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check-git-status:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-go@v5
+      with:
+        go-version: stable
+    - run: go install golang.org/x/tools/cmd/stringer@latest
+    - run: go fmt ./...
+    - run: go mod tidy
+    - run: go generate ./...
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
