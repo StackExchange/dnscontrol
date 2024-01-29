@@ -315,7 +315,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
   * `integrationTest/providers.json`
     * `providers/_all/all.go`
 3. Review the code for style issues, remove debug statements, make sure all exported functions have a comment, and generally tighten up the code.
-4. Verify you're using the most recent version of anything you import.  (See [Step 13](#step-11-dependencies))
+4. Verify you're using the most recent version of anything you import.  (See [Step 12](#step-12-dependencies))
 5. Re-run the [integration test](#step-7-integration-test) one last time.
   * Post the results as a comment to your PR.
 6. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
