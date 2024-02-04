@@ -42,7 +42,7 @@ jobs:
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
     - uses: actions/upload-artifact@v4.3.0
       with:
-        path: "/tmp/test-results"
+        path: $TEST_RESULTS
 
 # Stringer is needed because .goreleaser includes "go generate ./..."
     - name: Install stringer
@@ -202,4 +202,4 @@ jobs:
       working-directory: integrationTest
     - uses: actions/upload-artifact@v4.3.0
       with:
-        path: "/tmp/test-results"
+        path: $TEST_RESULTS
