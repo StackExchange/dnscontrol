@@ -213,19 +213,23 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 			}
 		}
 	}
-	msg := fmt.Sprintf("Changes:\n%s", buf)
-	corrections = append(corrections,
-		&models.Correction{
-			Msg: msg,
-			F: func() error {
-				rc := rrs
-				err := c.upsertRR(rc, dc.Name)
-				if err != nil {
-					return err
-				}
-				return nil
-			},
-		})
+
+	// If there are changes, upsert them.
+	if len(rrs) > 0 {
+		msg := fmt.Sprintf("Changes:\n%s", buf)
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					rc := rrs
+					err := c.upsertRR(rc, dc.Name)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			})
+	}
 
 	// NB(tlim): This sort is just to make updates look pretty. It is
 	// cosmetic.  The risk here is that there may be some updates that
