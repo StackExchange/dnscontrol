@@ -2115,6 +2115,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/2822
 		// Don't send empty updates.
+		// A carefully constructed IGNORE() can ignore all the
+		// changes. This resulted in the deSEC provider generating an
+		// empty upsert, which the API rejected.
 		testgroup("IGNORE everything b2822",
 			tc("Create some records",
 				a("dyndns-city1", "91.42.1.1"),
