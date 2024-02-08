@@ -276,12 +276,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 }
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
-	testGroups := makeTests(t)
-	runTestsHelper(t, prv, domainName, testGroups, origConfig)
-}
-
-func runTestsHelper(t *testing.T, prv providers.DNSServiceProvider, domainName string, testGroups []*TestGroup, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
+	testGroups := makeTests(t)
 
 	firstGroup := *startIdx
 	if firstGroup == -1 {
