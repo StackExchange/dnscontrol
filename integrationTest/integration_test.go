@@ -2113,6 +2113,28 @@ func makeTests(t *testing.T) []*TestGroup {
 			).ExpectNoChanges(),
 		),
 
+		// https://github.com/StackExchange/dnscontrol/issues/2822
+		// Don't send empty updates.
+		// A carefully constructed IGNORE() can ignore all the
+		// changes. This resulted in the deSEC provider generating an
+		// empty upsert, which the API rejected.
+		testgroup("IGNORE everything b2822",
+			tc("Create some records",
+				a("dyndns-city1", "91.42.1.1"),
+				a("dyndns-city2", "91.42.1.2"),
+				aaaa("dyndns-city1", "2003:dd:d7ff::fe71:ce77"),
+				aaaa("dyndns-city2", "2003:dd:d7ff::fe71:ce78"),
+			),
+			tc("ignore them all",
+				a("dyndns-city1", "91.42.1.1"),
+				a("dyndns-city2", "91.42.1.2"),
+				aaaa("dyndns-city1", "2003:dd:d7ff::fe71:ce77"),
+				aaaa("dyndns-city2", "2003:dd:d7ff::fe71:ce78"),
+				ignore("dyndns-city1", "A,AAAA", ""),
+				ignore("dyndns-city2", "A,AAAA", ""),
+			).ExpectNoChanges().UnsafeIgnore(),
+		),
+
 		testgroup("structured TXT",
 			only("OVH"),
 			tc("Create TXT",
