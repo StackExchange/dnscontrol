@@ -40,7 +40,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.3.0
+    - uses: actions/upload-artifact@v4.3.1
       with:
         name: unit-tests
         path: $TEST_RESULTS
@@ -201,7 +201,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v4.3.0
+    - uses: actions/upload-artifact@v4.3.1
       with:
         name: integration-tests-${{ matrix.provider }}
         path: $TEST_RESULTS
