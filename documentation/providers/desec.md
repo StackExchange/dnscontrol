@@ -36,3 +36,10 @@ D("example.com", REG_NONE, DnsProvider(DSP_DESEC),
 ## Activation
 DNSControl depends on a deSEC account auth token.
 This token can be obtained by [logging in via the deSEC API](https://desec.readthedocs.io/en/latest/auth/account.html#log-in).
+
+{% hint style="warning" %}
+deSEC enforces a daily limit of 300 RRset creation/deletion/modification per
+domain. As a result, large changes may have to be done over the course of a few
+days.  The integration test suite can not be run in one session.
+{% endhint %} 
+
