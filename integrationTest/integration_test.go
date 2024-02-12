@@ -1314,6 +1314,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"DIGITALOCEAN",  // No paging. Why bother?
+				"DESEC",         // Skip due to daily update limits.
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
@@ -1334,6 +1335,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS",     // Removed because it is too slow
 				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"MSDNS",         // No paging done. No need to test.
 				"GCLOUD",
@@ -1350,6 +1352,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
