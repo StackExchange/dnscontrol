@@ -39,7 +39,8 @@ This token can be obtained by [logging in via the deSEC API](https://desec.readt
 
 {% hint style="warning" %}
 deSEC enforces a daily limit of 300 RRset creation/deletion/modification per
-domain. As a result, large changes may have to be done over the course of a few
-days.  The integration test suite can not be run in one session.
+domain. Large changes may have to be done over the course of a few days.  The
+integration test suite can not be run in a single session. See
+[https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling](https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling)
 {% endhint %} 
 
