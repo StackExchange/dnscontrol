@@ -20,9 +20,9 @@ parameter_types:
   - alt (float32, optional)
   - ttl (optional)
 
-A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+A helper to build [`LOC`](LOC.md) records. Supply three parameters instead of 12.
 
-Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+Internally assumes some defaults for [`LOC`](LOC.md) records.
 
 
 Accepts a string with decimal minutes (DMM) coordinates in the form: 25.24°S 153.15°E
@@ -48,7 +48,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 
 
 Part of the series:
- * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
+ * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
