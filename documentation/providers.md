@@ -187,5 +187,5 @@ DNSControl tries to make writing a provider as easy as possible.  DNSControl
 does most of the work for you, you only have to write code to authenticate,
 download DNS records, and perform create/modify/delete operations on those
 records. Please read the directions for [Writing new DNS
-providers](/developer-info/writing-providers).  The DNS maintainers will gladly
+providers](writing-providers.md).  The DNS maintainers will gladly
 coach you through the process.
