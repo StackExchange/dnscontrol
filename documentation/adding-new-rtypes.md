@@ -16,7 +16,7 @@ Our general philosophy is:
 -   Anywhere we have a special case for a particular Rtype, we use a `switch` statement and have a `case` for every single record type, usually with a `default:` case that calls `panic()`. This way developers adding a new record type will quickly find where they need to add code (the panic will tell them where). Before we did this, missing implementation code would go unnoticed for months.
 -   Keep things alphabetical. If you are adding your record type to a case statement, function library, or whatever, please list it alphabetically along with the others when possible.
 
-Step 2 requires `stringer`. 
+Step 2 requires `stringer`.
 ```shell
 go install golang.org/x/tools/cmd/stringer@latest
 ```
@@ -73,7 +73,7 @@ popd
 ```
 
 -   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
-    
+
     {% code title="dnscontrol/build/generate/featureMatrix.go" %}
     ```diff
     func matrixData() *FeatureMatrix {
@@ -98,7 +98,7 @@ popd
     {% endcode %}
 
     then add it later in the file with a `setCapability()` statement, which should look like this:
-    
+
     {% code title="dnscontrol/build/generate/featureMatrix.go" %}
     ```diff
     ...
@@ -322,9 +322,9 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
 ...
 * Record Modifiers
 ...
-    * [DMARC_BUILDER](functions/record/DMARC_BUILDER.md)
+    * [DMARC_BUILDER](functions/domain/DMARC_BUILDER.md)
 +   * [FOO_HELPER](functions/record/FOO_HELPER.md)
-    * [SPF_BUILDER](functions/record/SPF_BUILDER.md)
+    * [SPF_BUILDER](functions/domain/SPF_BUILDER.md)
 ...
 ```
 {% endcode %}
