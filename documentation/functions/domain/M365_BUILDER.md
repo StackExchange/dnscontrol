@@ -24,7 +24,7 @@ parameter_types:
 DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
 
 It defaults to a setup without support for legacy Skype for Business applications.
-It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](/language-reference/record-modifiers/dmarc_builder) and [`DMARC_BUILDER`](/language-reference/record-modifiers/spf_builder).
+It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](SPF_BUILDER.md) and [`DMARC_BUILDER`](DMARC_BUILDER.md).
 
 ## Example
 

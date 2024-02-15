@@ -12,7 +12,7 @@ other system.
 By setting `NO_PURGE` on a domain, this tells DNSControl not to delete the
 records found in the domain.
 
-It is similar to [`IGNORE`](domain/IGNORE.md) but more general.
+It is similar to [`IGNORE`](IGNORE.md) but more general.
 
 The original reason for `NO_PURGE` was that a legacy system was adopting
 DNSControl. Previously the domain was managed via Microsoft DNS Server's GUI.
@@ -50,5 +50,5 @@ With introduction of `diff2` algorithm (enabled by default in v4.0.0),
 
 ## See also
 
-* [`PURGE`](domain/PURGE.md) is the default, thus this command is a no-op
-* [`IGNORE`](domain/IGNORE.md) is similar to `NO_PURGE` but is more selective
+* [`PURGE`](PURGE.md) is the default, thus this command is a no-op
+* [`IGNORE`](IGNORE.md) is similar to `NO_PURGE` but is more selective
