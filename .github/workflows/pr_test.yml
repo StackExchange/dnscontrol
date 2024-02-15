@@ -43,7 +43,7 @@ jobs:
     - uses: actions/upload-artifact@v4.3.1
       with:
         name: unit-tests
-        path: $TEST_RESULTS
+        path: ${{ env.TEST_RESULTS }}
 
 # Stringer is needed because .goreleaser includes "go generate ./..."
     - name: Install stringer
@@ -204,4 +204,4 @@ jobs:
     - uses: actions/upload-artifact@v4.3.1
       with:
         name: integration-tests-${{ matrix.provider }}
-        path: $TEST_RESULTS
+        path: ${{ env.TEST_RESULTS }}
