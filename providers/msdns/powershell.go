@@ -8,11 +8,11 @@ import (
 	"os"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	ps "github.com/StackExchange/dnscontrol/v4/pkg/powershell"
+	"github.com/StackExchange/dnscontrol/v4/pkg/powershell/backend"
+	"github.com/StackExchange/dnscontrol/v4/pkg/powershell/middleware"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/TomOnTime/utfutil"
-	ps "github.com/bhendo/go-powershell"
-	"github.com/bhendo/go-powershell/backend"
-	"github.com/bhendo/go-powershell/middleware"
 )
 
 type psHandle struct {
