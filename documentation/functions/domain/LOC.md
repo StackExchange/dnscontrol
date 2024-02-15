@@ -86,14 +86,14 @@ the LOC record type will supply defaults where values were absent on DNS import.
 One must supply the `LOC()` js helper all parameters. If that seems like too
 much work, see also helper functions:
 
- * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
- * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
+ * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
 
 ## Format ##
 
-The coordinate format for `LOC()` is: 
+The coordinate format for `LOC()` is:
 
 `degrees,minutes,seconds,[NnSs],deg,min,sec,[EeWw],altitude,size,horizontal_precision,vertical_precision`
 

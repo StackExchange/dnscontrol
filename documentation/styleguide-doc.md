@@ -207,7 +207,7 @@ The function `GetRegistrarCorrections()` returns...
 #### Internal links
 
 ```markdown
-Blah blah blah [M365_BUILDER](functions/record/M365_BUILDER.md)
+Blah blah blah [M365_BUILDER](functions/domain/M365_BUILDER.md)
 ```
 
 {% hint style="info" %}

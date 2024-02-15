@@ -1423,10 +1423,10 @@ declare function IP(ip: string): number;
  * One must supply the `LOC()` js helper all parameters. If that seems like too
  * much work, see also helper functions:
  *
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * ## Format ##
  *
@@ -1466,9 +1466,9 @@ declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min
  *   - alt (float32, optional)
  *   - ttl (optional)
  *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply four parameters instead of 12.
+ * A helper to build [`LOC`](LOC.md) records. Supply four parameters instead of 12.
  *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](LOC.md) records.
  *
  * The cartesian coordinates are decimal degrees, like you typically find in e.g. Google Maps.
  *
@@ -1506,11 +1506,11 @@ declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min
  * ```
  *
  * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dd
  */
@@ -1524,9 +1524,9 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  *   - alt (float32, optional)
  *   - ttl (optional)
  *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ * A helper to build [`LOC`](LOC.md) records. Supply three parameters instead of 12.
  *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](LOC.md) records.
  *
  * Accepts a string with decimal minutes (DMM) coordinates in the form: 25.24°S 153.15°E
  *
@@ -1548,11 +1548,11 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  * ```
  *
  * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dmm_str
  */
@@ -1566,9 +1566,9 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  *   - alt (float32, optional)
  *   - ttl (optional)
  *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ * A helper to build [`LOC`](LOC.md) records. Supply three parameters instead of 12.
  *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](LOC.md) records.
  *
  * Accepts a string with degrees, minutes, and seconds (DMS) coordinates in the form: 41°24'12.2"N 2°10'26.5"E
  *
@@ -1591,11 +1591,11 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  * ```
  *
  * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dms_str
  */
@@ -1609,13 +1609,13 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  *   - alt (float32, optional)
  *   - ttl (optional)
  *
- * A helper to build [`LOC`](../domain/LOC.md) records. Supply three parameters instead of 12.
+ * A helper to build [`LOC`](LOC.md) records. Supply three parameters instead of 12.
  *
- * Internally assumes some defaults for [`LOC`](../domain/LOC.md) records.
+ * Internally assumes some defaults for [`LOC`](LOC.md) records.
  *
  * Accepts a string and tries all `LOC_BUILDER_DM*_STR({})` methods:
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -1639,11 +1639,11 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  * ```
  *
  * Part of the series:
- *  * [`LOC()`](../domain/LOC.md) - build a `LOC` by supplying all 12 parameters
- *  * [`LOC_BUILDER_DD({})`](../record/LOC_BUILDER_DD.md) - accepts cartesian x, y
- *  * [`LOC_BUILDER_DMS_STR({})`](../record/LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
- *  * [`LOC_BUILDER_DMM_STR({})`](../record/LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](../record/LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
+ *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
+ *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
+ *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_str
  */
@@ -1653,7 +1653,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
  *
  * It defaults to a setup without support for legacy Skype for Business applications.
- * It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](/language-reference/record-modifiers/dmarc_builder) and [`DMARC_BUILDER`](/language-reference/record-modifiers/spf_builder).
+ * It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](SPF_BUILDER.md) and [`DMARC_BUILDER`](DMARC_BUILDER.md).
  *
  * ## Example
  *
@@ -2031,7 +2031,7 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  * By setting `NO_PURGE` on a domain, this tells DNSControl not to delete the
  * records found in the domain.
  *
- * It is similar to [`IGNORE`](domain/IGNORE.md) but more general.
+ * It is similar to [`IGNORE`](IGNORE.md) but more general.
  *
  * The original reason for `NO_PURGE` was that a legacy system was adopting
  * DNSControl. Previously the domain was managed via Microsoft DNS Server's GUI.
@@ -2067,8 +2067,8 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  *
  * ## See also
  *
- * * [`PURGE`](domain/PURGE.md) is the default, thus this command is a no-op
- * * [`IGNORE`](domain/IGNORE.md) is similar to `NO_PURGE` but is more selective
+ * * [`PURGE`](PURGE.md) is the default, thus this command is a no-op
+ * * [`IGNORE`](IGNORE.md) is similar to `NO_PURGE` but is more selective
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/no_purge
  */
