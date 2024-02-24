@@ -9,6 +9,25 @@ Solution: Use a "builder" to construct it for you.
 * [M365_BUILDER](functions/domain/M365_BUILDER.md)
 * [SPF Optimizer](functions/domain/SPF_BUILDER.md)
 
+# Trailing commas
+
+You can use the DNSControl constant `END` within `D()` so that the last item can include a comma.
+
+{% code title="dnsconfig.js" %}
+```diff
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4"),
+- A("bar", "4.3.2.1")
+-);
++ A("bar", "4.3.2.1"),
++ END);
+```
+{% endcode %}
+
+{% hint style="info" %}
+**NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
+{% endhint %}
+
 # Repeat records in many domains (macros)
 
 Problem: I have a set of records I'd like to include in many domains.
