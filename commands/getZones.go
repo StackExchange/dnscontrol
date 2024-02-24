@@ -270,6 +270,7 @@ func GetZone(args GetZoneArgs) error {
 				fmt.Fprint(w, out)
 				fmt.Fprint(w, "\n)\n")
 			} else {
+				out = out + ","
 				out = strings.ReplaceAll(out,
 					"// NOTE: CNAME at apex may require manual editing.,",
 					"// NOTE: CNAME at apex may require manual editing.",
