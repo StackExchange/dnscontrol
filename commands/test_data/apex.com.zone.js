@@ -9,5 +9,5 @@ D("apex.com", REG_CHANGEME,
 	//NAMESERVER("ns-cloud-c2.googledomains.com."),
 	// NOTE: CNAME at apex may require manual editing.
 	CNAME("@", "cnametest1.example.com."),
-	CNAME("www", "cnametest2.example.com.")
-)
+	CNAME("www", "cnametest2.example.com."),
+END)
