@@ -13,14 +13,25 @@ Solution: Use a "builder" to construct it for you.
 
 You can use the DNSControl constant `END` within `D()` so that the last item can include a comma.
 
+**Before** (_without a trailing comma_)
+
 {% code title="dnsconfig.js" %}
-```diff
+```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("foo", "1.2.3.4"),
-- A("bar", "4.3.2.1")
--);
-+ A("bar", "4.3.2.1"),
-+ END);
+  A("bar", "4.3.2.1")
+);
+```
+{% endcode %}
+
+**After** (_with a trailing comma_)
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4"),
+  A("bar", "4.3.2.1"),
+END);
 ```
 {% endcode %}
 
