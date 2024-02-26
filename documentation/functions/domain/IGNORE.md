@@ -69,7 +69,9 @@ following patterns will work:
 * `IGNORE("{bar,[fz]oo}")` will ignore `bar`, `foo` and `zoo`.
 * `IGNORE("\\*.foo")` will ignore the literal record `*.foo`.
 
-NOTE: `.` should not be escaped with a `\`.  These are globs (like filenames), not regular expressions.
+{% hint style="info" %}
+**NOTE**: `.` should not be escaped with a `\`.  These are globs (like filenames), not regular expressions.
+{% endhint %}
 
 ## Typical Usage
 
