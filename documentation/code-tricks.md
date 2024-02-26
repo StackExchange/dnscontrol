@@ -15,7 +15,23 @@ Solution: Use a "builder" to construct it for you.
 
 Because the DNSControl JavaScript DSL has no trailing commas, you can use the `END` constant within `D()`.
 
-**Before** (_without a trailing comma_)
+## Version-control diffs example
+
+{% hint style="info" %}
+**NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
+{% endhint %}
+
+Let's take an example with domain: `example.com`. We have recorded the [A-record](functions/domain/A.md) 'foo' configured.
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4")
+);
+```
+{% endcode %}
+
+Let's say we want to add an [A record](functions/domain/A.md) 'bar' to this domain.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -26,20 +42,36 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```
 {% endcode %}
 
-**After** (_with a trailing comma_)
+This will generate the version-control diff below:
+
+{% code title="dnsconfig.js" %}
+```diff
+-  A("foo", "1.2.3.4"),
++  A("foo", "1.2.3.4"),
++  A("bar", "4.3.2.1")
+);
+```
+{% endcode %}
+
+Let's apply the same A-record 'foo' to the domain using the `END` constant.
 
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("foo", "1.2.3.4"),
-  A("bar", "4.3.2.1"),
 END);
 ```
 {% endcode %}
 
-{% hint style="info" %}
-**NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
-{% endhint %}
+This will generate the cleaner version-control diff below:
+
+{% code title="dnsconfig.js" %}
+```diff
+   A("foo", "1.2.3.4"),
++  A("bar", "4.3.2.1"),
+END);
+```
+{% endcode %}
 
 # Repeat records in many domains (macros)
 
