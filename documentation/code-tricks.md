@@ -11,7 +11,9 @@ Solution: Use a "builder" to construct it for you.
 
 # Trailing commas
 
-You can use the DNSControl constant `END` within `D()` so that the last item can include a comma.
+**Trailing commas** (sometimes called "final commas") can be useful when adding new Domain Modifiers to your DNSControl code. If you want to add a Domain Modifier, you can add a new line without modifying the previously last line if that line already uses a trailing comma. This makes version-control diffs cleaner and editing code might be less troublesome.
+
+Because the DNSControl JavaScript DSL has no trailing commas, you can use the `END` constant within `D()`.
 
 **Before** (_without a trailing comma_)
 
