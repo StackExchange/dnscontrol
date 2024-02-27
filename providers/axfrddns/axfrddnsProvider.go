@@ -212,7 +212,11 @@ func readKey(raw string, kind string) (*Key, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
-	return &Key{algo: algo, id: arr[1] + ".", secret: arr[2]}, nil
+	id := arr[1]
+	if !strings.HasSuffix(id, ".") {
+		id += "."
+	}
+	return &Key{algo: algo, id: id, secret: arr[2]}, nil
 }
 
 // GetNameservers returns the nameservers for a domain.
