@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: I have a question or need support
+    url: https://docs.dnscontrol.org/
+    about: We use GitHub for tracking bugs, check our website for resources on getting help.
+  - name: I'm unsure where to go
+    url: https://groups.google.com/g/dnscontrol-discuss
+    about: If you are unsure where to go, then joining our mailing list is recommended; Just ask!
