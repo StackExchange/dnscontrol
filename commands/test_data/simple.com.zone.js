@@ -1,5 +1,6 @@
 var DSP_BIND = NewDnsProvider("bind", "BIND");
 var REG_CHANGEME = NewRegistrar("none");
+
 D("simple.com", REG_CHANGEME,
 	DnsProvider(DSP_BIND),
 	//SOA("@", "ns3.serverfault.com.", "sysadmin.stackoverflow.com.", 2020022300, 3600, 600, 604800, 1440),
@@ -20,5 +21,6 @@ D("simple.com", REG_CHANGEME,
 	TXT("m1._domainkey.dev-email", "v=DKIM1;k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCIBezZ2Gc+/3PghWk+YOE6T9HdwgUTMTR0Fne2i51MNN9Qs7AqDitVdG/949iDbI2fPNZSnKtOcnlLYwvve9MhMAMI1nZ26ILhgaBJi2BMZQpGFlO4ucuo/Uj4DPZ5Ge/NZHCX0CRhAhR5sRmL2OffNcFXFrymzUuz4KzI/NyUiwIDAQAB"),
 	CNAME("email", "mkto-sj280138.com."),
 	CNAME("info", "stackoverflow.mktoweb.com."),
-	SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com.")
-)
+	SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
+END);
+
