@@ -220,7 +220,7 @@ func GetZone(args GetZoneArgs) error {
 			fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 				dspVariableName, args.CredName, args.ProviderName)
 		}
-		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("none");`+"\n")
+		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("none");`+"\n\n")
 	}
 
 	// print each zone
@@ -268,7 +268,7 @@ func GetZone(args GetZoneArgs) error {
 					"// NOTE: CNAME at apex may require manual editing.",
 				)
 				fmt.Fprint(w, out)
-				fmt.Fprint(w, "\n)\n")
+				fmt.Fprint(w, "\n)\n\n")
 			} else {
 				out = out + ","
 				out = strings.ReplaceAll(out,
@@ -276,7 +276,7 @@ func GetZone(args GetZoneArgs) error {
 					"// NOTE: CNAME at apex may require manual editing.",
 				)
 				fmt.Fprint(w, out)
-				fmt.Fprint(w, "\nEND)\n")
+				fmt.Fprint(w, "\nEND);\n\n")
 			}
 
 		case "tsv":

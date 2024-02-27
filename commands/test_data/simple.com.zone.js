@@ -1,5 +1,6 @@
 var DSP_BIND = NewDnsProvider("bind", "BIND");
 var REG_CHANGEME = NewRegistrar("none");
+
 D("simple.com", REG_CHANGEME,
 	DnsProvider(DSP_BIND),
 	//SOA("@", "ns3.serverfault.com.", "sysadmin.stackoverflow.com.", 2020022300, 3600, 600, 604800, 1440),
@@ -21,4 +22,5 @@ D("simple.com", REG_CHANGEME,
 	CNAME("email", "mkto-sj280138.com."),
 	CNAME("info", "stackoverflow.mktoweb.com."),
 	SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
-END)
+END);
+

@@ -1,5 +1,6 @@
 var DSP_BIND = NewDnsProvider("bind", "BIND");
 var REG_CHANGEME = NewRegistrar("none");
+
 D("example.org", REG_CHANGEME,
 	DnsProvider(DSP_BIND),
 	DefaultTTL(7200),
@@ -352,4 +353,5 @@ D("example.org", REG_CHANGEME,
 	CNAME("opqrstuvwxyz", "gv-abcdefghijklmn.dv.googlehosted.com."),
 	CNAME("zyxwvutsrqpo", "gv-nmlkjihgfedcba.dv.googlehosted.com."),
 	CNAME("0123456789abcdef0123456789abcdef", "verify.bing.com."),
-END)
+END);
+
