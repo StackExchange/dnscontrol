@@ -101,8 +101,8 @@ github.com/decred/dcrd/crypto/blake256 v1.0.0/go.mod h1:sQl2p6Y26YV+ZOcSTP6thNdn
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d/go.mod h1:tmAIfUFEirG/Y8jhZ9M+h36obRZAk/1fcSpXwAVlfqE=
 github.com/deepmap/oapi-codegen v1.9.1 h1:yHmEnA7jSTUMQgV+uN02WpZtwHnz2CBW3mZRIxr1vtI=
 github.com/deepmap/oapi-codegen v1.9.1/go.mod h1:PLqNAhdedP8ttRpBBkzLKU3bp+Fpy+tTgeAMlztR2cw=
-github.com/digitalocean/godo v1.108.0 h1:fWyMENvtxpCpva1UbKzOFnyAS04N1FNuBWWfPeTGquQ=
-github.com/digitalocean/godo v1.108.0/go.mod h1:R6EmmWI8CT1+fCtjWY9UCB+L5uufuZH13wk3YhxycCs=
+github.com/digitalocean/godo v1.109.0 h1:4W97RJLJSUQ3veRZDNbp1Ol3Rbn6Lmt9bKGvfqYI5SU=
+github.com/digitalocean/godo v1.109.0/go.mod h1:R6EmmWI8CT1+fCtjWY9UCB+L5uufuZH13wk3YhxycCs=
 github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c h1:+Zo5Ca9GH0RoeVZQKzFJcTLoAixx5s5Gq3pTIS+n354=
 github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c/go.mod h1:HJGU9ULdREjOcVGZVPB5s6zYmHi1RxzT71l2wQyLmnE=
 github.com/dnaeon/go-vcr v1.2.0 h1:zHCHvJYTMh1N7xnV7zf1m1GPBF9Ad0Jk/whtQ1663qI=
