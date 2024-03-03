@@ -1,9 +1,7 @@
 package spflib
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -100,30 +98,4 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 
 	}
 	return rec, nil
-}
-
-func dump(rec *SPFRecord, indent string, w io.Writer) {
-
-	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups())
-	fmt.Fprint(w, indent+"v=spf1")
-	for _, p := range rec.Parts {
-		fmt.Fprint(w, " "+p.Text)
-	}
-	fmt.Fprintln(w)
-	indent += "\t"
-	for _, p := range rec.Parts {
-		if p.IsLookup {
-			fmt.Fprintln(w, indent+p.Text)
-		}
-		if p.IncludeRecord != nil {
-			dump(p.IncludeRecord, indent+"\t", w)
-		}
-	}
-}
-
-// Print prints an SPFRecord.
-func (s *SPFRecord) Print() string {
-	w := &bytes.Buffer{}
-	dump(s, "", w)
-	return w.String()
 }
