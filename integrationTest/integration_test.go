@@ -135,7 +135,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 
 // testPermitted returns nil if the test is permitted, otherwise an
 // error explaining why it is not.
-func testPermitted(t *testing.T, p string, f TestGroup) error {
+func testPermitted(p string, f TestGroup) error {
 
 	// not() and only() can't be mixed.
 	if len(f.only) != 0 && len(f.not) != 0 {
@@ -298,7 +298,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Abide by filter
-		if err := testPermitted(t, *providerToRun, *group); err != nil {
+		if err := testPermitted(*providerToRun, *group); err != nil {
 			//t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
 			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
 			continue
