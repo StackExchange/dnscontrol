@@ -266,7 +266,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	testGroups := makeTests(t)
+	testGroups := makeTests()
 
 	firstGroup := *startIdx
 	if firstGroup == -1 {
@@ -523,7 +523,7 @@ func ignoreName(labelSpec string) *models.RecordConfig {
 }
 
 func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
-	return ignore("*", "*", targetSpec)
+	return ignore("*", typeSpec, targetSpec)
 }
 
 func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
@@ -712,7 +712,7 @@ func ns1Urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS1_URLFWD")
 }
 
-func clear(items ...interface{}) *TestCase {
+func clear() *TestCase {
 	return tc("Empty")
 }
 
@@ -750,7 +750,7 @@ func alltrue(f ...bool) alltrueFilter {
 
 //
 
-func makeTests(t *testing.T) []*TestGroup {
+func makeTests() []*TestGroup {
 
 	sha256hash := strings.Repeat("0123456789abcdef", 4)
 	sha512hash := strings.Repeat("0123456789abcdef", 8)
