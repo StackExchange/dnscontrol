@@ -266,7 +266,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	testGroups := makeTests(t)
+	testGroups := makeTests()
 
 	firstGroup := *startIdx
 	if firstGroup == -1 {
@@ -750,7 +750,7 @@ func alltrue(f ...bool) alltrueFilter {
 
 //
 
-func makeTests(t *testing.T) []*TestGroup {
+func makeTests() []*TestGroup {
 
 	sha256hash := strings.Repeat("0123456789abcdef", 4)
 	sha512hash := strings.Repeat("0123456789abcdef", 8)
