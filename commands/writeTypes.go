@@ -56,9 +56,6 @@ func WriteTypes(args TypesArgs) error {
 	file.WriteString("// To update it, run `dnscontrol write-types`.\n\n")
 	file.WriteString("// " + version + "\n")
 	file.WriteString(dtsContent)
-	if err != nil {
-		return err
-	}
 
 	print("Successfully wrote " + args.DTSFile + "\n")
 	return nil
