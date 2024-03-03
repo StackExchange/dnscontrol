@@ -398,10 +398,9 @@ func checkNSModifications(dc *models.DomainConfig) {
 
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == punyRoot {
-			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
-				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
+			if strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
+				continue
 			}
-			continue
 		}
 		newList = append(newList, rec)
 	}
