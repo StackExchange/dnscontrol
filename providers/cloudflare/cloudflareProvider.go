@@ -1,6 +1,7 @@
 package cloudflare
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -827,7 +828,7 @@ func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE integration tests.
 func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 	cf, ok := prv.(*cloudflareProvider)
 	if ok {
@@ -842,4 +843,19 @@ func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 		}
 	}
 	return nil
+}
+
+func (c *cloudflareProvider) createTestWorker(workerName string) error {
+	wp := cloudflare.CreateWorkerParams{
+		ScriptName: workerName,
+		Script: `
+			addEventListener("fetch", (event) => {
+				event.respondWith(
+					new Response("Ok.", { status: 200 })
+				);
+			});`,
+	}
+
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountID), wp)
+	return err
 }
