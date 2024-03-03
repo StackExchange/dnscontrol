@@ -18,6 +18,19 @@ func init() {
 	color.NoColor = true
 }
 
+func makeRec(label, rtype, content string) *models.RecordConfig {
+	origin := "f.com"
+	r := models.RecordConfig{TTL: 300}
+	r.SetLabel(label, origin)
+	r.PopulateFromString(rtype, content, origin)
+	return &r
+}
+func makeRecTTL(label, rtype, content string, ttl uint32) *models.RecordConfig {
+	r := makeRec(label, rtype, content)
+	r.TTL = ttl
+	return r
+}
+
 var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               // [ 0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
 var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
