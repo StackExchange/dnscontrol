@@ -358,21 +358,6 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 	return err
 }
 
-func (c *cloudflareProvider) createTestWorker(workerName string) error {
-	wp := cloudflare.CreateWorkerParams{
-		ScriptName: workerName,
-		Script: `
-			addEventListener("fetch", (event) => {
-				event.respondWith(
-					new Response("Ok.", { status: 200 })
-				);
-			});`,
-	}
-
-	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountID), wp)
-	return err
-}
-
 // https://github.com/dominikh/go-tools/issues/1137 which is a dup of
 // https://github.com/dominikh/go-tools/issues/810
 //
