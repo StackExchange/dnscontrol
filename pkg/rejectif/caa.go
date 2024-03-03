@@ -27,10 +27,10 @@ func CaaTargetContainsWhitespace(rc *models.RecordConfig) error {
 	return nil
 }
 
-// CaaTargetHasSemicolon identifies CAA records that contain semicolons.
-func CaaTargetHasSemicolon(rc *models.RecordConfig) error {
-	if strings.Contains(rc.GetTargetField(), ";") {
-		return fmt.Errorf("caa target contains semicolon")
-	}
-	return nil
-}
+// // CaaTargetHasSemicolon identifies CAA records that contain semicolons.
+// func CaaTargetHasSemicolon(rc *models.RecordConfig) error {
+// 	if strings.Contains(rc.GetTargetField(), ";") {
+// 		return fmt.Errorf("caa target contains semicolon")
+// 	}
+// 	return nil
+// }
