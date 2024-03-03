@@ -1,12 +1,43 @@
 package diff2
 
 import (
+	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/kylelemons/godebug/diff"
 )
+
+// String returns cc represented as a string. This is used for
+// debugging and unit tests, as the structure may otherwise be
+// difficult to compare.
+func (cc *CompareConfig) String() string {
+	var buf bytes.Buffer
+	b := &buf
+
+	fmt.Fprintf(b, "ldata:\n")
+	for i, ld := range cc.ldata {
+		fmt.Fprintf(b, "  ldata[%02d]: %s\n", i, ld.label)
+		for j, t := range ld.tdata {
+			fmt.Fprintf(b, "             tdata[%d]: %q e(%d, %d) d(%d, %d)\n", j, t.rType,
+				len(t.existingTargets),
+				len(t.existingRecs),
+				len(t.desiredTargets),
+				len(t.desiredRecs),
+			)
+		}
+	}
+	fmt.Fprintf(b, "labelMap: len=%d %v\n", len(cc.labelMap), cc.labelMap)
+	fmt.Fprintf(b, "keyMap:   len=%d %v\n", len(cc.keyMap), cc.keyMap)
+	fmt.Fprintf(b, "existing: %q\n", cc.existing)
+	fmt.Fprintf(b, "desired: %q\n", cc.desired)
+	fmt.Fprintf(b, "origin: %v\n", cc.origin)
+	fmt.Fprintf(b, "compFn: %v\n", cc.compareableFunc)
+
+	return b.String()
+}
 
 func TestNewCompareConfig(t *testing.T) {
 	type args struct {
