@@ -52,6 +52,11 @@ var d12 = makeRec("labh", "A", "1.2.3.4")                 // [12']
 var d13 = makeRec("labc", "CNAME", "labe")                // [13']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
+func justMsgString(cl ChangeList) string {
+	msgs := justMsgs(cl)
+	return strings.Join(msgs, "\n")
+}
+
 func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string, wantstringdefault string) {
 	wantstring = coalesce(wantstring, wantstringdefault)
 	t.Helper()
