@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -45,16 +44,15 @@ func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "exa
 
 // ---
 
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
+func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string]string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
-		return nil, "", nil, nil
+		return nil, "", nil
 	}
 	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
-	fails := map[int]bool{}
 	for name, cfg := range jsons {
 		if *providerToRun != name {
 			continue
@@ -78,15 +76,6 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if err != nil {
 			t.Fatal(err)
 		}
-		if f := cfg["knownFailures"]; f != "" {
-			for _, s := range strings.Split(f, ",") {
-				i, err := strconv.Atoi(s)
-				if err != nil {
-					t.Fatal(err)
-				}
-				fails[i] = true
-			}
-		}
 
 		if name == "CLOUDFLAREAPI" && *enableCFWorkers {
 			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
@@ -95,15 +84,15 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 			}
 		}
 
-		return provider, cfg["domain"], fails, cfg
+		return provider, cfg["domain"], cfg
 	}
 
 	t.Fatalf("Provider %s not found", *providerToRun)
-	return nil, "", nil, nil
+	return nil, "", nil
 }
 
 func TestDNSProviders(t *testing.T) {
-	provider, domain, fails, cfg := getProvider(t)
+	provider, domain, cfg := getProvider(t)
 	if provider == nil {
 		return
 	}
@@ -112,7 +101,7 @@ func TestDNSProviders(t *testing.T) {
 	}
 
 	t.Run(domain, func(t *testing.T) {
-		runTests(t, provider, domain, fails, cfg)
+		runTests(t, provider, domain, cfg)
 	})
 
 }
@@ -275,7 +264,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 	})
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
+func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	testGroups := makeTests(t)
 
@@ -336,7 +325,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 func TestDualProviders(t *testing.T) {
-	p, domain, _, _ := getProvider(t)
+	p, domain, _ := getProvider(t)
 	if p == nil {
 		return
 	}
@@ -400,7 +389,7 @@ func TestNameserverDots(t *testing.T) {
 	// or vise-versa.
 
 	// Setup:
-	p, domain, _, _ := getProvider(t)
+	p, domain, _ := getProvider(t)
 	if p == nil {
 		return
 	}
