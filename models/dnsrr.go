@@ -16,7 +16,6 @@ func (rc *RecordConfig) String() string {
 
 // Conversions
 
-
 // RRtoRC converts dns.RR to RecordConfig
 func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	return helperRRtoRC(rr, origin, false)
