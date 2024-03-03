@@ -38,9 +38,23 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 	}
 }
 
+// rrstoRCs converts []dns.RR to []RecordConfigs.
+func rrstoRCs(rrs []dns.RR, origin string) (models.Records, error) {
+	rcs := make(models.Records, 0, len(rrs))
+	for _, r := range rrs {
+		rc, err := models.RRtoRC(r, origin)
+		if err != nil {
+			return nil, err
+		}
+
+		rcs = append(rcs, &rc)
+	}
+	return rcs, nil
+}
+
 // writeZoneFileRR is a helper for when you have []dns.RR instead of models.Records
 func writeZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
-	rcs, err := models.RRstoRCs(records, origin)
+	rcs, err := rrstoRCs(records, origin)
 	if err != nil {
 		return err
 	}
@@ -59,7 +73,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
-	x, err := models.RRstoRCs(records, "bosun.org")
+	x, err := rrstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +85,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
-	rcs, err := models.RRstoRCs(records, "bosun.org")
+	rcs, err := rrstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +97,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
-	rcs, err = models.RRstoRCs(records, "bosun.org")
+	rcs, err = rrstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
@@ -95,7 +109,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// NS records are ignored.
 	records = nil
 	records, e = append(records, r1, r4, r5), 100
-	rcs, err = models.RRstoRCs(records, "bosun.org")
+	rcs, err = rrstoRCs(records, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
@@ -357,7 +371,7 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
 	rsynz.SetLabel("zalias", "bosun.org")
 
-	recs, err := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	recs, err := rrstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
