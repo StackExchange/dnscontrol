@@ -534,7 +534,7 @@ func ignoreName(labelSpec string) *models.RecordConfig {
 }
 
 func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
-	return ignore("*", "*", targetSpec)
+	return ignore("*", typeSpec, targetSpec)
 }
 
 func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
@@ -723,7 +723,7 @@ func ns1Urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS1_URLFWD")
 }
 
-func clear(items ...interface{}) *TestCase {
+func clear() *TestCase {
 	return tc("Empty")
 }
 
