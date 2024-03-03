@@ -1,9 +1,38 @@
 package spflib
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"strings"
 	"testing"
 )
+
+func dump(rec *SPFRecord, indent string, w io.Writer) {
+
+	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups())
+	fmt.Fprint(w, indent+"v=spf1")
+	for _, p := range rec.Parts {
+		fmt.Fprint(w, " "+p.Text)
+	}
+	fmt.Fprintln(w)
+	indent += "\t"
+	for _, p := range rec.Parts {
+		if p.IsLookup {
+			fmt.Fprintln(w, indent+p.Text)
+		}
+		if p.IncludeRecord != nil {
+			dump(p.IncludeRecord, indent+"\t", w)
+		}
+	}
+}
+
+// Print prints an SPFRecord.
+func (s *SPFRecord) Print() string {
+	w := &bytes.Buffer{}
+	dump(s, "", w)
+	return w.String()
+}
 
 func TestParse(t *testing.T) {
 	dnsres, err := NewCache("testdata-dns1.json")
