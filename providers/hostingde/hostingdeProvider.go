@@ -178,9 +178,10 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	defaultSoa := &hp.defaultSoa
-	if defaultSoa == nil {
-		defaultSoa = &soaValues{}
-	}
+	// Commented out because this can not happen:
+	// if defaultSoa == nil {
+	// 	defaultSoa = &soaValues{}
+	// }
 
 	newSOA := soaValues{
 		Refresh:     firstNonZero(desiredSoa.SoaRefresh, defaultSoa.Refresh, 86400),
