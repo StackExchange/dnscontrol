@@ -223,7 +223,7 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					return a.recordDelete(dcn, chaKey, change.Old)
+					return a.recordDelete(dcn, chaKey)
 				},
 			})
 		default:
@@ -271,7 +271,7 @@ retry:
 	return err
 }
 
-func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey, recs models.Records) error {
+func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey) error {
 
 	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
 	if shortName == zoneName {

@@ -31,6 +31,6 @@ func (c *dohProvider) getNameservers(domain string) ([]string, error) {
 	return ns, nil
 }
 
-func (c *dohProvider) updateNameservers(ns []string, domain string) error {
+func (c *dohProvider) updateNameservers(domain string) error {
 	return fmt.Errorf("DNS-over-HTTPS 'Registrar' is read only, changes must be applied to %s manually", domain)
 }

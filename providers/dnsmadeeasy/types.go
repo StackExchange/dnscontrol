@@ -140,7 +140,7 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 	} else if record.Type == "CAA" {
 		value, unquoteErr := strconv.Unquote(record.Value)
 		if unquoteErr != nil {
-			panic(err)
+			panic(unquoteErr)
 		}
 		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
 	} else {

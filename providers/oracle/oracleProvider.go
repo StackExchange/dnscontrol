@@ -95,7 +95,7 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	if err == nil {
 		return nil
 	}
-	if err != nil && getResp.RawResponse.StatusCode != 404 {
+	if getResp.RawResponse.StatusCode != 404 {
 		return err
 	}
 

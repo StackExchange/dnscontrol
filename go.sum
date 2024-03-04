@@ -575,8 +575,8 @@ gopkg.in/h2non/gock.v1 v1.1.2/go.mod h1:n7UGz/ckNChHiK05rDoiC4MYSunEC/lyaUm2WWaD
 gopkg.in/ini.v1 v1.51.1/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
 gopkg.in/ini.v1 v1.67.0 h1:Dgnx+6+nfE+IfzjUEISNeydPJh9AXNNsWbGP9KzCsOA=
 gopkg.in/ini.v1 v1.67.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
-gopkg.in/ns1/ns1-go.v2 v2.8.0 h1:oX8QEHCCvnbTSqnSZRRHiGJsgke8eluTtQhNlPpFZBc=
-gopkg.in/ns1/ns1-go.v2 v2.8.0/go.mod h1:pfaU0vECVP7DIOr453z03HXS6dFJpXdNRwOyRzwmPSc=
+gopkg.in/ns1/ns1-go.v2 v2.7.11 h1:fs8fkDjfdWdR2Gg//HO+LHrtC38+Z+xpUs3z4iojsn8=
+gopkg.in/ns1/ns1-go.v2 v2.7.11/go.mod h1:pfaU0vECVP7DIOr453z03HXS6dFJpXdNRwOyRzwmPSc=
 gopkg.in/readline.v1 v1.0.0-20160726135117-62c6fe619375/go.mod h1:lNEQeAhU009zbRxng+XOj5ITVgY24WcbNnQopyfKoYQ=
 gopkg.in/sourcemap.v1 v1.0.5 h1:inv58fC9f9J3TK2Y2R1NPntXEn3/wjWHkonhIUODNTI=
 gopkg.in/sourcemap.v1 v1.0.5/go.mod h1:2RlvNNSMglmRrcvhfuzp4hQHwOtjxlbjX7UPY/GXb78=
