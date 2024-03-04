@@ -43,7 +43,7 @@ func (api *rwthProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		des := d.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
-			F:   func() error { return api.createRecord(dc.Name, des) },
+			F:   func() error { return api.createRecord(des) },
 		})
 	}
 	for _, d := range del {
