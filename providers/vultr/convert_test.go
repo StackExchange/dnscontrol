@@ -65,7 +65,7 @@ func TestConversion(t *testing.T) {
 			t.Error("Error converting Vultr record", record)
 		}
 
-		converted := toVultrRecord(dc, rc, "0")
+		converted := toVultrRecord(rc, "0")
 
 		if converted.Type != record.Type || converted.Name != record.Name || converted.Data != record.Data || (converted.Priority != record.Priority) || converted.TTL != record.TTL {
 			t.Error("Vultr record conversion mismatch", record, rc, converted)

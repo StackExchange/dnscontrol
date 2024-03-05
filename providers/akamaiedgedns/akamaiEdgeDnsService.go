@@ -186,7 +186,7 @@ func getAuthorities(contractID string) ([]string, error) {
 }
 
 // rcToRs converts DNSControl RecordConfig records to an AkamaiEdgeDNS recordset.
-func rcToRs(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody, error) {
+func rcToRs(records []*models.RecordConfig) (*dnsv2.RecordBody, error) {
 	if len(records) == 0 {
 		return nil, fmt.Errorf("no records to replace")
 	}
@@ -206,7 +206,7 @@ func rcToRs(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody,
 
 // createRecordset creates a new AkamaiEdgeDNS recordset in the zone.
 func createRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records, zonename)
+	akaRecord, err := rcToRs(records)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func createRecordset(records []*models.RecordConfig, zonename string) error {
 
 // replaceRecordset replaces an existing AkamaiEdgeDNS recordset in the zone.
 func replaceRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records, zonename)
+	akaRecord, err := rcToRs(records)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func replaceRecordset(records []*models.RecordConfig, zonename string) error {
 
 // deleteRecordset deletes an existing AkamaiEdgeDNS recordset in the zone.
 func deleteRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records, zonename)
+	akaRecord, err := rcToRs(records)
 	if err != nil {
 		return err
 	}

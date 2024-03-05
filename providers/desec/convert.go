@@ -35,7 +35,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 	return rcs
 }
 
-func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord {
+func recordsToNative(rcs []*models.RecordConfig) []resourceRecord {
 	// Take a list of RecordConfig and return an equivalent list of resourceRecord.
 	// deSEC requires one resourceRecord for each label:key tuple, therefore we
 	// might collapse many RecordConfig into one resourceRecord.

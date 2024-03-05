@@ -1,6 +1,7 @@
 package cloudflare
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -397,10 +398,9 @@ func checkNSModifications(dc *models.DomainConfig) {
 
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == punyRoot {
-			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
-				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
+			if strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
+				continue
 			}
-			continue
 		}
 		newList = append(newList, rec)
 	}
@@ -827,7 +827,7 @@ func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE integration tests.
 func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 	cf, ok := prv.(*cloudflareProvider)
 	if ok {
@@ -842,4 +842,19 @@ func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 		}
 	}
 	return nil
+}
+
+func (c *cloudflareProvider) createTestWorker(workerName string) error {
+	wp := cloudflare.CreateWorkerParams{
+		ScriptName: workerName,
+		Script: `
+			addEventListener("fetch", (event) => {
+				event.respondWith(
+					new Response("Ok.", { status: 200 })
+				);
+			});`,
+	}
+
+	_, err := c.cfClient.UploadWorker(context.Background(), cloudflare.AccountIdentifier(c.accountID), wp)
+	return err
 }

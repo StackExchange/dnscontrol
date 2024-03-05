@@ -114,7 +114,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	corrections := diff.GenerateMessageCorrections(toReport)
 
 	for _, m := range create {
-		req, err := toReq(zone.ID, dc, m.Desired)
+		req, err := toReq(zone.ID, m.Desired)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 			continue
 		}
 
-		req, _ := toReq(zone.ID, dc, m.Desired)
+		req, _ := toReq(zone.ID, m.Desired)
 		req.ID = original.ID
 		corr := &models.Correction{
 			Msg: m.String(),
@@ -165,7 +165,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	return corrections, nil
 }
 
-func toReq(zoneID string, dc *models.DomainConfig, rc *models.RecordConfig) (*domainRecord, error) {
+func toReq(zoneID string, rc *models.RecordConfig) (*domainRecord, error) {
 	req := &domainRecord{
 		Type:  rc.Type,
 		TTL:   int(rc.TTL),

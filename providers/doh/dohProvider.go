@@ -54,7 +54,7 @@ func (c *dohProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 		{
 			Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
 			F: func() error {
-				return c.updateNameservers(expected, dc.Name)
+				return c.updateNameservers(dc.Name)
 			},
 		},
 	}, nil
