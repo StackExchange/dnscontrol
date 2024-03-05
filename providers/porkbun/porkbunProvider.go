@@ -34,7 +34,7 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 }
 
 // newPorkbun creates the provider.
-func newPorkbun(m map[string]string, metadata json.RawMessage) (*porkbunProvider, error) {
+func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error) {
 	c := &porkbunProvider{}
 
 	c.apiKey, c.secretKey = m["api_key"], m["secret_key"]

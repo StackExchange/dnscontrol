@@ -31,7 +31,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
+func newOVH(m map[string]string, _ json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
 	c, err := ovh.NewClient(getOVHEndpoint(m), appKey, appSecretKey, consumerKey)

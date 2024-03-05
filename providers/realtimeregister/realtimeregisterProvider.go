@@ -3,14 +3,15 @@ package realtimeregister
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 /*
@@ -54,7 +55,7 @@ func init() {
 	providers.RegisterRegistrarType("REALTIMEREGISTER", newRtrReg)
 }
 
-func newRtr(config map[string]string, metadata json.RawMessage) (*realtimeregisterAPI, error) {
+func newRtr(config map[string]string, _ json.RawMessage) (*realtimeregisterAPI, error) {
 	apikey := config["apikey"]
 	sandbox := config["sandbox"] == "1"
 
