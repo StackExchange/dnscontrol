@@ -82,7 +82,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 // newHelper generates a handle.
-func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider, error) {
+func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error) {
 	api := &gandiv5Provider{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {

@@ -10,20 +10,6 @@ type SPFRecord struct {
 	Parts []*SPFPart
 }
 
-// Lookups returns the number of DNS lookups required by s.
-func (s *SPFRecord) Lookups() int {
-	count := 0
-	for _, p := range s.Parts {
-		if p.IsLookup {
-			count++
-		}
-		if p.IncludeRecord != nil {
-			count += p.IncludeRecord.Lookups()
-		}
-	}
-	return count
-}
-
 // SPFPart stores a part of an SPF record, with attributes.
 type SPFPart struct {
 	Text          string

@@ -27,6 +27,20 @@ func dump(rec *SPFRecord, indent string, w io.Writer) {
 	}
 }
 
+// Lookups returns the number of DNS lookups required by s.
+func (s *SPFRecord) Lookups() int {
+	count := 0
+	for _, p := range s.Parts {
+		if p.IsLookup {
+			count++
+		}
+		if p.IncludeRecord != nil {
+			count += p.IncludeRecord.Lookups()
+		}
+	}
+	return count
+}
+
 // Print prints an SPFRecord.
 func (s *SPFRecord) Print() string {
 	w := &bytes.Buffer{}

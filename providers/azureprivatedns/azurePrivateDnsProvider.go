@@ -31,7 +31,7 @@ func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers
 	return newAzureDNS(conf, metadata)
 }
 
-func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvider, error) {
+func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
 	credential, authErr := aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)

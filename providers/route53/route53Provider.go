@@ -43,7 +43,7 @@ func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.
 	return newRoute53(conf, metadata)
 }
 
-func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
+func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error) {
 	optFns := []func(*config.LoadOptions) error{
 		// Route53 uses a global endpoint and route53domains
 		// currently only has a single regional endpoint in us-east-1
