@@ -3,6 +3,7 @@ package bunnydns
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
