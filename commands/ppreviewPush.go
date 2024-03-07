@@ -192,18 +192,28 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		printer.Println("WARNING: Please remove obsolete --diff2 flag. This will be an error in v5 or later. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
+	fmt.Printf("Reading dnsconfig.js or equiv.\n")
+
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Reading creds.js or equiv.\n")
+
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Creating an in-memory model of 'desired'...\n")
+
 	notifier, err := PInitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Normalizing and validating 'desired'..\n")
 
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
@@ -211,6 +221,8 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 	anyErrors := false
 	totalCorrections := 0
+
+	fmt.Printf("Iterating over the domains...\n")
 
 	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
 	var wg sync.WaitGroup
