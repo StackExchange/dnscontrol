@@ -128,12 +128,12 @@ func (args *PPushArgs) flags() []cli.Flag {
 	return flags
 }
 
-// Preview implements the preview subcommand.
+// PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
 	return prun(args, false, false, printer.DefaultPrinter, nil)
 }
 
-// Push implements the push subcommand.
+// PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
 	return prun(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
@@ -142,6 +142,47 @@ var pobsoleteDiff2FlagUsed = false
 
 // run is the main routine common to preview/push
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
+
+	/*
+
+		Print warning about --diff2 flag
+		Compile dnsconfig.js or equiv.
+		Load creds.json or equiv.
+		Intiailize providers
+		Validate and Normalize
+		includedZone = (for all domains, shouldRunDomain)
+
+		foreach includedZone:
+		    includedProviders = (for all providers, shouldRunProvider)
+		    foreach includedProvider:
+			    go
+				    ZoneLister doesn't exists: goto next_step.
+			        (mutex protected) get ZoneList if we don't already have it.
+					if zone not in zonelist:
+				    	If Populate:
+							if ZoneCreator doesn't exist: goto next_step
+					    	if not push: output "would have created zone"; then next_step.
+				    		create zone.
+							If error, (mutex protected: anyError = true) then done.
+							(mutex protected) add zone to zonelist
+					next_step:
+			        	domain+provider.Nameservers = GetNameServers(domain) (zone not exist [return empty] vs. other error [return error])
+						domain+provider.Records = GetZoneRecords() (if error, output errror and store nil)
+						make NS and Rec corrections
+
+			WaitGroup.
+
+		foreach includedZone:
+		    includedProviders = (for all providers, shouldRunProvider)
+		    foreach includedProvider:
+			    BeginProvider
+				RunZoneCorrections (preview or push)
+				RunParentCorrections (preview or push)
+			    EndProvider
+
+
+	*/
+
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
 	// This is a hack until we have the new printer replacement.
