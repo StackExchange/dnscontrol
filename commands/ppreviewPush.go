@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -218,35 +219,36 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
-	//var wg sync.WaitGroup
-	//wg.Add(len(zonesToProcess))
+	var wg sync.WaitGroup
+	wg.Add(len(zonesToProcess))
 	for _, zone := range zonesToProcess {
 
-		// go func() {
-		// 	defer wg.Done()
+		go func(zone *models.DomainConfig) {
+			defer wg.Done()
 
-		// Loop over the (selected) providers configured for that zone:
-		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
-		for _, provider := range providersToProcess {
-			// Populate the zones at the provider (if desired/needed/able):
-			if !args.NoPopulate {
-				existingZones := zonesAtProvider(provider)
-				populateCorrections := generatePopulateCorrections(provider, existingZones, zone.Name)
-				rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, populateCorrections)
+			// Loop over the (selected) providers configured for that zone:
+			providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
+			for _, provider := range providersToProcess {
+				// Populate the zones at the provider (if desired/needed/able):
+				if !args.NoPopulate {
+					existingZones := zonesAtProvider(provider)
+					populateCorrections := generatePopulateCorrections(provider, existingZones, zone.Name)
+					rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, populateCorrections)
+				}
+
+				// Update the records at the provider:
+				existingZoneRecords := getZoneRecords(provider, zone.Name)
+				zoneCorrections := generateZoneCorrections(zone, existingZoneRecords)
+				rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, zoneCorrections)
 			}
 
-			// Update the records at the provider:
-			existingZoneRecords := getZoneRecords(provider, zone.Name)
-			zoneCorrections := generateZoneCorrections(zone, existingZoneRecords)
-			rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, zoneCorrections)
-		}
-
-		// Fix the parent zone's delegation: (if needed/able)
-		if parentSupportsDelegations(zone.RegistrarInstance) {
-			// Correct the parent delegations:
-			delegationCorrections := generateDelegationCorrections(zone)
-			rememberCorrectionsForDomainAndProvider(zone.Name, zone.RegistrarInstance.Name, delegationCorrections)
-		}
+			// Fix the parent zone's delegation: (if needed/able)
+			if parentSupportsDelegations(zone.RegistrarInstance) {
+				// Correct the parent delegations:
+				delegationCorrections := generateDelegationCorrections(zone)
+				rememberCorrectionsForDomainAndProvider(zone.Name, zone.RegistrarInstance.Name, delegationCorrections)
+			}
+		}(zone)
 
 	}
 
