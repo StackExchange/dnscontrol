@@ -11,8 +11,11 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -242,15 +245,14 @@ func oneDomain(zone *models.DomainConfig, args PPreviewArgs) {
 
 		// Populate the zones at the provider (if desired/needed/able):
 		if !args.NoPopulate {
-			existingZones := zonesAtProvider(provider)
-			populateCorrections := generatePopulateCorrections(provider, existingZones, zone.Name)
+			populateCorrections := generatePopulateCorrections(provider, zone.Name)
 			rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, populateCorrections)
 		}
 
 		// Update the zone's records at the provider:
-		existingZoneRecords := getZoneRecords(provider, zone.Name)
-		zoneCorrections := generateZoneCorrections(zone, existingZoneRecords)
+		zoneCorrections, reports := generateZoneCorrections(zone, provider)
 		rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, zoneCorrections)
+		rememberReports(zone.Name, provider.Name, reports)
 	}
 
 	// Fix the parent zone's delegation: (if able/needed)
@@ -261,31 +263,87 @@ func oneDomain(zone *models.DomainConfig, args PPreviewArgs) {
 }
 
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
-	_ = filter
-	return domains
+	if filter == "" || filter == "all" {
+		return domains
+	}
+
+	permitList := strings.Split(filter, ",")
+	var picked []*models.DomainConfig
+	for _, domain := range domains {
+		if domainInList(domain.Name, permitList) {
+			picked = append(picked, domain)
+		}
+	}
+	return picked
 }
+
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
-	_ = filter
-	return providers
+
+	if filter == "all" { // all
+		return providers
+	}
+
+	permitList := strings.Split(filter, ",")
+	var picked []*models.DNSProviderInstance
+
+	// Just the default providers:
+	if filter == "" {
+		for _, provider := range providers {
+			if provider.IsDefault {
+				picked = append(picked, provider)
+			}
+		}
+		return picked
+	}
+
+	// Just the exact matches:
+	for _, provider := range providers {
+		for _, filterItem := range permitList {
+			if provider.Name == filterItem {
+				picked = append(picked, provider)
+			}
+		}
+	}
+	return picked
 }
-func zonesAtProvider(provider *models.DNSProviderInstance) []string {
-	_ = provider
-	return nil
+
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string) []*models.Correction {
+
+	lister, ok := provider.Driver.(providers.ZoneLister)
+	if !ok {
+		return nil // We can't generate a list. No corrections are possible.
+	}
+
+	zones, err := lister.ListZones()
+	if err != nil {
+		return []*models.Correction{{Msg: fmt.Sprintf("Provider %q ListZones returned: %s", provider.Name, err)}}
+	}
+
+	aceZoneName, _ := idna.ToASCII(zoneName)
+	if slices.Contains(zones, aceZoneName) {
+		return nil // zone exists. Nothing to do.
+	}
+
+	creator, ok := provider.Driver.(providers.ZoneCreator)
+	if !ok {
+		return []*models.Correction{{Msg: fmt.Sprintf("Zone %q does not exist. Can not create because %q does not implement ZoneCreator", aceZoneName, provider.Name)}}
+	}
+
+	return []*models.Correction{{
+		Msg: fmt.Sprintf("Create zone '%s' in the '%s' profile", aceZoneName, provider.Name),
+		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
+	}}
 }
-func generatePopulateCorrections(provider *models.DNSProviderInstance, existingZones []string, myzone string) []*models.Correction {
-	_ = provider
-	_ = existingZones
-	_ = myzone
-	return nil
+
+func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction) {
+	reports, zoneCorrections, err := zonerecs.CorrectZoneRecords(provider.Driver, zone)
+	if err != nil {
+		return []*models.Correction{{Msg: fmt.Sprintf("Domain %q provider %s Error: %s", zone.Name, provider.Name, err)}}, nil
+	}
+	return zoneCorrections, reports
 }
-func getZoneRecords(provider *models.DNSProviderInstance, zoneName string) models.Records {
-	_ = provider
-	_ = zoneName
-	panic("unimplemented")
-}
-func generateZoneCorrections(zone *models.DomainConfig, existingZoneRecords models.Records) []*models.Correction {
-	_ = zone
-	_ = existingZoneRecords
+
+func rememberReports(s1, s2 string, reports []ReportItem) {
 	panic("unimplemented")
 }
 func parentSupportsDelegations(registrarInstance *models.RegistrarInstance) bool {
