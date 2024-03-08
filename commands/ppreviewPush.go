@@ -1,25 +1,18 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
-	"sync"
-
-	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -42,6 +35,7 @@ type PPreviewArgs struct {
 	Notify      bool
 	WarnChanges bool
 	NoPopulate  bool
+	DePopulate  bool
 	Full        bool
 }
 
@@ -70,7 +64,12 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
-		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
+		Usage:       `Do not auto-create zones at the provider`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "depopulate",
+		Destination: &args.NoPopulate,
+		Usage:       `Delete unknown zones at provider (dangerous!)`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "full",
@@ -140,48 +139,45 @@ func PPush(args PPushArgs) error {
 
 var pobsoleteDiff2FlagUsed = false
 
+// // create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
+// var wg sync.WaitGroup
+// wg.Add(len(cfg.Domains))
+// var reportItems []ReportItem
+// // For each domain in dnsconfig.js...
+
+/*
+
+	foreach includedZone:
+	    includedProviders = (for all providers, shouldRunProvider)
+	    foreach includedProvider:
+		    go
+			    ZoneLister doesn't exists: goto next_step.
+		        (mutex protected) get ZoneList if we don't already have it.
+				if zone not in zonelist:
+			    	If Populate:
+						if ZoneCreator doesn't exist: goto next_step
+				    	if not push: output "would have created zone"; then next_step.
+			    		create zone.
+						If error, (mutex protected: anyError = true) then done.
+						(mutex protected) add zone to zonelist
+				next_step:
+		        	domain+provider.Nameservers = GetNameServers(domain) (zone not exist [return empty] vs. other error [return error])
+					domain+provider.Records = GetZoneRecords() (if error, output errror and store nil)
+					make NS and Rec corrections
+
+		WaitGroup.
+
+	foreach includedZone:
+	    includedProviders = (for all providers, shouldRunProvider)
+	    foreach includedProvider:
+		    BeginProvider
+			RunZoneCorrections (preview or push)
+			RunParentCorrections (preview or push)
+		    EndProvider
+*/
+
 // run is the main routine common to preview/push
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
-
-	/*
-
-		Print warning about --diff2 flag
-		Compile dnsconfig.js or equiv.
-		Load creds.json or equiv.
-		Intiailize providers
-		Validate and Normalize
-		includedZone = (for all domains, shouldRunDomain)
-
-		foreach includedZone:
-		    includedProviders = (for all providers, shouldRunProvider)
-		    foreach includedProvider:
-			    go
-				    ZoneLister doesn't exists: goto next_step.
-			        (mutex protected) get ZoneList if we don't already have it.
-					if zone not in zonelist:
-				    	If Populate:
-							if ZoneCreator doesn't exist: goto next_step
-					    	if not push: output "would have created zone"; then next_step.
-				    		create zone.
-							If error, (mutex protected: anyError = true) then done.
-							(mutex protected) add zone to zonelist
-					next_step:
-			        	domain+provider.Nameservers = GetNameServers(domain) (zone not exist [return empty] vs. other error [return error])
-						domain+provider.Records = GetZoneRecords() (if error, output errror and store nil)
-						make NS and Rec corrections
-
-			WaitGroup.
-
-		foreach includedZone:
-		    includedProviders = (for all providers, shouldRunProvider)
-		    foreach includedProvider:
-			    BeginProvider
-				RunZoneCorrections (preview or push)
-				RunParentCorrections (preview or push)
-			    EndProvider
-
-
-	*/
 
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
@@ -193,183 +189,302 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 
 	fmt.Printf("Reading dnsconfig.js or equiv.\n")
-
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Reading creds.js or equiv.\n")
-
+	fmt.Printf("Reading creds.json or equiv.\n")
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Creating an in-memory model of 'desired'...\n")
-
 	notifier, err := PInitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Normalizing and validating 'desired'..\n")
-
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
 	}
-	anyErrors := false
-	totalCorrections := 0
 
 	fmt.Printf("Iterating over the domains...\n")
 
-	// create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
-	var wg sync.WaitGroup
-	wg.Add(len(cfg.Domains))
-	var reportItems []ReportItem
-	// For each domain in dnsconfig.js...
-	for _, domain := range cfg.Domains {
-		// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
-		// For now running this code is still sequential.
-		// Please note that at the end of this anonymous function there is a } (domain) which executes this function actually
-		func(domain *models.DomainConfig) {
-			defer wg.Done() // defer notify WaitGroup this anonymous function has finished
+	var corrections []*models.Correction
 
-			uniquename := domain.GetUniqueName()
-			if !args.shouldRunDomain(uniquename) {
-				return
+	// Loop over all (or some) zones:
+	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
+	//var wg sync.WaitGroup
+	//wg.Add(len(zonesToProcess))
+	for _, zone := range zonesToProcess {
+
+		// go func() {
+		// 	defer wg.Done()
+
+		// Loop over the (selected) providers configured for that zone:
+		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
+		for _, provider := range providersToProcess {
+			// Populate the zones at the provider (if desired/needed/able):
+			if !args.NoPopulate {
+				existingZones := zonesAtProvider(provider)
+				populateCorrections := generatePopulateCorrections(provider, existingZones, zone.Name)
+				rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, populateCorrections)
 			}
 
-			err = domain.Punycode()
-			if err != nil {
-				return
-			}
-
-			// Correct the domain...
-
-			out.StartDomain(uniquename)
-			var providersWithExistingZone []*models.DNSProviderInstance
-			/// For each DSP...
-			for _, provider := range domain.DNSProviderInstances {
-				if !args.NoPopulate {
-					// preview run: check if zone is already there, if not print a warning
-					if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
-						zones, err := lister.ListZones()
-						if err != nil {
-							out.Errorf("ERROR: %s\n", err.Error())
-							return
-						}
-						aceZoneName, _ := idna.ToASCII(domain.Name)
-
-						if !slices.Contains(zones, aceZoneName) {
-							//out.Warnf("DEBUG: zones: %v\n", zones)
-							//out.Warnf("DEBUG: Name: %v\n", domain.Name)
-
-							out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-							continue // continue with next provider, as we can not determine corrections without an existing zone
-						}
-					} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
-						// this is the actual push, ensure domain exists at DSP
-						if err := creator.EnsureZoneExists(domain.Name); err != nil {
-							out.Warnf("Error creating domain: %s\n", err)
-							anyErrors = true
-							continue // continue with next provider, as we couldn't create this one
-						}
-					}
-				}
-				providersWithExistingZone = append(providersWithExistingZone, provider)
-			}
-
-			// Correct the registrar...
-
-			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
-			if err != nil {
-				out.Errorf("ERROR: %s\n", err.Error())
-				return
-			}
-			domain.Nameservers = nsList
-			nameservers.AddNSRecords(domain)
-
-			for _, provider := range providersWithExistingZone {
-
-				shouldrun := args.shouldRunProvider(provider.Name, domain)
-				out.StartDNSProvider(provider.Name, !shouldrun)
-				if !shouldrun {
-					continue
-				}
-
-				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
-				out.EndProvider(provider.Name, len(corrections), err)
-				if err != nil {
-					anyErrors = true
-					return
-				}
-				totalCorrections += len(corrections)
-				pprintReports(domain.Name, provider.Name, reports, out, push, notifier)
-				reportItems = append(reportItems, ReportItem{
-					Domain:      domain.Name,
-					Corrections: len(corrections),
-					Provider:    provider.Name,
-				})
-				anyErrors = pprintOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
-			}
-
-			//
-			run := args.shouldRunProvider(domain.RegistrarName, domain)
-			out.StartRegistrar(domain.RegistrarName, !run)
-			if !run {
-				return
-			}
-			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-				out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-				return
-			}
-
-			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domain)
-			out.EndProvider(domain.RegistrarName, len(corrections), err)
-			if err != nil {
-				anyErrors = true
-				return
-			}
-			totalCorrections += len(corrections)
-			reportItems = append(reportItems, ReportItem{
-				Domain:      domain.Name,
-				Corrections: len(corrections),
-				Registrar:   domain.RegistrarName,
-			})
-			anyErrors = pprintOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
-		}(domain)
-	}
-	wg.Wait() // wait for all anonymous functions to finish
-
-	if os.Getenv("TEAMCITY_VERSION") != "" {
-		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
-	}
-	notifier.Done()
-	out.Printf("Done. %d corrections.\n", totalCorrections)
-	if anyErrors {
-		return fmt.Errorf("completed with errors")
-	}
-	if totalCorrections != 0 && args.WarnChanges {
-		return fmt.Errorf("there are pending changes")
-	}
-	if report != nil && *report != "" {
-		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			return err
+			// Update the records at the provider:
+			existingZoneRecords := getZoneRecords(provider, zone.Name)
+			zoneCorrections := generateZoneCorrections(zone, existingZoneRecords)
+			rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, zoneCorrections)
 		}
-		defer f.Close()
-		b, err := json.MarshalIndent(reportItems, "", "  ")
-		if err != nil {
-			return err
+
+		// Fix the parent zone's delegation: (if needed/able)
+		if parentSupportsDelegations(zone.RegistrarInstance) {
+			// Correct the parent delegations:
+			delegationCorrections := generateDelegationCorrections(zone)
+			rememberCorrectionsForDomainAndProvider(zone.Name, zone.RegistrarInstance.Name, delegationCorrections)
 		}
-		if _, err := f.Write(b); err != nil {
-			return err
-		}
+
+	}
+
+	// Now we know what to do, print or do the tasks.
+	for _, zone := range zonesToProcess {
+		previewOrRunCorrections(zone, corrections, push, interactive, out, notifier, *report != "")
 	}
 	return nil
 }
+
+func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
+	_ = filter
+	return domains
+}
+func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
+	_ = filter
+	return providers
+}
+func zonesAtProvider(provider *models.DNSProviderInstance) []string {
+	_ = provider
+	return nil
+}
+func generatePopulateCorrections(provider *models.DNSProviderInstance, existingZones []string, myzone string) []*models.Correction {
+	_ = provider
+	_ = existingZones
+	_ = myzone
+	return nil
+}
+func getZoneRecords(provider *models.DNSProviderInstance, zoneName string) models.Records {
+	_ = provider
+	_ = zoneName
+	panic("unimplemented")
+}
+func generateZoneCorrections(zone *models.DomainConfig, existingZoneRecords models.Records) []*models.Correction {
+	_ = zone
+	_ = existingZoneRecords
+	panic("unimplemented")
+}
+func parentSupportsDelegations(registrarInstance *models.RegistrarInstance) bool {
+	panic("unimplemented")
+}
+func rememberCorrectionsForDomainAndProvider(zoneName string, providerName string, populateCorrections []*models.Correction) {
+	panic("unimplemented")
+}
+func generateDelegationCorrections(zone *models.DomainConfig) []*models.Correction {
+	panic("unimplemented")
+}
+func previewOrRunCorrections(zone *models.DomainConfig, corrections []*models.Correction, push, interactive bool, out printer.CLI, notifier notifications.Notifier, inJSON bool) {
+	panic("unimplemented")
+}
+
+// includedZones, _ := slices.Filter(cfg.Domains, func(d *models.DomainConfig) (bool, error) { return args.shouldRunDomain(d.GetUniqueName()), nil })
+// // TODO(tlim): Improve performance by rewriting shouldRunDomain to not split on comma for every run.
+// fmt.Printf("len(includedZones) = %d\n", len(includedZones))
+
+// for _, zone := range includedZones {
+// 	fmt.Printf("zone: %s\n", zone.Name)
+
+// 	// REGISTRAR CORRECTIONS
+// 	fmt.Printf("    registrar = %s run=%v\n", zone.RegistrarName, run)
+
+// 	var regCorrections []*models.Correction
+// 	if args.shouldRunProvider(zone.RegistrarName, zone) {
+// 		regCorrections, err = zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)
+// 		fmt.Printf("    len(regCorrections) = %d\n", len(regCorrections))
+// 		if err != nil {
+// 			//anyErrors = true
+// 		}
+// 	}
+
+// 	// DSP CORRECTIONS
+// 	for _, provider := range zone.DNSProviderInstances {
+
+// 		canListZones, zones, err := getZoneList(provider.Driver)
+// 		fmt.Printf("    canListZones=%v err=%v zones=%v\n", canListZones, err, zones)
+
+// 		if canListZones {
+// 			if slices.Contains(zones, zone) {
+// 				if creator, ok := provider.Driver.(providers.ZoneCreator); ok {
+// 					if push {
+// 						fmt.Printf("    PUSH creating zone %q in %q: %v\n", zone.Name, provider.Name, creator)
+// 					} else {
+// 						fmt.Printf("    preview creating zone %q in %q\n", zone.Name, provider.Name)
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	//aceZoneName, _ := idna.ToASCII(domain.Name)
+// }
+
+// for _, domain := range cfg.Domains {
+// 	uniquename := domain.GetUniqueName()
+// 	if !args.shouldRunDomain(uniquename) {
+// 		skip
+// 	}
+// }
+
+// 	// Run preview or push operations per domain as anonymous function, in preparation for the later use of goroutines.
+// 	// For now running this code is still sequential.
+// 	// Please note that at the end of this anonymous function there is a } (domain) which executes this function actually
+// 	func(domain *models.DomainConfig) {
+// 		defer wg.Done() // defer notify WaitGroup this anonymous function has finished
+
+// 		err = domain.Punycode()
+// 		if err != nil {
+// 			return
+// 		}
+
+// 		// Correct the domain...
+
+// 		out.StartDomain(uniquename)
+// 		var providersWithExistingZone []*models.DNSProviderInstance
+// 		/// For each DSP...
+// 		for _, provider := range domain.DNSProviderInstances {
+// 			if !args.NoPopulate {
+// 				// preview run: check if zone is already there, if not print a warning
+// 				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+// 					zones, err := lister.ListZones()
+// 					if err != nil {
+// 						out.Errorf("ERROR: %s\n", err.Error())
+// 						return
+// 					}
+// 					aceZoneName, _ := idna.ToASCII(domain.Name)
+
+// 					if !slices.Contains(zones, aceZoneName) {
+// 						//out.Warnf("DEBUG: zones: %v\n", zones)
+// 						//out.Warnf("DEBUG: Name: %v\n", domain.Name)
+
+// 						out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+// 						continue // continue with next provider, as we can not determine corrections without an existing zone
+// 					}
+// 				} else if creator, ok := provider.Driver.(providers.ZoneCreator); ok && push {
+// 					// this is the actual push, ensure domain exists at DSP
+// 					if err := creator.EnsureZoneExists(domain.Name); err != nil {
+// 						out.Warnf("Error creating domain: %s\n", err)
+// 						anyErrors = true
+// 						continue // continue with next provider, as we couldn't create this one
+// 					}
+// 				}
+// 			}
+// 			providersWithExistingZone = append(providersWithExistingZone, provider)
+// 		}
+
+// 		// Correct the registrar...
+
+// 		nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
+// 		if err != nil {
+// 			out.Errorf("ERROR: %s\n", err.Error())
+// 			return
+// 		}
+// 		domain.Nameservers = nsList
+// 		nameservers.AddNSRecords(domain)
+
+// 		for _, provider := range providersWithExistingZone {
+
+// 			shouldrun := args.shouldRunProvider(provider.Name, domain)
+// 			out.StartDNSProvider(provider.Name, !shouldrun)
+// 			if !shouldrun {
+// 				continue
+// 			}
+
+// 			reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+// 			out.EndProvider(provider.Name, len(corrections), err)
+// 			if err != nil {
+// 				anyErrors = true
+// 				return
+// 			}
+// 			totalCorrections += len(corrections)
+// 			pprintReports(domain.Name, provider.Name, reports, out, push, notifier)
+// 			reportItems = append(reportItems, ReportItem{
+// 				Domain:      domain.Name,
+// 				Corrections: len(corrections),
+// 				Provider:    provider.Name,
+// 			})
+// 			anyErrors = pprintOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
+// 		}
+
+// 		//
+// 		run := args.shouldRunProvider(domain.RegistrarName, domain)
+// 		out.StartRegistrar(domain.RegistrarName, !run)
+// 		if !run {
+// 			return
+// 		}
+// 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+// 			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+// 			return
+// 		}
+
+// 		totalCorrections += len(corrections)
+// 		reportItems = append(reportItems, ReportItem{
+// 			Domain:      domain.Name,
+// 			Corrections: len(corrections),
+// 			Registrar:   domain.RegistrarName,
+// 		})
+// 		anyErrors = pprintOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+// 	}(domain)
+// }
+// wg.Wait() // wait for all anonymous functions to finish
+
+// if os.Getenv("TEAMCITY_VERSION") != "" {
+// 	fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
+// }
+// notifier.Done()
+// out.Printf("Done. %d corrections.\n", totalCorrections)
+// if anyErrors {
+// 	return fmt.Errorf("completed with errors")
+// }
+// if totalCorrections != 0 && args.WarnChanges {
+// 	return fmt.Errorf("there are pending changes")
+// }
+// if report != nil && *report != "" {
+// 	f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer f.Close()
+// 	b, err := json.MarshalIndent(reportItems, "", "  ")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if _, err := f.Write(b); err != nil {
+// 		return err
+// 	}
+// }
+
+// func getZoneList(driver models.DNSProvider) (bool, []string, error) {
+// 	lister, ok := driver.(providers.ZoneLister)
+// 	if !ok {
+// 		return false, nil, nil
+// 	}
+// 	zones, err := lister.ListZones()
+// 	return true, zones, err
+// }
+
+// func zoneMissing(name string, zones []string) bool {
+// 	return false
+// }
 
 // PInitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
 func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (notify notifications.Notifier, err error) {
@@ -621,39 +736,39 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 
 }
 
-func pprintOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
-	anyErrors = false
-	if len(corrections) == 0 {
-		return false
-	}
-	for i, correction := range corrections {
-		out.PrintCorrection(i, correction)
-		var err error
-		if push {
-			if interactive && !out.PromptToRun() {
-				continue
-			}
-			if correction.F != nil {
-				err = correction.F()
-				out.EndCorrection(err)
-				if err != nil {
-					anyErrors = true
-				}
-			}
-		}
-		notifier.Notify(domain, provider, correction.Msg, err, !push)
-	}
-	return anyErrors
-}
+// func pprintOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
+// 	anyErrors = false
+// 	if len(corrections) == 0 {
+// 		return false
+// 	}
+// 	for i, correction := range corrections {
+// 		out.PrintCorrection(i, correction)
+// 		var err error
+// 		if push {
+// 			if interactive && !out.PromptToRun() {
+// 				continue
+// 			}
+// 			if correction.F != nil {
+// 				err = correction.F()
+// 				out.EndCorrection(err)
+// 				if err != nil {
+// 					anyErrors = true
+// 				}
+// 			}
+// 		}
+// 		notifier.Notify(domain, provider, correction.Msg, err, !push)
+// 	}
+// 	return anyErrors
+// }
 
-func pprintReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
-	anyErrors = false
-	if len(reports) == 0 {
-		return false
-	}
-	for i, report := range reports {
-		out.PrintReport(i, report)
-		notifier.Notify(domain, provider, report.Msg, nil, !push)
-	}
-	return anyErrors
-}
+// func pprintReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
+// 	anyErrors = false
+// 	if len(reports) == 0 {
+// 		return false
+// 	}
+// 	for i, report := range reports {
+// 		out.PrintReport(i, report)
+// 		notifier.Notify(domain, provider, report.Msg, nil, !push)
+// 	}
+// 	return anyErrors
+// }
