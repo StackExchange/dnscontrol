@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -219,16 +220,23 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
-	//var wg sync.WaitGroup
-	//wg.Add(len(zonesToProcess))
-	for _, zone := range zonesToProcess {
-		fmt.Printf("ZONE: %q\n", zone.Name)
-		//func(zone *models.DomainConfig, args PPreviewArgs) {
-		//defer wg.Done()
-		oneDomain(zone, args)
-		//}(zone, args)
+	if false {
+		for _, zone := range zonesToProcess {
+			fmt.Printf("ZONE: %q\n", zone.Name)
+			oneDomain(zone, args)
+		}
+	} else {
+		var wg sync.WaitGroup
+		wg.Add(len(zonesToProcess))
+		for _, zone := range zonesToProcess {
+			fmt.Printf("ZONE: %q\n", zone.Name)
+			go func(zone *models.DomainConfig, args PPreviewArgs) {
+				defer wg.Done()
+				oneDomain(zone, args)
+			}(zone, args)
+		}
+		wg.Wait()
 	}
-	//wg.Wait()
 
 	// Now we know what to do, print or do the tasks.
 	fmt.Printf("CORRECTIONS:\n")

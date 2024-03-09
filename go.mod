@@ -61,7 +61,6 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.10.0
 	github.com/G-Core/gcore-dns-sdk-go v0.2.8
-	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/fatih/color v1.16.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.6.0
