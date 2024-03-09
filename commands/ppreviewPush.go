@@ -132,12 +132,12 @@ func (args *PPushArgs) flags() []cli.Flag {
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	return prun(args, false, false, printer.DefaultPrinter, nil)
+	return prun(args, false, false, printer.DefaultPrinter, "")
 }
 
 // PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
-	return prun(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
+	return prun(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, args.Report)
 }
 
 var pobsoleteDiff2FlagUsed = false
@@ -180,7 +180,7 @@ var pobsoleteDiff2FlagUsed = false
 */
 
 // run is the main routine common to preview/push
-func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
+func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report string) error {
 
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
@@ -215,25 +215,34 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return fmt.Errorf("exiting due to validation errors")
 	}
 
-	fmt.Printf("Iterating over the domains...\n")
-
-	var corrections []*models.Correction
+	fmt.Printf("Iterating over the zones...\n")
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
-	// var wg sync.WaitGroup
-	// wg.Add(len(zonesToProcess))
+	//var wg sync.WaitGroup
+	//wg.Add(len(zonesToProcess))
 	for _, zone := range zonesToProcess {
-		func(zone *models.DomainConfig, args PPreviewArgs) {
-			//defer wg.Done()
-			oneDomain(zone, args)
-		}(zone, args)
+		fmt.Printf("ZONE: %q\n", zone.Name)
+		//func(zone *models.DomainConfig, args PPreviewArgs) {
+		//defer wg.Done()
+		oneDomain(zone, args)
+		//}(zone, args)
 	}
-	// wg.Wait()
+	//wg.Wait()
 
 	// Now we know what to do, print or do the tasks.
+	fmt.Printf("CORRECTIONS:\n")
 	for _, zone := range zonesToProcess {
-		previewOrRunCorrections(zone, corrections, push, interactive, out, notifier, *report != "")
+		fmt.Printf("ZONE: %q\n", zone.Name)
+		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
+		for _, provider := range providersToProcess {
+			fmt.Printf("    PROVIDER: %q\n", provider.Name)
+			corrections := zone.GetCorrections(provider.Name)
+			pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report)
+		}
+		corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
+		//pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, *report != "")
+		pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report)
 	}
 	return nil
 }
@@ -246,20 +255,20 @@ func oneDomain(zone *models.DomainConfig, args PPreviewArgs) {
 		// Populate the zones at the provider (if desired/needed/able):
 		if !args.NoPopulate {
 			populateCorrections := generatePopulateCorrections(provider, zone.Name)
-			rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, populateCorrections)
+			zone.StoreCorrections(provider.Name, populateCorrections)
 		}
 
 		// Update the zone's records at the provider:
-		zoneCorrections, reports := generateZoneCorrections(zone, provider)
-		rememberCorrectionsForDomainAndProvider(zone.Name, provider.Name, zoneCorrections)
-		rememberReports(zone.Name, provider.Name, reports)
+		zoneCor, rep := generateZoneCorrections(zone, provider)
+		zone.StoreCorrections(provider.Name, rep)
+		zone.StoreCorrections(provider.Name, zoneCor)
 	}
 
-	// Fix the parent zone's delegation: (if able/needed)
-	if parentSupportsDelegations(zone.RegistrarInstance) {
-		delegationCorrections := generateDelegationCorrections(zone)
-		rememberCorrectionsForDomainAndProvider(zone.Name, zone.RegistrarInstance.Name, delegationCorrections)
-	}
+	// // Fix the parent zone's delegation: (if able/needed)
+	// if parentSupportsDelegations(zone.RegistrarInstance) {
+	delegationCorrections := generateDelegationCorrections(zone)
+	zone.StoreCorrections(zone.RegistrarInstance.Name, delegationCorrections)
+	// }
 }
 
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
@@ -343,20 +352,47 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 	return zoneCorrections, reports
 }
 
-func rememberReports(s1, s2 string, reports []ReportItem) {
-	panic("unimplemented")
-}
-func parentSupportsDelegations(registrarInstance *models.RegistrarInstance) bool {
-	panic("unimplemented")
-}
-func rememberCorrectionsForDomainAndProvider(zoneName string, providerName string, populateCorrections []*models.Correction) {
-	panic("unimplemented")
-}
 func generateDelegationCorrections(zone *models.DomainConfig) []*models.Correction {
-	panic("unimplemented")
+	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
+		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}
+	}
+
+	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)
+	if err != nil {
+		return msg(fmt.Sprintf("zone %q; registrar %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err))
+	}
+	return corrections
 }
-func previewOrRunCorrections(zone *models.DomainConfig, corrections []*models.Correction, push, interactive bool, out printer.CLI, notifier notifications.Notifier, inJSON bool) {
-	panic("unimplemented")
+
+func pprintOrRunCorrections(zoneName string, providerName string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier, report string) bool {
+	if len(corrections) == 0 {
+		return false
+	}
+	var anyErrors bool
+	for _, correction := range corrections {
+		// 		out.PrintCorrection(i, correction)
+		var err error
+		if push {
+			if interactive && !out.PromptToRun() {
+				continue
+			}
+			if correction.F != nil {
+				err = correction.F()
+				// 				out.EndCorrection(err)
+				if err != nil {
+					anyErrors = true
+				}
+			}
+		}
+		notifier.Notify(zoneName, providerName, correction.Msg, err, !push)
+	}
+
+	_ = report // File name to write report to.
+	return anyErrors
+}
+
+func msg(s string) []*models.Correction {
+	return []*models.Correction{{Msg: s}}
 }
 
 // includedZones, _ := slices.Filter(cfg.Domains, func(d *models.DomainConfig) (bool, error) { return args.shouldRunDomain(d.GetUniqueName()), nil })
@@ -796,31 +832,6 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 	}
 
 }
-
-// func pprintOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
-// 	anyErrors = false
-// 	if len(corrections) == 0 {
-// 		return false
-// 	}
-// 	for i, correction := range corrections {
-// 		out.PrintCorrection(i, correction)
-// 		var err error
-// 		if push {
-// 			if interactive && !out.PromptToRun() {
-// 				continue
-// 			}
-// 			if correction.F != nil {
-// 				err = correction.F()
-// 				out.EndCorrection(err)
-// 				if err != nil {
-// 					anyErrors = true
-// 				}
-// 			}
-// 		}
-// 		notifier.Notify(domain, provider, correction.Msg, err, !push)
-// 	}
-// 	return anyErrors
-// }
 
 // func pprintReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
 // 	anyErrors = false
