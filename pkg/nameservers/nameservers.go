@@ -14,11 +14,14 @@ import (
 // 1. All explicitly defined NAMESERVER records will be used.
 // 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
 func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
-	return DetermineNameserversForProviders(dc, dc.DNSProviderInstances)
+	return DetermineNameserversForProviders(dc, dc.DNSProviderInstances, false)
 }
 
+//var mu sync.Mutex
+
 // DetermineNameserversForProviders is like DetermineNameservers, for a subset of providers.
-func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*models.DNSProviderInstance) ([]*models.Nameserver, error) {
+func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*models.DNSProviderInstance, silent bool) ([]*models.Nameserver, error) {
+	fmt.Printf("DEBUG: DetermineNameserversForProviders: called for zone=%q\n", dc.Name)
 	// always take explicit
 	ns := dc.Nameservers
 	for _, dnsProvider := range providers {
@@ -26,12 +29,15 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 		if n == 0 {
 			continue
 		}
-		if !printer.SkinnyReport {
+		if !silent && !printer.SkinnyReport {
 			fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
 		}
+		//fmt.Printf("----- Getting nameservers for zone=%q from: %s\n", dc.Name, dnsProvider.Name)
+		//mu.Lock()
+		//defer mu.Unlock()
 		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error while getting Nameservers for zone=%q with provider=%q: %w", dc.Name, dnsProvider.Name, err)
 		}
 		// Clean up the nameservers due to
 		// https://github.com/StackExchange/dnscontrol/issues/491
@@ -51,6 +57,7 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 			ns = append(ns, nss[i])
 		}
 	}
+	fmt.Printf("DEBUG: Got nameservers for zone=%q: %v\n", dc.Name, ns)
 	return ns, nil
 }
 

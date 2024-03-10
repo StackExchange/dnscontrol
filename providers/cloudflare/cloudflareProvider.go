@@ -76,6 +76,7 @@ type cloudflareProvider struct {
 	manageWorkers   bool
 	accountID       string
 	cfClient        *cloudflare.API
+	//sync.Mutex
 }
 
 // TODO(dlemenkov): remove this function after deleting all commented code referecing it
@@ -91,23 +92,32 @@ type cloudflareProvider struct {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return nil, err
 	}
+	// if c.domainIndex == nil {
+	// 	if err := c.fetchDomainList(); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+	//c.Lock()
+	//defer c.Unlock()
 	ns, ok := c.nameservers[domain]
 	if !ok {
-		return nil, fmt.Errorf("nameservers for %s not found in cloudflare account", domain)
+		//fmt.Printf("DEBUG: dom=%v map = %v\n", domain, c.nameservers)
+		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
 	}
 	return models.ToNameservers(ns)
 }
 
 // ListZones returns a list of the DNS zones.
 func (c *cloudflareProvider) ListZones() ([]string, error) {
-	if err := c.fetchDomainList(); err != nil {
+	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
+	// if err := c.fetchDomainList(); err != nil {
+	// 	return nil, err
+	// }
 	zones := make([]string, 0, len(c.domainIndex))
 	for d := range c.domainIndex {
 		zones = append(zones, d)
@@ -175,11 +185,16 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 func (c *cloudflareProvider) getDomainID(name string) (string, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return "", err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return "", err
 	}
+	// if c.domainIndex == nil {
+	// 	if err := c.fetchDomainList(); err != nil {
+	// 		return "", err
+	// 	}
+	// }
+	//c.Lock()
+	//defer c.Unlock()
 	id, ok := c.domainIndex[name]
 	if !ok {
 		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
@@ -812,11 +827,14 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return err
 	}
+	// if c.domainIndex == nil {
+	// 	if err := c.fetchDomainList(); err != nil {
+	// 		return err
+	// 	}
+	// }
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

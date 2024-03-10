@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
@@ -43,6 +44,7 @@ type PPreviewArgs struct {
 	FilterArgs
 	Notify      bool
 	WarnChanges bool
+	NoParallel  bool
 	NoPopulate  bool
 	DePopulate  bool
 	Full        bool
@@ -69,6 +71,11 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "expect-no-changes",
 		Destination: &args.WarnChanges,
 		Usage:       `set to true for non-zero return code if there are changes`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "slow",
+		Destination: &args.NoParallel,
+		Usage:       `Do not run collection phase in parallel`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
@@ -215,21 +222,22 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return fmt.Errorf("exiting due to validation errors")
 	}
 
-	fmt.Printf("Iterating over the zones...\n")
 	zcache := NewZoneCache()
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
-	if false {
+	if args.NoParallel {
+		fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
 		for _, zone := range zonesToProcess {
-			fmt.Printf("ZONE: %q\n", zone.Name)
+			fmt.Printf("Gathering: %q\n", zone.Name)
 			oneDomain(zone, args, zcache)
 		}
 	} else {
+		fmt.Printf("Gathering zone and registrar info in parallel...\n")
 		var wg sync.WaitGroup
 		wg.Add(len(zonesToProcess))
 		for _, zone := range zonesToProcess {
-			fmt.Printf("ZONE: %q\n", zone.Name)
+			//fmt.Printf("ZONE: %q\n", zone.Name)
 			go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 				defer wg.Done()
 				oneDomain(zone, args, zcache)
@@ -239,30 +247,40 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 
 	// Now we know what to do, print or do the tasks.
-	fmt.Printf("CORRECTIONS:\n")
+	//fmt.Printf("CORRECTIONS:\n")
 	for _, zone := range zonesToProcess {
-		fmt.Printf("ZONE: %q\n", zone.Name)
+		out.StartDomain(zone.GetUniqueName())
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
-		for _, provider := range providersToProcess {
-			fmt.Printf("    PROVIDER: %q\n", provider.Name)
-			corrections := zone.GetCorrections(provider.Name)
-			pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report)
+		for _, provider := range zone.DNSProviderInstances {
+			skipProvider := skipProvider(provider.Name, providersToProcess)
+			out.StartDNSProvider(provider.Name, skipProvider)
+			if !skipProvider {
+				corrections := zone.GetCorrections(provider.Name)
+				pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report)
+				out.EndProvider(provider.Name, len(corrections), err)
+			}
 		}
 		corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
-		//pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, *report != "")
 		pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report)
 	}
 	return nil
 }
 
 func oneDomain(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
+	// Fix the parent zone's delegation: (if able/needed)
+	// NB(tlim): This must be done generateZoneCorrections().
+	//delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances)
+	delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
+
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
 
 		// Populate the zones at the provider (if desired/needed/able):
 		if !args.NoPopulate {
+			//zone.RegistrarInstance.Lock()
 			populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
+			//zone.RegistrarInstance.Unlock()
 			zone.StoreCorrections(provider.Name, populateCorrections)
 		}
 
@@ -272,11 +290,8 @@ func oneDomain(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 		zone.StoreCorrections(provider.Name, zoneCor)
 	}
 
-	// // Fix the parent zone's delegation: (if able/needed)
-	// if parentSupportsDelegations(zone.RegistrarInstance) {
-	delegationCorrections := generateDelegationCorrections(zone)
+	// Do the delegation corrections after the zones are updated.
 	zone.StoreCorrections(zone.RegistrarInstance.Name, delegationCorrections)
-	// }
 }
 
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
@@ -324,6 +339,12 @@ func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter str
 	return picked
 }
 
+func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
+	return !slices.ContainsFunc(providers, func(p *models.DNSProviderInstance) bool {
+		return p.Name == name
+	})
+}
+
 func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
 
 	lister, ok := provider.Driver.(providers.ZoneLister)
@@ -366,17 +387,17 @@ func (zc *zoneCache) zoneList(name string, lister providers.ZoneLister) (*[]stri
 	}
 
 	if v, ok := zc.cache[name]; ok {
-		fmt.Printf("ZONE CACHED: YES!!!!!!! %q : %v\n", name, len(*v))
+		//fmt.Printf("ZONE CACHED: YES!!!!!!! %q : %v\n", name, len(*v))
 		return v, nil
 	}
 
 	zones, err := lister.ListZones()
 	if err != nil {
-		fmt.Printf("ZONE CACHED: ERROR      %q : %v\n", name, 0)
+		//fmt.Printf("ZONE CACHED: ERROR      %q : %v\n", name, 0)
 		return nil, err
 	}
 	zc.cache[name] = &zones
-	fmt.Printf("ZONE CACHED: NO         %q : %v\n", name, len(zones))
+	//fmt.Printf("ZONE CACHED: NO         %q : %v\n", name, len(zones))
 	return &zones, nil
 }
 
@@ -388,14 +409,27 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 	return zoneCorrections, reports
 }
 
-func generateDelegationCorrections(zone *models.DomainConfig) []*models.Correction {
+func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) []*models.Correction {
+	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
+	if err != nil {
+		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err))
+	}
+	//fmt.Printf("DEBUG: reg nsList = %v\n", nsList)
+	zone.Nameservers = nsList
+	//fmt.Printf("DEBUG: Adding NS to zone=%q list=%v\n", zone.Name, nsList)
+	nameservers.AddNSRecords(zone)
+	//fmt.Printf("DEBUG: WTF?  %v\n", zone.Records)
+
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
 		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}
 	}
 
+	//zone.RegistrarInstance.Lock()
 	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)
+	//zone.RegistrarInstance.Unlock()
+	//corrections, err := regProvider.Driver.GetRegistrarCorrections(zone)
 	if err != nil {
-		return msg(fmt.Sprintf("zone %q; registrar %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err))
+		return msg(fmt.Sprintf("zone %q; Rregistrar %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err))
 	}
 	return corrections
 }
@@ -405,8 +439,8 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 		return false
 	}
 	var anyErrors bool
-	for _, correction := range corrections {
-		// 		out.PrintCorrection(i, correction)
+	for i, correction := range corrections {
+		out.PrintCorrection(i, correction)
 		var err error
 		if push {
 			if interactive && !out.PromptToRun() {
@@ -414,11 +448,11 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 			}
 			if correction.F != nil {
 				err = correction.F()
-				// 				out.EndCorrection(err)
 				if err != nil {
 					anyErrors = true
 				}
 			}
+			out.EndCorrection(err)
 		}
 		notifier.Notify(zoneName, providerName, correction.Msg, err, !push)
 	}
