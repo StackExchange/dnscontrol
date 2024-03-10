@@ -63,6 +63,8 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 
 // AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
+	fmt.Printf("DEBUG: AddNSRecords called for zone=%q\n", dc.Name)
+
 	ttl := uint32(300)
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
 		t, err := strconv.ParseUint(ttls, 10, 32)
