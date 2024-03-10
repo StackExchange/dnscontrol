@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/idna"
 
@@ -76,7 +77,7 @@ type cloudflareProvider struct {
 	manageWorkers   bool
 	accountID       string
 	cfClient        *cloudflare.API
-	//sync.Mutex
+	sync.Mutex
 }
 
 // TODO(dlemenkov): remove this function after deleting all commented code referecing it
@@ -100,9 +101,9 @@ func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver
 	// 		return nil, err
 	// 	}
 	// }
-	//c.Lock()
-	//defer c.Unlock()
+	c.Lock()
 	ns, ok := c.nameservers[domain]
+	c.Unlock()
 	if !ok {
 		//fmt.Printf("DEBUG: dom=%v map = %v\n", domain, c.nameservers)
 		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
@@ -118,10 +119,12 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 	// if err := c.fetchDomainList(); err != nil {
 	// 	return nil, err
 	// }
+	c.Lock()
 	zones := make([]string, 0, len(c.domainIndex))
 	for d := range c.domainIndex {
 		zones = append(zones, d)
 	}
+	c.Unlock()
 	return zones, nil
 }
 
@@ -193,9 +196,9 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 	// 		return "", err
 	// 	}
 	// }
-	//c.Lock()
-	//defer c.Unlock()
+	c.Lock()
 	id, ok := c.domainIndex[name]
+	c.Unlock()
 	if !ok {
 		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
 	}

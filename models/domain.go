@@ -24,9 +24,10 @@ type DomainConfig struct {
 
 	// Metadata[DomainUniqueName] // .Name + "!" + .Tag
 	// Metadata[DomainTag] // split horizon tag
-	Metadata    map[string]string `json:"meta,omitempty"`
-	Records     Records           `json:"records"`
-	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
+	Metadata         map[string]string `json:"meta,omitempty"`
+	Records          Records           `json:"records"`
+	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
+	NameserversMutex sync.Mutex
 
 	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE

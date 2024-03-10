@@ -21,9 +21,14 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 
 // DetermineNameserversForProviders is like DetermineNameservers, for a subset of providers.
 func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*models.DNSProviderInstance, silent bool) ([]*models.Nameserver, error) {
-	fmt.Printf("DEBUG: DetermineNameserversForProviders: called for zone=%q\n", dc.Name)
-	// always take explicit
+	//fmt.Printf("DEBUG: DetermineNameserversForProviders: called for zone=%q\n", dc.Name)
+	// start with the nameservers that have been explicitly added:
 	ns := dc.Nameservers
+	//fmt.Printf("DEBUG: DetermineNameserversForProviders(%q): start: dc.ns=%v\n", dc.Name, ns)
+	//dc.NameserversMutex.Lock()
+	//dc.NameserversMutex.Unlock()
+
+	//ns := dc.Nameservers
 	for _, dnsProvider := range providers {
 		n := dnsProvider.NumberOfNameservers
 		if n == 0 {
@@ -35,6 +40,11 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 		//fmt.Printf("----- Getting nameservers for zone=%q from: %s\n", dc.Name, dnsProvider.Name)
 		//mu.Lock()
 		//defer mu.Unlock()
+
+		// For the parallel version, we pre-get any nameservers:
+		//var nss []*models.Nameserver
+		//var err error
+
 		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
 			return nil, fmt.Errorf("error while getting Nameservers for zone=%q with provider=%q: %w", dc.Name, dnsProvider.Name, err)
@@ -57,13 +67,13 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 			ns = append(ns, nss[i])
 		}
 	}
-	fmt.Printf("DEBUG: Got nameservers for zone=%q: %v\n", dc.Name, ns)
+	//fmt.Printf("DEBUG: DetermineNameserversForProviders zone=%q: result=%v\n", dc.Name, ns)
 	return ns, nil
 }
 
 // AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
-	fmt.Printf("DEBUG: AddNSRecords called for zone=%q\n", dc.Name)
+	//fmt.Printf("DEBUG: AddNSRecords called for zone=%q\n", dc.Name)
 
 	ttl := uint32(300)
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {

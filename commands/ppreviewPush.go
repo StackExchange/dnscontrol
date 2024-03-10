@@ -233,21 +233,24 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			oneDomain(zone, args, zcache)
 		}
 	} else {
-		fmt.Printf("Gathering zone and registrar info in parallel...\n")
+		fmt.Printf("PHASE 1: GATHERING data in parallel...\n")
 		var wg sync.WaitGroup
 		wg.Add(len(zonesToProcess))
-		for _, zone := range zonesToProcess {
-			//fmt.Printf("ZONE: %q\n", zone.Name)
+		zonesToProcessSorted := optimizeOrder(zonesToProcess)
+		for _, zone := range zonesToProcessSorted {
+			fmt.Printf("Gathering: %q\n", zone.Name)
 			go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 				defer wg.Done()
 				oneDomain(zone, args, zcache)
+				fmt.Printf("    ...done: %q\n", zone.Name)
 			}(zone, args, zcache)
 		}
+		fmt.Printf("(waiting for %d gathers to complete...)\n", len(zonesToProcess))
 		wg.Wait()
 	}
 
 	// Now we know what to do, print or do the tasks.
-	//fmt.Printf("CORRECTIONS:\n")
+	fmt.Printf("PHASE 2: CORRECTIONS\n")
 	for _, zone := range zonesToProcess {
 		out.StartDomain(zone.GetUniqueName())
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -266,11 +269,35 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
+// optimizeOrder returns a list of DomainConfigs so that they gather fastest.
+//
+// The current algorithm is based on the heuistic that larger zones (zones with
+// the most records) need the most time to be processed.  Therefore, the largest
+// zones are moved to the front of the list.
+// This isn't perfect.  For example, at StackOverflow some of the largest zones
+// are not processed by default, but get moved to the front of
+// the list.  However they complete very quickly, making room for other zones.
+func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
+	slices.SortFunc(zones, func(a, b *models.DomainConfig) int {
+		return len(b.Records) - len(a.Records) // Biggest to smallest.
+		//return len(a.Records) - len(b.Records) // Smallest to smallest.
+	})
+
+	// // For benchmarking. Randomize the list.
+	// rand.Shuffle(len(zones), func(i, j int) {
+	// 	zones[i], zones[j] = zones[j], zones[i]
+	// })
+
+	return zones
+}
+
 func oneDomain(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Fix the parent zone's delegation: (if able/needed)
 	// NB(tlim): This must be done generateZoneCorrections().
 	//delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances)
+	zone.NameserversMutex.Lock()
 	delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
+	zone.NameserversMutex.Unlock()
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -410,6 +437,9 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 }
 
 func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) []*models.Correction {
+	//zone.NameserversMutex.Lock()
+
+	//fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
 		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err))
@@ -418,6 +448,7 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	zone.Nameservers = nsList
 	//fmt.Printf("DEBUG: Adding NS to zone=%q list=%v\n", zone.Name, nsList)
 	nameservers.AddNSRecords(zone)
+	//zone.NameserversMutex.Unlock()
 	//fmt.Printf("DEBUG: WTF?  %v\n", zone.Records)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
