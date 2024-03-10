@@ -19,6 +19,11 @@ import (
 	"golang.org/x/net/idna"
 )
 
+type zoneCache struct {
+	cache map[string]*[]string
+	sync.Mutex
+}
+
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPreviewArgs
 	return &cli.Command{
@@ -143,12 +148,6 @@ func PPush(args PPushArgs) error {
 
 var pobsoleteDiff2FlagUsed = false
 
-// // create a WaitGroup with the length of domains for the anonymous functions (later goroutines) to wait for
-// var wg sync.WaitGroup
-// wg.Add(len(cfg.Domains))
-// var reportItems []ReportItem
-// // For each domain in dnsconfig.js...
-
 /*
 
 	foreach includedZone:
@@ -217,23 +216,24 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 
 	fmt.Printf("Iterating over the zones...\n")
+	zcache := NewZoneCache()
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	if false {
 		for _, zone := range zonesToProcess {
 			fmt.Printf("ZONE: %q\n", zone.Name)
-			oneDomain(zone, args)
+			oneDomain(zone, args, zcache)
 		}
 	} else {
 		var wg sync.WaitGroup
 		wg.Add(len(zonesToProcess))
 		for _, zone := range zonesToProcess {
 			fmt.Printf("ZONE: %q\n", zone.Name)
-			go func(zone *models.DomainConfig, args PPreviewArgs) {
+			go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 				defer wg.Done()
-				oneDomain(zone, args)
-			}(zone, args)
+				oneDomain(zone, args, zcache)
+			}(zone, args, zcache)
 		}
 		wg.Wait()
 	}
@@ -255,14 +255,14 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
-func oneDomain(zone *models.DomainConfig, args PPreviewArgs) {
+func oneDomain(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
 
 		// Populate the zones at the provider (if desired/needed/able):
 		if !args.NoPopulate {
-			populateCorrections := generatePopulateCorrections(provider, zone.Name)
+			populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
 			zone.StoreCorrections(provider.Name, populateCorrections)
 		}
 
@@ -324,17 +324,18 @@ func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter str
 	return picked
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string) []*models.Correction {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
 
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil // We can't generate a list. No corrections are possible.
 	}
 
-	zones, err := lister.ListZones()
+	z, err := zcache.zoneList(provider.Name, lister)
 	if err != nil {
-		return []*models.Correction{{Msg: fmt.Sprintf("Provider %q ListZones returned: %s", provider.Name, err)}}
+		return []*models.Correction{{Msg: fmt.Sprintf("Could not list zones at %q: %s", provider.Name, err)}}
 	}
+	zones := *z
 
 	aceZoneName, _ := idna.ToASCII(zoneName)
 	if slices.Contains(zones, aceZoneName) {
@@ -350,6 +351,33 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 		Msg: fmt.Sprintf("Create zone '%s' in the '%s' profile", aceZoneName, provider.Name),
 		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
 	}}
+}
+
+func NewZoneCache() *zoneCache {
+	return &zoneCache{}
+}
+
+func (zc *zoneCache) zoneList(name string, lister providers.ZoneLister) (*[]string, error) {
+	zc.Lock()
+	defer zc.Unlock()
+
+	if zc.cache == nil {
+		zc.cache = map[string]*[]string{}
+	}
+
+	if v, ok := zc.cache[name]; ok {
+		fmt.Printf("ZONE CACHED: YES!!!!!!! %q : %v\n", name, len(*v))
+		return v, nil
+	}
+
+	zones, err := lister.ListZones()
+	if err != nil {
+		fmt.Printf("ZONE CACHED: ERROR      %q : %v\n", name, 0)
+		return nil, err
+	}
+	zc.cache[name] = &zones
+	fmt.Printf("ZONE CACHED: NO         %q : %v\n", name, len(zones))
+	return &zones, nil
 }
 
 func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction) {
