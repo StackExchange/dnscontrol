@@ -27,7 +27,7 @@ type DomainConfig struct {
 	Metadata         map[string]string `json:"meta,omitempty"`
 	Records          Records           `json:"records"`
 	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
-	NameserversMutex sync.Mutex
+	NameserversMutex sync.Mutex        `json:"-"`
 
 	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
