@@ -44,7 +44,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -628,26 +628,38 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name         string   `json:"name"`
-	Target       cfTarget `json:"target"`
-	Service      string   `json:"service"`       // SRV
-	Proto        string   `json:"proto"`         // SRV
-	Priority     uint16   `json:"priority"`      // SRV
-	Weight       uint16   `json:"weight"`        // SRV
-	Port         uint16   `json:"port"`          // SRV
-	Tag          string   `json:"tag"`           // CAA
-	Flags        uint8    `json:"flags"`         // CAA
-	Value        string   `json:"value"`         // CAA
-	Usage        uint8    `json:"usage"`         // TLSA
-	Selector     uint8    `json:"selector"`      // TLSA
-	MatchingType uint8    `json:"matching_type"` // TLSA
-	Certificate  string   `json:"certificate"`   // TLSA
-	Algorithm    uint8    `json:"algorithm"`     // SSHFP/DS
-	HashType     uint8    `json:"type"`          // SSHFP
-	Fingerprint  string   `json:"fingerprint"`   // SSHFP
-	KeyTag       uint16   `json:"key_tag"`       // DS
-	DigestType   uint8    `json:"digest_type"`   // DS
-	Digest       string   `json:"digest"`        // DS
+	Name          string   `json:"name"`
+	Target        cfTarget `json:"target"`
+	Service       string   `json:"service"`        // SRV
+	Proto         string   `json:"proto"`          // SRV
+	Priority      uint16   `json:"priority"`       // SRV
+	Weight        uint16   `json:"weight"`         // SRV
+	Port          uint16   `json:"port"`           // SRV
+	Tag           string   `json:"tag"`            // CAA
+	Flags         uint8    `json:"flags"`          // CAA
+	Value         string   `json:"value"`          // CAA
+	Usage         uint8    `json:"usage"`          // TLSA
+	Selector      uint8    `json:"selector"`       // TLSA
+	MatchingType  uint8    `json:"matching_type"`  // TLSA
+	Certificate   string   `json:"certificate"`    // TLSA
+	Algorithm     uint8    `json:"algorithm"`      // SSHFP/DS
+	HashType      uint8    `json:"type"`           // SSHFP
+	Fingerprint   string   `json:"fingerprint"`    // SSHFP
+	KeyTag        uint16   `json:"key_tag"`        // DS
+	DigestType    uint8    `json:"digest_type"`    // DS
+	Digest        string   `json:"digest"`         // DS
+	LatDegrees    uint8    `json:"lat_degrees"`    // LOC
+	LatMinutes    uint8    `json:"lat_minutes"`    // LOC
+	LatSeconds    float32  `json:"lat_seconds"`    // LOC
+	LatDirection  string   `json:"lat_direction"`  // LOC
+	LongDegrees   uint8    `json:"long_degrees"`   // LOC
+	LongMinutes   uint8    `json:"long_minutes"`   // LOC
+	LongSeconds   float32  `json:"long_seconds"`   // LOC
+	LongDirection string   `json:"long_direction"` // LOC
+	PrecisionHorz float32  `json:"precision_horz"` // LOC
+	PrecisionVert float32  `json:"precision_vert"` // LOC
+	Altitude      int32    `json:"altitude"`       // LOC
+	Size          float32  `json:"size"`           // LOC
 }
 
 // cfTarget is a SRV target. A null target is represented by an empty string, but

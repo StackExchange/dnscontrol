@@ -95,15 +95,19 @@ type RecordConfig struct {
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
+
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
 	SrvPort          uint16            `json:"srvport,omitempty"`
+
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
+
 	DsKeyTag         uint16            `json:"dskeytag,omitempty"`
 	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 	DsDigest         string            `json:"dsdigest,omitempty"`
+
 	LocVersion       uint8             `json:"locversion,omitempty"`
 	LocSize          uint8             `json:"locsize,omitempty"`
 	LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
@@ -111,24 +115,45 @@ type RecordConfig struct {
 	LocLatitude      uint32            `json:"loclatitude,omitempty"`
 	LocLongitude     uint32            `json:"loclongitude,omitempty"`
 	LocAltitude      uint32            `json:"localtitude,omitempty"`
+
+	LocLatDegrees    uint8             `json:"loclatdegrees,omitempty"`
+	LocLatMinutes    uint8             `json:"lotlatminutes,omitempty"`
+	LocLatSeconds    float32           `json:"loclatseconds,omitempty"`
+	LocLatDirection  string            `json:"loclatdirection,omitempty"`
+	LocLongDegrees   uint8             `json:"loclongdegrees,omitempty"`
+	LocLongMinutes   uint8             `json:"lotlongminutes,omitempty"`
+	LocLongSeconds   float32           `json:"loclongseconds,omitempty"`
+	LocLongDirection string            `json:"loclongdirection,omitempty"`
+
+	LocOrigAltitude  int32             `json:"locorigaltitude,omitempty"`
+	LocOrigSize      float32           `json:"locorigsize,omitempty"`
+	LocOrigHorizPre  float32           `json:"locorighorizpre,omitempty"`
+	LocOrigVertPre   float32           `json:"locorigvertpre,omitempty"`
+
 	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 	NaptrFlags       string            `json:"naptrflags,omitempty"`
 	NaptrService     string            `json:"naptrservice,omitempty"`
 	NaptrRegexp      string            `json:"naptrregexp,omitempty"`
+
 	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
+
 	SoaMbox          string            `json:"soambox,omitempty"`
 	SoaSerial        uint32            `json:"soaserial,omitempty"`
 	SoaRefresh       uint32            `json:"soarefresh,omitempty"`
 	SoaRetry         uint32            `json:"soaretry,omitempty"`
 	SoaExpire        uint32            `json:"soaexpire,omitempty"`
 	SoaMinttl        uint32            `json:"soaminttl,omitempty"`
+
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
+
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
+
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+
 	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 }
 
@@ -163,15 +188,19 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
+
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
 		SrvWeight        uint16            `json:"srvweight,omitempty"`
 		SrvPort          uint16            `json:"srvport,omitempty"`
+
 		CaaTag           string            `json:"caatag,omitempty"`
 		CaaFlag          uint8             `json:"caaflag,omitempty"`
+
 		DsKeyTag         uint16            `json:"dskeytag,omitempty"`
 		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 		DsDigest         string            `json:"dsdigest,omitempty"`
+
 		LocVersion       uint8             `json:"locversion,omitempty"`
 		LocSize          uint8             `json:"locsize,omitempty"`
 		LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
@@ -179,24 +208,45 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		LocLatitude      int               `json:"loclatitude,omitempty"`
 		LocLongitude     int               `json:"loclongitude,omitempty"`
 		LocAltitude      uint32            `json:"localtitude,omitempty"`
+
+		LocLatDegrees    uint8             `json:"loclatdegrees,omitempty"`
+		LocLatMinutes    uint8             `json:"lotlatminutes,omitempty"`
+		LocLatSeconds    float32           `json:"loclatseconds,omitempty"`
+		LocLatDirection  string            `json:"loclatdirection,omitempty"`
+		LocLongDegrees   uint8             `json:"loclongdegrees,omitempty"`
+		LocLongMinutes   uint8             `json:"lotlongminutes,omitempty"`
+		LocLongSeconds   float32           `json:"loclongseconds,omitempty"`
+		LocLongDirection string            `json:"loclongdirection,omitempty"`
+
+		LocOrigAltitude  int32             `json:"locorigaltitude,omitempty"`
+		LocOrigSize      float32           `json:"locorigsize,omitempty"`
+		LocOrigHorizPre  float32           `json:"locorighorizpre,omitempty"`
+		LocOrigVertPre   float32           `json:"locorigvertpre,omitempty"`
+
 		NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 		NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 		NaptrFlags       string            `json:"naptrflags,omitempty"`
 		NaptrService     string            `json:"naptrservice,omitempty"`
 		NaptrRegexp      string            `json:"naptrregexp,omitempty"`
+
 		SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 		SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
+
 		SoaMbox          string            `json:"soambox,omitempty"`
 		SoaSerial        uint32            `json:"soaserial,omitempty"`
 		SoaRefresh       uint32            `json:"soarefresh,omitempty"`
 		SoaRetry         uint32            `json:"soaretry,omitempty"`
 		SoaExpire        uint32            `json:"soaexpire,omitempty"`
 		SoaMinttl        uint32            `json:"soaminttl,omitempty"`
+
 		TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 		TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
+
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
+
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+
 		UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
 
 		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
