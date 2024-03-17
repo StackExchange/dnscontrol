@@ -44,7 +44,7 @@ type PPreviewArgs struct {
 	FilterArgs
 	Notify      bool
 	WarnChanges bool
-	NoParallel  bool
+	ConcurMode  string
 	NoPopulate  bool
 	DePopulate  bool
 	Full        bool
@@ -73,6 +73,16 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Usage:       `set to true for non-zero return code if there are changes`,
 	})
 	flags = append(flags, &cli.BoolFlag{
+		Name:        "slow",
+		Destination: &args.NoParallel,
+		Usage:       `alias for -cmode=none`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "cmode",
+		Destination: &args.ConcurMode,
+		Usage:       `Which providers to run concurrently: all, default, none`,
+	})
+	flags = append(flags, &cli.StringFlag{
 		Name:        "slow",
 		Destination: &args.NoParallel,
 		Usage:       `Do not run collection phase in parallel`,
@@ -193,6 +203,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
+	zonesSerial, zonesParallel := whichZonesParallel(args.P)
 	if args.NoParallel {
 		fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
 		for _, zone := range zonesToProcess {
