@@ -20,6 +20,11 @@ const (
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 
+	// CanRunConcurrently indicates that during preview/push operations,
+	// multiple instances of the provider can run concurrently.
+	// Originally providers ran one at a time.
+	CanNotGatherConcurrently
+
 	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
 	CanUseAKAMAICDN
 
