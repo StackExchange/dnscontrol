@@ -10,7 +10,6 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanGetZones:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
