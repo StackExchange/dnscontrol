@@ -23,6 +23,7 @@ import (
 const selfLinkBasePath = "https://www.googleapis.com/compute/v1/projects/"
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),

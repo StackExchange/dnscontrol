@@ -37,6 +37,7 @@ const (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CanGetZones:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),

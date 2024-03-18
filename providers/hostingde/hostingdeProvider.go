@@ -16,6 +16,7 @@ import (
 var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),

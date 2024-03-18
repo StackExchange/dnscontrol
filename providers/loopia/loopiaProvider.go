@@ -43,6 +43,7 @@ func init() {
 
 // features declares which features and options are available.
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Cannot(),

@@ -11,6 +11,7 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),

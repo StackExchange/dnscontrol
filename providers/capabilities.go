@@ -17,6 +17,11 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
+	// CanConcurGather indicates the provider can gather information
+	// concurrently.  Default true.  Set to Unimplemented() if testing
+	// hasn't been completed.
+	CanConcurGather
+
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 

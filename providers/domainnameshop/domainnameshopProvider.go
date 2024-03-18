@@ -23,8 +23,9 @@ type domainNameShopProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanAutoDNSSEC:          providers.Cannot(),                                     // Maybe there is support for it
-	providers.CanGetZones:            providers.Unimplemented(),                              //
+	providers.CanAutoDNSSEC:          providers.Cannot(), // Maybe there is support for it
+	providers.CanConcurGather:        providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented

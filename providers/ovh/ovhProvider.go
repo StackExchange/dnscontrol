@@ -18,6 +18,7 @@ type ovhProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),

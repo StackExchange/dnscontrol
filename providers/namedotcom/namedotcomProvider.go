@@ -21,6 +21,7 @@ type namedotcomProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),

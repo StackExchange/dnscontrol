@@ -14,6 +14,7 @@ type rwthProvider struct {
 
 // features is used to let dnscontrol know which features are supported by the RWTH DNS Admin.
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by RWTH but not implemented yet."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),

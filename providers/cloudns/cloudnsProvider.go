@@ -38,6 +38,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather: providers.Unimplemented(),
 	//providers.CanUseDS:               providers.Can(), // in ClouDNS we can add  DS record just for a subdomain(child)
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),

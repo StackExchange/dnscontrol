@@ -22,9 +22,10 @@ type softlayerProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanGetZones: providers.Unimplemented(),
-	providers.CanUseLOC:   providers.Cannot(),
-	providers.CanUseSRV:   providers.Can(),
+	providers.CanConcurGather: providers.Unimplemented(),
+	providers.CanGetZones:     providers.Unimplemented(),
+	providers.CanUseLOC:       providers.Cannot(),
+	providers.CanUseSRV:       providers.Can(),
 }
 
 func init() {

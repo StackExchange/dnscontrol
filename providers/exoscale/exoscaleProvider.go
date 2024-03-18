@@ -54,6 +54,7 @@ func NewExoscale(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanConcurGather:        providers.Cannot(),
 	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
