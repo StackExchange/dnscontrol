@@ -39,7 +39,8 @@ func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DN
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),

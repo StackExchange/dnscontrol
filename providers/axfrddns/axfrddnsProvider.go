@@ -37,18 +37,18 @@ const (
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CanGetZones:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseDHCID:            providers.Can(),
-	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),

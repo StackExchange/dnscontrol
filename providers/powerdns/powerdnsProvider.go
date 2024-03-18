@@ -12,7 +12,8 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),

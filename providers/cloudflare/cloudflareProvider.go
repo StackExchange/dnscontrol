@@ -40,7 +40,8 @@ Domain level metadata available:
 */
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),

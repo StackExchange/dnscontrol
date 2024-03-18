@@ -43,7 +43,8 @@ func init() {
 
 // features declares which features and options are available.
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Unimplemented(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Cannot(),

@@ -91,7 +91,6 @@ func matrixData() *FeatureMatrix {
 		DomainModifierDhcid  = "[`DHCID`](functions/domain/DHCID.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
-		NoPurge              = "[`NO_PURGE`](functions/domain/NO_PURGE.md)"
 		GetZones             = "get-zones"
 	)
 
@@ -116,7 +115,7 @@ func matrixData() *FeatureMatrix {
 			DomainModifierDhcid,
 			DualHost,
 			CreateDomains,
-			NoPurge,
+			//NoPurge,
 			GetZones,
 		},
 	}
@@ -235,17 +234,17 @@ func matrixData() *FeatureMatrix {
 			false,
 		)
 
-		// no purge is a freaky double negative
-		cantUseNOPURGE := providers.CantUseNOPURGE
-		if providerNotes[cantUseNOPURGE] != nil {
-			featureMap[NoPurge] = providerNotes[cantUseNOPURGE]
-		} else {
-			featureMap.SetSimple(
-				NoPurge,
-				false,
-				func() bool { return !providers.ProviderHasCapability(providerName, cantUseNOPURGE) },
-			)
-		}
+		//		// no purge is a freaky double negative
+		//		cantUseNOPURGE := providers.CantUseNOPURGE
+		//		if providerNotes[cantUseNOPURGE] != nil {
+		//			featureMap[NoPurge] = providerNotes[cantUseNOPURGE]
+		//		} else {
+		//			featureMap.SetSimple(
+		//				NoPurge,
+		//				false,
+		//				func() bool { return !providers.ProviderHasCapability(providerName, cantUseNOPURGE) },
+		//			)
+		//		}
 		matrix.Providers[providerName] = featureMap
 	}
 	return matrix

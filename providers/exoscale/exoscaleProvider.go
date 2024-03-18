@@ -54,7 +54,8 @@ func NewExoscale(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanConcurGather:        providers.Cannot(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
