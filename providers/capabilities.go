@@ -67,12 +67,6 @@ const (
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 
-	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
-	// work would require complex emulation of an incremental update mechanism,
-	// so it is easier to simply mark this feature as not working for this
-	// provider.
-	CantUseNOPURGE
-
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 

@@ -52,6 +52,8 @@ func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),

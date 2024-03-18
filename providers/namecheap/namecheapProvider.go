@@ -26,6 +26,8 @@ type namecheapProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
@@ -33,7 +35,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
