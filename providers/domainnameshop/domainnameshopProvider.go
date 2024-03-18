@@ -23,6 +23,8 @@ type domainNameShopProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),                                     // Maybe there is support for it
 	providers.CanGetZones:            providers.Unimplemented(),                              //
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
