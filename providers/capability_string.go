@@ -9,31 +9,32 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[CanAutoDNSSEC-0]
-	_ = x[CanGetZones-1]
-	_ = x[CanUseAKAMAICDN-2]
-	_ = x[CanUseAlias-3]
-	_ = x[CanUseAzureAlias-4]
-	_ = x[CanUseCAA-5]
-	_ = x[CanUseDHCID-6]
-	_ = x[CanUseDS-7]
-	_ = x[CanUseDSForChildren-8]
-	_ = x[CanUseLOC-9]
-	_ = x[CanUseNAPTR-10]
-	_ = x[CanUsePTR-11]
-	_ = x[CanUseRoute53Alias-12]
-	_ = x[CanUseSOA-13]
-	_ = x[CanUseSRV-14]
-	_ = x[CanUseSSHFP-15]
-	_ = x[CanUseTLSA-16]
-	_ = x[CantUseNOPURGE-17]
-	_ = x[DocCreateDomains-18]
-	_ = x[DocDualHost-19]
-	_ = x[DocOfficiallySupported-20]
+	_ = x[CanConcurGather-1]
+	_ = x[CanGetZones-2]
+	_ = x[CanUseAKAMAICDN-3]
+	_ = x[CanUseAlias-4]
+	_ = x[CanUseAzureAlias-5]
+	_ = x[CanUseCAA-6]
+	_ = x[CanUseDHCID-7]
+	_ = x[CanUseDS-8]
+	_ = x[CanUseDSForChildren-9]
+	_ = x[CanUseLOC-10]
+	_ = x[CanUseNAPTR-11]
+	_ = x[CanUsePTR-12]
+	_ = x[CanUseRoute53Alias-13]
+	_ = x[CanUseSOA-14]
+	_ = x[CanUseSRV-15]
+	_ = x[CanUseSSHFP-16]
+	_ = x[CanUseTLSA-17]
+	_ = x[CantUseNOPURGE-18]
+	_ = x[DocCreateDomains-19]
+	_ = x[DocDualHost-20]
+	_ = x[DocOfficiallySupported-21]
 }
 
-const _Capability_name = "CanAutoDNSSECCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDSCanUseDSForChildrenCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseTLSACantUseNOPURGEDocCreateDomainsDocDualHostDocOfficiallySupported"
+const _Capability_name = "CanAutoDNSSECCanConcurGatherCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDSCanUseDSForChildrenCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseTLSACantUseNOPURGEDocCreateDomainsDocDualHostDocOfficiallySupported"
 
-var _Capability_index = [...]uint16{0, 13, 24, 39, 50, 66, 75, 86, 94, 113, 122, 133, 142, 160, 169, 178, 189, 199, 213, 229, 240, 262}
+var _Capability_index = [...]uint16{0, 13, 28, 39, 54, 65, 81, 90, 101, 109, 128, 137, 148, 157, 175, 184, 193, 204, 214, 228, 244, 255, 277}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {
