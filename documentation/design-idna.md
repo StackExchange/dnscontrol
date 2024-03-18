@@ -4,14 +4,14 @@ This is my proposal for how to make IDNs work better in DNSControl.
 Basically, the UI will accept any format.  Early in the process
 DNSControl will store labels/domains data 4 ways: As received from the
 user (downcased), ASCII, Unicode, and in a "display" format that shows
-both. The converstions already done ahead of time, providers can
+both. The conversions already done ahead of time, providers can
 access whatever format they need.  Output from the main program will
 use the "display" format when possible.
 
 # Problem Statement
 
 DNSControl doesn't handle internationalized domain names (IDNs) very
-well.  Coverage is unevent: They work better in some providers than
+well.  Coverage is uneven: They work better in some providers than
 others. There are bugs and inconsistencies. Writing a provider that
 handles IDNs properly requires doing most of the work in the provider
 itself, which means every provider maintainer must be an expert in
@@ -178,7 +178,7 @@ special attention.
    everyone has an IDN to test with, (2) old code should work as well
    as before (bugs and all!).
 
-5. Documentation updates: Not sure what updates are neede but
+5. Documentation updates: Not sure what updates are need but
 suggestions welcome!
 
 # Call for volunteers!
