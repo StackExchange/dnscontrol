@@ -27,6 +27,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),                                     // Maybe there is support for it
 	providers.CanGetZones:            providers.Unimplemented(),                              //
+	providers.CanNotRunConcurrently:  providers.Cannot(),                                     // Delete this when fixed
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented

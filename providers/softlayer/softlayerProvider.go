@@ -24,9 +24,10 @@ type softlayerProvider struct {
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones: providers.Unimplemented(),
-	providers.CanUseLOC:   providers.Cannot(),
-	providers.CanUseSRV:   providers.Can(),
+	providers.CanGetZones:           providers.Unimplemented(),
+	providers.CanNotRunConcurrently: providers.Cannot(), // Delete this when fixed
+	providers.CanUseLOC:             providers.Cannot(),
+	providers.CanUseSRV:             providers.Can(),
 }
 
 func init() {

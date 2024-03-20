@@ -34,6 +34,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanNotRunConcurrently:  providers.Cannot(), // Delete this when fixed
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),

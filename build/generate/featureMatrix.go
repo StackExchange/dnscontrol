@@ -142,7 +142,7 @@ func matrixData() *FeatureMatrix {
 			)
 		}
 
-		setCapabilityThread := func(
+		setCapabilityDefaultCan := func(
 			featureName string,
 			capability providers.Capability,
 		) {
@@ -186,7 +186,7 @@ func matrixData() *FeatureMatrix {
 			false,
 			func() bool { return providers.RegistrarTypes[providerName] != nil },
 		)
-		setCapabilityThread(
+		setCapabilityDefaultCan(
 			ProviderThreadSafe,
 			providers.CanNotRunConcurrently,
 		)

@@ -91,6 +91,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanNotRunConcurrently:  providers.Cannot(), // Delete this when fixed
 	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),

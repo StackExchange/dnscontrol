@@ -25,8 +25,8 @@ const selfLinkBasePath = "https://www.googleapis.com/compute/v1/projects/"
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanNotRunConcurrently:  providers.Cannot(), // Delete this when fixed
 	providers.CanGetZones:            providers.Can(),
+	providers.CanNotRunConcurrently:  providers.Cannot(), // Delete this when fixed
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
