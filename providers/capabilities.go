@@ -17,11 +17,11 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
-	// CanNotRunConcurrently indicates the provider has NOT be tested in a
+	// CanNotRunConcur indicates the provider has NOT be tested in a
 	// concurrent situation and should default to running serially.  Once this
 	// has been tested to show it CAN run concurrently, delete this item (the
 	// default is "Can()").
-	CanNotRunConcurrently
+	CanNotRunConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones

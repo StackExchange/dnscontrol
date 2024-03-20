@@ -188,7 +188,7 @@ func matrixData() *FeatureMatrix {
 		)
 		setCapabilityDefaultCan(
 			ProviderThreadSafe,
-			providers.CanNotRunConcurrently,
+			providers.CanNotRunConcur,
 		)
 		setCapability(
 			DomainModifierAlias,

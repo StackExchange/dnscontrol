@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanNotRunConcurrently:  providers.Cannot(), // Delete this when fixed
+	providers.CanNotRunConcur:        providers.Cannot(), // Delete this line when concurrency is verified to work
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),

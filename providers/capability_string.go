@@ -9,7 +9,7 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[CanAutoDNSSEC-0]
-	_ = x[CanNotRunConcurrently-1]
+	_ = x[CanNotRunConcur-1]
 	_ = x[CanGetZones-2]
 	_ = x[CanUseAKAMAICDN-3]
 	_ = x[CanUseAlias-4]
