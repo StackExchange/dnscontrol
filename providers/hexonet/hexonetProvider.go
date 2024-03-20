@@ -26,7 +26,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Unimplemented(),
-	providers.CanConcur:              providers.Cannot(), // Delete this line when concurrency is verified to work
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),

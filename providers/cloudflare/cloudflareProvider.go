@@ -43,7 +43,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(), // Delete this line when concurrency is verified to work
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),

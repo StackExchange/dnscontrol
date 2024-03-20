@@ -20,7 +20,7 @@ var docNotes = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(), // Delete this line when concurrency is verified to work
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
