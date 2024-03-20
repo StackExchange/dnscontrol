@@ -172,6 +172,10 @@ func matrixData() *FeatureMatrix {
 			func() bool { return providers.RegistrarTypes[providerName] != nil },
 		)
 		setCapability(
+			ProviderThreadSafe,
+			providers.CanConcurGather,
+		)
+		setCapability(
 			DomainModifierAlias,
 			providers.CanUseAlias,
 		)
