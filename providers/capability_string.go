@@ -9,7 +9,7 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[CanAutoDNSSEC-0]
-	_ = x[CanConcurGather-1]
+	_ = x[CanNotRunConcurrently-1]
 	_ = x[CanGetZones-2]
 	_ = x[CanUseAKAMAICDN-3]
 	_ = x[CanUseAlias-4]
@@ -31,9 +31,9 @@ func _() {
 	_ = x[DocOfficiallySupported-20]
 }
 
-const _Capability_name = "CanAutoDNSSECCanConcurGatherCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDSCanUseDSForChildrenCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseTLSADocCreateDomainsDocDualHostDocOfficiallySupported"
+const _Capability_name = "CanAutoDNSSECCanNotRunConcurrentlyCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDSCanUseDSForChildrenCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseTLSADocCreateDomainsDocDualHostDocOfficiallySupported"
 
-var _Capability_index = [...]uint16{0, 13, 28, 39, 54, 65, 81, 90, 101, 109, 128, 137, 148, 157, 175, 184, 193, 204, 214, 230, 241, 263}
+var _Capability_index = [...]uint16{0, 13, 34, 45, 60, 71, 87, 96, 107, 115, 134, 143, 154, 163, 181, 190, 199, 210, 220, 236, 247, 269}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {

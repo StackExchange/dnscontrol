@@ -44,7 +44,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
-	providers.CanConcurGather:        providers.Unimplemented(),
+	providers.CanNotRunConcurrently:  providers.Unimplemented(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
 	providers.CanUseCAA:              providers.Can(),

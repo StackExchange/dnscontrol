@@ -23,7 +23,7 @@ import (
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanConcurGather:        providers.Unimplemented(),
+	providers.CanNotRunConcurrently:  providers.Unimplemented(),
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Can(),

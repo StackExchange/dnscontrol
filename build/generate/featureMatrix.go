@@ -142,6 +142,21 @@ func matrixData() *FeatureMatrix {
 			)
 		}
 
+		setCapabilityThread := func(
+			featureName string,
+			capability providers.Capability,
+		) {
+			if providerNotes[capability] != nil {
+				featureMap[featureName] = providerNotes[capability]
+				return
+			}
+			featureMap.SetSimple(
+				featureName,
+				true,
+				func() bool { return providers.ProviderHasCapability(providerName, capability) },
+			)
+		}
+
 		setDocumentation := func(
 			featureName string,
 			capability providers.Capability,
@@ -171,14 +186,9 @@ func matrixData() *FeatureMatrix {
 			false,
 			func() bool { return providers.RegistrarTypes[providerName] != nil },
 		)
-		// featureMap.SetSimple(
-		// 	ProviderThreadSafe,
-		// 	true,
-		// 	func() bool { return !providers.ProviderHasCapability(providerName, providers.CanConcurGather) },
-		// )
-		setCapability(
+		setCapabilityThread(
 			ProviderThreadSafe,
-			providers.CanConcurGather,
+			providers.CanNotRunConcurrently,
 		)
 		setCapability(
 			DomainModifierAlias,

@@ -17,10 +17,11 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
-	// CanConcurGather indicates the provider can gather information
-	// concurrently.  Default true.  Set to Unimplemented() if testing
-	// hasn't been completed.
-	CanConcurGather
+	// CanNotRunConcurrently indicates the provider has NOT be tested in a
+	// concurrent situation and should default to running serially.  Once this
+	// has been tested to show it CAN run concurrently, delete this item (the
+	// default is "Can()").
+	CanNotRunConcurrently
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
