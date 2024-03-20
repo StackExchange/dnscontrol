@@ -41,6 +41,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CanGetZones:            providers.Cannot(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),

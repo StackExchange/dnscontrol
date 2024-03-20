@@ -17,6 +17,12 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
+	// CanConcur indicates the provider can be used concurrently.  Can()
+	// indicates that it has been tested and shown to work concurrently.
+	// Cannot() indicates it has not been tested OR it has been shown to not
+	// work when used concurrently.  The default is Cannot().
+	CanConcur
+
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 
