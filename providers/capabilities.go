@@ -17,6 +17,12 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
+	// CanConcur indicates the provider can be used concurrently.  Can()
+	// indicates that it has been tested and shown to work concurrently.
+	// Cannot() indicates it has not been tested OR it has been shown to not
+	// work when used concurrently.  The default is Cannot().
+	CanConcur
+
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 
@@ -71,12 +77,6 @@ const (
 
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
-
-	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
-	// work would require complex emulation of an incremental update mechanism,
-	// so it is easier to simply mark this feature as not working for this
-	// provider.
-	CantUseNOPURGE
 
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
