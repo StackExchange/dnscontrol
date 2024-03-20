@@ -146,10 +146,10 @@ func matrixData() *FeatureMatrix {
 			featureName string,
 			capability providers.Capability,
 		) {
-			// if providerNotes[capability] != nil {
-			// 	featureMap[featureName] = providerNotes[capability]
-			// 	return
-			// }
+			if providerNotes[capability] != nil {
+				featureMap[featureName] = providerNotes[capability]
+				return
+			}
 			featureMap.SetSimple(
 				featureName,
 				true,
