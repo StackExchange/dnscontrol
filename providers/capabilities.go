@@ -93,6 +93,14 @@ func ProviderHasCapability(pType string, cap Capability) bool {
 	return providerCapabilities[pType][cap]
 }
 
+// ProviderNotHasCapability returns true if provider does not have the capability.
+func ProviderNotHasCapability(pType string, cap Capability) bool {
+	if providerCapabilities[pType] == nil {
+		return true
+	}
+	return !providerCapabilities[pType][cap]
+}
+
 // DocumentationNote is a way for providers to give more detail about what features they support.
 type DocumentationNote struct {
 	HasFeature    bool
