@@ -76,7 +76,7 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
-		ProviderThreadSafe   = "SAFETY"
+		ProviderThreadSafe   = "Works Concurrently"
 		DomainModifierAlias  = "[`ALIAS`](functions/domain/ALIAS.md)"
 		DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
 		DomainModifierDnssec = "[`AUTODNSSEC`](functions/domain/AUTODNSSEC_ON.md)"
@@ -171,9 +171,10 @@ func matrixData() *FeatureMatrix {
 			false,
 			func() bool { return providers.RegistrarTypes[providerName] != nil },
 		)
-		setCapability(
+		featureMap.SetSimple(
 			ProviderThreadSafe,
-			providers.CanConcurGather,
+			false,
+			func() bool { return providers.ProviderHasCapability(providerName, providers.CanConcurGather) },
 		)
 		setCapability(
 			DomainModifierAlias,
