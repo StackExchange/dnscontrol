@@ -173,7 +173,7 @@ func matrixData() *FeatureMatrix {
 		)
 		featureMap.SetSimple(
 			ProviderThreadSafe,
-			false,
+			true,
 			func() bool { return providers.ProviderHasCapability(providerName, providers.CanConcurGather) },
 		)
 		setCapability(
