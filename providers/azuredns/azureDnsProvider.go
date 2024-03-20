@@ -65,7 +65,7 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanConcurGather:        providers.Cannot(),
+	providers.CanConcurGather:        providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Can(),
