@@ -76,7 +76,7 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
-		ProviderThreadSafe   = "Works Concurrently"
+		ProviderThreadSafe   = "Concurrency Verified"
 		DomainModifierAlias  = "[`ALIAS`](functions/domain/ALIAS.md)"
 		DomainModifierCaa    = "[`CAA`](functions/domain/CAA.md)"
 		DomainModifierDnssec = "[`AUTODNSSEC`](functions/domain/AUTODNSSEC_ON.md)"
