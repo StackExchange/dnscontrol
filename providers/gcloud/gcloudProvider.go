@@ -26,7 +26,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanNotRunConcur:        providers.Cannot(), // Delete this line when concurrency is verified to work
+	providers.CanConcur:              providers.Cannot(), // Delete this line when concurrency is verified to work
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),

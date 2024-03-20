@@ -28,10 +28,10 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`DIGITALOCEAN`](providers/digitalocean.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](providers/dnsimple.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](providers/dnsmadeeasy.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ |
-| [`DNSOVERHTTPS`](providers/dnsoverhttps.md) | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
+| [`DNSOVERHTTPS`](providers/dnsoverhttps.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`DOMAINNAMESHOP`](providers/domainnameshop.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ |
-| [`DYNADOT`](providers/dynadot.md) | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
-| [`EASYNAME`](providers/easyname.md) | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
+| [`DYNADOT`](providers/dynadot.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
+| [`EASYNAME`](providers/easyname.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](providers/exoscale.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`GANDI_V5`](providers/gandi_v5.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](providers/gcloud.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
@@ -40,7 +40,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`HETZNER`](providers/hetzner.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
 | [`HEXONET`](providers/hexonet.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](providers/hostingde.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
-| [`INTERNETBS`](providers/internetbs.md) | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
+| [`INTERNETBS`](providers/internetbs.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](providers/inwx.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`LINODE`](providers/linode.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](providers/loopia.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ❌ | ✅ |
@@ -52,7 +52,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`NETCUP`](providers/netcup.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❌ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ❌ |
 | [`NETLIFY`](providers/netlify.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ |
 | [`NS1`](providers/ns1.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ |
-| [`OPENSRS`](providers/opensrs.md) | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
+| [`OPENSRS`](providers/opensrs.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`ORACLE`](providers/oracle.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ |
 | [`OVH`](providers/ovh.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ❌ | ✅ |
 | [`PACKETFRAME`](providers/packetframe.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ❔ |

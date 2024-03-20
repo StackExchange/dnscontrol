@@ -142,21 +142,6 @@ func matrixData() *FeatureMatrix {
 			)
 		}
 
-		setCapabilityDefaultCan := func(
-			featureName string,
-			capability providers.Capability,
-		) {
-			if providerNotes[capability] != nil {
-				featureMap[featureName] = providerNotes[capability]
-				return
-			}
-			featureMap.SetSimple(
-				featureName,
-				true,
-				func() bool { return providers.ProviderNotHasCapability(providerName, capability) },
-			)
-		}
-
 		setDocumentation := func(
 			featureName string,
 			capability providers.Capability,
@@ -186,9 +171,9 @@ func matrixData() *FeatureMatrix {
 			false,
 			func() bool { return providers.RegistrarTypes[providerName] != nil },
 		)
-		setCapabilityDefaultCan(
+		setCapability(
 			ProviderThreadSafe,
-			providers.CanNotRunConcur,
+			providers.CanConcur,
 		)
 		setCapability(
 			DomainModifierAlias,

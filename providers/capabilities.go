@@ -17,11 +17,11 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
-	// CanNotRunConcur indicates the provider has NOT be tested in a
-	// concurrent situation and should default to running serially.  Once this
-	// has been tested to show it CAN run concurrently, delete this item (the
-	// default is "Can()").
-	CanNotRunConcur
+	// CanConcur indicates the provider can be used concurrently.  Can()
+	// indicates that it has been tested and shown to work concurrently.
+	// Cannot() indicates it has not been tested OR it has been shown to not
+	// work when used concurrently.  The default is Cannot().
+	CanConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
@@ -91,14 +91,6 @@ func ProviderHasCapability(pType string, cap Capability) bool {
 		return false
 	}
 	return providerCapabilities[pType][cap]
-}
-
-// ProviderNotHasCapability returns true if provider does not have the capability.
-func ProviderNotHasCapability(pType string, cap Capability) bool {
-	if providerCapabilities[pType] == nil {
-		return true
-	}
-	return !providerCapabilities[pType][cap]
 }
 
 // DocumentationNote is a way for providers to give more detail about what features they support.
