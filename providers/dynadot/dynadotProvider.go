@@ -18,8 +18,14 @@ Info required in `creds.json`:
 
 */
 
+var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanConcur: providers.Cannot(), // Delete this line when concurrency is verified to work
+}
+
 func init() {
-	providers.RegisterRegistrarType("DYNADOT", newDynadot)
+	providers.RegisterRegistrarType("DYNADOT", newDynadot, features)
 }
 
 func newDynadot(m map[string]string) (providers.Registrar, error) {
