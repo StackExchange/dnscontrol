@@ -72,20 +72,17 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.WarnChanges,
 		Usage:       `set to true for non-zero return code if there are changes`,
 	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "slow",
-		Destination: &args.NoParallel,
-		Usage:       `alias for -cmode=none`,
-	})
-	flags = append(flags, &cli.BoolFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
+		Value:       "default",
 		Usage:       `Which providers to run concurrently: all, default, none`,
-	})
-	flags = append(flags, &cli.StringFlag{
-		Name:        "slow",
-		Destination: &args.NoParallel,
-		Usage:       `Do not run collection phase in parallel`,
+		Action: func(c *cli.Context, s string) error {
+			if !slices.Contains([]string{"all", "default", "none"}, s) {
+				fmt.Printf("%q is not a valid option for --cmode.  Valie are: all, default, none", s)
+			}
+			return nil
+		},
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
@@ -203,29 +200,29 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
-	zonesSerial, zonesParallel := whichZonesParallel(args.P)
-	if args.NoParallel {
-		fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
-		for _, zone := range zonesToProcess {
-			fmt.Printf("Gathering: %q\n", zone.Name)
+	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
+	fmt.Printf("PHASE 1: GATHERING data\n")
+	//fmt.Printf("    CONCURRENT: % 4d, %v\n", len(zonesConcurrent), namesOf(zonesConcurrent))
+	//fmt.Printf("        SERIAL: % 4d, %v\n", len(zonesSerial), namesOf(zonesSerial))
+	fmt.Printf("Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
+	var wg sync.WaitGroup
+	wg.Add(len(zonesConcurrent))
+	for _, zone := range optimizeOrder(zonesConcurrent) {
+		fmt.Printf("Background gathering: %q\n", zone.Name)
+		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
+			defer wg.Done()
 			oneDomain(zone, args, zcache)
-		}
-	} else {
-		fmt.Printf("PHASE 1: GATHERING data in parallel...\n")
-		var wg sync.WaitGroup
-		wg.Add(len(zonesToProcess))
-		zonesToProcessSorted := optimizeOrder(zonesToProcess)
-		for _, zone := range zonesToProcessSorted {
-			fmt.Printf("Gathering: %q\n", zone.Name)
-			go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
-				defer wg.Done()
-				oneDomain(zone, args, zcache)
-				fmt.Printf("    ...done: %q\n", zone.Name)
-			}(zone, args, zcache)
-		}
-		fmt.Printf("(waiting for %d gathers to complete...)\n", len(zonesToProcess))
-		wg.Wait()
+			//fmt.Printf("    ...done: %q\n", zone.Name)
+		}(zone, args, zcache)
 	}
+	fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
+	for _, zone := range zonesSerial {
+		fmt.Printf("Gathering: %q\n", zone.Name)
+		oneDomain(zone, args, zcache)
+	}
+	fmt.Printf("Waiting for background gathering to complete...")
+	wg.Wait()
+	fmt.Printf("DONE\n")
 
 	// Now we know what to do, print or do the tasks.
 	fmt.Printf("PHASE 2: CORRECTIONS\n")
@@ -252,18 +249,25 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
+func namesOf(zones []*models.DomainConfig) []string {
+	var r []string
+	for _, zc := range zones {
+		r = append(r, zc.Name)
+	}
+	slices.Sort[[]string](r)
+	slices.Compact[[]string](r)
+	return r
+}
+
 // optimizeOrder returns a list of DomainConfigs so that they gather fastest.
 //
 // The current algorithm is based on the heuistic that larger zones (zones with
 // the most records) need the most time to be processed.  Therefore, the largest
 // zones are moved to the front of the list.
-// This isn't perfect.  For example, at StackOverflow some of the largest zones
-// are not processed by default, but get moved to the front of
-// the list.  However they complete very quickly, making room for other zones.
+// This isn't perfect but it is good enough.
 func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	slices.SortFunc(zones, func(a, b *models.DomainConfig) int {
 		return len(b.Records) - len(a.Records) // Biggest to smallest.
-		//return len(a.Records) - len(b.Records) // Smallest to smallest.
 	})
 
 	// // For benchmarking. Randomize the list. If you aren't better
@@ -314,6 +318,41 @@ func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*model
 		}
 	}
 	return picked
+}
+
+// splitConcurrent takes a list of DomainConfigs and returns two lists. The
+// first list is the items that do NOT support concurrency.  The second is list
+// the items that DO support concurrency.
+func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*models.DomainConfig, concurrent []*models.DomainConfig) {
+	if filter == "none" {
+		return domains, nil
+	} else if filter == "all" {
+		return nil, domains
+	}
+	for _, dc := range domains {
+		if allConcur(dc) {
+			concurrent = append(concurrent, dc)
+		} else {
+			serial = append(serial, dc)
+		}
+	}
+	return
+}
+
+// allConcur returns true if its registrar and all DNS providers support
+// concurrency.  Otherwise false is returned.
+func allConcur(dc *models.DomainConfig) bool {
+	if !providers.ProviderHasCapability(dc.RegistrarInstance.ProviderType, providers.CanConcur) {
+		//fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
+		return false
+	}
+	for _, p := range dc.DNSProviderInstances {
+		if !providers.ProviderHasCapability(p.ProviderType, providers.CanConcur) {
+			//fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
+			return false
+		}
+	}
+	return true
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {

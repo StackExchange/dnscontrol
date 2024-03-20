@@ -171,10 +171,16 @@ func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	return nil, nil
 }
 
+var featuresNone = DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
+	CanConcur: Can(),
+}
+
 func init() {
 	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
 		return None{}, nil
-	})
+	}, featuresNone)
 }
 
 // CustomRType stores an rtype that is only valid for this DSP.

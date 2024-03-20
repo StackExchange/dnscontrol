@@ -2,7 +2,9 @@
 
 package providers
 
-import "log"
+import (
+	"log"
+)
 
 // Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
 type Capability uint32
@@ -92,6 +94,7 @@ var providerCapabilities = map[string]map[Capability]bool{}
 
 // ProviderHasCapability returns true if provider has capability.
 func ProviderHasCapability(pType string, cap Capability) bool {
+	//fmt.Printf("DEBUG: providerCap=\n%+v\n", providerCapabilities)
 	if providerCapabilities[pType] == nil {
 		return false
 	}

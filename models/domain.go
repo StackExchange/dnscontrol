@@ -47,10 +47,9 @@ type DomainConfig struct {
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	// pendingCorrectionsMutex sync.Mutex
-	// pendingCorrections      *orderedmap.OrderedMap[string, []*Correction]
-	pendingWork      map[string]([]*Correction)
-	pendingWorkOrder []string
-	pendingWorkMutex sync.Mutex
+	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
+	pendingCorrectionsOrder []string                   // Call the providers in this order
+	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -152,22 +151,22 @@ func (dc *DomainConfig) Punycode() error {
 }
 
 func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Correction) {
-	dc.pendingWorkMutex.Lock()
-	defer dc.pendingWorkMutex.Unlock()
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
 
-	if dc.pendingWork == nil {
+	if dc.pendingCorrections == nil {
 		// First time storing anything.
-		dc.pendingWork = make(map[string]([]*Correction))
-		dc.pendingWork[providerName] = corrections
-		dc.pendingWorkOrder = []string{providerName}
-	} else if c, ok := dc.pendingWork[providerName]; !ok {
+		dc.pendingCorrections = make(map[string]([]*Correction))
+		dc.pendingCorrections[providerName] = corrections
+		dc.pendingCorrectionsOrder = []string{providerName}
+	} else if c, ok := dc.pendingCorrections[providerName]; !ok {
 		// First time key used
-		dc.pendingWork[providerName] = corrections
-		dc.pendingWorkOrder = []string{providerName}
+		dc.pendingCorrections[providerName] = corrections
+		dc.pendingCorrectionsOrder = []string{providerName}
 	} else {
 		// Add to existing.
-		dc.pendingWork[providerName] = append(c, corrections...)
-		dc.pendingWorkOrder = append(dc.pendingWorkOrder, providerName)
+		dc.pendingCorrections[providerName] = append(c, corrections...)
+		dc.pendingCorrectionsOrder = append(dc.pendingCorrectionsOrder, providerName)
 
 	}
 }
@@ -190,14 +189,14 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 // }
 
 func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
-	dc.pendingWorkMutex.Lock()
-	defer dc.pendingWorkMutex.Unlock()
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
 
-	if dc.pendingWork == nil {
+	if dc.pendingCorrections == nil {
 		// First time storing anything.
 		return nil
 	}
-	if c, ok := dc.pendingWork[providerName]; ok {
+	if c, ok := dc.pendingCorrections[providerName]; ok {
 		return c
 	}
 	return nil
