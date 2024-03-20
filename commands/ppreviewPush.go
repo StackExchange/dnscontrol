@@ -204,9 +204,11 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	fmt.Printf("PHASE 1: GATHERING data\n")
 	//fmt.Printf("    CONCURRENT: % 4d, %v\n", len(zonesConcurrent), namesOf(zonesConcurrent))
 	//fmt.Printf("        SERIAL: % 4d, %v\n", len(zonesSerial), namesOf(zonesSerial))
-	fmt.Printf("Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
 	var wg sync.WaitGroup
 	wg.Add(len(zonesConcurrent))
+	if len(zonesConcurrent) > 0 {
+		fmt.Printf("Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
+	}
 	for _, zone := range optimizeOrder(zonesConcurrent) {
 		fmt.Printf("Background gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
@@ -215,14 +217,20 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			//fmt.Printf("    ...done: %q\n", zone.Name)
 		}(zone, args, zcache)
 	}
-	fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
+	if len(zonesSerial) > 0 {
+		fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
+	}
 	for _, zone := range zonesSerial {
 		fmt.Printf("Gathering: %q\n", zone.Name)
 		oneDomain(zone, args, zcache)
 	}
-	fmt.Printf("Waiting for background gathering to complete...")
+	if len(zonesConcurrent) > 0 {
+		fmt.Printf("Waiting for background gathering to complete...")
+	}
 	wg.Wait()
-	fmt.Printf("DONE\n")
+	if len(zonesConcurrent) > 0 {
+		fmt.Printf("DONE\n")
+	}
 
 	// Now we know what to do, print or do the tasks.
 	fmt.Printf("PHASE 2: CORRECTIONS\n")
@@ -247,16 +255,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	return nil
-}
-
-func namesOf(zones []*models.DomainConfig) []string {
-	var r []string
-	for _, zc := range zones {
-		r = append(r, zc.Name)
-	}
-	slices.Sort[[]string](r)
-	slices.Compact[[]string](r)
-	return r
 }
 
 // optimizeOrder returns a list of DomainConfigs so that they gather fastest.
