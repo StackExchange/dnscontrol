@@ -19,8 +19,14 @@ Info required in `creds.json`:
 
 */
 
+var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanConcur: providers.Cannot(),
+}
+
 func init() {
-	providers.RegisterRegistrarType("INTERNETBS", newInternetBs)
+	providers.RegisterRegistrarType("INTERNETBS", newInternetBs, features)
 }
 
 func newInternetBs(m map[string]string) (providers.Registrar, error) {
