@@ -45,7 +45,7 @@ NOTE: Feedback needed!  Do you prefer "a" or "b"?  Is there an even better forma
 Example 1a: CREATE unicode (ascii)
 
 ```
-#1: + CREATE foo.рф.com (foo.xn--p1ai.com) MX 10 рф.com. (xn--p1ai.com) (ttl=14400)
+#1: + CREATE foo.рф.com (foo.xn--p1ai.com) MX 10 рф.com. (xn--p1ai.com.) (ttl=14400)
 ```
 
 Example 1b: CREATE ascii (unicode)
@@ -81,12 +81,67 @@ Example 3d: MODIFY unicode
 NOTE: When the ASCII and Unicode versions are the same (i.e.
 everything is plain ASCII) the display would appear as before:
 
-(Example #7 has a target that is unicode, #8 is all ASCII)
+```
+#7: + CREATE foo1.example.com MX 10 mxfoo.example.com. (ttl=14400)
+#8: ± MODIFY foo2.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
+```
+
+these examples are similar, but the targets are unicode:
 
 ```
-#7: + CREATE foo.example.com MX 10 xn--p1ai.com (рф.com) (ttl=14400)
-#8: ± MODIFY foo.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
+#9: + CREATE foo3.example.com MX 10 xn--p1ai.com. (рф.com.) (ttl=14400)
+#10: ± MODIFY foo4.example.com (10 xn--p1ai.com. (рф.com.) ttl=14400) -> (10 foo.example.com. ttl=14400)
+#11: ± MODIFY foo5.example.com (10 example.com. ttl=14400) -> (10 xn--p1ai.com. (рф.com.) ttl=14400)
 ```
+
+Now here are the same examples with `()` changed to `{}`:
+
+```
+#1: + CREATE foo.рф.com {foo.xn--p1ai.com} MX 10 рф.com. {xn--p1ai.com.} (ttl=14400)
+#2: + CREATE foo.xn--p1ai.com {foo.рф.com} MX 10 xn--p1ai.com. {рф.com.} (ttl=14400)
+#3: ± MODIFY foo.xn--p1ai.com {foo.рф.com} (10 xn--p1ai.com. {рф.com.} ttl=14400) -> (10 foo.xn--p1ai.com. {foo.рф.com.} ttl=14400)
+#4: ± MODIFY foo.рф.com {foo.xn--p1ai.com} (10 рф.com. {xn--p1ai.com.} ttl=14400) -> (10 foo.рф.com. {foo.xn--p1ai.com.} ttl=14400)
+#5: ± MODIFY foo.рф.com (10 рф.com. ttl=14400) -> (10 foo.рф.com. ttl=14400)
+#6: ± MODIFY foo.xn--p1ai.com (10 xn--p1ai.com. ttl=14400) -> (10 foo.xn--p1ai.com. ttl=14400)
+#7: + CREATE foo1.example.com MX 10 mxfoo.example.com (ttl=14400)
+#8: ± MODIFY foo2.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
+#9: + CREATE foo3.example.com MX 10 xn--p1ai.com. {рф.com.} (ttl=14400)
+#10: ± MODIFY foo4.example.com (10 xn--p1ai.com. {рф.com.} ttl=14400) -> (10 foo.example.com. ttl=14400)
+#11: ± MODIFY foo5.example.com (10 example.com. ttl=14400) -> (10 xn--p1ai.com. {рф.com.} ttl=14400)
+```
+
+Now here are the same examples with `()` changed to `⟬⟭`:
+
+```
+#1: + CREATE foo.рф.com ⟬foo.xn--p1ai.com⟭ MX 10 рф.com. ⟬xn--p1ai.com.⟭ (ttl=14400)
+#2: + CREATE foo.xn--p1ai.com ⟬foo.рф.com⟭ MX 10 xn--p1ai.com. ⟬рф.com.⟭ (ttl=14400)
+#3: ± MODIFY foo.xn--p1ai.com ⟬foo.рф.com⟭ (10 xn--p1ai.com. ⟬рф.com.⟭ ttl=14400) -> (10 foo.xn--p1ai.com. ⟬foo.рф.com.⟭ ttl=14400)
+#4: ± MODIFY foo.рф.com ⟬foo.xn--p1ai.com⟭ (10 рф.com. ⟬xn--p1ai.com.⟭ ttl=14400) -> (10 foo.рф.com. ⟬foo.xn--p1ai.com.⟭ ttl=14400)
+#5: ± MODIFY foo.рф.com (10 рф.com. ttl=14400) -> (10 foo.рф.com. ttl=14400)
+#6: ± MODIFY foo.xn--p1ai.com (10 xn--p1ai.com. ttl=14400) -> (10 foo.xn--p1ai.com. ttl=14400)
+#7: + CREATE foo1.example.com MX 10 mxfoo.example.com (ttl=14400)
+#8: ± MODIFY foo2.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
+#9: + CREATE foo3.example.com MX 10 xn--p1ai.com. ⟬рф.com.⟭ (ttl=14400)
+#10: ± MODIFY foo4.example.com (10 xn--p1ai.com. ⟬рф.com.⟭ ttl=14400) -> (10 foo.example.com. ttl=14400)
+#11: ± MODIFY foo5.example.com (10 example.com. ttl=14400) -> (10 xn--p1ai.com. ⟬рф.com.⟭ ttl=14400)
+```
+
+Now here are the same examples with `()` changed to `❮❯`:
+
+```
+#1: + CREATE foo.рф.com ❮foo.xn--p1ai.com❯ MX 10 рф.com. ❮xn--p1ai.com.❯ (ttl=14400)
+#2: + CREATE foo.xn--p1ai.com ❮foo.рф.com❯ MX 10 xn--p1ai.com. ❮рф.com.❯ (ttl=14400)
+#3: ± MODIFY foo.xn--p1ai.com ❮foo.рф.com❯ (10 xn--p1ai.com. ❮рф.com.❯ ttl=14400) -> (10 foo.xn--p1ai.com. ❮foo.рф.com.❯ ttl=14400)
+#4: ± MODIFY foo.рф.com ❮foo.xn--p1ai.com❯ (10 рф.com. ❮xn--p1ai.com.❯ ttl=14400) -> (10 foo.рф.com. ❮foo.xn--p1ai.com.❯ ttl=14400)
+#5: ± MODIFY foo.рф.com (10 рф.com. ttl=14400) -> (10 foo.рф.com. ttl=14400)
+#6: ± MODIFY foo.xn--p1ai.com (10 xn--p1ai.com. ttl=14400) -> (10 foo.xn--p1ai.com. ttl=14400)
+#7: + CREATE foo1.example.com MX 10 mxfoo.example.com (ttl=14400)
+#8: ± MODIFY foo2.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
+#9: + CREATE foo3.example.com MX 10 xn--p1ai.com. ❮рф.com.❯ (ttl=14400)
+#10: ± MODIFY foo4.example.com (10 xn--p1ai.com. ❮рф.com.❯ ttl=14400) -> (10 foo.example.com. ttl=14400)
+#11: ± MODIFY foo5.example.com (10 example.com. ttl=14400) -> (10 xn--p1ai.com. ❮рф.com.❯ ttl=14400)
+```
+
 
 # Design
 
