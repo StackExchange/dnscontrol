@@ -81,6 +81,8 @@ Example 3d: MODIFY unicode
 NOTE: When the ASCII and Unicode versions are the same (i.e.
 everything is plain ASCII) the display would appear as before:
 
+(Example #7 has a target that is unicode, #8 is all ASCII)
+
 ```
 #7: + CREATE foo.example.com MX 10 xn--p1ai.com (рф.com) (ttl=14400)
 #8: ± MODIFY foo.example.com (10 example.com. ttl=14400) -> (10 foo.example.com. ttl=14400)
