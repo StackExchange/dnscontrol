@@ -92,15 +92,15 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	var edits []zoneResourceRecordEdit
 	var descriptions []string
 	for _, del := range dels {
-		edits = append(edits, makePurge(dc.Name, del))
+		edits = append(edits, makePurge(del))
 		descriptions = append(descriptions, del.String())
 	}
 	for _, cre := range creates {
-		edits = append(edits, makeAdd(dc.Name, cre))
+		edits = append(edits, makeAdd(cre))
 		descriptions = append(descriptions, cre.String())
 	}
 	for _, m := range modifications {
-		edits = append(edits, makeEdit(dc.Name, m))
+		edits = append(edits, makeEdit(m))
 		descriptions = append(descriptions, m.String())
 	}
 	if len(edits) > 0 {
@@ -126,7 +126,7 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	return corrections, nil
 }
 
-func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
+func makePurge(cor diff.Correlation) zoneResourceRecordEdit {
 	var existingTarget string
 
 	switch cor.Existing.Type {
@@ -152,7 +152,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 	return zer
 }
 
-func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
+func makeAdd(cre diff.Correlation) zoneResourceRecordEdit {
 	rec := cre.Desired
 
 	var recTarget string
@@ -192,7 +192,7 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	return zer
 }
 
-func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
+func makeEdit(m diff.Correlation) zoneResourceRecordEdit {
 	old, rec := m.Existing, m.Desired
 	// TODO: Assert that old.Type == rec.Type
 	// TODO: Assert that old.Name == rec.Name

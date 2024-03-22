@@ -103,7 +103,7 @@ func errorRepeat(label, domain string) string {
 	)
 }
 
-func checkLabel(label string, rType string, target, domain string, meta map[string]string) error {
+func checkLabel(label string, rType string, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
 	}
@@ -142,7 +142,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	return nil
 }
 
-func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, serial uint32, mbox string) error {
+func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox string) error {
 	if expire <= 0 {
 		return fmt.Errorf("SOA Expire must be > 0")
 	}
@@ -213,7 +213,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "PTR":
 		check(checkTarget(target))
 	case "SOA":
-		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
+		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaMbox))
 		check(checkTarget(target))
 		if label != "@" {
 			check(fmt.Errorf("SOA record is only valid for bare domain"))
@@ -321,10 +321,10 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// be performed.
 				continue
 			}
-			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
-			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
-				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
-			}
+			//			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
+			//			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
+			//				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
+			//			}
 		}
 
 		// Normalize Nameservers.
@@ -373,7 +373,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec.GetLabel(), rec.Type, rec.GetTargetField(), domain.Name, rec.Metadata); err != nil {
+			if err := checkLabel(rec.GetLabel(), rec.Type, domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
 

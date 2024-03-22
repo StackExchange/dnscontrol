@@ -314,8 +314,3 @@ func justMsgs(cl ChangeList) []string {
 	}
 	return msgs
 }
-
-func justMsgString(cl ChangeList) string {
-	msgs := justMsgs(cl)
-	return strings.Join(msgs, "\n")
-}

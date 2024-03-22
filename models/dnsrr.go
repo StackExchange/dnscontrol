@@ -16,20 +16,6 @@ func (rc *RecordConfig) String() string {
 
 // Conversions
 
-// RRstoRCs converts []dns.RR to []RecordConfigs.
-func RRstoRCs(rrs []dns.RR, origin string) (Records, error) {
-	rcs := make(Records, 0, len(rrs))
-	for _, r := range rrs {
-		rc, err := RRtoRC(r, origin)
-		if err != nil {
-			return nil, err
-		}
-
-		rcs = append(rcs, &rc)
-	}
-	return rcs, nil
-}
-
 // RRtoRC converts dns.RR to RecordConfig
 func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	return helperRRtoRC(rr, origin, false)

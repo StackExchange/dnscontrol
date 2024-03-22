@@ -12,8 +12,14 @@ import (
 	opensrs "github.com/philhug/opensrs-go/opensrs"
 )
 
+var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanConcur: providers.Cannot(),
+}
+
 func init() {
-	providers.RegisterRegistrarType("OPENSRS", newReg)
+	providers.RegisterRegistrarType("OPENSRS", newReg, features)
 }
 
 var defaultNameServerNames = []string{

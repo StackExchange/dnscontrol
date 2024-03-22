@@ -66,7 +66,7 @@ func checkIsLockedSystemRecord(record *models.RecordConfig) error {
 	return nil
 }
 
-func (api *rwthProvider) createRecord(domain string, record *models.RecordConfig) error {
+func (api *rwthProvider) createRecord(record *models.RecordConfig) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}

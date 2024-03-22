@@ -70,7 +70,10 @@ retry:
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
@@ -195,7 +198,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 		corrections = append(corrections, corr)
 	}
 	for _, m := range toCreate {
-		req := toReq(dc, m.Desired)
+		req := toReq(m.Desired)
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
@@ -213,7 +216,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 	}
 	for _, m := range toModify {
 		id := m.Existing.Original.(*godo.DomainRecord).ID
-		req := toReq(dc, m.Desired)
+		req := toReq(m.Desired)
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
@@ -304,7 +307,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	return t
 }
 
-func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordEditRequest {
+func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
 	target := rc.GetTargetField() // DO uses the target field only for a single value
 	priority := 0                 // DO uses the same property for MX and SRV priority

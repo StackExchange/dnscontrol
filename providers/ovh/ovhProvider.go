@@ -18,7 +18,10 @@ type ovhProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),
@@ -31,7 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
+func newOVH(m map[string]string, _ json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
 	c, err := ovh.NewClient(getOVHEndpoint(m), appKey, appSecretKey, consumerKey)

@@ -20,7 +20,7 @@ type shellTestDataItem struct {
 }
 
 // setupTestShellCompletionCommand resets the buffers used to capture output and errors from the app.
-func setupTestShellCompletionCommand(t *testing.T, app *cli.App) func(t *testing.T) {
+func setupTestShellCompletionCommand(app *cli.App) func(t *testing.T) {
 	return func(t *testing.T) {
 		app.Writer.(*bytes.Buffer).Reset()
 		cli.ErrWriter.(*bytes.Buffer).Reset()
@@ -65,7 +65,7 @@ func TestShellCompletionCommand(t *testing.T) {
 	t.Run("shellArg", func(t *testing.T) {
 		for _, tt := range shellsAndCompletionScripts {
 			t.Run(tt.shellName, func(t *testing.T) {
-				tearDownTest := setupTestShellCompletionCommand(t, app)
+				tearDownTest := setupTestShellCompletionCommand(app)
 				defer tearDownTest(t)
 
 				err := app.Run([]string{app.Name, "shell-completion", tt.shellName})
@@ -90,7 +90,7 @@ func TestShellCompletionCommand(t *testing.T) {
 		}
 
 		t.Run(invalidShellTestDataItem.shellName, func(t *testing.T) {
-			tearDownTest := setupTestShellCompletionCommand(t, app)
+			tearDownTest := setupTestShellCompletionCommand(app)
 			defer tearDownTest(t)
 
 			err := app.Run([]string{app.Name, "shell-completion", "invalid"})
@@ -116,7 +116,7 @@ func TestShellCompletionCommand(t *testing.T) {
 	t.Run("$SHELL", func(t *testing.T) {
 		for _, tt := range shellsAndCompletionScripts {
 			t.Run(tt.shellName, func(t *testing.T) {
-				tearDownTest := setupTestShellCompletionCommand(t, app)
+				tearDownTest := setupTestShellCompletionCommand(app)
 				defer tearDownTest(t)
 
 				t.Setenv("SHELL", tt.shellPath)
@@ -143,7 +143,7 @@ func TestShellCompletionCommand(t *testing.T) {
 		}
 
 		t.Run(invalidShellTestDataItem.shellName, func(t *testing.T) {
-			tearDownTest := setupTestShellCompletionCommand(t, app)
+			tearDownTest := setupTestShellCompletionCommand(app)
 			defer tearDownTest(t)
 
 			t.Setenv("SHELL", invalidShellTestDataItem.shellPath)
@@ -189,7 +189,7 @@ func TestShellCompletionCommand(t *testing.T) {
 
 		for _, tC := range testCases {
 			t.Run(tC.shellArg, func(t *testing.T) {
-				tearDownTest := setupTestShellCompletionCommand(t, app)
+				tearDownTest := setupTestShellCompletionCommand(app)
 				defer tearDownTest(t)
 				app.EnableBashCompletion = true
 				defer func() {

@@ -54,9 +54,9 @@ func Warnf(fmt string, args ...interface{}) {
 }
 
 // Errorf is called to print/format an error.
-func Errorf(fmt string, args ...interface{}) {
-	DefaultPrinter.Errorf(fmt, args...)
-}
+// func Errorf(fmt string, args ...interface{}) {
+// 	DefaultPrinter.Errorf(fmt, args...)
+// }
 
 var (
 	// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.

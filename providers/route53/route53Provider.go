@@ -43,7 +43,7 @@ func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.
 	return newRoute53(conf, metadata)
 }
 
-func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
+func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error) {
 	optFns := []func(*config.LoadOptions) error{
 		// Route53 uses a global endpoint and route53domains
 		// currently only has a single regional endpoint in us-east-1
@@ -76,7 +76,10 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),

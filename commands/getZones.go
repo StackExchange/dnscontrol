@@ -220,7 +220,7 @@ func GetZone(args GetZoneArgs) error {
 			fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 				dspVariableName, args.CredName, args.ProviderName)
 		}
-		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("none");`+"\n")
+		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("none");`+"\n\n")
 	}
 
 	// print each zone
@@ -254,7 +254,7 @@ func GetZone(args GetZoneArgs) error {
 				if (rec.Type == "CNAME") && (rec.Name == "@") {
 					o = append(o, "// NOTE: CNAME at apex may require manual editing.")
 				}
-				o = append(o, formatDsl(zoneName, rec, defaultTTL))
+				o = append(o, formatDsl(rec, defaultTTL))
 			}
 			out := strings.Join(o, sep)
 
@@ -267,14 +267,17 @@ func GetZone(args GetZoneArgs) error {
 					"//,  NOTE: CNAME at apex may require manual editing.",
 					"// NOTE: CNAME at apex may require manual editing.",
 				)
+				fmt.Fprint(w, out)
+				fmt.Fprint(w, "\n)\n\n")
 			} else {
+				out = out + ","
 				out = strings.ReplaceAll(out,
 					"// NOTE: CNAME at apex may require manual editing.,",
 					"// NOTE: CNAME at apex may require manual editing.",
 				)
+				fmt.Fprint(w, out)
+				fmt.Fprint(w, "\nEND);\n\n")
 			}
-			fmt.Fprint(w, out)
-			fmt.Fprint(w, "\n)\n")
 
 		case "tsv":
 			for _, rec := range recs {
@@ -311,7 +314,7 @@ func jsonQuoted(i string) string {
 	return string(b)
 }
 
-func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) string {
+func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 
 	target := rec.GetTargetCombined()
 
@@ -407,5 +410,5 @@ func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 }
 
 func makeUknown(rc *models.RecordConfig, ttl uint32) string {
-	return fmt.Sprintf(`// %s("%s")`, rc.UnknownTypeName, rc.GetTargetField())
+	return fmt.Sprintf(`// %s("%s", TTL(%d))`, rc.UnknownTypeName, rc.GetTargetField(), ttl)
 }

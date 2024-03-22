@@ -41,35 +41,34 @@ func TestCheckSoa(t *testing.T) {
 		minttl  uint32
 		refresh uint32
 		retry   uint32
-		serial  uint32
 		mbox    string
 	}{
 		// Expire
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
-		{true, 0, 123, 123, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 0, 123, 123, 123, "foo.bar.com."},
 		// MinTTL
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
-		{true, 123, 0, 123, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 0, 123, 123, "foo.bar.com."},
 		// Refresh
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
-		{true, 123, 123, 0, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 0, 123, "foo.bar.com."},
 		// Retry
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
-		{true, 123, 123, 123, 0, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 123, 0, "foo.bar.com."},
 		// Serial
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
-		{false, 123, 123, 123, 123, 0, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
 		// MBox
-		{true, 123, 123, 123, 123, 123, ""},
-		{true, 123, 123, 123, 123, 123, "foo@bar.com."},
-		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 123, 123, ""},
+		{true, 123, 123, 123, 123, "foo@bar.com."},
+		{false, 123, 123, 123, 123, "foo.bar.com."},
 	}
 
 	for _, test := range tests {
-		experiment := fmt.Sprintf("%d %d %d %d %d %s", test.expire, test.minttl, test.refresh,
-			test.retry, test.serial, test.mbox)
+		experiment := fmt.Sprintf("%d %d %d %d %s", test.expire, test.minttl, test.refresh,
+			test.retry, test.mbox)
 		t.Run(experiment, func(t *testing.T) {
-			err := checkSoa(test.expire, test.minttl, test.refresh, test.retry, test.serial, test.mbox)
+			err := checkSoa(test.expire, test.minttl, test.refresh, test.retry, test.mbox)
 			checkError(t, err, test.isError, experiment)
 		})
 	}
@@ -102,7 +101,7 @@ func TestCheckLabel(t *testing.T) {
 			if test.hasSkipMeta {
 				meta["skip_fqdn_check"] = "true"
 			}
-			err := checkLabel(test.label, test.rType, test.target, "foo.tld", meta)
+			err := checkLabel(test.label, test.rType, "foo.tld", meta)
 			if err != nil && !test.isError {
 				t.Errorf("%02d: Expected no error but got %s", i, err)
 			}

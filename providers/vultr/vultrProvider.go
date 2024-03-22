@@ -26,7 +26,10 @@ Info required in `creds.json`:
 */
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -137,7 +140,7 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
-			r := toVultrRecord(dc, change.New[0], "0")
+			r := toVultrRecord(change.New[0], "0")
 			corrections = append(corrections, &models.Correction{
 				Msg: change.Msgs[0],
 				F: func() error {
@@ -146,7 +149,7 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 				},
 			})
 		case diff2.CHANGE:
-			r := toVultrRecord(dc, change.New[0], change.Old[0].Original.(govultr.DomainRecord).ID)
+			r := toVultrRecord(change.New[0], change.Old[0].Original.(govultr.DomainRecord).ID)
 			corrections = append(corrections, &models.Correction{
 				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", change.Msgs[0], r.ID),
 				F: func() error {
@@ -271,7 +274,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 }
 
 // toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DomainRecordReq. #rtype_variations
-func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID string) *govultr.DomainRecord {
+func toVultrRecord(rc *models.RecordConfig, vultrID string) *govultr.DomainRecord {
 	name := rc.GetLabel()
 	// Vultr uses a blank string to represent the apex domain.
 	if name == "@" {

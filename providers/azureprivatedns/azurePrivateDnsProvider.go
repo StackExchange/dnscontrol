@@ -31,7 +31,7 @@ func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers
 	return newAzureDNS(conf, metadata)
 }
 
-func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvider, error) {
+func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
 	credential, authErr := aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
@@ -63,7 +63,10 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 }
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Can(),
 	providers.CanUseCAA:              providers.Cannot("Azure Private DNS does not support CAA records"),
@@ -211,7 +214,7 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					return a.recordDelete(dcn, chaKey, change.Old)
+					return a.recordDelete(dcn, chaKey)
 				},
 			})
 		default:
@@ -259,7 +262,7 @@ retry:
 	return err
 }
 
-func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey, recs models.Records) error {
+func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey) error {
 
 	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
 	if shortName == zoneName {

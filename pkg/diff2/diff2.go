@@ -6,7 +6,6 @@ package diff2
 // against the desired records.
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -254,38 +253,4 @@ func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc
 	}
 
 	return instructions, nil
-}
-
-// Stringify the datastructures (for debugging)
-
-func (c Change) String() string {
-	var buf bytes.Buffer
-	b := &buf
-
-	fmt.Fprintf(b, "Change: verb=%v\n", c.Type)
-	fmt.Fprintf(b, "    key=%v\n", c.Key)
-	if c.HintOnlyTTL {
-		fmt.Fprint(b, "    Hints=OnlyTTL\n", c.Key)
-	}
-	if len(c.Old) != 0 {
-		fmt.Fprintf(b, "    old=%v\n", c.Old)
-	}
-	if len(c.New) != 0 {
-		fmt.Fprintf(b, "    new=%v\n", c.New)
-	}
-	fmt.Fprintf(b, "    msg=%q\n", c.Msgs)
-
-	return b.String()
-}
-
-func (cl ChangeList) String() string {
-	var buf bytes.Buffer
-	b := &buf
-
-	fmt.Fprintf(b, "ChangeList: len=%d\n", len(cl))
-	for i, j := range cl {
-		fmt.Fprintf(b, "%02d: %s", i, j)
-	}
-
-	return b.String()
 }

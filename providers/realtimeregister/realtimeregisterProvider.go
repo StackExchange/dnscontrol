@@ -3,14 +3,15 @@ package realtimeregister
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 /*
@@ -25,8 +26,11 @@ Additional settings available in `creds.json`:
 */
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Cannot(),
@@ -35,9 +39,9 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot(),
@@ -54,7 +58,7 @@ func init() {
 	providers.RegisterRegistrarType("REALTIMEREGISTER", newRtrReg)
 }
 
-func newRtr(config map[string]string, metadata json.RawMessage) (*realtimeregisterAPI, error) {
+func newRtr(config map[string]string, _ json.RawMessage) (*realtimeregisterAPI, error) {
 	apikey := config["apikey"]
 	sandbox := config["sandbox"] == "1"
 

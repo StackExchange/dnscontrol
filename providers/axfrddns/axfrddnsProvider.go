@@ -37,17 +37,19 @@ const (
 )
 
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CanGetZones:            providers.Cannot(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseDHCID:            providers.Can(),
-	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -212,7 +214,11 @@ func readKey(raw string, kind string) (*Key, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
-	return &Key{algo: algo, id: arr[1] + ".", secret: arr[2]}, nil
+	id := arr[1]
+	if !strings.HasSuffix(id, ".") {
+		id += "."
+	}
+	return &Key{algo: algo, id: id, secret: arr[2]}, nil
 }
 
 // GetNameservers returns the nameservers for a domain.

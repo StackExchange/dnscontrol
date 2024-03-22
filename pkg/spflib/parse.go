@@ -1,29 +1,13 @@
 package spflib
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"strings"
 )
 
 // SPFRecord stores the parts of an SPF record.
 type SPFRecord struct {
 	Parts []*SPFPart
-}
-
-// Lookups returns the number of DNS lookups required by s.
-func (s *SPFRecord) Lookups() int {
-	count := 0
-	for _, p := range s.Parts {
-		if p.IsLookup {
-			count++
-		}
-		if p.IncludeRecord != nil {
-			count += p.IncludeRecord.Lookups()
-		}
-	}
-	return count
 }
 
 // SPFPart stores a part of an SPF record, with attributes.
@@ -100,30 +84,4 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 
 	}
 	return rec, nil
-}
-
-func dump(rec *SPFRecord, indent string, w io.Writer) {
-
-	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups())
-	fmt.Fprint(w, indent+"v=spf1")
-	for _, p := range rec.Parts {
-		fmt.Fprint(w, " "+p.Text)
-	}
-	fmt.Fprintln(w)
-	indent += "\t"
-	for _, p := range rec.Parts {
-		if p.IsLookup {
-			fmt.Fprintln(w, indent+p.Text)
-		}
-		if p.IncludeRecord != nil {
-			dump(p.IncludeRecord, indent+"\t", w)
-		}
-	}
-}
-
-// Print prints an SPFRecord.
-func (s *SPFRecord) Print() string {
-	w := &bytes.Buffer{}
-	dump(s, "", w)
-	return w.String()
 }

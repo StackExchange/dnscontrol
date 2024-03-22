@@ -43,8 +43,11 @@ func init() {
 
 // features declares which features and options are available.
 var features = providers.DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAKAMAICDN:        providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
@@ -78,7 +81,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 // newHelper generates a handle.
-func newHelper(m map[string]string, metadata json.RawMessage) (*APIClient, error) {
+func newHelper(m map[string]string, _ json.RawMessage) (*APIClient, error) {
 	if m["username"] == "" {
 		return nil, fmt.Errorf("missing Loopia API username")
 	}

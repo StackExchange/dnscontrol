@@ -9,6 +9,70 @@ Solution: Use a "builder" to construct it for you.
 * [M365_BUILDER](functions/domain/M365_BUILDER.md)
 * [SPF Optimizer](functions/domain/SPF_BUILDER.md)
 
+# Trailing commas
+
+**Trailing commas** (sometimes called "final commas") can be useful when adding new Domain Modifiers to your DNSControl code. If you want to add a Domain Modifier, you can add a new line without modifying the previously last line if that line already uses a trailing comma. This makes version-control diffs cleaner and editing code might be less troublesome.
+
+Because the DNSControl JavaScript DSL has no trailing commas, you can use the `END` constant within `D()`.
+
+## Version-control diffs example
+
+{% hint style="info" %}
+**NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
+{% endhint %}
+
+Let's take an example with domain: `example.com`. We have recorded the [A-record](functions/domain/A.md) 'foo' configured.
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4")
+);
+```
+{% endcode %}
+
+Let's say we want to add an [A record](functions/domain/A.md) 'bar' to this domain.
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4"),
+  A("bar", "4.3.2.1")
+);
+```
+{% endcode %}
+
+This will generate the version-control diff below:
+
+{% code title="dnsconfig.js" %}
+```diff
+-  A("foo", "1.2.3.4"),
++  A("foo", "1.2.3.4"),
++  A("bar", "4.3.2.1")
+);
+```
+{% endcode %}
+
+Let's apply the same A-record 'foo' to the domain using the `END` constant.
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  A("foo", "1.2.3.4"),
+END);
+```
+{% endcode %}
+
+This will generate the cleaner version-control diff below:
+
+{% code title="dnsconfig.js" %}
+```diff
+   A("foo", "1.2.3.4"),
++  A("bar", "4.3.2.1"),
+END);
+```
+{% endcode %}
+
 # Repeat records in many domains (macros)
 
 Problem: I have a set of records I'd like to include in many domains.
