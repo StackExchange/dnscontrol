@@ -23,7 +23,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`BUNNY_DNS`](providers/bunny_dns.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ |
 | [`CLOUDNS`](providers/cloudns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ |
-| [`CSCGLOBAL`](providers/cscglobal.md) | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
+| [`CSCGLOBAL`](providers/cscglobal.md) | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
 | [`DESEC`](providers/desec.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](providers/digitalocean.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](providers/dnsimple.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ |
