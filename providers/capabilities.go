@@ -89,7 +89,6 @@ var providerCapabilities = map[string]map[Capability]bool{}
 
 // ProviderHasCapability returns true if provider has capability.
 func ProviderHasCapability(pType string, cap Capability) bool {
-	//fmt.Printf("DEBUG: providerCap=\n%+v\n", providerCapabilities)
 	if providerCapabilities[pType] == nil {
 		return false
 	}
