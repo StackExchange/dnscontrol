@@ -49,19 +49,21 @@ func ReverseDomainName(cidr string) (string, error) {
 	// if bits >= 25 && bits < 32 {
 	// first address / netmask . Class-b-arpa.
 
-	a, c, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return "", err
-	}
+	// a, c, err := net.ParseCIDR(cidr)
+	// if err != nil {
+	// 	return "", err
+	// }
+	a := p.Addr().AsSlice()
+	c := p
 
 	base, err := reverseaddr(a)
 	if err != nil {
 		return "", err
 	}
 
-	fparts := strings.Split(c.IP.String(), ".")
+	fparts := strings.Split(c.String(), ".")
 	first := fparts[3]
-	bits, _ = c.Mask.Size()
+	bits = c.Bits()
 	bparts := strings.SplitN(base, ".", 2)
 	return fmt.Sprintf("%s/%d.%s", first, bits, bparts[1]), nil
 }
