@@ -2,7 +2,6 @@ package rfc4183
 
 import (
 	"fmt"
-	"net"
 	"net/netip"
 	"strings"
 )
@@ -43,7 +42,8 @@ func ReverseDomainName(cidr string) (string, error) {
 	if strings.Contains(cidr, ":") {
 		// There is no p.Is6() so we test for ":" as a workaround.
 		// No way to tell if netip.ParsePrefix() found an IPv4 or IPv6 address. Therefore we re-parse it.
-		ip, _, _ := net.ParseCIDR(cidr)
+		//ip, _, _ := net.ParseCIDR(cidr)
+		ip = p.Addr().AsSlice()
 		if err != nil {
 			return "", fmt.Errorf("not a CIDR block: %w", err)
 		}
