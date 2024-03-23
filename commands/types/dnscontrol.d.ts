@@ -2199,7 +2199,7 @@ declare function PANIC(message: string): never;
  *
  * Target should be a string representing the FQDN of a host.  Like all FQDNs in DNSControl, it must end with a `.`.
  *
- * **Magic Mode:**
+ * # Magic Mode
  *
  * PTR records are complex and typos are common. Therefore DNSControl
  * enables features to save labor and
@@ -2267,9 +2267,33 @@ declare function PANIC(message: string): never;
  * );
  * ```
  *
- * In the future we plan on adding a flag to [`A()`](A.md) which will insert
- * the correct PTR() record if the appropriate `.arpa` domain has been
- * defined.
+ * # Automatic forward and reverse lookups
+ *
+ * DNSControl does not automatically generate forward and reverse lookups. However
+ * it is possible to write a macro that does this by using the
+ * [`D_EXTEND()`](../global/D_EXTEND.md)
+ * function to insert `A` and `PTR` records into previously-defined domains.
+ *
+ * ```
+ * function FORWARD_AND_REVERSE(ipaddr, fqdn) {
+ *     D_EXTEND(dom,
+ *         A(fqdn, ipaddr)
+ *     );
+ *     D_EXTEND(REV(ipaddr),
+ *         PTR(ipaddr, fqdn)
+ *     );
+ * }
+ *
+ * D("example.com", REGISTRAR, DnsProvider(DSP_NONE),
+ *     ...,
+ *     END);
+ * D(REV("10.20.30.0/24"), REGISTRAR, DnsProvider(DSP_NONE),
+ *     ...,
+ *     END);
+ *
+ * FORWARD_AND_REVERSE("10.20.30.77", "foo.example.com.");
+ * FORWARD_AND_REVERSE("10.20.30.99", "bar.example.com.");
+ * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ptr
  */
@@ -2380,52 +2404,114 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * `REV` returns the reverse lookup domain for an IP network. For
  * example `REV("1.2.3.0/24")` returns `3.2.1.in-addr.arpa.` and
  * `REV("2001:db8:302::/48")` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
- * This is used in [`D()`](D.md) functions to create reverse DNS lookup zones.
  *
- * This is a convenience function. You could specify `D("3.2.1.in-addr.arpa",
- * ...` if you like to do things manually but why would you risk making
- * typos?
+ * `REV() is commonly used with the [`D()`](D.md) functions to create reverse DNS lookup zones.
  *
- * `REV` complies with RFC2317, "Classless in-addr.arpa delegation"
- * for netmasks of size /25 through /31.
- * While the RFC permits any format, we abide by the recommended format:
- * `FIRST/MASK.C.B.A.in-addr.arpa` where `FIRST` is the first IP address
- * of the zone, `MASK` is the netmask of the zone (25-31 inclusive),
- * and A, B, C are the first 3 octets of the IP address. For example
- * `172.20.18.130/27` is located in a zone named
- * `128/27.18.20.172.in-addr.arpa`
+ * These two are equivalent:
  *
- * If the address does not include a "/" then `REV` assumes /32 for IPv4 addresses
+ * ```
+ * D("3.2.1.in-addr.arpa", ...
+ * ```
+ *
+ * ```
+ * D(REV("1.2.3.0/24", ...
+ * ```
+ *
+ * The latter is easier to type and less error-prone.
+ *
+ * If the address does not include a "/" then `REV()` assumes /32 for IPv4 addresses
  * and /128 for IPv6 addresses.
  *
- * Note that the lower bits (the ones outside the netmask) must be zeros. They are not
- * zeroed out automatically. Thus, `REV("1.2.3.4/24")` is an error.  This is done
- * to catch typos.
+ * # RFC compliance
+ *
+ * `REV()` implements both RFC 2317 and the newer RFC 4183. The `REVCOMPAT()`
+ * function selects which mode is used. If `REVCOMPAT()` is not called, a default
+ * is selected for you.  The default will change to RFC 4183 in DNSControl v5.0.
+ *
+ * See [REVCOMPAT()](functions/global/REVCOMPAT.md) for details.
+ *
+ * # Host bits
+ *
+ * v4.x:
+ * The host bits (the ones outside the netmask) must be zeros. They are not zeroed
+ * out automatically. Thus, `REV("1.2.3.4/24")` is an error.
+ *
+ * v5.0 and later:
+ * The host bits (the ones outside the netmask) are ignored.  Thus
+ * `REV("1.2.3.4/24")` and `REV("1.2.3.0/24")` are equivalent.
+ *
+ * # Examples
+ *
+ * Here's an example reverse lookup domain:
  *
  * ```javascript
  * D(REV("1.2.3.0/24"), REGISTRAR, DnsProvider(BIND),
  *   PTR("1", "foo.example.com."),
  *   PTR("2", "bar.example.com."),
  *   PTR("3", "baz.example.com."),
- *   // These take advantage of DNSControl's ability to generate the right name:
+ *   // If a full IP address is used, DNSControl automatically calls REV() for you.
  *   PTR("1.2.3.10", "ten.example.com."),
  * );
  *
  * D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
  *   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
- *   // These take advantage of DNSControl's ability to generate the right name:
+ *   // If a full IP address is used, DNSControl automatically calls REV() for you.
  *   PTR("2001:db8:302::2", "two.example.com."),                          // 2.0.0...
  *   PTR("2001:db8:302::3", "three.example.com."),                        // 3.0.0...
  * );
  * ```
  *
- * In the future we plan on adding a flag to [`A()`](../domain/A.md)which will insert
- * the correct PTR() record in the appropriate `D(REV())` domain (i.e. `.arpa` domain) has been
- * defined.
+ * # Automatic forward and reverse record generation
+ *
+ * DNSControl does not automatically generate forward and reverse lookups. However
+ * it is possible to write a macro that does this.  See
+ * [PTR()](../functions/domain/PTR.md)   for an example.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/rev
  */
 declare function REV(address: string): string;
+
+/**
+ * `REVCOMPAT()` controls which RFC the [`REV()`](REV.md) function adheres to.
+ *
+ * Include one of these two commands near the top `dnsconfig.js` (at the global level):
+ *
+ * ```
+ * REVCOMPAT("rfc2317");  // RFC 2117: Compatible with old files
+ * REVCOMPAT("rfc4183");  // RFC 4183: Adopt the newer standard.
+ * ```
+ *
+ * `REVCOMPAT()` is global for all of `dnsconfig.js`. It must appear before any
+ * use of `REV()`; If not, behavior is undefined.
+ *
+ * # RFC 4183 vs RFC 2317
+ *
+ * RFC 2317 and RFC 4183 are two different ways to implement reverse lookups for
+ * CIDR blocks that are not on 8-bit boundaries (/24, /16, /8).
+ *
+ * Originally DNSControl implemented the older standard, which only specifies what
+ * to do for /8, /16, /24 - /32.  Using REV() for /9-17 and /17-23 CIDRs was an
+ * error.
+ *
+ * v4 defaults to RFC 2317.  In v5.0 the default will change to RFC 4183.
+ * `REVCOMPAT()` is provided for those that wish to retain the old behavior.
+ *
+ * For more information, see [Opinion #9](../opinions.md).
+ *
+ * # Transition plan
+ *
+ * What's the default behavior if `REVCOMPAT()` is not used?
+ *
+ * | Version  | /9 to /15 and /17 to /23 | /25 to 32  | Warnings      |
+ * |----------|--------------------------|------------|---------------|
+ * | v4       | RFC 4183                 | RFC 2317   | Only if /25 - /32 are used |
+ * | v5       | RFC 4183                 | RFC 4183   | none          |
+ *
+ * No warnings are generated if the `REVCOMPAT()` function is used.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
+ */
+declare function REVCOMPAT(rfc: string): string;
 
 /**
  * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
