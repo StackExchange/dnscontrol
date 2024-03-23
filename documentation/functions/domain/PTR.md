@@ -17,7 +17,7 @@ saving the user from having to reverse the IP address manually.
 
 Target should be a string representing the FQDN of a host.  Like all FQDNs in DNSControl, it must end with a `.`.
 
-**Magic Mode:**
+# Magic Mode
 
 PTR records are complex and typos are common. Therefore DNSControl
 enables features to save labor and
@@ -91,6 +91,30 @@ D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
 ```
 {% endcode %}
 
-In the future we plan on adding a flag to [`A()`](A.md) which will insert
-the correct PTR() record if the appropriate `.arpa` domain has been
-defined.
+# Automatic forward and reverse lookups
+
+DNSControl does not automatically generate forward and reverse lookups. However
+it is possible to write a macro that does this by using the 
+[D_EXTEND()](functions/global/D_EXTEND.md)
+function to insert `A` and `PTR` records into previously-defined domains.
+
+```
+function FORWARD_AND_REVERSE(ipaddr, fqdn) {
+    D_EXTEND(dom,
+        A(fqdn, ipaddr)
+    );
+    D_EXTEND(REV(ipaddr),
+        PTR(ipaddr, fqdn)
+    );
+}
+
+D("example.com", REGISTRAR, DnsProvider(DSP_NONE),
+    ...,
+    END);
+D(REV("10.20.30.0/24"), REGISTRAR, DnsProvider(DSP_NONE),
+    ...,
+    END);
+
+FORWARD_AND_REVERSE("10.20.30.77", "foo.example.com.");
+FORWARD_AND_REVERSE("10.20.30.99", "bar.example.com.");
+```
