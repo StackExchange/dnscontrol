@@ -56,23 +56,18 @@ func ReverseDomainName(cidr string) (string, error) {
 	a := p.Addr().AsSlice()
 	c := p
 
-	base, err := reverseaddr(a)
-	if err != nil {
-		return "", err
-	}
-
+	base := reverseaddr(a)
 	fparts := strings.Split(c.String(), ".")
 	first := fparts[3]
-	bits = c.Bits()
 	bparts := strings.SplitN(base, ".", 2)
-	return fmt.Sprintf("%s/%d.%s", first, bits, bparts[1]), nil
+	return fmt.Sprintf("%s.%s", first, bparts[1]), nil
 }
 
 // copied from go source.
 // https://github.com/golang/go/blob/bfc164c64d33edfaf774b5c29b9bf5648a6447fb/src/net/dnsclient.go#L15
 
-func reverseaddr(ip net.IP) (arpa string, err error) {
-	return uitoa(uint(ip[15])) + "." + uitoa(uint(ip[14])) + "." + uitoa(uint(ip[13])) + "." + uitoa(uint(ip[12])) + ".in-addr.arpa", nil
+func reverseaddr(ip net.IP) (arpa string) {
+	return uitoa(uint(ip[3])) + "." + uitoa(uint(ip[2])) + "." + uitoa(uint(ip[1])) + "." + uitoa(uint(ip[0])) + ".in-addr.arpa"
 }
 
 // Convert unsigned integer to decimal string.
