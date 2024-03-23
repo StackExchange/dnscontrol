@@ -2,7 +2,6 @@ package transform
 
 import (
 	"fmt"
-	"net"
 	"net/netip"
 	"strings"
 
@@ -54,28 +53,23 @@ func ReverseDomainName(cidr string) (string, error) {
 	// 	return "", err
 	// }
 	a := p.Addr().AsSlice()
+	ip := a
 	c := p
 
-	base := reverseaddr(a)
+	base := uitoa(ip[3]) + "." + uitoa(ip[2]) + "." + uitoa(ip[1]) + "." + uitoa(ip[0]) + ".in-addr.arpa"
 	fparts := strings.Split(c.String(), ".")
 	first := fparts[3]
 	bparts := strings.SplitN(base, ".", 2)
-	return fmt.Sprintf("%s.%s", first, bparts[1]), nil
+	return first + "." + bparts[1], nil
 }
 
 // copied from go source.
 // https://github.com/golang/go/blob/bfc164c64d33edfaf774b5c29b9bf5648a6447fb/src/net/dnsclient.go#L15
-
-func reverseaddr(ip net.IP) (arpa string) {
-	return uitoa(uint(ip[3])) + "." + uitoa(uint(ip[2])) + "." + uitoa(uint(ip[1])) + "." + uitoa(uint(ip[0])) + ".in-addr.arpa"
-}
-
-// Convert unsigned integer to decimal string.
-func uitoa(val uint) string {
+func uitoa(val byte) string {
 	if val == 0 { // avoid string allocation
 		return "0"
 	}
-	var buf [20]byte // big enough for 64bit value base 10
+	var buf [4]byte // big enough for 8bit value base 10
 	i := len(buf) - 1
 	for val >= 10 {
 		q := val / 10
