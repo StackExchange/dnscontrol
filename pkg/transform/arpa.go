@@ -42,38 +42,11 @@ func ReverseDomainName(cidr string) (string, error) {
 		return rfc4183.ReverseDomainName(cidr)
 	}
 
-	// LEGACY CODE
-
 	// Handle IPv4 "Classless in-addr.arpa delegation" RFC2317:
 	// if bits >= 25 && bits < 32 {
 	// first address / netmask . Class-b-arpa.
 
-	a := p.Addr().AsSlice()
-	ip := a
-	c := p
-
-	base := uitoa(ip[3]) + "." + uitoa(ip[2]) + "." + uitoa(ip[1]) + "." + uitoa(ip[0]) + ".in-addr.arpa"
-	fparts := strings.Split(c.String(), ".")
-	first := fparts[3]
-	bparts := strings.SplitN(base, ".", 2)
-	return first + "." + bparts[1], nil
-}
-
-// copied from go source.
-// https://github.com/golang/go/blob/bfc164c64d33edfaf774b5c29b9bf5648a6447fb/src/net/dnsclient.go#L15
-func uitoa(val byte) string {
-	if val == 0 { // avoid string allocation
-		return "0"
-	}
-	var buf [4]byte // big enough for 8bit value base 10
-	i := len(buf) - 1
-	for val >= 10 {
-		q := val / 10
-		buf[i] = byte('0' + val - q*10)
-		i--
-		val = q
-	}
-	// val < 10
-	buf[i] = byte('0' + val)
-	return string(buf[i:])
+	ip := p.Addr().AsSlice()
+	return fmt.Sprintf("%d/%d.%d.%d.%d.in-addr.arpa",
+		ip[3], bits, ip[2], ip[1], ip[0]), nil
 }
