@@ -206,31 +206,22 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.PrintfIf(fullMode, "PHASE 1: GATHERING data\n")
 	var wg sync.WaitGroup
 	wg.Add(len(zonesConcurrent))
-	if len(zonesConcurrent) > 0 {
-		out.PrintfIf(fullMode, "Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
-	}
+	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
 	for _, zone := range optimizeOrder(zonesConcurrent) {
-		out.PrintfIf(fullMode, "Background gathering: %q\n", zone.Name)
+		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 			defer wg.Done()
 			oneDomain(zone, args, zcache)
-			//out.PrintfIf(fullMode, "    ...done: %q\n", zone.Name)
 		}(zone, args, zcache)
 	}
-	if len(zonesSerial) > 0 {
-		out.PrintfIf(fullMode, "Gathering zone and registrar info SERIALLY...\n")
-	}
+	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
-		out.PrintfIf(fullMode, "Gathering: %q\n", zone.Name)
+		out.Printf("Serially Gathering: %q\n", zone.Name)
 		oneDomain(zone, args, zcache)
 	}
-	if len(zonesConcurrent) > 0 {
-		out.PrintfIf(fullMode, "Waiting for background gathering to complete...")
-	}
+	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
 	wg.Wait()
-	if len(zonesConcurrent) > 0 {
-		out.PrintfIf(fullMode, "DONE\n")
-	}
+	out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
 
 	// Now we know what to do, print or do the tasks.
 	out.PrintfIf(fullMode, "PHASE 2: CORRECTIONS\n")
@@ -343,9 +334,9 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 
 func oneDomain(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Fix the parent zone's delegation: (if able/needed)
-	zone.NameserversMutex.Lock()
+	//zone.NameserversMutex.Lock()
 	delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
-	zone.NameserversMutex.Unlock()
+	//zone.NameserversMutex.Unlock()
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
