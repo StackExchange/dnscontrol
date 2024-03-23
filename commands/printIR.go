@@ -60,7 +60,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 
 			err := exit(PrintIR(pargs))
 			rfc4183.PrintWarning()
-			if err != nil {
+			if err == nil {
 				fmt.Fprintf(os.Stdout, "No errors.\n")
 			}
 			return err

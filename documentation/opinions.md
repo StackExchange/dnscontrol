@@ -184,18 +184,21 @@ need in the future.
 
 # Opinion #9: RFC 4183 is better than RFC 2317 
 
-There is no standard for how to do reverse lookup zones (in-addr.arpa) for CIDR
-blocks that are not /8, /16, or /24. There are only recommendations.
+There is no standard for how to do reverse lookup zones (in-addr.arpa)
+for CIDR blocks that are not /8, /16, or /24. There are only
+recommendations.
 
-RFC 2317 is a good recommendation, but it only covers /25 to /32.  It also uses
-`/` in zone names, which many DNS providers do not support.
+RFC 2317 is a good recommendation, but it only covers /25 to /32.
+It also uses `/` in zone names, which many DNS providers do not
+support.
 
-RFC 4183 covers /8 through /32 and uses hyphens, which are supported universally.
+RFC 4183 covers /8 through /32 and uses hyphens, which are supported
+universally.
 
 Originally DNSControl implemented RFC 2317.
 
-In v5.0 we will adopt RFC 4183 as the default with a flag `--revmode=rfc2317`
-to enable backwards compatibility. v4.x users can add the flag
-`--revmode=rfc4183` to adopt the new behavior early.
+In v5.0 we will adopt RFC 4183 as the default.  A new function,
+`REVCOMPAT()`, will be provided to enable backwards compatibility.
+v4.x users can use the function to adopt the new behavior early.
 
-See [RFC4183](rfc4183.md) for details.
+See [`REVCOMPAT()`](global/functions/REVCOMPAT) for details.
