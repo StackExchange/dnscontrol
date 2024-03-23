@@ -10,9 +10,8 @@ import (
 // a in-addr name.  IP addresses are assumed to be /32 or /128 CIDR blocks.
 // CIDR host bits are changed to 0s.
 func ReverseDomainName(cidr string) (string, error) {
-	//fmt.Printf("DEBUG: RDN(%q) called\n", cidr)
 
-	// If this is missing the "/", add a mask.
+	// Mask missing? Add it.
 	if !strings.Contains(cidr, "/") {
 		fmt.Printf("DEBUG: RDN(%q) contains /\n", cidr)
 		a, err := netip.ParseAddr(cidr)
@@ -31,26 +30,22 @@ func ReverseDomainName(cidr string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("not a CIDR block: %w", err)
 	}
+
 	// RFC4183 4.1 step 4: The notion of fewer than 8 mask bits is not reasonable.
 	if p.Bits() < 8 {
 		return "", fmt.Errorf("mask fewer than 8 bits is unreasonable: %s", cidr)
 	}
-	// Zero out any host bits.
-	p = p.Masked()
 
 	// IPv6:
 	if strings.Contains(cidr, ":") {
 		// There is no p.Is6() so we test for ":" as a workaround.
-		// No way to tell if netip.ParsePrefix() found an IPv4 or IPv6 address. Therefore we re-parse it.
-		//ip, _, _ := net.ParseCIDR(cidr)
-		ip = p.Addr().AsSlice()
-		if err != nil {
-			return "", fmt.Errorf("not a CIDR block: %w", err)
-		}
-		return reverseIPv6(ip, p.Bits())
+		return reverseIPv6(p.Addr().AsSlice(), p.Bits())
 	}
 
-	// IPv4: Use RFC4183 procedure
+	// Zero out any host bits.
+	p = p.Masked()
+
+	// IPv4: Implement the RFC4183 procedure
 
 	// 4.1 Step 1
 	b := p.Addr().AsSlice()

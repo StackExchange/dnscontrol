@@ -73,11 +73,9 @@ func TestReverse(t *testing.T) {
 		{"174.1.0.0/31", false, "0/31.0.1.174.in-addr.arpa"},
 		{"174.1.0.2/31", false, "2/31.0.1.174.in-addr.arpa"},
 
-		// IPv4 "Classless in-addr.arpa delegation" RFC4183.
-		// From examples in the RFC:
-		{"10.100.2.0/26", false, "0-26.2.100.10.in-addr.arpa."},
-		{"10.20.128.0/23", false, "128-23.20.10.in-addr.arpa."},
-		{"10.192.0.0/13", false, "192-13.10.in-addr.arpa."},
+		// Use RFC4193 for cases not covered by RFC22317:
+		{"10.20.128.0/23", false, "128-23.20.10.in-addr.arpa"},
+		{"10.192.0.0/13", false, "192-13.10.in-addr.arpa"},
 
 		// Error Cases:
 		{"0.0.0.0/0", true, ""},
