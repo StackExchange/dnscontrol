@@ -163,6 +163,7 @@
 * [Notifications](notifications.md)
 * [Useful code tricks](code-tricks.md)
 * [JSON Reports](json-reports.md)
+* [RFC4183](rfc4183.md)
 
 ## Developer info
 

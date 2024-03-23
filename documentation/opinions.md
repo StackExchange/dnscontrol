@@ -90,7 +90,7 @@ Some examples:
 * SPF records are stated in the most verbose way; DNSControl optimizes it for you in a safe, opt-in way.
 
 
-# Opinion #6 If it is ambiguous in DNS, it is forbidden in DNSControl
+# Opinion #6: If it is ambiguous in DNS, it is forbidden in DNSControl
 
 When there is ambiguity an expert knows what the system will do.
 Your coworkers should not be expected to be experts. (See [Opinion #2](#opinion-2-non-experts-should-be-able-to-safely-make-dns-changes)).
@@ -124,7 +124,7 @@ Therefore, we require all CNAME, MX, and NS targets to be FQDNs (they must
 end with a "."), or to be a shortname (no dots at all).  Everything
 else is ambiguous and therefore an error.
 
-# Opinion #7 Hostnames don't have underscores
+# Opinion #7: Hostnames don't have underscores
 
 DNSControl prints warnings if a hostname includes an underscore
 (`_`) because underscores are not permitted in hostnames.
@@ -151,7 +151,7 @@ unless the rtype is SRV, TLSA, TXT, or if the name starts with
 certain prefixes such as `_dmarc`.  We're always willing to
 [add more exceptions](https://github.com/StackExchange/dnscontrol/pull/453/files).
 
-# Opinion #8 TXT Records are one long string
+# Opinion #8: TXT Records are one long string
 
 * TXT records are a single string with a length of 0 to 65,280 bytes
   (the maximum possible TXT record size).
@@ -180,3 +180,22 @@ control panel let you specify the boundaries, (b) I've never seen a
 FAQ or reddit post asking how to specify those boundaries. Therefore,
 there is no need for this. I also assert that there will be no such
 need in the future.
+
+
+# Opinion #9: RFC 4183 is better than RFC 2317 
+
+There is no standard for how to do reverse lookup zones (in-addr.arpa) for CIDR
+blocks that are not /8, /16, or /24. There are only recommendations.
+
+RFC 2317 is a good recommendation, but it only covers /25 to /32.  It also uses
+`/` in zone names, which many DNS providers do not support.
+
+RFC 4183 covers /8 through /32 and uses hyphens, which are supported universally.
+
+Originally DNSControl implemented RFC 2317.
+
+In v5.0 we will adopt RFC 4183 as the default with a flag `--revmode=rfc2317`
+to enable backwards compatibility. v4.x users can add the flag
+`--revmode=rfc4183` to adopt the new behavior early.
+
+See [RFC4183](rfc4183.md) for details.
