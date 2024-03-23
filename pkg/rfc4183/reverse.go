@@ -13,7 +13,6 @@ func ReverseDomainName(cidr string) (string, error) {
 
 	// Mask missing? Add it.
 	if !strings.Contains(cidr, "/") {
-		fmt.Printf("DEBUG: RDN(%q) contains /\n", cidr)
 		a, err := netip.ParseAddr(cidr)
 		if err != nil {
 			return "", fmt.Errorf("not an IP address: %w", err)

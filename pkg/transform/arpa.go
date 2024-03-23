@@ -9,7 +9,13 @@ import (
 )
 
 // ReverseDomainName turns a CIDR block into a reversed (in-addr) name.
+// For cases not covered by RFC2317, implement RFC4183
+// The host bits must all be zeros.
 func ReverseDomainName(cidr string) (string, error) {
+
+	if rfc4183.IsRFC4183Mode() {
+		return rfc4183.ReverseDomainName(cidr)
+	}
 
 	// Mask missing? Add it.
 	if !strings.Contains(cidr, "/") {
@@ -41,6 +47,9 @@ func ReverseDomainName(cidr string) (string, error) {
 		// There is no p.Is6() so we test for ":" as a workaround.
 		return rfc4183.ReverseDomainName(cidr)
 	}
+
+	// Record that the change to --revmode default will affect this configuration
+	rfc4183.NeedsWarning()
 
 	// Handle IPv4 "Classless in-addr.arpa delegation" RFC2317:
 	// if bits >= 25 && bits < 32 {

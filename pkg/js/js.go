@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
@@ -70,6 +71,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 
 	vm.Set("require", require)
 	vm.Set("REV", reverse)
+	vm.Set("REVCOMPAT", reverseCompat)
 	vm.Set("glob", listFiles) // used for require_glob()
 	vm.Set("PANIC", jsPanic)
 
@@ -288,5 +290,18 @@ func reverse(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 	v, _ := otto.ToValue(rev)
+	return v
+}
+
+func reverseCompat(call otto.FunctionCall) otto.Value {
+	if len(call.ArgumentList) != 1 {
+		throw(call.Otto, "REVCOMPAT takes exactly one argument")
+	}
+	dom := call.Argument(0).String()
+	err := rfc4183.SetCompatibilityMode(dom)
+	if err != nil {
+		throw(call.Otto, err.Error())
+	}
+	v, _ := otto.ToValue(nil)
 	return v
 }
