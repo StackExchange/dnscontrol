@@ -48,10 +48,6 @@ func ReverseDomainName(cidr string) (string, error) {
 	// if bits >= 25 && bits < 32 {
 	// first address / netmask . Class-b-arpa.
 
-	// a, c, err := net.ParseCIDR(cidr)
-	// if err != nil {
-	// 	return "", err
-	// }
 	a := p.Addr().AsSlice()
 	ip := a
 	c := p
