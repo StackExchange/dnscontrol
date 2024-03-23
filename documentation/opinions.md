@@ -201,5 +201,4 @@ In v5.0 we will adopt RFC 4183 as the default.  A new function,
 `REVCOMPAT()`, will be provided to enable backwards compatibility.
 v4.x users can use the function to adopt the new behavior early.
 
-See [`REVCOMPAT()`](../domain/REVCOMPAT.md) for details.
-
+See [`REVCOMPAT()`](functions/domain/REVCOMPAT.md) for details.
