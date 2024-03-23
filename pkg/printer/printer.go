@@ -31,6 +31,7 @@ type Printer interface {
 	Println(lines ...string)
 	Warnf(fmt string, args ...interface{})
 	Errorf(fmt string, args ...interface{})
+	PrintfIf(print bool, fmt string, args ...interface{})
 }
 
 // Debugf is called to print/format debug information.
@@ -57,6 +58,11 @@ func Warnf(fmt string, args ...interface{}) {
 // func Errorf(fmt string, args ...interface{}) {
 // 	DefaultPrinter.Errorf(fmt, args...)
 // }
+
+// PrintfIf is called to optionally print something.
+func PrintfIf(print bool, fmt string, args ...interface{}) {
+	DefaultPrinter.PrintfIf(print, fmt, args...)
+}
 
 var (
 	// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.
@@ -189,4 +195,11 @@ func (c ConsolePrinter) Warnf(format string, args ...interface{}) {
 // Errorf is called to print/format an error.
 func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
+}
+
+// Errorf is called to optionally print/format a message.
+func (c ConsolePrinter) PrintfIf(print bool, format string, args ...interface{}) {
+	if print {
+		fmt.Fprintf(c.Writer, format, args...)
+	}
 }

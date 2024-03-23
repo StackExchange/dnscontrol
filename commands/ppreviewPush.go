@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -167,30 +168,31 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
+	fullMode := args.Full
 
 	if pobsoleteDiff2FlagUsed {
 		printer.Println("WARNING: Please remove obsolete --diff2 flag. This will be an error in v5 or later. See https://github.com/StackExchange/dnscontrol/issues/2262")
 	}
 
-	fmt.Printf("Reading dnsconfig.js or equiv.\n")
+	out.PrintfIf(fullMode, "Reading dnsconfig.js or equiv.\n")
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Reading creds.json or equiv.\n")
+	out.PrintfIf(fullMode, "Reading creds.json or equiv.\n")
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Creating an in-memory model of 'desired'...\n")
+	out.PrintfIf(fullMode, "Creating an in-memory model of 'desired'...\n")
 	notifier, err := PInitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Normalizing and validating 'desired'..\n")
+	out.PrintfIf(fullMode, "Normalizing and validating 'desired'..\n")
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
@@ -201,40 +203,40 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
-	fmt.Printf("PHASE 1: GATHERING data\n")
-	//fmt.Printf("    CONCURRENT: % 4d, %v\n", len(zonesConcurrent), namesOf(zonesConcurrent))
-	//fmt.Printf("        SERIAL: % 4d, %v\n", len(zonesSerial), namesOf(zonesSerial))
+	out.PrintfIf(fullMode, "PHASE 1: GATHERING data\n")
 	var wg sync.WaitGroup
 	wg.Add(len(zonesConcurrent))
 	if len(zonesConcurrent) > 0 {
-		fmt.Printf("Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
+		out.PrintfIf(fullMode, "Gathering zone and registrar info CONCURRENTLY (%d zones)\n", len(zonesConcurrent))
 	}
 	for _, zone := range optimizeOrder(zonesConcurrent) {
-		fmt.Printf("Background gathering: %q\n", zone.Name)
+		out.PrintfIf(fullMode, "Background gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 			defer wg.Done()
 			oneDomain(zone, args, zcache)
-			//fmt.Printf("    ...done: %q\n", zone.Name)
+			//out.PrintfIf(fullMode, "    ...done: %q\n", zone.Name)
 		}(zone, args, zcache)
 	}
 	if len(zonesSerial) > 0 {
-		fmt.Printf("Gathering zone and registrar info SERIALLY...\n")
+		out.PrintfIf(fullMode, "Gathering zone and registrar info SERIALLY...\n")
 	}
 	for _, zone := range zonesSerial {
-		fmt.Printf("Gathering: %q\n", zone.Name)
+		out.PrintfIf(fullMode, "Gathering: %q\n", zone.Name)
 		oneDomain(zone, args, zcache)
 	}
 	if len(zonesConcurrent) > 0 {
-		fmt.Printf("Waiting for background gathering to complete...")
+		out.PrintfIf(fullMode, "Waiting for background gathering to complete...")
 	}
 	wg.Wait()
 	if len(zonesConcurrent) > 0 {
-		fmt.Printf("DONE\n")
+		out.PrintfIf(fullMode, "DONE\n")
 	}
 
 	// Now we know what to do, print or do the tasks.
-	fmt.Printf("PHASE 2: CORRECTIONS\n")
+	out.PrintfIf(fullMode, "PHASE 2: CORRECTIONS\n")
 	var totalCorrections int
+	var reportItems []*ReportItem
+	var anyErrors bool
 	for _, zone := range zonesToProcess {
 		out.StartDomain(zone.GetUniqueName())
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -243,18 +245,80 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			out.StartDNSProvider(provider.Name, skipProvider)
 			if !skipProvider {
 				corrections := zone.GetCorrections(provider.Name)
-				pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report)
 				totalCorrections += len(corrections)
-				out.EndProvider(provider.Name, len(corrections), err)
+				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+				anyErrors = ifany(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
+				out.EndProvider(provider.Name, len(corrections), nil)
 			}
 		}
-		//out.StartRegistrar(zone.RegistrarName, !run)
-		corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
-		pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report)
-		totalCorrections += len(corrections)
+		skipProvider := skipProvider(zone.RegistrarInstance.Name, providersToProcess)
+		out.StartRegistrar(zone.RegistrarName, !skipProvider)
+		if skipProvider {
+			corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
+			totalCorrections += len(corrections)
+			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
+			anyErrors = ifany(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
+			out.EndProvider(zone.RegistrarName, len(corrections), nil)
+		}
 	}
+
+	// if os.Getenv("TEAMCITY_VERSION") != "" {
+	// 	fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
+	// }
+	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
+	err = writeReport(report, reportItems)
+	if err != nil {
+		return fmt.Errorf("could not write report")
+	}
+	if anyErrors {
+		return fmt.Errorf("completed with errors")
+	}
+	if totalCorrections != 0 && args.WarnChanges {
+		return fmt.Errorf("there are pending changes")
+	}
 	return nil
+}
+
+func writeReport(report string, reportItems []*ReportItem) error {
+	// No filename? No report.
+	if report == "" {
+		return nil
+	}
+
+	f, err := os.OpenFile(report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	b, err := json.MarshalIndent(reportItems, "", "  ")
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(b); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ifany(a, b bool) bool { return a || b }
+
+func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
+
+	// Only count the actions, not the messages.
+	cnt := 0
+	for _, cor := range corrections {
+		if cor.F != nil {
+			cnt++
+		}
+	}
+
+	r := ReportItem{
+		Domain:      zname,
+		Corrections: cnt,
+		Provider:    pname,
+	}
+	return &r
 }
 
 // optimizeOrder returns a list of DomainConfigs so that they gather fastest.
@@ -458,11 +522,8 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	if err != nil {
 		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err))
 	}
-	//fmt.Printf("DEBUG: reg nsList = %v\n", nsList)
 	zone.Nameservers = nsList
-	//fmt.Printf("DEBUG: Adding NS to zone=%q list=%v\n", zone.Name, nsList)
 	nameservers.AddNSRecords(zone)
-	//fmt.Printf("DEBUG: WTF?  %v\n", zone.Records)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
 		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}
@@ -505,72 +566,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 func msg(s string) []*models.Correction {
 	return []*models.Correction{{Msg: s}}
 }
-
-/*
-TODO:
-* Punycode()
-* Print "report"
-* Add back "notifier"
-* Add back "teamcity"
-* Add a way to mark a provider as not being gorouting-compatible
-*/
-
-// 			totalCorrections += len(corrections)
-// 			pprintReports(domain.Name, provider.Name, reports, out, push, notifier)
-// 			reportItems = append(reportItems, ReportItem{
-// 				Domain:      domain.Name,
-// 				Corrections: len(corrections),
-// 				Provider:    provider.Name,
-// 			})
-// 			anyErrors = pprintOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
-// 		}
-
-// 		//
-// 		run := args.shouldRunProvider(domain.RegistrarName, domain)
-// 		out.StartRegistrar(domain.RegistrarName, !run)
-// 		if !run {
-// 			return
-// 		}
-// 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-// 			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-// 			return
-// 		}
-
-// 		totalCorrections += len(corrections)
-// 		reportItems = append(reportItems, ReportItem{
-// 			Domain:      domain.Name,
-// 			Corrections: len(corrections),
-// 			Registrar:   domain.RegistrarName,
-// 		})
-// 		anyErrors = pprintOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
-// 	}(domain)
-// }
-
-// if os.Getenv("TEAMCITY_VERSION") != "" {
-// 	fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
-// }
-// notifier.Done()
-// out.Printf("Done. %d corrections.\n", totalCorrections)
-// if anyErrors {
-// 	return fmt.Errorf("completed with errors")
-// }
-// if totalCorrections != 0 && args.WarnChanges {
-// 	return fmt.Errorf("there are pending changes")
-// }
-// if report != nil && *report != "" {
-// 	f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer f.Close()
-// 	b, err := json.MarshalIndent(reportItems, "", "  ")
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if _, err := f.Write(b); err != nil {
-// 		return err
-// 	}
-// }
 
 // PInitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
 func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (notify notifications.Notifier, err error) {
@@ -822,15 +817,3 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 	}
 
 }
-
-// func pprintReports(domain string, provider string, reports []*models.Correction, out printer.CLI, push bool, notifier notifications.Notifier) (anyErrors bool) {
-// 	anyErrors = false
-// 	if len(reports) == 0 {
-// 		return false
-// 	}
-// 	for i, report := range reports {
-// 		out.PrintReport(i, report)
-// 		notifier.Notify(domain, provider, report.Msg, nil, !push)
-// 	}
-// 	return anyErrors
-// }
