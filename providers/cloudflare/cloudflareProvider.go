@@ -99,16 +99,10 @@ func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver
 	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
-	// if c.domainIndex == nil {
-	// 	if err := c.fetchDomainList(); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	c.Lock()
 	ns, ok := c.nameservers[domain]
 	c.Unlock()
 	if !ok {
-		//fmt.Printf("DEBUG: dom=%v map = %v\n", domain, c.nameservers)
 		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
 	}
 	return models.ToNameservers(ns)
@@ -119,9 +113,6 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
-	// if err := c.fetchDomainList(); err != nil {
-	// 	return nil, err
-	// }
 	c.Lock()
 	zones := make([]string, 0, len(c.domainIndex))
 	for d := range c.domainIndex {
@@ -194,11 +185,6 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 	if err := c.cacheDomainList(); err != nil {
 		return "", err
 	}
-	// if c.domainIndex == nil {
-	// 	if err := c.fetchDomainList(); err != nil {
-	// 		return "", err
-	// 	}
-	// }
 	c.Lock()
 	id, ok := c.domainIndex[name]
 	c.Unlock()
@@ -214,14 +200,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
-	//	for i := len(records) - 1; i >= 0; i-- {
-	//		rec := records[i]
-	//		// Delete ignore labels
-	//		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-	//			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-	//			records = append(records[:i], records[i+1:]...)
-	//		}
-	//	}
 
 	checkNSModifications(dc)
 
@@ -240,9 +218,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		if rec.Metadata[metaProxy] != "off" {
 			rec.TTL = 1
 		}
-		//		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-		//			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-		//		}
 	}
 
 	checkNSModifications(dc)

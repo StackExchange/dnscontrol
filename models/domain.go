@@ -171,23 +171,6 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 	}
 }
 
-// dc.pendingCorrectionsMutex.Lock()
-// defer dc.pendingCorrectionsMutex.Unlock()
-
-// if dc.pendingCorrections == nil {
-// 	//dc.pendingCorrections = orderedmap.NewOrderedMap[string, []*Correction]()
-// 	dc.pendingCorrections = orderedmap.NewOrderedMap[string, []*Correction]()
-// 	dc.pendingCorrections.Set(providerName, corrections)
-// 	return
-// }
-// c, ok := dc.pendingCorrections.Get(providerName)
-// if !ok {
-// 	dc.pendingCorrections.Set(providerName, corrections)
-// } else {
-// 	c = append(c, corrections...)
-// 	dc.pendingCorrections.Set(providerName, c)
-// }
-
 func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 	dc.pendingCorrectionsMutex.Lock()
 	defer dc.pendingCorrectionsMutex.Unlock()
@@ -201,16 +184,3 @@ func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 	}
 	return nil
 }
-
-// dc.pendingCorrectionsMutex.Lock()
-// defer dc.pendingCorrectionsMutex.Unlock()
-
-// if dc.pendingCorrections == nil {
-// 	return nil
-// }
-// v, ok := dc.pendingCorrections.Get(providerName)
-// if !ok {
-// 	return nil
-// }
-// return v
-//}

@@ -23,7 +23,6 @@ type ProviderBase struct {
 type RegistrarInstance struct {
 	ProviderBase
 	Driver Registrar
-	//sync.Mutex
 }
 
 // DNSProviderInstance is a single DNS provider.

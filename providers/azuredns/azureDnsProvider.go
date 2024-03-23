@@ -23,8 +23,6 @@ type azurednsProvider struct {
 	zones          map[string]*adns.Zone
 	resourceGroup  *string
 	subscriptionID *string
-	//rawRecords     map[string][]*adns.RecordSet
-	//zoneName map[string]string
 }
 
 func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -52,8 +50,6 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 		recordsClient:  recordsClient,
 		resourceGroup:  to.StringPtr(rg),
 		subscriptionID: to.StringPtr(subID),
-		//rawRecords:     map[string][]*adns.RecordSet{},
-		//zoneName: map[string]string{},
 	}
 	err := api.getZones()
 	if err != nil {
@@ -186,9 +182,6 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 	for _, set := range rawRecords {
 		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
 	}
-
-	//a.rawRecords[domain] = rawRecords
-	//a.zoneName[domain] = zoneName
 
 	return existingRecords, rawRecords, zoneName, nil
 }
