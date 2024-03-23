@@ -37,10 +37,9 @@ For more information, see [Opinion #9](../opinions.md).
 
 What's the default behavior if `REVCOMPAT()` is not used?
 
-| Version  | /9 to /15  | /17 to /23  | /25 to 32  | Warnings      |
-|----------|------------|-------------|------------|---------------|
-| old      | error      | error       | RFC 2317   | none          |
-| v4       | RFC 4183   | RFC 4183    | RFC 2317   | Only if /25 - /32 are used |
-| v5       | RFC 4183   | RFC 4183    | RFC 4183   | none          |
+| Version  | /9 to /15 and /17 to /23 | /25 to 32  | Warnings      |
+|----------|--------------------------|------------|---------------|
+| v4       | RFC 4183                 | RFC 2317   | Only if /25 - /32 are used |
+| v5       | RFC 4183                 | RFC 4183   | none          |
 
 No warnings are generated if the `REVCOMPAT()` function is used.

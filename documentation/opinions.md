@@ -198,7 +198,7 @@ universally.
 Originally DNSControl implemented RFC 2317.
 
 In v5.0 we will adopt RFC 4183 as the default.  A new function,
-[REVCOMPAT](functions/global/REVCOMPAT.md), will be provided to enable backwards compatibility.
+[REVCOMPAT()](functions/global/REVCOMPAT.md), will be provided to enable backwards compatibility.
 v4.x users can use the function to adopt the new behavior early.
 
-See [REVCOMPAT](functions/global/REVCOMPAT.md) for details.
+See [REVCOMPAT()](functions/global/REVCOMPAT.md) for details.
