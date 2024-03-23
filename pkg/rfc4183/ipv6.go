@@ -17,18 +17,15 @@ func reverseIPv6(ip net.IP, maskbits int) (arpa string, err error) {
 		return "", fmt.Errorf("not IPv6 %s/%d", ip.String(), maskbits)
 	}
 
-	buf := make([]byte, 0, len(ip)*4+len("ip6.arpa"))
-	// Add it, in reverse, to the buffer
-	for i := len(ip) - 1; i >= 0; i-- {
-		v := ip[i]
-		buf = append(buf, hexDigit[v&0xF])
-		buf = append(buf, '.')
-		buf = append(buf, hexDigit[v>>4])
-		buf = append(buf, '.')
+	buf := []byte("x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.ip6.arpa")
+	// Poke hex digits into the template
+	pos := 128/4*2 - 2
+	for _, v := range ip {
+		buf[pos] = hexDigit[v>>4]
+		buf[pos-2] = hexDigit[v&0xF]
+		pos = pos - 4
 	}
-	// Append "ip6.arpa." and return (buf already has the final .)
-	buf = append(buf, "ip6.arpa"...)
-	return string(buf), nil
+	return string(buf[(128-maskbits)/4*2:]), nil
 }
 
 //// Convert unsigned integer to decimal string.

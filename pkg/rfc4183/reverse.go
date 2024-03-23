@@ -42,16 +42,12 @@ func ReverseDomainName(cidr string) (string, error) {
 	// IPv6:
 	if strings.Contains(cidr, ":") {
 		// There is no p.Is6() so we test for ":" as a workaround.
-		if p.Bits()%4 != 0 {
-			return "", fmt.Errorf("IPv6 mask must be multiple of 4 bits")
-		}
+		// No way to tell if netip.ParsePrefix() found an IPv4 or IPv6 address. Therefore we re-parse it.
 		ip, _, _ := net.ParseCIDR(cidr)
-		base, err := reverseIPv6(ip, p.Bits())
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("not a CIDR block: %w", err)
 		}
-		toTrim := (128 - p.Bits()) / 4 * 2
-		return base[toTrim:], nil
+		return reverseIPv6(ip, p.Bits())
 	}
 
 	// IPv4: Use RFC4183 procedure
