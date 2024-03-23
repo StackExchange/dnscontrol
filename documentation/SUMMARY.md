@@ -25,6 +25,7 @@
   * [NewRegistrar](functions/global/NewRegistrar.md)
   * [PANIC](functions/global/PANIC.md)
   * [REV](functions/global/REV.md)
+  * [REVCOMPAT](functions/global/REVCOMPAT.md)
   * [getConfiguredDomains](functions/global/getConfiguredDomains.md)
   * [require](functions/global/require.md)
   * [require_glob](functions/global/require_glob.md)
@@ -163,7 +164,6 @@
 * [Notifications](notifications.md)
 * [Useful code tricks](code-tricks.md)
 * [JSON Reports](json-reports.md)
-* [RFC4183](rfc4183.md)
 
 ## Developer info
 
