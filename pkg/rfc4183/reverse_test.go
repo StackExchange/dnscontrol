@@ -10,6 +10,13 @@ func TestReverse(t *testing.T) {
 		in  string
 		out string
 	}{
+		// IPv4 "Classless in-addr.arpa delegation" RFC4183.
+		// Examples in the RFC:
+		{"10.100.2.0/26", "0-26.2.100.10.in-addr.arpa"},
+		{"10.192.0.0/13", "192-13.10.in-addr.arpa"},
+		{"10.20.128.0/23", "128-23.20.10.in-addr.arpa"},
+		{"10.20.129.0/23", "128-23.20.10.in-addr.arpa"}, // Not in the RFC but should be!
+
 		// IPv6
 		{"2001::/16", "1.0.0.2.ip6.arpa"},
 		{"2001:0db8:0123:4567:89ab:cdef:1234:5670/64", "7.6.5.4.3.2.1.0.8.b.d.0.1.0.0.2.ip6.arpa"},
@@ -69,11 +76,6 @@ func TestReverse(t *testing.T) {
 		{"174.1.0.2/31", "2-31.0.1.174.in-addr.arpa"},
 		{"174.1.0.3/31", "2-31.0.1.174.in-addr.arpa"}, // host bits
 
-		// IPv4 "Classless in-addr.arpa delegation" RFC4183.
-		// Examples in the RFC:
-		{"10.100.2.0/26", "0-26.2.100.10.in-addr.arpa"},
-		{"10.20.128.0/23", "128-23.20.10.in-addr.arpa"},
-		{"10.192.0.0/13", "192-13.10.in-addr.arpa"},
 		// Other tests:
 		{"10.100.2.255/23", "2-23.100.10.in-addr.arpa"},
 		{"10.100.2.255/22", "0-22.100.10.in-addr.arpa"},

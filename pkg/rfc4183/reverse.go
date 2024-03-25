@@ -35,18 +35,17 @@ func ReverseDomainName(cidr string) (string, error) {
 		return "", fmt.Errorf("mask fewer than 8 bits is unreasonable: %s", cidr)
 	}
 
-	// IPv6:
-	if strings.Contains(cidr, ":") {
-		// There is no p.Is6() so we test for ":" as a workaround.
+	// Handle IPv6 separately:
+	if p.Addr().Is6() {
 		return reverseIPv6(p.Addr().AsSlice(), p.Bits())
 	}
 
 	// Zero out any host bits.
 	p = p.Masked()
 
-	// IPv4: Implement the RFC4183 procedure
+	// IPv4: Implement the RFC4183 process:
 
-	// 4.1 Step 1
+	// 4.p Step 1
 	b := p.Addr().AsSlice()
 	x, y, z, w := b[0], b[1], b[2], b[3]
 	m := p.Bits()
