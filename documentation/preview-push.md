@@ -73,16 +73,16 @@ preview --expect-no-changes` daily to determine if changes have been made to
 a domain outside of DNSControl.
 
 `--no-populate` -- Do not auto-create non-existing zones at the provider.
-Normally non-existant zones are automatically created at a provider (unless the
+Normally non-existent zones are automatically created at a provider (unless the
 provider does not implement zone creation). This flag disables that feature.
 
 `--full` -- Add headings, providers names, notifications of no changes, etc. to
-the output.  Normallly the output of `preview`/`push` is extremely brief. This
+the output.  Normally the output of `preview`/`push` is extremely brief. This
 makes the output more verbose. Useful for debugging.
 
 `--bindserial value` -- Force BIND serial numbers to this value. Normally the
 BIND provider generates SOA serial numbers automatically. This flag forces the
-serial number generater to output the value specified for all domains.  This is
+serial number generator to output the value specified for all domains.  This is
 generally used for reproducibility in testing pipelines.
 
 `--report name` -- (`push` only!)  Generate a machine-parseable report of
@@ -92,9 +92,10 @@ report is generated.
 ## Experimental
 
 The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
-data is gathered concurrently.
+data is gathered concurrently.  The commands will go away when
+they replace the existing `preview`/`push` commands.
 
-`--cmode value` -- Specifies which providers should be run concurrently:
+`--cmode value` -- Concurrency mode.  Specifies what kind of providers should be run concurrently. This flag onl
 
 * `default` -- Providers are run sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
 * `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
