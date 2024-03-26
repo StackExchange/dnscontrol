@@ -88,3 +88,14 @@ generally used for reproducibility in testing pipelines.
 `--report name` -- (`push` only!)  Generate a machine-parseable report of
 performed corrections in the file named `name`.  If no name is specified, no
 report is generated.
+
+## Experimental
+
+The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
+data is gathered concurrently.
+
+`--cmode value` -- Specifies which providers should be run concurrently:
+
+* `default` -- Providers are run sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
+* `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
+* `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.
