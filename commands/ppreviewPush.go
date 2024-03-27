@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -238,7 +239,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				corrections := zone.GetCorrections(provider.Name)
 				totalCorrections += len(corrections)
 				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
-				anyErrors = ifany(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
+				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
 				out.EndProvider(provider.Name, len(corrections), nil)
 			}
 		}
@@ -248,7 +249,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
 			totalCorrections += len(corrections)
 			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
-			anyErrors = ifany(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
+			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 			out.EndProvider(zone.RegistrarName, len(corrections), nil)
 		}
 	}
@@ -447,8 +448,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 	_ = report // File name to write report to.
 	return anyErrors
 }
-
-func ifany(a, b bool) bool { return a || b }
 
 func writeReport(report string, reportItems []*ReportItem) error {
 	// No filename? No report.
