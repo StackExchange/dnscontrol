@@ -159,9 +159,10 @@ release:
     ## Deprecation warnings
 
     > [!WARNING]
-    > - **Call for new volunteer maintainers for NAMEDOTCOM and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
-    > - **REV() will switch from RFC2317 to RFC4183 in v5.0.  This is a breaking change. Warnings are output if your configuration is affected. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-    > - **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
+    > - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
+    > - **MSDNS maintainer needed!** Without a new volunteer, this DNS provider will lose support after April 2025. See https://github.com/StackExchange/dnscontrol/issues/2878
+    > - **NAMEDOTCOM and SOFTLAYER maintainer needed!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
+    > - **ACME/Let's Encrypt support (get-certs) is frozen and will be removed without notice between now and April 2025.**  It has been unsupported since December 2022.  If you don't use this feature, do not start. If you do use this feature, migrate ASAP.  There are many projects that do a better job.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 
     ## Install
 

@@ -23,15 +23,13 @@ type azurednsProvider struct {
 	zones          map[string]*adns.Zone
 	resourceGroup  *string
 	subscriptionID *string
-	rawRecords     map[string][]*adns.RecordSet
-	zoneName       map[string]string
 }
 
 func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	return newAzureDNS(conf, metadata)
 }
 
-func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvider, error) {
+func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
 	credential, authErr := aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
@@ -52,8 +50,6 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 		recordsClient:  recordsClient,
 		resourceGroup:  to.StringPtr(rg),
 		subscriptionID: to.StringPtr(subID),
-		rawRecords:     map[string][]*adns.RecordSet{},
-		zoneName:       map[string]string{},
 	}
 	err := api.getZones()
 	if err != nil {
@@ -66,7 +62,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
@@ -186,9 +182,6 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 	for _, set := range rawRecords {
 		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
 	}
-
-	a.rawRecords[domain] = rawRecords
-	a.zoneName[domain] = zoneName
 
 	return existingRecords, rawRecords, zoneName, nil
 }

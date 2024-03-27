@@ -231,7 +231,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 
 			// Correct the registrar...
 
-			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
+			nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone, false)
 			if err != nil {
 				out.Errorf("ERROR: %s\n", err.Error())
 				return

@@ -27,12 +27,11 @@ import (
 )
 
 type route53Provider struct {
-	client          *r53.Client
-	registrar       *r53d.Client
-	delegationSet   *string
-	zonesByID       map[string]r53Types.HostedZone
-	zonesByDomain   map[string]r53Types.HostedZone
-	originalRecords []r53Types.ResourceRecordSet
+	client        *r53.Client
+	registrar     *r53d.Client
+	delegationSet *string
+	zonesByID     map[string]r53Types.HostedZone
+	zonesByDomain map[string]r53Types.HostedZone
 }
 
 func newRoute53Reg(conf map[string]string) (providers.Registrar, error) {
@@ -79,7 +78,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -267,7 +266,6 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 	if err != nil {
 		return nil, err
 	}
-	r.originalRecords = records
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {

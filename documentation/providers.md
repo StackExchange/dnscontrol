@@ -17,13 +17,13 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`AKAMAIEDGEDNS`](providers/akamaiedgedns.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](providers/autodns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](providers/axfrddns.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ❌ | ❌ |
-| [`AZURE_DNS`](providers/azure_dns.md) | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`AZURE_DNS`](providers/azure_dns.md) | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`AZURE_PRIVATE_DNS`](providers/azure_private_dns.md) | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`BIND`](providers/bind.md) | ✅ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`BUNNY_DNS`](providers/bunny_dns.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ |
+| [`CLOUDFLAREAPI`](providers/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ✅ | ✅ |
 | [`CLOUDNS`](providers/cloudns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ |
-| [`CSCGLOBAL`](providers/cscglobal.md) | ✅ | ✅ | ✅ | ❌ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
+| [`CSCGLOBAL`](providers/cscglobal.md) | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
 | [`DESEC`](providers/desec.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](providers/digitalocean.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](providers/dnsimple.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ❔ | ❌ | ❌ | ✅ |
@@ -34,7 +34,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`EASYNAME`](providers/easyname.md) | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](providers/exoscale.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❌ | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`GANDI_V5`](providers/gandi_v5.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ✅ |
-| [`GCLOUD`](providers/gcloud.md) | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`GCLOUD`](providers/gcloud.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`GCORE`](providers/gcore.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ | ❌ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ |
 | [`HEDNS`](providers/hedns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](providers/hetzner.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
@@ -59,7 +59,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`PORKBUN`](providers/porkbun.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ✅ |
 | [`POWERDNS`](providers/powerdns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
 | [`REALTIMEREGISTER`](providers/realtimeregister.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| [`ROUTE53`](providers/route53.md) | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`ROUTE53`](providers/route53.md) | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`RWTH`](providers/rwth.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`SOFTLAYER`](providers/softlayer.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`TRANSIP`](providers/transip.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ❔ | ❌ | ✅ |

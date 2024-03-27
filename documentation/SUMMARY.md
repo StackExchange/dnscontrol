@@ -8,7 +8,6 @@
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
 * [TypeScript autocomplete and type checking](typescript.md)
-* [Disabling Colors](colors.md)
 
 ## Language Reference
 
@@ -151,10 +150,14 @@
 
 ## Commands
 
-* [creds.json](creds-json.md)
+* [preview/push](preview-push.md)
 * [check-creds](check-creds.md)
-* [get-certs](get-certs.md)
 * [get-zones](get-zones.md)
+* [get-certs](get-certs.md)
+* [fmt](fmt.md)
+* [creds.json](creds-json.md)
+* [Global Flag](globalflags.md)
+* [Disabling Colors](colors.md)
 
 ## Advanced features
 
