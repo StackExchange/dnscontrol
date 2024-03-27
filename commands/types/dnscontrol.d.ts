@@ -2428,7 +2428,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * function selects which mode is used. If `REVCOMPAT()` is not called, a default
  * is selected for you.  The default will change to RFC 4183 in DNSControl v5.0.
  *
- * See [REVCOMPAT()](functions/global/REVCOMPAT.md) for details.
+ * See [REVCOMPAT()](REVCOMPAT.md) for details.
  *
  * # Host bits
  *
