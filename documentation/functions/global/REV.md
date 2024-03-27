@@ -78,4 +78,4 @@ D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
 
 DNSControl does not automatically generate forward and reverse lookups. However
 it is possible to write a macro that does this.  See
-[`PTR()`](PTR.md)   for an example.
+[`PTR()`](../domain/PTR.md)   for an example.
