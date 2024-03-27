@@ -1,4 +1,4 @@
-# check-creds
+# fmt
 
 This is a stand-alone utility to pretty-format your `dnsconfig.js` configuration file.
 
@@ -36,8 +36,8 @@ dnscontrol fmt -o new-dnsconfig.js
 The **safest** method involves making a backup first:
 
 ```
-mv dnsconfig.js dnsconfig.js.BACKUP
-dnscontrol fmt -i dnsconfig.js -o dnsconfig.js.BACKUP -o dnsconfig.js
+cp dnsconfig.js dnsconfig.js.BACKUP
+dnscontrol fmt -i dnsconfig.js.BACKUP -o dnsconfig.js
 ```
 
 The **riskiest** method depends on the fact that DNSControl currently processes
@@ -45,7 +45,7 @@ the `-o` file after the input file is completely read.  It makes no backups.
 This is useful if Git is your backup mechanism.
 
 ```
-git commit -m'old version' dnsconfig.js
+git commit -m'backup dnsconfig.js' dnsconfig.js
 dnscontrol fmt -o dnsconfig.js
 git diff -- dnsconfig.js
 ```
