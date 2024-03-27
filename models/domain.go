@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
@@ -23,9 +24,10 @@ type DomainConfig struct {
 
 	// Metadata[DomainUniqueName] // .Name + "!" + .Tag
 	// Metadata[DomainTag] // split horizon tag
-	Metadata    map[string]string `json:"meta,omitempty"`
-	Records     Records           `json:"records"`
-	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
+	Metadata         map[string]string `json:"meta,omitempty"`
+	Records          Records           `json:"records"`
+	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
+	NameserversMutex sync.Mutex        `json:"-"`
 
 	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
@@ -42,6 +44,12 @@ type DomainConfig struct {
 	// 2. Final driver instances are loaded after we load credentials. Any actual provider interaction requires that.
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
+
+	// Pending work to do for each provider.  Provider may be a registrar or DSP.
+	// pendingCorrectionsMutex sync.Mutex
+	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
+	pendingCorrectionsOrder []string                   // Call the providers in this order
+	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -138,6 +146,41 @@ func (dc *DomainConfig) Punycode() error {
 		default:
 			return fmt.Errorf("Punycode rtype %v unimplemented", rec.Type)
 		}
+	}
+	return nil
+}
+
+func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Correction) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingCorrections == nil {
+		// First time storing anything.
+		dc.pendingCorrections = make(map[string]([]*Correction))
+		dc.pendingCorrections[providerName] = corrections
+		dc.pendingCorrectionsOrder = []string{providerName}
+	} else if c, ok := dc.pendingCorrections[providerName]; !ok {
+		// First time key used
+		dc.pendingCorrections[providerName] = corrections
+		dc.pendingCorrectionsOrder = []string{providerName}
+	} else {
+		// Add to existing.
+		dc.pendingCorrections[providerName] = append(c, corrections...)
+		dc.pendingCorrectionsOrder = append(dc.pendingCorrectionsOrder, providerName)
+
+	}
+}
+
+func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingCorrections == nil {
+		// First time storing anything.
+		return nil
+	}
+	if c, ok := dc.pendingCorrections[providerName]; ok {
+		return c
 	}
 	return nil
 }
