@@ -2465,7 +2465,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this.  See
- * [PTR()](../functions/domain/PTR.md)   for an example.
+ * [PTR()](PTR.md)   for an example.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/rev
  */
