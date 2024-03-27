@@ -2274,7 +2274,7 @@ declare function PANIC(message: string): never;
  * [`D_EXTEND()`](../global/D_EXTEND.md)
  * function to insert `A` and `PTR` records into previously-defined domains.
  *
- * ```
+ * ```javascript
  * function FORWARD_AND_REVERSE(ipaddr, fqdn) {
  *     D_EXTEND(dom,
  *         A(fqdn, ipaddr)
@@ -2405,15 +2405,15 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * example `REV("1.2.3.0/24")` returns `3.2.1.in-addr.arpa.` and
  * `REV("2001:db8:302::/48")` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
  *
- * `REV() is commonly used with the [`D()`](D.md) functions to create reverse DNS lookup zones.
+ * `REV()` is commonly used with the [`D()`](D.md) functions to create reverse DNS lookup zones.
  *
  * These two are equivalent:
  *
- * ```
+ * ```javascript
  * D("3.2.1.in-addr.arpa", ...
  * ```
  *
- * ```
+ * ```javascript
  * D(REV("1.2.3.0/24", ...
  * ```
  *
@@ -2428,7 +2428,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * function selects which mode is used. If `REVCOMPAT()` is not called, a default
  * is selected for you.  The default will change to RFC 4183 in DNSControl v5.0.
  *
- * See [REVCOMPAT()](REVCOMPAT.md) for details.
+ * See [`REVCOMPAT()`](REVCOMPAT.md) for details.
  *
  * # Host bits
  *
@@ -2465,7 +2465,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this.  See
- * [PTR()](PTR.md)   for an example.
+ * [`PTR()`](../domain/PTR.md)   for an example.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/rev
  */
@@ -2476,8 +2476,8 @@ declare function REV(address: string): string;
  *
  * Include one of these two commands near the top `dnsconfig.js` (at the global level):
  *
- * ```
- * REVCOMPAT("rfc2317");  // RFC 2117: Compatible with old files
+ * ```javascript
+ * REVCOMPAT("rfc2317");  // RFC 2117: Compatible with old files.
  * REVCOMPAT("rfc4183");  // RFC 4183: Adopt the newer standard.
  * ```
  *
@@ -2490,22 +2490,22 @@ declare function REV(address: string): string;
  * CIDR blocks that are not on 8-bit boundaries (/24, /16, /8).
  *
  * Originally DNSControl implemented the older standard, which only specifies what
- * to do for /8, /16, /24 - /32.  Using REV() for /9-17 and /17-23 CIDRs was an
+ * to do for /8, /16, /24 - /32.  Using `REV()` for /9-17 and /17-23 CIDRs was an
  * error.
  *
  * v4 defaults to RFC 2317.  In v5.0 the default will change to RFC 4183.
  * `REVCOMPAT()` is provided for those that wish to retain the old behavior.
  *
- * For more information, see [Opinion #9](../opinions.md).
+ * For more information, see [Opinion #9](../../opinions.md#opinion-9-rfc-4183-is-better-than-rfc-2317).
  *
  * # Transition plan
  *
  * What's the default behavior if `REVCOMPAT()` is not used?
  *
- * | Version  | /9 to /15 and /17 to /23 | /25 to 32  | Warnings      |
- * |----------|--------------------------|------------|---------------|
- * | v4       | RFC 4183                 | RFC 2317   | Only if /25 - /32 are used |
- * | v5       | RFC 4183                 | RFC 4183   | none          |
+ * | Version | /9 to /15 and /17 to /23 | /25 to 32 | Warnings                   |
+ * |---------|--------------------------|-----------|----------------------------|
+ * | v4      | RFC 4183                 | RFC 2317  | Only if /25 - /32 are used |
+ * | v5      | RFC 4183                 | RFC 4183  | none                       |
  *
  * No warnings are generated if the `REVCOMPAT()` function is used.
  *
