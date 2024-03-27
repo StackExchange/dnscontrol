@@ -4,8 +4,6 @@
 prints them.  `push` is the same but executes the changes.
 
 ```text
-Syntax:
-
 NAME:
    dnscontrol preview - read live configuration and identify changes to be made, without applying them
 
