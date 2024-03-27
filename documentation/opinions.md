@@ -182,7 +182,7 @@ there is no need for this. I also assert that there will be no such
 need in the future.
 
 
-# Opinion #9: RFC 4183 is better than RFC 2317 
+# Opinion #9: RFC 4183 is better than RFC 2317
 
 There is no standard for how to do reverse lookup zones (in-addr.arpa)
 for CIDR blocks that are not /8, /16, or /24. There are only

@@ -33,7 +33,7 @@ error.
 v4 defaults to RFC 2317.  In v5.0 the default will change to RFC 4183.
 `REVCOMPAT()` is provided for those that wish to retain the old behavior.
 
-For more information, see [Opinion #9](../opinions.md).
+For more information, see [Opinion #9](../../opinions.md#opinion-9-rfc-4183-is-better-than-rfc-2317).
 
 # Transition plan
 
