@@ -11,7 +11,7 @@ ts_return: string
 example `REV("1.2.3.0/24")` returns `3.2.1.in-addr.arpa.` and
 `REV("2001:db8:302::/48")` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
 
-`REV() is commonly used with the [`D()`](D.md) functions to create reverse DNS lookup zones.
+`REV()` is commonly used with the [`D()`](D.md) functions to create reverse DNS lookup zones.
 
 These two are equivalent:
 
@@ -47,7 +47,7 @@ v4.x:
 The host bits (the ones outside the netmask) must be zeros. They are not zeroed
 out automatically. Thus, `REV("1.2.3.4/24")` is an error.
 
-v5.0 and later: 
+v5.0 and later:
 The host bits (the ones outside the netmask) are ignored.  Thus
 `REV("1.2.3.4/24")` and `REV("1.2.3.0/24")` are equivalent.
 
