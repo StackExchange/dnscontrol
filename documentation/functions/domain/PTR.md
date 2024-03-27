@@ -98,7 +98,8 @@ it is possible to write a macro that does this by using the
 [`D_EXTEND()`](../global/D_EXTEND.md)
 function to insert `A` and `PTR` records into previously-defined domains.
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 function FORWARD_AND_REVERSE(ipaddr, fqdn) {
     D_EXTEND(dom,
         A(fqdn, ipaddr)
@@ -118,3 +119,4 @@ D(REV("10.20.30.0/24"), REGISTRAR, DnsProvider(DSP_NONE),
 FORWARD_AND_REVERSE("10.20.30.77", "foo.example.com.");
 FORWARD_AND_REVERSE("10.20.30.99", "bar.example.com.");
 ```
+{% endcode %}

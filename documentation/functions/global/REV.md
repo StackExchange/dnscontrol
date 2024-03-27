@@ -15,13 +15,17 @@ example `REV("1.2.3.0/24")` returns `3.2.1.in-addr.arpa.` and
 
 These two are equivalent:
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 D("3.2.1.in-addr.arpa", ...
 ```
+{% endcode %}
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 D(REV("1.2.3.0/24", ...
 ```
+{% endcode %}
 
 The latter is easier to type and less error-prone.
 

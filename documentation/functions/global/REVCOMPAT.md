@@ -11,10 +11,12 @@ ts_return: string
 
 Include one of these two commands near the top `dnsconfig.js` (at the global level):
 
-```
+{% code title="dnsconfig.js" %}
+```javascript
 REVCOMPAT("rfc2317");  // RFC 2117: Compatible with old files
 REVCOMPAT("rfc4183");  // RFC 4183: Adopt the newer standard.
 ```
+{% endcode %}
 
 `REVCOMPAT()` is global for all of `dnsconfig.js`. It must appear before any
 use of `REV()`; If not, behavior is undefined.
