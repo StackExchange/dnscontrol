@@ -37,12 +37,10 @@ OPTIONS:
 `dnsconfig.js`.
 
 * `--creds name`
-  * Specifies the name of the credentials file, normally
-    `creds.json`. Typically the file is read.  If the executable bit is set, the
-    file is executed and the output is used as the configuration. (That feature may
-    or may not work on Windows.)   If the filename begins with a `|` (for example:
-    `|runme.sh`) the `|` is removed and the remaining string is used as the name of
-    the program.
+  * Specifies the name of the credentials file, normally `creds.json`.
+    Typically the file is read.  If the executable bit is set, the file is
+    executed and the output is used as the configuration. See
+    [creds.json][creds-json.md] for details.
 
 * `--providers name,name2`
   * Specifies a comma-separated list of providers to
