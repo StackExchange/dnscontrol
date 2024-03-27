@@ -38,7 +38,7 @@ and /128 for IPv6 addresses.
 function selects which mode is used. If `REVCOMPAT()` is not called, a default
 is selected for you.  The default will change to RFC 4183 in DNSControl v5.0.
 
-See [REVCOMPAT()](REVCOMPAT.md) for details.
+See [`REVCOMPAT()`](REVCOMPAT.md) for details.
 
 
 # Host bits
@@ -78,4 +78,4 @@ D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
 
 DNSControl does not automatically generate forward and reverse lookups. However
 it is possible to write a macro that does this.  See
-[PTR()](PTR.md)   for an example.
+[`PTR()`](PTR.md)   for an example.
