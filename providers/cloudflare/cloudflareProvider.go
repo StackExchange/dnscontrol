@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/idna"
 
@@ -43,7 +44,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
@@ -79,6 +80,7 @@ type cloudflareProvider struct {
 	manageWorkers   bool
 	accountID       string
 	cfClient        *cloudflare.API
+	sync.Mutex
 }
 
 // TODO(dlemenkov): remove this function after deleting all commented code referecing it
@@ -94,27 +96,29 @@ type cloudflareProvider struct {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return nil, err
 	}
+	c.Lock()
 	ns, ok := c.nameservers[domain]
+	c.Unlock()
 	if !ok {
-		return nil, fmt.Errorf("nameservers for %s not found in cloudflare account", domain)
+		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
 	}
 	return models.ToNameservers(ns)
 }
 
 // ListZones returns a list of the DNS zones.
 func (c *cloudflareProvider) ListZones() ([]string, error) {
-	if err := c.fetchDomainList(); err != nil {
+	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
+	c.Lock()
 	zones := make([]string, 0, len(c.domainIndex))
 	for d := range c.domainIndex {
 		zones = append(zones, d)
 	}
+	c.Unlock()
 	return zones, nil
 }
 
@@ -178,12 +182,12 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 func (c *cloudflareProvider) getDomainID(name string) (string, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return "", err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return "", err
 	}
+	c.Lock()
 	id, ok := c.domainIndex[name]
+	c.Unlock()
 	if !ok {
 		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
 	}
@@ -196,14 +200,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
-	//	for i := len(records) - 1; i >= 0; i-- {
-	//		rec := records[i]
-	//		// Delete ignore labels
-	//		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-	//			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-	//			records = append(records[:i], records[i+1:]...)
-	//		}
-	//	}
 
 	checkNSModifications(dc)
 
@@ -222,9 +218,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		if rec.Metadata[metaProxy] != "off" {
 			rec.TTL = 1
 		}
-		//		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
-		//			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
-		//		}
 	}
 
 	checkNSModifications(dc)
@@ -815,11 +808,14 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return err
-		}
+	if err := c.cacheDomainList(); err != nil {
+		return err
 	}
+	// if c.domainIndex == nil {
+	// 	if err := c.fetchDomainList(); err != nil {
+	// 		return err
+	// 	}
+	// }
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

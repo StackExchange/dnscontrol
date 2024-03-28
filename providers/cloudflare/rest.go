@@ -13,7 +13,10 @@ import (
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
-func (c *cloudflareProvider) fetchDomainList() error {
+func (c *cloudflareProvider) cacheDomainList() error {
+	c.Lock()
+	defer c.Unlock()
+
 	c.domainIndex = map[string]string{}
 	c.nameservers = map[string][]string{}
 	zones, err := c.cfClient.ListZones(context.Background())
