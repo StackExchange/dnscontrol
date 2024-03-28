@@ -50,8 +50,9 @@ func Run(v string) int {
 	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
-			Name:        "v",
-			Usage:       "Enable detailed logging",
+			Name:        "debug",
+			Aliases:     []string{"v"},
+			Usage:       "Enable debug logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},
 		&cli.BoolFlag{
