@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/urfave/cli/v2"
 )
 
@@ -58,6 +59,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 			log.SetOutput(os.Stdout)
 
 			err := exit(PrintIR(pargs))
+			rfc4183.PrintWarning()
 			if err == nil {
 				fmt.Fprintf(os.Stdout, "No errors.\n")
 			}

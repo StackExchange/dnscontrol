@@ -24,6 +24,7 @@
   * [NewRegistrar](functions/global/NewRegistrar.md)
   * [PANIC](functions/global/PANIC.md)
   * [REV](functions/global/REV.md)
+  * [REVCOMPAT](functions/global/REVCOMPAT.md)
   * [getConfiguredDomains](functions/global/getConfiguredDomains.md)
   * [require](functions/global/require.md)
   * [require_glob](functions/global/require_glob.md)

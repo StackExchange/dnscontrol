@@ -16,6 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
@@ -293,6 +294,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
+	rfc4183.PrintWarning()
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {

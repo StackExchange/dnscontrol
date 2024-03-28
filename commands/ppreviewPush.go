@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/urfave/cli/v2"
@@ -257,6 +258,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
+	rfc4183.PrintWarning()
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	err = writeReport(report, reportItems)
