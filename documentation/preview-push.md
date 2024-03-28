@@ -3,9 +3,7 @@
 `preview` reads the dnsconfig.js file (or equivalent), determines what changes are to be made, and
 prints them.  `push` is the same but executes the changes.
 
-```text
-Syntax:
-
+```shell
 NAME:
    dnscontrol preview - read live configuration and identify changes to be made, without applying them
 
