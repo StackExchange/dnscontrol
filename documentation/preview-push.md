@@ -96,7 +96,11 @@ OPTIONS:
     performed corrections in the file named `name`. If no name is specified, no
     report is generated.
 
-## Starting in v4.9
+## ppreview/ppush
+
+{% hint style="info" %}
+Starting in v4.9
+{% endhint %}
 
 The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
 data is gathered concurrently. The commands will go away when
