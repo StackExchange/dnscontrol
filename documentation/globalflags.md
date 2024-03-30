@@ -1,6 +1,6 @@
 # Global Flags
 
-These flags are global. They affect all subcommands.  
+These flags are global. They affect all subcommands.
 
 ```text
    --debug, -v        Enable detailed logging (default: false)
@@ -27,10 +27,10 @@ $ dnscontrol preview --no-colors
 
 
 * `--allow-fetch`
-  * Enable the `fetch()` function in `dnsconfig.js` (or equivalent).  It is disabled by default because it can be used for nefarious purposes.  It is dangerous on untrusted code!  Enable it only if you trust all the people editing dnsconfig.js.
+  * Enable the `fetch()` function in `dnsconfig.js` (or equivalent). It is disabled by default because it can be used for nefarious purposes. It is dangerous on untrusted code!  Enable it only if you trust all the people editing dnsconfig.js.
 
 * `--disableordering`
-  * Disables update reordering.  Normally DNSControl re-orders the updates done by `push`.  This is usually only used to work around bugs in the reordering code.
+  * Disables update reordering. Normally DNSControl re-orders the updates done by `push`. This is usually only used to work around bugs in the reordering code.
 
 * `--no-colors`
-  * Disable colors.  See [Disabling Colors](colors.md) for details.
+  * Disable colors. See [Disabling Colors](colors.md) for details.

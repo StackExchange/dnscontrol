@@ -2,7 +2,6 @@
 
 This is a stand-alone utility to pretty-format your `dnsconfig.js` configuration file.
 
-
 ```text
 NAME:
    dnscontrol fmt - [BETA] Format and prettify a given file
@@ -41,7 +40,7 @@ dnscontrol fmt -i dnsconfig.js.BACKUP -o dnsconfig.js
 ```
 
 The **riskiest** method depends on the fact that DNSControl currently processes
-the `-o` file after the input file is completely read.  It makes no backups.
+the `-o` file after the input file is completely read. It makes no backups.
 This is useful if Git is your backup mechanism.
 
 ```
