@@ -14,13 +14,13 @@ They must appear before the subcommand.
 
 **Right**
 
-```
+```shell
 $ dnscontrol --no-colors preview
 ```
 
 **Wrong**
 
-```
+```shell
 $ dnscontrol preview --no-colors
 ```
 
