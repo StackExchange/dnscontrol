@@ -14,15 +14,19 @@ They must appear before the subcommand.
 
 **Right**
 
+{% hint style="success" %}
 ```shell
 dnscontrol --no-colors preview
 ```
+{% endhint %}
 
 **Wrong**
 
+{% hint style="danger" %}
 ```shell
 dnscontrol preview --no-colors
 ```
+{% endhint %}
 
 * `-debug`
   * Enable debug output.  (The `-v` alias is the original name for this flag. That alias will go away eventually.)
