@@ -2,7 +2,7 @@
 
 This is a stand-alone utility to pretty-format your `dnsconfig.js` configuration file.
 
-```text
+```shell
 NAME:
    dnscontrol fmt - [BETA] Format and prettify a given file
 
