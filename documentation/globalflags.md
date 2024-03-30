@@ -12,13 +12,15 @@ These flags are global. They affect all subcommands.
 
 They must appear before the subcommand.
 
+**Right**
+
 ```
-RIGHT:
 $ dnscontrol --no-colors preview
 ```
 
+**Wrong**
+
 ```
-WRONG:
 $ dnscontrol preview --no-colors
 ```
 
