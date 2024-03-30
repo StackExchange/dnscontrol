@@ -51,7 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUsePTR:              providers.Can("G-Core supports PTR records only in rDNS zones"),
 	providers.CanUseSRV:              providers.Can("G-Core doesn't support SRV records with empty targets"),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
