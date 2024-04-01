@@ -1607,6 +1607,21 @@ func makeTests() []*TestGroup {
 			tc("change it", alias("@", "foo2.com.")),
 		),
 
+		testgroup("ALIAS to nonfqdn",
+			requires(providers.CanUseAlias),
+			tc("ALIAS at root",
+				a("foo", "1.2.3.4"),
+				alias("@", "foo"),
+			),
+		),
+
+		testgroup("CNAME-label",
+			tc("Create a CNAME",
+				a("foo", "1.2.3.4"),
+				cname("testcname", "foo"),
+			),
+		),
+
 		testgroup("ALIAS on subdomain",
 			requires(providers.CanUseAlias),
 			not("TRANSIP"), // TransIP does support ALIAS records, but only for apex records (@)

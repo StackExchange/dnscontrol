@@ -429,7 +429,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 func (rc *RecordConfig) GetDependencies() []string {
 
 	switch rc.Type {
-	case "NS", "SRV", "CNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":
+	// #rtype_variations
+	case "NS", "SRV", "CNAME", "DNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":
 		return []string{
 			rc.target,
 		}
@@ -536,11 +537,11 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "AAAA", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "ALIAS", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
@@ -561,10 +562,10 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
-		case "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
+		case "ALIAS", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "ALIAS", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
