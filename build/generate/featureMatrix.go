@@ -89,6 +89,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierTlsa   = "[`TLSA`](functions/domain/TLSA.md)"
 		DomainModifierDs     = "[`DS`](functions/domain/DS.md)"
 		DomainModifierDhcid  = "[`DHCID`](functions/domain/DHCID.md)"
+		DomainModifierDname  = "[`DNAME`](functions/domain/DNAME.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
 		GetZones             = "get-zones"
@@ -113,6 +114,7 @@ func matrixData() *FeatureMatrix {
 			DomainModifierTlsa,
 			DomainModifierDs,
 			DomainModifierDhcid,
+			DomainModifierDname,
 			DualHost,
 			CreateDomains,
 			//NoPurge,
@@ -190,6 +192,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierDhcid,
 			providers.CanUseDHCID,
+		)
+		setCapability(
+			DomainModifierDname,
+			providers.CanUseDNAME,
 		)
 		setCapability(
 			DomainModifierDs,

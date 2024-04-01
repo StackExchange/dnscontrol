@@ -80,6 +80,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTargetDSString(contents)
 	case "DHCID":
 		return rc.SetTarget(contents)
+	case "DNAME":
+		return rc.SetTarget(contents)
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
 	case "MX":
@@ -163,6 +165,8 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "DS":
 		return rc.SetTargetDSString(contents)
 	case "DHCID":
+		return rc.SetTarget(contents)
+	case "DNAME":
 		return rc.SetTarget(contents)
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
