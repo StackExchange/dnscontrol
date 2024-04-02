@@ -161,7 +161,7 @@ release:
     > [!WARNING]
     > - **MSDNS maintainer needed!** Without a new volunteer, this DNS provider will lose support after April 2025. See https://github.com/StackExchange/dnscontrol/issues/2878
     > - **Call for new volunteer maintainers for NAMEDOTCOM and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
-    > - **ACME/Let's Encrypt support is frozen and will be removed without notice between now and April 2025.**  It has been unsupported since December 2022.  If you don't use this feature, do not start. If you do use this feature, migrate ASAP.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
+    > - **get-certs/ACME support is frozen and will be removed without notice between now and July 2025.** It has been unsupported since December 2022.  If you don't use this feature, do not start. If you do use this feature, migrate ASAP.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 
     ## Install
 
