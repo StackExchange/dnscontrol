@@ -61,7 +61,7 @@ D(REV("1.2.3.0/24"), REGISTRAR, DnsProvider(BIND),
   PTR("1", "foo.example.com."),
   PTR("2", "bar.example.com."),
   PTR("3", "baz.example.com."),
-  // If a full IP address is used, DNSControl automatically calls REV() for you.
+  // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
   PTR("1.2.3.10", "ten.example.com."),
 );
 
