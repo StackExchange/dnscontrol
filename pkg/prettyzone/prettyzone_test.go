@@ -359,9 +359,9 @@ var testdataZFEach = `$TTL 300
                  IN DHCID AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=
 4.5              IN PTR   y.bosun.org.
 _443._tcp        IN TLSA  3 1 1 abcdef0
+dname            IN DNAME example.com.
 sub              IN NS    bosun.org.
 x                IN CNAME bosun.org.
-dname            IN DNAME example.com.
 `
 
 func TestWriteZoneFileSynth(t *testing.T) {
