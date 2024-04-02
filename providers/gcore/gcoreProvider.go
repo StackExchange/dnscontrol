@@ -43,7 +43,7 @@ func NewGCore(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
@@ -187,6 +187,31 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 		default:
 			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
+	}
+
+	dnssecEnabled, err := c.dnssdkGetDNSSEC(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if !dnssecEnabled && dc.AutoDNSSEC == "on" {
+		// Copy all params to avoid overwrites
+		zone := dc.Name
+		corrections = append(corrections, &models.Correction{
+			Msg: "Enable DNSSEC",
+			F: func() error {
+				return c.dnssdkSetDNSSEC(zone, true)
+			},
+		})
+	} else if dnssecEnabled && dc.AutoDNSSEC == "off" {
+		// Copy all params to avoid overwrites
+		zone := dc.Name
+		corrections = append(corrections, &models.Correction{
+			Msg: "Disable DNSSEC",
+			F: func() error {
+				return c.dnssdkSetDNSSEC(zone, false)
+			},
+		})
 	}
 
 	result := append(reports, deletions...)
