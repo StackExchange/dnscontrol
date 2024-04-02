@@ -24,6 +24,8 @@ var _ = cmd(catUtils, func() *cli.Command {
 			return exit(GetCerts(args))
 		},
 		Flags: args.flags(),
+
+		Hidden: true,
 	}
 }())
 
