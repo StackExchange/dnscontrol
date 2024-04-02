@@ -821,6 +821,21 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
 declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): DomainModifier;
 
 /**
+ * DNAME adds a DNAME record to the domain.
+ *
+ * Target should be a string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DNAME("sub", "example.net.")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dname
+ */
+declare function DNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
  * a domain's zones are managed elsewhere. That is, it permits you easily delegate
  * a domain to a hard-coded list of DNS servers.

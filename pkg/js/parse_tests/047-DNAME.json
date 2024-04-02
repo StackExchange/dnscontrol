@@ -1,0 +1,18 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "DNAME",
+          "name": "@",
+          "target": "bar.com."
+        }
+      ]
+    }
+  ]
+}

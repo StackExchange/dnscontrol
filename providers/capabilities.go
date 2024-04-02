@@ -43,6 +43,9 @@ const (
 	// CanUseDHCID indicates the provider can handle DHCID records
 	CanUseDHCID
 
+	// CanUseDNAME indicates the provider can handle DNAME records
+	CanUseDNAME
+
 	// CanUseDS indicates that the provider can handle DS record types. This
 	// implies CanUseDSForChildren without specifying the latter explicitly.
 	CanUseDS

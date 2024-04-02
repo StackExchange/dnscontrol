@@ -60,6 +60,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"CAA":              true,
 		"CNAME":            true,
 		"DHCID":            true,
+		"DNAME":            true,
 		"DS":               true,
 		"IMPORT_TRANSFORM": false,
 		"LOC":              true,
@@ -194,6 +195,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if labelFQDN == targetFQDN {
 			check(fmt.Errorf("CNAME loop (target points at itself)"))
 		}
+	case "DNAME":
+		check(checkTarget(target))
 	case "LOC":
 	case "MX":
 		check(checkTarget(target))
@@ -679,6 +682,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
 	capabilityCheck("DHCID", providers.CanUseDHCID),
+	capabilityCheck("DNAME", providers.CanUseDNAME),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),

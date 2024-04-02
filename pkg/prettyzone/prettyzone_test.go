@@ -338,6 +338,7 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`sub.bosun.org.       300 IN NS    bosun.org.`))    // Must be a label with no other records.
 	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
 	d = append(d, mustNewRR(`bosun.org.           300 IN DHCID   AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=`))
+	d = append(d, mustNewRR(`dname.bosun.org.     300 IN DNAME   example.com.`))
 	buf := &bytes.Buffer{}
 	writeZoneFileRR(buf, d, "bosun.org")
 	if buf.String() != testdataZFEach {
@@ -360,6 +361,7 @@ var testdataZFEach = `$TTL 300
 _443._tcp        IN TLSA  3 1 1 abcdef0
 sub              IN NS    bosun.org.
 x                IN CNAME bosun.org.
+dname            IN DNAME example.com.
 `
 
 func TestWriteZoneFileSynth(t *testing.T) {
