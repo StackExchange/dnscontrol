@@ -37,6 +37,7 @@ var features = providers.DocumentationNotes{
 	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
+	providers.CanUseDNAME:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
