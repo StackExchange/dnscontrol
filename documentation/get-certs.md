@@ -1,7 +1,7 @@
 # *Let's Encrypt* Certificate generation
 
 {% hint style="warning" %}
-**WARNING**: This feature is frozen and will be removed without notice between now and April 2025.
+**WARNING**: This feature is frozen and will be removed without notice between now and July 2025.
 It has been unsupported since December 2022.
 This feature has no maintainer. There are other projects that do a better job. 
 If you do use this feature, please migrate to something else ASAP.
