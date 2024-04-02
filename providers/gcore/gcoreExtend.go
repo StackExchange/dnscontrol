@@ -13,6 +13,14 @@ import (
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 )
 
+type gcoreZone struct {
+	DNSSECEnabled bool `json:"dnssec_enabled"`
+}
+
+type gcoreDNSSECRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
 type gcoreRRSets struct {
 	RRSets []gcoreRRSetExtended `json:"rrsets"`
 }
@@ -102,4 +110,30 @@ func (c *gcoreProvider) dnssdkRRSets(domain string) (gcoreRRSets, error) {
 	}
 
 	return result, nil
+}
+
+func (c *gcoreProvider) dnssdkGetDNSSEC(domain string) (bool, error) {
+	var result gcoreZone
+	url := fmt.Sprintf("/v2/zones/%s", domain)
+
+	err := dnssdkDo(c.ctx, c.provider, c.apiKey, http.MethodGet, url, nil, &result)
+	if err != nil {
+		return false, err
+	}
+
+	return result.DNSSECEnabled, nil
+}
+
+func (c *gcoreProvider) dnssdkSetDNSSEC(domain string, enabled bool) error {
+	var request gcoreDNSSECRequest
+	request.Enabled = enabled
+
+	url := fmt.Sprintf("/v2/zones/%s/dnssec", domain)
+
+	err := dnssdkDo(c.ctx, c.provider, c.apiKey, http.MethodPatch, url, request, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
