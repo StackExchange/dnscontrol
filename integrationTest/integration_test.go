@@ -873,6 +873,13 @@ func makeTests() []*TestGroup {
 			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
 		),
 
+		testgroup("CNAME-short",
+			tc("Create a CNAME",
+				a("foo", "1.2.3.4"),
+				cname("testcname", "foo"),
+			),
+		),
+
 		// MX
 
 		// Narrative: MX is the first record we're going to test with
@@ -1605,6 +1612,14 @@ func makeTests() []*TestGroup {
 			requires(providers.CanUseAlias),
 			tc("ALIAS at root", alias("@", "foo.com.")),
 			tc("change it", alias("@", "foo2.com.")),
+		),
+
+		testgroup("ALIAS to nonfqdn",
+			requires(providers.CanUseAlias),
+			tc("ALIAS at root",
+				a("foo", "1.2.3.4"),
+				alias("@", "foo"),
+			),
 		),
 
 		testgroup("ALIAS on subdomain",

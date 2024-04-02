@@ -225,13 +225,14 @@ An example of a template file containing Linode and Cloudflare API credentials i
 ```
 {% endcode %}
 
-## Don't store secrets in a Git repo!
+## Don't store creds.json in a Git repo!
 
-Do NOT store secrets in a Git repository. That is not secure. For example,
-storing the example `cloudflare_tal` is insecure because anyone with access to
-your Git repository or the history will know your apiuser is `REDACTED`.
-Removing secrets accidentally stored in Git is very difficult. You'll probably
-give up and re-create the repo and lose all history.
+Do NOT store `creds.json` (or any secrets!) in a Git repository. That is not secure.
 
-Instead, use environment variables as in the `hexonet` example above.  Use
+For example, storing the creds.json at the top of this document would be horribly insecure.
+Anyone with access to your Git repository *or the history* will know your apiuser is `REDACTED`.
+Removing secrets accidentally stored in Git is very difficult because you'll need to rewrite
+the repo history.
+
+A better way is to use environment variables as in the `hexonet` example above.  Use
 secure means to distribute the names and values of the environment variables.
