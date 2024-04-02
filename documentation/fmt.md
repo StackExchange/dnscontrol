@@ -2,8 +2,7 @@
 
 This is a stand-alone utility to pretty-format your `dnsconfig.js` configuration file.
 
-
-```text
+```shell
 NAME:
    dnscontrol fmt - [BETA] Format and prettify a given file
 
@@ -23,28 +22,28 @@ OPTIONS:
 
 By default the output goes to stdout:
 
-```
+```shell
 dnscontrol fmt >new-dnsconfig.js
 ```
 
 You can also redirect the output via the `-o` option:
 
-```
+```shell
 dnscontrol fmt -o new-dnsconfig.js
 ```
 
 The **safest** method involves making a backup first:
 
-```
+```shell
 cp dnsconfig.js dnsconfig.js.BACKUP
 dnscontrol fmt -i dnsconfig.js.BACKUP -o dnsconfig.js
 ```
 
 The **riskiest** method depends on the fact that DNSControl currently processes
-the `-o` file after the input file is completely read.  It makes no backups.
+the `-o` file after the input file is completely read. It makes no backups.
 This is useful if Git is your backup mechanism.
 
-```
+```shell
 git commit -m'backup dnsconfig.js' dnsconfig.js
 dnscontrol fmt -o dnsconfig.js
 git diff -- dnsconfig.js
