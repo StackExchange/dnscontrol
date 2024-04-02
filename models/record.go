@@ -361,6 +361,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.CNAME).Target = rc.GetTargetField()
 	case dns.TypeDHCID:
 		rr.(*dns.DHCID).Digest = rc.GetTargetField()
+	case dns.TypeDNAME:
+		rr.(*dns.DNAME).Target = rc.GetTargetField()
 	case dns.TypeDS:
 		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
 		rr.(*dns.DS).DigestType = rc.DsDigestType
@@ -537,7 +539,7 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
@@ -562,7 +564,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
-		case "ALIAS", "ANAME", "CNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
+		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
 		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":

@@ -512,6 +512,10 @@ func dhcid(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "DHCID")
 }
 
+func dname(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "DNAME")
+}
+
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.SetTargetDS(keyTag, algorithm, digestType, digest)
@@ -1599,6 +1603,13 @@ func makeTests() []*TestGroup {
 			requires(providers.CanUseDHCID),
 			tc("Create DHCID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 			tc("Modify DHCID record", dhcid("test", "Test/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+		),
+
+		testgroup("DNAME",
+			requires(providers.CanUseDNAME),
+			tc("Create DNAME record", dname("test", "example.com.")),
+			tc("Modify DNAME record", dname("test", "example.net.")),
+			tc("Create DNAME record in non-FQDN", dname("a", "b")),
 		),
 
 		//// Vendor-specific record types

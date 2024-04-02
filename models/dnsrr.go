@@ -48,6 +48,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTarget(v.Target)
 	case *dns.DHCID:
 		err = rc.SetTarget(v.Digest)
+	case *dns.DNAME:
+		err = rc.SetTarget(v.Target)
 	case *dns.DS:
 		err = rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest)
 	case *dns.LOC:
