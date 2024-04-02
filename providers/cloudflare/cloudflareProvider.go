@@ -197,6 +197,12 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
+	}
+
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
@@ -209,9 +215,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
-		}
 		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
 		// When not forcing this property change here, dnscontrol tries each time to update
 		// the TTL of a record which simply cannot be changed anyway.
@@ -735,7 +738,7 @@ func stringDefault(value interface{}, def string) string {
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
-	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
+	if cr.Type == "ALIAS" || cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
 			cr.Content = cr.Content + "."
 		}
