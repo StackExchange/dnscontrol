@@ -2464,13 +2464,13 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *   PTR("1", "foo.example.com."),
  *   PTR("2", "bar.example.com."),
  *   PTR("3", "baz.example.com."),
- *   // If a full IP address is used, DNSControl automatically calls REV() for you.
+ *   // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
  *   PTR("1.2.3.10", "ten.example.com."),
  * );
  *
  * D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
  *   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
- *   // If a full IP address is used, DNSControl automatically calls REV() for you.
+ *   // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
  *   PTR("2001:db8:302::2", "two.example.com."),                          // 2.0.0...
  *   PTR("2001:db8:302::3", "three.example.com."),                        // 3.0.0...
  * );
