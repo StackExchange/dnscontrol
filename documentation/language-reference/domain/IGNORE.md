@@ -26,11 +26,11 @@ records.
 
 Technically `IGNORE_NAME` is a promise that DNSControl will not modify or
 delete existing records that match particular patterns. It is like
-[`NO_PURGE`](../domain/NO_PURGE.md) that matches only specific records.
+[`NO_PURGE`](../domain-modifiers/NO_PURGE.md) that matches only specific records.
 
 Including a record that is ignored is considered an error and may have
 undefined behavior. This safety check can be disabled using the
-[`DISABLE_IGNORE_SAFETY_CHECK`](../domain/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
+[`DISABLE_IGNORE_SAFETY_CHECK`](../domain-modifiers/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
 
 ## Syntax
 
@@ -45,7 +45,7 @@ IGNORE(labelSpec):
 {% endcode %}
 
 * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
-* `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).  
+* `typeSpec` is a comma-separated list of DNS types.  For example `"A"` matches DNS A records, `"A,CNAME"` matches both A and CNAME records. `"*"` matches any DNS type, as does the empty string (`""`).
 * `targetSpec` is a glob that matches the DNS target. For example `"foo"` or `"foo*"`.  `"*"` matches all targets, as does the empty string (`""`).
 
 `typeSpec` and `targetSpec` default to `"*"` if they are omitted.

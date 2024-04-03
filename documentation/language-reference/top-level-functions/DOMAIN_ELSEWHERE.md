@@ -40,6 +40,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 {% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The [`NO_PURGE`](../domain/NO_PURGE.md) is used out of abundance of caution but since no
+**NOTE**: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used out of abundance of caution but since no
 `DnsProvider()` statements exist, no updates would be performed.
 {% endhint %}

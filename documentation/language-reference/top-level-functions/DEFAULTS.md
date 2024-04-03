@@ -11,7 +11,7 @@ arguments passed as if they were the first modifiers in the argument list.
 
 ## Example
 
-We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain/DefaultTTL.md).
+We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain-modifiers/DefaultTTL.md).
 The domain `example.com` will have the defaults set.
 
 {% code title="dnsconfig.js" %}

@@ -36,4 +36,4 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```
 {% endcode %}
 
-To apply a default TTL to all other record types, see [`DefaultTTL`](../domain/DefaultTTL.md)
+To apply a default TTL to all other record types, see [`DefaultTTL`](../domain-modifiers/DefaultTTL.md)

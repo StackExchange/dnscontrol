@@ -44,5 +44,5 @@ D("example.com", REG_NAMEDOTCOM,
 {% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The [`NO_PURGE`](../domain/NO_PURGE.md) is used to prevent DNSControl from changing the records.
+**NOTE**: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used to prevent DNSControl from changing the records.
 {% endhint %}
