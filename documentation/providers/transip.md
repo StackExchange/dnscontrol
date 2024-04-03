@@ -64,7 +64,7 @@ TransIP depends on a TransIP personal access token.
 
 > "When multiple or none of the current DNS entries matches, the response will be an error with http status code 406." — _[TransIP - REST API - Update single DNS entry](https://api.transip.nl/rest/docs.html#domains-dns-patch)_
 
-This makes it not possible, for example, to update a [`CAA()`](../language-reference/domain/CAA.md) record in one update. Instead, the old DNS entry is deleted and the replacement is added. You'll see `[1/2]` and `[2/2]` in the DNSControl output whenever this happens.
+This makes it not possible, for example, to update a [`CAA()`](../language-reference/domain-modifiers/CAA.md) record in one update. Instead, the old DNS entry is deleted and the replacement is added. You'll see `[1/2]` and `[2/2]` in the DNSControl output whenever this happens.
 
 ### Example with a `CAA_BUILDER()`
 

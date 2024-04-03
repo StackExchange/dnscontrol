@@ -36,7 +36,7 @@ Within the git repo, docs are grouped:
 Files in the `documentation/language-reference/{record,domain,global}` subdirectories
 have a header at the top that is used to populate other systems.
 
-Here's an example from [`A`](language-reference/domain/A.md)
+Here's an example from [`A`](language-reference/domain-modifiers/A.md)
 
 ```
 ---
@@ -193,7 +193,7 @@ However, the first mention on a page should always
 be a link.  Others are at the authors digression.
 
 ```markdown
-The [`PTR`](language-reference/domain/PTR.md) feature is helpful in LANs.
+The [`PTR`](language-reference/domain-modifiers/PTR.md) feature is helpful in LANs.
 ```
 
 #### Mentioning functions from the Source code
@@ -207,7 +207,7 @@ The function `GetRegistrarCorrections()` returns...
 #### Internal links
 
 ```markdown
-Blah blah blah [M365_BUILDER](language-reference/domain/M365_BUILDER.md)
+Blah blah blah [M365_BUILDER](language-reference/domain-modifiers/M365_BUILDER.md)
 ```
 
 {% hint style="info" %}

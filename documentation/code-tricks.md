@@ -4,10 +4,10 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA Builder](language-reference/domain/CAA_BUILDER.md)
-* [DMARC Builder](language-reference/domain/DMARC_BUILDER.md)
-* [M365_BUILDER](language-reference/domain/M365_BUILDER.md)
-* [SPF Optimizer](language-reference/domain/SPF_BUILDER.md)
+* [CAA Builder](language-reference/domain-modifiers/CAA_BUILDER.md)
+* [DMARC Builder](language-reference/domain-modifiers/DMARC_BUILDER.md)
+* [M365_BUILDER](language-reference/domain-modifiers/M365_BUILDER.md)
+* [SPF Optimizer](language-reference/domain-modifiers/SPF_BUILDER.md)
 
 # Trailing commas
 
@@ -21,7 +21,7 @@ Because the DNSControl JavaScript DSL has no trailing commas, you can use the `E
 **NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
 {% endhint %}
 
-Let's take an example with domain: `example.com`. We have recorded the [A-record](language-reference/domain/A.md) 'foo' configured.
+Let's take an example with domain: `example.com`. We have recorded the [A-record](language-reference/domain-modifiers/A.md) 'foo' configured.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -31,7 +31,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```
 {% endcode %}
 
-Let's say we want to add an [A record](language-reference/domain/A.md) 'bar' to this domain.
+Let's say we want to add an [A record](language-reference/domain-modifiers/A.md) 'bar' to this domain.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -221,5 +221,5 @@ domain exists, who requested it, any associated ticket numbers, and so
 on.
 
 We also comment the individual parts of a record. Look at the [SPF
-Optimizer](language-reference/domain/SPF_BUILDER.md) example.  Each part of
+Optimizer](language-reference/domain-modifiers/SPF_BUILDER.md) example.  Each part of
 the SPF record has a comment.

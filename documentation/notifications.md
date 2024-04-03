@@ -28,7 +28,7 @@ Notifications are set up in your credentials JSON file. They will use the `notif
 
 If you want to send a notification, add the `--notify` flag to the `dnscontrol preview` or `dnscontrol push` commands.
 
-Below is an example where we add [the A record](language-reference/domain/A.md) `foo` and display the notification output.
+Below is an example where we add [the A record](language-reference/domain-modifiers/A.md) `foo` and display the notification output.
 
 {% code title="dnsconfig.js" %}
 ```diff

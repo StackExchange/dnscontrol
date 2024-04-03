@@ -79,9 +79,9 @@ popd
     func matrixData() *FeatureMatrix {
         const (
             ...
-            DomainModifierCaa    = "[`CAA`](language-reference/domain/CAA.md)"
-    +       DomainModifierFoo    = "[`FOO`](language-reference/domain/FOO.md)"
-            DomainModifierLoc    = "[`LOC`](language-reference/domain/LOC.md)"
+            DomainModifierCaa    = "[`CAA`](language-reference/domain-modifiers/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](language-reference/domain-modifiers/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](language-reference/domain-modifiers/LOC.md)"
             ...
         )
         matrix := &FeatureMatrix{
@@ -153,7 +153,7 @@ example we removed `providers.CanUseCAA` from the
 
 Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-[`A()`](language-reference/domain/A.md) and [`MX()`](language-reference/domain/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
+[`A()`](language-reference/domain-modifiers/A.md) and [`MX()`](language-reference/domain-modifiers/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
@@ -292,7 +292,7 @@ tests, please ask!
 
 ## Step 8: Write documentation
 
-Add a new Markdown file to `documentation/language-reference/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+Add a new Markdown file to `documentation/language-reference/domain-modifiers`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
 
 -   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
 -   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
@@ -307,24 +307,24 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
 ...
 * Domain Modifiers
 ...
-    * [DnsProvider](language-reference/domain/DnsProvider.md)
-+   * [FOO](language-reference/domain/FOO.md)
-    * [FRAME](language-reference/domain/FRAME.md)
+    * [DnsProvider](language-reference/domain-modifiers/DnsProvider.md)
++   * [FOO](language-reference/domain-modifiers/FOO.md)
+    * [FRAME](language-reference/domain-modifiers/FRAME.md)
 ...
     * Service Provider specific
 ...
         * ClouDNS
-            * [CLOUDNS_WR](language-reference/domain/CLOUDNS_WR.md)
+            * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
 +       * ASDF
 +           * [ASDF_NINJA](function/domain/ASDF_NINJA.md)
         * NS1
-            * [NS1_URLFWD](language-reference/domain/NS1_URLFWD.md)
+            * [NS1_URLFWD](language-reference/domain-modifiers/NS1_URLFWD.md)
 ...
 * Record Modifiers
 ...
-    * [DMARC_BUILDER](language-reference/domain/DMARC_BUILDER.md)
+    * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
 +   * [FOO_HELPER](language-reference/record/FOO_HELPER.md)
-    * [SPF_BUILDER](language-reference/domain/SPF_BUILDER.md)
+    * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
 ...
 ```
 {% endcode %}

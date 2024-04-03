@@ -18,7 +18,7 @@ Take advantage of the advanced features. Use macros and variables for easier upd
 * Supports 35+ [DNS Providers](providers.md) including [BIND](providers/bind.md), [AWS Route 53](providers/route53.md), [Google DNS](providers/gcloud.md), and [name.com](providers/namedotcom.md).
 * [Apply CI/CD principles](ci-cd-gitlab.md) to DNS: Unit-tests, system-tests, automated deployment.
 * All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.
-* Optimize DNS with [SPF optimizer](language-reference/domain/SPF_BUILDER.md). Detect too many lookups. Flatten includes.
+* Optimize DNS with [SPF optimizer](language-reference/domain-modifiers/SPF_BUILDER.md). Detect too many lookups. Flatten includes.
 * Runs on Linux, Windows, Mac, or any operating system supported by Go.
 * Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.
 * [Assign an IP address to a constant](examples.md#variables-for-common-ip-addresses) and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile".
