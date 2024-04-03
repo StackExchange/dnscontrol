@@ -87,7 +87,7 @@ double quotes, back-ticks, or other chars.
 
 #### How can you tell if a provider will support a particular `TXT()` record?
 
-Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
+Include the `TXT()` record in a [`D()`](../top-level-functions/D.md) as usual, along
 with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
 see if any errors are produced.  The check command does not talk to
 the provider's API, thus permitting you to do this without having an

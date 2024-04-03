@@ -53,7 +53,7 @@ are all equivalent:
 * `PTR("4.3", ...`    // Assuming the domain is `2.1.in-addr.arpa`
 
 All magic is RFC2317-aware. We use the first format listed in the
-RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
+RFC for both [`REV()`](../top-level-functions/REV.md) and `PTR()`. The format is
 `FIRST/MASK.C.B.A.in-addr.arpa` where `FIRST` is the first IP address
 of the zone, `MASK` is the netmask of the zone (25-31 inclusive),
 and A, B, C are the first 3 octets of the IP address. For example
