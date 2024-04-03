@@ -1,5 +1,5 @@
 /**
- * @dnscontrol-auto-doc-comment language-reference/global/FETCH.md
+ * @dnscontrol-auto-doc-comment language-reference/top-level-functions/FETCH.md
  */
 declare function FETCH(
     url: string,

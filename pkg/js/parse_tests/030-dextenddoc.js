@@ -1,7 +1,7 @@
 var REG = NewRegistrar("Third-Party", "NONE");
 var DNS = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
 
-// The example from documentation/language-reference/global/D_EXTEND.md
+// The example from documentation/language-reference/top-level-functions/D_EXTEND.md
 
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
