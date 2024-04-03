@@ -87,11 +87,11 @@
         * NS1
             * [NS1_URLFWD](language-reference/domain-modifiers/NS1_URLFWD.md)
 * Record Modifiers
-    * [TTL](language-reference/record/TTL.md)
+    * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
         * Amazon Route 53
-            * [R53_ZONE](language-reference/record/R53_ZONE.md)
-            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record/R53\_EVALUATE\_TARGET\_HEALTH.md)
+            * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
+            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md)
 * [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
 ## Service Providers

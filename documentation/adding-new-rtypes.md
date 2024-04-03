@@ -323,7 +323,7 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
 * Record Modifiers
 ...
     * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
-+   * [FOO_HELPER](language-reference/record/FOO_HELPER.md)
++   * [FOO_HELPER](language-reference/record-modifiers/FOO_HELPER.md)
     * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
 ...
 ```
