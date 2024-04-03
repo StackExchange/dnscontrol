@@ -180,7 +180,7 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
 /**
  * A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
- * The address should be an ip address, either a string, or a numeric value obtained via [IP](../global/IP.md).
+ * The address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
  *
  * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
  *
@@ -371,7 +371,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
 
 /**
  * DNSControl contains a `CAA_BUILDER` which can be used to simply create
- * [`CAA()`](../domain/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain/CAA.md) record
+ * [`CAA()`](../domain-modifiers/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain-modifiers/CAA.md) record
  * individually, you can simply configure your report mail address, the
  * authorized certificate authorities and the builder cares about the rest.
  *
@@ -570,11 +570,11 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
 /**
  * `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
  * name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
- * add records with [A](../domain/A.md), [CNAME](../domain/CNAME.md), and so forth, or add metadata.
+ * add records with [A](../domain-modifiers/A.md), [CNAME](../domain-modifiers/CNAME.md), and so forth, or add metadata.
  *
  * Modifier arguments are processed according to type as follows:
  *
- * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
+ * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers-modifiers) return such functions.
  * - An object argument will be merged into the domain's metadata collection.
  * - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
  *    be used like a macro in multiple domains.
@@ -660,7 +660,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  *
  * ## Example
  *
- * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain/DefaultTTL.md).
+ * We want to create backup zone files for all domains, but not actually register them. Also create a [`DefaultTTL`](../domain-modifiers/DefaultTTL.md).
  * The domain `example.com` will have the defaults set.
  *
  * ```javascript
@@ -713,7 +713,7 @@ declare function DHCID(name: string, digest: string, ...modifiers: RecordModifie
  * It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK()` which is
  * deprecated as of DNSControl v4.0.0.0.
  *
- * See [`IGNORE()`](../domain/IGNORE.md) for more information.
+ * See [`IGNORE()`](../domain-modifiers/IGNORE.md) for more information.
  *
  * ## Syntax
  *
@@ -861,7 +861,7 @@ declare function DNAME(name: string, target: string, ...modifiers: RecordModifie
  * );
  * ```
  *
- * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used out of abundance of caution but since no
+ * NOTE: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used out of abundance of caution but since no
  * `DnsProvider()` statements exist, no updates would be performed.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere
@@ -896,7 +896,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  * );
  * ```
  *
- * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used to prevent DNSControl from changing the records.
+ * NOTE: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used to prevent DNSControl from changing the records.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/domain_elsewhere_auto
  */
@@ -945,7 +945,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * not `domain.tld`.
  *
  * Some operators only act on an apex domain (e.g.
- * [`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
+ * [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them
  * in a `D_EXTEND` subdomain may not be what you expect.
  *
  * ```javascript
@@ -1007,10 +1007,10 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
 declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
 
 /**
- * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
- * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../global/DEFAULTS.md) to override the internal defaults.
+ * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record-modifiers/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
+ * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../top-level-functions/DEFAULTS.md) to override the internal defaults.
  *
- * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain/NAMESERVER_TTL.md) to set a default TTL for all NS records.
+ * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain-modifiers/NAMESERVER_TTL.md) to set a default TTL for all NS records.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -1020,7 +1020,7 @@ declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
  * );
  * ```
  *
- * The DefaultTTL duration is the same format as [`TTL`](../record/TTL.md), an integer number of seconds
+ * The DefaultTTL duration is the same format as [`TTL`](../record-modifiers/TTL.md), an integer number of seconds
  * or a string with a unit such as `"4d"`.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/defaultttl
@@ -1029,7 +1029,7 @@ declare function DefaultTTL(ttl: Duration): DomainModifier;
 
 /**
  * DnsProvider indicates that the specified provider should be used to manage
- * records for this domain. The name must match the name used with [NewDnsProvider](../global/NewDnsProvider.md).
+ * records for this domain. The name must match the name used with [NewDnsProvider](../top-level-functions/NewDnsProvider.md).
  *
  * The nsCount parameter determines how the nameservers will be managed from this provider.
  *
@@ -1075,11 +1075,11 @@ declare function FRAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * Technically `IGNORE_NAME` is a promise that DNSControl will not modify or
  * delete existing records that match particular patterns. It is like
- * [`NO_PURGE`](../domain/NO_PURGE.md) that matches only specific records.
+ * [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) that matches only specific records.
  *
  * Including a record that is ignored is considered an error and may have
  * undefined behavior. This safety check can be disabled using the
- * [`DISABLE_IGNORE_SAFETY_CHECK`](../domain/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
+ * [`DISABLE_IGNORE_SAFETY_CHECK`](../domain-modifiers/DISABLE_IGNORE_SAFETY_CHECK.md) feature.
  *
  * ## Syntax
  *
@@ -1815,7 +1815,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
 /**
  * NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [`NAMESERVER`](NAMESERVER.md).
  *
- * The value can be an integer or a string. See [`TTL`](../record/TTL.md) for examples.
+ * The value can be an integer or a string. See [`TTL`](../record-modifiers/TTL.md) for examples.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -1837,7 +1837,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  * );
  * ```
  *
- * To apply a default TTL to all other record types, see [`DefaultTTL`](../domain/DefaultTTL.md)
+ * To apply a default TTL to all other record types, see [`DefaultTTL`](../domain-modifiers/DefaultTTL.md)
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/nameserver_ttl
  */
@@ -2250,7 +2250,7 @@ declare function PANIC(message: string): never;
  * * `PTR("4.3", ...`    // Assuming the domain is `2.1.in-addr.arpa`
  *
  * All magic is RFC2317-aware. We use the first format listed in the
- * RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
+ * RFC for both [`REV()`](../top-level-functions/REV.md) and `PTR()`. The format is
  * `FIRST/MASK.C.B.A.in-addr.arpa` where `FIRST` is the first IP address
  * of the zone, `MASK` is the netmask of the zone (25-31 inclusive),
  * and A, B, C are the first 3 octets of the IP address. For example
@@ -2371,7 +2371,7 @@ declare const PURGE: DomainModifier;
  * * _S3 bucket_ (configured as website): specify the domain name of the Amazon S3 website endpoint in which you configured the bucket (for instance s3-website-us-east-2.amazonaws.com). For the available values refer to the [Amazon S3 Website Endpoints](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
  * * _Another Route53 record_: specify the value of the name of another record in the same hosted zone.
  *
- * For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the [`R53_ZONE`](../record/R53_ZONE.md) record modifier.
+ * For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the [`R53_ZONE`](../record-modifiers/R53_ZONE.md) record modifier.
  *
  * The zone id can be found depending on the target type:
  *
@@ -2381,7 +2381,7 @@ declare const PURGE: DomainModifier;
  * * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
  * * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
  *
- * Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record/R53\_EVALUATE\_TARGET\_HEALTH.md) record modifier.
+ * Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md) record modifier.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
@@ -2398,18 +2398,18 @@ declare const PURGE: DomainModifier;
 declare function R53_ALIAS(name: string, target: string, zone_idModifier: DomainModifier & RecordModifier, evaluatetargethealthModifier: RecordModifier): DomainModifier;
 
 /**
- * `R53_EVALUATE_TARGET_HEALTH` lets you enable target health evaluation for a [`R53_ALIAS()`](../domain/R53_ALIAS.md) record. Omitting `R53_EVALUATE_TARGET_HEALTH()` from `R53_ALIAS()` set the behavior to false.
+ * `R53_EVALUATE_TARGET_HEALTH` lets you enable target health evaluation for a [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) record. Omitting `R53_EVALUATE_TARGET_HEALTH()` from `R53_ALIAS()` set the behavior to false.
  *
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_evaluate_target_health
  */
 declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 
 /**
- * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../global/D.md)) or a specific [`R53_ALIAS()`](../domain/R53_ALIAS.md) record.
+ * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../top-level-functions/D.md)) or a specific [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) record.
  *
- * When used with [`D()`](../global/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
+ * When used with [`D()`](../top-level-functions/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
  *
- * When used with [`R53_ALIAS()`](../domain/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain/R53_ALIAS.md) documentation for details.
+ * When used with [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) documentation for details.
  *
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_zone
  */
@@ -2906,7 +2906,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
 
 /**
  * TTL sets the TTL for a single record only. This will take precedence
- * over the domain's [DefaultTTL](../domain/DefaultTTL.md) if supplied.
+ * over the domain's [DefaultTTL](../domain-modifiers/DefaultTTL.md) if supplied.
  *
  * The value can be:
  *
@@ -3010,7 +3010,7 @@ declare function TTL(ttl: Duration): RecordModifier;
  *
  * #### How can you tell if a provider will support a particular `TXT()` record?
  *
- * Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
+ * Include the `TXT()` record in a [`D()`](../top-level-functions/D.md) as usual, along
  * with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
  * see if any errors are produced.  The check command does not talk to
  * the provider's API, thus permitting you to do this without having an
