@@ -23,7 +23,7 @@ Within the git repo, docs are grouped:
 
 * [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation): general docs
 * [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/providers/): One file per provider
-* [`documentation/functions/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/functions/): One file per `dnsconfig.js` language feature
+* [`documentation/language-reference/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/language-reference/): One file per `dnsconfig.js` language feature
 * [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
 
 ## How to add a new page?
@@ -33,10 +33,10 @@ Within the git repo, docs are grouped:
 
 ## Top-of-Document parameters
 
-Files in the `documentation/functions/{record,domain,global}` subdirectories
+Files in the `documentation/language-reference/{record,domain,global}` subdirectories
 have a header at the top that is used to populate other systems.
 
-Here's an example from [`A`](functions/domain/A.md)
+Here's an example from [`A`](language-reference/domain/A.md)
 
 ```
 ---
@@ -193,7 +193,7 @@ However, the first mention on a page should always
 be a link.  Others are at the authors digression.
 
 ```markdown
-The [`PTR`](functions/domain/PTR.md) feature is helpful in LANs.
+The [`PTR`](language-reference/domain/PTR.md) feature is helpful in LANs.
 ```
 
 #### Mentioning functions from the Source code
@@ -207,7 +207,7 @@ The function `GetRegistrarCorrections()` returns...
 #### Internal links
 
 ```markdown
-Blah blah blah [M365_BUILDER](functions/domain/M365_BUILDER.md)
+Blah blah blah [M365_BUILDER](language-reference/domain/M365_BUILDER.md)
 ```
 
 {% hint style="info" %}
