@@ -73,6 +73,10 @@ func TestReverse(t *testing.T) {
 		{"174.1.0.0/31", false, "0/31.0.1.174.in-addr.arpa"},
 		{"174.1.0.2/31", false, "2/31.0.1.174.in-addr.arpa"},
 
+		// Use RFC4183 for cases not covered by RFC2317:
+		{"10.20.128.0/23", false, "128-23.20.10.in-addr.arpa"},
+		{"10.192.0.0/13", false, "192-13.10.in-addr.arpa"},
+
 		// Error Cases:
 		{"0.0.0.0/0", true, ""},
 		{"2001::/0", true, ""},
