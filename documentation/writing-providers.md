@@ -10,7 +10,7 @@ assigned bugs related to the provider in the future (unless
 you designate someone else as the maintainer). More details
 [here](providers.md).
 
-Please follow the [DNSControl Code Style Guide](https://docs.dnscontrol.org/developer-info/styleguide-code) and the [DNSControl Documentation Style Guide](https://docs.dnscontrol.org/developer-info/styleguide-doc).
+Please follow the [DNSControl Code Style Guide](styleguide-code.md) and the [DNSControl Documentation Style Guide](styleguide-doc.md).
 
 ## Overview
 
