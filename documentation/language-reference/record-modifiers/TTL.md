@@ -7,7 +7,7 @@ parameter_types:
 ---
 
 TTL sets the TTL for a single record only. This will take precedence
-over the domain's [DefaultTTL](../domain/DefaultTTL.md) if supplied.
+over the domain's [DefaultTTL](../domain-modifiers/DefaultTTL.md) if supplied.
 
 The value can be:
 

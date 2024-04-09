@@ -12,7 +12,7 @@ parameter_types:
 
 A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
-The address should be an ip address, either a string, or a numeric value obtained via [IP](../global/IP.md).
+The address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
 
 Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 

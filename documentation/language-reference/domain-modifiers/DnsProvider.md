@@ -9,7 +9,7 @@ parameter_types:
 ---
 
 DnsProvider indicates that the specified provider should be used to manage
-records for this domain. The name must match the name used with [NewDnsProvider](../global/NewDnsProvider.md).
+records for this domain. The name must match the name used with [NewDnsProvider](../top-level-functions/NewDnsProvider.md).
 
 The nsCount parameter determines how the nameservers will be managed from this provider.
 

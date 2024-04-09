@@ -78,15 +78,15 @@ func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 }
 
 var returnTypes = map[string]string{
-	"domain": "DomainModifier",
-	"global": "void",
-	"record": "RecordModifier",
+	"domain-modifiers":    "DomainModifier",
+	"top-level-functions": "void",
+	"record-modifiers":    "RecordModifier",
 }
 
 var categories = map[string]string{
-	"domain": "domain-modifiers",
-	"global": "top-level-functions",
-	"record": "record-modifiers",
+	"domain-modifiers":    "domain-modifiers",
+	"top-level-functions": "top-level-functions",
+	"record-modifiers":    "record-modifiers",
 }
 
 var providerNames = map[string]string{
@@ -101,7 +101,7 @@ var providerNames = map[string]string{
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
-	srcRoot := join("documentation", "functions")
+	srcRoot := join("documentation", "language-reference")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return "", err

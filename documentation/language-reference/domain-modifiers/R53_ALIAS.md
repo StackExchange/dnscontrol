@@ -29,7 +29,7 @@ The Target can be any of:
 * _S3 bucket_ (configured as website): specify the domain name of the Amazon S3 website endpoint in which you configured the bucket (for instance s3-website-us-east-2.amazonaws.com). For the available values refer to the [Amazon S3 Website Endpoints](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
 * _Another Route53 record_: specify the value of the name of another record in the same hosted zone.
 
-For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the [`R53_ZONE`](../record/R53_ZONE.md) record modifier.
+For all the target type, excluding 'another record', you have to specify the `Zone ID` of the target. This is done by using the [`R53_ZONE`](../record-modifiers/R53_ZONE.md) record modifier.
 
 The zone id can be found depending on the target type:
 
@@ -39,7 +39,7 @@ The zone id can be found depending on the target type:
 * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
 
-Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record/R53\_EVALUATE\_TARGET\_HEALTH.md) record modifier.
+Target health evaluation can be enabled with the [`R53_EVALUATE_TARGET_HEALTH`](../record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md) record modifier.
 
 {% code title="dnsconfig.js" %}
 ```javascript

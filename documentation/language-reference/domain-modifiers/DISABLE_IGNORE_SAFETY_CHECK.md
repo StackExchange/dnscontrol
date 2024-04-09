@@ -9,7 +9,7 @@ safety check for the entire domain.
 It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK()` which is
 deprecated as of DNSControl v4.0.0.0.
 
-See [`IGNORE()`](../domain/IGNORE.md) for more information.
+See [`IGNORE()`](../domain-modifiers/IGNORE.md) for more information.
 
 ## Syntax
 
