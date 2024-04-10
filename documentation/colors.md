@@ -15,6 +15,8 @@ codes.
 In order to do so, a global `--no-colors` command option is provided, which when
 set `--no-colors=true`, will disable colors globally.
 
+Alternatively, a `NO_COLOR` environment variable set to any non-empty string will disable color output.
+
 ## (Force) Enable colors
 
 If color support is not correctly detected, providing `--no-colors=false` would
