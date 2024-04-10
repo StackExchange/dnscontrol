@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
@@ -238,7 +239,6 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		desiredSoa = dc.Records[len(dc.Records)-1]
 	} else {
 		*desiredSoa = *soaRec
-		c.skipNextSoaIncrease = true
 	}
 
 	var msgs []string
@@ -272,6 +272,11 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	// We only change the serial number if there is a change.
 	if !c.skipNextSoaIncrease {
 		desiredSoa.SoaSerial = nextSerial
+	}
+
+	// If the --bindserial flag is used, force the serial to that value
+	if bindserial.ForcedValue != 0 {
+		desiredSoa.SoaSerial = uint32(bindserial.ForcedValue & 0xFFFF)
 	}
 
 	corrections = append(corrections,
