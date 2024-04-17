@@ -32,7 +32,7 @@ title: DNSControl
          Use macros and variables for easier updates.
          <!-- Optimize your SPF records. -->
          Upload your zones to
-         <strong><a href="https://docs.dnscontrol.org/service-providers/providers">multiple DNS providers</a></strong>.
+         <strong><a href="https://docs.dnscontrol.org/provider">multiple DNS providers</a></strong>.
     </p>
     </div>
 
@@ -85,7 +85,7 @@ title: DNSControl
                       <a href="https://docs.dnscontrol.org/getting-started/getting-started">Getting Started</a>: A walk-through of the basics
                 </li>
                 <li>
-                    <a href="https://docs.dnscontrol.org/service-providers/providers">Providers</a>: Which DNS providers are supported
+                    <a href="https://docs.dnscontrol.org/provider">Providers</a>: Which DNS providers are supported
                 </li>
                 <li>
                     <a href="https://docs.dnscontrol.org/getting-started/examples">Examples</a>: The DNSControl language by example
