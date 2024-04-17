@@ -2407,7 +2407,7 @@ declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 /**
  * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../top-level-functions/D.md)) or a specific [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) record.
  *
- * When used with [`D()`](../top-level-functions/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
+ * When used with [`D()`](../top-level-functions/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../provider/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../provider/route53.md).
  *
  * When used with [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) documentation for details.
  *
@@ -2546,7 +2546,7 @@ declare function REVCOMPAT(rfc: string): string;
  * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
  * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
  *
- * There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
+ * There is more info about `SOA` in the documentation for the [BIND provider](../../provider/bind.md).
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/soa
  */
