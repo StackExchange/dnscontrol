@@ -38,7 +38,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 		featureMap := matrix.Providers[providerName]
 
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`](providers/"+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`](provider/"+strings.ToLower(providerName)+".md)")
 		for _, featureName := range matrix.Features {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
