@@ -39,7 +39,7 @@ Message to requester:
 Thank you for requesting this provider!
 
 I've tagged this issue as a provider-request.  It will (soon) be listed as a "requested provider" on the provider list web page:
-https://docs.dnscontrol.org/service-providers/providers
+https://docs.dnscontrol.org/provider
 
 I will now close the issue.  I know that's a bit confusing, but it will remain on the "requested provider" list.
 

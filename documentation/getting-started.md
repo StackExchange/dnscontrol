@@ -298,7 +298,7 @@ $TTL 300
 ```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
-for the [BIND provider](providers/bind.md) to set
+for the [BIND provider](provider/bind.md) to set
 the "master" and "mbox" settings.  Try that now.
 
 

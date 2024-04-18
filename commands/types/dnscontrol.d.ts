@@ -1441,7 +1441,7 @@ declare function IP(ip: string): number;
  *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - build a `LOC` by supplying only **d**ecimal **d**egrees.
  *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the coordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * ## Format ##
  *
@@ -1525,7 +1525,7 @@ declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min
  *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
  *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the coordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dd
  */
@@ -1567,7 +1567,7 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
  *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the coordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dmm_str
  */
@@ -1610,7 +1610,7 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
  *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the coordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_dms_str
  */
@@ -1658,7 +1658,7 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  *  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
  *  * [`LOC_BUILDER_DMS_STR({})`](LOC_BUILDER_DMS_STR.md) - accepts DMS 33°51′31″S 151°12′51″E
  *  * [`LOC_BUILDER_DMM_STR({})`](LOC_BUILDER_DMM_STR.md) - accepts DMM 25.24°S 153.15°E
- *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the cooordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
+ *  * [`LOC_BUILDER_STR({})`](LOC_BUILDER_STR.md) - tries the coordinate string in all `LOC_BUILDER_DM*_STR()` functions until one works
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc_builder_str
  */
@@ -2407,7 +2407,7 @@ declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 /**
  * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../top-level-functions/D.md)) or a specific [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) record.
  *
- * When used with [`D()`](../top-level-functions/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../providers/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../providers/route53.md).
+ * When used with [`D()`](../top-level-functions/D.md), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones. See this [example](../../provider/route53.md#split-horizon) in the [Amazon Route 53 provider page](../../provider/route53.md).
  *
  * When used with [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) it sets the required Route53 hosted zone id in a R53_ALIAS record. See [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) documentation for details.
  *
@@ -2546,7 +2546,7 @@ declare function REVCOMPAT(rfc: string): string;
  * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
  * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
  *
- * There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
+ * There is more info about `SOA` in the documentation for the [BIND provider](../../provider/bind.md).
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/soa
  */

@@ -22,7 +22,7 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/do
 Within the git repo, docs are grouped:
 
 * [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation): general docs
-* [`documentation/providers/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/providers/): One file per provider
+* [`documentation/provider/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/provider/): One file per provider
 * [`documentation/language-reference/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/language-reference/): One file per `dnsconfig.js` language feature
 * [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
 
