@@ -1602,7 +1602,7 @@ func makeTests() []*TestGroup {
 		testgroup("DHCID",
 			requires(providers.CanUseDHCID),
 			tc("Create DHCID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
-			tc("Modify DHCID record", dhcid("test", "FOOAAAAAAAAuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
+			tc("Modify DHCID record", dhcid("test", "AAAAAAAAuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 		),
 
 		testgroup("DNAME",
