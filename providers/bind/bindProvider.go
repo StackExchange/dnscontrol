@@ -39,6 +39,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDNSKEY:           providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),

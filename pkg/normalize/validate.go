@@ -62,6 +62,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"DHCID":            true,
 		"DNAME":            true,
 		"DS":               true,
+		"DNSKEY":           true,
 		"IMPORT_TRANSFORM": false,
 		"LOC":              true,
 		"MX":               true,
@@ -223,7 +224,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "CAA", "DHCID", "DS", "IMPORT_TRANSFORM", "SSHFP", "TLSA", "TXT":
+	case "CAA", "DHCID", "DNSKEY", "DS", "IMPORT_TRANSFORM", "SSHFP", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -683,6 +684,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("CAA", providers.CanUseCAA),
 	capabilityCheck("DHCID", providers.CanUseDHCID),
 	capabilityCheck("DNAME", providers.CanUseDNAME),
+	capabilityCheck("DNSKEY", providers.CanUseDNSKEY),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),

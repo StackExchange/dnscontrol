@@ -78,6 +78,9 @@ const (
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 
+	// CanUseDNSKEY indicates that the provider can handle DNSKEY records
+	CanUseDNSKEY
+
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 

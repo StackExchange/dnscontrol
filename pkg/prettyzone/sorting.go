@@ -99,6 +99,20 @@ func (z *ZoneGenData) Less(i, j int) bool {
 			// flag set goes before ones without flag set
 			return fa > fb
 		}
+	case "DS":
+		pa, pb := a.DsKeyTag, b.DsKeyTag
+		if pa != pb {
+			return pa < pb
+		}
+	case "DNSKEY":
+		pa, pb := a.DnskeyFlags, b.DnskeyFlags
+		if pa != pb {
+			return pa < pb
+		}
+		fa, fb := a.DnskeyProtocol, b.DnskeyProtocol
+		if fa != fb {
+			return fa < fb
+		}
 	default:
 		// pass through. String comparison is sufficient.
 	}
