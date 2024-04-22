@@ -39,6 +39,7 @@
     * [CNAME](language-reference/domain-modifiers/CNAME.md)
     * [DHCID](language-reference/domain-modifiers/DHCID.md)
     * [DNAME](language-reference/domain-modifiers/DNAME.md)
+    * [DNSKEY](language-reference/domain-modifiers/DNSKEY.md)
     * [DISABLE_IGNORE_SAFETY_CHECK](language-reference/domain-modifiers/DISABLE_IGNORE_SAFETY_CHECK.md)
     * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
     * [DS](language-reference/domain-modifiers/DS.md)

@@ -78,6 +78,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTargetCAAString(contents)
 	case "DS":
 		return rc.SetTargetDSString(contents)
+	case "DNSKEY":
+		return rc.SetTargetDNSKEYString(contents)
 	case "DHCID":
 		return rc.SetTarget(contents)
 	case "DNAME":
@@ -164,6 +166,8 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return rc.SetTargetCAAString(contents)
 	case "DS":
 		return rc.SetTargetDSString(contents)
+	case "DNSKEY":
+		return rc.SetTargetDNSKEYString(contents)
 	case "DHCID":
 		return rc.SetTarget(contents)
 	case "DNAME":

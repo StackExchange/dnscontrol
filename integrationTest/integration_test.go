@@ -522,6 +522,12 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 	return r
 }
 
+func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
+	r := makeRec(name, "", "DNSKEY")
+	r.SetTargetDNSKEY(flags, protocol, algorithm, publicKey)
+	return r
+}
+
 func ignoreName(labelSpec string) *models.RecordConfig {
 	return ignore(labelSpec, "*", "*")
 }
@@ -1610,6 +1616,14 @@ func makeTests() []*TestGroup {
 			tc("Create DNAME record", dname("test", "example.com.")),
 			tc("Modify DNAME record", dname("test", "example.net.")),
 			tc("Create DNAME record in non-FQDN", dname("a", "b")),
+		),
+
+		testgroup("DNSKEY",
+			requires(providers.CanUseDNSKEY),
+			tc("Create DNSKEY record", dnskey("test", 257, 3, 13, "fRnjbeUVyKvz1bDx2lPmu3KY1k64T358t8kP6Hjveos=")),
+			tc("Modify DNSKEY record 1", dnskey("test", 256, 3, 13, "fRnjbeUVyKvz1bDx2lPmu3KY1k64T358t8kP6Hjveos=")),
+			tc("Modify DNSKEY record 2", dnskey("test", 256, 3, 13, "whjtMiJP9C86l0oTJUxemuYtQ0RIZePWt6QETC2kkKM=")),
+			tc("Modify DNSKEY record 3", dnskey("test", 256, 3, 15, "whjtMiJP9C86l0oTJUxemuYtQ0RIZePWt6QETC2kkKM=")),
 		),
 
 		//// Vendor-specific record types

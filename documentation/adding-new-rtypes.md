@@ -60,14 +60,14 @@ a minimum.
 -   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
 
 ```shell
-pushd; cd provider/;
+pushd; cd providers/;
 stringer -type=Capability
 popd
 ```
 alternatively
 
 ```shell
-pushd; cd provider/;
+pushd; cd providers/;
 go generate
 popd
 ```

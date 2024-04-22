@@ -1,0 +1,22 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "DNSKEY",
+          "name": "@",
+          "dnskeyflags": 257,
+          "dnskeyprotocol": 3,
+          "dnskeyalgorithm": 13,
+          "dnskeypublickey": "AABBCCDD",
+          "target": ""
+        }
+      ]
+    }
+  ]
+}

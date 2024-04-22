@@ -104,6 +104,10 @@ type RecordConfig struct {
 	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 	DsDigest         string            `json:"dsdigest,omitempty"`
+	DnskeyFlags      uint16            `json:"dnskeyflags,omitempty"`
+	DnskeyProtocol   uint8             `json:"dnskeyprotocol,omitempty"`
+	DnskeyAlgorithm  uint8             `json:"dnskeyalgorithm,omitempty"`
+	DnskeyPublicKey  string            `json:"dnskeypublickey,omitempty"`
 	LocVersion       uint8             `json:"locversion,omitempty"`
 	LocSize          uint8             `json:"locsize,omitempty"`
 	LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
@@ -172,6 +176,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
 		DsDigest         string            `json:"dsdigest,omitempty"`
+		DnskeyFlags      uint16            `json:"dnskeyflags,omitempty"`
+		DnskeyProtocol   uint8             `json:"dnskeyprotocol,omitempty"`
+		DnskeyAlgorithm  uint8             `json:"dnskeyalgorithm,omitempty"`
+		DnskeyPublicKey  string            `json:"dnskeypublickey,omitempty"`
 		LocVersion       uint8             `json:"locversion,omitempty"`
 		LocSize          uint8             `json:"locsize,omitempty"`
 		LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
@@ -368,6 +376,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DS).DigestType = rc.DsDigestType
 		rr.(*dns.DS).Digest = rc.DsDigest
 		rr.(*dns.DS).KeyTag = rc.DsKeyTag
+	case dns.TypeDNSKEY:
+		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
+		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
+		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
+		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
 	case dns.TypeLOC:
 		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
 		// fmt.Printf("ToRR rc: %+v\n", *rc)
@@ -539,7 +552,7 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
@@ -564,7 +577,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
-		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "MX", "NS", "NAPTR", "PTR", "SRV":
+		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
 		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
