@@ -106,7 +106,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "SSHFP":
 		return rc.SetTargetSSHFPString(contents)
 	case "SVCB", "HTTPS":
-		return rc.SetTargetSVCBString(contents)
+		return rc.SetTargetSVCBString(origin, contents)
 	case "TLSA":
 		return rc.SetTargetTLSAString(contents)
 	default:

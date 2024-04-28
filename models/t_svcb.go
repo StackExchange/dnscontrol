@@ -3,8 +3,6 @@ package models
 import (
 	"fmt"
 	"github.com/miekg/dns"
-	"net"
-	"strconv"
 	"strings"
 )
 
@@ -26,61 +24,20 @@ func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []d
 	return nil
 }
 
-// SetTargetSVCBStrings is like SetTargetSVCB but accepts strings.
-func (rc *RecordConfig) SetTargetSVCBStrings(priority, target, params string) error {
-	u64prio, err := strconv.ParseUint(priority, 10, 16)
+// SetTargetSVCBString is like SetTargetSVCB but accepts one big string and the origin so parsing can be done using miekg/dns.
+func (rc *RecordConfig) SetTargetSVCBString(origin, contents string) error {
+	if rc.Type == "" {
+		rc.Type = "SVCB"
+	}
+	record, err := dns.NewRR(fmt.Sprintf("%s. %s %s", origin, rc.Type, contents))
 	if err != nil {
-		return fmt.Errorf("can't parse SVCB data: %w", err)
+		return fmt.Errorf("could not parse SVCB record: %s", err)
 	}
-
-	paramsData := []dns.SVCBKeyValue{}
-
-	for _, kv := range strings.Split(params, " ") {
-		kv = strings.TrimSpace(kv)
-		args := strings.Split(kv, "=")
-		if len(args) != 2 {
-			return fmt.Errorf("can't parse SVCB data as key=value pair: %s", kv)
-		}
-		key := strings.TrimSpace(args[0])
-		value := strings.TrimSpace(args[1])
-		value = strings.Trim(value, `"`)
-		switch key {
-		case "alpn":
-			alpn := new(dns.SVCBAlpn)
-			alpn.Alpn = strings.Split(value, ",")
-			paramsData = append(paramsData, alpn)
-		case "ipv4hint":
-			alpn := new(dns.SVCBIPv4Hint)
-			data := strings.Split(value, ",")
-			for _, ip := range data {
-				alpn.Hint = append(alpn.Hint, net.ParseIP(strings.TrimSpace(ip)))
-			}
-			paramsData = append(paramsData, alpn)
-		case "ipv6hint":
-			alpn := new(dns.SVCBIPv6Hint)
-			data := strings.Split(value, ",")
-			for _, ip := range data {
-				alpn.Hint = append(alpn.Hint, net.ParseIP(strings.TrimSpace(ip)))
-			}
-			paramsData = append(paramsData, alpn)
-		case "port":
-			port := new(dns.SVCBPort)
-			uport, err := strconv.ParseUint(value, 10, 16)
-			if err != nil {
-				return fmt.Errorf("can't parse port: %s", value)
-			}
-			port.Port = uint16(uport)
-			paramsData = append(paramsData, port)
-		}
+	switch r := record.(type) {
+	case *dns.HTTPS:
+		return rc.SetTargetSVCB(r.Priority, r.Target, r.Value)
+	case *dns.SVCB:
+		return rc.SetTargetSVCB(r.Priority, r.Target, r.Value)
 	}
-	return rc.SetTargetSVCB(uint16(u64prio), target, paramsData)
-}
-
-// SetTargetSVCBString is like SetTargetSVCB but accepts one big string.
-func (rc *RecordConfig) SetTargetSVCBString(s string) error {
-	part := strings.Fields(s)
-	if len(part) != 3 {
-		return fmt.Errorf("SVCB value does not contain 3 fields: (%#v)", s)
-	}
-	return rc.SetTargetSVCBStrings(part[0], part[1], part[2])
+	return nil
 }

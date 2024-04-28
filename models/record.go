@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -500,51 +498,17 @@ func (rc *RecordConfig) Key() RecordKey {
 }
 
 func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
-	paramsData := []dns.SVCBKeyValue{}
-
-	rc.SvcParams = strings.TrimSpace(rc.SvcParams)
-	if rc.SvcParams == "" {
-		return paramsData
+	record, err := dns.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
+	if err != nil {
+		log.Fatalf("could not parse SVCB record: %s", err)
 	}
-	for _, kv := range strings.Split(rc.SvcParams, " ") {
-		kv = strings.TrimSpace(kv)
-		args := strings.Split(kv, "=")
-		if len(args) != 2 {
-			log.Fatalf("can't parse SVCB data as key=value pair: %s", kv)
-		}
-		key := strings.TrimSpace(args[0])
-		value := strings.TrimSpace(args[1])
-		value = strings.Trim(value, `"`)
-		switch key {
-		case "alpn":
-			alpn := new(dns.SVCBAlpn)
-			alpn.Alpn = strings.Split(value, ",")
-			paramsData = append(paramsData, alpn)
-		case "ipv4hint":
-			alpn := new(dns.SVCBIPv4Hint)
-			data := strings.Split(value, ",")
-			for _, ip := range data {
-				alpn.Hint = append(alpn.Hint, net.ParseIP(strings.TrimSpace(ip)))
-			}
-			paramsData = append(paramsData, alpn)
-		case "ipv6hint":
-			alpn := new(dns.SVCBIPv6Hint)
-			data := strings.Split(value, ",")
-			for _, ip := range data {
-				alpn.Hint = append(alpn.Hint, net.ParseIP(strings.TrimSpace(ip)))
-			}
-			paramsData = append(paramsData, alpn)
-		case "port":
-			port := new(dns.SVCBPort)
-			uport, err := strconv.ParseUint(value, 10, 16)
-			if err != nil {
-				log.Fatalf("can't parse port: %s", value)
-			}
-			port.Port = uint16(uport)
-			paramsData = append(paramsData, port)
-		}
+	switch r := record.(type) {
+	case *dns.HTTPS:
+		return r.Value
+	case *dns.SVCB:
+		return r.Value
 	}
-	return paramsData
+	return nil
 }
 
 // Records is a list of *RecordConfig.
