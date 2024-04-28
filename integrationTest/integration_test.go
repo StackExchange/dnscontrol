@@ -528,6 +528,13 @@ func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey stri
 	return r
 }
 
+func https(name string, priority uint16, target string, params string) *models.RecordConfig {
+	r := makeRec(name, target, "HTTPS")
+	r.SvcPriority = priority
+	r.SvcParams = params
+	return r
+}
+
 func ignoreName(labelSpec string) *models.RecordConfig {
 	return ignore(labelSpec, "*", "*")
 }
@@ -617,6 +624,13 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
 	r.SetTargetSSHFP(algorithm, fingerprint, target)
+	return r
+}
+
+func svcb(name string, priority uint16, target string, params string) *models.RecordConfig {
+	r := makeRec(name, target, "SVCB")
+	r.SvcPriority = priority
+	r.SvcParams = params
 	return r
 }
 

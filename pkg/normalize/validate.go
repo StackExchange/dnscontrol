@@ -64,6 +64,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"DS":               true,
 		"DNSKEY":           true,
 		"IMPORT_TRANSFORM": false,
+		"HTTPS":            true,
 		"LOC":              true,
 		"MX":               true,
 		"NAPTR":            true,
@@ -72,6 +73,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
+		"SVCB":             true,
 		"TLSA":             true,
 		"TXT":              true,
 	}
@@ -224,6 +226,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
+	case "HTTPS", "SVCB":
+		// TODO: Validate record?
 	case "CAA", "DHCID", "DNSKEY", "DS", "IMPORT_TRANSFORM", "SSHFP", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
@@ -685,6 +689,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("DHCID", providers.CanUseDHCID),
 	capabilityCheck("DNAME", providers.CanUseDNAME),
 	capabilityCheck("DNSKEY", providers.CanUseDNSKEY),
+	capabilityCheck("HTTPS", providers.CanUseHTTPS),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
@@ -692,6 +697,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),
+	capabilityCheck("SVCB", providers.CanUseSVCB),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
 
 	// DS needs special record-level checks
