@@ -1,5 +1,5 @@
 ---
-name: HTTPS
+name: SVCB
 parameters:
   - name
   - priority
