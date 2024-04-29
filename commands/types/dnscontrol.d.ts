@@ -836,6 +836,27 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
 declare function DNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * DNSKEY adds a DNSKEY record to the domain.
+ *
+ * Flags should be a number.
+ *
+ * Protocol should be a number.
+ *
+ * Algorithm must be a number.
+ *
+ * Public key must be a string.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DNSKEY("@", 257, 3, 13, "AABBCCDD")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dnskey
+ */
+declare function DNSKEY(name: string, flags: number, protocol: number, algorithm: number, publicKey: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
  * a domain's zones are managed elsewhere. That is, it permits you easily delegate
  * a domain to a hard-coded list of DNS servers.

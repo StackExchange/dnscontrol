@@ -430,6 +430,25 @@ var DHCID = recordBuilder('DHCID');
 // DNAME(name,target, recordModifiers...)
 var DNAME = recordBuilder('DNAME');
 
+// DNSKEY(name, flags, protocol, algorithm, publickey)
+var DNSKEY = recordBuilder('DNSKEY', {
+    args: [
+        ['name', _.isString],
+        ['flags', _.isNumber],
+        ['protocol', _.isNumber],
+        ['algorithm', _.isNumber],
+        ['publickey', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.dnskeyflags = args.flags;
+        record.dnskeyprotocol = args.protocol;
+        record.dnskeyalgorithm = args.algorithm;
+        record.dnskeypublickey = args.publickey;
+        record.target = args.target;
+    },
+});
+
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
@@ -871,11 +890,11 @@ function IGNORE(labelPattern, rtypePattern, targetPattern) {
 
 // IGNORE_NAME(name, rTypes)
 function IGNORE_NAME(name, rTypes) {
-  return IGNORE(name, rTypes)
+    return IGNORE(name, rTypes);
 }
 
 function IGNORE_TARGET(target, rType) {
-  return IGNORE("*", rType, target)
+    return IGNORE('*', rType, target);
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)
@@ -1482,18 +1501,18 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function() {};
+        var flag = function () {};
         if (value.issue_critical) {
-          flag = CAA_CRITICAL;
+            flag = CAA_CRITICAL;
         }
         for (var i = 0, len = value.issue.length; i < len; i++)
             r.push(CAA(value.label, 'issue', value.issue[i], flag));
     }
 
     if (value.issuewild) {
-        var flag = function() {};
+        var flag = function () {};
         if (value.issuewild_critical) {
-          flag = CAA_CRITICAL;
+            flag = CAA_CRITICAL;
         }
         for (var i = 0, len = value.issuewild.length; i < len; i++)
             r.push(CAA(value.label, 'issuewild', value.issuewild[i], flag));

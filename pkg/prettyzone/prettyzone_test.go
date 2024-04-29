@@ -339,6 +339,8 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
 	d = append(d, mustNewRR(`bosun.org.           300 IN DHCID   AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=`))
 	d = append(d, mustNewRR(`dname.bosun.org.     300 IN DNAME   example.com.`))
+	d = append(d, mustNewRR(`dnssec.bosun.org.    300 IN DS      31334 13 2 94cc505ebc36b1f4e051268b820efb230f1572d445e833bb5bf7380d6c2cbc0a`))
+	d = append(d, mustNewRR(`dnssec.bosun.org.    300 IN DNSKEY  257 3 13 rNR701yiOPHfqDP53GnsHZdlsRqI7O1ksk60rnFILZVk7Z4eTBd1U49oSkTNVNox9tb7N15N2hboXoMEyFFzcw==`))
 	buf := &bytes.Buffer{}
 	writeZoneFileRR(buf, d, "bosun.org")
 	if buf.String() != testdataZFEach {
@@ -360,6 +362,8 @@ var testdataZFEach = `$TTL 300
 4.5              IN PTR   y.bosun.org.
 _443._tcp        IN TLSA  3 1 1 abcdef0
 dname            IN DNAME example.com.
+dnssec           IN DNSKEY 257 3 13 rNR701yiOPHfqDP53GnsHZdlsRqI7O1ksk60rnFILZVk7Z4eTBd1U49oSkTNVNox9tb7N15N2hboXoMEyFFzcw==
+                 IN DS    31334 13 2 94CC505EBC36B1F4E051268B820EFB230F1572D445E833BB5BF7380D6C2CBC0A
 sub              IN NS    bosun.org.
 x                IN CNAME bosun.org.
 `

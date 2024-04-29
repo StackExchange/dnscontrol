@@ -90,6 +90,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierDs     = "[`DS`](language-reference/domain-modifiers/DS.md)"
 		DomainModifierDhcid  = "[`DHCID`](language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname  = "[`DNAME`](language-reference/domain-modifiers/DNAME.md)"
+		DomainModifierDnskey = "[`DNSKEY`](language-reference/domain-modifiers/DNSKEY.md)"
 		DualHost             = "dual host"
 		CreateDomains        = "create-domains"
 		GetZones             = "get-zones"
@@ -115,6 +116,7 @@ func matrixData() *FeatureMatrix {
 			DomainModifierDs,
 			DomainModifierDhcid,
 			DomainModifierDname,
+			DomainModifierDnskey,
 			DualHost,
 			CreateDomains,
 			//NoPurge,
@@ -200,6 +202,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierDs,
 			providers.CanUseDS,
+		)
+		setCapability(
+			DomainModifierDnskey,
+			providers.CanUseDNSKEY,
 		)
 		setCapability(
 			DomainModifierLoc,

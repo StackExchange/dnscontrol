@@ -337,6 +337,8 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		return makeCaa(rec, ttlop)
 	case "DS":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
+	case "DNSKEY":
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DnskeyFlags, rec.DnskeyProtocol, rec.DnskeyAlgorithm, rec.DnskeyPublicKey)
 	case "MX":
 		target = fmt.Sprintf(`%d, "%s"`, rec.MxPreference, rec.GetTargetField())
 	case "NAPTR":
