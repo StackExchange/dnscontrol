@@ -341,8 +341,6 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DnskeyFlags, rec.DnskeyProtocol, rec.DnskeyAlgorithm, rec.DnskeyPublicKey)
 	case "MX":
 		target = fmt.Sprintf(`%d, "%s"`, rec.MxPreference, rec.GetTargetField())
-	case "HTTPS":
-		target = fmt.Sprintf(`%d, "%s", "%s"`, rec.SvcPriority, rec.GetTargetField(), rec.SvcParams)
 	case "NAPTR":
 		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
 			rec.NaptrOrder,                   // 1
@@ -359,7 +357,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = fmt.Sprintf(`"%s", "%s", %d, %d, %d, %d, %d`, rec.GetTargetField(), rec.SoaMbox, rec.SoaSerial, rec.SoaRefresh, rec.SoaRetry, rec.SoaExpire, rec.SoaMinttl)
 	case "SRV":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
-	case "SVCB":
+	case "SVCB", "HTTPS":
 		target = fmt.Sprintf(`%d, "%s", "%s"`, rec.SvcPriority, rec.GetTargetField(), rec.SvcParams)
 	case "TLSA":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())

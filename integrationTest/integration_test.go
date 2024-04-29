@@ -1030,6 +1030,19 @@ func makeTests() []*TestGroup {
 			tc("Change back to CNAME", cname("foo", "google2.com.")),
 		),
 
+		testgroup("HTTPS",
+			tc("Create a HTTPS record", https("@", 1, "test.com.", "")),
+			tc("Change params of a HTTPS record", https("@", 1, "test.com.", "port=80")),
+			tc("Change target of a HTTPS record", https("@", 1, "www.test.com.", "")),
+			tc("Change priority a HTTPS record", https("@", 10, "test.com.", "")),
+		),
+
+		testgroup("SVCB",
+			tc("Create a SVCB record", svcb("@", 1, "test.com.", "")),
+			tc("Change params of a SVCB record", svcb("@", 1, "test.com.", "port=80")),
+			tc("Change target of a SVCB record", svcb("@", 1, "www.test.com.", "")),
+			tc("Change priority a SVCB record", svcb("@", 10, "test.com.", "")),
+		),
 		//// Test edge cases from various types.
 
 		// Narrative: Every DNS record type has some weird edge-case that
