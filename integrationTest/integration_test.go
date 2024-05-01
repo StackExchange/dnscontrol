@@ -1031,6 +1031,7 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("HTTPS",
+			requires(providers.CanUseHTTPS),
 			tc("Create a HTTPS record", https("@", 1, "test.com.", "port=80")),
 			tc("Change HTTPS priority", https("@", 2, "test.com.", "port=80")),
 			tc("Change HTTPS target", https("@", 2, ".", "port=80")),
@@ -1040,6 +1041,7 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SVCB",
+			requires(providers.CanUseSVCB),
 			tc("Create a HTTPS record", https("@", 1, "test.com.", "port=80")),
 			tc("Change HTTPS priority", https("@", 2, "test.com.", "port=80")),
 			tc("Change HTTPS target", https("@", 2, ".", "port=80")),
