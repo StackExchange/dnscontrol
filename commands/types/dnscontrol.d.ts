@@ -1080,6 +1080,26 @@ declare function DnsProvider(name: string, nsCount?: number): DomainModifier;
 declare function FRAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * HTTPS adds an HTTPS record to a domain. The name should be the relative label for the record. Use `@` for the domain apex. The HTTPS record is a special form of the SVCB resource record.
+ *
+ * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
+ *
+ * The params may be configured to specify the `alpn`, `ipv4hint`, `ipv6hint`, `ech` or `port` setting. Several params may be joined by a space. Not existing params may be specified as an empty string `""`
+ *
+ * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   HTTPS("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
+ *   HTTPS("@", 1, "test.com", "")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/https
+ */
+declare function HTTPS(name: string, priority: number, target: string, params: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `IGNORE()` makes it possible for DNSControl to share management of a domain
  * with an external system.  The parameters of `IGNORE()` indicate which records
  * are managed elsewhere and should not be modified or deleted.
@@ -2906,6 +2926,25 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/sshfp
  */
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * SVCB adds an SVCB record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ *
+ * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
+ *
+ * The params may be configured to specify the `alpn`, `ipv4hint`, `ipv6hint`, `ech` or `port` setting. Several params may be joined by a space. Not existing params may be specified as an empty string `""`
+ *
+ * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   SVCB("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443")
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/svcb
+ */
+declare function SVCB(name: string, priority: number, target: string, params: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
