@@ -80,12 +80,14 @@ func matrixData() *FeatureMatrix {
 		DomainModifierAlias  = "[`ALIAS`](language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa    = "[`CAA`](language-reference/domain-modifiers/CAA.md)"
 		DomainModifierDnssec = "[`AUTODNSSEC`](language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
+		DomainModifierHttps  = "[`HTTPS`](language-reference/domain-modifiers/HTTPS.md)"
 		DomainModifierLoc    = "[`LOC`](language-reference/domain-modifiers/LOC.md)"
 		DomainModifierNaptr  = "[`NAPTR`](language-reference/domain-modifiers/NAPTR.md)"
 		DomainModifierPtr    = "[`PTR`](language-reference/domain-modifiers/PTR.md)"
 		DomainModifierSoa    = "[`SOA`](language-reference/domain-modifiers/SOA.md)"
 		DomainModifierSrv    = "[`SRV`](language-reference/domain-modifiers/SRV.md)"
 		DomainModifierSshfp  = "[`SSHFP`](language-reference/domain-modifiers/SSHFP.md)"
+		DomainModifierSvcb   = "[`SVCB`](language-reference/domain-modifiers/SVCB.md)"
 		DomainModifierTlsa   = "[`TLSA`](language-reference/domain-modifiers/TLSA.md)"
 		DomainModifierDs     = "[`DS`](language-reference/domain-modifiers/DS.md)"
 		DomainModifierDhcid  = "[`DHCID`](language-reference/domain-modifiers/DHCID.md)"
@@ -106,12 +108,14 @@ func matrixData() *FeatureMatrix {
 			DomainModifierAlias,
 			DomainModifierCaa,
 			DomainModifierDnssec,
+			DomainModifierHttps,
 			DomainModifierLoc,
 			DomainModifierNaptr,
 			DomainModifierPtr,
 			DomainModifierSoa,
 			DomainModifierSrv,
 			DomainModifierSshfp,
+			DomainModifierSvcb,
 			DomainModifierTlsa,
 			DomainModifierDs,
 			DomainModifierDhcid,
@@ -208,6 +212,10 @@ func matrixData() *FeatureMatrix {
 			providers.CanUseDNSKEY,
 		)
 		setCapability(
+			DomainModifierHttps,
+			providers.CanUseHTTPS,
+		)
+		setCapability(
 			DomainModifierLoc,
 			providers.CanUseLOC,
 		)
@@ -230,6 +238,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierSshfp,
 			providers.CanUseSSHFP,
+		)
+		setCapability(
+			DomainModifierSvcb,
+			providers.CanUseSVCB,
 		)
 		setCapability(
 			DomainModifierTlsa,

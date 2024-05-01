@@ -22,6 +22,7 @@ import (
 //	  ANAME  // Technically not an official rtype yet.
 //	  CAA
 //	  CNAME
+//	  HTTPS
 //	  LOC
 //	  MX
 //	  NAPTR
@@ -30,6 +31,7 @@ import (
 //	  SOA
 //	  SRV
 //	  SSHFP
+//	  SVCB
 //	  TLSA
 //	  TXT
 //	Pseudo-Types: (alphabetical)
@@ -128,6 +130,8 @@ type RecordConfig struct {
 	SoaRetry         uint32            `json:"soaretry,omitempty"`
 	SoaExpire        uint32            `json:"soaexpire,omitempty"`
 	SoaMinttl        uint32            `json:"soaminttl,omitempty"`
+	SvcPriority      uint16            `json:"svcpriority,omitempty"`
+	SvcParams        string            `json:"svcparams,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
@@ -200,6 +204,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		SoaRetry         uint32            `json:"soaretry,omitempty"`
 		SoaExpire        uint32            `json:"soaexpire,omitempty"`
 		SoaMinttl        uint32            `json:"soaminttl,omitempty"`
+		SvcPriority      uint16            `json:"svcpriority,omitempty"`
+		SvcParams        string            `json:"svcparams,omitempty"`
 		TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 		TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
@@ -381,6 +387,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
 		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
 		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
+	case dns.TypeHTTPS:
+		rr.(*dns.HTTPS).Priority = rc.SvcPriority
+		rr.(*dns.HTTPS).Target = rc.GetTargetField()
+		rr.(*dns.HTTPS).Value = rc.GetSVCBValue()
 	case dns.TypeLOC:
 		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
 		// fmt.Printf("ToRR rc: %+v\n", *rc)
@@ -424,6 +434,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SSHFP).Algorithm = rc.SshfpAlgorithm
 		rr.(*dns.SSHFP).Type = rc.SshfpFingerprint
 		rr.(*dns.SSHFP).FingerPrint = rc.GetTargetField()
+	case dns.TypeSVCB:
+		rr.(*dns.SVCB).Priority = rc.SvcPriority
+		rr.(*dns.SVCB).Target = rc.GetTargetField()
+		rr.(*dns.SVCB).Value = rc.GetSVCBValue()
 	case dns.TypeTLSA:
 		rr.(*dns.TLSA).Usage = rc.TlsaUsage
 		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
@@ -481,6 +495,20 @@ func (rc *RecordConfig) Key() RecordKey {
 		}
 	}
 	return RecordKey{rc.NameFQDN, t}
+}
+
+func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
+	record, err := dns.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
+	if err != nil {
+		log.Fatalf("could not parse SVCB record: %s", err)
+	}
+	switch r := record.(type) {
+	case *dns.HTTPS:
+		return r.Value
+	case *dns.SVCB:
+		return r.Value
+	}
+	return nil
 }
 
 // Records is a list of *RecordConfig.
@@ -580,7 +608,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {

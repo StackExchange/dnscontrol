@@ -131,6 +131,9 @@ func (rc *RecordConfig) GetTargetDebug() string {
 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
 	case "SSHFP":
 		content += fmt.Sprintf(" sshfpalgorithm=%d sshfpfingerprint=%d", rc.SshfpAlgorithm, rc.SshfpFingerprint)
+	case "SVCB", "HTTPS":
+		// HTTPS is only a special subform of the SVCB Record
+		content += fmt.Sprintf(" priority=%d params=%v", rc.SvcPriority, rc.SvcParams)
 	case "TLSA":
 		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
 	default:

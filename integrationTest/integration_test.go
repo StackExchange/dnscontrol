@@ -528,6 +528,13 @@ func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey stri
 	return r
 }
 
+func https(name string, priority uint16, target string, params string) *models.RecordConfig {
+	r := makeRec(name, target, "HTTPS")
+	r.SvcPriority = priority
+	r.SvcParams = params
+	return r
+}
+
 func ignoreName(labelSpec string) *models.RecordConfig {
 	return ignore(labelSpec, "*", "*")
 }
@@ -617,6 +624,13 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
 	r.SetTargetSSHFP(algorithm, fingerprint, target)
+	return r
+}
+
+func svcb(name string, priority uint16, target string, params string) *models.RecordConfig {
+	r := makeRec(name, target, "SVCB")
+	r.SvcPriority = priority
+	r.SvcParams = params
 	return r
 }
 
@@ -1016,6 +1030,23 @@ func makeTests() []*TestGroup {
 			tc("Change back to CNAME", cname("foo", "google2.com.")),
 		),
 
+		testgroup("HTTPS",
+			tc("Create a HTTPS record", https("@", 1, "test.com.", "port=80")),
+			tc("Change HTTPS priority", https("@", 2, "test.com.", "port=80")),
+			tc("Change HTTPS target", https("@", 2, ".", "port=80")),
+			tc("Change HTTPS params", https("@", 2, ".", "port=99")),
+			tc("Change HTTPS params-empty", https("@", 2, ".", "")),
+			tc("Change HTTPS all", https("@", 3, "example.com.", "port=100")),
+		),
+
+		testgroup("SVCB",
+			tc("Create a HTTPS record", https("@", 1, "test.com.", "port=80")),
+			tc("Change HTTPS priority", https("@", 2, "test.com.", "port=80")),
+			tc("Change HTTPS target", https("@", 2, ".", "port=80")),
+			tc("Change HTTPS params", https("@", 2, ".", "port=99")),
+			tc("Change HTTPS params-empty", https("@", 2, ".", "")),
+			tc("Change HTTPS all", https("@", 3, "example.com.", "port=100")),
+		),
 		//// Test edge cases from various types.
 
 		// Narrative: Every DNS record type has some weird edge-case that

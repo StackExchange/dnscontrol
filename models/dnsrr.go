@@ -54,6 +54,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest)
 	case *dns.DNSKEY:
 		err = rc.SetTargetDNSKEY(v.Flags, v.Protocol, v.Algorithm, v.PublicKey)
+	case *dns.HTTPS:
+		err = rc.SetTargetSVCB(v.Priority, v.Target, v.Value)
 	case *dns.LOC:
 		err = rc.SetTargetLOC(v.Version, v.Latitude, v.Longitude, v.Altitude, v.Size, v.HorizPre, v.VertPre)
 	case *dns.MX:
@@ -70,6 +72,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target)
 	case *dns.SSHFP:
 		err = rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint)
+	case *dns.SVCB:
+		err = rc.SetTargetSVCB(v.Priority, v.Target, v.Value)
 	case *dns.TLSA:
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
