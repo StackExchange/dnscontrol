@@ -72,15 +72,16 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	domainIndex     map[string]string // Call c.fetchDomainList() to populate before use.
-	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
 	manageRedirects bool
 	manageWorkers   bool
 	accountID       string
 	cfClient        *cloudflare.API
-	sync.Mutex
+
+	sync.Mutex                      // Protects all access to the following fields:
+	domainIndex map[string]string   // Cache of zone name to zone ID.
+	nameservers map[string][]string // Cache of zone name to list of nameservers.
 }
 
 // TODO(dlemenkov): remove this function after deleting all commented code referecing it
@@ -96,12 +97,14 @@ type cloudflareProvider struct {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+
+	c.Lock()
+	defer c.Unlock()
 	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
-	c.Lock()
+
 	ns, ok := c.nameservers[domain]
-	c.Unlock()
 	if !ok {
 		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
 	}
@@ -110,15 +113,17 @@ func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver
 
 // ListZones returns a list of the DNS zones.
 func (c *cloudflareProvider) ListZones() ([]string, error) {
+
+	c.Lock()
+	defer c.Unlock()
 	if err := c.cacheDomainList(); err != nil {
 		return nil, err
 	}
-	c.Lock()
+
 	zones := make([]string, 0, len(c.domainIndex))
 	for d := range c.domainIndex {
 		zones = append(zones, d)
 	}
-	c.Unlock()
 	return zones, nil
 }
 
@@ -182,12 +187,14 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 func (c *cloudflareProvider) getDomainID(name string) (string, error) {
+
+	c.Lock()
+	defer c.Unlock()
 	if err := c.cacheDomainList(); err != nil {
 		return "", err
 	}
-	c.Lock()
+
 	id, ok := c.domainIndex[name]
-	c.Unlock()
 	if !ok {
 		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
 	}
@@ -811,21 +818,20 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
+
+	c.Lock()
+	defer c.Unlock()
 	if err := c.cacheDomainList(); err != nil {
 		return err
 	}
-	// if c.domainIndex == nil {
-	// 	if err := c.fetchDomainList(); err != nil {
-	// 		return err
-	// 	}
-	// }
+
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
 	var id string
 	id, err := c.createZone(domain)
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
-	c.domainIndex = nil // clear the index to let the following functions get a fresh list with nameservers etc..
+	c.domainIndex = nil // clear the index so that the next caller has to refresh the cache.
 	return err
 }
 
