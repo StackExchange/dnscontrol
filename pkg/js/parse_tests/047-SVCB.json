@@ -1,0 +1,27 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "SVCB",
+          "name": "@",
+          "target": ".",
+          "svcpriority": 1
+        },
+
+        {
+          "type": "HTTPS",
+          "name": "@",
+          "svcparams": "alpn=\"h3,h2\" port=443 ipv4hint=123.123.123.123 ipv6hint=dead::beaf",
+          "svcpriority": 2,
+          "target": "."
+        }
+      ]
+    }
+  ]
+}

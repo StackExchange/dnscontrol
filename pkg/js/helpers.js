@@ -449,6 +449,22 @@ var DNSKEY = recordBuilder('DNSKEY', {
     },
 });
 
+// name, priority, target, params
+var HTTPS = recordBuilder('HTTPS', {
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['target', _.isString],
+        ['params', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.svcpriority = args.priority;
+        record.target = args.target;
+        record.svcparams = args.params;
+    },
+});
+
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
@@ -527,6 +543,22 @@ var SSHFP = recordBuilder('SSHFP', {
         record.sshfpalgorithm = args.algorithm;
         record.sshfpfingerprint = args.fingerprint;
         record.target = args.value;
+    },
+});
+
+// name, priority, target, params
+var SVCB = recordBuilder('SVCB', {
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['target', _.isString],
+        ['params', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.svcpriority = args.priority;
+        record.target = args.target;
+        record.svcparams = args.params;
     },
 });
 

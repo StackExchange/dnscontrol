@@ -80,6 +80,12 @@ func (z *ZoneGenData) Less(i, j int) bool {
 		if pa != pb {
 			return pa < pb
 		}
+	case "SVCB", "HTTPS":
+		// sort by priority. If they are equal, sort by record.
+		if a.SvcPriority == b.SvcPriority {
+			return a.GetTargetField() < b.GetTargetField()
+		}
+		return a.SvcPriority < b.SvcPriority
 	case "PTR":
 		//ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
 		pa, pb := a.GetTargetField(), b.GetTargetField()
