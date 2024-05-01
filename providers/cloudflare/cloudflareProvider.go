@@ -831,7 +831,7 @@ func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	var id string
 	id, err := c.createZone(domain)
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
-	c.domainIndex = nil // clear the index so that the next caller has to refresh the cache.
+	clear(c.domainIndex) // clear the cache so that the next caller has to refresh it, thus loading the new ID.
 	return err
 }
 
