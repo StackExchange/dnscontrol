@@ -14,7 +14,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-A adds an SVCB record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+SVCB adds an SVCB record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
 The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
 

@@ -446,23 +446,23 @@ var DNSKEY = recordBuilder('DNSKEY', {
         record.dnskeyalgorithm = args.algorithm;
         record.dnskeypublickey = args.publickey;
         record.target = args.target;
-  },
+    },
 });
 
 // name, priority, target, params
 var HTTPS = recordBuilder('HTTPS', {
-  args: [
-    ['name', _.isString],
-    ['priority', _.isNumber],
-    ['target', _.isString],
-    ['params', _.isString],
-  ],
-  transform: function (record, args, modifiers) {
-    record.name = args.name;
-    record.svcpriority = args.priority;
-    record.target = args.target;
-    record.svcparams = args.params;
-  },
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['target', _.isString],
+        ['params', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.svcpriority = args.priority;
+        record.target = args.target;
+        record.svcparams = args.params;
+    },
 });
 
 // PTR(name,target, recordModifiers...)
@@ -548,18 +548,18 @@ var SSHFP = recordBuilder('SSHFP', {
 
 // name, priority, target, params
 var SVCB = recordBuilder('SVCB', {
-  args: [
-    ['name', _.isString],
-    ['priority', _.isNumber],
-    ['target', _.isString],
-    ['params', _.isString],
-  ],
-  transform: function (record, args, modifiers) {
-    record.name = args.name;
-    record.svcpriority = args.priority;
-    record.target = args.target;
-    record.svcparams = args.params;
-  },
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['target', _.isString],
+        ['params', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.svcpriority = args.priority;
+        record.target = args.target;
+        record.svcparams = args.params;
+    },
 });
 
 // name, usage, selector, matchingtype, certificate

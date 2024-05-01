@@ -2,8 +2,9 @@ package models
 
 import (
 	"fmt"
-	"github.com/miekg/dns"
 	"strings"
+
+	"github.com/miekg/dns"
 )
 
 // SetTargetSVCB sets the SVCB fields.
