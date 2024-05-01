@@ -13,12 +13,15 @@ import (
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
+// The caller must do all locking.
 func (c *cloudflareProvider) cacheDomainList() error {
-	c.Lock()
-	defer c.Unlock()
+	if c.domainIndex != nil {
+		return nil
+	}
 
 	c.domainIndex = map[string]string{}
 	c.nameservers = map[string][]string{}
+	//fmt.Printf("DEBUG: CLOUDFLARE POPULATING CACHE\n")
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %s", c.cfClient.APIEmail, err)
@@ -26,11 +29,17 @@ func (c *cloudflareProvider) cacheDomainList() error {
 
 	for _, zone := range zones {
 		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
+			if _, ok := c.domainIndex[encoded]; ok {
+				fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", encoded)
+			}
 			c.domainIndex[encoded] = zone.ID
-			c.nameservers[encoded] = append(c.nameservers[encoded], zone.NameServers...)
+			c.nameservers[encoded] = zone.NameServers
+		}
+		if _, ok := c.domainIndex[zone.Name]; ok {
+			fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", zone.Name)
 		}
 		c.domainIndex[zone.Name] = zone.ID
-		c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.NameServers...)
+		c.nameservers[zone.Name] = zone.NameServers
 	}
 
 	return nil
