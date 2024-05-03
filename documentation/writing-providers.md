@@ -331,5 +331,5 @@ submit a PR if you haven't already.
 ## Step 16: After the PR is merged
 
 1. Close any related GitHub issues.
-2. [Create an issue](https://github.com/StackExchange/dnscontrol/issues/new/choose) (feature request) titled "Add label for PROVIDERNAME" with the text "Please create  the GitHub label 'provider-PROVIDERNAME’.
+2. [Create an issue (feature request)](https://github.com/StackExchange/dnscontrol/issues/new/choose) titled "Add label for PROVIDERNAME" with the text "Please create  the GitHub label 'provider-PROVIDERNAME'".
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
