@@ -328,3 +328,13 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
 ...
 ```
 {% endcode %}
+
+## Step 9: "go generate"
+
+Re-generate the documentation:
+
+```shell
+go generate ./...
+```
+
+This will regenerate things like the table of which providers have which features and the `dnscontrol.d.ts` file.
