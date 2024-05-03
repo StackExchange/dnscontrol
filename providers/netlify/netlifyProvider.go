@@ -141,6 +141,21 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return cleanRecords, nil
 }
 
+// ListZones returns all DNS zones managed by this provider.
+func (n *netlifyProvider) ListZones() ([]string, error) {
+	zones, err := n.getDNSZones()
+	if err != nil {
+		return nil, err
+	}
+
+	zoneNames := make([]string, len(zones))
+	for i, z := range zones {
+		zoneNames[i] = z.Name
+	}
+
+	return zoneNames, nil
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(records)
