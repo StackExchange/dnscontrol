@@ -1042,12 +1042,12 @@ func makeTests() []*TestGroup {
 
 		testgroup("SVCB",
 			requires(providers.CanUseSVCB),
-			tc("Create a HTTPS record", https("@", 1, "test.com.", "port=80")),
-			tc("Change HTTPS priority", https("@", 2, "test.com.", "port=80")),
-			tc("Change HTTPS target", https("@", 2, ".", "port=80")),
-			tc("Change HTTPS params", https("@", 2, ".", "port=99")),
-			tc("Change HTTPS params-empty", https("@", 2, ".", "")),
-			tc("Change HTTPS all", https("@", 3, "example.com.", "port=100")),
+			tc("Create a SVCB record", svcb("@", 1, "test.com.", "port=80")),
+			tc("Change SVCB priority", svcb("@", 2, "test.com.", "port=80")),
+			tc("Change SVCB target", svcb("@", 2, ".", "port=80")),
+			tc("Change SVCB params", svcb("@", 2, ".", "port=99")),
+			tc("Change SVCB params-empty", svcb("@", 2, ".", "")),
+			tc("Change SVCB all", svcb("@", 3, "example.com.", "port=100")),
 		),
 		//// Test edge cases from various types.
 
