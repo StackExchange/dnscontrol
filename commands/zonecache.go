@@ -2,6 +2,7 @@ package commands
 
 import "github.com/StackExchange/dnscontrol/v4/providers"
 
+// NewZoneCache creates a zoneCache.
 func NewZoneCache() *zoneCache {
 	return &zoneCache{}
 }

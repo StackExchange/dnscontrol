@@ -497,6 +497,7 @@ func (rc *RecordConfig) Key() RecordKey {
 	return RecordKey{rc.NameFQDN, t}
 }
 
+// GetSVCBValue returns the SVCB Key/Values as a list of Key/Values.
 func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	record, err := dns.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
 	if err != nil {
