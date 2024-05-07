@@ -10,19 +10,27 @@ Please change the version number as appropriate.  Substitute (for example)
 ## Step 1. Rebuild generated files
 
 ```shell
-export VERSION=v4.2.0
+export VERSION=v4.x.0
 git checkout main
 git pull
 go fmt ./...
 go generate ./...
 go mod tidy
+git status
+```
+
+There should be no modified files. If there are, check them in then start over from the beginning:
+
+```
+git checkout -b gogenerate
 git commit -a -m "Update generated files for $VERSION"
 ```
 
 ## Step 2. Tag the commit in main that you want to release
 
 ```shell
-export VERSION=v4.2.0
+export VERSION=v4.x.0
+git checkout main
 git tag -m "Release $VERSION" -a $VERSION
 git push origin HEAD --tags
 ```
@@ -47,33 +55,6 @@ Release notes style guide:
 * The `Deprecation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
 
 See [https://github.com/StackExchange/dnscontrol/releases](https://github.com/StackExchange/dnscontrol/releases) for examples for recent release notes and copy that style.
-
-Template:
-
-```text
-## Changelog
-
-This release includes many new providers (FILL IN), dozens
-of bug fixes, and FILL IN.
-
-### Breaking changes:
-
-* FILL IN
-
-### Major features:
-
-* FILL IN
-
-### Provider-specific changes:
-
-* FILL IN
-
-### Other changes and improvements:
-
-* FILL IN
-
-### Deprecation warnings:
-```
 
 ## Step 4. Announce it via email
 
@@ -108,7 +89,6 @@ Mention the fact that you did this release in your weekly accomplishments.
 If you are at Stack Overflow:
 
 * Add the release to your weekly snippets
-* Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
 
 ## Tip: How to bump the major version
 
