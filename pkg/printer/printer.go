@@ -197,7 +197,7 @@ func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
 }
 
-// Errorf is called to optionally print/format a message.
+// PrintfIf is called to optionally print/format a message.
 func (c ConsolePrinter) PrintfIf(print bool, format string, args ...interface{}) {
 	if print {
 		fmt.Fprintf(c.Writer, format, args...)
