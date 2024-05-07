@@ -16,6 +16,7 @@ type CLI interface {
 	StartDomain(domain string)
 	StartDNSProvider(name string, skip bool)
 	EndProvider(name string, numCorrections int, err error)
+	EndProvider2(name string, numCorrections int)
 	StartRegistrar(name string, skip bool)
 
 	PrintCorrection(n int, c *models.Correction)
@@ -170,6 +171,18 @@ func (c ConsolePrinter) EndProvider(name string, numCorrections int, err error) 
 	}
 }
 
+// EndProvider2 is called at the end of each provider.
+func (c ConsolePrinter) EndProvider2(name string, numCorrections int) {
+	plural := "s"
+	if numCorrections == 1 {
+		plural = ""
+	}
+	if (SkinnyReport) && (numCorrections == 0) {
+		return
+	}
+	fmt.Fprintf(c.Writer, "%d correction%s (%s)\n", numCorrections, plural, name)
+}
+
 // Debugf is called to print/format debug information.
 func (c ConsolePrinter) Debugf(format string, args ...interface{}) {
 	if c.Verbose {
@@ -197,7 +210,7 @@ func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
 }
 
-// Errorf is called to optionally print/format a message.
+// PrintfIf is called to optionally print/format a message.
 func (c ConsolePrinter) PrintfIf(print bool, format string, args ...interface{}) {
 	if print {
 		fmt.Fprintf(c.Writer, format, args...)

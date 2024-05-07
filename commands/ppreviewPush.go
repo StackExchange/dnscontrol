@@ -232,27 +232,34 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	var anyErrors bool
 	for _, zone := range zonesToProcess {
 		out.StartDomain(zone.GetUniqueName())
+
+		// Process DNS provider changes:
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 		for _, provider := range zone.DNSProviderInstances {
 			skip := skipProvider(provider.Name, providersToProcess)
 			out.StartDNSProvider(provider.Name, skip)
 			if !skip {
 				corrections := zone.GetCorrections(provider.Name)
-				totalCorrections += len(corrections)
+				numActions := countActions(corrections)
+				totalCorrections += numActions
+				out.EndProvider2(provider.Name, numActions)
 				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
 				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
-				out.EndProvider(provider.Name, len(corrections), nil)
 			}
 		}
+
+		// Process Registrar changes:
 		skip := skipProvider(zone.RegistrarInstance.Name, providersToProcess)
 		out.StartRegistrar(zone.RegistrarName, !skip)
 		if skip {
 			corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
-			totalCorrections += len(corrections)
+			numActions := countActions(corrections)
+			out.EndProvider2(zone.RegistrarName, numActions)
+			totalCorrections += numActions
 			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
-			out.EndProvider(zone.RegistrarName, len(corrections), nil)
 		}
+
 	}
 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
@@ -272,6 +279,16 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return fmt.Errorf("there are pending changes")
 	}
 	return nil
+}
+
+func countActions(corrections []*models.Correction) int {
+	r := 0
+	for _, c := range corrections {
+		if c.F != nil {
+			r++
+		}
+	}
+	return r
 }
 
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
@@ -429,25 +446,40 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 		return false
 	}
 	var anyErrors bool
-	for i, correction := range corrections {
-		out.PrintCorrection(i, correction)
+	cc := 0
+	cn := 0
+	for _, correction := range corrections {
+
+		// Print what we're about to do.
+		if correction.F == nil {
+			out.PrintReport(cn, correction)
+			cn++
+		} else {
+			out.PrintCorrection(cc, correction)
+			cc++
+		}
+
 		var err error
 		if push {
+
+			// If interactive, ask "are you sure?" and skip if not.
 			if interactive && !out.PromptToRun() {
 				continue
 			}
+
+			// If it is an action (not an informational message), notify and execute.
 			if correction.F != nil {
+				notifier.Notify(zoneName, providerName, correction.Msg, err, false)
 				err = correction.F()
+				out.EndCorrection(err)
 				if err != nil {
 					anyErrors = true
 				}
 			}
-			out.EndCorrection(err)
 		}
-		notifier.Notify(zoneName, providerName, correction.Msg, err, !push)
 	}
 
-	_ = report // File name to write report to.
+	_ = report // File name to write report to. (obsolete)
 	return anyErrors
 }
 
