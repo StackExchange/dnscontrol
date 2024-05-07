@@ -25,6 +25,7 @@
   * [NewRegistrar](language-reference/top-level-functions/NewRegistrar.md)
   * [PANIC](language-reference/top-level-functions/PANIC.md)
   * [REV](language-reference/top-level-functions/REV.md)
+  * [REVCOMPAT](language-reference/top-level-functions/REVCOMPAT.md)
   * [getConfiguredDomains](language-reference/top-level-functions/getConfiguredDomains.md)
   * [require](language-reference/top-level-functions/require.md)
   * [require_glob](language-reference/top-level-functions/require_glob.md)

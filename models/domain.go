@@ -150,6 +150,7 @@ func (dc *DomainConfig) Punycode() error {
 	return nil
 }
 
+// StoreCorrections accumulates corrections in a thread-safe way.
 func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Correction) {
 	dc.pendingCorrectionsMutex.Lock()
 	defer dc.pendingCorrectionsMutex.Unlock()
@@ -171,6 +172,7 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 	}
 }
 
+// GetCorrections returns the accumulated corrections for providerName.
 func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 	dc.pendingCorrectionsMutex.Lock()
 	defer dc.pendingCorrectionsMutex.Unlock()
