@@ -8,6 +8,7 @@ import (
 var newmode bool
 var modeset bool
 
+// SetCompatibilityMode sets REV() compatibility mode.
 func SetCompatibilityMode(m string) error {
 	if modeset {
 		return fmt.Errorf("ERROR: REVCOMPAT() already set")
@@ -25,16 +26,20 @@ func SetCompatibilityMode(m string) error {
 	return nil
 }
 
+// IsRFC4183Mode returns true if REV() is in RFC4183 mode.
 func IsRFC4183Mode() bool {
 	return newmode
 }
 
 var warningNeeded bool = false
 
+// NeedsWarning sets that a future warning regarding RFC2317
+// compatibility is needed.
 func NeedsWarning() {
 	warningNeeded = true
 }
 
+// PrintWarning prints a warning if a warning related to RFC2317 is needed.
 func PrintWarning() {
 	if modeset {
 		// No warnings if REVCOMPAT() was used.
