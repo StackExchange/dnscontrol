@@ -108,9 +108,9 @@ Expectations of maintainers:
 Providers in this category and their maintainers are:
 
 |Name|Maintainer|
-|---|---|
+|---|--|
 |[`AZURE_PRIVATE_DNS`](provider/azure_private_dns.md)|@matthewmgamble|
-|[`AKAMAIEDGEDNS`](provider/akamaiedgedns.md)|@svernick|
+|[`AKAMAIEDGEDNS`](provider/akamaiedgedns.md)|@cdornin|
 |[`AXFRDDNS`](provider/axfrddns.md)|@hnrgrgr|
 |[`BUNNY_DNS`](provider/bunny_dns.md)|@ppmathis|
 |[`CLOUDFLAREAPI`](provider/cloudflareapi.md)|@tresni|
