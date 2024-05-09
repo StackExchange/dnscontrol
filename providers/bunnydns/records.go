@@ -60,6 +60,10 @@ func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		if rc.Name == "@" && rc.Type == "NS" {
 			rc.TTL = 0
 		}
+
+		if rc.Type == "ALIAS" {
+			rc.Type = "CNAME"
+		}
 	}
 
 	zone, err := b.findZoneByDomain(dc.Name)
