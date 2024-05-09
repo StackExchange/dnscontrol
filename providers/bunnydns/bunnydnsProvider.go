@@ -14,7 +14,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Cannot(),
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAlias:            providers.Can("Bunny flattens CNAME records into A/AAAA records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Cannot(),
 	providers.CanUseDS:               providers.Cannot(),
