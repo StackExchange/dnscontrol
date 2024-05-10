@@ -90,7 +90,7 @@ const (
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 
-	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with anothe provider
+	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider
 	DocDualHost
 
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange
