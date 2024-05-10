@@ -142,9 +142,9 @@ OVH now allows to host DNS zone for a domain that is not registered in their reg
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
-|  OVH      | other       |    √     |
-|  OVH      | OVH + other |    √     |
-|  other    | OVH         |    √     |
+|  OVH      | other       |    ✅     |
+|  OVH      | OVH + other |    ✅     |
+|  other    | OVH         |    ✅     |
 
 ## Caveats
 
