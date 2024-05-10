@@ -65,7 +65,7 @@ D("example.com", REG_OVH, DnsProvider(DSP_R53),
 To obtain the OVH keys, one need to register an app at OVH by following the
 [OVH API Getting Started](https://docs.ovh.com/gb/en/customer/first-steps-with-ovh-api/)
 
-It consist in declaring the app at https://eu.api.ovh.com/createApp/
+It consist in declaring the app at <https://eu.api.ovh.com/createApp/>
 which gives the `app-key` and `app-secret-key`. If your domains and zones are located in another region, see below for the correct url to use.
 
 Once done, to obtain the `consumer-key` it is necessary to authorize the just created app
@@ -138,7 +138,7 @@ control panel manually.
 
 ## Dual providers scenario
 
-OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: https://www.ovh.com/manager/web/#/zone). The following dual providers scenario are supported:
+OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: <https://www.ovh.com/manager/web/#/zone>). The following dual providers scenario are supported:
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
