@@ -36,8 +36,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 
 D("example.com", REG_NONE, DnsProvider(DSP_SOFTLAYER),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 
@@ -53,7 +53,7 @@ var DSP_SOFTLAYER = NewDnsProvider("softlayer");
 D("example.com", REG_NONE, DnsProvider(SOFTLAYER),
     NAMESERVER_TTL(86400),
 
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}

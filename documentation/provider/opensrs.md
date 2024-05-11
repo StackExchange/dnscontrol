@@ -13,7 +13,7 @@ var REG_NONE = NewRegistrar("none");
 var DSP_OPENSRS = NewDnsProvider("opensrs");
 
 D("example.com", REG_NONE, DnsProvider(DSP_OPENSRS),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}

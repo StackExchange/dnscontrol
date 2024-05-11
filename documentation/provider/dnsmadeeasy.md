@@ -37,8 +37,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_DNSMADEEASY = NewDnsProvider("dnsmadeeasy");
 
 D("example.com", REG_NONE, DnsProvider(DSP_DNSMADEEASY),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

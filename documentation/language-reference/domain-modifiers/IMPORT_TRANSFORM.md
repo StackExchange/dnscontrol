@@ -52,16 +52,16 @@ var TRANSFORM_INT = [
 ]
 
 D("foo.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  A("one","1.2.3.1")
-  A("two","1.2.3.2")
-  A("three","1.2.3.13")
-  A("four","1.2.3.14")
-);
+  A("one","1.2.3.1"),
+  A("two","1.2.3.2"),
+  A("three","1.2.3.13"),
+  A("four","1.2.3.14"),
+END);
 
 D("bar.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  A("www","123.123.123.123")
+  A("www","123.123.123.123"),
   IMPORT_TRANSFORM(TRANSFORM_INT, "foo.com", 300),
-);
+END);
 ```
 {% endcode %}
 

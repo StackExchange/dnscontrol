@@ -42,8 +42,8 @@ var REG_OVH = NewRegistrar("ovh");
 var DSP_OVH = NewDnsProvider("ovh");
 
 D("example.com", REG_OVH, DnsProvider(DSP_OVH),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 
@@ -55,8 +55,8 @@ var REG_OVH = NewRegistrar("ovh");
 var DSP_R53 = NewDnsProvider("r53");
 
 D("example.com", REG_OVH, DnsProvider(DSP_R53),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

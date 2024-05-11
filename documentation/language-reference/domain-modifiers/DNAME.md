@@ -17,7 +17,7 @@ Target should be a string.
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  DNAME("sub", "example.net.")
-);
+  DNAME("sub", "example.net."),
+END);
 ```
 {% endcode %}

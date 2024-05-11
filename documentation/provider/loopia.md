@@ -198,8 +198,8 @@ D("example.com", REG_LOOPIA, DnsProvider(DSP_LOOPIA),
     //NAMESERVER("ns1.loopia.se."), //default
     //NAMESERVER("ns2.loopia.se."), //default
     A("elk1", "192.0.2.1"),
-    A("test", "192.0.2.2")
-);
+    A("test", "192.0.2.2"),
+END);
 ```
 {% endcode %}
 

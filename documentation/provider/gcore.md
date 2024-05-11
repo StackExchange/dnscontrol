@@ -28,8 +28,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_GCORE = NewDnsProvider("gcore");
 
 D("example.com", REG_NONE, DnsProvider(DSP_GCORE),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 
