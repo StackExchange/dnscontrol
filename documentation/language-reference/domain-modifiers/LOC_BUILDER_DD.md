@@ -65,7 +65,6 @@ END);
 ```
 {% endcode %}
 
-
 Part of the series:
  * [`LOC()`](LOC.md) - build a `LOC` by supplying all 12 parameters
  * [`LOC_BUILDER_DD({})`](LOC_BUILDER_DD.md) - accepts cartesian x, y
