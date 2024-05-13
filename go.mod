@@ -17,15 +17,15 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/aws/aws-sdk-go-v2 v1.26.1
-	github.com/aws/aws-sdk-go-v2/config v1.27.11
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.11
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.4
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.23.4
+	github.com/aws/aws-sdk-go-v2/config v1.27.13
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.13
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.5
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.23.5
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.6
 	github.com/cloudflare/cloudflare-go v0.95.0
-	github.com/digitalocean/godo v1.114.0
+	github.com/digitalocean/godo v1.115.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.5.1
 	github.com/exoscale/egoscale v0.90.2
@@ -54,14 +54,14 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0
 	golang.org/x/oauth2 v0.20.0
-	google.golang.org/api v0.178.0
+	google.golang.org/api v0.180.0
 	gopkg.in/ns1/ns1-go.v2 v2.10.0
 )
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
 	github.com/G-Core/gcore-dns-sdk-go v0.2.9
-	github.com/fatih/color v1.16.0
+	github.com/fatih/color v1.17.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -75,7 +75,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/auth v0.3.0 // indirect
+	cloud.google.com/go/auth v0.4.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
@@ -88,9 +88,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.7 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.20.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.23.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.28.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.20.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.28.7 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
