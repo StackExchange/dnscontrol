@@ -33,7 +33,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
