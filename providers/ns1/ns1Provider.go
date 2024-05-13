@@ -26,6 +26,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseDNAME:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
