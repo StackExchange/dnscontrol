@@ -68,7 +68,7 @@ D(REV("1.2.3.0/24"), REGISTRAR, DnsProvider(BIND),
   PTR("3", "baz.example.com."),
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
   PTR("1.2.3.10", "ten.example.com."),    // "10"
-);
+END);
 ```
 {% endcode %}
 
@@ -76,7 +76,7 @@ D(REV("1.2.3.0/24"), REGISTRAR, DnsProvider(BIND),
 ```javascript
 D(REV("9.9.9.128/25"), REGISTRAR, DnsProvider(BIND),
   PTR("9.9.9.129", "first.example.com."),
-);
+END);
 ```
 {% endcode %}
 
@@ -87,7 +87,7 @@ D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
   PTR("2001:db8:302::2", "two.example.com."),                          // "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
   PTR("2001:db8:302::3", "three.example.com."),                        // "3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
-);
+END);
 ```
 {% endcode %}
 
@@ -111,10 +111,10 @@ function FORWARD_AND_REVERSE(ipaddr, fqdn) {
 
 D("example.com", REGISTRAR, DnsProvider(DSP_NONE),
     ...,
-    END);
+END);
 D(REV("10.20.30.0/24"), REGISTRAR, DnsProvider(DSP_NONE),
     ...,
-    END);
+END);
 
 FORWARD_AND_REVERSE("10.20.30.77", "foo.example.com.");
 FORWARD_AND_REVERSE("10.20.30.99", "bar.example.com.");

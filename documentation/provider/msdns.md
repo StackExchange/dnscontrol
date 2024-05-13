@@ -54,7 +54,7 @@ var REG_NONE = NewRegistrar("none");
 var DSP_MSDNS = NewDnsProvider("msdns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_MSDNS),
-      A("test", "1.2.3.4")
-)
+      A("test", "1.2.3.4"),
+END)
 ```
 {% endcode %}

@@ -65,8 +65,8 @@ var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_GCLOUD = NewDnsProvider("gcloud");
 
 D("example.com", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 
@@ -108,8 +108,8 @@ var DSP_GCLOUD = NewDnsProvider("gcloud", {
 });
 
 D("example.tld", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

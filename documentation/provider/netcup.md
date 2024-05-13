@@ -27,8 +27,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_NETCUP = NewDnsProvider("netcup");
 
 D("example.com", REG_NONE, DnsProvider(DSP_NETCUP),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

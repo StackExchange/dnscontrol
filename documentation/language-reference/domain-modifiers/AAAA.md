@@ -24,7 +24,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   AAAA("@", addrV6),
   AAAA("foo", addrV6),
   AAAA("test.foo", addrV6, TTL(5000)),
-  AAAA("*", addrV6, {foo: 42})
-);
+  AAAA("*", addrV6, {foo: 42}),
+END);
 ```
 {% endcode %}

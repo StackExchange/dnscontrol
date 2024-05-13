@@ -48,7 +48,7 @@ var REG_MONITOR = NewRegistrar("dohcloudflare");
 D("example.com", REG_MONITOR,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
-);
+END);
 ```
 {% endcode %}
 

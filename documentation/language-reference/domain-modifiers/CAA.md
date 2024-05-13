@@ -33,8 +33,8 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   CAA("@", "issuewild", ";"),
   // Report all violation to test@example.com. If CA does not support
   // this record then refuse to issue any certificate
-  CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
-);
+  CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
+END);
 ```
 {% endcode %}
 

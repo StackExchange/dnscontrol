@@ -29,8 +29,8 @@ An example configuration:
 var DSP_VULTR = NewDnsProvider("vultr");
 
 D("example.com", REG_DNSIMPLE, DnsProvider(DSP_VULTR),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

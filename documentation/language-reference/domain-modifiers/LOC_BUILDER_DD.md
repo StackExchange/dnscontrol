@@ -42,27 +42,26 @@ The White House:
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-    LOC_BUILDER_DD({
+  LOC_BUILDER_DD({
     label: "big-ben",
     x: 51.50084265331501,
     y: -0.12462541415599787,
     alt: 6,
-  })
-  , LOC_BUILDER_DD({
+  }),
+  LOC_BUILDER_DD({
     label: "white-house",
     x: 38.89775977858357,
     y: -77.03655125982903,
     alt: 19,
-  })
-  , LOC_BUILDER_DD({
+  }),
+  LOC_BUILDER_DD({
     label: "white-house-ttl",
     x: 38.89775977858357,
     y: -77.03655125982903,
     alt: 19,
     ttl: "5m",
-  })
-);
-
+  }),
+END);
 ```
 {% endcode %}
 

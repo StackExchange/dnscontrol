@@ -28,8 +28,8 @@ in place.
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), NO_PURGE,
-  A("foo","1.2.3.4")
-);
+  A("foo","1.2.3.4"),
+END);
 ```
 {% endcode %}
 
