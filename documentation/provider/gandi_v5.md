@@ -59,8 +59,8 @@ var REG_GANDI = NewRegistrar("gandi");
 var DSP_GANDI = NewDnsProvider("gandi");
 
 D("example.com", REG_GANDI, DnsProvider(DSP_GANDI),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

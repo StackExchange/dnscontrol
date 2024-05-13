@@ -55,8 +55,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_POWERDNS = NewDnsProvider("powerdns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

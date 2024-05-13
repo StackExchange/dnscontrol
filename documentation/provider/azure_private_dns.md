@@ -57,8 +57,8 @@ var REG_NONE = NewRegistrar("none");
 var DSP_AZURE_PRIVATE_MAIN = NewDnsProvider("azure_private_dns_main");
 
 D("example.com", REG_NONE, DnsProvider(DSP_AZURE_PRIVATE_MAIN),
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

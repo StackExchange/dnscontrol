@@ -27,6 +27,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   //               pr  w   port, target
   SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
   SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.com."),
-);
+END);
 ```
 {% endcode %}

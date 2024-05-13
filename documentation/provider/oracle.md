@@ -38,7 +38,7 @@ var DSP_ORACLE = NewDnsProvider("oracle");
 D("example.com", REG_NONE, DnsProvider(DSP_ORACLE),
     NAMESERVER_TTL(86400),
 
-    A("test", "1.2.3.4")
-);
+    A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}

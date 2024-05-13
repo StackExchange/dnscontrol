@@ -71,8 +71,8 @@ D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
-  A("foo", "1.2.3.4")
-);
+  A("foo", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

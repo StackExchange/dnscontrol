@@ -29,7 +29,7 @@ Public key must be a string.
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  DNSKEY("@", 257, 3, 13, "AABBCCDD")
-);
+  DNSKEY("@", 257, 3, 13, "AABBCCDD"),
+END);
 ```
 {% endcode %}

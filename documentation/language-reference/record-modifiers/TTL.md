@@ -32,6 +32,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("foo", "2.3.4.5", TTL(500)), // overrides default
   A("demo1", "3.4.5.11", TTL("5d")),  // 5 days
   A("demo2", "3.4.5.12", TTL("5w")),  // 5 weeks
-);
+END);
 ```
 {% endcode %}
