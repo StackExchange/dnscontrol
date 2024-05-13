@@ -63,9 +63,9 @@ END);
 ## Activation
 
 To obtain the OVH keys, one need to register an app at OVH by following the
-[OVH API Getting Started](https://docs.ovh.com/gb/en/customer/first-steps-with-ovh-api/)
+[OVH API Getting Started](https://help.ovhcloud.com/csm/en-gb-api-getting-started-ovhcloud-api?id=kb_article_view&sysparm_article=KB0042784)
 
-It consist in declaring the app at https://eu.api.ovh.com/createApp/
+It consist in declaring the app at <https://eu.api.ovh.com/createApp/>
 which gives the `app-key` and `app-secret-key`. If your domains and zones are located in another region, see below for the correct url to use.
 
 Once done, to obtain the `consumer-key` it is necessary to authorize the just created app
@@ -108,7 +108,6 @@ curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/j
 
 It should return something akin to:
 
-{% code title="creds.json" %}
 ```json
 {
   "validationUrl": "https://eu.api.ovh.com/auth/?credentialToken=<long-token>",
@@ -116,7 +115,6 @@ It should return something akin to:
   "state": "pendingValidation"
 }
 ```
-{% endcode %}
 
 Open the "validationUrl" in a browser and log in with your OVH account. This will link the app with your account,
 authorizing it to access your zones and domains.
@@ -138,13 +136,13 @@ control panel manually.
 
 ## Dual providers scenario
 
-OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: https://www.ovh.com/manager/web/#/zone). The following dual providers scenario are supported:
+OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: <https://www.ovh.com/manager/web/#/zone>). The following dual providers scenario are supported:
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
-|  OVH      | other       |    √     |
-|  OVH      | OVH + other |    √     |
-|  other    | OVH         |    √     |
+|  OVH      | other       |    ✅     |
+|  OVH      | OVH + other |    ✅     |
+|  other    | OVH         |    ✅     |
 
 ## Caveats
 
