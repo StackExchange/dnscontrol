@@ -21,6 +21,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   CNAME("foo", "google.com."), // foo.example.com -> google.com
   CNAME("abc", "@"), // abc.example.com -> example.com
   CNAME("def", "test"), // def.example.com -> test.example.com
-);
+END);
 ```
 {% endcode %}

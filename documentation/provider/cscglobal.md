@@ -37,8 +37,8 @@ var REG_CSCGLOBAL = NewRegistrar("cscglobal");
 var DSP_BIND = NewDnsProvider("bind");
 
 D("example.com", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
-  A("test", "1.2.3.4")
-);
+  A("test", "1.2.3.4"),
+END);
 ```
 {% endcode %}
 

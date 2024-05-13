@@ -91,8 +91,8 @@ D("example.com", REG_HEXONET, DnsProvider(DSP_HEXONET),
     NAMESERVER("ns3.ispapi.net"),
     NAMESERVER("ns4.ispapi.net"),
     A("elk1", "10.190.234.178"),
-    A("test", "56.123.54.12")
-);
+    A("test", "56.123.54.12"),
+END);
 ```
 {% endcode %}
 

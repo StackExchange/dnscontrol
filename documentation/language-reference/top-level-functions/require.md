@@ -45,8 +45,8 @@ Here's a more complex example:
 require("kubernetes/clusters.js");
 
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-    IncludeKubernetes()
-);
+    IncludeKubernetes(),
+END);
 ```
 {% endcode %}
 

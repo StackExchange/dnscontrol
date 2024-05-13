@@ -31,8 +31,8 @@ var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
 var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
 
 D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
-  A("@","1.2.3.4")
-);
+  A("@","1.2.3.4"),
+END);
 ```
 {% endcode %}
 
@@ -44,7 +44,7 @@ var REG_MYNDC = NewRegistrar("mynamedotcom");
 var DNS_MYAWS = NewDnsProvider("myaws");
 
 D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
-  A("@","1.2.3.4")
-);
+  A("@","1.2.3.4"),
+END);
 ```
 {% endcode %}

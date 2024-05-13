@@ -38,8 +38,8 @@ DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
 ```javascript
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,
-    DnsProvider(DSP_AZURE)
-);
+    DnsProvider(DSP_AZURE),
+END);
 ```
 {% endcode %}
 

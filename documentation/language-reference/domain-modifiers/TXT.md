@@ -30,8 +30,8 @@ Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/la
       TXT("multiple", ["one", "two", "three"]),  // Multiple strings
       TXT("quoted", "any "quotes" and escapes? ugh; no worries!"),
       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
-      TXT("long", "X".repeat(300)) // Long strings are split automatically.
-    );
+      TXT("long", "X".repeat(300)), // Long strings are split automatically.
+    END);
 ```
 {% endcode %}
 
