@@ -23,6 +23,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDNAME:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
