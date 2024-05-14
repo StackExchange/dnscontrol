@@ -1,4 +1,4 @@
-#compdef "{{.App.Name}}"
+#compdef {{.App.Name}}
 
 _dnscontrol() {
   local -a opts
@@ -17,4 +17,12 @@ _dnscontrol() {
   fi
 }
 
-compdef "_dnscontrol" "{{.App.Name}}"
+# Run the function the first time we are auto-loaded, otherwise the very first
+# complete wouldn't work in each shell session
+# Otherwise assume we are directly sourced and register the completion
+# (This is done by the #compdef directive in the autoloaded case.)
+if [[ "${zsh_eval_context[-1]}" == "loadautofunc" ]]; then
+  _dnscontrol "$@"
+else
+  compdef "_dnscontrol" "dnscontrol"
+fi
