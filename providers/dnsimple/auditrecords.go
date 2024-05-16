@@ -11,8 +11,6 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	// DNSimple sent email 2024-05-16 announcing that they now support Null MX records.
-
 	a.Add("TXT", rejectif.TxtLongerThan(1000)) // Last verified 2023-12
 
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2023-03
