@@ -95,7 +95,9 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 			r.Name = "@"
 		}
 
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "NS" {
+		if r.Type == "CNAME" || r.Type == "ALIAS" || r.Type == "NS" {
+			r.Content += "."
+		} else if r.Type == "MX" && r.Content != "." {
 			r.Content += "."
 		}
 
