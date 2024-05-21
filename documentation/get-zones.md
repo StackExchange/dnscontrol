@@ -1,4 +1,4 @@
-# get-zones (was "convertzone")
+# get-zones
 
 DNSControl has a stand-alone utility that will contact a provider,
 download the records of one or more zones, and output them to a file
