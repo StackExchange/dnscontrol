@@ -127,7 +127,7 @@ records.
 
 Solution 1: Use a macro.
 
-```
+```javascript
 function PARKED_R53(name) {
     D(name, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
