@@ -1,4 +1,4 @@
-## Typical DNS Records ##
+## Typical DNS Records
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -18,7 +18,7 @@ END);
 {% endcode %}
 
 
-## Set TTLs ##
+## Set TTLs
 {% code title="dnsconfig.js" %}
 ```javascript
 var mailTTL = TTL("1h");
@@ -36,7 +36,7 @@ END);
 ```
 {% endcode %}
 
-## Variables for common IP Addresses ##
+## Variables for common IP Addresses
 {% code title="dnsconfig.js" %}
 ```javascript
 var addrA = IP("1.2.3.4")
@@ -59,7 +59,7 @@ var addrAAAA = "0:0:0:0:0:0:0:0";
 ```
 {% endcode %}
 
-## Variables to swap active Data Center ##
+## Variables to swap active Data Center
 {% code title="dnsconfig.js" %}
 ```javascript
 var DSP_R53 = NewDnsProvider("route53_user1");
@@ -76,7 +76,7 @@ END);
 ```
 {% endcode %}
 
-## Macro for repeated records ##
+## Macro for repeated records
 {% code title="dnsconfig.js" %}
 ```javascript
 var GOOGLE_APPS_MX_RECORDS = [
@@ -104,7 +104,7 @@ END);
 ```
 {% endcode %}
 
-## Use SPF_BUILDER to add comments to SPF records ##
+## Use SPF_BUILDER to add comments to SPF records
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -127,7 +127,7 @@ END);
 ```
 {% endcode %}
 
-## Set default records modifiers ##
+## Set default records modifiers
 {% code title="dnsconfig.js" %}
 ```javascript
 DEFAULTS(
@@ -140,7 +140,7 @@ END);
 
 # Advanced Examples #
 
-## Dual DNS Providers ##
+## Dual DNS Providers
 {% code title="dnsconfig.js" %}
 ```javascript
 
@@ -165,7 +165,7 @@ END);
 ```
 {% endcode %}
 
-## Automate Fastmail DKIM records ##
+## Automate Fastmail DKIM records
 
 In this example we need a macro that can dynamically change for each domain.
 
