@@ -137,10 +137,10 @@ title: DNSControl
                     <a href="https://docs.dnscontrol.org/developer-info/alias">Aliases</a>: ALIAS/ANAME records
                 </li>
                 <li>
-                    <a href="https://docs.dnscontrol.org/language-reference/record-modifiers/spf_builder">SPF Optimizer</a>: Optimize your SPF records
+                    <a href="https://docs.dnscontrol.org/language-reference/domain-modifiers/spf_builder">SPF Optimizer</a>: Optimize your SPF records
                 </li>
                 <li>
-                    <a href="https://docs.dnscontrol.org/language-reference/record-modifiers/caa_builder">CAA Builder</a>: Build CAA records the easy way
+                    <a href="https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder">CAA Builder</a>: Build CAA records the easy way
                 </li>
             </ul>
         </div>
