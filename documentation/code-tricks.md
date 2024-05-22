@@ -4,10 +4,10 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA Builder](language-reference/domain-modifiers/CAA_BUILDER.md)
-* [DMARC Builder](language-reference/domain-modifiers/DMARC_BUILDER.md)
+* [CAA_BUILDER](language-reference/domain-modifiers/CAA_BUILDER.md)
+* [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
 * [M365_BUILDER](language-reference/domain-modifiers/M365_BUILDER.md)
-* [SPF Optimizer](language-reference/domain-modifiers/SPF_BUILDER.md)
+* [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
 
 # Trailing commas
 
@@ -127,7 +127,7 @@ records.
 
 Solution 1: Use a macro.
 
-```
+```javascript
 function PARKED_R53(name) {
     D(name, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),

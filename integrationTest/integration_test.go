@@ -812,7 +812,7 @@ func makeTests() []*TestGroup {
 
 	// clear() is the same as tc("Empty").  It removes all records.
 	// Each testgroup() begins with clear() automagically. You do not
-	// have to include the clear() in teach testgroup().
+	// have to include the clear() in each testgroup().
 
 	tests := []*TestGroup{
 

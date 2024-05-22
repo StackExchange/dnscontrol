@@ -71,7 +71,7 @@ manually.
 If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will
 use the API to remove all non-default nameservers.
 
-If dnsconfig.js has 1 or more `NAMESERVER()` commands for a domain, it
+If `dnsconfig.js` has 1 or more `NAMESERVER()` commands for a domain, it
 will use the API to add those nameservers (unless, of course,
 they already exist).
 

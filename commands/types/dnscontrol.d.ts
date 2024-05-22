@@ -1828,7 +1828,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will
  * use the API to remove all non-default nameservers.
  *
- * If dnsconfig.js has 1 or more `NAMESERVER()` commands for a domain, it
+ * If `dnsconfig.js` has 1 or more `NAMESERVER()` commands for a domain, it
  * will use the API to add those nameservers (unless, of course,
  * they already exist).
  *
@@ -2103,7 +2103,7 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  *
  * The main caveat of `NO_PURGE` is that intentionally deleting records becomes
  * more difficult. Suppose a `NO_PURGE` zone has an record such as A("ken",
- * "1.2.3.4"). Removing the record from dnsconfig.js will not delete "ken" from
+ * "1.2.3.4"). Removing the record from `dnsconfig.js` will not delete "ken" from
  * the domain. DNSControl has no way of knowing the record was deleted from the
  * file  The DNS record must be removed manually.  Users of `NO_PURGE` are prone
  * to finding themselves with an accumulation of orphaned DNS records. That's easy
