@@ -23,7 +23,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.23.6
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
-	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3 v3.5.6
+	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.3
 	github.com/cloudflare/cloudflare-go v0.95.0
 	github.com/digitalocean/godo v1.115.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
