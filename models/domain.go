@@ -46,10 +46,9 @@ type DomainConfig struct {
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
-	// pendingCorrectionsMutex sync.Mutex
+	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
 	pendingCorrectionsOrder []string                   // Call the providers in this order
-	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -92,17 +91,6 @@ func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
 	err := reprint.FromTo(dc, newDc) // Deep copy
 	return newDc, err
-
-	// NB(tlim): The old version of this copied the structure by gob-encoding
-	// and decoding it. gob doesn't like the dc.RegisterInstance or
-	// dc.DNSProviderInstances fields, so we saved a temporary copy of those,
-	// nil'ed out the original, did the gob copy, and then manually copied those
-	// fields using the temp variables we saved. It looked like:
-	//reg, dnsps := dc.RegistrarInstance, dc.DNSProviderInstances
-	//dc.RegistrarInstance, dc.DNSProviderInstances = nil, nil
-	// (perform the copy)
-	//dc.RegistrarInstance, dc.DNSProviderInstances = reg, dnsps
-	//newDc.RegistrarInstance, newDc.DNSProviderInstances = reg, dnsps
 }
 
 // Filter removes all records that don't match the filter f.
@@ -168,7 +156,6 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 		// Add to existing.
 		dc.pendingCorrections[providerName] = append(c, corrections...)
 		dc.pendingCorrectionsOrder = append(dc.pendingCorrectionsOrder, providerName)
-
 	}
 }
 
