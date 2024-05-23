@@ -135,10 +135,6 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 		}
 		if rtype == "CNAME" || rtype == "MX" || rtype == "ALIAS" || rtype == "SRV" {
 			t := rcontent + "."
-			// for SRV records we need to aditionally prefix target with priority, which API handles as separate field.
-			if rtype == "SRV" && record.Weight != nil {
-				t = fmt.Sprintf("%d %s", *record.Weight, t)
-			}
 			rcontent = t
 		}
 		// byteplus adds these odd txt records that mirror the alias records.
@@ -160,11 +156,17 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 			rc.Type = rtype
 			rc.SetTarget(rcontent)
 		case "MX":
+			sp := strings.Split(*record.Value, " ")       // received Value from bytedns "5 domain.com"
+			rcontent = strings.Join(sp[1:], " ") + "."    // re-add trailing dot "5 domain.com."
+			rprio, err := strconv.ParseInt(sp[0], 10, 64) // split get priority value
+
 			var prio uint16
-			if record.Weight != nil {
-				prio = uint16(*record.Weight)
+			if err != nil {
+				return nil, err
 			}
-			err = rc.SetTargetMX(prio, rcontent)
+			prio = uint16(rprio)
+
+			rc.SetTargetMX(prio, rcontent)
 		default:
 			err = rc.PopulateFromString(rtype, rcontent, domainName)
 		}
@@ -231,23 +233,12 @@ func (c *byteplusProvider) createRecordFunc(rc *models.RecordConfig, domainID *i
 		var prio *int64
 
 		if rc.Type == "MX" {
-			target = rc.GetTargetField()
-
-			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
-				prio = &p
-			}
+			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
+			target = prioStr + " " + rc.GetTargetField()
 		}
 
-		if rc.Type == "SRV" {
-			// API wants priority as a separate argument, here we will strip it from combined target.
-			sp := strings.Split(target, " ")
-			target = strings.Join(sp[1:], " ")
-			p, err := strconv.ParseInt(sp[0], 10, 64)
-			if err != nil {
-				return err
-			}
-			prio = &p
+		if rc.Type == "TXT" {
+			target = strings.Trim(rc.GetTargetField(), `"`) // byteplus not supporting quote TXT records, remove!
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -287,23 +278,12 @@ func (c *byteplusProvider) updateRecordFunc(record *byteplus.QueryRecordResponse
 		name := rc.GetLabel()
 
 		if rc.Type == "MX" {
-			target = rc.GetTargetField()
-
-			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
-				record.Weight = &p
-			}
+			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
+			target = prioStr + " " + rc.GetTargetField()
 		}
 
-		if rc.Type == "SRV" {
-			// API wants priority as separate argument, here we will strip it from combined target.
-			sp := strings.Split(target, " ")
-			target = strings.Join(sp[1:], " ")
-			p, err := strconv.ParseInt(sp[0], 10, 64)
-			if err != nil {
-				return err
-			}
-			record.Weight = &p
+		if rc.Type == "TXT" {
+			target = strings.Trim(rc.GetTargetField(), `"`) // byteplus not supporting quote TXT records, remove!
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
