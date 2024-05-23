@@ -61,6 +61,7 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
 	github.com/G-Core/gcore-dns-sdk-go v0.2.9
+	github.com/byteplus-sdk/byteplus-sdk-golang v1.0.23
 	github.com/fatih/color v1.17.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.6.0
@@ -93,7 +94,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.8 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/byteplus-sdk/byteplus-sdk-golang v1.0.23 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
