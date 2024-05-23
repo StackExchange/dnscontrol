@@ -16,7 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-// ErrDomainNotFound error indicates domain name is not managed by Exoscale.
+// ErrDomainNotFound error indicates domain name is not managed by Byteplus.
 var ErrDomainNotFound = errors.New("domain not found")
 
 type byteplusProvider struct {
