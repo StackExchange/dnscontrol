@@ -11,10 +11,18 @@ import (
 	byteplus "github.com/byteplus-sdk/byteplus-sdk-golang/service/dns"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
+
+const (
+	minimumTTL = 600
+)
+
+var defaultNS = []string{
+	"ns1.byteplusdns.com",
+	"ns2.byteplusdns.net",
+}
 
 // ErrDomainNotFound error indicates domain name is not managed by Byteplus.
 var ErrDomainNotFound = errors.New("domain not found")
@@ -23,7 +31,7 @@ type byteplusProvider struct {
 	client *byteplus.Client
 }
 
-type MyStruct struct {
+type domainStruct struct {
 	DomainID *string
 }
 
@@ -71,9 +79,9 @@ func (c *byteplusProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-// GetNameservers returns the nameservers for domain.
+// GetNameservers returns the nameservers for a domain.
 func (c *byteplusProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return nil, nil
+	return models.ToNameservers(defaultNS)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -86,16 +94,19 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 	}
 	domainID := *domain.ZID
 
-	//byteplus package issue
-	domainIDStr := strconv.Itoa(int(domainID))
+	// warning!! inconsistency within byteplus go sdk.
+	// ListRecords later below is demanding string version if ZID (domain id)
+	// while TopZoneResponse (findDomainByName) above returns in int64.
+	domainIDString := strconv.Itoa(int(domainID))
 
 	// Create the struct, setting the pointer to the string
-	myStruct := MyStruct{
-		DomainID: &domainIDStr, // Take the address of domainIDStr
+	domainStr := domainStruct{
+		DomainID: &domainIDString, // Take the address of domainIDStr
 	}
 
 	ctx := context.Background()
-	records, err := c.client.ListRecords(ctx, &byteplus.ListRecordsRequest{ZID: myStruct.DomainID})
+	pageSize := "500" // arbitrary limit. max records size per page is 500.
+	records, err := c.client.ListRecords(ctx, &byteplus.ListRecordsRequest{ZID: domainStr.DomainID, PageSize: &pageSize})
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +167,7 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 			rc.Type = rtype
 			rc.SetTarget(rcontent)
 		case "MX":
-			sp := strings.Split(*record.Value, " ")       // received Value from bytedns "5 domain.com"
+			sp := strings.Split(*record.Value, " ")       // received combined value from byteplus "5 domain.com"
 			rcontent = strings.Join(sp[1:], " ") + "."    // re-add trailing dot "5 domain.com."
 			rprio, err := strconv.ParseInt(sp[0], 10, 64) // split get priority value
 
@@ -181,47 +192,51 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *byteplusProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *byteplusProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	corrections, err := c.getDiff2DomainCorrections(dc, actual)
+	if err != nil {
+		return nil, err
+	}
 
-	removeOtherNS(dc)
+	return corrections, nil
+}
+
+func (c *byteplusProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 	domain, err := c.findDomainByName(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	domainID := domain.ZID
 
-	toReport, create, toDelete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	instructions, err := diff2.ByRecord(actual, dc, nil)
 	if err != nil {
 		return nil, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
 
-	for _, del := range toDelete {
-		record := del.Existing.Original.(*byteplus.QueryRecordResponse)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(*record.RecordID),
-		})
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+		case diff2.CHANGE:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.updateRecordFunc(inst.Old[0].Original.(*byteplus.QueryRecordResponse), inst.New[0], domain.ZID),
+			})
+		case diff2.CREATE:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.createRecordFunc(inst.New[0], domain.ZID),
+			})
+		case diff2.DELETE:
+			rec := inst.Old[0].Original.(*byteplus.QueryRecordResponse)
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.deleteRecordFunc(*rec.RecordID),
+			})
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+		}
 	}
-
-	for _, cre := range create {
-		rc := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rc, domainID),
-		})
-	}
-
-	for _, mod := range modify {
-		old := mod.Existing.Original.(*byteplus.QueryRecordResponse)
-		new := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, domainID),
-		})
-	}
-
 	return corrections, nil
 }
 
@@ -232,13 +247,13 @@ func (c *byteplusProvider) createRecordFunc(rc *models.RecordConfig, domainID *i
 		name := rc.GetLabel()
 		var prio *int64
 
+		// byteplus have kinda(?) non-compliant spec for MX
+		// the Weight value will be combined with domain name in "Value" key
+		// instead of its own Weight key.
+		// below combines MX weight + domain.
 		if rc.Type == "MX" {
 			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
 			target = prioStr + " " + rc.GetTargetField()
-		}
-
-		if rc.Type == "TXT" {
-			target = strings.Trim(rc.GetTargetField(), `"`) // byteplus not supporting quote TXT records, remove!
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -277,13 +292,13 @@ func (c *byteplusProvider) updateRecordFunc(record *byteplus.QueryRecordResponse
 		target := rc.GetTargetCombined()
 		name := rc.GetLabel()
 
+		// byteplus have kinda(?) non-compliant spec for MX
+		// the Weight value will be combined with domain name in "Value" key
+		// instead of its own Weight key.
+		// below combines MX weight + domain.
 		if rc.Type == "MX" {
 			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
 			target = prioStr + " " + rc.GetTargetField()
-		}
-
-		if rc.Type == "TXT" {
-			target = strings.Trim(rc.GetTargetField(), `"`) // byteplus not supporting quote TXT records, remove!
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -327,28 +342,4 @@ func (c *byteplusProvider) findDomainByName(name string) (*byteplus.TopZoneRespo
 	}
 
 	return nil, ErrDomainNotFound
-}
-
-func defaultNSSUffix(defNS string) bool {
-	return (strings.HasSuffix(defNS, ".byteplusdns.io.") ||
-		strings.HasSuffix(defNS, ".byteplusdns.com.") ||
-		strings.HasSuffix(defNS, ".byteplusdns.net."))
-}
-
-// remove all non-byteplus NS records from our desired state.
-// if any are found, print a warning
-func removeOtherNS(dc *models.DomainConfig) {
-	newList := make([]*models.RecordConfig, 0, len(dc.Records))
-	for _, rec := range dc.Records {
-		if rec.Type == "NS" {
-			// apex NS inside byteplus are expected.
-			if rec.GetLabelFQDN() == dc.Name && defaultNSSUffix(rec.GetTargetField()) {
-				continue
-			}
-			printer.Printf("Warning: byteplus.com(.io, .ch, .net) does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
-			continue
-		}
-		newList = append(newList, rec)
-	}
-	dc.Records = newList
 }
