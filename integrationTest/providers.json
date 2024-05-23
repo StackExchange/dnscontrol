@@ -288,5 +288,10 @@
     "TYPE": "VULTR",
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "BYTEPLUS": {
+    "ak": "$BYTEPLUS_ACCESS_KEY",
+    "sk": "$BYTEPLUS_SECRET_KEY",
+    "domain": "$BYTEPLUS_DOMAIN"
   }
 }

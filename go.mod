@@ -93,6 +93,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.8 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/byteplus-sdk/byteplus-sdk-golang v1.0.23 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
