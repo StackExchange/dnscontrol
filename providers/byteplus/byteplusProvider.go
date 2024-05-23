@@ -83,7 +83,7 @@ func (c *byteplusProvider) EnsureZoneExists(domain string) error {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *byteplusProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.ToNameservers(defaultNS)
+	return nil, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
