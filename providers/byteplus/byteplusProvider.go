@@ -1,3 +1,5 @@
+// byteplus support is done thanks to the authors of exoscale, porkbun, ovh providers!
+
 package byteplus
 
 import (
