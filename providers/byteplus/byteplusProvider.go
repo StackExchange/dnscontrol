@@ -350,9 +350,9 @@ func (c *byteplusProvider) findDomainByName(name string) (*byteplus.TopZoneRespo
 }
 
 func defaultNSSUffix(defNS string) bool {
-	return (strings.HasSuffix(defNS, ".byteplus.io.") ||
-		strings.HasSuffix(defNS, ".byteplus.com.") ||
-		strings.HasSuffix(defNS, ".byteplus.net."))
+	return (strings.HasSuffix(defNS, ".byteplusdns.io.") ||
+		strings.HasSuffix(defNS, ".byteplusdns.com.") ||
+		strings.HasSuffix(defNS, ".byteplusdns.net."))
 }
 
 // remove all non-byteplus NS records from our desired state.
