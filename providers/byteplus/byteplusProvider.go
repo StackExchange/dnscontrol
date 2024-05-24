@@ -169,16 +169,20 @@ func (c *byteplusProvider) GetZoneRecords(domainName string, meta map[string]str
 			rc.Type = rtype
 			rc.SetTarget(rcontent)
 		case "MX":
-			sp := strings.Split(*record.Value, " ")       // received combined value from byteplus "5 domain.com"
-			rcontent = strings.Join(sp[1:], " ") + "."    // re-add trailing dot "5 domain.com."
-			rprio, err := strconv.ParseInt(sp[0], 10, 64) // split get priority value
+			// byteplus combines MX priority value + domain name into one value
+			// we split them below
+			split := strings.SplitN(*record.Value, " ", 2)
 
+			// parse priority string -> int64
+			rprio, err := strconv.ParseInt(split[0], 10, 64)
 			var prio uint16
 			if err != nil {
 				return nil, err
 			}
 			prio = uint16(rprio)
 
+			// take domain string. add literal dot
+			rcontent := split[1] + "."
 			rc.SetTargetMX(prio, rcontent)
 		default:
 			err = rc.PopulateFromString(rtype, rcontent, domainName)
@@ -242,40 +246,59 @@ func (c *byteplusProvider) getDiff2DomainCorrections(dc *models.DomainConfig, ac
 	return corrections, nil
 }
 
+func (c *byteplusProvider) prepareRecordConfig(rc *models.RecordConfig) *models.RecordConfig {
+	// ttl cant be 0/empty -> set to minimum TTL
+	if rc.TTL == 0 {
+		rc.TTL = 600
+	}
+
+	return rc
+}
+
 // Returns a function that can be invoked to create a record in a zone.
 func (c *byteplusProvider) createRecordFunc(rc *models.RecordConfig, domainID *int64) func() error {
 	return func() error {
-		target := rc.GetTargetCombined()
-		name := rc.GetLabel()
 		var prio *int64
+		recordConfig := c.prepareRecordConfig(rc)
 
-		// byteplus have kinda(?) non-compliant spec for MX
-		// the Weight value will be combined with domain name in "Value" key
-		// instead of its own Weight key.
-		// below combines MX weight + domain.
-		if rc.Type == "MX" {
-			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
-			target = prioStr + " " + rc.GetTargetField()
-		}
-
-		if rc.Type == "NS" && (name == "@" || name == "") {
-			name = "*"
-		}
+		target := recordConfig.GetTargetCombined()
+		name := recordConfig.GetLabel()
+		ttl := int64(recordConfig.TTL)
 
 		record := byteplus.CreateRecordRequest{
+			ZID:    domainID,
 			Host:   &name,
 			Type:   &rc.Type,
 			Value:  &target,
-			ZID:    domainID,
 			Weight: prio,
-		}
-
-		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
-			record.TTL = &ttl
+			TTL:    &ttl,
 		}
 
 		_, err := c.client.CreateRecord(context.Background(), &record)
+
+		return err
+	}
+}
+
+// Returns a function that can be invoked to update a record in a zone.
+func (c *byteplusProvider) updateRecordFunc(record *byteplus.QueryRecordResponse, rc *models.RecordConfig, domainID *int64) func() error {
+	return func() error {
+		recordConfig := c.prepareRecordConfig(rc)
+
+		target := recordConfig.GetTargetCombined()
+		name := recordConfig.GetLabel()
+		ttl := int64(recordConfig.TTL)
+
+		newRecord := &byteplus.UpdateRecordRequest{
+			RecordID: *record.RecordID,
+			Host:     name,
+			Type:     &rc.Type,
+			Value:    &target,
+			Weight:   record.Weight,
+			TTL:      &ttl,
+		}
+
+		_, err := c.client.UpdateRecord(context.Background(), newRecord)
 
 		return err
 	}
@@ -285,49 +308,6 @@ func (c *byteplusProvider) createRecordFunc(rc *models.RecordConfig, domainID *i
 func (c *byteplusProvider) deleteRecordFunc(recordID string) func() error {
 	return func() error {
 		return c.client.DeleteRecord(context.Background(), &byteplus.DeleteRecordRequest{RecordID: &recordID})
-	}
-}
-
-// Returns a function that can be invoked to update a record in a zone.
-func (c *byteplusProvider) updateRecordFunc(record *byteplus.QueryRecordResponse, rc *models.RecordConfig, domainID *int64) func() error {
-	return func() error {
-		target := rc.GetTargetCombined()
-		name := rc.GetLabel()
-
-		// byteplus have kinda(?) non-compliant spec for MX
-		// the Weight value will be combined with domain name in "Value" key
-		// instead of its own Weight key.
-		// below combines MX weight + domain.
-		if rc.Type == "MX" {
-			prioStr := strconv.FormatInt(int64(rc.MxPreference), 10)
-			target = prioStr + " " + rc.GetTargetField()
-		}
-
-		if rc.Type == "NS" && (name == "@" || name == "") {
-			name = "*"
-		}
-
-		record.Host = &name
-		record.Type = &rc.Type
-		record.Value = &target
-		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
-			record.TTL = &ttl
-		}
-
-		newRecord := &byteplus.UpdateRecordRequest{
-			Host:     *record.Host,
-			Line:     *record.Line,
-			RecordID: *record.RecordID,
-			TTL:      record.TTL,
-			Type:     record.Type,
-			Value:    record.Value,
-			Weight:   record.Weight,
-		}
-
-		_, err := c.client.UpdateRecord(context.Background(), newRecord)
-
-		return err
 	}
 }
 
