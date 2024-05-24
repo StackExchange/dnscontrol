@@ -8,6 +8,7 @@ parameters:
   - issue_critical
   - issuewild
   - issuewild_critical
+  - ttl
 parameters_object: true
 parameter_types:
   label: string?
@@ -17,6 +18,7 @@ parameter_types:
   issue_critical: boolean?
   issuewild: string[]
   issuewild_critical: boolean?
+  ttl: Duration?
 ---
 
 DNSControl contains a `CAA_BUILDER` which can be used to simply create
@@ -114,3 +116,4 @@ which in turns yield the following records:
 * `issue_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
 * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
 * `issuewild_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+* `ttl:` Input for `TTL` method (optional)
