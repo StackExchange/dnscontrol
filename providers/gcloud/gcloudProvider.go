@@ -475,7 +475,7 @@ func (g *gcloudProvider) EnsureZoneExists(domain string) error {
 		mz.Name = strings.Replace(mz.Name, "zone-", "zone-"+g.Visibility+"-", 1)
 	}
 	if g.Networks != nil {
-		mzn := make([]*gdns.ManagedZonePrivateVisibilityConfigNetwork, len(g.Networks))
+		mzn := make([]*gdns.ManagedZonePrivateVisibilityConfigNetwork, 0, len(g.Networks))
 		printer.Printf("for network(s) ")
 		for _, v := range g.Networks {
 			printer.Printf("%s ", v)
