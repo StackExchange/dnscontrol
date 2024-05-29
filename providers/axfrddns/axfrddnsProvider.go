@@ -216,10 +216,7 @@ func readKey(raw string, kind string) (*Key, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
-	id := arr[1]
-	if !strings.HasSuffix(id, ".") {
-		id += "."
-	}
+	id := dns.CanonicalName(arr[1])
 	return &Key{algo: algo, id: id, secret: arr[2]}, nil
 }
 
