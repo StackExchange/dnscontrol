@@ -45,6 +45,11 @@ func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordCon
 				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
 			}
 
+		case "SCVB": // GCore mistypes "SVCB" as "SCVB"
+			if err := rc.PopulateFromString("SVCB", value.ContentToString(), zoneName); err != nil {
+				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
+			}
+
 		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV"
 			if err := rc.PopulateFromString(recType, value.ContentToString(), zoneName); err != nil {
 				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
@@ -87,6 +92,13 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 		case "TXT": // Avoid double quoting for TXT records
 			rr = dnssdk.ResourceRecord{
 				Content: convertTxtSliceToSdkAnySlice(r.GetTargetTXTJoined()),
+				Meta:    nil,
+				Enabled: true,
+			}
+		case "SVCB":
+			// GCore mistypes "SVCB" as "SCVB"
+			rr = dnssdk.ResourceRecord{
+				Content: dnssdk.ContentFromValue("SCVB", r.GetTargetCombined()),
 				Meta:    nil,
 				Enabled: true,
 			}
