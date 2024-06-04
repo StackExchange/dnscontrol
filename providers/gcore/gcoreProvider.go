@@ -55,6 +55,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can("G-Core doesn't support SRV records with empty targets"),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseHTTPS:            providers.Can(),
+	providers.CanUseSVCB:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),

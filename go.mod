@@ -16,16 +16,16 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20230223141146-125e65197b36
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go-v2 v1.26.2
-	github.com/aws/aws-sdk-go-v2/config v1.27.14
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.14
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.6
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.23.6
+	github.com/aws/aws-sdk-go-v2 v1.27.1
+	github.com/aws/aws-sdk-go-v2/config v1.27.17
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.17
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.9
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.23.9
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.3
-	github.com/cloudflare/cloudflare-go v0.95.0
-	github.com/digitalocean/godo v1.115.0
+	github.com/cloudflare/cloudflare-go v0.96.0
+	github.com/digitalocean/godo v1.116.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.5.1
 	github.com/exoscale/egoscale v0.90.2
@@ -33,7 +33,7 @@ require (
 	github.com/go-gandi/go-gandi v0.7.0
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
-	github.com/hashicorp/vault/api v1.13.0
+	github.com/hashicorp/vault/api v1.14.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/miekg/dns v1.1.59
 	github.com/mittwald/go-powerdns v0.6.2
@@ -53,8 +53,8 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0
-	golang.org/x/oauth2 v0.20.0
-	google.golang.org/api v0.180.0
+	golang.org/x/oauth2 v0.21.0
+	google.golang.org/api v0.182.0
 	gopkg.in/ns1/ns1-go.v2 v2.10.0
 )
 
@@ -69,28 +69,28 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
-	golang.org/x/text v0.15.0
+	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc
+	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	cloud.google.com/go/auth v0.4.1 // indirect
+	cloud.google.com/go/auth v0.4.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.6 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.6 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.8 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.8 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.8 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.20.7 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.28.8 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.20.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.28.11 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
@@ -118,7 +118,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.6 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
@@ -152,9 +152,10 @@ require (
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240429193739-8cf5692501f6 // indirect
-	google.golang.org/grpc v1.63.2 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/grpc v1.64.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
