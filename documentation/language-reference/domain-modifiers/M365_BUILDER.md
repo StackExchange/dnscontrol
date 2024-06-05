@@ -32,9 +32,11 @@ It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](SPF_BUILDER.md) and [`DMARC_
 
 {% code title="dnsconfig.js" %}
 ```javascript
-M365_BUILDER({
-    initialDomain: "example.onmicrosoft.com",
-});
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  M365_BUILDER({
+      initialDomain: "example.onmicrosoft.com",
+  }),
+END);
 ```
 {% endcode %}
 
@@ -44,15 +46,17 @@ This sets up `MX` records, Autodiscover, and DKIM.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-M365_BUILDER({
-    label: "test",
-    mx: false,
-    autodiscover: false,
-    dkim: false,
-    mdm: true,
-    domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
-    initialDomain: "example.onmicrosoft.com",
-});
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  M365_BUILDER({
+      label: "test",
+      mx: false,
+      autodiscover: false,
+      dkim: false,
+      mdm: true,
+      domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
+      initialDomain: "example.onmicrosoft.com",
+  }),
+END);
 ```
 {% endcode %}
 
