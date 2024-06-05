@@ -32,16 +32,18 @@ authorized certificate authorities and the builder cares about the rest.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-CAA_BUILDER({
-  label: "@",
-  iodef: "mailto:test@example.com",
-  iodef_critical: true,
-  issue: [
-    "letsencrypt.org",
-    "comodoca.com",
-  ],
-  issuewild: "none",
-})
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  CAA_BUILDER({
+    label: "@",
+    iodef: "mailto:test@example.com",
+    iodef_critical: true,
+    issue: [
+      "letsencrypt.org",
+      "comodoca.com",
+    ],
+    issuewild: "none",
+  }),
+END);
 ```
 {% endcode %}
 
@@ -49,10 +51,12 @@ CAA_BUILDER({
 
 {% code title="dnsconfig.js" %}
 ```javascript
-CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
-CAA("@", "issue", "letsencrypt.org")
-CAA("@", "issue", "comodoca.com")
-CAA("@", "issuewild", ";")
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
+  CAA("@", "issue", "letsencrypt.org"),
+  CAA("@", "issue", "comodoca.com"),
+  CAA("@", "issuewild", ";"),
+END);
 ```
 {% endcode %}
 
@@ -71,18 +75,20 @@ The same example can be enriched with CAA_CRITICAL on all records:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-CAA_BUILDER({
-  label: "@",
-  iodef: "mailto:test@example.com",
-  iodef_critical: true,
-  issue: [
-    "letsencrypt.org",
-    "comodoca.com",
-  ],
-  issue_critical: true,
-  issuewild: "none",
-  issuewild_critical: true,
-})
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  CAA_BUILDER({
+    label: "@",
+    iodef: "mailto:test@example.com",
+    iodef_critical: true,
+    issue: [
+      "letsencrypt.org",
+      "comodoca.com",
+    ],
+    issue_critical: true,
+    issuewild: "none",
+    issuewild_critical: true,
+  }),
+END);
 ```
 {% endcode %}
 
@@ -90,10 +96,12 @@ CAA_BUILDER({
 
 {% code title="dnsconfig.js" %}
 ```javascript
-CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
-CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL)
-CAA("@", "issue", "comodoca.com", CAA_CRITICAL)
-CAA("@", "issuewild", ";", CAA_CRITICAL)
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
+  CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL),
+  CAA("@", "issue", "comodoca.com", CAA_CRITICAL),
+  CAA("@", "issuewild", ";", CAA_CRITICAL),
+END);
 ```
 {% endcode %}
 
@@ -105,7 +113,6 @@ which in turns yield the following records:
 @ 300 IN CAA 128 issue "comodoca.com"
 @ 300 IN CAA 128 issuewild ";"
 ```
-
 
 ### Parameters
 

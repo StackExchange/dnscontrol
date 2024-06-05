@@ -380,25 +380,29 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * ### Simple example
  *
  * ```javascript
- * CAA_BUILDER({
- *   label: "@",
- *   iodef: "mailto:test@example.com",
- *   iodef_critical: true,
- *   issue: [
- *     "letsencrypt.org",
- *     "comodoca.com",
- *   ],
- *   issuewild: "none",
- * })
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CAA_BUILDER({
+ *     label: "@",
+ *     iodef: "mailto:test@example.com",
+ *     iodef_critical: true,
+ *     issue: [
+ *       "letsencrypt.org",
+ *       "comodoca.com",
+ *     ],
+ *     issuewild: "none",
+ *   }),
+ * END);
  * ```
  *
  * `CAA_BUILDER()` builds multiple records:
  *
  * ```javascript
- * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
- * CAA("@", "issue", "letsencrypt.org")
- * CAA("@", "issue", "comodoca.com")
- * CAA("@", "issuewild", ";")
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
+ *   CAA("@", "issue", "letsencrypt.org"),
+ *   CAA("@", "issue", "comodoca.com"),
+ *   CAA("@", "issuewild", ";"),
+ * END);
  * ```
  *
  * which in turns yield the following records:
@@ -415,27 +419,31 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * The same example can be enriched with CAA_CRITICAL on all records:
  *
  * ```javascript
- * CAA_BUILDER({
- *   label: "@",
- *   iodef: "mailto:test@example.com",
- *   iodef_critical: true,
- *   issue: [
- *     "letsencrypt.org",
- *     "comodoca.com",
- *   ],
- *   issue_critical: true,
- *   issuewild: "none",
- *   issuewild_critical: true,
- * })
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CAA_BUILDER({
+ *     label: "@",
+ *     iodef: "mailto:test@example.com",
+ *     iodef_critical: true,
+ *     issue: [
+ *       "letsencrypt.org",
+ *       "comodoca.com",
+ *     ],
+ *     issue_critical: true,
+ *     issuewild: "none",
+ *     issuewild_critical: true,
+ *   }),
+ * END);
  * ```
  *
  * `CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
  *
  * ```javascript
- * CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
- * CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL)
- * CAA("@", "issue", "comodoca.com", CAA_CRITICAL)
- * CAA("@", "issuewild", ";", CAA_CRITICAL)
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
+ *   CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL),
+ *   CAA("@", "issue", "comodoca.com", CAA_CRITICAL),
+ *   CAA("@", "issuewild", ";", CAA_CRITICAL),
+ * END);
  * ```
  *
  * which in turns yield the following records:
@@ -740,12 +748,14 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * ### Simple example
  *
  * ```javascript
- * DMARC_BUILDER({
- *   policy: "reject",
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- * })
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DMARC_BUILDER({
+ *     policy: "reject",
+ *     ruf: [
+ *       "mailto:mailauth-reports@example.com",
+ *     ],
+ *   }),
+ * END);
  * ```
  *
  * This yield the following record:
@@ -757,36 +767,40 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * ### Advanced example
  *
  * ```javascript
- * DMARC_BUILDER({
- *   policy: "reject",
- *   subdomainPolicy: "quarantine",
- *   percent: 50,
- *   alignmentSPF: "r",
- *   alignmentDKIM: "strict",
- *   rua: [
- *     "mailto:mailauth-reports@example.com",
- *     "https://dmarc.example.com/submit",
- *   ],
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- *   failureOptions: "1",
- *   reportInterval: "1h",
- * });
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DMARC_BUILDER({
+ *     policy: "reject",
+ *     subdomainPolicy: "quarantine",
+ *     percent: 50,
+ *     alignmentSPF: "r",
+ *     alignmentDKIM: "strict",
+ *     rua: [
+ *       "mailto:mailauth-reports@example.com",
+ *       "https://dmarc.example.com/submit",
+ *     ],
+ *     ruf: [
+ *       "mailto:mailauth-reports@example.com",
+ *     ],
+ *     failureOptions: "1",
+ *     reportInterval: "1h",
+ *   }),
+ * END);
  * ```
  *
  * ```javascript
- * DMARC_BUILDER({
- *   label: "insecure",
- *   policy: "none",
- *   ruf: [
- *     "mailto:mailauth-reports@example.com",
- *   ],
- *   failureOptions: {
- *       SPF: false,
- *       DKIM: true,
- *   },
- * });
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DMARC_BUILDER({
+ *     label: "insecure",
+ *     policy: "none",
+ *     ruf: [
+ *       "mailto:mailauth-reports@example.com",
+ *     ],
+ *     failureOptions: {
+ *         SPF: false,
+ *         DKIM: true,
+ *     },
+ *   }),
+ * END);
  * ```
  *
  * This yields the following records:
@@ -1128,9 +1142,11 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * The `IGNORE()` function can be used with up to 3 parameters:
  *
  * ```javascript
- * IGNORE(labelSpec, typeSpec, targetSpec):
- * IGNORE(labelSpec, typeSpec):
- * IGNORE(labelSpec):
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE(labelSpec, typeSpec, targetSpec),
+ *   IGNORE(labelSpec, typeSpec),
+ *   IGNORE(labelSpec),
+ * END);
  * ```
  *
  * * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
@@ -1232,82 +1248,129 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```
  *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("@", "", ""),
- *     // Would match:
- *     //    foo.example.com. A 1.1.1.1
- *     //    foo.more.example.com. A 1.1.1.1
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * `foo.example.com. A 1.1.1.1`
+ * * `foo.more.example.com. A 1.1.1.1`
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("example.com.", "", ""),
- *     // Would match:
- *     //    nothing
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * nothing
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("foo", "", ""),
- *     // Would match:
- *     //    foo.example.com. A 1.1.1.1
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * `foo.example.com. A 1.1.1.1`
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("foo.**", "", ""),
- *     // Would match:
- *     //    foo.more.example.com. A 1.1.1.1
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * `foo.more.example.com. A 1.1.1.1`
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www", "", ""),
- *     // Would match:
+ * END);
  *     //    www.example.com. A 174.136.107.196
  * ```
  *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.*", "", ""),
- *     // Would match:
+ * END);
  *     //    nothing
  * ```
  *
+ * **Would match**:
+ *
+ * * nothing
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.example.com", "", ""),
- *     // Would match:
+ * END);
  *     //    nothing
  * ```
  *
+ * **Would match**:
+ *
+ * * nothing
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.example.com.", "", ""),
- *     // Would match:
- *     //    none
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * none
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     //IGNORE("", "", "1.1.1.*"),
- *     // Would match:
- *     //    foo.example.com. A 1.1.1.1
- *     //    foo.more.example.com. A 1.1.1.1
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * `foo.example.com. A 1.1.1.1`
+ * * `foo.more.example.com. A 1.1.1.1`
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     //IGNORE("", "", "www"),
- *     // Would match:
- *     //    none
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * none
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("", "", "*bar*"),
- *     // Would match:
- *     //    cfull2.example.com. CNAME www.bar.plts.org.
- *     //    cfull3.example.com. CNAME bar.www.plts.org.
- *     //    mfull2.more.example.com. CNAME www.bar.plts.org.
- *     //    mfull3.more.example.com. CNAME bar.www.plts.org.
+ * END);
  * ```
  *
+ * **Would match**:
+ *
+ * * `cfull2.example.com. CNAME www.bar.plts.org.`
+ * * `cfull3.example.com. CNAME bar.www.plts.org.`
+ * * `mfull2.more.example.com. CNAME www.bar.plts.org.`
+ * * `mfull3.more.example.com. CNAME bar.www.plts.org.`
+ *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("", "", "bar.**"),
- *     // Would match:
- *     //    cfull3.example.com. CNAME bar.www.plts.org.
- *     //    mfull3.more.example.com. CNAME bar.www.plts.org.
+ * END);
  * ```
+ *
+ * **Would match**:
+ *
+ * * `cfull3.example.com. CNAME bar.www.plts.org.`
+ * * `mfull3.more.example.com. CNAME bar.www.plts.org.`
  *
  * ## Conflict handling
  *
@@ -1344,8 +1407,10 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * instead.
  *
  * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
  *     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
+ * END);
  * ```
  *
  * ## Caveats
@@ -1712,9 +1777,11 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  * ### Simple example
  *
  * ```javascript
- * M365_BUILDER({
- *     initialDomain: "example.onmicrosoft.com",
- * });
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER({
+ *       initialDomain: "example.onmicrosoft.com",
+ *   }),
+ * END);
  * ```
  *
  * This sets up `MX` records, Autodiscover, and DKIM.
@@ -1722,15 +1789,17 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  * ### Advanced example
  *
  * ```javascript
- * M365_BUILDER({
- *     label: "test",
- *     mx: false,
- *     autodiscover: false,
- *     dkim: false,
- *     mdm: true,
- *     domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
- *     initialDomain: "example.onmicrosoft.com",
- * });
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER({
+ *       label: "test",
+ *       mx: false,
+ *       autodiscover: false,
+ *       dkim: false,
+ *       mdm: true,
+ *       domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
+ *       initialDomain: "example.onmicrosoft.com",
+ *   }),
+ * END);
  * ```
  *
  * This sets up Mobile Device Management only.
@@ -2916,7 +2985,9 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
  * `value` is the fingerprint as a string.
  *
  * ```javascript
- * SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
+ * END);
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/sshfp
