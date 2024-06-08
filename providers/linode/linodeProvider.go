@@ -99,12 +99,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "LINODE"
+	const providerMaintainer = "@koesie10"
 	// SRV support is in this provider, but Linode doesn't seem to support it properly
 	fns := providers.DspFuncs{
 		Initializer:   NewLinode,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("LINODE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

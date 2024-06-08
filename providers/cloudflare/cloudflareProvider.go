@@ -64,14 +64,17 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "CLOUDFLAREAPI"
+	const providerMaintainer = "@tresni"
 	fns := providers.DspFuncs{
 		Initializer:   newCloudflare,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
-	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
-	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
-	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType("CF_REDIRECT", providerName, "")
+	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", providerName, "")
+	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // cloudflareProvider is the handle for API calls.

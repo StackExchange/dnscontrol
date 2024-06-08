@@ -37,11 +37,14 @@ type autoDNSProvider struct {
 }
 
 func init() {
+	const providerName = "AUTODNS"
+	const providerMaintainer = "@arnoschoon"
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("AUTODNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // New creates a new API handle.

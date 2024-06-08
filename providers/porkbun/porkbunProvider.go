@@ -69,12 +69,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("PORKBUN", newReg)
+	const providerName = "PORKBUN"
+	const providerMaintainer = "@imlonghao"
+	providers.RegisterRegistrarType(providerName, newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("PORKBUN", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.
