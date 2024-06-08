@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 project_name: dnscontrol
+version: 2
 builds:
   -
     id: build
