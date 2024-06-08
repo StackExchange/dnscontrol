@@ -65,10 +65,13 @@ func newProvider(conf map[string]string) (*namedotcomProvider, error) {
 }
 
 func init() {
-	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
+	const providerName = "NAMEDOTCOM"
+	const providerMaintainer = "NEEDS VOLUNTEER"
+	providers.RegisterRegistrarType(providerName, newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }

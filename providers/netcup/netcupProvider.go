@@ -24,11 +24,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "NETCUP"
+	const providerMaintainer = "@kordianbruck"
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("NETCUP", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // New creates a new API handle.

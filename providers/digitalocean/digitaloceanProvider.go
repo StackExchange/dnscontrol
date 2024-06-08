@@ -82,11 +82,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "DIGITALOCEAN"
+	const providerMaintainer = "@Deraen"
 	fns := providers.DspFuncs{
 		Initializer:   NewDo,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // EnsureZoneExists creates a zone if it does not exist

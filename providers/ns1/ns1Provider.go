@@ -42,12 +42,15 @@ var docNotes = providers.DocumentationNotes{
 const clientRetries = 10
 
 func init() {
+	const providerName = "NS1"
+	const providerMaintainer = "@costasd"
 	fns := providers.DspFuncs{
 		Initializer:   newProvider,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
+	providers.RegisterCustomRecordType("NS1_URLFWD", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 type nsone struct {

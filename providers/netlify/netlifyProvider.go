@@ -33,13 +33,16 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "NETLIFY"
+	const providerMaintainer = "@SphericalKat"
 	fns := providers.DspFuncs{
 		Initializer:   newNetlify,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("NETLIFY", fns, features)
-	providers.RegisterCustomRecordType("NETLIFY", "NETLIFY", "")
-	providers.RegisterCustomRecordType("NETLIFYv6", "NETLIFY", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType(providerName, providerName, "")
+	providers.RegisterCustomRecordType("NETLIFYv6", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 type netlifyProvider struct {

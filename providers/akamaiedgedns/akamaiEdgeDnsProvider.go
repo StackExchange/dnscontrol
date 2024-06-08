@@ -49,12 +49,15 @@ type edgeDNSProvider struct {
 }
 
 func init() {
+	const providerName = "AKAMAIEDGEDNS"
+	const providerMaintainer = "@edglynes"
 	fns := providers.DspFuncs{
 		Initializer:   newEdgeDNSDSP,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("AKAMAIEDGEDNS", fns, features)
-	providers.RegisterCustomRecordType("AKAMAICDN", "AKAMAIEDGEDNS", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType("AKAMAICDN", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // DnsServiceProvider

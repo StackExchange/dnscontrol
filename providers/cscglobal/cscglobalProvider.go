@@ -61,11 +61,14 @@ func newProvider(m map[string]string) (*providerClient, error) {
 }
 
 func init() {
-	providers.RegisterRegistrarType("CSCGLOBAL", newReg)
+	const providerName = "CSCGLOBAL"
+	const providerMaintainer = "@mikenz"
+	providers.RegisterRegistrarType(providerName, newReg)
 
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("CSCGLOBAL", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }

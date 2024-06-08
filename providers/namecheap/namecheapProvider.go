@@ -42,15 +42,18 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("NAMECHEAP", newReg)
+	const providerName = "NAMECHEAP"
+	const providerMaintainer = "@willpower232"
+	providers.RegisterRegistrarType(providerName, newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)
-	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
-	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
-	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType("URL", providerName, "")
+	providers.RegisterCustomRecordType("URL301", providerName, "")
+	providers.RegisterCustomRecordType("FRAME", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

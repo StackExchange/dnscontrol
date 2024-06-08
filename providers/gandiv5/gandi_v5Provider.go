@@ -34,12 +34,15 @@ import (
 
 // init registers the provider to dnscontrol.
 func init() {
+	const providerName = "GANDI_V5"
+	const providerMaintainer = "@TomOnTime"
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("GANDI_V5", fns, features)
-	providers.RegisterRegistrarType("GANDI_V5", newReg)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, newReg)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // features declares which features and options are available.
