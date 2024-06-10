@@ -250,6 +250,17 @@ func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 	return result.Enabled, err
 }
 
+func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*models.RecordConfig, error) {
+	_ = id
+	_ = domain
+	// TODO:
+	// 1. Get list of Single Redirect.
+	//       https://developers.cloudflare.com/api/operations/single-redirect-rules-list-single-redirect-rules
+	// 2. For each one, generate a RecordConfig of type CLOUDFLARE_SINGLE_REDIRECT.
+	// 3 Return the list of RecordConfig.
+	return nil, nil
+}
+
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
 	if err != nil {

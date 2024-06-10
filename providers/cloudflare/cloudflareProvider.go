@@ -72,13 +72,14 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	ipConversions    []transform.IPConversion
-	ignoredLabels    []string
-	manageRedirRules bool
-	manageRedirects  bool
-	manageWorkers    bool
-	accountID        string
-	cfClient         *cloudflare.API
+	ipConversions   []transform.IPConversion
+	ignoredLabels   []string
+	manageRedirects bool // Old "Page Rule"-style redirects.
+	manageWorkers   bool
+	accountID       string
+	cfClient        *cloudflare.API
+	//
+	manageSingleRedirects bool // New "Single Redirects"-style redirects.
 
 	sync.Mutex                      // Protects all access to the following fields:
 	domainIndex map[string]string   // Cache of zone name to zone ID.
@@ -172,8 +173,12 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 		records = append(records, prs...)
 	}
-	if c.manageRedirectsNew {
-		prs, err := c.getPageRulesNew(domainID, domain)
+
+	if c.manageSingleRedirects {
+		// Download the list of Single Redirects.
+		// For each one, generate a CF_SINGLE_REDIRECT record
+		// Append these records to `records`
+		prs, err := c.getSingleRedirects(domainID, domain)
 		if err != nil {
 			return nil, err
 		}
@@ -522,8 +527,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
-			if !c.manageRedirects {
-				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
+			if !c.manageRedirects && !c.manageSingleRedirects {
+				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
 			}
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
@@ -533,10 +538,52 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
-			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
-			currentPrPrio++
-			rec.TTL = 1
-			rec.Type = "PAGE_RULE"
+
+			if c.manageRedirects && !c.manageSingleRedirects {
+				// Old-Style.  Convert this record to PAGE_RULE.
+				rec.Type = "PAGE_RULE"
+				rec.TTL = 1
+				rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
+				currentPrPrio++
+			} else if !c.manageRedirects && c.manageSingleRedirects {
+				// New-Style.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
+				rec.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
+				rec.TTL = 1
+				t, m, e, err := generateSingleRedirectRule(rec.GetTargetField())
+				if err != nil {
+					return err
+				}
+				rec.SetTarget(t)
+				rec.CloudflareSingleRedirectMatcher = m
+				rec.CloudflareSingleRedirectExpr = e
+			} else {
+				// Both!  Convert this record to PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
+				// make the additional record:
+				newRec, err := rec.Copy()
+				if err != nil {
+					return err
+				}
+
+				newRec.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
+				newRec.TTL = 1
+				t, m, e, err := generateSingleRedirectRule(rec.GetTargetField())
+				if err != nil {
+					return err
+				}
+				rec.SetTarget(t)
+				rec.CloudflareSingleRedirectMatcher = m
+				rec.CloudflareSingleRedirectExpr = e
+
+				// Append new record to the end of the list.
+				dc.Records = append(dc.Records, newRec)
+
+				// Convert the current record:
+				rec.Type = "PAGE_RULE"
+				rec.TTL = 1
+				rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
+				currentPrPrio++
+			}
+
 		}
 
 		// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
@@ -613,17 +660,18 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions    string   `json:"ip_conversions"`
-			IgnoredLabels    []string `json:"ignored_labels"`
-			ManageRedirRules bool     `json:"manage_redirrules"`
-			ManageRedirects  bool     `json:"manage_redirects"`
-			ManageWorkers    bool     `json:"manage_workers"`
+			IPConversions   string   `json:"ip_conversions"`
+			IgnoredLabels   []string `json:"ignored_labels"`
+			ManageRedirects bool     `json:"manage_redirects"`
+			ManageWorkers   bool     `json:"manage_workers"`
+			//
+			ManageSingleRedirects bool `json:"manage_single_redirect"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
-		api.manageRedirRules = parsedMeta.ManageRedirRules
+		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
 		api.manageRedirects = parsedMeta.ManageRedirects
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:

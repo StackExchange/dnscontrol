@@ -200,6 +200,46 @@ If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
 
 
+## Old-style vs new-style redirects
+
+Old-style redirects uses the [Page Rules][https://developers.cloudflare.com/rules/page-rules/] product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
+`CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generate Page Rules.
+
+Enable it using:
+
+```javascript
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
+    "manage_redirects": true
+});
+```
+
+New redirects uses the [Single Redirects][https://developers.cloudflare.com/rules/url-forwarding/] product feature.  In this mode, 
+`CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generates Single Redirects.
+
+Enable it using:
+
+```javascript
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
+    "manage_single_redirects": true
+});
+```
+
+If both are enabled, DNSControl converts the old-style Page Rules into
+new-style Single Redirects.  That is, it uses the API to download the existing
+Page Rule-based redirects, translates them into Single Redirects.  When doing
+a `push`, DNSControl updates both the Page Rule-based directs and the Single
+Redirects.
+
+Single Redirects are processed before old-style Page Rules. Therefore, it is
+safe to have both.
+
+We recommend that once the conversion is complete, change `manage_redirects` to
+`false`.  At that point, either delete the old redirects via the CloudFlare web
+control panel. Eventually Cloudflare will delete them for you when the product
+is decommissioned.
+
+
+
 ## Redirects
 The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
