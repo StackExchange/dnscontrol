@@ -238,6 +238,9 @@ We recommend that once the conversion is complete, change `manage_redirects` to
 control panel. Eventually Cloudflare will delete them for you when the product
 is decommissioned.
 
+NOTE: Only a limited number of patterns are supported.  File a bug if you have a pattern that doesn't work.
+
+See providers/cloudflare/singleredirect_test.go for a list of what's implemented.
 
 
 ## Redirects

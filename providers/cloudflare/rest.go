@@ -256,7 +256,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	// TODO:
 	// 1. Get list of Single Redirect.
 	//       https://developers.cloudflare.com/api/operations/single-redirect-rules-list-single-redirect-rules
-	// 2. For each one, generate a RecordConfig of type CLOUDFLARE_SINGLE_REDIRECT.
+	// 2. For each one, generate a RecordConfig of type CLOUDFLAREAPI_SINGLE_REDIRECT.
 	// 3 Return the list of RecordConfig.
 	return nil, nil
 }

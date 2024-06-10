@@ -16,40 +16,42 @@ import (
 // RecordConfig stores a DNS record.
 // Valid types:
 //
-//	Official: (alphabetical)
-//	  A
-//	  AAAA
-//	  ANAME  // Technically not an official rtype yet.
-//	  CAA
-//	  CNAME
-//	  HTTPS
-//	  LOC
-//	  MX
-//	  NAPTR
-//	  NS
-//	  PTR
-//	  SOA
-//	  SRV
-//	  SSHFP
-//	  SVCB
-//	  TLSA
-//	  TXT
-//	Pseudo-Types: (alphabetical)
-//	  ALIAS
-//	  CF_REDIRECT
-//	  CF_TEMP_REDIRECT
-//	  CF_WORKER_ROUTE
-//	  CLOUDNS_WR
-//	  FRAME
-//	  IMPORT_TRANSFORM
-//	  NAMESERVER
-//	  NO_PURGE
-//	  NS1_URLFWD
-//	  PAGE_RULE
-//	  PURGE
-//	  URL
-//	  URL301
-//	  WORKER_ROUTE
+//			Official: (alphabetical)
+//			  A
+//			  AAAA
+//			  ANAME  // Technically not an official rtype yet.
+//			  CAA
+//			  CNAME
+//			  HTTPS
+//			  LOC
+//			  MX
+//			  NAPTR
+//			  NS
+//			  PTR
+//			  SOA
+//			  SRV
+//			  SSHFP
+//			  SVCB
+//			  TLSA
+//			  TXT
+//			Pseudo-Types: (alphabetical)
+//	       NOTE: All NEW record types should be prefixed with the provider name (Correct: CLOUDFLAREAPI_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
+//			  ALIAS
+//			  CF_REDIRECT
+//			  CF_TEMP_REDIRECT
+//			  CF_WORKER_ROUTE
+//		      CLOUDFLAREAPI_SINGLE_REDIRECT
+//			  CLOUDNS_WR
+//			  FRAME
+//			  IMPORT_TRANSFORM
+//			  NAMESERVER
+//			  NO_PURGE
+//			  NS1_URLFWD
+//			  PAGE_RULE
+//			  PURGE
+//			  URL
+//			  URL301
+//			  WORKER_ROUTE
 //
 // Notes about the fields:
 //

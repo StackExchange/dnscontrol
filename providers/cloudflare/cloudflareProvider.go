@@ -176,7 +176,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 
 	if c.manageSingleRedirects {
 		// Download the list of Single Redirects.
-		// For each one, generate a CF_SINGLE_REDIRECT record
+		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
 		// Append these records to `records`
 		prs, err := c.getSingleRedirects(domainID, domain)
 		if err != nil {
@@ -662,10 +662,10 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		parsedMeta := &struct {
 			IPConversions   string   `json:"ip_conversions"`
 			IgnoredLabels   []string `json:"ignored_labels"`
-			ManageRedirects bool     `json:"manage_redirects"`
+			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
 			ManageWorkers   bool     `json:"manage_workers"`
 			//
-			ManageSingleRedirects bool `json:"manage_single_redirect"`
+			ManageSingleRedirects bool `json:"manage_single_redirect"` // New-style Dynamic "Single Redirects"
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
