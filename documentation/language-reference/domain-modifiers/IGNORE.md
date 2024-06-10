@@ -38,9 +38,11 @@ The `IGNORE()` function can be used with up to 3 parameters:
 
 {% code %}
 ```javascript
-IGNORE(labelSpec, typeSpec, targetSpec):
-IGNORE(labelSpec, typeSpec):
-IGNORE(labelSpec):
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  IGNORE(labelSpec, typeSpec, targetSpec),
+  IGNORE(labelSpec, typeSpec),
+  IGNORE(labelSpec),
+END);
 ```
 {% endcode %}
 
@@ -152,105 +154,152 @@ END);
 
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("@", "", ""),
-    // Would match:
-    //    foo.example.com. A 1.1.1.1
-    //    foo.more.example.com. A 1.1.1.1
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* `foo.example.com. A 1.1.1.1`
+* `foo.more.example.com. A 1.1.1.1`
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("example.com.", "", ""),
-    // Would match:
-    //    nothing
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* nothing
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("foo", "", ""),
-    // Would match:
-    //    foo.example.com. A 1.1.1.1
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* `foo.example.com. A 1.1.1.1`
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("foo.**", "", ""),
-    // Would match:
-    //    foo.more.example.com. A 1.1.1.1
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* `foo.more.example.com. A 1.1.1.1`
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www", "", ""),
-    // Would match:
+END);
     //    www.example.com. A 174.136.107.196
 ```
 {% endcode %}
 
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.*", "", ""),
-    // Would match:
+END);
     //    nothing
 ```
 {% endcode %}
 
+**Would match**:
+
+* nothing
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.example.com", "", ""),
-    // Would match:
+END);
     //    nothing
 ```
 {% endcode %}
 
+**Would match**:
+
+* nothing
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.example.com.", "", ""),
-    // Would match:
-    //    none
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* none
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     //IGNORE("", "", "1.1.1.*"),
-    // Would match:
-    //    foo.example.com. A 1.1.1.1
-    //    foo.more.example.com. A 1.1.1.1
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* `foo.example.com. A 1.1.1.1`
+* `foo.more.example.com. A 1.1.1.1`
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     //IGNORE("", "", "www"),
-    // Would match:
-    //    none
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* none
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("", "", "*bar*"),
-    // Would match:
-    //    cfull2.example.com. CNAME www.bar.plts.org.
-    //    cfull3.example.com. CNAME bar.www.plts.org.
-    //    mfull2.more.example.com. CNAME www.bar.plts.org.
-    //    mfull3.more.example.com. CNAME bar.www.plts.org.
+END);
 ```
 {% endcode %}
 
+**Would match**:
+
+* `cfull2.example.com. CNAME www.bar.plts.org.`
+* `cfull3.example.com. CNAME bar.www.plts.org.`
+* `mfull2.more.example.com. CNAME www.bar.plts.org.`
+* `mfull3.more.example.com. CNAME bar.www.plts.org.`
+
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("", "", "bar.**"),
-    // Would match:
-    //    cfull3.example.com. CNAME bar.www.plts.org.
-    //    mfull3.more.example.com. CNAME bar.www.plts.org.
+END);
 ```
 {% endcode %}
+
+**Would match**:
+
+* `cfull3.example.com. CNAME bar.www.plts.org.`
+* `mfull3.more.example.com. CNAME bar.www.plts.org.`
 
 ## Conflict handling
 
@@ -294,8 +343,10 @@ instead.
 
 {% code %}
 ```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
+END);
 ```
 {% endcode %}
 

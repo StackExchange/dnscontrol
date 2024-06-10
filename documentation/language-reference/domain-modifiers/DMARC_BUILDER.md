@@ -41,12 +41,14 @@ DMARC policies for your domains.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-DMARC_BUILDER({
-  policy: "reject",
-  ruf: [
-    "mailto:mailauth-reports@example.com",
-  ],
-})
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  DMARC_BUILDER({
+    policy: "reject",
+    ruf: [
+      "mailto:mailauth-reports@example.com",
+    ],
+  }),
+END);
 ```
 {% endcode %}
 
@@ -60,38 +62,42 @@ This yield the following record:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-DMARC_BUILDER({
-  policy: "reject",
-  subdomainPolicy: "quarantine",
-  percent: 50,
-  alignmentSPF: "r",
-  alignmentDKIM: "strict",
-  rua: [
-    "mailto:mailauth-reports@example.com",
-    "https://dmarc.example.com/submit",
-  ],
-  ruf: [
-    "mailto:mailauth-reports@example.com",
-  ],
-  failureOptions: "1",
-  reportInterval: "1h",
-});
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  DMARC_BUILDER({
+    policy: "reject",
+    subdomainPolicy: "quarantine",
+    percent: 50,
+    alignmentSPF: "r",
+    alignmentDKIM: "strict",
+    rua: [
+      "mailto:mailauth-reports@example.com",
+      "https://dmarc.example.com/submit",
+    ],
+    ruf: [
+      "mailto:mailauth-reports@example.com",
+    ],
+    failureOptions: "1",
+    reportInterval: "1h",
+  }),
+END);
 ```
 {% endcode %}
 
 {% code title="dnsconfig.js" %}
 ```javascript
-DMARC_BUILDER({
-  label: "insecure",
-  policy: "none",
-  ruf: [
-    "mailto:mailauth-reports@example.com",
-  ],
-  failureOptions: {
-      SPF: false,
-      DKIM: true,
-  },
-});
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  DMARC_BUILDER({
+    label: "insecure",
+    policy: "none",
+    ruf: [
+      "mailto:mailauth-reports@example.com",
+    ],
+    failureOptions: {
+        SPF: false,
+        DKIM: true,
+    },
+  }),
+END);
 ```
 {% endcode %}
 
@@ -101,7 +107,6 @@ This yields the following records:
 @           IN  TXT "v=DMARC1; p=reject; sp=quarantine; adkim=s; aspf=r; pct=50; rua=mailto:mailauth-reports@example.com,https://dmarc.example.com/submit; ruf=mailto:mailauth-reports@example.com; fo=1; ri=3600"
 insecure    IN  TXT "v=DMARC1; p=none; ruf=mailto:mailauth-reports@example.com; fo=d"
 ```
-
 
 ### Parameters
 
