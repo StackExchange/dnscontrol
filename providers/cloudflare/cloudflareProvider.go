@@ -72,12 +72,13 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	ipConversions   []transform.IPConversion
-	ignoredLabels   []string
-	manageRedirects bool
-	manageWorkers   bool
-	accountID       string
-	cfClient        *cloudflare.API
+	ipConversions    []transform.IPConversion
+	ignoredLabels    []string
+	manageRedirRules bool
+	manageRedirects  bool
+	manageWorkers    bool
+	accountID        string
+	cfClient         *cloudflare.API
 
 	sync.Mutex                      // Protects all access to the following fields:
 	domainIndex map[string]string   // Cache of zone name to zone ID.
@@ -166,6 +167,13 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(domainID, domain)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, prs...)
+	}
+	if c.manageRedirectsNew {
+		prs, err := c.getPageRulesNew(domainID, domain)
 		if err != nil {
 			return nil, err
 		}
@@ -605,15 +613,17 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions   string   `json:"ip_conversions"`
-			IgnoredLabels   []string `json:"ignored_labels"`
-			ManageRedirects bool     `json:"manage_redirects"`
-			ManageWorkers   bool     `json:"manage_workers"`
+			IPConversions    string   `json:"ip_conversions"`
+			IgnoredLabels    []string `json:"ignored_labels"`
+			ManageRedirRules bool     `json:"manage_redirrules"`
+			ManageRedirects  bool     `json:"manage_redirects"`
+			ManageWorkers    bool     `json:"manage_workers"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
+		api.manageRedirRules = parsedMeta.ManageRedirRules
 		api.manageRedirects = parsedMeta.ManageRedirects
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
