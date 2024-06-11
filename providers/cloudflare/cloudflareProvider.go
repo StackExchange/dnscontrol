@@ -47,12 +47,15 @@ var features = providers.DocumentationNotes{
 	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDNSKEY:           providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
@@ -642,15 +645,17 @@ type cfRecData struct {
 	Weight       uint16   `json:"weight"`        // SRV
 	Port         uint16   `json:"port"`          // SRV
 	Tag          string   `json:"tag"`           // CAA
-	Flags        uint8    `json:"flags"`         // CAA
+	Flags        uint16   `json:"flags"`         // CAA/DNSKEY
 	Value        string   `json:"value"`         // CAA
 	Usage        uint8    `json:"usage"`         // TLSA
 	Selector     uint8    `json:"selector"`      // TLSA
 	MatchingType uint8    `json:"matching_type"` // TLSA
 	Certificate  string   `json:"certificate"`   // TLSA
-	Algorithm    uint8    `json:"algorithm"`     // SSHFP/DS
+	Algorithm    uint8    `json:"algorithm"`     // SSHFP/DNSKEY/DS
 	HashType     uint8    `json:"type"`          // SSHFP
 	Fingerprint  string   `json:"fingerprint"`   // SSHFP
+	Protocol     uint8    `json:"protocol"`      // DNSKEY
+	PublicKey    string   `json:"public_key"`    // DNSKEY
 	KeyTag       uint16   `json:"key_tag"`       // DS
 	DigestType   uint8    `json:"digest_type"`   // DS
 	Digest       string   `json:"digest"`        // DS

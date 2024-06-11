@@ -71,6 +71,15 @@ func (c *cloudflareProvider) createZone(domainName string) (string, error) {
 	return zone.ID, err
 }
 
+func cfDnskeyData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Algorithm: rec.DnskeyAlgorithm,
+		Flags:     rec.DnskeyFlags,
+		Protocol:  rec.DnskeyProtocol,
+		PublicKey: rec.DnskeyPublicKey,
+	}
+}
+
 func cfDSData(rec *models.RecordConfig) *cfRecData {
 	return &cfRecData{
 		KeyTag:     rec.DsKeyTag,
@@ -97,7 +106,7 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 func cfCaaData(rec *models.RecordConfig) *cfRecData {
 	return &cfRecData{
 		Tag:   rec.CaaTag,
-		Flags: rec.CaaFlag,
+		Flags: uint16(rec.CaaFlag),
 		Value: rec.GetTargetField(),
 	}
 }
@@ -116,6 +125,14 @@ func cfSshfpData(rec *models.RecordConfig) *cfRecData {
 		Algorithm:   rec.SshfpAlgorithm,
 		HashType:    rec.SshfpFingerprint,
 		Fingerprint: rec.GetTargetField(),
+	}
+}
+
+func cfSvcbData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Priority: rec.SvcPriority,
+		Target:   cfTarget(rec.GetTargetField()),
+		Value:    rec.SvcParams,
 	}
 }
 
@@ -175,11 +192,15 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			} else if rec.Type == "SSHFP" {
 				cf.Data = cfSshfpData(rec)
 				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "DNSKEY" {
+				cf.Data = cfDnskeyData(rec)
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			} else if rec.Type == "NAPTR" {
 				cf.Data = cfNaptrData(rec)
 				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+				cf.Data = cfSvcbData(rec)
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -227,12 +248,17 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	} else if rec.Type == "SSHFP" {
 		r.Data = cfSshfpData(rec)
 		r.Name = rec.GetLabelFQDN()
+	} else if rec.Type == "DNSKEY" {
+		r.Data = cfDnskeyData(rec)
+		r.Content = ""
 	} else if rec.Type == "DS" {
 		r.Data = cfDSData(rec)
 		r.Content = ""
 	} else if rec.Type == "NAPTR" {
 		r.Data = cfNaptrData(rec)
 		r.Name = rec.GetLabelFQDN()
+	} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+		r.Data = cfSvcbData(rec)
 	}
 	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 	return err
