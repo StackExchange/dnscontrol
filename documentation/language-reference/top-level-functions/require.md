@@ -81,7 +81,7 @@ function includeK8Sdev() {
 ```
 {% endcode %}
 
-### Example 3: JSON and JASN5
+### Example 3: JSON and JSON5
 
 Requiring JSON files initializes variables:
 
