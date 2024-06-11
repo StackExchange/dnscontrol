@@ -1,8 +1,205 @@
 package cloudflare
 
 import (
+	"regexp"
 	"testing"
+
+	"github.com/gobwas/glob"
 )
+
+func Test_makeSingleDirectRule(t *testing.T) {
+	tests := []struct {
+		name string
+		//
+		pattern string
+		replace string
+		//
+		wantMatch string
+		wantExpr  string
+		wantErr   bool
+	}{
+		{
+			name:      "000",
+			pattern:   "example.com/",
+			replace:   "foo.com",
+			wantMatch: `http.host eq "example.com" and http.request.uri.path eq "/"`,
+			wantExpr:  `"https://foo.com"`,
+			wantErr:   false,
+		},
+
+		/*
+			All the test-cases I could find in dnsconfig.js
+
+			Generated with this:
+
+			dnscontrol print-ir --pretty |grep '"target' |grep , | sed -e 's@"target":@@g' > /tmp/list
+			vim /tmp/list    # removed the obvious duplicates
+			awk < /tmp/list -v q='"' -F, '{ print "{" ; print "name: " q NR  q ","  ; print "pattern: " $1 q "," ; print "replace: " q $2 "," ; print "wantMatch: `FIXME`," ; print "wantExpr:  `FIXME`," ; print "wantErr:   false," ; print "},"  }' | pbcopy
+
+		*/
+
+		{
+			name:      "1",
+			pattern:   "https://i-dev.sstatic.net/",
+			replace:   "https://stackexchange.com/",
+			wantMatch: `http.host eq "i-dev.sstatic.net" and http.request.uri.path eq "/"`,
+			wantExpr:  `"https://stackexchange.com/"`,
+			wantErr:   false,
+		},
+		{
+			name:      "2",
+			pattern:   "https://i.stack.imgur.com/*",
+			replace:   "https://i.sstatic.net/$1",
+			wantMatch: `http.host eq "i.stack.imgur.com"`,
+			wantExpr:  `concat("https://i.sstatic.net/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "3",
+			pattern:   "https://img.stack.imgur.com/*",
+			replace:   "https://i.sstatic.net/$1",
+			wantMatch: `http.host eq "img.stack.imgur.com"`,
+			wantExpr:  `concat("https://i.sstatic.net/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "4",
+			pattern:   "https://insights.stackoverflow.com/",
+			replace:   "https://survey.stackoverflow.co",
+			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/"`,
+			wantExpr:  `"https://survey.stackoverflow.co"`,
+			wantErr:   false,
+		},
+		{
+			name:      "5",
+			pattern:   "https://insights.stackoverflow.com/trends",
+			replace:   "https://trends.stackoverflow.co",
+			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/trends"`,
+			wantExpr:  `"https://trends.stackoverflow.co"`,
+			wantErr:   false,
+		},
+		{
+			name:      "6",
+			pattern:   "https://insights.stackoverflow.com/trends/",
+			replace:   "https://trends.stackoverflow.co",
+			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/trends/"`,
+			wantExpr:  `"https://trends.stackoverflow.co"`,
+			wantErr:   false,
+		},
+		{
+			name:      "7",
+			pattern:   "https://insights.stackoverflow.com/survey/2021",
+			replace:   "https://survey.stackoverflow.co/2021",
+			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/survey/2021"`,
+			wantExpr:  `"https://survey.stackoverflow.co/2021"`,
+			wantErr:   false,
+		},
+		// {
+		// 	name:      "27",
+		// 	pattern:   "*www.stackoverflow.help/*",
+		// 	replace:   "https://stackoverflow.help/$1",
+		/// FIXME(tlim): Should "$1" should be a "$2"?   See dnsconfig.js:4344
+		// 	wantMatch: `FIXME`,
+		// 	wantExpr:  `FIXME`,
+		// 	wantErr:   false,
+		// },
+		{
+			name:      "28",
+			pattern:   "*stackoverflow.help/support/solutions/articles/36000241656-write-an-article",
+			replace:   "https://stackoverflow.help/en/articles/4397209-write-an-article",
+			wantMatch: `( http.host eq "stackoverflow.help" or ends_with(http.host, ".stackoverflow.help") ) and http.request.uri.path eq "/support/solutions/articles/36000241656-write-an-article"`,
+			wantExpr:  `"https://stackoverflow.help/en/articles/4397209-write-an-article"`,
+			wantErr:   false,
+		},
+		{
+			name:      "29",
+			pattern:   "*stackoverflow.careers/*",
+			replace:   "https://careers.stackoverflow.com/$2",
+			wantMatch: `http.host eq "stackoverflow.careers" or ends_with(http.host, ".stackoverflow.careers")`,
+			wantExpr:  `concat("https://careers.stackoverflow.com/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "31",
+			pattern:   "stackenterprise.com/*",
+			replace:   "https://stackoverflow.co/teams/",
+			wantMatch: `http.host eq "stackenterprise.com"`,
+			wantExpr:  `"https://stackoverflow.co/teams/"`,
+			wantErr:   false,
+		},
+		{
+			name:      "33",
+			pattern:   "meta.*yodeya.com/*",
+			replace:   "https://judaism.meta.stackexchange.com/$2",
+			wantMatch: `http.host matches r###"^meta\..*yodeya\.com$"###`,
+			wantExpr:  `concat("https://judaism.meta.stackexchange.com/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "34",
+			pattern:   "chat.*yodeya.com/*",
+			replace:   "https://chat.stackexchange.com/?tab=site\u0026host=judaism.stackexchange.com",
+			wantMatch: `http.host matches r###"^chat\..*yodeya\.com$"###`,
+			wantExpr:  `"https://chat.stackexchange.com/?tab=site&host=judaism.stackexchange.com"`,
+			wantErr:   false,
+		},
+		{
+			name:      "35",
+			pattern:   "*yodeya.com/*",
+			replace:   "https://judaism.stackexchange.com/$2",
+			wantMatch: `http.host eq "yodeya.com" or ends_with(http.host, ".yodeya.com")`,
+			wantExpr:  `concat("https://judaism.stackexchange.com/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "36",
+			pattern:   "meta.*seasonedadvice.com/*",
+			replace:   "https://cooking.meta.stackexchange.com/$2",
+			wantMatch: `http.host matches r###"^meta\..*seasonedadvice\.com$"###`,
+			wantExpr:  `concat("https://cooking.meta.stackexchange.com/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "70",
+			pattern:   "collectivesonstackoverflow.co/*",
+			replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
+			wantMatch: `http.host eq "collectivesonstackoverflow.co"`,
+			wantExpr:  `"https://stackoverflow.com/collectives-on-stack-overflow"`,
+			wantErr:   false,
+		},
+		{
+			name:      "71",
+			pattern:   "*collectivesonstackoverflow.co/*",
+			replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
+			wantMatch: `http.host eq "collectivesonstackoverflow.co" or ends_with(http.host, ".collectivesonstackoverflow.co")`,
+			wantExpr:  `"https://stackoverflow.com/collectives-on-stack-overflow"`,
+			wantErr:   false,
+		},
+		{
+			name:      "76",
+			pattern:   "*stackexchange.ca/*",
+			replace:   "https://stackexchange.com/$2",
+			wantMatch: `http.host eq "stackexchange.ca" or ends_with(http.host, ".stackexchange.ca")`,
+			wantExpr:  `concat("https://stackexchange.com/", http.request.uri.path)`,
+			wantErr:   false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("makeSingleDirectRule() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotMatch != tt.wantMatch {
+				t.Errorf("makeSingleDirectRule() MATCH = %v\n                                                  want %v", gotMatch, tt.wantMatch)
+			}
+			if gotExpr != tt.wantExpr {
+				t.Errorf("makeSingleDirectRule()  EXPR = %v\n                                                  want %v", gotExpr, tt.wantExpr)
+			}
+		})
+	}
+}
 
 func Test_normalizeURL(t *testing.T) {
 	tests := []struct {
@@ -71,675 +268,53 @@ func Test_normalizeURL(t *testing.T) {
 	}
 }
 
-func Test_makeSingleDirectRule(t *testing.T) {
+func Test_simpleGlobToRegex(t *testing.T) {
 	tests := []struct {
-		name string
-		//
+		name    string
 		pattern string
-		replace string
-		//
-		wantMatch string
-		wantExpr  string
-		wantErr   bool
+		want    string
 	}{
-		{
-			name:      "000",
-			pattern:   "example.com/",
-			replace:   "foo.com",
-			wantMatch: `http.host eq "example.com" and http.request.uri.path eq "/"`,
-			wantExpr:  `"https://foo.com"`,
-			wantErr:   false,
-		},
-
-		/*
-			All the test-cases I could find in dnsconfig.js
-
-			Generated with this:
-
-			dnscontrol print-ir --pretty |grep '"target' |grep , | sed -e 's@"target":@@g' > /tmp/list
-			vim /tmp/list    # removed the obvious duplicates
-			awk < /tmp/list -v q='"' -F, '{ print "{" ; print "name: " q NR  q ","  ; print "pattern: " $1 q "," ; print "replace: " q $2 "," ; print "wantMatch: `FIXME`," ; print "wantExpr:  `FIXME`," ; print "wantErr:   false," ; print "},"  }' | pbcopy
-
-		*/
-
-		// {
-		// 	name:      "1",
-		// 	pattern:   "https://i-dev.sstatic.net/",
-		// 	replace:   "https://stackexchange.com/",
-		// 	wantMatch: `http.host eq "i-dev.sstatic.net" and http.request.uri.path eq "/"`,
-		// 	wantExpr:  `concat("https://i-dev.sstatic.net", http.request.uri.path)`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "2",
-		// 	pattern:   "https://i.stack.imgur.com/*",
-		// 	replace:   "https://i.sstatic.net/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "3",
-		// 	pattern:   "https://img.stack.imgur.com/*",
-		// 	replace:   "https://i.sstatic.net/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "4",
-		// 	pattern:   "https://insights.stackoverflow.com/",
-		// 	replace:   "https://survey.stackoverflow.co",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "5",
-		// 	pattern:   "https://insights.stackoverflow.com/trends",
-		// 	replace:   "https://trends.stackoverflow.co",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "6",
-		// 	pattern:   "https://insights.stackoverflow.com/trends/",
-		// 	replace:   "https://trends.stackoverflow.co",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "7",
-		// 	pattern:   "https://insights.stackoverflow.com/survey/2021",
-		// 	replace:   "https://survey.stackoverflow.co/2021",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "8",
-		// 	pattern:   "https://looker.ds.stackexchange.com/*",
-		// 	replace:   "https://stackoverflow.cloud.looker.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "9",
-		// 	pattern:   "https://looker-api.ds.stackexchange.com/*",
-		// 	replace:   "https://stackoverflow.cloud.looker.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "10",
-		// 	pattern:   "https://moderators.meta.stackexchange.com/*",
-		// 	replace:   "https://communitybuilding.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "11",
-		// 	pattern:   "https://meta.moderators.stackexchange.com/*",
-		// 	replace:   "https://communitybuilding.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "12",
-		// 	pattern:   "https://meta.writers.stackexchange.com/*",
-		// 	replace:   "https://writing.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "13",
-		// 	pattern:   "https://fantasy.meta.stackexchange.com/*",
-		// 	replace:   "https://scifi.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "14",
-		// 	pattern:   "https://meta.fantasy.stackexchange.com/*",
-		// 	replace:   "https://scifi.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "15",
-		// 	pattern:   "https://meta.beer.stackexchange.com/*",
-		// 	replace:   "https://alcohol.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "16",
-		// 	pattern:   "https://meta.photography.stackexchange.com/*",
-		// 	replace:   "https://photo.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "17",
-		// 	pattern:   "https://garage.meta.stackexchange.com/*",
-		// 	replace:   "https://mechanics.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "18",
-		// 	pattern:   "https://meta.garage.stackexchange.com/*",
-		// 	replace:   "https://mechanics.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "19",
-		// 	pattern:   "https://meta.health.stackexchange.com/*",
-		// 	replace:   "https://medicalsciences.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "20",
-		// 	pattern:   "https://ui.meta.stackexchange.com/*",
-		// 	replace:   "https://ux.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "21",
-		// 	pattern:   "https://meta.ui.stackexchange.com/*",
-		// 	replace:   "https://ux.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "22",
-		// 	pattern:   "https://meta.mathoverflow.stackexchange.com/*",
-		// 	replace:   "https://meta.mathoverflow.net/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "23",
-		// 	pattern:   "https://meta.programmers.stackexchange.com/*",
-		// 	replace:   "https://softwareengineering.meta.stackexchange.com/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "24",
-		// 	pattern:   "*stackpromos.com/*",
-		// 	replace:   "https://contests.stackoverflow.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "25",
-		// 	pattern:   "*isstackoverflowdownforeveryoneorjustme.com/*",
-		// 	replace:   "https://www.stackstatus.net/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "26",
-		// 	pattern:   "https://stackoverflow.help/*",
-		// 	replace:   "https://stackoverflowteams.help/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "27",
-		// 	pattern:   "*www.stackoverflow.help/*",
-		// 	replace:   "https://stackoverflow.help/$1",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "28",
-		// 	pattern:   "*stackoverflow.help/support/solutions/articles/36000241656-write-an-article",
-		// 	replace:   "https://stackoverflow.help/en/articles/4397209-write-an-article",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "29",
-		// 	pattern:   "*stackoverflow.careers/*",
-		// 	replace:   "https://careers.stackoverflow.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "30",
-		// 	pattern:   "*stackoverflowenterprise.com/*",
-		// 	replace:   "https://www.stackoverflowbusiness.com/enterprise/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "31",
-		// 	pattern:   "stackenterprise.com/*",
-		// 	replace:   "https://stackoverflow.co/teams/",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "32",
-		// 	pattern:   "www.stackenterprise.com/*",
-		// 	replace:   "https://stackoverflow.co/teams/",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "33",
-		// 	pattern:   "meta.*yodeya.com/*",
-		// 	replace:   "https://judaism.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "34",
-		// 	pattern:   "chat.*yodeya.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=judaism.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "35",
-		// 	pattern:   "*yodeya.com/*",
-		// 	replace:   "https://judaism.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "36",
-		// 	pattern:   "meta.*seasonedadvice.com/*",
-		// 	replace:   "https://cooking.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "37",
-		// 	pattern:   "chat.*seasonedadvice.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=cooking.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "38",
-		// 	pattern:   "*seasonedadvice.com/*",
-		// 	replace:   "https://cooking.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "39",
-		// 	pattern:   "meta.*askpatents.com/*",
-		// 	replace:   "https://patents.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "40",
-		// 	pattern:   "chat.*askpatents.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=patents.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "41",
-		// 	pattern:   "*askpatents.com/*",
-		// 	replace:   "https://patents.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "42",
-		// 	pattern:   "meta.*arqade.com/*",
-		// 	replace:   "https://gaming.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "43",
-		// 	pattern:   "chat.*arqade.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=gaming.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "44",
-		// 	pattern:   "*arqade.com/*",
-		// 	replace:   "https://gaming.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "45",
-		// 	pattern:   "meta.*askdifferent.com/*",
-		// 	replace:   "https://apple.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "46",
-		// 	pattern:   "chat.*askdifferent.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=apple.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "47",
-		// 	pattern:   "*askdifferent.com/*",
-		// 	replace:   "https://apple.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "48",
-		// 	pattern:   "meta.*basicallymoney.com/*",
-		// 	replace:   "https://money.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "49",
-		// 	pattern:   "chat.*basicallymoney.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=money.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "50",
-		// 	pattern:   "*basicallymoney.com/*",
-		// 	replace:   "https://money.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "51",
-		// 	pattern:   "meta.*chiphacker.com/*",
-		// 	replace:   "https://electronics.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "52",
-		// 	pattern:   "chat.*chiphacker.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=electronics.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "53",
-		// 	pattern:   "*chiphacker.com/*",
-		// 	replace:   "https://electronics.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "54",
-		// 	pattern:   "meta.*crossvalidated.com/*",
-		// 	replace:   "https://stats.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "55",
-		// 	pattern:   "chat.*crossvalidated.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=stats.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "56",
-		// 	pattern:   "*crossvalidated.com/*",
-		// 	replace:   "https://stats.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "57",
-		// 	pattern:   "meta.*miyodeya.com/*",
-		// 	replace:   "https://judaism.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "58",
-		// 	pattern:   "chat.*miyodeya.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=judaism.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "59",
-		// 	pattern:   "*miyodeya.com/*",
-		// 	replace:   "https://judaism.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "60",
-		// 	pattern:   "meta.*skepticexchange.com/*",
-		// 	replace:   "https://skeptics.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "61",
-		// 	pattern:   "chat.*skepticexchange.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=skeptics.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "62",
-		// 	pattern:   "*skepticexchange.com/*",
-		// 	replace:   "https://skeptics.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "63",
-		// 	pattern:   "meta.*thearqade.com/*",
-		// 	replace:   "https://gaming.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "64",
-		// 	pattern:   "chat.*thearqade.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=gaming.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "65",
-		// 	pattern:   "*thearqade.com/*",
-		// 	replace:   "https://gaming.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "66",
-		// 	pattern:   "meta.*nothingtoinstall.com/*",
-		// 	replace:   "https://webapps.meta.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "67",
-		// 	pattern:   "chat.*nothingtoinstall.com/*",
-		// 	replace:   "https://chat.stackexchange.com/?tab=site\u0026host=webapps.stackexchange.com",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "68",
-		// 	pattern:   "*nothingtoinstall.com/*",
-		// 	replace:   "https://webapps.stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "69",
-		// 	pattern:   "*slackoverflow.com/*",
-		// 	replace:   "https://stackoverflow.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "70",
-		// 	pattern:   "collectivesonstackoverflow.co/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "71",
-		// 	pattern:   "*collectivesonstackoverflow.co/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "72",
-		// 	pattern:   "collectivesonstackoverflow.io/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "73",
-		// 	pattern:   "*collectivesonstackoverflow.io/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "74",
-		// 	pattern:   "collectivesonstackoverflow.com/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "75",
-		// 	pattern:   "*collectivesonstackoverflow.com/*",
-		// 	replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "76",
-		// 	pattern:   "*stackexchange.ca/*",
-		// 	replace:   "https://stackexchange.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "77",
-		// 	pattern:   "*stackoverflow.ca/*",
-		// 	replace:   "https://stackoverflow.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
-		// {
-		// 	name:      "78",
-		// 	pattern:   "*stackoverflow.tv/*",
-		// 	replace:   "https://stackoverflow.com/$2",
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
+		{"1", `foo`, `^foo$`},
+		{"2", `fo.o`, `^fo\.o$`},
+		{"3", `*foo`, `.*foo$`},
+		{"4", `foo*`, `^foo.*`},
+		{"5", `f.oo*`, `^f\.oo.*`},
+		{"6", `f*oo*`, `^f.*oo.*`},
 	}
+
+	data := []string{
+		"bar",
+		"foo",
+		"foofoo",
+		"ONEfooTWO",
+		"fo",
+		"frankfodog",
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("makeSingleDirectRule() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			got := simpleGlobToRegex(tt.pattern)
+			if got != tt.want {
+				t.Errorf("simpleGlobToRegex() = %v, want %v", got, tt.want)
 			}
-			if gotMatch != tt.wantMatch {
-				t.Errorf("makeSingleDirectRule() MATCH = %v, want %v", gotMatch, tt.wantMatch)
-			}
-			if gotExpr != tt.wantExpr {
-				t.Errorf("makeSingleDirectRule()  EXPR = %v, want %v", gotExpr, tt.wantExpr)
+
+			// Make sure the regex compiles and gets the same result when matching against strings in data.
+			for i, d := range data {
+
+				rm, err := regexp.MatchString(got, d)
+				if err != nil {
+					t.Errorf("simpleGlobToRegex() = %003d  can not compile: %v", i, err)
+				}
+
+				g := glob.MustCompile(tt.pattern)
+				gm := g.Match(d) // true
+
+				if gm != rm {
+					t.Errorf("simpleGlobToRegex() = %003d  glob: %v '%v'  regexp: %v '%v'", i, gm, tt.pattern, rm, got)
+				}
+
 			}
 		})
+
 	}
 }

@@ -8,9 +8,17 @@ import (
 	"strings"
 )
 
+// generateSingleRedirectRule takes a PAGE_RULE-style target and returns strings
+// to use with Single Redirect.
+// target format is: pattern,action,index,code
+//
+//	pattern: The glob-like pattern
+//	action: The replacement pattern (with $1, $2, etc substitutions)
+//	index: The index in the list of rules. This is ignored.
+//	code: 301 or 302
 func generateSingleRedirectRule(target string) (string, string, string, error) {
-	// TODO: The list of returned items is growing long.  Maybe return a struct instead?
-	//      Either cloudflare.RulesetRule or maybe cloudflare.RulesetRuleActionParameters
+	// FIXME(tlim): Instead of returning so many strings, this should probably return a struct.
+	//      Possibly cloudflare.RulesetRule or cloudflare.RulesetRuleActionParameters ?
 
 	parts := strings.Split(target, ",")
 	constraint := parts[0]
@@ -22,7 +30,93 @@ func generateSingleRedirectRule(target string) (string, string, string, error) {
 	return pattern, replacement, target, err
 }
 
+// makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
+func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
+	// TODO: Change this function to do something useful with the replacement string.
+
+	// TODO: These are just to get rid of the warning that the variables are unused.
+	//_ = replacement
+	_ = temporary
+
+	var matcher, expr string
+	var err error
+
+	// TODO: replace with a real conversion.
+
+	var host, path string
+	origPattern := pattern
+	pattern, host, path, err = normalizeURL(pattern)
+	_ = pattern
+	if err != nil {
+		return "", "", err
+	}
+	var rhost, rpath string
+	origReplacement := replacement
+	replacement, rhost, rpath, err = normalizeURL(replacement)
+	_ = rpath
+	if err != nil {
+		return "", "", err
+	}
+
+	// pattern -> matcher
+
+	if !strings.Contains(host, `*`) && (path == `/` || path == "") {
+		// https://i.sstatic.net/  (No Wildcards)
+		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, "/")
+
+	} else if !strings.Contains(host, `*`) && (path == `/*`) {
+		// https://i.stack.imgur.com/*
+		matcher = fmt.Sprintf(`http.host eq "%s"`, host)
+
+	} else if !strings.Contains(host, `*`) && !strings.Contains(path, "*") {
+		// https://insights.stackoverflow.com/trends
+		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, path)
+
+	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && !strings.Contains(path, "*") {
+		// *stackoverflow.careers/  (wildcard at beginning only)
+		matcher = fmt.Sprintf(`( http.host eq "%s" or ends_with(http.host, ".%s") ) and http.request.uri.path eq "%s"`, host[1:], host[1:], path)
+
+	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && path == "/*" {
+		// *stackoverflow.careers/*  (wildcard at beginning and end)
+		matcher = fmt.Sprintf(`http.host eq "%s" or ends_with(http.host, ".%s")`, host[1:], host[1:])
+
+	} else if strings.Contains(host, `*`) && path == "/*" {
+		// meta.*yodeya.com/* (wildcard in host)
+		h := simpleGlobToRegex(host)
+		matcher = fmt.Sprintf(`http.host matches r###"%s"###`, h)
+	}
+
+	// replacement
+
+	if !strings.Contains(replacement, `$`) {
+		//  https://stackexchange.com/ (no substitutions)
+		expr = fmt.Sprintf(`"%s"`, replacement)
+
+	} else if strings.Count(replacement, `$`) == 1 && rpath == `/$1` {
+		// https://i.sstatic.net/$1 ($1 at end)
+		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)
+
+	} else if strings.Count(host, `*`) == 1 && strings.Count(path, `*`) == 1 &&
+		strings.Count(replacement, `$`) == 1 && rpath == `/$2` {
+		// https://careers.stackoverflow.com/$2
+		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)
+
+	}
+
+	// Not implemented
+
+	if matcher == "" {
+		return "", "", fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
+	}
+	if expr == "" {
+		return "", "", fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
+	}
+
+	return matcher, expr, nil
+}
+
 // normalizeURL turns foo.com into https://foo.com and replaces HTTP with HTTPS.
+// It also returns an error if there is a port specified (like :8080)
 func normalizeURL(s string) (string, string, string, error) {
 	orig := s
 	if strings.HasPrefix(s, `http://`) {
@@ -46,48 +140,22 @@ func normalizeURL(s string) (string, string, string, error) {
 	return s, u.Host, u.Path, nil
 }
 
-func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
-	// TODO: Change this function to do something useful with the replacement string.
+// simpleGlobToRegex translates very simple Glob patterns into regexp-compatible expressions.
+// It only handles `.` and `*` currently.  See singleredirect_test.go for supported patterns.
+func simpleGlobToRegex(g string) string {
 
-	// TODO: These are just to get rid of the warning that the variables are unused.
-	//_ = replacement
-	_ = temporary
-
-	var matcher, expr string
-	var err error
-
-	// TODO: replace with a real conversion.
-
-	var host, path string
-	origPattern := pattern
-	pattern, host, path, err = normalizeURL(pattern)
-	_ = pattern
-	if err != nil {
-		return "", "", err
-	}
-	var rhost, rpath string
-	replacement, rhost, rpath, err = normalizeURL(replacement)
-	_ = rpath
-	if err != nil {
-		return "", "", err
+	if g == "" {
+		return `.*`
 	}
 
-	//  https://i.sstatic.net/,https://stackexchange.com/
-	if !strings.Contains(host, `*`) && path == `/` && !strings.Contains(replacement, `$`) {
-		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, "/")
-		expr = fmt.Sprintf(`"%s"`, replacement)
-		return matcher, expr, nil
+	if !strings.HasSuffix(g, "*") {
+		g = g + `$`
+	}
+	if !strings.HasPrefix(g, "*") {
+		g = `^` + g
 	}
 
-	// https://i.stack.imgur.com/*,https://i.sstatic.net/$1
-	if !strings.Contains(host, `*`) && path == `/*` && !strings.Contains(replacement, `$1`) {
-		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, "/*")
-		expr = fmt.Sprintf(`concat("%s/", http.request.uri.path)`, rhost)
-		return matcher, expr, nil
-	}
-
-	if matcher == "" {
-		return "", "", fmt.Errorf("conversion not implemented for: %s", origPattern)
-	}
-	return matcher, expr, nil
+	g = strings.ReplaceAll(g, `.`, `\.`)
+	g = strings.ReplaceAll(g, `*`, `.*`)
+	return g
 }
