@@ -141,6 +141,11 @@ type RecordConfig struct {
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
+
+	// Cloudflare-specific fields:
+	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
+	CloudflareSingleRedirectMatcher string `json:"cf_single_redirect_matcher,omitempty"`
+	CloudflareSingleRedirectExpr    string `json:"cf_single_redirect_expr,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
