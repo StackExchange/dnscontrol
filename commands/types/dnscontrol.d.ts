@@ -110,6 +110,7 @@ interface ResponseHeaders {
 
 
 declare function require(name: `${string}.json`): any;
+declare function require(name: `${string}.json5`): any;
 declare function require(name: string): true;
 
 /**

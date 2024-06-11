@@ -157,7 +157,8 @@ func require(call otto.FunctionCall) otto.Value {
 	var value = otto.TrueValue()
 
 	// If its a json file return the json value, else default to true
-	if strings.HasSuffix(filepath.Ext(relFile), "json") {
+	var ext = strings.ToLower(filepath.Ext(relFile))
+	if strings.HasSuffix(ext, "json") || strings.HasSuffix(ext, "json5") {
 		cmd := fmt.Sprintf(`JSON.parse(JSON.stringify(%s))`, string(data))
 		value, err = call.Otto.Run(cmd)
 	} else {
