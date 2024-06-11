@@ -5,14 +5,14 @@ parameters:
 ts_ignore: true
 ---
 
-`require(...)` loads the specified JavaScript or JSON file, allowing
+`require(...)` loads the specified JavaScript, JSON, or JSON5 file, allowing
 to split your configuration across multiple files.
 
 A better name for this function might be "include".
 
 If the supplied `path` string ends with `.js`, the file is interpreted
 as JavaScript code, almost as though its contents had been included in
-the currently-executing file.  If  the path string ends with `.json`,
+the currently-executing file.  If  the path string ends with `.json` or `.json5` (case insensitive),
 `require()` returns the `JSON.parse()` of the file's contents.
 
 If the path string begins with a `./`, it is interpreted relative to
@@ -81,7 +81,7 @@ function includeK8Sdev() {
 ```
 {% endcode %}
 
-### Example 3: JSON
+### Example 3: JSON and JSON5
 
 Requiring JSON files initializes variables:
 
@@ -89,8 +89,11 @@ Requiring JSON files initializes variables:
 ```javascript
 var domains = require("./domain-ip-map.json")
 
+var REG_MY_PROVIDER = NewRegistrar("none");
+var DSP_MY_DNSSERVER = NewDnsProvider("none");
+
 for (var domain in domains) {
-    D(domain, REG_MY_PROVIDER, PROVIDER,
+    D(domain, REG_MY_PROVIDER, DSP_MY_DNSSERVER,
         A("@", domains[domain])
     );
 }
@@ -105,6 +108,11 @@ for (var domain in domains) {
 }
 ```
 {% endcode %}
+
+JSON5 works the same way, but the filename ends in `.json5`. (Note: JSON5
+features are supported whether the filename ends with `.json` or `.json5`.
+However please don't rely on JSON5 features in a `.json` file as this may
+change some day.)
 
 # Notes
 

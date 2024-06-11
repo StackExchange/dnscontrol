@@ -1,0 +1,7 @@
+// This is a comment.
+{
+  "foo.com": "1.1.1.1",
+  "bar.com": "5.5.5.5",
+}
+
+// The "bar.com" line has a comma at the end.
