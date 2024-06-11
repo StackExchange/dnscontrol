@@ -21,6 +21,7 @@ jobs:
     - run: go fmt ./...
     - run: go mod tidy
     - run: go generate ./...
+    - run: build/checkowner.sh
     - uses: CatChen/check-git-status-action@v1
       with:
         fail-if-not-clean: true
