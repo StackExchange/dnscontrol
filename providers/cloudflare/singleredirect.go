@@ -32,16 +32,11 @@ func generateSingleRedirectRule(target string) (string, string, string, error) {
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
 func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
-	// TODO: Change this function to do something useful with the replacement string.
 
-	// TODO: These are just to get rid of the warning that the variables are unused.
-	//_ = replacement
-	_ = temporary
+	_ = temporary // Prevents error due to this variable not (yet) being used
 
 	var matcher, expr string
 	var err error
-
-	// TODO: replace with a real conversion.
 
 	var host, path string
 	origPattern := pattern
@@ -57,6 +52,9 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 	if err != nil {
 		return "", "", err
 	}
+
+	// TODO(tlim): This could be a lot faster by not repeating itself so much.
+	// However I want to get it working before it is optimized.
 
 	// pattern -> matcher
 
