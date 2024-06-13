@@ -20,7 +20,7 @@ func (c *huaweicloudProvider) EnsureZoneExists(domain string) error {
 	printer.Printf("Adding zone for %s to huaweicloud account in region %s\n", domain, c.region.Id)
 	createPayload := model.CreatePublicZoneRequest{
 		Body: &model.CreatePublicZoneReq{
-				Name: domain,
+			Name: domain,
 		},
 	}
 	res, err := c.client.CreatePublicZone(&createPayload)

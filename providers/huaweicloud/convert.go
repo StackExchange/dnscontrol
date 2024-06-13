@@ -55,9 +55,9 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) *model.Li
 	resultVal := []string{}
 	name := expectedKey.NameFQDN + "."
 	result := &model.ListRecordSets{
-		Name: &name,
-		Type: &expectedKey.Type,
-		Ttl: &resultTTL,
+		Name:    &name,
+		Type:    &expectedKey.Type,
+		Ttl:     &resultTTL,
 		Records: &resultVal,
 	}
 

@@ -24,10 +24,10 @@ Info required in `creds.json`:
 */
 
 type huaweicloudProvider struct {
-	client        *dnssdk.DnsClient
-	domainByZoneID     map[string]string
+	client         *dnssdk.DnsClient
+	domainByZoneID map[string]string
 	zoneIDByDomain map[string]string
-	region        *region.Region
+	region         *region.Region
 }
 
 // NewHuaweicloud creates the provider.
@@ -41,7 +41,7 @@ func NewHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DN
 	}
 	region, err := dnsRegion.SafeValueOf(m["Region"])
 	if err != nil {
-			return nil, err
+		return nil, err
 	}
 
 	client, err := dnssdk.DnsClientBuilder().
@@ -131,12 +131,12 @@ func (c *huaweicloudProvider) GetNameservers(domain string) ([]*models.Nameserve
 
 	searchName := domain + "."
 	searchType := "NS"
-	strActive  := "ACTIVE"
-	strEqual   := "equal"
+	strActive := "ACTIVE"
+	strEqual := "equal"
 	payload := model.ListRecordSetsByZoneRequest{
 		ZoneId:     c.zoneIDByDomain[domain],
 		SearchMode: &strEqual,
-		Name: 		  &searchName,
+		Name:       &searchName,
 		Type:       &searchType,
 		Status:     &strActive,
 	}
@@ -147,7 +147,7 @@ func (c *huaweicloudProvider) GetNameservers(domain string) ([]*models.Nameserve
 	nameservers := []string{}
 	if res.Recordsets != nil {
 		for _, record := range *res.Recordsets {
-			if (record.Records == nil) {
+			if record.Records == nil {
 				continue
 			}
 			nameservers = append(nameservers, *record.Records...)
@@ -159,4 +159,3 @@ func (c *huaweicloudProvider) GetNameservers(domain string) ([]*models.Nameserve
 
 	return models.ToNameserversStripTD(defaultNameServerNames)
 }
-

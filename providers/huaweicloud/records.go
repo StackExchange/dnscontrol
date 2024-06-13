@@ -23,7 +23,7 @@ func (c *huaweicloudProvider) GetZoneRecords(domain string, meta map[string]stri
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert rrsets to DNSControl's RecordConfig
 	existingRecords := []*models.RecordConfig{}
 	for _, rec := range *records {
@@ -93,7 +93,7 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 			deletions = append(deletions, &models.Correction{
 				Msg: msg,
 				F: func() error {
-					return c.deleteRRSets(zoneID, rrsetsID);
+					return c.deleteRRSets(zoneID, rrsetsID)
 				},
 			})
 		default:
@@ -109,7 +109,7 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 func (c *huaweicloudProvider) deleteRRSets(zoneID string, rrsets []string) error {
 	for _, rrset := range rrsets {
 		deletePayload := model.DeleteRecordSetRequest{
-			ZoneId: zoneID,
+			ZoneId:      zoneID,
 			RecordsetId: rrset,
 		}
 		var err error
@@ -128,9 +128,9 @@ func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ListRecordSet
 	createPayload := &model.CreateRecordSetRequest{
 		ZoneId: zoneID,
 		Body: &model.CreateRecordSetRequestBody{
-			Name: *rc.Name,
-			Type: *rc.Type,
-			Ttl: rc.Ttl,
+			Name:    *rc.Name,
+			Type:    *rc.Type,
+			Ttl:     rc.Ttl,
 			Records: *rc.Records,
 		},
 	}
@@ -145,14 +145,14 @@ func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ListRecordSet
 	return nil
 }
 
-func (c *huaweicloudProvider) updateRRSet(zoneID ,rrsetID string, rc *model.ListRecordSets) error {
+func (c *huaweicloudProvider) updateRRSet(zoneID, rrsetID string, rc *model.ListRecordSets) error {
 	updatePayload := &model.UpdateRecordSetRequest{
-		ZoneId: zoneID,
+		ZoneId:      zoneID,
 		RecordsetId: rrsetID,
 		Body: &model.UpdateRecordSetReq{
-			Name: *rc.Name,
-			Type: *rc.Type,
-			Ttl: rc.Ttl,
+			Name:    *rc.Name,
+			Type:    *rc.Type,
+			Ttl:     rc.Ttl,
 			Records: rc.Records,
 		},
 	}
@@ -200,7 +200,7 @@ func (c *huaweicloudProvider) getZoneRecords(zoneID string) (*[]model.ListRecord
 		if err != nil {
 			return nil, err
 		}
-		if (res.Recordsets == nil) {
+		if res.Recordsets == nil {
 			return &existingRecords, nil
 		}
 		for _, record := range *res.Recordsets {
