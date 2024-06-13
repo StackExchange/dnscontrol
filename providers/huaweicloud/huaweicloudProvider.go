@@ -133,14 +133,14 @@ func (c *huaweicloudProvider) GetNameservers(domain string) ([]*models.Nameserve
 	searchType := "NS"
 	strActive := "ACTIVE"
 	strEqual := "equal"
-	payload := model.ListRecordSetsByZoneRequest{
+	payload := &model.ListRecordSetsByZoneRequest{
 		ZoneId:     c.zoneIDByDomain[domain],
 		SearchMode: &strEqual,
 		Name:       &searchName,
 		Type:       &searchType,
 		Status:     &strActive,
 	}
-	res, err := c.client.ListRecordSetsByZone(&payload)
+	res, err := c.client.ListRecordSetsByZone(payload)
 	if err != nil {
 		return nil, err
 	}

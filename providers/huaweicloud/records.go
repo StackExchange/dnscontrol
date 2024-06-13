@@ -19,7 +19,7 @@ func (c *huaweicloudProvider) GetZoneRecords(domain string, meta map[string]stri
 	if !ok {
 		return nil, fmt.Errorf("zone %s not found", domain)
 	}
-	records, err := c.getZoneRecords(zoneID)
+	records, err := c.fetchZoneRecordsFromRemote(zoneID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,13 +108,13 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 
 func (c *huaweicloudProvider) deleteRRSets(zoneID string, rrsets []string) error {
 	for _, rrset := range rrsets {
-		deletePayload := model.DeleteRecordSetRequest{
+		deletePayload := &model.DeleteRecordSetRequest{
 			ZoneId:      zoneID,
 			RecordsetId: rrset,
 		}
 		var err error
 		withRetry(func() error {
-			_, err = c.client.DeleteRecordSet(&deletePayload)
+			_, err = c.client.DeleteRecordSet(deletePayload)
 			return err
 		})
 		if err != nil {
@@ -181,7 +181,7 @@ func parseMarkerFromURL(link string) (string, error) {
 	return marker, nil
 }
 
-func (c *huaweicloudProvider) getZoneRecords(zoneID string) (*[]model.ListRecordSets, error) {
+func (c *huaweicloudProvider) fetchZoneRecordsFromRemote(zoneID string) (*[]model.ListRecordSets, error) {
 	var nextMarker *string
 	existingRecords := []model.ListRecordSets{}
 	availableStatus := []string{"ACTIVE", "PENDING_CREATE", "PENDING_UPDATE"}

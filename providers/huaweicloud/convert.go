@@ -1,6 +1,7 @@
 package huaweicloud
 
-// Convert the provider's native record description to models.RecordConfig.
+// Support for Huawei Cloud DNS.
+// API Documentation: https://www.huaweicloud.com/intl/en-us/product/dns.html
 
 import (
 	"fmt"
