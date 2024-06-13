@@ -29,6 +29,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hexonet"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hostingde"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/huaweicloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/inwx"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/linode"
