@@ -38,6 +38,7 @@ Currently supported DNS providers:
 - Hetzner
 - HEXONET
 - hosting.de
+- Huawei Cloud DNS
 - Hurricane Electric DNS
 - INWX
 - Linode
