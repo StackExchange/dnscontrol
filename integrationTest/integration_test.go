@@ -1915,6 +1915,8 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		// TODO(tlim): add tests for converting  301 -> 302 -> 301
+
 		// CLOUDFLAREAPI: PROXY
 
 		testgroup("CF_PROXY A create",

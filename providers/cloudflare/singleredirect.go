@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
-// generateSingleRedirectRule takes a PAGE_RULE-style target and returns strings
+// convertPageRuleToSingleRedirect takes a PAGE_RULE-style target and returns strings
 // to use with Single Redirect.
 // target format is: pattern,action,index,code
 //
@@ -16,14 +18,18 @@ import (
 //	action: The replacement pattern (with $1, $2, etc substitutions)
 //	index: The index in the list of rules. This is ignored.
 //	code: 301 or 302
-func generateSingleRedirectRule(target string) (string, string, string, int, error) {
+func convertPageRuleToSingleRedirect(target string) (string, string, string, int, error) {
 	// FIXME(tlim): Instead of returning so many strings, this should probably return a struct.
 	//      Possibly cloudflare.RulesetRule or cloudflare.RulesetRuleActionParameters ?
 
 	parts := strings.Split(target, ",")
+	printer.Printf("DEBUG: gSRR: parts=%v\n", parts)
 	constraint := parts[0]
 	action := parts[1]
-	code, _ := strconv.Atoi(parts[3])
+	code := 301
+	if len(parts) > 3 {
+		code, _ = strconv.Atoi(parts[3])
+	}
 
 	pattern, replacement, type_, err := makeRuleFromPattern(constraint, action, code != 301)
 	target = fmt.Sprintf("%03d,%q,%q matcher=%q expr=%s", code, constraint, action, pattern, replacement)

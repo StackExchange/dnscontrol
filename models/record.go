@@ -144,6 +144,7 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
+	CloudflareSingleAsInput           string `json:"cf_single_redirect_as_input,omitempty"`
 	CloudflareSingleRedirectMatchExpr string `json:"cf_single_redirect_match_expr,omitempty"`
 	CloudflareSingleRedirectRedirExpr string `json:"cf_single_redirect_redir_expr,omitempty"`
 	CloudflareSingleRedirectType      int    `json:"cf_single_redirect_type,omitempty"`

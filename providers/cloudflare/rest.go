@@ -259,7 +259,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	// printer.Printf("DEBUG: %+v\n", rules)
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
-		printer.Printf("DEBUG: %+v\n", pr)
+		//printer.Printf("DEBUG: %+v\n", pr)
 
 		var thisPr = pr
 		r := &models.RecordConfig{
@@ -309,6 +309,14 @@ func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) er
 	return err
 }
 
+func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, target string) error {
+	_ = recordID
+	_ = domainID
+	_ = target
+	printer.Printf("DEBUG: createSingleRedirect not implemented.\n")
+	return nil
+}
+
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
 	if err != nil {
@@ -331,11 +339,14 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			TTL:      1,
 		}
 		r.SetLabel("@", domain)
-		r.SetTarget(fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
+		raw := fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
 			pr.Targets[0].Constraint.Value,
 			value["url"],
 			pr.Priority,
-			intZero(value["status_code"])))
+			intZero(value["status_code"]))
+		r.CloudflareSingleAsInput = raw
+		r.SetTarget(raw)
+
 		recs = append(recs, r)
 	}
 	return recs, nil
