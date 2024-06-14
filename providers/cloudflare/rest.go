@@ -277,6 +277,38 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	return recs, nil
 }
 
+func (c *cloudflareProvider) createSingleRedirects(domainID string, target string) error {
+	// newActionParams.FromValue.StatusCode = 301
+	// newActionParams.FromValue.PreserveQueryString = &trueBool
+	// newActionParams.FromValue.TargetURL.Expression = "dothis"
+
+	newRuleSet := []cloudflare.RulesetRule{}
+
+	newRuleSet[0].Description = "GUID"
+	newRuleSet[0].Action = "redirect"
+	newRuleSet[0].Expression = "blah"
+	newRuleSet[0].ActionParameters = &newActionParams
+	newRedirect := cloudflare.CreateRulesetParams{}
+	newRedirect.Rules = newRuleSet
+
+	// CHANGE THE VAR NAME BELOW!
+	newActionParams := cloudflare.UpdateEntrypointRulesetParams{}
+
+	newActionParams.Phase = "http_request_dynamic_redirect"
+	newActionParams.Description = "GUID"
+	newActionParams.Rules = newRuleSet
+
+	_, err := c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newRedirect)
+
+	return err
+}
+
+func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) error {
+	err := c.cfClient.DeleteRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID)
+
+	return err
+}
+
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
 	if err != nil {
