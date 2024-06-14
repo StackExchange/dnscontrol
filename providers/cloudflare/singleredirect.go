@@ -45,14 +45,14 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 	pattern, host, path, err = normalizeURL(pattern)
 	_ = pattern
 	if err != nil {
-		return "", "", err
+		return "", "", -1, err
 	}
 	var rhost, rpath string
 	origReplacement := replacement
 	replacement, rhost, rpath, err = normalizeURL(replacement)
 	_ = rpath
 	if err != nil {
-		return "", "", err
+		return "", "", -1, err
 	}
 
 	// TODO(tlim): This could be a lot faster by not repeating itself so much.
@@ -106,10 +106,10 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 	// Not implemented
 
 	if matcher == "" {
-		return "", "", fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
+		return "", "", -1, fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
 	}
 	if expr == "" {
-		return "", "", fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
+		return "", "", -1, fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
 	}
 
 	return matcher, expr, type_, nil

@@ -186,7 +186,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
+			gotMatch, gotExpr, gotType, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("makeSingleDirectRule() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -197,6 +197,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			if gotExpr != tt.wantExpr {
 				t.Errorf("makeSingleDirectRule()  EXPR = %v\n                                                  want %v", gotExpr, tt.wantExpr)
 			}
+			_ = gotType
 		})
 	}
 }
