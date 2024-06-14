@@ -16,7 +16,7 @@ import (
 //	action: The replacement pattern (with $1, $2, etc substitutions)
 //	index: The index in the list of rules. This is ignored.
 //	code: 301 or 302
-func generateSingleRedirectRule(target string) (string, string, string, error) {
+func generateSingleRedirectRule(target string) (string, string, string, int, error) {
 	// FIXME(tlim): Instead of returning so many strings, this should probably return a struct.
 	//      Possibly cloudflare.RulesetRule or cloudflare.RulesetRuleActionParameters ?
 
@@ -25,18 +25,20 @@ func generateSingleRedirectRule(target string) (string, string, string, error) {
 	action := parts[1]
 	code, _ := strconv.Atoi(parts[3])
 
-	pattern, replacement, err := makeRuleFromPattern(constraint, action, code != 301)
+	pattern, replacement, type_, err := makeRuleFromPattern(constraint, action, code != 301)
 	target = fmt.Sprintf("%03d,%q,%q matcher=%q expr=%s", code, constraint, action, pattern, replacement)
-	return pattern, replacement, target, err
+	return pattern, replacement, target, type_, err
 }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
-func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
+func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, int, error) {
 
 	_ = temporary // Prevents error due to this variable not (yet) being used
 
 	var matcher, expr string
 	var err error
+
+	var type_ int
 
 	var host, path string
 	origPattern := pattern
@@ -110,7 +112,7 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		return "", "", fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
 	}
 
-	return matcher, expr, nil
+	return matcher, expr, type_, nil
 }
 
 // normalizeURL turns foo.com into https://foo.com and replaces HTTP with HTTPS.

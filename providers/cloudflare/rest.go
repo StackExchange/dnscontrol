@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -252,41 +252,29 @@ func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 }
 
 func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*models.RecordConfig, error) {
-	_ = id
-	_ = domain
-	rules, err := c.cfClient.ListRulesets(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListRulesetsParams{})
+	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(id), "http_request_dynamic_redirect")
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
 	}
-	// recs := []*models.RecordConfig{}
-	for _, pr := range rules {
-		printer.Printf("%+v\n", pr)
-		// only interested in redirect rules. Lets be very specific, and skip anything else
-		// if pr.phase != "http_request_dynamic_redirect" && pr.phase != "http_request_redirect"{
-		// 	continue
-		// }
-		// value := pr.Actions[0].Value.(map[string]interface{})
-		// var thisPr = pr
-		// r := &models.RecordConfig{
-		// 	Type:     "PAGE_RULE",
-		// 	Original: thisPr,
-		// 	TTL:      1,
-		// }
-		// r.SetLabel("@", domain)
-		// r.SetTarget(fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
-		// 	pr.Targets[0].Constraint.Value,
-		// 	value["url"],
-		// 	pr.Priority,
-		// 	intZero(value["status_code"])))
-		// recs = append(recs, r)
+	// printer.Printf("DEBUG: %+v\n", rules)
+	recs := []*models.RecordConfig{}
+	for _, pr := range rules.Rules {
+		printer.Printf("DEBUG: %+v\n", pr)
+
+		var thisPr = pr
+		r := &models.RecordConfig{
+			Type:     "CLOUDFLAREAPI_SINGLE_REDIRECT",
+			Original: thisPr,
+			TTL:      1,
+		}
+		r.SetLabel("@", domain)
+		r.CloudflareSingleRedirectMatchExpr = pr.Expression
+		r.CloudflareSingleRedirectRedirExpr = pr.ActionParameters.FromValue.TargetURL.Expression
+		r.CloudflareSingleRedirectType = int(pr.ActionParameters.FromValue.StatusCode)
+		recs = append(recs, r)
 	}
 
-	// TODO:
-	// 1. Get list of Single Redirect.
-	//       https://developers.cloudflare.com/api/operations/single-redirect-rules-list-single-redirect-rules
-	// 2. For each one, generate a RecordConfig of type CLOUDFLAREAPI_SINGLE_REDIRECT.
-	// 3 Return the list of RecordConfig.
-	return nil, nil
+	return recs, nil
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {

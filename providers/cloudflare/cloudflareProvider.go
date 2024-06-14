@@ -174,7 +174,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		records = append(records, prs...)
 	}
 
-	if c.manageSingleRedirects {
+	if /* c.manageSingleRedirects */ true {
 		// Download the list of Single Redirects.
 		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
 		// Append these records to `records`
@@ -182,6 +182,8 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		if err != nil {
 			return nil, err
 		}
+		printer.Printf("DEBUG: Single Redirects")
+		fmt.Fprintf(os.Stdout, "DEBUG: Single Redirects")
 		records = append(records, prs...)
 	}
 
@@ -549,13 +551,14 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				// New-Style.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
 				rec.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
 				rec.TTL = 1
-				t, m, e, err := generateSingleRedirectRule(rec.GetTargetField())
+				t, m, e, ty, err := generateSingleRedirectRule(rec.GetTargetField())
 				if err != nil {
 					return err
 				}
 				rec.SetTarget(t)
-				rec.CloudflareSingleRedirectMatcher = m
-				rec.CloudflareSingleRedirectExpr = e
+				rec.CloudflareSingleRedirectMatchExpr = m
+				rec.CloudflareSingleRedirectRedirExpr = e
+				rec.CloudflareSingleRedirectType = ty
 			} else {
 				// Both!  Convert this record to PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
 				// make the additional record:
@@ -566,13 +569,14 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 				newRec.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
 				newRec.TTL = 1
-				t, m, e, err := generateSingleRedirectRule(rec.GetTargetField())
+				t, m, e, ty, err := generateSingleRedirectRule(rec.GetTargetField())
 				if err != nil {
 					return err
 				}
 				rec.SetTarget(t)
-				rec.CloudflareSingleRedirectMatcher = m
-				rec.CloudflareSingleRedirectExpr = e
+				rec.CloudflareSingleRedirectMatchExpr = m
+				rec.CloudflareSingleRedirectRedirExpr = e
+				rec.CloudflareSingleRedirectType = ty
 
 				// Append new record to the end of the list.
 				dc.Records = append(dc.Records, newRec)
@@ -665,7 +669,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
 			ManageWorkers   bool     `json:"manage_workers"`
 			//
-			ManageSingleRedirects bool `json:"manage_single_redirect"` // New-style Dynamic "Single Redirects"
+			ManageSingleRedirects bool `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
