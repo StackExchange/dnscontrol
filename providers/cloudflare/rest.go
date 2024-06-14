@@ -277,7 +277,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirects(domainID string, target string) error {
+func (c *cloudflareProvider) createSingleRedirect(domainID string, target string) error {
 	// newActionParams.FromValue.StatusCode = 301
 	// newActionParams.FromValue.PreserveQueryString = &trueBool
 	// newActionParams.FromValue.TargetURL.Expression = "dothis"
