@@ -271,11 +271,15 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		case diff2.CHANGE:
 			newMsgs = change.Msgs
 			newAdds = mkRRSs(n, ty, change.New)
-			newDels = mkRRSs(n, ty, change.Old)
+			// When deleting in GCLOUD order of elements matters, so lets take original old value
+			origOld := existingRecords.GetByKey(change.Key)
+			newDels = mkRRSs(n, ty, origOld)
 		case diff2.DELETE:
 			newMsgs = change.Msgs
 			newAdds = nil
-			newDels = mkRRSs(n, ty, change.Old)
+			// When deleting in GCLOUD order of elements matters, so lets take original old value
+			origOld := existingRecords.GetByKey(change.Key)
+			newDels = mkRRSs(n, ty, origOld)
 		default:
 			return nil, fmt.Errorf("GCLOUD unhandled change.TYPE %s", change.Type)
 		}

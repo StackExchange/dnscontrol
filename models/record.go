@@ -536,6 +536,17 @@ func (recs Records) GetByType(typeName string) Records {
 	return results
 }
 
+// GetByKey returns the records that match RecordKey.
+func (recs Records) GetByKey(key RecordKey) Records {
+	results := Records{}
+	for _, rec := range recs {
+		if rec.Key() == key {
+			results = append(results, rec)
+		}
+	}
+	return results
+}
+
 // GroupedByKey returns a map of keys to records.
 func (recs Records) GroupedByKey() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
