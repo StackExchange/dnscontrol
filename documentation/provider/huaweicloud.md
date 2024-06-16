@@ -37,7 +37,7 @@ END);
 {% endcode %}
 
 ## Activation
-DNSControl depends on a standard [IAM User Access Key](https://support.huaweicloud.com/intl/en-us/usermanual-iam/iam_02_0003.html) with permission to list, create and update hosted zones.
+DNSControl depends on a standard [IAM User](https://support.huaweicloud.com/intl/en-us/usermanual-iam/iam_02_0003.html) with permission to list, create and update hosted zones.
 
 You can apply the `DNS FullAccess` policy however this includes access to many other areas. The minimum permissions required are as follows:
 
@@ -66,8 +66,8 @@ If you don't know how to fill in the `Region` parameter, you can refer to the [e
 If you're still not sure, you can log into Huaweicloud's website and open the [API Explorer](https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/debug?api=ListPublicZones), find the `ListPublicZones` API, select a different Region and click Debug to try and find your Region!
 
 ## New domains
-If a domain does not exist in your Huawei Cloud account, DNSControl will automatically add it with the `push` command. Don't worry about incurring fees, it's free!
+If a domain does not exist in your Huawei Cloud account, DNSControl will automatically add it with the `push` command.
 
 ## GeoDNS
-Managing GeoDNS RRSet on huawei cloud (also called **Line** in Huawei Cloud DNS) is not supported in dnscontrol.
-If your Zone needs to use GeoDNS, please create it manually in the console and use [IGNORE](../language-reference/domain-modifiers/IGNORE.md) modifiers in dnscontrol to prevent changing it.
+Managing GeoDNS RRSet on Huawei Cloud (also called **Line** in Huawei Cloud DNS) is not supported in DNSControl.
+If your Zone needs to use GeoDNS, please create it manually in the console and use [IGNORE](../language-reference/domain-modifiers/IGNORE.md) modifiers in DNSControl to prevent changing it.
