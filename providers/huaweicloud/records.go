@@ -65,18 +65,16 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	}
 
 	for _, change := range changes {
-		msg := change.MsgsJoined
-		records := recordsToNative(change.New, change.Key)
-		rrsetsID := getRRSetIDFromRecords(change.Old)
-
 		switch change.Type {
 		case diff2.REPORT:
-			reports = append(reports, &models.Correction{Msg: msg})
+			reports = append(reports, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
 			fallthrough
 		case diff2.CHANGE:
+			records := recordsToNative(change.New, change.Key)
+			rrsetsID := getRRSetIDFromRecords(change.Old)
 			corrections = append(corrections, &models.Correction{
-				Msg: msg,
+				Msg: change.MsgsJoined,
 				F: func() error {
 					if len(rrsetsID) == 1 {
 						return c.updateRRSet(zoneID, rrsetsID[0], records)
@@ -90,8 +88,9 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 				},
 			})
 		case diff2.DELETE:
+			rrsetsID := getRRSetIDFromRecords(change.Old)
 			deletions = append(deletions, &models.Correction{
-				Msg: msg,
+				Msg: change.MsgsJoined,
 				F: func() error {
 					return c.deleteRRSets(zoneID, rrsetsID)
 				},
