@@ -278,27 +278,37 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 }
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, target string) error {
-	// newActionParams.FromValue.StatusCode = 301
-	// newActionParams.FromValue.PreserveQueryString = &trueBool
-	// newActionParams.FromValue.TargetURL.Expression = "dothis"
 
-	newRuleSet := []cloudflare.RulesetRule{}
+	// Asumption for target:
+	// "Description,status code,incoming match expression,redirect expression"
+	parts := strings.Split(target, ",")
 
-	newRuleSet[0].Description = "GUID"
-	newRuleSet[0].Action = "redirect"
-	newRuleSet[0].Expression = "blah"
-	newRuleSet[0].ActionParameters = &newActionParams
-	newRedirect := cloudflare.CreateRulesetParams{}
-	newRedirect.Rules = newRuleSet
+	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
+	newSingleRedirectRules := []cloudflare.RulesetRule{}
+	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
-	// CHANGE THE VAR NAME BELOW!
-	newActionParams := cloudflare.UpdateEntrypointRulesetParams{}
+	// Preserve query string
+	preserveQueryString := true
+	// Redirect status code
+	statusCode, _ := strconv.Atoi(parts[1])
+	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(statusCode)
+	// Incoming request expression
+	newSingleRedirectRules[0].Expression = parts[2]
+	// Redirect expression
+	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = parts[3]
+	// Redirect name
+	newSingleRedirectRules[0].Description = parts[0]
+	// Rule action, should always be redirect in this case
+	newSingleRedirectRules[0].Action = "redirect"
+	// Phase should always be http_request_dynamic_redirect
+	newSingleRedirect.Phase = "http_request_dynamic_redirect"
 
-	newActionParams.Phase = "http_request_dynamic_redirect"
-	newActionParams.Description = "GUID"
-	newActionParams.Rules = newRuleSet
+	// Assigns the values in the nested structs
+	newSingleRedirectRulesActionParameters.FromValue.PreserveQueryString = &preserveQueryString
+	newSingleRedirectRules[0].ActionParameters = &newSingleRedirectRulesActionParameters
+	newSingleRedirect.Rules = newSingleRedirectRules
 
-	_, err := c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newRedirect)
+	_, err := c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newSingleRedirect)
 
 	return err
 }
