@@ -9,7 +9,6 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -320,11 +319,10 @@ func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) er
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, target string) error {
-	_ = recordID
-	_ = domainID
-	_ = target
-	printer.Printf("DEBUG: createSingleRedirect not implemented.\n")
-	return nil
+	if err := c.deleteSingleRedirects(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createSingleRedirect(domainID, target)
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
