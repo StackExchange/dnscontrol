@@ -356,13 +356,17 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(rulesetruleID, recordID, domainID string) error {
-	err := c.cfClient.DeleteRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID, rulesetruleID)
+	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(id), "http_request_dynamic_redirect")
+	if err != nil {
+		return err
+	}
+	err = c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), rules.ID, rulesetruleID)
 
 	return err
 }
 
-func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	if err := c.deleteSingleRedirects(recordID, domainID); err != nil {
+func (c *cloudflareProvider) updateSingleRedirect(rulesetruleID, recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+	if err := c.deleteSingleRedirects(rulesetruleID, recordID, domainID); err != nil {
 		return err
 	}
 	return c.createSingleRedirect(domainID, cfr)
