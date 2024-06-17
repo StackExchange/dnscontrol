@@ -15,6 +15,9 @@ import (
 	dnsRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2/region"
 )
 
+// Support for Huawei Cloud DNS.
+// API Documentation: https://www.huaweicloud.com/intl/en-us/product/dns.html
+
 /*
 Huaweicloud API DNS provider:
 Info required in `creds.json`:
@@ -30,8 +33,8 @@ type huaweicloudProvider struct {
 	region         *region.Region
 }
 
-// NewHuaweicloud creates the provider.
-func NewHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+// newHuaweicloud creates the provider.
+func newHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	auth, err := basic.NewCredentialsBuilder().
 		WithAk(m["KeyId"]).
 		WithSk(m["SecretKey"]).
@@ -93,7 +96,7 @@ var defaultNameServerNames = []string{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:   NewHuaweicloud,
+		Initializer:   newHuaweicloud,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("HUAWEICLOUD", fns, features)
@@ -129,28 +132,19 @@ func (c *huaweicloudProvider) GetNameservers(domain string) ([]*models.Nameserve
 		return nil, err
 	}
 
-	searchName := domain + "."
-	searchType := "NS"
-	strActive := "ACTIVE"
-	strEqual := "equal"
-	payload := &model.ListRecordSetsByZoneRequest{
-		ZoneId:     c.zoneIDByDomain[domain],
-		SearchMode: &strEqual,
-		Name:       &searchName,
-		Type:       &searchType,
-		Status:     &strActive,
+	payload := &model.ShowPublicZoneNameServerRequest{
+		ZoneId: c.zoneIDByDomain[domain],
 	}
-	res, err := c.client.ListRecordSetsByZone(payload)
+	res, err := c.client.ShowPublicZoneNameServer(payload)
 	if err != nil {
 		return nil, err
 	}
 	nameservers := []string{}
-	if res.Recordsets != nil {
-		for _, record := range *res.Recordsets {
-			if record.Records == nil {
-				continue
+	if res.Nameservers != nil {
+		for _, record := range *res.Nameservers {
+			if record.Hostname != nil {
+				nameservers = append(nameservers, *record.Hostname)
 			}
-			nameservers = append(nameservers, *record.Records...)
 		}
 	}
 	if len(nameservers) != 0 {

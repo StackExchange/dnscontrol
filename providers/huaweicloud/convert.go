@@ -1,8 +1,5 @@
 package huaweicloud
 
-// Support for Huawei Cloud DNS.
-// API Documentation: https://www.huaweicloud.com/intl/en-us/product/dns.html
-
 import (
 	"fmt"
 	"slices"

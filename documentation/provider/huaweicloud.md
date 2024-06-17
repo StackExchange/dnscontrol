@@ -54,6 +54,7 @@ The minimum permissions required are as follows:
                 "dns:recordset:create",
                 "dns:zone:create",
                 "dns:recordset:get",
+                "dns:nameserver:getZoneNameServer",
                 "dns:zone:list",
                 "dns:recordset:update",
                 "dns:recordset:list"
