@@ -164,9 +164,10 @@ type CloudflareSingleRedirectConfig struct {
 	PRPriority    int // Really an identifier for the rule.
 	//
 	// SR == SingleRedirect
-	SRDisplay     string // How is this displayed to the user
-	SRMatcher     string
-	SRReplacement string
+	SRDisplay        string // How is this displayed to the user
+	SRMatcher        string
+	SRReplacement    string
+	SRRRulesetRuleID string
 }
 
 // MarshalJSON marshals RecordConfig.

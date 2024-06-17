@@ -299,8 +299,11 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srReplacement := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := int(pr.ActionParameters.FromValue.StatusCode)
 		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
-		printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
+		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
 		sr.SRDisplay = pr.Description
+		//printer.Printf("DEBUG: PR = %+v\n", pr)
+		sr.SRRRulesetRuleID = pr.ID
+
 		r.CloudflareRedirect = sr
 		r.SetTarget(pr.Description)
 
@@ -356,13 +359,14 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(rulesetruleID, recordID, domainID string) error {
-	err := c.cfClient.DeleteRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID, rulesetruleID)
+	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID, rulesetruleID)
 
 	return err
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	if err := c.deleteSingleRedirects(recordID, domainID); err != nil {
+	rulesetID := cfr.SRRRulesetRuleID
+	if err := c.deleteSingleRedirects(rulesetID, recordID, domainID); err != nil {
 		return err
 	}
 	return c.createSingleRedirect(domainID, cfr)
