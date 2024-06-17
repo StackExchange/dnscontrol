@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"golang.org/x/net/idna"
@@ -329,10 +330,10 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) error {
-	printer.Printf("DEBUG: deleteSingleRedirect: recID=%v domID=%v\n", recordID, domainID)
-	err := c.cfClient.DeleteRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID)
-	printer.Printf("DEBUG: deleteSingleRedirect: err=%v\n", err)
+func (c *cloudflareProvider) deleteSingleRedirects(rulesetID, recordID, domainID string) error {
+	rc := cloudflare.ZoneIdentifier(domainID)
+	uri := fmt.Sprintf("/%s/%s/rulesets/%s/rules/%s", rc.Level, rc.Identifier, rulesetID, recordID)
+	_, err := api.makeRequestContext(context.Background(), http.MethodDelete, uri, nil)
 
 	return err
 }
