@@ -271,11 +271,11 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		case diff2.CHANGE:
 			newMsgs = change.Msgs
 			newAdds = mkRRSs(n, ty, change.New)
-			newDels = mkRRSs(n, ty, change.Old)
+			newDels = change.Old[0].Original.(*gdns.ResourceRecordSet)
 		case diff2.DELETE:
 			newMsgs = change.Msgs
 			newAdds = nil
-			newDels = mkRRSs(n, ty, change.Old)
+			newDels = change.Old[0].Original.(*gdns.ResourceRecordSet)
 		default:
 			return nil, fmt.Errorf("GCLOUD unhandled change.TYPE %s", change.Type)
 		}
@@ -403,6 +403,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	rtype := set.Type
+	r.Original = set
 	err := r.PopulateFromStringFunc(rtype, rec, origin, txtutil.ParseQuoted)
 	if err != nil {
 		return nil, fmt.Errorf("unparsable record %q received from GCLOUD: %w", rtype, err)
