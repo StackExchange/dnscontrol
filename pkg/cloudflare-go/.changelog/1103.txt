@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: bumps github.com/urfave/cli/v2 from 2.17.1 to 2.19.2
+```

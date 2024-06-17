@@ -1,0 +1,3 @@
+```release-note:bug
+cloudflare: fix nil dereference error in makeRequestWithAuthTypeAndHeaders
+```

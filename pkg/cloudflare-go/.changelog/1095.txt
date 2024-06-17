@@ -1,0 +1,7 @@
+```release-note:enhancement
+account_member: add support for domain scoped roles
+```
+
+```release-note:breaking-change
+account_member: `CreateAccountMember` has been updated to accept a `CreateAccountMemberParams` struct instead of multiple parameters
+```

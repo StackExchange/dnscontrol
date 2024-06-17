@@ -4,7 +4,7 @@ go 1.22.1
 
 retract v4.8.0
 
-replace github.com/cloudflare/cloudflare-go => ../cloudflare-go
+replace github.com/cloudflare/cloudflare-go => ./pkg/cloudflare-go
 
 require google.golang.org/protobuf v1.34.1 // indirect
 

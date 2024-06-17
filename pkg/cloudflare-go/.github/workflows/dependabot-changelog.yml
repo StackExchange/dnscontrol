@@ -1,0 +1,35 @@
+name: Add CHANGELOG for dependabot changes
+on: pull_request_target
+permissions:
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  contents: write
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
+    steps:
+      - name: Fetch dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v2.1.0
+      - uses: actions/checkout@v4
+      - run: |
+          gh pr checkout $PR_URL
+          cat << EOF > .changelog/$PR_NUMBER.txt
+          \`\`\`release-note:dependency
+          deps: bumps $DEP_NAME from $DEP_PREV_VERSION to $DEP_NEXT_VERSION
+          \`\`\`
+          EOF
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add .changelog/$PR_NUMBER.txt
+          git commit -m "add CHANGELOG for #$PR_NUMBER"
+          git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEP_NAME: ${{ steps.dependabot-metadata.outputs.dependency-names }}
+          DEP_PREV_VERSION: ${{ steps.dependabot-metadata.outputs.previous-version }}
+          DEP_NEXT_VERSION: ${{ steps.dependabot-metadata.outputs.new-version }}

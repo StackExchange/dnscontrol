@@ -1,0 +1,9 @@
+```release-note:bug
+email_routing_destination: Update API reference URLs
+```
+```release-note:bug
+email_routing_rules: Update API reference URLs
+```
+```release-note:bug
+email_routing_settings: Update API reference URLs
+```

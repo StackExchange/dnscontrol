@@ -1,0 +1,3 @@
+```release-note:bug
+dex_test: use dex test types and json struct mappings instead of managed networks
+```
