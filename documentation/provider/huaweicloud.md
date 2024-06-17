@@ -57,7 +57,8 @@ The minimum permissions required are as follows:
                 "dns:nameserver:getZoneNameServer",
                 "dns:zone:list",
                 "dns:recordset:update",
-                "dns:recordset:list"
+                "dns:recordset:list",
+                "dns:zone:get"
             ]
         }
     ]
