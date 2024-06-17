@@ -144,10 +144,29 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareSingleAsInput           string `json:"cf_single_redirect_as_input,omitempty"`
-	CloudflareSingleRedirectMatchExpr string `json:"cf_single_redirect_match_expr,omitempty"`
-	CloudflareSingleRedirectRedirExpr string `json:"cf_single_redirect_redir_expr,omitempty"`
-	CloudflareSingleRedirectType      int    `json:"cf_single_redirect_type,omitempty"`
+	// CloudflareSingleAsInput             string `json:"cf_single_redirect_as_input,omitempty"`   // example.com/*,newexample.com/$1,1,301
+	// CloudflareSingleRedirectMatchExpr   string `json:"cf_single_redirect_match_expr,omitempty"` // The new-style rule for the match
+	// CloudflareSingleRedirectReplaceExpr string `json:"cf_single_redirect_redir_expr,omitempty"` // The new-style rule for the replacement
+	// CloudflareSingleRedirectType        int    `json:"cf_single_redirect_type,omitempty"`       // 301 or 302
+	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+}
+
+// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
+//
+//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
+type CloudflareSingleRedirectConfig struct {
+	//
+	Code int // 301 or 302
+	// PR == PageRule
+	PRDisplay     string // How is this displayed to the user
+	PRMatcher     string
+	PRReplacement string
+	PRPriority    int // Really an identifier for the rule.
+	//
+	// SR == SingleRedirect
+	SRDisplay     string // How is this displayed to the user
+	SRMatcher     string
+	SRReplacement string
 }
 
 // MarshalJSON marshals RecordConfig.

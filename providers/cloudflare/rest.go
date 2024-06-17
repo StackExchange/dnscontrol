@@ -3,12 +3,12 @@ package cloudflare
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -267,20 +267,26 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 			TTL:      1,
 		}
 		r.SetLabel("@", domain)
-		r.CloudflareSingleRedirectMatchExpr = pr.Expression
-		r.CloudflareSingleRedirectRedirExpr = pr.ActionParameters.FromValue.TargetURL.Expression
-		r.CloudflareSingleRedirectType = int(pr.ActionParameters.FromValue.StatusCode)
+
+		// Extract the valuables from the rule, use it to make the sr:
+		srMatcher := pr.Expression
+		srReplacement := pr.ActionParameters.FromValue.TargetURL.Expression
+		code := int(pr.ActionParameters.FromValue.StatusCode)
+		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
+		r.CloudflareRedirect = sr
+
 		recs = append(recs, r)
 	}
 
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirect(domainID string, target string) error {
+func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
+	printer.Printf("DEBUG: createSingleRedir: d=%v targ=%v\n", domainID, cfr)
 	// Asumption for target:
 	// "Description,status code,incoming match expression,redirect expression"
-	parts := strings.Split(target, ",")
+	//desc : =
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
@@ -289,14 +295,16 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, target string
 	// Preserve query string
 	preserveQueryString := true
 	// Redirect status code
-	statusCode, _ := strconv.Atoi(parts[1])
-	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(statusCode)
+	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(cfr.Code)
 	// Incoming request expression
-	newSingleRedirectRules[0].Expression = parts[2]
+	//newSingleRedirectRules[0].Expression = parts[2]
+	newSingleRedirectRules[0].Expression = cfr.SRMatcher
 	// Redirect expression
-	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = parts[3]
+	//newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = parts[3]
+	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = cfr.SRReplacement
 	// Redirect name
-	newSingleRedirectRules[0].Description = parts[0]
+	//newSingleRedirectRules[0].Description = parts[0]
+	newSingleRedirectRules[0].Description = cfr.SRDisplay
 	// Rule action, should always be redirect in this case
 	newSingleRedirectRules[0].Action = "redirect"
 	// Phase should always be http_request_dynamic_redirect
@@ -318,11 +326,11 @@ func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) er
 	return err
 }
 
-func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, target string) error {
+func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 	if err := c.deleteSingleRedirects(recordID, domainID); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, target)
+	return c.createSingleRedirect(domainID, cfr)
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
@@ -347,13 +355,19 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			TTL:      1,
 		}
 		r.SetLabel("@", domain)
+		code := intZero(value["status_code"])
 		raw := fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
 			pr.Targets[0].Constraint.Value,
 			value["url"],
 			pr.Priority,
-			intZero(value["status_code"]))
-		r.CloudflareSingleAsInput = raw
+			code)
 		r.SetTarget(raw)
+
+		cr, err := newCfsrFromUserInput(raw, code, pr.Priority)
+		if err != nil {
+			return nil, err
+		}
+		r.CloudflareRedirect = cr
 
 		recs = append(recs, r)
 	}
@@ -364,30 +378,38 @@ func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
 	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
 }
 
-func (c *cloudflareProvider) updatePageRule(recordID, domainID string, target string) error {
+func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 	// maybe someday?
 	//c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
 	if err := c.deletePageRule(recordID, domainID); err != nil {
 		return err
 	}
-	return c.createPageRule(domainID, target)
+	return c.createPageRule(domainID, cfr)
 }
 
-func (c *cloudflareProvider) createPageRule(domainID string, target string) error {
+func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 	// from to priority code
-	parts := strings.Split(target, ",")
-	priority, _ := strconv.Atoi(parts[2])
-	code, _ := strconv.Atoi(parts[3])
+	// parts := strings.Split(target, ",")
+	// priority, _ := strconv.Atoi(parts[2])
+	// code, _ := strconv.Atoi(parts[3])
+	// printer.Printf("DEBUG: pr.PageRule target = %v\n", target)
+	// printer.Printf("DEBUG: pr.PageRule target = %v\n", parts[0])
+	// printer.Printf("DEBUG: pr.PageRule url    = %v\n", parts[1])
+	// printer.Printf("DEBUG: pr.PageRule code   = %v\n", code)
+	priority := cfr.PRPriority
+	code := cfr.Code
+	matcher := cfr.PRMatcher
+	replacement := cfr.PRReplacement
 	pr := cloudflare.PageRule{
 		Status:   "active",
 		Priority: priority,
 		Targets: []cloudflare.PageRuleTarget{
-			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: parts[0]}},
+			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: matcher}},
 		},
 		Actions: []cloudflare.PageRuleAction{
 			{ID: "forwarding_url", Value: &pageRuleFwdInfo{
 				StatusCode: code,
-				URL:        parts[1],
+				URL:        replacement,
 			}},
 		},
 	}

@@ -4,61 +4,93 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"strconv"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
-// convertPageRuleToSingleRedirect takes a PAGE_RULE-style target and returns strings
-// to use with Single Redirect.
-// target format is: pattern,action,index,code
-//
-//	pattern: The glob-like pattern
-//	action: The replacement pattern (with $1, $2, etc substitutions)
-//	index: The index in the list of rules. This is ignored.
-//	code: 301 or 302
-func convertPageRuleToSingleRedirect(target string) (string, string, string, int, error) {
-	// FIXME(tlim): Instead of returning so many strings, this should probably return a struct.
-	//      Possibly cloudflare.RulesetRule or cloudflare.RulesetRuleActionParameters ?
+func newCfsrFromUserInput(target string, code int, priority int) (*models.CloudflareSingleRedirectConfig, error) {
+	// target: matcher,replacement,priority,code
+	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1,1,302
 
+	r := &models.CloudflareSingleRedirectConfig{}
+
+	// Break apart the 4-part string and store into the individual fields:
 	parts := strings.Split(target, ",")
-	printer.Printf("DEBUG: gSRR: parts=%v\n", parts)
-	constraint := parts[0]
-	action := parts[1]
-	code := 301
-	if len(parts) > 3 {
-		code, _ = strconv.Atoi(parts[3])
-	}
+	printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
+	r.PRMatcher = parts[0]
+	r.PRReplacement = parts[1]
+	r.PRPriority = priority
+	r.Code = code
 
-	pattern, replacement, type_, err := makeRuleFromPattern(constraint, action, code != 301)
-	target = fmt.Sprintf("%03d,%q,%q matcher=%q expr=%s", code, constraint, action, pattern, replacement)
-	return pattern, replacement, target, type_, err
+	// Convert old-style to new-style:
+	if err := addNewStyleFields(r); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func newCfsrFromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig {
+	r := &models.CloudflareSingleRedirectConfig{
+		PRMatcher:     "UNKNOWABLE",
+		PRReplacement: "UNKNOWABLE",
+		PRPriority:    0,
+		Code:          code,
+		SRMatcher:     sm,
+		SRReplacement: sr,
+	}
+	return r
+}
+
+// addNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
+func addNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
+
+	// Extract the fields we're reading from:
+	prMatcher := sr.PRMatcher
+	prReplacement := sr.PRReplacement
+	code := sr.Code
+
+	// Convert old-style patterns to new-style rules:
+	srMatcher, srReplacement, err := makeRuleFromPattern(prMatcher, prReplacement, code != 301)
+	if err != nil {
+		return err
+	}
+	display := fmt.Sprintf(`%s,%s,%d,%03d matcher=%q replacement=%q`,
+		prMatcher, prReplacement,
+		sr.PRPriority, code,
+		srMatcher, srReplacement,
+	)
+
+	// Store the results in the fields we're writing to:
+	sr.SRMatcher = srMatcher
+	sr.SRReplacement = srReplacement
+	sr.SRDisplay = display
+
+	return nil
 }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
-func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, int, error) {
+func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
 
 	_ = temporary // Prevents error due to this variable not (yet) being used
 
 	var matcher, expr string
 	var err error
 
-	var type_ int
-
 	var host, path string
 	origPattern := pattern
 	pattern, host, path, err = normalizeURL(pattern)
 	_ = pattern
 	if err != nil {
-		return "", "", -1, err
+		return "", "", err
 	}
 	var rhost, rpath string
 	origReplacement := replacement
 	replacement, rhost, rpath, err = normalizeURL(replacement)
 	_ = rpath
 	if err != nil {
-		return "", "", -1, err
+		return "", "", err
 	}
 
 	// TODO(tlim): This could be a lot faster by not repeating itself so much.
@@ -112,13 +144,13 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 	// Not implemented
 
 	if matcher == "" {
-		return "", "", -1, fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
+		return "", "", fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
 	}
 	if expr == "" {
-		return "", "", -1, fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
+		return "", "", fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
 	}
 
-	return matcher, expr, type_, nil
+	return matcher, expr, nil
 }
 
 // normalizeURL turns foo.com into https://foo.com and replaces HTTP with HTTPS.
