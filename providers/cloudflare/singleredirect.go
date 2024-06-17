@@ -19,6 +19,7 @@ func newCfsrFromUserInput(target string, code int, priority int) (*models.Cloudf
 	// Break apart the 4-part string and store into the individual fields:
 	parts := strings.Split(target, ",")
 	printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
+	r.PRDisplay = fmt.Sprintf("%s,%d,%03d", target, priority, code)
 	r.PRMatcher = parts[0]
 	r.PRReplacement = parts[1]
 	r.PRPriority = priority

@@ -283,18 +283,24 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
-	printer.Printf("DEBUG: createSingleRedir: d=%v targ=%v\n", domainID, cfr)
+	printer.Printf("DEBUG: createSingleRedir: d=%v targ=%+v\n", domainID, cfr)
 	// Asumption for target:
 	// "Description,status code,incoming match expression,redirect expression"
 	//desc : =
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
+	newSingleRedirectRule := cloudflare.RulesetRule{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
+	newSingleRedirectRules = append(newSingleRedirectRules, newSingleRedirectRule)
 	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
 	// Preserve query string
 	preserveQueryString := true
 	// Redirect status code
+	newSingleRedirectRulesActionParameters.FromValue = &cloudflare.RulesetRuleActionParametersFromValue{}
+	// printer.Printf("DEBUG: createSR()    1 = %v\n", newSingleRedirectRulesActionParameters)
+	// printer.Printf("DEBUG: createSR()    2 = %v\n", newSingleRedirectRulesActionParameters.FromValue)
+	// printer.Printf("DEBUG: createSR()    3 = %v\n", newSingleRedirectRulesActionParameters.FromValue.StatusCode)
 	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(cfr.Code)
 	// Incoming request expression
 	//newSingleRedirectRules[0].Expression = parts[2]

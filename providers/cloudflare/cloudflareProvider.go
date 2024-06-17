@@ -406,8 +406,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 	case "WORKER_ROUTE":
 		idTxt = origRec.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		//idTxt = origRec.(cloudflare.PageRule).ID
-		idTxt = ""
+		idTxt = origRec.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.(cloudflare.DNSRecord).ID
 	}
@@ -422,7 +421,8 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.(cloudflare.WorkerRoute).ID, domainID)
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				return c.deleteWorkerRoute(origRec.(cloudflare.WorkerRoute).ID, domainID)
+				//printer.Printf("DEBUG: TYPE = %T\n", origRec)
+				return c.deleteWorkerRoute(origRec.(cloudflare.RulesetRule).ID, domainID)
 			default:
 				return c.deleteDNSRecord(origRec.(cloudflare.DNSRecord), domainID)
 			}
