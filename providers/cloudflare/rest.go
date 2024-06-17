@@ -330,7 +330,9 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) error {
+	printer.Printf("DEBUG: deleteSingleRedirect: recID=%v domID=%v\n", recordID, domainID)
 	err := c.cfClient.DeleteRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), recordID)
+	printer.Printf("DEBUG: deleteSingleRedirect: err=%v\n", err)
 
 	return err
 }
