@@ -356,7 +356,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(rulesetruleID, recordID, domainID string) error {
-	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(id), "http_request_dynamic_redirect")
+	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
 	if err != nil {
 		return err
 	}
