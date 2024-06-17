@@ -273,7 +273,10 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srReplacement := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := int(pr.ActionParameters.FromValue.StatusCode)
 		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
+		printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
+		sr.SRDisplay = pr.Description
 		r.CloudflareRedirect = sr
+		r.SetTarget(pr.Description)
 
 		recs = append(recs, r)
 	}
