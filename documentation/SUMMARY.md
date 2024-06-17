@@ -127,6 +127,7 @@
 * [Hetzner DNS Console](provider/hetzner.md)
 * [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
+* [Huawei Cloud DNS](provider/huaweicloud.md)
 * [Hurricane Electric DNS](provider/hedns.md)
 * [Internet.bs](provider/internetbs.md)
 * [INWX](provider/inwx.md)
