@@ -39,7 +39,9 @@ END);
 ## Activation
 DNSControl depends on a standard [IAM User](https://support.huaweicloud.com/intl/en-us/usermanual-iam/iam_02_0003.html) with permission to list, create and update hosted zones.
 
-You can apply the `DNS FullAccess` policy however this includes access to many other areas. The minimum permissions required are as follows:
+The `DNS FullAccess` policy will also work, but that provides access to many other areas and violates the "principle of least privilege".
+
+The minimum permissions required are as follows:
 
 ```json
 {
@@ -61,9 +63,9 @@ You can apply the `DNS FullAccess` policy however this includes access to many o
 }
 ```
 
-If you don't know how to fill in the `Region` parameter, you can refer to the [endpoint page of huaweicloud](https://developer.huaweicloud.com/intl/en-us/endpoint?DNS). For reference, I'm using on its international site, the `Region` I need to fill in is `ap-southeast-1`.
+To determine the `Region` parameter, refer to the [endpoint page of huaweicloud](https://developer.huaweicloud.com/intl/en-us/endpoint?DNS). For example, on the international site, the `Region` name `ap-southeast-1` is known to work.
 
-If you're still not sure, you can log into Huaweicloud's website and open the [API Explorer](https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/debug?api=ListPublicZones), find the `ListPublicZones` API, select a different Region and click Debug to try and find your Region!
+If that doesn't work, log into Huaweicloud's website and open the [API Explorer](https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/debug?api=ListPublicZones), find the `ListPublicZones` API, select a different Region and click Debug to try and find your Region.
 
 ## New domains
 If a domain does not exist in your Huawei Cloud account, DNSControl will automatically add it with the `push` command.
