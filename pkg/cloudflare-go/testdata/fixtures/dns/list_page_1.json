@@ -1,0 +1,80 @@
+{
+    "success": true,
+    "errors": [],
+    "messages": [],
+    "result": [
+        {
+            "id": "372e67954025e0ba6aaa6d586b9e0b59",
+            "type": "A",
+            "name": "example.com",
+            "content": "198.51.100.4",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 120,
+            "zone_id": "d56084adb405e0b7e32c52321bf07be6",
+            "zone_name": "example.com",
+            "created_on": "2014-01-01T05:20:00Z",
+            "modified_on": "2014-01-01T05:20:00Z",
+            "data": {},
+            "meta": {
+                "auto_added": true,
+                "source": "primary"
+            },
+            "tags": [
+                "tag1",
+                "tag2extended"
+            ]
+        },
+        {
+            "id": "7eb0a9821aec4b1395bd8cc03d88c17d",
+            "type": "A",
+            "name": "sub1.example.com",
+            "content": "198.51.100.5",
+            "proxiable": true,
+            "proxied": false,
+            "ttl": 120,
+            "zone_id": "d56084adb405e0b7e32c52321bf07be6",
+            "zone_name": "example.com",
+            "created_on": "2014-01-01T05:20:00Z",
+            "modified_on": "2014-01-01T05:20:00Z",
+            "data": {},
+            "meta": {
+                "auto_added": true,
+                "source": "primary"
+            },
+            "tags": [
+                "tag1",
+                "tag2extended"
+            ]
+        },
+        {
+            "id": "4c2c40857e334a2d903dd28f65a99682",
+            "type": "A",
+            "name": "sub2.example.com",
+            "content": "198.51.100.6",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 120,
+            "zone_id": "d56084adb405e0b7e32c52321bf07be6",
+            "zone_name": "example.com",
+            "created_on": "2014-01-01T05:20:00Z",
+            "modified_on": "2014-01-01T05:20:00Z",
+            "data": {},
+            "meta": {
+                "auto_added": true,
+                "source": "primary"
+            },
+            "tags": [
+                "tag1",
+                "tag2extended"
+            ]
+        }
+    ],
+    "result_info": {
+        "count": 3,
+        "page": 1,
+        "per_page": 3,
+        "total_count": 5,
+        "total_pages": 2
+    }
+}

@@ -1,0 +1,3 @@
+```release-note:bug
+turnstile: remove `SiteKey`/`Secret` being sent in update request body
+```

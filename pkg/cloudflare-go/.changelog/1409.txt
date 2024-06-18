@@ -1,0 +1,3 @@
+```release-note:enhancement
+list_item: allow filtering by search term, cursor and per page attributes
+```

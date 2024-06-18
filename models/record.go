@@ -39,6 +39,7 @@ import (
 //	  CF_REDIRECT
 //	  CF_TEMP_REDIRECT
 //	  CF_WORKER_ROUTE
+//	  CLOUDFLAREAPI_SINGLE_REDIRECT
 //	  CLOUDNS_WR
 //	  FRAME
 //	  IMPORT_TRANSFORM
@@ -50,6 +51,8 @@ import (
 //	  URL
 //	  URL301
 //	  WORKER_ROUTE
+//
+// NOTE: All NEW record types should be prefixed with the provider name (Correct: CLOUDFLAREAPI_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
 //
 // Notes about the fields:
 //
@@ -138,6 +141,30 @@ type RecordConfig struct {
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
+
+	// Cloudflare-specific fields:
+	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
+	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+}
+
+// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
+//
+//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
+type CloudflareSingleRedirectConfig struct {
+	//
+	Code int `json:"code,omitempty"` // 301 or 302
+	// PR == PageRule
+	PRDisplay     string `json:"pr_display,omitempty"` // How is this displayed to the user
+	PRMatcher     string `json:"pr_matcher,omitempty"`
+	PRReplacement string `json:"pr_replacement,omitempty"`
+	PRPriority    int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	//
+	// SR == SingleRedirect
+	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRMatcher        string `json:"sr_matcher,omitempty"`
+	SRReplacement    string `json:"sr_replacement,omitempty"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.

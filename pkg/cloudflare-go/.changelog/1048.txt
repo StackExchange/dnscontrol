@@ -1,0 +1,3 @@
+```release-note:bug
+workers_test: Fix incorrect test from PR #1014
+```

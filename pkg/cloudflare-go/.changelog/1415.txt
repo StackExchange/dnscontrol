@@ -1,0 +1,7 @@
+```release-note:enhancement
+access_organization: Add support for session_duration
+```
+
+```release-note:enhancement
+access_policy: Add support for session_duration
+```

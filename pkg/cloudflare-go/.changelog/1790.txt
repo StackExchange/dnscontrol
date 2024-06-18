@@ -1,0 +1,3 @@
+```release-note:enhancement
+access_application: support options_preflight_bypass for access_application
+```

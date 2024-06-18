@@ -134,7 +134,10 @@ func (c *porkbunProvider) getRecords(domain string) ([]domainRecord, error) {
 	}
 
 	var dr recordResponse
-	json.Unmarshal(bodyString, &dr)
+	err = json.Unmarshal(bodyString, &dr)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing record list from porkbun: %w", err)
+	}
 
 	var records []domainRecord
 	for _, rec := range dr.Records {
@@ -154,7 +157,10 @@ func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
 	}
 
 	var ns nsResponse
-	json.Unmarshal(bodyString, &ns)
+	err = json.Unmarshal(bodyString, &ns)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing nameserver list from porkbun: %w", err)
+	}
 
 	sort.Strings(ns.Nameservers)
 
@@ -185,7 +191,10 @@ func (c *porkbunProvider) listAllDomains() ([]string, error) {
 	}
 
 	var dlr domainListResponse
-	json.Unmarshal(bodyString, &dlr)
+	err = json.Unmarshal(bodyString, &dlr)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing domain list from porkbun: %w", err)
+	}
 
 	var domains []string
 	for _, domain := range dlr.Domains {

@@ -1,0 +1,3 @@
+```release-note:enhancement
+magic_transit_ipsec_tunnel: makes customer endpoint an optional field for ipsec tunnel creation
+```

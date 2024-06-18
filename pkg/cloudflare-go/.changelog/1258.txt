@@ -1,0 +1,3 @@
+```release-note:enhancement
+access: Add `isolation_required` flag to Access policies
+```

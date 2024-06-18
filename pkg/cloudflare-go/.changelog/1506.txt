@@ -1,0 +1,3 @@
+```release-note:bug
+registrar: Fix request method to call domain list endpoint from POST to GET
+```

@@ -29,3 +29,5 @@ go.sum text eol=lf
 *.jpg binary
 *.png
 *.svg
+
+pkg/cloudflare-go/.changelog text eol=crlf

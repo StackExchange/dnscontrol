@@ -1,0 +1,7 @@
+```release-note:bug
+images: Fix issue parsing Image Details from API due to incorrect struct json field
+```
+
+```release-note:breaking-change
+images: Renamed Image struct "Metadata" field to "Meta"
+```

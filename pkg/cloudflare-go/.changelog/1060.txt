@@ -1,0 +1,3 @@
+```release-note:bug
+email_routing_settings: change enable endpoint from `enabled` to `enable`
+```

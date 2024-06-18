@@ -1,0 +1,3 @@
+```release-note:enhancement
+access: Added `self_hosted_domains` support to access applications
+```

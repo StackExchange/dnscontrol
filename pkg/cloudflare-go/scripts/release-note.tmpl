@@ -1,0 +1,3 @@
+{{- define "note" -}}
+* {{.Body}} ([#{{- .Issue -}}](https://github.com/cloudflare/cloudflare-go/issues/{{- .Issue -}}))
+{{- end -}}

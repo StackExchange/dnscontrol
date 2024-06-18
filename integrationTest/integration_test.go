@@ -25,6 +25,7 @@ var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
+var enableCFRedirectMode = flag.String("cfredirect", "", "cloudflare pagerule tests: default=page_rules, c=convert old to enw, n=new-style, o=none")
 
 func init() {
 	testing.Init()
@@ -65,11 +66,21 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
+			items := []string{}
 			if *enableCFWorkers {
-				metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
-			} else {
-				metadata = []byte(`{ "manage_redirects": true }`)
+				items = append(items, `"manage_workers": true`)
 			}
+			switch *enableCFRedirectMode {
+			case "":
+				items = append(items, `"manage_redirects": true`)
+			case "c":
+				items = append(items, `"manage_redirects": true`)
+				items = append(items, `"manage_single_redirects": true`)
+			case "n":
+				items = append(items, `"manage_single_redirects": true`)
+			case "o":
+			}
+			metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
 		}
 
 		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
@@ -1830,6 +1841,14 @@ func makeTests() []*TestGroup {
 
 		// CLOUDFLAREAPI features
 
+		// CLOUDFLAREAPI: Redirects:
+
+		// go test -v -verbose -provider CLOUDFLAREAPI                // PAGE_RULEs
+		// go test -v -verbose -provider CLOUDFLAREAPI -cfredirect=c  // Convert: Convert page rules to Single Redirect
+		// go test -v -verbose -provider CLOUDFLAREAPI -cfredirect=n  // New: Convert old to new Single Redirect
+		// ProTip: Add this to just run this test:
+		//  -start 59 -end 60
+
 		testgroup("CF_REDIRECT",
 			only("CLOUDFLAREAPI"),
 			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
@@ -1838,32 +1857,32 @@ func makeTests() []*TestGroup {
 
 			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
-			//clear(),
-			//tc("multipleA",
-			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//),
-			//clear(),
-			//tc("multipleB",
-			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-			//),
-			//tc("change1",
-			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
-			//),
-			//tc("change1",
-			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//	cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
-			//),
+			clear(),
+			tc("multipleA",
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("multipleB",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
 
-			// TODO(tlim): Fix this test case. It is currently failing.
-			//clear(),
-			//tc("multiple3",
-			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
-			//),
+			// NB(tlim): This test case used to fail but mysteriously started working.
+			clear(),
+			tc("multiple3",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			),
 
 			// Repeat the above tests using CF_TEMP_REDIR instead
 			clear(),
@@ -1888,13 +1907,22 @@ func makeTests() []*TestGroup {
 				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
 			),
-			// TODO(tlim): Fix this test case:
-			//tc("tempmultiple3",
-			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
-			//),
+			// NB(tlim): This test case used to fail but mysteriously started working.
+			tc("tempmultiple3",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			),
 		),
+
+		testgroup("CF_REDIRECT_CONVERT",
+			only("CLOUDFLAREAPI"),
+			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+		),
+
+		// CLOUDFLAREAPI: PROXY
 
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),

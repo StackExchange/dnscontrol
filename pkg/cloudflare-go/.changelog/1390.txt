@@ -1,0 +1,3 @@
+```release-note:enhancement
+access_identity_provider: add support for email_claim_name and authorization_server_id
+```

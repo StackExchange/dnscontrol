@@ -1,0 +1,11 @@
+```release-note:enhancement
+access_application: Add support for custom pages
+```
+
+```release-note:enhancement
+access_custom_page: Add support for custom pages
+```
+
+```release-note:enhancement
+access_organization: add support for custom pages
+```

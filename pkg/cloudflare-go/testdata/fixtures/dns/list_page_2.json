@@ -1,0 +1,58 @@
+{
+    "success": true,
+    "errors": [],
+    "messages": [],
+    "result": [
+        {
+            "id": "97e1dc2d19204b448b6ee04724f005ba",
+            "type": "A",
+            "name": "sub3.example.com",
+            "content": "198.51.100.7",
+            "proxiable": true,
+            "proxied": false,
+            "ttl": 120,
+            "zone_id": "d56084adb405e0b7e32c52321bf07be6",
+            "zone_name": "example.com",
+            "created_on": "2014-01-01T05:20:00Z",
+            "modified_on": "2014-01-01T05:20:00Z",
+            "data": {},
+            "meta": {
+                "auto_added": true,
+                "source": "primary"
+            },
+            "tags": [
+                "tag1",
+                "tag2extended"
+            ]
+        },
+        {
+            "id": "5bafaa7059d3480da9f6e2ecd8468c33",
+            "type": "A",
+            "name": "sub4.example.com",
+            "content": "198.51.100.8",
+            "proxiable": true,
+            "proxied": false,
+            "ttl": 120,
+            "zone_id": "d56084adb405e0b7e32c52321bf07be6",
+            "zone_name": "example.com",
+            "created_on": "2014-01-01T05:20:00Z",
+            "modified_on": "2014-01-01T05:20:00Z",
+            "data": {},
+            "meta": {
+                "auto_added": true,
+                "source": "primary"
+            },
+            "tags": [
+                "tag1",
+                "tag2extended"
+            ]
+        }
+    ],
+    "result_info": {
+        "count": 2,
+        "page": 2,
+        "per_page": 3,
+        "total_count": 5,
+        "total_pages": 2
+    }
+}

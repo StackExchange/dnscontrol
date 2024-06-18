@@ -1,0 +1,3 @@
+```release-note:enhancement
+teams_rules: Added support for notification settings in a gateway rule
+```

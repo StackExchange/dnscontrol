@@ -1,0 +1,3 @@
+```release_note:enhancement
+rulesets: Add support for Cache Reserve configuration via the Rulesets/Cache Rules API
+```

@@ -1,0 +1,11 @@
+```release-note:breaking-change
+zone: `ZoneSingleSetting` has been renamed to `GetZoneSetting` and updated method signature inline with our expected conventions
+```
+
+```release-note:breaking-change
+zone: `UpdateZoneSingleSetting` has been renamed to `UpdateZoneSetting` and updated method signature inline with our expected conventions
+```
+
+```release-note:enhancement
+zone: `GetZoneSetting` and `UpdateZoneSetting` now allow configuring the path for where a setting resides instead of assuming `settings`
+```

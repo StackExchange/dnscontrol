@@ -1,0 +1,19 @@
+```release-note:breaking-change
+pages_deployment: add support for auto pagination
+```
+
+```release-note:enchancement
+pages_deployment: add Force to DeletePagesDeploymentParams
+```
+
+```release-note:breaking-change
+pages_deployment: change DeletePagesDeploymentParams to contain all parameters
+```
+
+```release-note:breaking-change
+pages_project: rename PagesProject to GetPagesProject
+```
+
+```release-note:breaking-change
+pages_project: change to use ResourceContainer for account ID
+```

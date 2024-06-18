@@ -1,0 +1,3 @@
+```release-note:enhancement
+workers-account-settings: Add in support for Workers account settings API
+```

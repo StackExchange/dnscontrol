@@ -1,0 +1,3 @@
+```release-note:bug
+load_balancing: Fix pool creation with MinimumOrigins set to 0
+```

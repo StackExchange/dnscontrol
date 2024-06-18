@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: bumps actions/cache from 3 to 4
+```

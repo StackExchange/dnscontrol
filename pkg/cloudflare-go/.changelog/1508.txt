@@ -1,0 +1,7 @@
+```release-note:enhancement
+workers_for_platforms: Add ability to list Workers for Platforms namespaces, get a namespace, create a new namespace or delete a namespace.
+```
+
+```release-note:enhancement
+workers: Add Workers for Platforms support for getting a Worker, content and bindings
+```

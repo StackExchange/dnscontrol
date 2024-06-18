@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: bumps github.com/cloudflare/circl from 1.3.3 to 1.3.7
+```

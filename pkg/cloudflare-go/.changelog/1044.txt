@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: bumps golang.org/x/tools/gopls from 0.9.3 to 0.9.4
+```

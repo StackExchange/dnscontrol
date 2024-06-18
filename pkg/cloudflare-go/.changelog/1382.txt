@@ -1,0 +1,3 @@
+```release-note:bug
+semgrep: Improved IPv4 validation by implementing a new pattern to handle cases where non-IPv4 addresses were previously accepted.
+```

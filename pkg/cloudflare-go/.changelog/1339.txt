@@ -1,0 +1,7 @@
+```release-note:enhancement
+device_posture_rule: support certificate_id and cn for client_certificate posture rule
+```
+
+```release-note:enhancement
+device_posture_rule: support active_threats, network_status, infected, and is_active for sentinelone_s2s posture rule
+```

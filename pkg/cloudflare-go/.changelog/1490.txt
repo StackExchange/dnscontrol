@@ -1,0 +1,3 @@
+```release-note:note
+zaraz: replace deprecated neoEvents with Actions on Zaraz Config tools schema
+```

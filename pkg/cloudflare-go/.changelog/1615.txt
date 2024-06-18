@@ -1,0 +1,3 @@
+```release-note:bug
+teams_rules: add "resolve" to allowable actions
+```

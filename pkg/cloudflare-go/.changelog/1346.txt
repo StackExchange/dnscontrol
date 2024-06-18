@@ -1,0 +1,11 @@
+```release-note:enhancement
+rulesets: Update API reference links
+```
+
+```release-note:enhancement
+rulesets: Remove internal-only schema kind
+```
+
+```release-note:enhancement
+rulesets: Remove some request parameters that are not allowed or have no effect
+```

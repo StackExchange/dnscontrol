@@ -1,0 +1,3 @@
+```release-note:enhancement
+dns: update default `per_page` attribute to 100 records
+```

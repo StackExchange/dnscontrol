@@ -1,0 +1,3 @@
+```release-note:bug
+workers: Fix namespace dispatch upload API path
+```

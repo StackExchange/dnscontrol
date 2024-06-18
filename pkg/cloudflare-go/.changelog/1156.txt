@@ -1,0 +1,31 @@
+```release-note:bug
+firewall_rules: use empty reponse struct on each page call
+```
+
+```release-note:bug
+filter: use empty reponse struct on each page call
+```
+
+```release-note:bug
+email_routing_destination: use empty reponse struct on each page call
+```
+
+```release-note:bug
+email_routing_rules: use empty reponse struct on each page call
+```
+
+```release-note:bug
+lockdown: use empty reponse struct on each page call
+```
+
+```release-note:bug
+queue: use empty reponse struct on each page call
+```
+
+```release-note:bug
+teams_list: use empty reponse struct on each page call
+```
+
+```release-note:bug
+workers_kv: use empty reponse struct on each page call
+```

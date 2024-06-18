@@ -1,0 +1,7 @@
+```release-note:note
+dns: remove additional lookup from `Update` operations when `Name` or `Type` was omitted
+```
+
+```release-note:breaking-change
+dns: remove these read-only fields from `UpdateDNSRecordParams`: `CreatedOn`, `ModifiedOn`, `Meta`, `ZoneID`, `ZoneName`, `Proxiable`, and `Locked`
+```

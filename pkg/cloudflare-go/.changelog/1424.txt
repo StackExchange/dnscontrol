@@ -1,0 +1,7 @@
+```release-note:enhancement
+teams: Add `non_identity_enabled` boolean in browser isolation settings
+```
+
+```release-note:breaking-change
+teams: `BrowserIsolation.UrlBrowserIsolationEnabled` has changed from `bool` to `*bool` to meet the library conventions
+```

@@ -1,0 +1,7 @@
+```release-note:enhancement
+firewall_rule: automatically paginate `List` results unless `Page` and `PerPage` are provided
+```
+
+```release-note:enhancement
+filter: automatically paginate `List` results unless `Page` and `PerPage` are provided
+```

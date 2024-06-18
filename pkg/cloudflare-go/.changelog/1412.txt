@@ -1,0 +1,3 @@
+```release-note:bug
+observatory: fix double url encoding
+```

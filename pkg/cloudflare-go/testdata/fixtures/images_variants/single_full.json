@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "messages": [],
+  "result": {
+    "variant": {
+      "id": "hero",
+      "neverRequireSignedURLs": true,
+      "options": {
+        "fit": "scale-down",
+        "height": 768,
+        "metadata": "none",
+        "width": 1366
+      }
+    }
+  },
+  "success": true
+}

@@ -1,0 +1,3 @@
+```release-note:bug
+origin certificate: Fix API auth type used
+```

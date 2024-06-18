@@ -1,0 +1,3 @@
+```release-note:enhancement
+access_application: add support for `scim_config`
+```

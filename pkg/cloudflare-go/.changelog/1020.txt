@@ -1,0 +1,3 @@
+```release-note:dependency
+provider: bumps github.com/golangci/golangci-lint from 1.47.3 to 1.48.0
+```
