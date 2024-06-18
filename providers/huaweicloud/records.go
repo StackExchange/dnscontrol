@@ -73,8 +73,8 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		case diff2.CREATE:
 			fallthrough
 		case diff2.CHANGE:
-			newRecordsColl := collectRecordsByLineAndWeight(change.New)
-			oldRecordsColl := collectRecordsByLineAndWeight(change.Old)
+			newRecordsColl := collectRecordsByLineAndWeightAndKey(change.New)
+			oldRecordsColl := collectRecordsByLineAndWeightAndKey(change.Old)
 			corrections = append(corrections, &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
@@ -94,10 +94,7 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 						if err != nil {
 							return err
 						}
-						oldRecords, ok := oldRecordsColl[key]
-						if !ok {
-							oldRecords = models.Records{}
-						}
+						oldRecords := oldRecordsColl[key]
 						rrsetIDOld := getRRSetIDFromRecords(oldRecords)
 
 						if len(rrsetIDOld) == 1 {
@@ -139,12 +136,13 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	return result, nil
 }
 
-func collectRecordsByLineAndWeight(records models.Records) map[string]models.Records {
+func collectRecordsByLineAndWeightAndKey(records models.Records) map[string]models.Records {
 	recordsByLineAndWeight := make(map[string]models.Records)
 	for _, rec := range records {
 		line := rec.Metadata[metaLine]
 		weight := rec.Metadata[metaWeight]
-		key := weight + "," + line
+		rrsetKey := rec.Metadata[metaKey]
+		key := weight + "," + line + "," + rrsetKey
 		if _, ok := recordsByLineAndWeight[key]; !ok {
 			recordsByLineAndWeight[key] = models.Records{}
 		}
@@ -176,13 +174,14 @@ func genComparable(rec *models.RecordConfig) string {
 	}
 	weight := rec.Metadata[metaWeight]
 	line := rec.Metadata[metaLine]
+	key := rec.Metadata[metaKey]
 	if weight == "" {
 		weight = defaultWeight
 	}
 	if line == "" {
 		line = defaultLine
 	}
-	return "weight=" + weight + " line=" + line
+	return "weight=" + weight + " line=" + line + " key=" + key
 }
 
 func (c *huaweicloudProvider) deleteRRSets(zoneID string, rrsets []string) error {
@@ -207,12 +206,13 @@ func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ShowRecordSet
 	createPayload := &model.CreateRecordSetWithLineRequest{
 		ZoneId: zoneID,
 		Body: &model.CreateRecordSetWithLineRequestBody{
-			Name:    *rc.Name,
-			Type:    *rc.Type,
-			Ttl:     rc.Ttl,
-			Records: rc.Records,
-			Weight:  rc.Weight,
-			Line:    rc.Line,
+			Name:        *rc.Name,
+			Type:        *rc.Type,
+			Ttl:         rc.Ttl,
+			Records:     rc.Records,
+			Weight:      rc.Weight,
+			Line:        rc.Line,
+			Description: rc.Description,
 		},
 	}
 	var err error
@@ -231,11 +231,12 @@ func (c *huaweicloudProvider) updateRRSet(zoneID, rrsetID string, rc *model.Show
 		ZoneId:      zoneID,
 		RecordsetId: rrsetID,
 		Body: &model.UpdateRecordSetsReq{
-			Name:    *rc.Name,
-			Type:    *rc.Type,
-			Ttl:     rc.Ttl,
-			Records: rc.Records,
-			Weight:  rc.Weight,
+			Name:        *rc.Name,
+			Type:        *rc.Type,
+			Ttl:         rc.Ttl,
+			Records:     rc.Records,
+			Weight:      rc.Weight,
+			Description: rc.Description,
 		},
 	}
 	var err error

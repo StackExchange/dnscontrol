@@ -24,6 +24,7 @@ There are some record level metadata available for this provider:
    * `hw_line` (Line ID, default "default_view") Refer to the [Intelligent Resolution](https://support.huaweicloud.com/intl/en-us/usermanual-dns/dns_usermanual_0041.html) for more information.
      * Available Line ID refer to [Resolution Lines](https://support.huaweicloud.com/intl/en-us/api-dns/en-us_topic_0085546214.html). Custom Line ID can also be used.
    * `hw_weight` (0-1000, default "1") Refer to the [Configuring Weighted Routing](https://support.huaweicloud.com/intl/en-us/usermanual-dns/dns_usermanual_0705.html) for more information.
+   * `hw_rrset_key` (default "") User defined key for RRset load balance. This value would be stored in the description field of the RRset.
 
 The following example shows how to use the metadata:
 
@@ -32,14 +33,21 @@ The following example shows how to use the metadata:
 var REG_NONE = NewRegistrar("none");
 var DSP_HWCLOUD = NewDnsProvider("huaweicloud");
 
-// this example will create 4 rrsets for the same name "test"
 D("example.com", REG_NONE, DnsProvider(DSP_HWCLOUD),
+    // this example will create 4 rrsets with the same name "test"
     A("test", "8.8.8.8"),
     A("test", "8.8.4.4"),
     A("test", "9.9.9.9", {hw_weight: "10"}),         // Weighted Routing
     A("test", "149.112.112.112", {hw_weight: "10"}), // Weighted Routing
     A("test", "223.5.5.5", {hw_line: "CN"}), // GEODNS
     A("test", "223.6.6.6", {hw_line: "CN", hw_weight: "10"}), // GEODNS with weight
+
+    // this example will create 3 rrsets with the same name "lb"
+    A("rr-lb", "10.0.0.1", {hw_weight: "10", hw_rrset_key: "lb-zone-a"}),
+    A("rr-lb", "10.0.0.2", {hw_weight: "10", hw_rrset_key: "lb-zone-a"}),
+    A("rr-lb", "10.0.1.1", {hw_weight: "10", hw_rrset_key: "lb-zone-b"}),
+    A("rr-lb", "10.0.1.2", {hw_weight: "10", hw_rrset_key: "lb-zone-b"}),
+    A("rr-lb", "10.0.2.2", {hw_weight: "0",  hw_rrset_key: "lb-zone-c"}),
 END);
 ```
 {% endcode %}

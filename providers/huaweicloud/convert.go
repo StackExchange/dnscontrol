@@ -45,10 +45,13 @@ func nativeToRecords(n *model.ShowRecordSetByZoneResp, zoneName string) (models.
 			return nil, fmt.Errorf("unparsable record received from Huaweicloud: %w", err)
 		}
 		if n.Line != nil {
-			rc.Metadata["hw_line"] = *n.Line
+			rc.Metadata[metaLine] = *n.Line
 		}
 		if n.Weight != nil {
-			rc.Metadata["hw_weight"] = fmt.Sprintf("%d", *n.Weight)
+			rc.Metadata[metaWeight] = fmt.Sprintf("%d", *n.Weight)
+		}
+		if n.Description != nil {
+			rc.Metadata[metaKey] = *n.Description
 		}
 		rcs = append(rcs, rc)
 	}
@@ -64,7 +67,6 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 	// line and weight should be the same for all records in the rrset
 	line := rcs[0].Metadata[metaLine]
 	weightStr := rcs[0].Metadata[metaWeight]
-	// isApexNS := expectedKey.Type == "NS" && rcs[0].Name == "@"
 	for _, r := range rcs {
 		if r.Metadata[metaLine] != line {
 			return nil, fmt.Errorf("all records in the rrset must have the same line %s", line)
@@ -92,6 +94,7 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 	resultTTL := int32(0)
 	resultVal := []string{}
 	name := expectedKey.NameFQDN + "."
+	key := rcs[0].Metadata[metaKey]
 	result := &model.ShowRecordSetByZoneResp{
 		Name:    &name,
 		Type:    &expectedKey.Type,
@@ -99,6 +102,7 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 		Records: &resultVal,
 		Line:    &line,
 		Weight:  weight,
+		Description: &key,
 	}
 
 	for _, r := range rcs {
