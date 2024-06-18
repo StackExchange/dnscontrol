@@ -20,10 +20,18 @@ import (
 
 /*
 Huaweicloud API DNS provider:
+
 Info required in `creds.json`:
    - KeyId
    - SecretKey
    - Region
+
+Record level metadata available:
+   - hw_line (refer below Huawei Cloud DNS API documentation for available lines, default "default_view")
+	 					 (https://support.huaweicloud.com/intl/en-us/api-dns/en-us_topic_0085546214.html)
+   - hw_weight (0-1000, default "1")
+	 - hw_rrset_key (default "")
+
 */
 
 type huaweicloudProvider struct {
@@ -32,6 +40,14 @@ type huaweicloudProvider struct {
 	zoneIDByDomain map[string]string
 	region         *region.Region
 }
+
+const (
+	metaWeight    = "hw_weight"
+	metaLine      = "hw_line"
+	metaKey       = "hw_rrset_key"
+	defaultWeight = "1"
+	defaultLine   = "default_view"
+)
 
 // newHuaweicloud creates the provider.
 func newHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

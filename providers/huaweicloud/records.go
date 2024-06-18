@@ -54,12 +54,14 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		return nil, fmt.Errorf("zone %s not found", dc.Name)
 	}
 
+	addDefaultMeta(dc.Records)
+
 	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction
 	var deletions []*models.Correction
 	var reports []*models.Correction
 
-	changes, err := diff2.ByRecordSet(existing, dc, nil)
+	changes, err := diff2.ByRecordSet(existing, dc, genComparable)
 	if err != nil {
 		return nil, err
 	}
@@ -71,20 +73,49 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		case diff2.CREATE:
 			fallthrough
 		case diff2.CHANGE:
-			records := recordsToNative(change.New, change.Key)
-			rrsetsID := getRRSetIDFromRecords(change.Old)
+			newRecordsColl := collectRecordsByLineAndWeightAndKey(change.New)
+			oldRecordsColl := collectRecordsByLineAndWeightAndKey(change.Old)
 			corrections = append(corrections, &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					if len(rrsetsID) == 1 {
-						return c.updateRRSet(zoneID, rrsetsID[0], records)
-					} else {
-						err := c.deleteRRSets(zoneID, rrsetsID)
+					// delete old records if not exist in new records
+					for key, oldRecords := range oldRecordsColl {
+						if _, ok := newRecordsColl[key]; !ok {
+							rrsetIDOld := getRRSetIDFromRecords(oldRecords)
+							err := c.deleteRRSets(zoneID, rrsetIDOld)
+							if err != nil {
+								return err
+							}
+						}
+					}
+					// modify or create new records
+					for key, newRecords := range newRecordsColl {
+						records, err := recordsToNative(newRecords, change.Key)
 						if err != nil {
 							return err
 						}
-						return c.createRRSet(zoneID, records)
+						oldRecords := oldRecordsColl[key]
+						rrsetIDOld := getRRSetIDFromRecords(oldRecords)
+
+						if len(rrsetIDOld) == 1 {
+							// update existing rrset
+							err = c.updateRRSet(zoneID, rrsetIDOld[0], records)
+							if err != nil {
+								return err
+							}
+						} else {
+							// create new rrset or combine multiple rrsets into one
+							err := c.deleteRRSets(zoneID, rrsetIDOld)
+							if err != nil {
+								return err
+							}
+							err = c.createRRSet(zoneID, records)
+							if err != nil {
+								return err
+							}
+						}
 					}
+					return nil
 				},
 			})
 		case diff2.DELETE:
@@ -105,15 +136,63 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	return result, nil
 }
 
+func collectRecordsByLineAndWeightAndKey(records models.Records) map[string]models.Records {
+	recordsByLineAndWeight := make(map[string]models.Records)
+	for _, rec := range records {
+		line := rec.Metadata[metaLine]
+		weight := rec.Metadata[metaWeight]
+		rrsetKey := rec.Metadata[metaKey]
+		key := weight + "," + line + "," + rrsetKey
+		if _, ok := recordsByLineAndWeight[key]; !ok {
+			recordsByLineAndWeight[key] = models.Records{}
+		}
+		recordsByLineAndWeight[key] = append(recordsByLineAndWeight[key], rec)
+	}
+	return recordsByLineAndWeight
+}
+
+func addDefaultMeta(recs models.Records) {
+	for _, r := range recs {
+		if r.Metadata == nil {
+			r.Metadata = make(map[string]string)
+		}
+		if r.Metadata[metaLine] == "" {
+			r.Metadata[metaLine] = defaultLine
+		}
+		// apex ns should not have weight
+		isApexNS := r.Type == "NS" && r.Name == "@"
+		if !isApexNS && r.Metadata[metaWeight] == "" {
+			r.Metadata[metaWeight] = defaultWeight
+		}
+	}
+}
+
+func genComparable(rec *models.RecordConfig) string {
+	// apex ns
+	if rec.Type == "NS" && rec.Name == "@" {
+		return ""
+	}
+	weight := rec.Metadata[metaWeight]
+	line := rec.Metadata[metaLine]
+	key := rec.Metadata[metaKey]
+	if weight == "" {
+		weight = defaultWeight
+	}
+	if line == "" {
+		line = defaultLine
+	}
+	return "weight=" + weight + " line=" + line + " key=" + key
+}
+
 func (c *huaweicloudProvider) deleteRRSets(zoneID string, rrsets []string) error {
 	for _, rrset := range rrsets {
-		deletePayload := &model.DeleteRecordSetRequest{
+		deletePayload := &model.DeleteRecordSetsRequest{
 			ZoneId:      zoneID,
 			RecordsetId: rrset,
 		}
 		var err error
 		withRetry(func() error {
-			_, err = c.client.DeleteRecordSet(deletePayload)
+			_, err = c.client.DeleteRecordSets(deletePayload)
 			return err
 		})
 		if err != nil {
@@ -123,19 +202,22 @@ func (c *huaweicloudProvider) deleteRRSets(zoneID string, rrsets []string) error
 	return nil
 }
 
-func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ListRecordSets) error {
-	createPayload := &model.CreateRecordSetRequest{
+func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ShowRecordSetByZoneResp) error {
+	createPayload := &model.CreateRecordSetWithLineRequest{
 		ZoneId: zoneID,
-		Body: &model.CreateRecordSetRequestBody{
-			Name:    *rc.Name,
-			Type:    *rc.Type,
-			Ttl:     rc.Ttl,
-			Records: *rc.Records,
+		Body: &model.CreateRecordSetWithLineRequestBody{
+			Name:        *rc.Name,
+			Type:        *rc.Type,
+			Ttl:         rc.Ttl,
+			Records:     rc.Records,
+			Weight:      rc.Weight,
+			Line:        rc.Line,
+			Description: rc.Description,
 		},
 	}
 	var err error
 	withRetry(func() error {
-		_, err = c.client.CreateRecordSet(createPayload)
+		_, err = c.client.CreateRecordSetWithLine(createPayload)
 		return err
 	})
 	if err != nil {
@@ -144,20 +226,22 @@ func (c *huaweicloudProvider) createRRSet(zoneID string, rc *model.ListRecordSet
 	return nil
 }
 
-func (c *huaweicloudProvider) updateRRSet(zoneID, rrsetID string, rc *model.ListRecordSets) error {
-	updatePayload := &model.UpdateRecordSetRequest{
+func (c *huaweicloudProvider) updateRRSet(zoneID, rrsetID string, rc *model.ShowRecordSetByZoneResp) error {
+	updatePayload := &model.UpdateRecordSetsRequest{
 		ZoneId:      zoneID,
 		RecordsetId: rrsetID,
-		Body: &model.UpdateRecordSetReq{
-			Name:    *rc.Name,
-			Type:    *rc.Type,
-			Ttl:     rc.Ttl,
-			Records: rc.Records,
+		Body: &model.UpdateRecordSetsReq{
+			Name:        *rc.Name,
+			Type:        *rc.Type,
+			Ttl:         rc.Ttl,
+			Records:     rc.Records,
+			Weight:      rc.Weight,
+			Description: rc.Description,
 		},
 	}
 	var err error
 	withRetry(func() error {
-		_, err = c.client.UpdateRecordSet(updatePayload)
+		_, err = c.client.UpdateRecordSets(updatePayload)
 		return err
 	})
 	if err != nil {
@@ -180,20 +264,20 @@ func parseMarkerFromURL(link string) (string, error) {
 	return marker, nil
 }
 
-func (c *huaweicloudProvider) fetchZoneRecordsFromRemote(zoneID string) (*[]model.ListRecordSets, error) {
+func (c *huaweicloudProvider) fetchZoneRecordsFromRemote(zoneID string) (*[]model.ShowRecordSetByZoneResp, error) {
 	var nextMarker *string
-	existingRecords := []model.ListRecordSets{}
+	existingRecords := []model.ShowRecordSetByZoneResp{}
 	availableStatus := []string{"ACTIVE", "PENDING_CREATE", "PENDING_UPDATE"}
 
 	for {
-		payload := model.ListRecordSetsByZoneRequest{
+		payload := model.ShowRecordSetByZoneRequest{
 			ZoneId: zoneID,
 			Marker: nextMarker,
 		}
-		var res *model.ListRecordSetsByZoneResponse
+		var res *model.ShowRecordSetByZoneResponse
 		var err error
 		withRetry(func() error {
-			res, err = c.client.ListRecordSetsByZone(&payload)
+			res, err = c.client.ShowRecordSetByZone(&payload)
 			return err
 		})
 		if err != nil {
