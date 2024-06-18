@@ -281,8 +281,9 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
 	}
-	var rulelist []cloudflare.RulesetRule
-	rulelist = rules.Rules
+	//var rulelist []cloudflare.RulesetRule
+	//rulelist = rules.Rules
+	//rulelist := rules.Rules
 
 	//printer.Printf("DEBUG: rules %+v\n", rules)
 	recs := []*models.RecordConfig{}
@@ -302,7 +303,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srReplacement := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := int(pr.ActionParameters.FromValue.StatusCode)
 		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
-		sr.SRRRuleList = rulelist
+		//sr.SRRRuleList = rulelist
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
 		sr.SRDisplay = pr.Description
 		// printer.Printf("DEBUG: PR = %+v\n", pr)

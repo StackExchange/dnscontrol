@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/cloudflare/cloudflare-go"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -145,10 +144,6 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	// CloudflareSingleAsInput             string `json:"cf_single_redirect_as_input,omitempty"`   // example.com/*,newexample.com/$1,1,301
-	// CloudflareSingleRedirectMatchExpr   string `json:"cf_single_redirect_match_expr,omitempty"` // The new-style rule for the match
-	// CloudflareSingleRedirectReplaceExpr string `json:"cf_single_redirect_redir_expr,omitempty"` // The new-style rule for the replacement
-	// CloudflareSingleRedirectType        int    `json:"cf_single_redirect_type,omitempty"`       // 301 or 302
 	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
 }
 
@@ -157,20 +152,19 @@ type RecordConfig struct {
 //	When these are used, .target is set to a human-readable version (only to be used for display purposes).
 type CloudflareSingleRedirectConfig struct {
 	//
-	Code int // 301 or 302
+	Code int `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
-	PRDisplay     string // How is this displayed to the user
-	PRMatcher     string
-	PRReplacement string
-	PRPriority    int // Really an identifier for the rule.
+	PRDisplay     string `json:"pr_display,omitempty"` // How is this displayed to the user
+	PRMatcher     string `json:"pr_matcher,omitempty"`
+	PRReplacement string `json:"pr_replacement,omitempty"`
+	PRPriority    int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
 	//
 	// SR == SingleRedirect
-	SRDisplay        string // How is this displayed to the user
-	SRMatcher        string
-	SRReplacement    string
-	SRRRulesetID     string
-	SRRRulesetRuleID string
-	SRRRuleList      []cloudflare.RulesetRule
+	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRMatcher        string `json:"sr_matcher,omitempty"`
+	SRReplacement    string `json:"sr_replacement,omitempty"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
