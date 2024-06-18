@@ -365,7 +365,10 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 
 func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
-	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't working.
+	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
+	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
+	// updatedRulesetRules := []cloudflare.RulesetRule{}
+
 	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
 	// if err != nil {
 	// 	return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
@@ -381,11 +384,14 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	// updatedRuleset.Rules = updatedRulesetRules
 	// _, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), updatedRuleset)
 
+	// Old Code
+
 	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
 	// if err != nil {
 	// 	return err
 	// }
 	//printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+
 	if cfr.SRRRulesetID == "" {
 		panic("STOP")
 	}
