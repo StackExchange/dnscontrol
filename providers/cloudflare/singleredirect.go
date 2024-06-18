@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 func newCfsrFromUserInput(target string, code int, priority int) (*models.CloudflareSingleRedirectConfig, error) {
@@ -18,7 +17,7 @@ func newCfsrFromUserInput(target string, code int, priority int) (*models.Cloudf
 
 	// Break apart the 4-part string and store into the individual fields:
 	parts := strings.Split(target, ",")
-	printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
+	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
 	r.PRDisplay = fmt.Sprintf("%s,%d,%03d", target, priority, code)
 	r.PRMatcher = parts[0]
 	r.PRReplacement = parts[1]
@@ -36,7 +35,7 @@ func newCfsrFromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirec
 	r := &models.CloudflareSingleRedirectConfig{
 		PRMatcher:     "UNKNOWABLE",
 		PRReplacement: "UNKNOWABLE",
-		PRPriority:    0,
+		//PRPriority:    0,
 		Code:          code,
 		SRMatcher:     sm,
 		SRReplacement: sr,

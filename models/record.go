@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -169,6 +170,7 @@ type CloudflareSingleRedirectConfig struct {
 	SRReplacement    string
 	SRRRulesetID     string
 	SRRRulesetRuleID string
+	SRRRuleList      []cloudflare.RulesetRule
 }
 
 // MarshalJSON marshals RecordConfig.
