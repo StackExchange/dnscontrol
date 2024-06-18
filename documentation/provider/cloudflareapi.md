@@ -63,6 +63,8 @@ DNSControl requires the token to have the following permissions:
 * Add: Enable SSL controls (`Zone → SSL and Certificates → Edit`)
 * Editing Page Rules?
   * Add: Edit Page Rules (`Zone → Page Rules → Edit`)
+* Creating Redirects?
+  * Add: Edit Dynamic Redirect (`Zone → Dynamic Redirect → Edit`)
 * Managing Cloudflare Workers? (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
   * Add: Edit Worker Scripts (`Account → Workers Scripts → Edit`)
   * Add: Edit Worker Scripts (`Zone → Workers Routes → Edit`)
