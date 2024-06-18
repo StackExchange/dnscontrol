@@ -177,7 +177,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		records = append(records, prs...)
 	}
 
-	if c.manageSingleRedirects && !c.manageRedirects { // if new xor old
+	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
 		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
 		// Append these records to `records`
@@ -593,6 +593,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			} else {
 				// Both!  Convert this record to PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
 
+				target := rec.GetTargetField()
+
 				// make a copy:
 				newRec, err := rec.Copy()
 				if err != nil {
@@ -600,7 +602,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 
 				// The copy becomes the CF SingleRedirect
-				sr, err := newCfsrFromUserInput(newRec.GetTargetField(), code, currentPrPrio)
+				sr, err := newCfsrFromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -613,7 +615,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				dc.Records = append(dc.Records, newRec)
 
 				// The original becomes the PAGE_RULE:
-				sr, err = newCfsrFromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err = newCfsrFromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}

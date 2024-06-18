@@ -399,6 +399,7 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 	// TODO(tlim): This is terrible.  It returns an error even when it is successful.
 	if strings.Contains(err.Error(), `"success": true,`) {
+		printer.Printf("DEBUG: SUCCESS!!!")
 		return nil
 	}
 
