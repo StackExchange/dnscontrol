@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -322,7 +321,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
-	printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
+	//printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
 	// Asumption for target:
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
@@ -393,13 +392,9 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	// }
 	//printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 
-	if cfr.SRRRulesetID == "" {
-		panic("STOP")
-	}
 	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 	// TODO(tlim): This is terrible.  It returns an error even when it is successful.
 	if strings.Contains(err.Error(), `"success": true,`) {
-		printer.Printf("DEBUG: SUCCESS!!!")
 		return nil
 	}
 
@@ -472,7 +467,7 @@ func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr model
 }
 
 func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	printer.Printf("DEBUG: called createPageRule(%s, %+v)\n", domainID, cfr)
+	//printer.Printf("DEBUG: called createPageRule(%s, %+v)\n", domainID, cfr)
 	// from to priority code
 	// parts := strings.Split(target, ",")
 	// priority, _ := strconv.Atoi(parts[2])
@@ -498,7 +493,7 @@ func (c *cloudflareProvider) createPageRule(domainID string, cfr models.Cloudfla
 			}},
 		},
 	}
-	printer.Printf("DEBUG: createPageRule pr=%+v\n", pr)
+	//printer.Printf("DEBUG: createPageRule pr=%+v\n", pr)
 	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
 	return err
 }
