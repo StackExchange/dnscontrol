@@ -96,12 +96,12 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 	name := expectedKey.NameFQDN + "."
 	key := rcs[0].Metadata[metaKey]
 	result := &model.ShowRecordSetByZoneResp{
-		Name:    &name,
-		Type:    &expectedKey.Type,
-		Ttl:     &resultTTL,
-		Records: &resultVal,
-		Line:    &line,
-		Weight:  weight,
+		Name:        &name,
+		Type:        &expectedKey.Type,
+		Ttl:         &resultTTL,
+		Records:     &resultVal,
+		Line:        &line,
+		Weight:      weight,
 		Description: &key,
 	}
 
