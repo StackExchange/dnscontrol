@@ -86,6 +86,7 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 		if weightInt32 < 0 || weightInt32 > 1000 {
 			return nil, fmt.Errorf("weight must be between 0 and 1000")
 		}
+		weight = &weightInt32
 	}
 
 	resultTTL := int32(0)
