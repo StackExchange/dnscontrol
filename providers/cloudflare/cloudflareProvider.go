@@ -169,7 +169,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 	// 	}
 	// }
 
-	if c.manageRedirects {
+	if c.manageRedirects { // if old
 		prs, err := c.getPageRules(domainID, domain)
 		if err != nil {
 			return nil, err
@@ -177,7 +177,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		records = append(records, prs...)
 	}
 
-	if /* c.manageSingleRedirects */ true {
+	if c.manageSingleRedirects && !c.manageRedirects { // if new xor old
 		// Download the list of Single Redirects.
 		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
 		// Append these records to `records`
@@ -280,8 +280,9 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		case diff2.DELETE:
 			deleteRec := inst.Old[0]
 			deleteRecType := deleteRec.Type
-			deleteRecOrig := deleteRec.Original
-			corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
+			//deleteRecOrig := deleteRec.Original
+			//corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
+			corrs = c.mkDeleteCorrection(deleteRecType, deleteRec, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we remove DS records before any NS records.
 			addToFront = (deleteRecType == "DS")
@@ -360,7 +361,8 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		idTxt = oldrec.Original.(cloudflare.RulesetRule).ID
+		//idTxt = oldrec.Original.(cloudflare.RulesetRule).ID
+		idTxt = oldrec.CloudflareRedirect.SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
 	}
@@ -378,7 +380,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updateSingleRedirect(idTxt, domainID, *newrec.CloudflareRedirect)
+				return c.updateSingleRedirect(domainID, oldrec, newrec)
 			},
 		}}
 	case "WORKER_ROUTE":
@@ -399,18 +401,18 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	}
 }
 
-func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, domainID string, msg string) []*models.Correction {
+func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.RecordConfig, domainID string, msg string) []*models.Correction {
 
 	var idTxt string
 	switch recType {
 	case "PAGE_RULE":
-		idTxt = origRec.(cloudflare.PageRule).ID
+		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
-		idTxt = origRec.(cloudflare.WorkerRoute).ID
+		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		idTxt = origRec.(cloudflare.RulesetRule).ID
+		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
-		idTxt = origRec.(cloudflare.DNSRecord).ID
+		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.RedString(" id=%v", idTxt)
 
@@ -419,21 +421,18 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 		F: func() error {
 			switch recType {
 			case "PAGE_RULE":
-				return c.deletePageRule(origRec.(cloudflare.PageRule).ID, domainID)
+				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
-				return c.deleteWorkerRoute(origRec.(cloudflare.WorkerRoute).ID, domainID)
+				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				o := origRec.(cloudflare.Ruleset)
-				printer.Printf("DEBUG: DELETE %+v\n", o)
+				//o := origRec.Original.(cloudflare.Ruleset)
+				//printer.Printf("DEBUG: DELETE %+v\n", o)
 				// printer.Printf("DEBUG: DELETE ID = %+v\n", o.ID)
 				// printer.Printf("DEBUG: DELETE ACTION %+v\n", o.ActionParameters)
 				// printer.Printf("DEBUG: DELETE FROMVALUE %+v\n", o.ActionParameters.FromValue)
-				return c.deleteSingleRedirects(
-					"", // inner ID
-					origRec.(cloudflare.Ruleset).ID,
-					domainID)
+				return c.deleteSingleRedirects(domainID, *origRec.CloudflareRedirect)
 			default:
-				return c.deleteDNSRecord(origRec.(cloudflare.DNSRecord), domainID)
+				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
 			}
 		},
 	}

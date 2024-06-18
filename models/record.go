@@ -167,6 +167,7 @@ type CloudflareSingleRedirectConfig struct {
 	SRDisplay        string // How is this displayed to the user
 	SRMatcher        string
 	SRReplacement    string
+	SRRRulesetID     string
 	SRRRulesetRuleID string
 }
 

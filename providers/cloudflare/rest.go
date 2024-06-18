@@ -301,8 +301,10 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
 		sr.SRDisplay = pr.Description
-		//printer.Printf("DEBUG: PR = %+v\n", pr)
-		sr.SRRRulesetRuleID = pr.ID
+		// printer.Printf("DEBUG: PR = %+v\n", pr)
+		// printer.Printf("DEBUG: rules = %+v\n", rules)
+		sr.SRRRulesetID = rules.ID
+		sr.SRRRulesetRuleID = pr.ID //correct
 
 		r.CloudflareRedirect = sr
 		r.SetTarget(pr.Description)
@@ -358,22 +360,34 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(recordID, domainID string) error {
-	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	if err != nil {
-		return err
+func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+
+	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
+	// if err != nil {
+	// 	return err
+	// }
+	printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+	if cfr.SRRRulesetID == "" {
+		panic("STOP")
 	}
-	err = c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), rules.ID, recordID)
+	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+	// TODO(tlim): This is terrible.  It returns an error even when it is successful.
+	if strings.Contains(err.Error(), `"success": true,`) {
+		return nil
+	}
 
 	return err
 }
 
-func (c *cloudflareProvider) updateSingleRedirect(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	rulesetID := cfr.SRRRulesetRuleID
-	if err := c.deleteSingleRedirects(rulesetID, recordID, domainID); err != nil {
+func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newrec *models.RecordConfig) error {
+	// rulesetID := cfr.SRRRulesetID
+	// rulesetRuleID := cfr.SRRRulesetRuleID
+	//printer.Printf("DEBUG: UPDATE-DEL domID=%v sr=%+v\n", domainID, cfr)
+	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, cfr)
+	printer.Printf("DEBUG: UPDATE-CREATE domID=%v sr=%+v\n", domainID, newrec.CloudflareRedirect)
+	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
