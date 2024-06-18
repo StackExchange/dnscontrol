@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -284,7 +283,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	var rulelist []cloudflare.RulesetRule
 	rulelist = rules.Rules
 
-	printer.Printf("DEBUG: %+v\n", rules)
+	//printer.Printf("DEBUG: rules %+v\n", rules)
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
 		//printer.Printf("DEBUG: %+v\n", pr)
@@ -321,7 +320,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
-	printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
+	//printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
 	// Asumption for target:
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
@@ -375,7 +374,7 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	// if err != nil {
 	// 	return err
 	// }
-	printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+	//printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 	if cfr.SRRRulesetID == "" {
 		panic("STOP")
 	}
@@ -395,7 +394,7 @@ func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newre
 	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
 		return err
 	}
-	printer.Printf("DEBUG: UPDATE-CREATE domID=%v sr=%+v\n", domainID, newrec.CloudflareRedirect)
+	//printer.Printf("DEBUG: UPDATE-CREATE domID=%v sr=%+v\n", domainID, newrec.CloudflareRedirect)
 	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
 }
 

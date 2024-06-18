@@ -1915,7 +1915,12 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// TODO(tlim): add tests for converting  301 -> 302 -> 301
+		testgroup("CF_REDIRECT_CONVERT",
+			only("CLOUDFLAREAPI"),
+			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+		),
 
 		// CLOUDFLAREAPI: PROXY
 

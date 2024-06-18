@@ -573,7 +573,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
-				printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
+				//printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
 				sr, err := newCfsrFromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
