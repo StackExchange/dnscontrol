@@ -154,6 +154,13 @@
     "authToken": "$HOSTINGDE_AUTHTOKEN",
     "domain": "$HOSTINGDE_DOMAIN"
   },
+  "HUAWEICLOUD": {
+    "TYPE": "HUAWEICLOUD",
+    "domain": "$HUAWEICLOUD_DOMAIN",
+    "Region": "$HUAWEICLOUD_REGION",
+    "KeyId": "$HUAWEICLOUD_KEY_ID",
+    "SecretKey": "$HUAWEICLOUD_KEY"
+  },
   "INWX": {
     "TYPE": "INWX",
     "domain": "$INWX_DOMAIN",
@@ -288,12 +295,5 @@
     "TYPE": "VULTR",
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
-  },
-  "HUAWEICLOUD": {
-    "TYPE": "HUAWEICLOUD",
-    "domain": "$HUAWEICLOUD_DOMAIN",
-    "Region": "$HUAWEICLOUD_REGION",
-    "KeyId": "$HUAWEICLOUD_KEY_ID",
-    "SecretKey": "$HUAWEICLOUD_KEY"
   }
 }

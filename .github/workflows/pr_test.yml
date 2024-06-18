@@ -117,6 +117,7 @@ jobs:
       GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
+      HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
@@ -160,6 +161,10 @@ jobs:
       HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
       HEXONET_PW: ${{ secrets.HEXONET_PW }}
       HEXONET_UID: ${{ secrets.HEXONET_UID }}
+
+      HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
+      HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
+      HUAWEICLOUD_KEY: ${{ secrets.HUAWEICLOUD_KEY }}
 
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
