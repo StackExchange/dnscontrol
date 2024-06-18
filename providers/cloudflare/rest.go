@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -320,7 +321,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 
-	//printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
+	printer.Printf("DEBUG: createSingleRedir: d=%v crf=%+v\n", domainID, cfr)
 	// Asumption for target:
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
@@ -331,20 +332,14 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 
 	// Preserve query string
 	preserveQueryString := true
-	// Redirect status code
 	newSingleRedirectRulesActionParameters.FromValue = &cloudflare.RulesetRuleActionParametersFromValue{}
-	// printer.Printf("DEBUG: createSR()    1 = %v\n", newSingleRedirectRulesActionParameters)
-	// printer.Printf("DEBUG: createSR()    2 = %v\n", newSingleRedirectRulesActionParameters.FromValue)
-	// printer.Printf("DEBUG: createSR()    3 = %v\n", newSingleRedirectRulesActionParameters.FromValue.StatusCode)
+	// Redirect status code
 	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(cfr.Code)
 	// Incoming request expression
-	//newSingleRedirectRules[0].Expression = parts[2]
 	newSingleRedirectRules[0].Expression = cfr.SRMatcher
 	// Redirect expression
-	//newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = parts[3]
 	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = cfr.SRReplacement
 	// Redirect name
-	//newSingleRedirectRules[0].Description = parts[0]
 	newSingleRedirectRules[0].Description = cfr.SRDisplay
 	// Rule action, should always be redirect in this case
 	newSingleRedirectRules[0].Action = "redirect"
@@ -453,6 +448,7 @@ func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr model
 }
 
 func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+	printer.Printf("DEBUG: called createPageRule(%s, %+v)\n", domainID, cfr)
 	// from to priority code
 	// parts := strings.Split(target, ",")
 	// priority, _ := strconv.Atoi(parts[2])
@@ -478,6 +474,7 @@ func (c *cloudflareProvider) createPageRule(domainID string, cfr models.Cloudfla
 			}},
 		},
 	}
+	printer.Printf("DEBUG: createPageRule pr=%+v\n", pr)
 	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
 	return err
 }
