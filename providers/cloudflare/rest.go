@@ -327,14 +327,6 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
-	currentSingleRedirectRules := []cloudflare.RulesetRule{}
-
-	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	if err != nil {
-		return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
-	}
-	currentSingleRedirectRules = append(currentSingleRedirectRules, rules.Rules...)
-
 	newSingleRedirectRules = append(newSingleRedirectRules, newSingleRedirectRule)
 	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
@@ -363,10 +355,14 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	// Assigns the values in the nested structs
 	newSingleRedirectRulesActionParameters.FromValue.PreserveQueryString = &preserveQueryString
 	newSingleRedirectRules[0].ActionParameters = &newSingleRedirectRulesActionParameters
-	currentSingleRedirectRules = append(currentSingleRedirectRules, newSingleRedirectRule)
-	newSingleRedirect.Rules = currentSingleRedirectRules
 
-	printer.Printf("++++++++DEBUG: %+v\n", newSingleRedirect)
+	// Get a list of current redirects so that the new redirect get appended to it
+	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
+	if err != nil {
+		return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
+	}
+	newSingleRedirect.Rules = newSingleRedirectRules
+	newSingleRedirect.Rules = append(newSingleRedirect.Rules, rules.Rules...)
 
 	_, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newSingleRedirect)
 
