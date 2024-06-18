@@ -1,0 +1,3 @@
+```release-note:bug
+dns: keep comments when calling UpdateDNSRecord with zero values of UpdateDNSRecordParams
+```

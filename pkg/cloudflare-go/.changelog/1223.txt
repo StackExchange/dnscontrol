@@ -1,0 +1,3 @@
+```release-note:enhancement
+access_application: Add `path_cookie_attribute` app setting
+```

@@ -1,0 +1,3 @@
+```release-note:enhancement
+teams_account: add support for `suppress_footer`
+```

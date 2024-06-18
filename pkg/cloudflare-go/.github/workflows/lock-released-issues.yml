@@ -1,0 +1,29 @@
+name: Lock released issues and PRs
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_list:
+        description: Comma seperated (no spaces) list of issues/PRs to lock
+        required: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  lock-closed-issues:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      - run: |
+          IFS=',' read -r -a issues <<< "$ISSUES"
+          for element in "${issues[@]}"
+          do
+              echo "Locking $element"
+              echo "no" | gh pr lock -r resolved $element || true
+              echo "no" | gh issue lock -r resolved $element || true
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUES: ${{ github.event.inputs.issue_list }}

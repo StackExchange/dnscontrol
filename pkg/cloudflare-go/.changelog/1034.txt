@@ -1,0 +1,9 @@
+```release-note:enhancement
+email_routing_destination: Adds support for the email routing destination API
+```
+```release-note:enhancement
+email_routing_rules: Adds support for the email routing rules API
+```
+```release-note:enhancement
+email_routing_settings: Adds support for the email routing settings API
+```

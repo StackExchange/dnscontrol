@@ -1,0 +1,3 @@
+```release-note:bug
+tunnel_configuration: Remove unnecessary double-unmarshalling due to changes in the API
+```

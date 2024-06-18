@@ -1,0 +1,40 @@
+name: Closed Milestones
+
+on:
+  milestone:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  comment-on-closed-milestone:
+    runs-on: ubuntu-latest
+    outputs:
+      ids: ${{ steps.milestone-comment.outputs.ids }}
+    steps:
+      - id: milestone-comment
+        uses: bflad/action-milestone-comment@v2
+        with:
+          body: |
+            This functionality has been released in [${{ github.event.milestone.title }}](https://github.com/${{ github.repository }}/releases/tag/${{ github.event.milestone.title }}).
+
+            For further feature requests or bug reports with this functionality, please create a [new GitHub issue](https://github.com/${{ github.repository }}/issues/new/choose) following the template. Thank you!
+  
+  lock-closed-issues:
+    runs-on: ubuntu-latest
+    needs: comment-on-closed-milestone
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          IFS=',' read -r -a issues <<< "$ISSUES"
+          for element in "${issues[@]}"
+          do
+              echo "Locking $element"
+              echo "no" | gh pr lock -r resolved $element || true
+              echo "no" | gh issue lock -r resolved $element || true
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUES: ${{ needs.comment-on-closed-milestone.outputs.ids }}

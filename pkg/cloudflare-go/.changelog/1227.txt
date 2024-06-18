@@ -1,0 +1,10 @@
+```release-note:breaking-change
+tunnel: renamed `Tunnels` to `ListTunnels`
+```
+
+```release-note:breaking-change
+tunnel: renamed `Tunnel` to `GetTunnel`
+```
+```release-note:enhancement
+tunnel: updated parameters to latest API docs
+```

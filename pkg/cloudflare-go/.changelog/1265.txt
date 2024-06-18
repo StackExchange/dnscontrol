@@ -1,0 +1,7 @@
+```release-note:enhancement
+r2_bucket: add support for getting a bucket
+```
+
+```release-note:breaking-change
+r2_bucket: change creation time from string to *time.Time
+```
