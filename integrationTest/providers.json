@@ -288,5 +288,12 @@
     "TYPE": "VULTR",
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "HUAWEICLOUD": {
+    "TYPE": "HUAWEICLOUD",
+    "domain": "$HUAWEICLOUD_DOMAIN",
+    "Region": "$HUAWEICLOUD_REGION",
+    "KeyId": "$HUAWEICLOUD_KEY_ID",
+    "SecretKey": "$HUAWEICLOUD_KEY"
   }
 }
