@@ -1,0 +1,11 @@
+```release-note:enhancement
+access_identity_provider: add attr conditional_access_enabled
+```
+
+```release-note:enhancement
+access_group: add auth_context group ruletype
+```
+
+```release-note:enhancement
+access_identity_provider: add auth context list/put endpoint
+```

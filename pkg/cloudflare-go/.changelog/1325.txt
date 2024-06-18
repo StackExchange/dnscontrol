@@ -1,0 +1,3 @@
+```release-note:enhancement
+resource_container: expose `Type` on `*ResourceContainer` to explicitly denote what type of resource it is instead of inferring from `Level`.
+```

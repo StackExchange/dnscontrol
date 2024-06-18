@@ -6,6 +6,8 @@ retract v4.8.0
 
 require google.golang.org/protobuf v1.34.2 // indirect
 
+replace github.com/cloudflare/cloudflare-go => ./pkg/cloudflare-go
+
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0

@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: bumps actions/checkout from 3 to 4
+```

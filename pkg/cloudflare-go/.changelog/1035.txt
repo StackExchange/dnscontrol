@@ -1,0 +1,3 @@
+```release-note:bug
+r2: fix create bucket endpoint
+```

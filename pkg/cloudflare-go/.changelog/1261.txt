@@ -1,0 +1,7 @@
+```release-note:enhancement
+rulesets: add support for the `http_response_compression` phase
+```
+
+```release-note:enhancement
+rulesets: add support for the `compress_response` action
+```

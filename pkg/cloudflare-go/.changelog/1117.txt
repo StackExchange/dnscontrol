@@ -1,0 +1,3 @@
+```release-note:dependency
+deps: remove `github.com/pkg/errors` in favor of `errors`
+```

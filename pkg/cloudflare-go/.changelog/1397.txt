@@ -1,0 +1,3 @@
+```release_note:enhancement
+api_shield: Add support for Get/Post/Delete operations in API Shield Endpoint Management
+```

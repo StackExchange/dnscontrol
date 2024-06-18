@@ -1,0 +1,3 @@
+```release_note:enhancement
+rulesets: Add support for Origin Cache Control configuration via the Rulesets/Cache Rules API
+```
