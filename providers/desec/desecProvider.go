@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -21,18 +22,10 @@ Info required in `creds.json`:
 // NewDeSec creates the provider.
 func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &desecProvider{}
-	c.creds.token = m["auth-token"]
-	if c.creds.token == "" {
+	c.token = strings.TrimSpace(m["auth-token"])
+	if c.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
-	if err := c.authenticate(); err != nil {
-		return nil, fmt.Errorf("authentication failed")
-	}
-	//DomainIndex is used for corrections (minttl) and domain creation
-	if err := c.initializeDomainIndex(); err != nil {
-		return nil, err
-	}
-
 	return c, nil
 }
 
@@ -119,9 +112,13 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *desecProvider) EnsureZoneExists(domain string) error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	if _, ok := c.domainIndex[domain]; ok {
+	_, ok, err := c.searchDomainIndex(domain)
+	if err != nil {
+		return err
+	}
+
+	if ok {
+		// Domain already exists
 		return nil
 	}
 	return c.createDomain(domain)
@@ -155,14 +152,14 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-	var minTTL uint32
-	c.mutex.Lock()
-	if ttl, ok := c.domainIndex[dc.Name]; !ok {
-		minTTL = 3600
-	} else {
-		minTTL = ttl
+	minTTL, ok, err := c.searchDomainIndex(dc.Name)
+	if err != nil {
+		return nil, err
 	}
-	c.mutex.Unlock()
+	if !ok {
+		minTTL = 3600
+	}
+
 	PrepDesiredRecords(dc, minTTL)
 
 	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existing)

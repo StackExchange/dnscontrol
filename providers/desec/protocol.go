@@ -19,14 +19,9 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
-	creds       struct {
-		tokenid  string
-		token    string
-		user     string
-		password string
-	}
-	mutex sync.Mutex
+	domainIndex     map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
+	domainIndexLock sync.Mutex
+	token           string
 }
 
 type domainObject struct {
@@ -66,86 +61,85 @@ type nonFieldError struct {
 	Errors []string `json:"non_field_errors"`
 }
 
-func (c *desecProvider) authenticate() error {
-	endpoint := "/auth/account/"
-	var _, resp, err = c.get(endpoint, "GET")
-	//restricted tokens are valid, but get 403 on /auth/account
-	//invalid tokens get 401
-	if resp.StatusCode == 403 {
-		return nil
+// searchDomainIndex checks the domain index for the provided domain.
+// In case the domain index is not yet initialized, it's fetched from the deSEC API.
+func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool, err error) {
+	// Lock index
+	c.domainIndexLock.Lock()
+	defer c.domainIndexLock.Unlock()
+
+	// Init index if needed
+	if c.domainIndex == nil {
+		printer.Debugf("Domain index not yet populated, fetching now\n")
+		c.domainIndex, err = c.fetchDomainIndex()
+		if err != nil {
+			return 0, false, fmt.Errorf("failed to fetch domain index: %w", err)
+		}
 	}
-	if err != nil {
-		return err
-	}
-	return nil
+
+	// Lookup domain in index
+	index, ok := c.domainIndex[domain]
+	return index, ok, nil
 }
-func (c *desecProvider) initializeDomainIndex() error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	if c.domainIndex != nil {
-		return nil
-	}
+
+func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 	endpoint := "/domains/"
+	var domainIndex map[string]uint32
 	var bodyString, resp, err = c.get(endpoint, "GET")
 	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
 		//pagination is required
-		links := c.convertLinks(resp.Header.Get("Link"))
+		links := convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
 		printer.Debugf("initial endpoint %s\n", endpoint)
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
-				if resp.StatusCode == 404 {
-					return nil
-				}
-				return fmt.Errorf("failed fetching domains: %s", err)
+				return nil, fmt.Errorf("failed fetching domains: %s", err)
 			}
-			err = c.buildIndexFromResponse(bodyString)
+			domainIndex, err = appendDomainIndexFromResponse(domainIndex, bodyString)
 			if err != nil {
-				return fmt.Errorf("failed fetching domains: %s", err)
+				return nil, fmt.Errorf("failed fetching domains: %s", err)
 			}
-			links = c.convertLinks(resp.Header.Get("Link"))
+			links = convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
 			printer.Debugf("next endpoint %s\n", endpoint)
 		}
 		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
-		return nil //domainIndex was build using pagination without errors
+		return domainIndex, nil //domainIndex was build using pagination without errors
 	}
 
 	//no pagination required
 	if err != nil && resp.StatusCode != 400 {
-		if resp.StatusCode == 404 {
-			return nil
-		}
-		return fmt.Errorf("failed fetching domains: %s", err)
+		return nil, fmt.Errorf("failed fetching domains: %s", err)
 	}
-	err = c.buildIndexFromResponse(bodyString)
-	if err == nil {
-		printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+	domainIndex, err = appendDomainIndexFromResponse(domainIndex, bodyString)
+	if err != nil {
+		return nil, err
 	}
-	return err
+	printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+	return domainIndex, nil
 }
 
-// buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
-func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
-	if c.domainIndex == nil {
-		c.domainIndex = map[string]uint32{}
-	}
+func appendDomainIndexFromResponse(domainIndex map[string]uint32, bodyString []byte) (map[string]uint32, error) {
 	var dr []domainObject
 	err := json.Unmarshal(bodyString, &dr)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	if domainIndex == nil {
+		domainIndex = make(map[string]uint32, len(dr))
 	}
 	for _, domain := range dr {
 		//deSEC allows different minimum ttls per domain
 		//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
-		c.domainIndex[domain.Name] = domain.MinimumTTL
+		domainIndex[domain.Name] = domain.MinimumTTL
 	}
-	return nil
+	return domainIndex, nil
 }
 
 // Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/main/fetch_zone.py#L13)
-func (c *desecProvider) convertLinks(links string) map[string]string {
+func convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
 	printer.Debugf("Header: %s\n", links)
 	for _, link := range strings.Split(links, ", ") {
@@ -173,7 +167,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	var bodyString, resp, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
 		//pagination required
-		links := c.convertLinks(resp.Header.Get("Link"))
+		links := convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
 		printer.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
 		for endpoint != "" {
@@ -189,7 +183,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
 			}
 			rrsNew = append(rrsNew, tmp...)
-			links = c.convertLinks(resp.Header.Get("Link"))
+			links = convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
 			printer.Debugf("getRecords: next endpoint %s\n", endpoint)
 		}
@@ -282,7 +276,7 @@ retry:
 	client := &http.Client{}
 	req, _ := http.NewRequest(method, endpoint, nil)
 	q := req.URL.Query()
-	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.creds.token))
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.token))
 
 	req.URL.RawQuery = q.Encode()
 
@@ -304,12 +298,12 @@ retry:
 					if wait > 180 {
 						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
 					}
-					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					printer.Warnf("Rate limiting.. waiting for %s seconds\n", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
-			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds\n")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
@@ -346,7 +340,7 @@ retry:
 	}
 	q := req.URL.Query()
 	if endpoint != "/auth/login/" {
-		req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.creds.token))
+		req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.token))
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -371,12 +365,12 @@ retry:
 					if wait > 180 {
 						return []byte{}, fmt.Errorf("rate limiting exceeded")
 					}
-					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					printer.Warnf("Rate limiting.. waiting for %s seconds\n", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
-			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds\n")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
