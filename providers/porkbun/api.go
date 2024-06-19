@@ -34,33 +34,21 @@ type domainRecord struct {
 	Content string `json:"content"`
 	TTL     string `json:"ttl"`
 	Prio    string `json:"prio"`
-	Notes   string `json:"notes"`
 }
 
 type recordResponse struct {
-	Status  string         `json:"status"`
 	Records []domainRecord `json:"records"`
 }
 
 type domainListRecord struct {
-	Domain       string `json:"domain"`
-	Status       string `json:"status"`
-	TLD          string `json:"tld"`
-	CreateDate   string `json:"createDate"`
-	ExpireDate   string `json:"expireDate"`
-	SecurityLock string `json:"securityLock"`
-	WhoisPrivacy string `json:"whoisPrivacy"`
-	AutoRenew    string `json:"autoRenew"`
-	NotLocal     string `json:"notLocal"`
+	Domain string `json:"domain"`
 }
 
 type domainListResponse struct {
-	Status  string             `json:"status"`
 	Domains []domainListRecord `json:"domains"`
 }
 
 type nsResponse struct {
-	Status      string   `json:"status"`
 	Nameservers []string `json:"ns"`
 }
 
