@@ -61,9 +61,9 @@ type nonFieldError struct {
 	Errors []string `json:"non_field_errors"`
 }
 
-// searchDomainIndex checks the domain index for the provided domain.
-// In case the domain index is not yet initialized, it's fetched from the deSEC API.
-func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool, err error) {
+// withDomainIndex checks if the domain index is initialized. If not, it's fetched from the deSEC API.
+// Next, the provided readFn function is executed to extract data from the domain index.
+func (c *desecProvider) withDomainIndex(readFn func(domainIndex map[string]uint32)) error {
 	// Lock index
 	c.domainIndexLock.Lock()
 	defer c.domainIndexLock.Unlock()
@@ -71,15 +71,35 @@ func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool
 	// Init index if needed
 	if c.domainIndex == nil {
 		printer.Debugf("Domain index not yet populated, fetching now\n")
+		var err error
 		c.domainIndex, err = c.fetchDomainIndex()
 		if err != nil {
-			return 0, false, fmt.Errorf("failed to fetch domain index: %w", err)
+			return fmt.Errorf("failed to fetch domain index: %w", err)
 		}
 	}
 
-	// Lookup domain in index
-	index, ok := c.domainIndex[domain]
-	return index, ok, nil
+	// Execute handler on index
+	readFn(c.domainIndex)
+	return nil
+}
+
+// listDomainIndex lists all the available domains in the domain index
+func (c *desecProvider) listDomainIndex() (domains []string, err error) {
+	err = c.withDomainIndex(func(domainIndex map[string]uint32) {
+		domains = make([]string, 0, len(domainIndex))
+		for domain := range domainIndex {
+			domains = append(domains, domain)
+		}
+	})
+	return
+}
+
+// searchDomainIndex performs a lookup to the domain index for the TTL of the domain
+func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool, err error) {
+	err = c.withDomainIndex(func(domainIndex map[string]uint32) {
+		ttl, found = domainIndex[domain]
+	})
+	return
 }
 
 func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
@@ -104,7 +124,7 @@ func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 			endpoint = links["next"]
 			printer.Debugf("next endpoint %s\n", endpoint)
 		}
-		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
+		printer.Debugf("Domain Index fetched with pagination (%d domains)\n", len(domainIndex))
 		return domainIndex, nil //domainIndex was build using pagination without errors
 	}
 
@@ -116,7 +136,7 @@ func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 	if err != nil {
 		return nil, err
 	}
-	printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+	printer.Debugf("Domain Index fetched without pagination (%d domains)\n", len(domainIndex))
 	return domainIndex, nil
 }
 

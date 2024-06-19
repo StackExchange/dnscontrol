@@ -247,9 +247,5 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 
 // ListZones return all the zones in the account
 func (c *desecProvider) ListZones() ([]string, error) {
-	var domains []string
-	for domain := range c.domainIndex {
-		domains = append(domains, domain)
-	}
-	return domains, nil
+	return c.listDomainIndex()
 }
