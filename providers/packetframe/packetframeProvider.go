@@ -50,11 +50,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "PACKETFRAME"
+	const providerMaintainer = "@hamptonmoore"
 	fns := providers.DspFuncs{
 		Initializer:   newPacketframe,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("PACKETFRAME", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

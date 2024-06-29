@@ -47,11 +47,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "MYTHICBEASTS"
+	const providerMaintainer = "@tomfitzhenry"
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("MYTHICBEASTS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

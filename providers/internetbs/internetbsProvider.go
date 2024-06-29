@@ -26,7 +26,10 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("INTERNETBS", newInternetBs, features)
+	const providerName = "INTERNETBS"
+	const providerMaintainer = "@pragmaton"
+	providers.RegisterRegistrarType(providerName, newInternetBs, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newInternetBs(m map[string]string) (providers.Registrar, error) {

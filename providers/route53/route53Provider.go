@@ -91,13 +91,16 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "ROUTE53"
+	const providerMaintainer = "@tresni"
 	fns := providers.DspFuncs{
 		Initializer:   newRoute53Dsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("ROUTE53", fns, features)
-	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
-	providers.RegisterCustomRecordType("R53_ALIAS", "ROUTE53", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, newRoute53Reg)
+	providers.RegisterCustomRecordType("R53_ALIAS", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func withRetry(f func() error) {

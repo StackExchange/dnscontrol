@@ -172,11 +172,14 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 }
 
 func init() {
+	const providerName = "AXFRDDNS"
+	const providerMaintainer = "@hnrgrgr"
 	fns := providers.DspFuncs{
 		Initializer:   initAxfrDdns,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("AXFRDDNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // Param is used to decode extra parameters sent to provider.

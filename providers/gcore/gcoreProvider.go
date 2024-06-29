@@ -68,11 +68,14 @@ var defaultNameServerNames = []string{
 }
 
 func init() {
+	const providerName = "GCORE"
+	const providerMaintainer = "@xddxdd"
 	fns := providers.DspFuncs{
 		Initializer:   NewGCore,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("GCORE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

@@ -37,11 +37,14 @@ type bunnydnsProvider struct {
 }
 
 func init() {
+	const providerName = "BUNNY_DNS"
+	const providerMaintainer = "@ppmathis"
 	fns := providers.DspFuncs{
 		Initializer:   newBunnydns,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("BUNNY_DNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newBunnydns(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {

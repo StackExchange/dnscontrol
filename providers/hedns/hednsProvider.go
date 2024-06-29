@@ -66,11 +66,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "HEDNS"
+	const providerMaintainer = "@rblenkinsopp"
 	fns := providers.DspFuncs{
 		Initializer:   newHEDNSProvider,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 var defaultNameservers = []string{

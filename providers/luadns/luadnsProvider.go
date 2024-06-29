@@ -36,11 +36,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "LUADNS"
+	const providerMaintainer = "@riku22"
 	fns := providers.DspFuncs{
 		Initializer:   NewLuaDNS,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("LUADNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // NewLuaDNS creates the provider.

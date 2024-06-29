@@ -33,12 +33,15 @@ import (
 
 // init registers the provider to dnscontrol.
 func init() {
+	const providerName = "LOOPIA"
+	const providerMaintainer = "@systemcrash"
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("LOOPIA", fns, features)
-	providers.RegisterRegistrarType("LOOPIA", newReg)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, newReg)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // features declares which features and options are available.

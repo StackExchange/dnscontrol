@@ -50,12 +50,15 @@ var features = providers.DocumentationNotes{
 
 // init registers the domain service provider with dnscontrol.
 func init() {
+	const providerName = "REALTIMEREGISTER"
+	const providerMaintainer = "@PJEilers"
 	fns := providers.DspFuncs{
 		Initializer:   newRtrDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("REALTIMEREGISTER", fns, features)
-	providers.RegisterRegistrarType("REALTIMEREGISTER", newRtrReg)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, newRtrReg)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newRtr(config map[string]string, _ json.RawMessage) (*realtimeregisterAPI, error) {

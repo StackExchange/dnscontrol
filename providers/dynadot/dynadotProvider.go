@@ -25,7 +25,10 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("DYNADOT", newDynadot, features)
+	const providerName = "DYNADOT"
+	const providerMaintainer = "@e-im"
+	providers.RegisterRegistrarType(providerName, newDynadot, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newDynadot(m map[string]string) (providers.Registrar, error) {
