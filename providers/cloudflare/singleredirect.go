@@ -122,6 +122,13 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		// meta.*yodeya.com/* (wildcard in host)
 		h := simpleGlobToRegex(host)
 		matcher = fmt.Sprintf(`http.host matches r###"%s"###`, h)
+
+	} else if !strings.Contains(host, `*`) && strings.Count(path, `*`) == 1 && strings.HasSuffix(path, "*") {
+		// domain.tld/.well-known* (wildcard in path)
+		matcher = fmt.Sprintf(`(starts_with(http.request.uri.path, "%s") and http.host eq "%s")`,
+			path[0:len(path)-1],
+			host)
+
 	}
 
 	// replacement
@@ -138,6 +145,10 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		strings.Count(replacement, `$`) == 1 && rpath == `/$2` {
 		// https://careers.stackoverflow.com/$2
 		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)
+
+	} else if strings.Count(replacement, `$`) == 1 && strings.HasSuffix(replacement, `$1`) {
+		// https://social.domain.tld/.well-known$1
+		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	}
 

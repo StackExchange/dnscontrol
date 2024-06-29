@@ -183,7 +183,33 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			wantExpr:  `concat("https://stackexchange.com/", http.request.uri.path)`,
 			wantErr:   false,
 		},
+
+		{
+			name:      "pro-sumer1",
+			pattern:   "domain.tld/.well-known*",
+			replace:   "https://social.domain.tld/.well-known$1",
+			wantMatch: `(starts_with(http.request.uri.path, "/.well-known") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "pro-sumer2",
+			pattern:   "domain.tld/users*",
+			replace:   "https://social.domain.tld/users$1",
+			wantMatch: `(starts_with(http.request.uri.path, "/users") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "pro-sumer3",
+			pattern:   "domain.tld/@*",
+			replace:   `https://social.domain.tld/@$1`,
+			wantMatch: `(starts_with(http.request.uri.path, "/@") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
