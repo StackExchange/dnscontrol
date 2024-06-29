@@ -137,6 +137,13 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		//  https://stackexchange.com/ (no substitutions)
 		expr = fmt.Sprintf(`"%s"`, replacement)
 
+	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && strings.Count(replacement, `$`) == 1 && len(rpath) > 3 && strings.HasSuffix(rpath, "/$2") {
+		// *stackoverflowenterprise.com/* -> https://www.stackoverflowbusiness.com/enterprise/$2
+		expr = fmt.Sprintf(`concat("https://%s", "%s", http.request.uri.path)`,
+			rhost,
+			rpath[0:len(rpath)-3],
+		)
+
 	} else if strings.Count(replacement, `$`) == 1 && rpath == `/$1` {
 		// https://i.sstatic.net/$1 ($1 at end)
 		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)

@@ -208,6 +208,17 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
 			wantErr:   false,
 		},
+
+		{
+			name:      "stackentwild",
+			pattern:   "*stackoverflowenterprise.com/*",
+			replace:   "https://www.stackoverflowbusiness.com/enterprise/$2",
+			wantMatch: `http.host eq "stackoverflowenterprise.com" or ends_with(http.host, ".stackoverflowenterprise.com")`,
+			wantExpr:  `concat("https://www.stackoverflowbusiness.com", "/enterprise", http.request.uri.path)`,
+			wantErr:   false,
+		},
+
+		//
 	}
 
 	for _, tt := range tests {
