@@ -13,14 +13,6 @@ On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
 brew install dnscontrol
 ```
 
-### MacPorts
-
-Alternatively on macOS you can install it using [MacPorts](https://www.macports.org).
-
-```shell
-sudo port install dnscontrol
-```
-
 ### Docker
 
 You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol) and the command below.
