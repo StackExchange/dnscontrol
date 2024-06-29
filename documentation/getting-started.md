@@ -5,6 +5,11 @@
 
 Choose one of the following installation methods:
 
+1. [Homebrew](#homebrew)
+2. [Docker](#docker)
+3. [GitHub binaries](#binaries)
+4. [GitHub source](#source)
+
 ### Homebrew
 
 On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
