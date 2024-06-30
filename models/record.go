@@ -37,6 +37,7 @@ import (
 //	Pseudo-Types: (alphabetical)
 //	  ALIAS
 //	  CF_REDIRECT
+//	  CF_SINGLE_REDIRECT
 //	  CF_TEMP_REDIRECT
 //	  CF_WORKER_ROUTE
 //	  CLOUDFLAREAPI_SINGLE_REDIRECT
@@ -97,6 +98,7 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Args      []any             `json:"args,omitempty"`
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -196,6 +198,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+		Args      []any             `json:"args,omitempty"`
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -612,7 +615,7 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "CAA", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
@@ -636,7 +639,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {

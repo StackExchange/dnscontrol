@@ -1,4 +1,4 @@
-package cloudflare
+package singleredirect
 
 import (
 	"regexp"

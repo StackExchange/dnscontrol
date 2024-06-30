@@ -16,6 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/cfsingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -60,7 +61,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		}
 
 		var metadata json.RawMessage
-		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// CLOUDFLAREAPI tests related to CF_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
 		// requires metadata to enable this feature.
 		// In hindsight, I have no idea why this metadata flag is required to
 		// use this feature. Maybe because we didn't have the capabilities
@@ -494,6 +495,12 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	r := cname(name, target)
 	r.Metadata = make(map[string]string)
 	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
+	r := makeRec("@", name, "CF_SINGLE_REDIRECT")
+	cfsingleredirect.FromArgs(r, []any{name, code, when, then})
 	return r
 }
 
@@ -1920,6 +1927,13 @@ func makeTests() []*TestGroup {
 			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+		),
+
+		testgroup("CF_SINGLE_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			//tc("start301", cfSingleRedirect("name1", "301", `http.host eq "**current-domain-no-trailing**"`, `"https://stackexchange.com/"`)
+			tc("start301", cfSingleRedirect(`name1`, `301`, `http.host eq "example.com"`, `"https://stackexchange.com/"`)),
+			tc("change", cfSingleRedirect(`name1`, `302`, `http.host eq "example.com"`, `"https://stackexchange.com/"`)),
 		),
 
 		// CLOUDFLAREAPI: PROXY

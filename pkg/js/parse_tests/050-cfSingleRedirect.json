@@ -1,0 +1,46 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "rtype",
+          "name": "cfsingleredirect",
+          "args": [
+            "name1",
+            301,
+            "when1",
+            "then1"
+          ],
+          "target": "name1,301,when1,then1"
+        },
+        {
+          "type": "rtype",
+          "name": "cfsingleredirect",
+          "args": [
+            "name2",
+            302,
+            "when2",
+            "then2"
+          ],
+          "target": "name2,302,when2,then2"
+        },
+        {
+          "type": "rtype",
+          "name": "cfsingleredirect",
+          "args": [
+            "name3",
+            "301",
+            "when3",
+            "then3"
+          ],
+          "target": "name3,301,when3,then3"
+        }
+      ]
+    }
+  ]
+}

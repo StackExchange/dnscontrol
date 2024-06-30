@@ -1097,6 +1097,7 @@ function recordBuilder(type, opts) {
             // Handle D_EXTEND() with subdomains.
             if (
                 d.subdomain &&
+                record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_REDIRECT' &&
                 record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE'
@@ -1219,6 +1220,24 @@ function _validateCloudflareRedirect(value) {
     }
     return value.indexOf(',') === -1;
 }
+
+function _validateIntOrString(value) {
+    return ( _.isString(value) || _.isNumber(value) );
+}
+
+var CF_SINGLE_REDIRECT = recordBuilder('rtype', {
+    args: [
+        ['name', _.isString],
+        ['code', _validateIntOrString],
+        ['when', _.isString],
+        ['then', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = 'cfsingleredirect';
+        record.args = new Array("CF_SINGLE_REDIRECT", args.name, args.code, args.when, args.then);
+        record.target = record.args.toString();
+    },
+});
 
 var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
     args: [

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/singleredirect"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -301,7 +302,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srMatcher := pr.Expression
 		srReplacement := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := int(pr.ActionParameters.FromValue.StatusCode)
-		sr := newCfsrFromAPIData(srMatcher, srReplacement, code)
+		sr := singleredirect.FromAPIData(srMatcher, srReplacement, code)
 		//sr.SRRRuleList = rulelist
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
 		sr.SRDisplay = pr.Description
@@ -442,7 +443,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			code)
 		r.SetTarget(raw)
 
-		cr, err := newCfsrFromUserInput(raw, code, pr.Priority)
+		cr, err := singleredirect.FromUserInput(raw, code, pr.Priority)
 		if err != nil {
 			return nil, err
 		}
