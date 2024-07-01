@@ -135,7 +135,7 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 
 	if !strings.Contains(replacement, `$`) {
 		//  https://stackexchange.com/ (no substitutions)
-		expr = fmt.Sprintf(`"%s"`, replacement)
+		expr = fmt.Sprintf(`concat("%s", "")`, replacement)
 
 	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && strings.Count(replacement, `$`) == 1 && len(rpath) > 3 && strings.HasSuffix(rpath, "/$2") {
 		// *stackoverflowenterprise.com/* -> https://www.stackoverflowbusiness.com/enterprise/$2
@@ -146,12 +146,12 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 
 	} else if strings.Count(replacement, `$`) == 1 && rpath == `/$1` {
 		// https://i.sstatic.net/$1 ($1 at end)
-		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)
+		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	} else if strings.Count(host, `*`) == 1 && strings.Count(path, `*`) == 1 &&
 		strings.Count(replacement, `$`) == 1 && rpath == `/$2` {
 		// https://careers.stackoverflow.com/$2
-		expr = fmt.Sprintf(`concat("https://%s/", http.request.uri.path)`, rhost)
+		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	} else if strings.Count(replacement, `$`) == 1 && strings.HasSuffix(replacement, `$1`) {
 		// https://social.domain.tld/.well-known$1
