@@ -632,7 +632,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		}
 
 		// CF_SINGLE_REDIRECT record types.
-		if rec.Type == "CF_SINGLE_REDIRECT" {
+		if rec.Type == "CF_SINGLE_REDIRECT" && rec.CloudflareRedirect == nil {
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
@@ -644,6 +644,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
+
+			//fmt.Printf("DEBUG: preprocess: CFSR=%v\n", rec.CloudflareRedirect)
+			//fmt.Printf("DEBUG: preprocess: ARGS=%v\n", rec.Args)
 
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
