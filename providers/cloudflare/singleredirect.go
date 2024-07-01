@@ -128,7 +128,7 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 
 	if !strings.Contains(replacement, `$`) {
 		//  https://stackexchange.com/ (no substitutions)
-		expr = fmt.Sprintf(`"%s"`, replacement)
+		expr = fmt.Sprintf(`concat("%s", "")`, replacement)
 
 	} else if strings.Count(replacement, `$`) == 1 && rpath == `/$1` {
 		// https://i.sstatic.net/$1 ($1 at end)
