@@ -335,8 +335,9 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	newSingleRedirectRules = append(newSingleRedirectRules, newSingleRedirectRule)
 	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
-	// Preserve query string
-	preserveQueryString := true
+	// Preserve query string only if it's not in the replacement
+	preserveQueryString := !strings.Contains(cfr.SRReplacement, "?")
+
 	newSingleRedirectRulesActionParameters.FromValue = &cloudflare.RulesetRuleActionParametersFromValue{}
 	// Redirect status code
 	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(cfr.Code)
