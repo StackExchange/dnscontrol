@@ -175,12 +175,6 @@ release:
     brew install dnscontrol
     ```
 
-    ##### Install with [MacPorts](https://www.macports.org)
-
-    ```shell
-    sudo port install dnscontrol
-    ```
-
     ##### Using with [Docker](https://www.docker.com)
 
     You can use the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol).
@@ -207,12 +201,6 @@ release:
 
     ```shell
     brew upgrade dnscontrol
-    ```
-
-    ##### Install with [MacPorts](https://www.macports.org)
-
-    ```shell
-    sudo port upgrade dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.
