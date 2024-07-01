@@ -43,11 +43,6 @@ func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error
 		return nil, fmt.Errorf("missing porkbun api_key or secret_key")
 	}
 
-	// Validate authentication
-	if err := c.ping(); err != nil {
-		return nil, err
-	}
-
 	return c, nil
 }
 

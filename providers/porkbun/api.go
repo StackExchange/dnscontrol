@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"io"
 	"net/http"
 	"sort"
@@ -34,33 +35,21 @@ type domainRecord struct {
 	Content string `json:"content"`
 	TTL     string `json:"ttl"`
 	Prio    string `json:"prio"`
-	Notes   string `json:"notes"`
 }
 
 type recordResponse struct {
-	Status  string         `json:"status"`
 	Records []domainRecord `json:"records"`
 }
 
 type domainListRecord struct {
-	Domain       string `json:"domain"`
-	Status       string `json:"status"`
-	TLD          string `json:"tld"`
-	CreateDate   string `json:"createDate"`
-	ExpireDate   string `json:"expireDate"`
-	SecurityLock string `json:"securityLock"`
-	WhoisPrivacy string `json:"whoisPrivacy"`
-	AutoRenew    string `json:"autoRenew"`
-	NotLocal     string `json:"notLocal"`
+	Domain string `json:"domain"`
 }
 
 type domainListResponse struct {
-	Status  string             `json:"status"`
 	Domains []domainListRecord `json:"domains"`
 }
 
 type nsResponse struct {
-	Status      string   `json:"status"`
 	Nameservers []string `json:"ns"`
 }
 
@@ -76,8 +65,11 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", baseURL+endpoint, bytes.NewBuffer(personJSON))
 
+	retrycnt := 0
+
 	// If request sending too fast, the server will fail with the following error:
 	// porkbun API error: Create error: We were unable to create the DNS record.
+retry:
 	time.Sleep(500 * time.Millisecond)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -85,6 +77,16 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode == 202 {
+		retrycnt += 1
+		if retrycnt == 5 {
+			return bodyString, fmt.Errorf("rate limiting exceeded")
+		}
+		printer.Warnf("Rate limiting.. waiting for %d minute(s)\n", retrycnt)
+		time.Sleep(time.Minute * time.Duration(retrycnt))
+		goto retry
+	}
 
 	// Got error from API ?
 	var errResp errorResponse
