@@ -283,7 +283,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		if errors.As(err, &e) {
 			return []*models.RecordConfig{}, nil
 		}
-		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: [ %T ] %s", err, err)
+		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s (%T)", err, err)
 	}
 	//var rulelist []cloudflare.RulesetRule
 	//rulelist = rules.Rules
@@ -335,7 +335,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	newSingleRedirectRules = append(newSingleRedirectRules, newSingleRedirectRule)
 	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
-	// Preserve query string only if it's not in the replacement
+	// Preserve query string if there isn't one in the replacement.
 	preserveQueryString := !strings.Contains(cfr.SRReplacement, "?")
 
 	newSingleRedirectRulesActionParameters.FromValue = &cloudflare.RulesetRuleActionParametersFromValue{}
