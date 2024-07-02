@@ -23,7 +23,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "example.com/",
 			replace:   "foo.com",
 			wantMatch: `http.host eq "example.com" and http.request.uri.path eq "/"`,
-			wantExpr:  `"https://foo.com"`,
+			wantExpr:  `concat("https://foo.com", "")`,
 			wantErr:   false,
 		},
 
@@ -43,7 +43,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://i-dev.sstatic.net/",
 			replace:   "https://stackexchange.com/",
 			wantMatch: `http.host eq "i-dev.sstatic.net" and http.request.uri.path eq "/"`,
-			wantExpr:  `"https://stackexchange.com/"`,
+			wantExpr:  `concat("https://stackexchange.com/", "")`,
 			wantErr:   false,
 		},
 		{
@@ -51,7 +51,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://i.stack.imgur.com/*",
 			replace:   "https://i.sstatic.net/$1",
 			wantMatch: `http.host eq "i.stack.imgur.com"`,
-			wantExpr:  `concat("https://i.sstatic.net/", http.request.uri.path)`,
+			wantExpr:  `concat("https://i.sstatic.net", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -59,7 +59,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://img.stack.imgur.com/*",
 			replace:   "https://i.sstatic.net/$1",
 			wantMatch: `http.host eq "img.stack.imgur.com"`,
-			wantExpr:  `concat("https://i.sstatic.net/", http.request.uri.path)`,
+			wantExpr:  `concat("https://i.sstatic.net", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -67,7 +67,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://insights.stackoverflow.com/",
 			replace:   "https://survey.stackoverflow.co",
 			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/"`,
-			wantExpr:  `"https://survey.stackoverflow.co"`,
+			wantExpr:  `concat("https://survey.stackoverflow.co", "")`,
 			wantErr:   false,
 		},
 		{
@@ -75,7 +75,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://insights.stackoverflow.com/trends",
 			replace:   "https://trends.stackoverflow.co",
 			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/trends"`,
-			wantExpr:  `"https://trends.stackoverflow.co"`,
+			wantExpr:  `concat("https://trends.stackoverflow.co", "")`,
 			wantErr:   false,
 		},
 		{
@@ -83,7 +83,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://insights.stackoverflow.com/trends/",
 			replace:   "https://trends.stackoverflow.co",
 			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/trends/"`,
-			wantExpr:  `"https://trends.stackoverflow.co"`,
+			wantExpr:  `concat("https://trends.stackoverflow.co", "")`,
 			wantErr:   false,
 		},
 		{
@@ -91,7 +91,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "https://insights.stackoverflow.com/survey/2021",
 			replace:   "https://survey.stackoverflow.co/2021",
 			wantMatch: `http.host eq "insights.stackoverflow.com" and http.request.uri.path eq "/survey/2021"`,
-			wantExpr:  `"https://survey.stackoverflow.co/2021"`,
+			wantExpr:  `concat("https://survey.stackoverflow.co/2021", "")`,
 			wantErr:   false,
 		},
 		// {
@@ -108,7 +108,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "*stackoverflow.help/support/solutions/articles/36000241656-write-an-article",
 			replace:   "https://stackoverflow.help/en/articles/4397209-write-an-article",
 			wantMatch: `( http.host eq "stackoverflow.help" or ends_with(http.host, ".stackoverflow.help") ) and http.request.uri.path eq "/support/solutions/articles/36000241656-write-an-article"`,
-			wantExpr:  `"https://stackoverflow.help/en/articles/4397209-write-an-article"`,
+			wantExpr:  `concat("https://stackoverflow.help/en/articles/4397209-write-an-article", "")`,
 			wantErr:   false,
 		},
 		{
@@ -116,7 +116,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "*stackoverflow.careers/*",
 			replace:   "https://careers.stackoverflow.com/$2",
 			wantMatch: `http.host eq "stackoverflow.careers" or ends_with(http.host, ".stackoverflow.careers")`,
-			wantExpr:  `concat("https://careers.stackoverflow.com/", http.request.uri.path)`,
+			wantExpr:  `concat("https://careers.stackoverflow.com", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -124,7 +124,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "stackenterprise.com/*",
 			replace:   "https://stackoverflow.co/teams/",
 			wantMatch: `http.host eq "stackenterprise.com"`,
-			wantExpr:  `"https://stackoverflow.co/teams/"`,
+			wantExpr:  `concat("https://stackoverflow.co/teams/", "")`,
 			wantErr:   false,
 		},
 		{
@@ -132,7 +132,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "meta.*yodeya.com/*",
 			replace:   "https://judaism.meta.stackexchange.com/$2",
 			wantMatch: `http.host matches r###"^meta\..*yodeya\.com$"###`,
-			wantExpr:  `concat("https://judaism.meta.stackexchange.com/", http.request.uri.path)`,
+			wantExpr:  `concat("https://judaism.meta.stackexchange.com", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -140,7 +140,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "chat.*yodeya.com/*",
 			replace:   "https://chat.stackexchange.com/?tab=site\u0026host=judaism.stackexchange.com",
 			wantMatch: `http.host matches r###"^chat\..*yodeya\.com$"###`,
-			wantExpr:  `"https://chat.stackexchange.com/?tab=site&host=judaism.stackexchange.com"`,
+			wantExpr:  `concat("https://chat.stackexchange.com/?tab=site&host=judaism.stackexchange.com", "")`,
 			wantErr:   false,
 		},
 		{
@@ -148,7 +148,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "*yodeya.com/*",
 			replace:   "https://judaism.stackexchange.com/$2",
 			wantMatch: `http.host eq "yodeya.com" or ends_with(http.host, ".yodeya.com")`,
-			wantExpr:  `concat("https://judaism.stackexchange.com/", http.request.uri.path)`,
+			wantExpr:  `concat("https://judaism.stackexchange.com", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -156,7 +156,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "meta.*seasonedadvice.com/*",
 			replace:   "https://cooking.meta.stackexchange.com/$2",
 			wantMatch: `http.host matches r###"^meta\..*seasonedadvice\.com$"###`,
-			wantExpr:  `concat("https://cooking.meta.stackexchange.com/", http.request.uri.path)`,
+			wantExpr:  `concat("https://cooking.meta.stackexchange.com", http.request.uri.path)`,
 			wantErr:   false,
 		},
 		{
@@ -164,7 +164,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "collectivesonstackoverflow.co/*",
 			replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
 			wantMatch: `http.host eq "collectivesonstackoverflow.co"`,
-			wantExpr:  `"https://stackoverflow.com/collectives-on-stack-overflow"`,
+			wantExpr:  `concat("https://stackoverflow.com/collectives-on-stack-overflow", "")`,
 			wantErr:   false,
 		},
 		{
@@ -172,7 +172,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "*collectivesonstackoverflow.co/*",
 			replace:   "https://stackoverflow.com/collectives-on-stack-overflow",
 			wantMatch: `http.host eq "collectivesonstackoverflow.co" or ends_with(http.host, ".collectivesonstackoverflow.co")`,
-			wantExpr:  `"https://stackoverflow.com/collectives-on-stack-overflow"`,
+			wantExpr:  `concat("https://stackoverflow.com/collectives-on-stack-overflow", "")`,
 			wantErr:   false,
 		},
 		{
@@ -180,10 +180,48 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			pattern:   "*stackexchange.ca/*",
 			replace:   "https://stackexchange.com/$2",
 			wantMatch: `http.host eq "stackexchange.ca" or ends_with(http.host, ".stackexchange.ca")`,
-			wantExpr:  `concat("https://stackexchange.com/", http.request.uri.path)`,
+			wantExpr:  `concat("https://stackexchange.com", http.request.uri.path)`,
 			wantErr:   false,
 		},
+
+		// https://github.com/StackExchange/dnscontrol/issues/2313#issuecomment-2197296025
+		{
+			name:      "pro-sumer1",
+			pattern:   "domain.tld/.well-known*",
+			replace:   "https://social.domain.tld/.well-known$1",
+			wantMatch: `(starts_with(http.request.uri.path, "/.well-known") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "pro-sumer2",
+			pattern:   "domain.tld/users*",
+			replace:   "https://social.domain.tld/users$1",
+			wantMatch: `(starts_with(http.request.uri.path, "/users") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
+		{
+			name:      "pro-sumer3",
+			pattern:   "domain.tld/@*",
+			replace:   `https://social.domain.tld/@$1`,
+			wantMatch: `(starts_with(http.request.uri.path, "/@") and http.host eq "domain.tld")`,
+			wantExpr:  `concat("https://social.domain.tld", http.request.uri.path)`,
+			wantErr:   false,
+		},
+
+		{
+			name:      "stackentwild",
+			pattern:   "*stackoverflowenterprise.com/*",
+			replace:   "https://www.stackoverflowbusiness.com/enterprise/$2",
+			wantMatch: `http.host eq "stackoverflowenterprise.com" or ends_with(http.host, ".stackoverflowenterprise.com")`,
+			wantExpr:  `concat("https://www.stackoverflowbusiness.com", "/enterprise", http.request.uri.path)`,
+			wantErr:   false,
+		},
+
+		//
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)

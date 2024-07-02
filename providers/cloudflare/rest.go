@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -278,7 +279,11 @@ func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(id), "http_request_dynamic_redirect")
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
+		var e *cloudflare.NotFoundError
+		if errors.As(err, &e) {
+			return []*models.RecordConfig{}, nil
+		}
+		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s (%T)", err, err)
 	}
 	//var rulelist []cloudflare.RulesetRule
 	//rulelist = rules.Rules
@@ -330,8 +335,9 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	newSingleRedirectRules = append(newSingleRedirectRules, newSingleRedirectRule)
 	newSingleRedirect := cloudflare.UpdateEntrypointRulesetParams{}
 
-	// Preserve query string
-	preserveQueryString := true
+	// Preserve query string if there isn't one in the replacement.
+	preserveQueryString := !strings.Contains(cfr.SRReplacement, "?")
+
 	newSingleRedirectRulesActionParameters.FromValue = &cloudflare.RulesetRuleActionParametersFromValue{}
 	// Redirect status code
 	newSingleRedirectRulesActionParameters.FromValue.StatusCode = uint16(cfr.Code)
@@ -352,7 +358,8 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 
 	// Get a list of current redirects so that the new redirect get appended to it
 	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	if err != nil {
+	var e *cloudflare.NotFoundError
+	if err != nil && !errors.As(err, &e) {
 		return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
 	}
 	newSingleRedirect.Rules = newSingleRedirectRules
