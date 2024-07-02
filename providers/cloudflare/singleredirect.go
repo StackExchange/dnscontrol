@@ -149,7 +149,7 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	} else if strings.Count(host, `*`) == 1 && strings.Count(path, `*`) == 1 &&
-		strings.Count(replacement, `$`) == 1 && rpath == `/$2` {
+		strings.Count(replacement, `$`) == 1 && strings.HasPrefix(rpath, `/$2`) {
 		// https://careers.stackoverflow.com/$2
 		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
@@ -165,7 +165,7 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 		return "", "", fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
 	}
 	if expr == "" {
-		return "", "", fmt.Errorf("conversion not implemented for replacemennt: %s", origReplacement)
+		return "", "", fmt.Errorf("conversion not implemented for replacement: %s", origReplacement)
 	}
 
 	return matcher, expr, nil
