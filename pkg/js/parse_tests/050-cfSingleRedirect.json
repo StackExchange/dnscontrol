@@ -8,37 +8,51 @@
       "dnsProviders": {},
       "records": [
         {
-          "type": "rtype",
-          "name": "cfsingleredirect",
+          "type": "A",
+          "name": "name1",
+          "meta": {
+            "meta": "value"
+          },
+          "target": "1.2.3.4"
+        }
+      ],
+      "rawrecords": [
+        {
+          "type": "CF_SINGLE_REDIRECT",
           "args": [
             "name1",
             301,
             "when1",
             "then1"
-          ],
-          "target": "name1,301,when1,then1"
+          ]
         },
         {
-          "type": "rtype",
-          "name": "cfsingleredirect",
+          "type": "CF_SINGLE_REDIRECT",
           "args": [
             "name2",
             302,
             "when2",
             "then2"
-          ],
-          "target": "name2,302,when2,then2"
+          ]
         },
         {
-          "type": "rtype",
-          "name": "cfsingleredirect",
+          "type": "CF_SINGLE_REDIRECT",
           "args": [
             "name3",
             "301",
             "when3",
             "then3"
+          ]
+        },
+        {
+          "type": "CF_SINGLE_REDIRECT",
+          "args": [
+            "namettl",
+            302,
+            "whenttl",
+            "thenttl"
           ],
-          "target": "name3,301,when3,then3"
+          "ttl": 999
         }
       ]
     }

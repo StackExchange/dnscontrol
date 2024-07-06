@@ -637,9 +637,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
 
-			if len(rec.Args) != 4 {
-			}
-
 			code := 301
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302

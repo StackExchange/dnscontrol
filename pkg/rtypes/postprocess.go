@@ -9,19 +9,24 @@ import (
 
 func PostProcess(domains []*models.DomainConfig) error {
 
+	var err error
+
 	for _, dc := range domains {
 		fmt.Printf("DOMAIN: %d %s\n", len(dc.Records), dc.Name)
-		for _, rc := range dc.Records {
-			if rc.Type == "rtype" {
-				switch rc.Args[0] {
-				case "CF_SINGLE_REDIRECT":
-					err := cfsingleredirect.FromArgs(rc, rc.Args[1:])
-					if err != nil {
-						return err
-					}
-				default:
-				}
+
+		for _, rawRec := range dc.RawRecords {
+			rec := &models.RecordConfig{}
+
+			switch rawRec.Type {
+			case "CF_SINGLE_REDIRECT":
+				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
+			default:
+				return fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
 			}
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 

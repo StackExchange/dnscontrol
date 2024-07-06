@@ -45,6 +45,9 @@ type DomainConfig struct {
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
 
+	// Raw user-input from dnsconfig.js that will be processed into RecordConfigs later:
+	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
+
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider

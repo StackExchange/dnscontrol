@@ -92,13 +92,12 @@ import (
 type RecordConfig struct {
 	Type      string            `json:"type"` // All caps rtype name.
 	Name      string            `json:"name"` // The short name. See above.
+	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
 	SubDomain string            `json:"subdomain,omitempty"`
-	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-	Args      []any             `json:"args,omitempty"`
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`

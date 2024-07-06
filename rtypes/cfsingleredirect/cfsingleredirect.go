@@ -8,7 +8,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/singleredirect"
 )
 
-func FromArgs(rc *models.RecordConfig, items []any) error {
+func FromRaw(rc *models.RecordConfig, items []any) error {
 	var err error
 
 	rc.Type = "CF_SINGLE_REDIRECT"

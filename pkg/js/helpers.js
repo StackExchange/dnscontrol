@@ -12,6 +12,52 @@
 // debugging/developing this code, it may be faster to specify the
 // -dev file to have helpers.js read from the file instead.
 
+// ============================================================
+// This section includes commands that are defined using the new "Go-parsed" records.
+// This javascript just stores the user input from dnsconfig.js for later processing in the Go code.
+// (The old way had the Javascript function do all the pre-proocessing and delivered the Go code a fully-formed RecordConfig.)
+
+var CF_SINGLE_REDIRECT = rawrecordBuilder('CF_SINGLE_REDIRECT');
+
+function rawrecordBuilder(type) {
+
+    return function () {
+
+        // Copy the raw args:
+        var rawArgs = [];
+        for (var i = 0; i < arguments.length; i++) {
+            rawArgs.push(arguments[i]);
+        }
+
+        return function (d) {
+
+             var record = {
+                 type: type,
+             };
+
+            // Copy the args, executing any functions.
+            var processedArgs = [];
+            for (var i = 0; i < rawArgs.length; i++) {
+                var r = rawArgs[i];
+                if (_.isFunction(r)) {
+                  r(record);
+                } else {
+                  processedArgs.push(r);
+                }
+            };
+            // Store the processed args.
+            record.args = processedArgs;
+
+            // Add this raw record to the list of records.
+            d.rawrecords.push(record);
+
+            return record;
+        };
+    };
+}
+
+// ============================================================
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -104,6 +150,7 @@ function newDomain(name, registrar) {
         registrar: registrar,
         meta: {},
         records: [],
+        rawrecords: [],
         recordsabsent: [],
         dnsProviders: {},
         defaultTTL: 0,
@@ -1020,6 +1067,7 @@ function recordBuilder(type, opts) {
         },
 
         applyModifier: function (record, modifiers) {
+
             for (var i = 0; i < modifiers.length; i++) {
                 var mod = modifiers[i];
 
@@ -1225,19 +1273,6 @@ function _validateIntOrString(value) {
     return ( _.isString(value) || _.isNumber(value) );
 }
 
-var CF_SINGLE_REDIRECT = recordBuilder('rtype', {
-    args: [
-        ['name', _.isString],
-        ['code', _validateIntOrString],
-        ['when', _.isString],
-        ['then', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = 'cfsingleredirect';
-        record.args = new Array("CF_SINGLE_REDIRECT", args.name, args.code, args.when, args.then);
-        record.target = record.args.toString();
-    },
-});
 
 var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
     args: [

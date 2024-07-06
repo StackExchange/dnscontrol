@@ -502,7 +502,7 @@ func cfSingleRedirect(name string, code any, when, then string) *models.RecordCo
 	r := makeRec("@", name, "CF_SINGLE_REDIRECT")
 	fmt.Printf("DEBUG: BEFORE single r: %+v\n", *r)
 	fmt.Printf("DEBUG: BEFORE single cr: %+v\n", r.CloudflareRedirect)
-	cfsingleredirect.FromArgs(r, []any{name, code, when, then})
+	cfsingleredirect.FromRaw(r, []any{name, code, when, then})
 	fmt.Printf("DEBUG: AFTER single r: %+v\n", *r)
 	fmt.Printf("DEBUG: AFTER single cr: %+v\n", r.CloudflareRedirect)
 	return r
