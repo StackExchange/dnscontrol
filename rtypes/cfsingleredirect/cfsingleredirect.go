@@ -40,6 +40,10 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 		fmt.Printf("code %q unexpected type %T", ucode, v)
 	}
 
+	if code != 301 && code != 302 {
+		return fmt.Errorf("code (%03d) is not 301 or 302", code)
+	}
+
 	when, then = items[1].(string), items[2].(string)
 
 	s := singleredirect.FromAPIData(when, then, code)
