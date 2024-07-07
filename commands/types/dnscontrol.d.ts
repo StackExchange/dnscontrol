@@ -477,7 +477,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
- * Page Rule types other than "Forwarding URL” will be left alone.
+ * Page Rule types other than "Forwarding URL" will be left alone.
  *
  * WARNING: Cloudflare does not currently fully document the Page Rules API and
  * this interface is not extensively tested. Take precautions such as making
@@ -501,6 +501,37 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_redirect
  */
 declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP 301
+ * (permanent) or 302 (temporary) redirects.
+ *
+ * This feature manages dynamic "Single Redirects". (Single Redirects can be
+ * static or dynamic but DNSControl only maintains dynamic redirects).
+ *
+ * Cloudflare documentation: https://developers.cloudflare.com/rules/url-forwarding/single-redirects/
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CF_SINGLE_REDIRECT("name", 301, "when", "then"),
+ *   CF_SINGLE_REDIRECT('redirect www.example.com', 301, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
+ *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 301, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ * END);
+ * ```
+ *
+ * The fields are:
+ *
+ * * name: The name (basically a comment, but it must be unique)
+ * * code: Either 301 (permanent) or 302 (temporary) redirects. May be a number or string.
+ * * when: What Cloudflare sometimes calls the "rule expression".
+ * * then: The replacement expression.
+ *
+ * NOTE:
+ * The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
+ */
+declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
@@ -982,7 +1013,8 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * not `domain.tld`.
  *
  * Some operators only act on an apex domain (e.g.
- * [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them
+ * [`CF_SINGLE_REDIRECT`](../domain-modifiers/CF_SINGLE_REDIRECT.md),
+ * [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md), and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them
  * in a `D_EXTEND` subdomain may not be what you expect.
  *
  * ```javascript
