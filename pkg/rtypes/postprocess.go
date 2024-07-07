@@ -15,19 +15,43 @@ func PostProcess(domains []*models.DomainConfig) error {
 		fmt.Printf("DOMAIN: %d %s\n", len(dc.Records), dc.Name)
 
 		for _, rawRec := range dc.RawRecords {
-			rec := &models.RecordConfig{}
+			rec := &models.RecordConfig{
+				Type:     rawRec.Type,
+				TTL:      rawRec.TTL,
+				Name:     rawRec.Args[0].(string),
+				Metadata: map[string]string{},
+			}
 
+			// Copy the metadata (convert everything to string)
+			for _, m := range rawRec.Metas {
+				for mk, mv := range m {
+					if v, ok := mv.(string); ok {
+						rec.Metadata[mk] = v // Already a string. No new malloc.
+					} else {
+						rec.Metadata[mk] = fmt.Sprintf("%v", mv)
+					}
+				}
+			}
+
+			// Call the proper initialize function.
+			// TODO(tlim): Good candiate for an interface or a lookup table.
 			switch rawRec.Type {
 			case "CF_SINGLE_REDIRECT":
-				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
+				err = cfsingleredirect.FromRaw(rec, rawRec.Args[1:])
+				if err != nil {
+					return err
+				}
 			default:
 				return fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
 			}
-			if err != nil {
-				return err
-			}
 
+			// Free memeory:
+			clear(rawRec.Args)
+			rawRec.Args = nil
+
+			dc.Records = append(dc.Records, rec)
 		}
+		dc.RawRecords = nil
 	}
 
 	return nil

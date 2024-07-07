@@ -53,6 +53,23 @@
             "thenttl"
           ],
           "ttl": 999
+        },
+        {
+          "type": "CF_SINGLE_REDIRECT",
+          "args": [
+            "namemeta",
+            302,
+            "whenmeta",
+            "thenmeta"
+          ],
+          "metas": [
+            {
+              "metastr": "stringy"
+            },
+            {
+              "metanum": 22
+            }
+          ]
         }
       ]
     }

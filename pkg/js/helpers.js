@@ -12,52 +12,6 @@
 // debugging/developing this code, it may be faster to specify the
 // -dev file to have helpers.js read from the file instead.
 
-// ============================================================
-// This section includes commands that are defined using the new "Go-parsed" records.
-// This javascript just stores the user input from dnsconfig.js for later processing in the Go code.
-// (The old way had the Javascript function do all the pre-proocessing and delivered the Go code a fully-formed RecordConfig.)
-
-var CF_SINGLE_REDIRECT = rawrecordBuilder('CF_SINGLE_REDIRECT');
-
-function rawrecordBuilder(type) {
-
-    return function () {
-
-        // Copy the raw args:
-        var rawArgs = [];
-        for (var i = 0; i < arguments.length; i++) {
-            rawArgs.push(arguments[i]);
-        }
-
-        return function (d) {
-
-             var record = {
-                 type: type,
-             };
-
-            // Copy the args, executing any functions.
-            var processedArgs = [];
-            for (var i = 0; i < rawArgs.length; i++) {
-                var r = rawArgs[i];
-                if (_.isFunction(r)) {
-                  r(record);
-                } else {
-                  processedArgs.push(r);
-                }
-            };
-            // Store the processed args.
-            record.args = processedArgs;
-
-            // Add this raw record to the list of records.
-            d.rawrecords.push(record);
-
-            return record;
-        };
-    };
-}
-
-// ============================================================
-
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -1067,7 +1021,6 @@ function recordBuilder(type, opts) {
         },
 
         applyModifier: function (record, modifiers) {
-
             for (var i = 0; i < modifiers.length; i++) {
                 var mod = modifiers[i];
 
@@ -1268,11 +1221,6 @@ function _validateCloudflareRedirect(value) {
     }
     return value.indexOf(',') === -1;
 }
-
-function _validateIntOrString(value) {
-    return ( _.isString(value) || _.isNumber(value) );
-}
-
 
 var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
     args: [
@@ -1969,3 +1917,73 @@ var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: 'true' };
 // D("bar.com", ...
 //     A("foo.bar.com", "10.1.1.1", DISABLE_REPEATED_DOMAIN_CHECK),
 // )
+
+// ============================================================
+
+// RTYPES
+
+// Background:
+// Old-style commands: Commands built using recordBuild() are the original
+// style.  They all validation and pre-processing here in helpers.js. This
+// seemed like a good idea at the time, but in hindsight it puts a burden on the
+// developer to know both Javascript and go.
+
+// New-style commands: Command built using rawrecordBuilder() are the new style.
+// They simply pack up the arguments listed in dnsconfig.js and store them in
+// .rawrecords. This is passed to the Go code, which is responsible for all
+// validation, pre-processing, etc.  The benefit is this minimizes the need for
+// Javascript knowledge, and allows us to use the testing platform build into
+// Go.
+
+function rawrecordBuilder(type) {
+
+    return function () {
+
+        // Copy the raw args:
+        var rawArgs = [];
+        for (var i = 0; i < arguments.length; i++) {
+            rawArgs.push(arguments[i]);
+        }
+
+        return function (d) {
+
+             var record = {
+                 type: type,
+             };
+
+            // Process the args: Functions are executed, objects are assumed to
+            // be meta and stored, strings are assumed to be args and are
+            // stored.
+            // NB(tlim): Allowing for the intermixing of args and meta seems
+            // bad.  It might be better to simply preserve the first n items as
+            // args, then assume the rest are metas. That would be more similar
+            // to the old style functions. However at this time I can't think of
+            // a reason this isn't sufficient.
+            var processedArgs = [];
+            var processedMetas = [];
+            for (var i = 0; i < rawArgs.length; i++) {
+                var r = rawArgs[i];
+                if (_.isFunction(r)) {
+                  r(record);
+                } else if (_.isObject(r)) {
+                  processedMetas.push(r);
+                } else {
+                  processedArgs.push(r);
+                }
+            };
+            // Store the processed args.
+            record.args = processedArgs;
+            record.metas = processedMetas;
+
+            // Add this raw record to the list of records.
+            d.rawrecords.push(record);
+
+            return record;
+        };
+    };
+}
+
+// PLEASE KEEP THIS LIST ALPHABETICAL!
+
+// CLOUDFLAREAPI:
+var CF_SINGLE_REDIRECT = rawrecordBuilder('CF_SINGLE_REDIRECT');

@@ -130,7 +130,10 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
 
-	rtypes.PostProcess(dnsConfig.Domains)
+	err = rtypes.PostProcess(dnsConfig.Domains)
+	if err != nil {
+		return nil, err
+	}
 
 	return dnsConfig, nil
 }

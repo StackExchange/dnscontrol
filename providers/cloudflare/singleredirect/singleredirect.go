@@ -35,7 +35,6 @@ func FromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig
 	r := &models.CloudflareSingleRedirectConfig{
 		PRMatcher:     "UNKNOWABLE",
 		PRReplacement: "UNKNOWABLE",
-		//PRPriority:    0,
 		Code:          code,
 		SRMatcher:     sm,
 		SRReplacement: sr,
@@ -43,7 +42,7 @@ func FromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig
 	return r
 }
 
-// addNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
+// AddNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
 func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
 
 	// Extract the fields we're reading from:
