@@ -38,11 +38,11 @@ func PostProcess(domains []*models.DomainConfig) error {
 			switch rawRec.Type {
 			case "CF_SINGLE_REDIRECT":
 				err = cfsingleredirect.FromRaw(rec, rawRec.Args[1:])
-				if err != nil {
-					return err
-				}
 			default:
-				return fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
+				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
+			}
+			if err != nil {
+				return fmt.Errorf("%s (%q, %q) record error: %w", rawRec.Type, rec.Name, dc.Name, err)
 			}
 
 			// Free memeory:
