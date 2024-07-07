@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/rtypes/cfsingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
 func PostProcess(domains []*models.DomainConfig) error {
@@ -35,9 +35,12 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			// Call the proper initialize function.
 			// TODO(tlim): Good candiate for an interface or a lookup table.
+			args := rawRec.Args[1:]
 			switch rawRec.Type {
+
 			case "CF_SINGLE_REDIRECT":
-				err = cfsingleredirect.FromRaw(rec, rawRec.Args[1:])
+				err = cfsingleredirect.FromRaw(rec, args)
+
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
 			}
