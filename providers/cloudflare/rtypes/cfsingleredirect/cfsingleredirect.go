@@ -13,19 +13,25 @@ func init() {
 }
 
 func FromRaw(rc *models.RecordConfig, items []any) error {
+	fmt.Printf("DEBUG: FromRaw: items=%+v\n", items)
+
+	if len(items) != 4 {
+		return fmt.Errorf("expected 4 items: %v", items)
+	}
 	var err error
 
-	//fmt.Printf("DEBUG: FromRaw: items=%+v\n", items)
-	// Unpack the args:
-
-	var when, then string
-	var code int
-
-	if err := rtypecontrol.CheckArgTypes(items, "iss"); err != nil {
+	// Validate types.
+	if err := rtypecontrol.CheckArgTypes(items, "siss"); err != nil {
 		return err
 	}
 
-	ucode := items[0]
+	// Unpack the args:
+	var name, when, then string
+	var code int
+
+	name = items[0].(string)
+
+	ucode := items[1]
 	switch v := ucode.(type) {
 	case int:
 		code = v
@@ -37,20 +43,19 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 			return err
 		}
 	default:
-		fmt.Printf("code %q unexpected type %T", ucode, v)
+		return fmt.Errorf("code %q unexpected type %T", ucode, v)
 	}
 
 	if code != 301 && code != 302 {
 		return fmt.Errorf("code (%03d) is not 301 or 302", code)
 	}
 
-	when, then = items[1].(string), items[2].(string)
+	when, then = items[2].(string), items[3].(string)
 
-	s := FromAPIData(when, then, code)
-
+	rc.Name = name
 	rc.SetTarget(fmt.Sprintf("code=%03d when=(%v) then=(%v)", code, when, then))
-
-	rc.CloudflareRedirect = s
+	rc.CloudflareRedirect = FromAPIData(when, then, code)
+	fmt.Printf("DEBUG: FromRaw: result cr=%+v\n", rc.CloudflareRedirect)
 
 	return nil
 }

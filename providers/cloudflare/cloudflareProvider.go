@@ -70,7 +70,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
 	providers.RegisterCustomRecordType("rtype", "CLOUDFLAREAPI", "")
-	providers.RegisterCustomRecordType("CF_SINGLE_REDIRECT", "CLOUDFLAREAPI", "")
+	//providers.RegisterCustomRecordType("CF_SINGLE_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
@@ -344,7 +344,9 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", *newrec.CloudflareRedirect)
+		fmt.Printf("DEBUG: mkCreateSingleRedir: newrec=%+v\n", *newrec)
+		fmt.Printf("DEBUG: mkCreateSingleRedir: crn=%+v\n", (*newrec).CloudflareRedirect)
+		fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", (*newrec).CloudflareRedirect)
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -627,7 +629,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 
 		} else if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
-			// CF_SINGLE_REDIRECT record types.
+			// CLOUDFLAREAPI_SINGLE_REDIRECT record types.
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
