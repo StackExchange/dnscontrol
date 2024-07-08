@@ -91,8 +91,8 @@ import (
 type RecordConfig struct {
 	Type      string            `json:"type"` // All caps rtype name.
 	Name      string            `json:"name"` // The short name. See above.
+	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
 	SubDomain string            `json:"subdomain,omitempty"`
-	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
@@ -154,15 +154,15 @@ type CloudflareSingleRedirectConfig struct {
 	//
 	Code int `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
-	PRDisplay     string `json:"pr_display,omitempty"` // How is this displayed to the user
-	PRMatcher     string `json:"pr_matcher,omitempty"`
-	PRReplacement string `json:"pr_replacement,omitempty"`
-	PRPriority    int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
+	PRWhen     string `json:"pr_when,omitempty"`
+	PRThen     string `json:"pr_then,omitempty"`
+	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
 	//
 	// SR == SingleRedirect
 	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
-	SRMatcher        string `json:"sr_matcher,omitempty"`
-	SRReplacement    string `json:"sr_replacement,omitempty"`
+	SRWhen           string `json:"sr_when,omitempty"`
+	SRThen           string `json:"sr_then,omitempty"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
 }
@@ -196,6 +196,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+		Args      []any             `json:"args,omitempty"`
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -612,7 +613,7 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "CAA", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
@@ -636,7 +637,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {

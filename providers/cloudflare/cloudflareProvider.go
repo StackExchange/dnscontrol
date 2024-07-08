@@ -17,6 +17,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
 )
@@ -68,6 +69,8 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
+	providers.RegisterCustomRecordType("rtype", "CLOUDFLAREAPI", "")
+	//providers.RegisterCustomRecordType("CF_SINGLE_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
@@ -341,6 +344,9 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: newrec=%+v\n", *newrec)
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: crn=%+v\n", (*newrec).CloudflareRedirect)
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", (*newrec).CloudflareRedirect)
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -557,15 +563,13 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 		}
 
-		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
+		// CF_REDIRECT record types. Encode target as
+		// $FROM,$TO,$PRIO,$CODE or build Cfsr struct for new-style
+		// (Single Redirect) versions.
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
 			if !c.manageRedirects && !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
 			}
-			// parts := strings.Split(rec.GetTargetField(), ",")
-			// if len(parts) != 2 {
-			// 	return fmt.Errorf("invalid data specified for cloudflare redirect record")
-			// }
 			code := 301
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
@@ -574,7 +578,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
 				//printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
-				sr, err := newCfsrFromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -582,7 +586,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				currentPrPrio++
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
-				sr, err := newCfsrFromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -602,7 +606,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 
 				// The copy becomes the CF SingleRedirect
-				sr, err := newCfsrFromUserInput(target, code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -615,7 +619,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				dc.Records = append(dc.Records, newRec)
 
 				// The original becomes the PAGE_RULE:
-				sr, err = newCfsrFromUserInput(target, code, currentPrPrio)
+				sr, err = cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -624,10 +628,15 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 			}
 
-		}
+		} else if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
+			// CLOUDFLAREAPI_SINGLE_REDIRECT record types.
+			if !c.manageSingleRedirects {
+				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
+			}
+			// Nothing needs to be done.
 
-		// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
-		if rec.Type == "CF_WORKER_ROUTE" {
+		} else if rec.Type == "CF_WORKER_ROUTE" {
+			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
 				return fmt.Errorf("invalid data specified for cloudflare worker record")
@@ -675,7 +684,7 @@ func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedir
 	rc.SetTarget(sr.SRDisplay)
 	rc.CloudflareRedirect = sr
 
-	err := addNewStyleFields(sr)
+	err := cfsingleredirect.AddNewStyleFields(sr)
 	return err
 }
 

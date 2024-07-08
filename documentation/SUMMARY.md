@@ -84,6 +84,7 @@
         * Azure DNS
             * [AZURE_ALIAS](language-reference/domain-modifiers/AZURE_ALIAS.md)
         * Cloudflare DNS
+            * [CF_SINGLE_REDIRECT](language-reference/domain-modifiers/CF_SINGLE_REDIRECT.md)
             * [CF_REDIRECT](language-reference/domain-modifiers/CF_REDIRECT.md)
             * [CF_TEMP_REDIRECT](language-reference/domain-modifiers/CF_TEMP_REDIRECT.md)
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)

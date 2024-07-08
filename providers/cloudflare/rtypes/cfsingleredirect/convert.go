@@ -1,4 +1,4 @@
-package cloudflare
+package cfsingleredirect
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-func newCfsrFromUserInput(target string, code int, priority int) (*models.CloudflareSingleRedirectConfig, error) {
+func FromUserInput(target string, code int, priority int) (*models.CloudflareSingleRedirectConfig, error) {
 	// target: matcher,replacement,priority,code
 	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1,1,302
 
@@ -19,68 +19,54 @@ func newCfsrFromUserInput(target string, code int, priority int) (*models.Cloudf
 	parts := strings.Split(target, ",")
 	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
 	r.PRDisplay = fmt.Sprintf("%s,%d,%03d", target, priority, code)
-	r.PRMatcher = parts[0]
-	r.PRReplacement = parts[1]
+	r.PRWhen = parts[0]
+	r.PRThen = parts[1]
 	r.PRPriority = priority
 	r.Code = code
 
 	// Convert old-style to new-style:
-	if err := addNewStyleFields(r); err != nil {
+	if err := AddNewStyleFields(r); err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-func newCfsrFromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig {
-	r := &models.CloudflareSingleRedirectConfig{
-		PRMatcher:     "UNKNOWABLE",
-		PRReplacement: "UNKNOWABLE",
-		//PRPriority:    0,
-		Code:          code,
-		SRMatcher:     sm,
-		SRReplacement: sr,
-	}
-	return r
-}
-
-// addNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
-func addNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
+// AddNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
+func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
 
 	// Extract the fields we're reading from:
-	prMatcher := sr.PRMatcher
-	prReplacement := sr.PRReplacement
+	prWhen := sr.PRWhen
+	prThen := sr.PRThen
 	code := sr.Code
 
 	// Convert old-style patterns to new-style rules:
-	srMatcher, srReplacement, err := makeRuleFromPattern(prMatcher, prReplacement, code != 301)
+	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
 	if err != nil {
 		return err
 	}
-	display := fmt.Sprintf(`%s,%s,%d,%03d matcher=%q replacement=%q`,
-		prMatcher, prReplacement,
+	display := fmt.Sprintf(`%s,%s,%d,%03d matcher=%s replacement=%s`,
+		prWhen, prThen,
 		sr.PRPriority, code,
-		srMatcher, srReplacement,
+		srWhen, srThen,
 	)
 
 	// Store the results in the fields we're writing to:
-	sr.SRMatcher = srMatcher
-	sr.SRReplacement = srReplacement
+	sr.SRWhen = srWhen
+	sr.SRThen = srThen
 	sr.SRDisplay = display
 
 	return nil
 }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
-func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, string, error) {
+func makeRuleFromPattern(pattern, replacement string) (string, string, error) {
 
-	_ = temporary // Prevents error due to this variable not (yet) being used
-
-	var matcher, expr string
+	var srWhen, srThen string
 	var err error
 
-	var host, path string
+	var phost, ppath string
 	origPattern := pattern
-	pattern, host, path, err = normalizeURL(pattern)
+	pattern, phost, ppath, err = normalizeURL(pattern)
 	_ = pattern
 	if err != nil {
 		return "", "", err
@@ -96,38 +82,41 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 	// TODO(tlim): This could be a lot faster by not repeating itself so much.
 	// However I want to get it working before it is optimized.
 
-	// pattern -> matcher
+	// "pr" is Page Rule (old style)
+	// "sr" is Static Rule (new style)
+	// prWhen + prThen is the old-style matching pattern and replacement pattern.
+	// srWhen + srThen is the new-style matching rule and replacement expression.
 
-	if !strings.Contains(host, `*`) && (path == `/` || path == "") {
+	if !strings.Contains(phost, `*`) && (ppath == `/` || ppath == "") {
 		// https://i.sstatic.net/  (No Wildcards)
-		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, "/")
+		srWhen = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, phost, "/")
 
-	} else if !strings.Contains(host, `*`) && (path == `/*`) {
+	} else if !strings.Contains(phost, `*`) && (ppath == `/*`) {
 		// https://i.stack.imgur.com/*
-		matcher = fmt.Sprintf(`http.host eq "%s"`, host)
+		srWhen = fmt.Sprintf(`http.host eq "%s"`, phost)
 
-	} else if !strings.Contains(host, `*`) && !strings.Contains(path, "*") {
+	} else if !strings.Contains(phost, `*`) && !strings.Contains(ppath, "*") {
 		// https://insights.stackoverflow.com/trends
-		matcher = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, host, path)
+		srWhen = fmt.Sprintf(`http.host eq "%s" and http.request.uri.path eq "%s"`, phost, ppath)
 
-	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && !strings.Contains(path, "*") {
+	} else if phost[0] == '*' && strings.Count(phost, `*`) == 1 && !strings.Contains(ppath, "*") {
 		// *stackoverflow.careers/  (wildcard at beginning only)
-		matcher = fmt.Sprintf(`( http.host eq "%s" or ends_with(http.host, ".%s") ) and http.request.uri.path eq "%s"`, host[1:], host[1:], path)
+		srWhen = fmt.Sprintf(`( http.host eq "%s" or ends_with(http.host, ".%s") ) and http.request.uri.path eq "%s"`, phost[1:], phost[1:], ppath)
 
-	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && path == "/*" {
+	} else if phost[0] == '*' && strings.Count(phost, `*`) == 1 && ppath == "/*" {
 		// *stackoverflow.careers/*  (wildcard at beginning and end)
-		matcher = fmt.Sprintf(`http.host eq "%s" or ends_with(http.host, ".%s")`, host[1:], host[1:])
+		srWhen = fmt.Sprintf(`http.host eq "%s" or ends_with(http.host, ".%s")`, phost[1:], phost[1:])
 
-	} else if strings.Contains(host, `*`) && path == "/*" {
+	} else if strings.Contains(phost, `*`) && ppath == "/*" {
 		// meta.*yodeya.com/* (wildcard in host)
-		h := simpleGlobToRegex(host)
-		matcher = fmt.Sprintf(`http.host matches r###"%s"###`, h)
+		h := simpleGlobToRegex(phost)
+		srWhen = fmt.Sprintf(`http.host matches r###"%s"###`, h)
 
-	} else if !strings.Contains(host, `*`) && strings.Count(path, `*`) == 1 && strings.HasSuffix(path, "*") {
+	} else if !strings.Contains(phost, `*`) && strings.Count(ppath, `*`) == 1 && strings.HasSuffix(ppath, "*") {
 		// domain.tld/.well-known* (wildcard in path)
-		matcher = fmt.Sprintf(`(starts_with(http.request.uri.path, "%s") and http.host eq "%s")`,
-			path[0:len(path)-1],
-			host)
+		srWhen = fmt.Sprintf(`(starts_with(http.request.uri.path, "%s") and http.host eq "%s")`,
+			ppath[0:len(ppath)-1],
+			phost)
 
 	}
 
@@ -135,40 +124,51 @@ func makeRuleFromPattern(pattern, replacement string, temporary bool) (string, s
 
 	if !strings.Contains(replacement, `$`) {
 		//  https://stackexchange.com/ (no substitutions)
-		expr = fmt.Sprintf(`concat("%s", "")`, replacement)
+		srThen = fmt.Sprintf(`concat("%s", "")`, replacement)
 
-	} else if host[0] == '*' && strings.Count(host, `*`) == 1 && strings.Count(replacement, `$`) == 1 && len(rpath) > 3 && strings.HasSuffix(rpath, "/$2") {
+	} else if phost[0] == '*' && strings.Count(phost, `*`) == 1 && strings.Count(replacement, `$`) == 1 && len(rpath) > 3 && strings.HasSuffix(rpath, "/$2") {
 		// *stackoverflowenterprise.com/* -> https://www.stackoverflowbusiness.com/enterprise/$2
-		expr = fmt.Sprintf(`concat("https://%s", "%s", http.request.uri.path)`,
+		srThen = fmt.Sprintf(`concat("https://%s", "%s", http.request.uri.path)`,
+			rhost,
+			rpath[0:len(rpath)-3],
+		)
+
+	} else if phost[0] == '*' && strings.Count(phost, `*`) == 1 && strings.Count(replacement, `$`) == 1 && len(rpath) > 3 && strings.HasSuffix(rpath, "/$2") {
+		// *stackoverflowenterprise.com/* -> https://www.stackoverflowbusiness.com/enterprise/$2
+		srThen = fmt.Sprintf(`concat("https://%s", "%s", http.request.uri.path)`,
 			rhost,
 			rpath[0:len(rpath)-3],
 		)
 
 	} else if strings.Count(replacement, `$`) == 1 && rpath == `/$1` {
 		// https://i.sstatic.net/$1 ($1 at end)
-		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
+		srThen = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
-	} else if strings.Count(host, `*`) == 1 && strings.Count(path, `*`) == 1 &&
+	} else if strings.Count(phost, `*`) == 1 && strings.Count(ppath, `*`) == 1 &&
 		strings.Count(replacement, `$`) == 1 && strings.HasSuffix(rpath, `/$2`) {
 		// https://careers.stackoverflow.com/$2
-		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
+		srThen = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	} else if strings.Count(replacement, `$`) == 1 && strings.HasSuffix(replacement, `$1`) {
 		// https://social.domain.tld/.well-known$1
-		expr = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
+		srThen = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
+
+	} else if strings.Count(replacement, `$`) == 1 && strings.HasSuffix(replacement, `$1`) {
+		// https://social.domain.tld/.well-known$1
+		srThen = fmt.Sprintf(`concat("https://%s", http.request.uri.path)`, rhost)
 
 	}
 
 	// Not implemented
 
-	if matcher == "" {
+	if srWhen == "" {
 		return "", "", fmt.Errorf("conversion not implemented for pattern: %s", origPattern)
 	}
-	if expr == "" {
+	if srThen == "" {
 		return "", "", fmt.Errorf("conversion not implemented for replacement: %s", origReplacement)
 	}
 
-	return matcher, expr, nil
+	return srWhen, srThen, nil
 }
 
 // normalizeURL turns foo.com into https://foo.com and replaces HTTP with HTTPS.
