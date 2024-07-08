@@ -344,9 +344,9 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		fmt.Printf("DEBUG: mkCreateSingleRedir: newrec=%+v\n", *newrec)
-		fmt.Printf("DEBUG: mkCreateSingleRedir: crn=%+v\n", (*newrec).CloudflareRedirect)
-		fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", (*newrec).CloudflareRedirect)
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: newrec=%+v\n", *newrec)
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: crn=%+v\n", (*newrec).CloudflareRedirect)
+		//fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", (*newrec).CloudflareRedirect)
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {

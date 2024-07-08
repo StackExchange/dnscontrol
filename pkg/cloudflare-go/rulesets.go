@@ -874,7 +874,7 @@ func (api *API) UpdateEntrypointRuleset(ctx context.Context, rc *ResourceContain
 	}
 
 	uri := fmt.Sprintf("/%s/%s/rulesets/phases/%s/entrypoint", rc.Level, rc.Identifier, params.Phase)
-	fmt.Printf("DEBUG: update: uri=%v\n", uri)
+	//fmt.Printf("DEBUG: update: uri=%v\n", uri)
 	res, err := api.makeRequestContext(ctx, http.MethodPut, uri, params)
 	if err != nil {
 		return Ruleset{}, err

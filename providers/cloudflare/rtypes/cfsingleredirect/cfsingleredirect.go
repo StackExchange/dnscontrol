@@ -13,11 +13,7 @@ func init() {
 }
 
 func FromRaw(rc *models.RecordConfig, items []any) error {
-	fmt.Printf("DEBUG: FromRaw: items=%+v\n", items)
 
-	if len(items) != 4 {
-		return fmt.Errorf("expected 4 items: %v", items)
-	}
 	var err error
 
 	// Validate types.
@@ -54,10 +50,7 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 
 	rc.Name = name
 	rc.CloudflareRedirect = FromAPIData(when, then, code)
-	t := fmt.Sprintf("code=%03d when=(%v) then=(%v)", code, when, then)
-	rc.SetTarget(t)
-	rc.CloudflareRedirect.SRDisplay = t
-	//fmt.Printf("DEBUG: FromRaw: result cr=%+v\n", rc.CloudflareRedirect)
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
 
 	return nil
 }

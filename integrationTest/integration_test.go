@@ -504,15 +504,10 @@ func cfSingleRedirectEnabled() bool {
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
 	r := makeRec("@", name, "CLOUDFLAREAPI_SINGLE_REDIRECT")
-	//fmt.Printf("DEBUG: BEFORE single r: %+v\n", *r)
-	//fmt.Printf("DEBUG: BEFORE single cr: %+v\n", r.CloudflareRedirect)
 	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
-
 	if err != nil {
 		panic("Should not happen... cfSingleRedirect")
 	}
-	//fmt.Printf("DEBUG: AFTER single r: %+v\n", *r)
-	fmt.Printf("DEBUG: AFTER single cr: %+v\n", r.CloudflareRedirect)
 	return r
 }
 
@@ -1949,7 +1944,9 @@ func makeTests() []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfSingleRedirect(`name1`, `301`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
-			tc("change", cfSingleRedirect(`name2`, `302`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changecode", cfSingleRedirect(`name1`, `302`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changewhen", cfSingleRedirect(`name1`, `302`, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changethen", cfSingleRedirect(`name1`, `302`, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
 		),
 
 		// CLOUDFLAREAPI: PROXY
