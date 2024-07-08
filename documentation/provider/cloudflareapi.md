@@ -215,7 +215,7 @@ var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
 });
 ```
 
-New redirects uses the [Single Redirects][https://developers.cloudflare.com/rules/url-forwarding/] product feature.  In this mode, 
+New redirects uses the [Single Redirects][https://developers.cloudflare.com/rules/url-forwarding/] product feature.  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generates Single Redirects.
 
 Enable it using:
@@ -240,7 +240,7 @@ and `manage_single_redirects` to true.
 
 {% hint style="warning" %}
 The conversion process only handles a few, very simple, patterns.
-See `providers/cloudflare/singleredirect_test.go` for a list of patterns
+See `providers/cloudflare/rtypes/cfsingleredirect/convert_test.go` for a list of patterns
 supported.  Please file bugs if you find problems. PRs welcome!
 {% endhint %}
 

@@ -9,12 +9,13 @@ import (
 )
 
 func init() {
-	rtypecontrol.Register("CF_SINGLE_REDIRECT")
+	rtypecontrol.Register("CLOUDFLAREAPI_SINGLE_REDIRECT")
 }
 
 func FromRaw(rc *models.RecordConfig, items []any) error {
 	var err error
 
+	//fmt.Printf("DEBUG: FromRaw: items=%+v\n", items)
 	// Unpack the args:
 
 	var when, then string
@@ -52,15 +53,4 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	rc.CloudflareRedirect = s
 
 	return nil
-}
-
-func FromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig {
-	r := &models.CloudflareSingleRedirectConfig{
-		PRMatcher:     "UNKNOWABLE",
-		PRReplacement: "UNKNOWABLE",
-		Code:          code,
-		SRMatcher:     sm,
-		SRReplacement: sr,
-	}
-	return r
 }

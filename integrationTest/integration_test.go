@@ -498,11 +498,15 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	return r
 }
 
+func cfSingleRedirectEnabled() bool {
+	return ((*enableCFRedirectMode) != "")
+}
+
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, "CF_SINGLE_REDIRECT")
-	fmt.Printf("DEBUG: BEFORE single r: %+v\n", *r)
-	fmt.Printf("DEBUG: BEFORE single cr: %+v\n", r.CloudflareRedirect)
-	cfsingleredirect.FromRaw(r, []any{name, code, when, then})
+	r := makeRec("@", name, "CLOUDFLAREAPI_SINGLE_REDIRECT")
+	//fmt.Printf("DEBUG: BEFORE single r: %+v\n", *r)
+	//fmt.Printf("DEBUG: BEFORE single cr: %+v\n", r.CloudflareRedirect)
+	cfsingleredirect.FromRaw(r, []any{code, when, then})
 	fmt.Printf("DEBUG: AFTER single r: %+v\n", *r)
 	fmt.Printf("DEBUG: AFTER single cr: %+v\n", r.CloudflareRedirect)
 	return r
@@ -717,6 +721,9 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
+		if r == nil {
+			continue
+		}
 		switch r.Type {
 		case "IGNORE":
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
@@ -817,7 +824,7 @@ func makeTests() []*TestGroup {
 	// Only run this test if all these bool flags are true:
 	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
-	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+	//     not("ROUTE53"), only("GCLOUD"),  // ERROR!
 	// NOTE: All requires()/not()/only() must appear before any tc().
 
 	// tc()
@@ -1928,6 +1935,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_REDIRECT_CONVERT",
 			only("CLOUDFLAREAPI"),
+			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
@@ -1935,9 +1943,9 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_SINGLE_REDIRECT",
 			only("CLOUDFLAREAPI"),
-			//tc("start301", cfSingleRedirect("name1", "301", `http.host eq "**current-domain-no-trailing**"`, `"https://stackexchange.com/"`)
-			tc("start301", cfSingleRedirect(`name1`, `301`, `http.host eq "example.com"`, `"https://stackexchange.com/"`)),
-			tc("change", cfSingleRedirect(`name1`, `302`, `http.host eq "example.com"`, `"https://stackexchange.com/"`)),
+			alltrue(cfSingleRedirectEnabled()),
+			tc("start301", cfSingleRedirect(`name1`, `301`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("change", cfSingleRedirect(`name2`, `302`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
 		),
 
 		// CLOUDFLAREAPI: PROXY

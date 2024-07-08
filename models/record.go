@@ -155,15 +155,15 @@ type CloudflareSingleRedirectConfig struct {
 	//
 	Code int `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
-	PRDisplay     string `json:"pr_display,omitempty"` // How is this displayed to the user
-	PRMatcher     string `json:"pr_matcher,omitempty"`
-	PRReplacement string `json:"pr_replacement,omitempty"`
-	PRPriority    int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
+	PRWhen     string `json:"pr_when,omitempty"`
+	PRThen     string `json:"pr_then,omitempty"`
+	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
 	//
 	// SR == SingleRedirect
 	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
-	SRMatcher        string `json:"sr_matcher,omitempty"`
-	SRReplacement    string `json:"sr_replacement,omitempty"`
+	SRWhen           string `json:"sr_when,omitempty"`
+	SRThen           string `json:"sr_then,omitempty"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
 }
@@ -614,7 +614,7 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "CAA", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "CAA", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
