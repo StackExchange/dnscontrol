@@ -507,6 +507,7 @@ func cfSingleRedirect(name string, code any, when, then string) *models.RecordCo
 	//fmt.Printf("DEBUG: BEFORE single r: %+v\n", *r)
 	//fmt.Printf("DEBUG: BEFORE single cr: %+v\n", r.CloudflareRedirect)
 	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
+
 	if err != nil {
 		panic("Should not happen... cfSingleRedirect")
 	}

@@ -53,9 +53,11 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	when, then = items[2].(string), items[3].(string)
 
 	rc.Name = name
-	rc.SetTarget(fmt.Sprintf("code=%03d when=(%v) then=(%v)", code, when, then))
 	rc.CloudflareRedirect = FromAPIData(when, then, code)
-	fmt.Printf("DEBUG: FromRaw: result cr=%+v\n", rc.CloudflareRedirect)
+	t := fmt.Sprintf("code=%03d when=(%v) then=(%v)", code, when, then)
+	rc.SetTarget(t)
+	rc.CloudflareRedirect.SRDisplay = t
+	//fmt.Printf("DEBUG: FromRaw: result cr=%+v\n", rc.CloudflareRedirect)
 
 	return nil
 }
