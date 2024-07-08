@@ -21,7 +21,7 @@ parameter_types:
 This feature manages dynamic "Single Redirects". (Single Redirects can be
 static or dynamic but DNSControl only maintains dynamic redirects).
 
-Cloudflare documentation: https://developers.cloudflare.com/rules/url-forwarding/single-redirects/
+Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
 
 {% code title="dnsconfig.js" %}
 ```javascript
