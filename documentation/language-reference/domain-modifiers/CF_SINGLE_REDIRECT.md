@@ -40,5 +40,6 @@ The fields are:
 * when: What Cloudflare sometimes calls the "rule expression".
 * then: The replacement expression.
 
-NOTE:
-The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+{% hint style="info" %}
+**NOTE**: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+{% endhint %}
