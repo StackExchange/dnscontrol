@@ -35,12 +35,11 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			// Call the proper initialize function.
 			// TODO(tlim): Good candiate for an interface or a lookup table.
-			args := rawRec.Args[1:]
 			switch rawRec.Type {
 
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				rec.Name = rawRec.Args[0]
-				err = cfsingleredirect.FromRaw(rec, args)
+				rec.Name = rawRec.Args[0].(string)
+				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
