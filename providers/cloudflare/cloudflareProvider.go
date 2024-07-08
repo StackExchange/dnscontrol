@@ -17,7 +17,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/singleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
 )
@@ -579,7 +579,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
 				//printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
-				sr, err := singleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -587,7 +587,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				currentPrPrio++
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
-				sr, err := singleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -607,7 +607,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 
 				// The copy becomes the CF SingleRedirect
-				sr, err := singleredirect.FromUserInput(target, code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -620,7 +620,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				dc.Records = append(dc.Records, newRec)
 
 				// The original becomes the PAGE_RULE:
-				sr, err = singleredirect.FromUserInput(target, code, currentPrPrio)
+				sr, err = cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -648,7 +648,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
 				//printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
-				sr, err := singleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -656,7 +656,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				currentPrPrio++
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
-				sr, err := singleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -676,7 +676,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 
 				// The copy becomes the CF SingleRedirect
-				sr, err := singleredirect.FromUserInput(target, code, currentPrPrio)
+				sr, err := cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -689,7 +689,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				dc.Records = append(dc.Records, newRec)
 
 				// The original becomes the PAGE_RULE:
-				sr, err = singleredirect.FromUserInput(target, code, currentPrPrio)
+				sr, err = cfsingleredirect.FromUserInput(target, code, currentPrPrio)
 				if err != nil {
 					return err
 				}
@@ -749,7 +749,7 @@ func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedir
 	rc.SetTarget(sr.SRDisplay)
 	rc.CloudflareRedirect = sr
 
-	err := singleredirect.AddNewStyleFields(sr)
+	err := cfsingleredirect.AddNewStyleFields(sr)
 	return err
 }
 

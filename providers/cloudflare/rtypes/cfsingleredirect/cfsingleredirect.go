@@ -6,7 +6,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/singleredirect"
 )
 
 func init() {
@@ -46,11 +45,22 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 
 	when, then = items[1].(string), items[2].(string)
 
-	s := singleredirect.FromAPIData(when, then, code)
+	s := FromAPIData(when, then, code)
 
 	rc.SetTarget(fmt.Sprintf("code=%03d when=(%v) then=(%v)", code, when, then))
 
 	rc.CloudflareRedirect = s
 
 	return nil
+}
+
+func FromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig {
+	r := &models.CloudflareSingleRedirectConfig{
+		PRMatcher:     "UNKNOWABLE",
+		PRReplacement: "UNKNOWABLE",
+		Code:          code,
+		SRMatcher:     sm,
+		SRReplacement: sr,
+	}
+	return r
 }

@@ -1,4 +1,4 @@
-package singleredirect
+package cfsingleredirect
 
 import (
 	"fmt"
