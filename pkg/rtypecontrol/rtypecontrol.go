@@ -1,5 +1,7 @@
 package rtypecontrol
 
+import "github.com/StackExchange/dnscontrol/v4/providers"
+
 var validTypes = map[string]struct{}{}
 
 func Register(t string) {
@@ -10,6 +12,7 @@ func Register(t string) {
 
 	validTypes[t] = struct{}{}
 
+	providers.RegisterCustomRecordType(t, "", "")
 }
 
 func IsValid(t string) bool {
