@@ -509,7 +509,7 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
  *
- * Cloudflare documentation: https://developers.cloudflare.com/rules/url-forwarding/single-redirects/
+ * Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -526,8 +526,7 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * NOTE:
- * The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ * NOTE: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
