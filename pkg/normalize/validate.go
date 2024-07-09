@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
@@ -79,7 +78,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"TXT":              true,
 	}
 	_, ok := validTypes[rec.Type]
-	if !ok || rtypecontrol.IsValid(rec.Type) {
+	if !ok {
 		cType := providers.GetCustomRecordType(rec.Type)
 		if cType == nil {
 			return fmt.Errorf("unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())

@@ -12,7 +12,6 @@ func PostProcess(domains []*models.DomainConfig) error {
 	var err error
 
 	for _, dc := range domains {
-		//fmt.Printf("DOMAIN: %d %s\n", len(dc.Records), dc.Name)
 
 		for _, rawRec := range dc.RawRecords {
 			rec := &models.RecordConfig{
@@ -38,7 +37,6 @@ func PostProcess(domains []*models.DomainConfig) error {
 			switch rawRec.Type {
 
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				rec.Name = rawRec.Args[0].(string)
 				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
 
 			default:
