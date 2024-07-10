@@ -204,7 +204,7 @@ will automatically add it when `dnscontrol push` is executed.
 
 ## Old-style vs new-style redirects
 
-Old-style redirects uses the [Page Rules][https://developers.cloudflare.com/rules/page-rules/] product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
+Old-style redirects uses the [Page Rules](https://developers.cloudflare.com/rules/page-rules/) product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generate Page Rules.
 
 Enable it using:
@@ -215,7 +215,7 @@ var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
 });
 ```
 
-New redirects uses the [Single Redirects][https://developers.cloudflare.com/rules/url-forwarding/] product feature.  In this mode,
+New redirects uses the [Single Redirects](https://developers.cloudflare.com/rules/url-forwarding/) product feature.  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generates Single Redirects.
 
 Enable it using:
