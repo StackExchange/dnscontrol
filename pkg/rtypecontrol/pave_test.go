@@ -2,7 +2,7 @@ package rtypecontrol
 
 import "testing"
 
-func TestValidateArgs(t *testing.T) {
+func TestPaveArgs(t *testing.T) {
 	tests := []struct {
 		name     string
 		dataArgs []any
@@ -19,23 +19,35 @@ func TestValidateArgs(t *testing.T) {
 			name:     "int to string",
 			dataArgs: []any{100},
 			dataRule: "s",
-			wantErr:  true,
+			wantErr:  false,
 		},
 
 		{
-			name:     "int",
-			dataArgs: []any{int(1)},
+			name:     "uint16",
+			dataArgs: []any{uint16(1)},
 			dataRule: "i",
 			wantErr:  false,
 		},
 		{
-			name:     "string to int",
+			name:     "float to uint16",
+			dataArgs: []any{float64(2)},
+			dataRule: "i",
+			wantErr:  false,
+		},
+		{
+			name:     "int uint16",
+			dataArgs: []any{int(3)},
+			dataRule: "i",
+			wantErr:  false,
+		},
+		{
+			name:     "string to uint16",
 			dataArgs: []any{"111"},
 			dataRule: "i",
 			wantErr:  false,
 		},
 		{
-			name:     "txt to int",
+			name:     "txt to uint16",
 			dataArgs: []any{"one"},
 			dataRule: "i",
 			wantErr:  true,
@@ -43,8 +55,8 @@ func TestValidateArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CheckArgTypes(tt.dataArgs, tt.dataRule); (err != nil) != tt.wantErr {
-				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
+			if err := PaveArgs(tt.dataArgs, tt.dataRule); (err != nil) != tt.wantErr {
+				t.Errorf("PaveArgs() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

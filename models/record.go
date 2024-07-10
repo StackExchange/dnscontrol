@@ -152,7 +152,7 @@ type RecordConfig struct {
 //	When these are used, .target is set to a human-readable version (only to be used for display purposes).
 type CloudflareSingleRedirectConfig struct {
 	//
-	Code int `json:"code,omitempty"` // 301 or 302
+	Code uint16 `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
 	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
 	PRWhen     string `json:"pr_when,omitempty"`

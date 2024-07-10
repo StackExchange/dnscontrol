@@ -568,7 +568,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			if !c.manageRedirects && !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
 			}
-			code := 301
+			code := uint16(301)
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
@@ -844,13 +844,13 @@ func uint16Zero(value interface{}) uint16 {
 	return 0
 }
 
-// intZero converts value to int or returns 0.
-func intZero(value interface{}) int {
+// intZero converts value to uint16 or returns 0.
+func intZero(value interface{}) uint16 {
 	switch v := value.(type) {
 	case float64:
-		return int(v)
+		return uint16(v)
 	case int:
-		return v
+		return uint16(v)
 	case nil:
 	}
 	return 0

@@ -306,7 +306,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		// Extract the valuables from the rule, use it to make the sr:
 		srWhen := pr.Expression
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
-		code := int(pr.ActionParameters.FromValue.StatusCode)
+		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 		sr := cfsingleredirect.FromAPIData(srWhen, srThen, code)
 		//sr.SRRRuleList = rulelist
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
@@ -475,15 +475,6 @@ func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr model
 }
 
 func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	//printer.Printf("DEBUG: called createPageRule(%s, %+v)\n", domainID, cfr)
-	// from to priority code
-	// parts := strings.Split(target, ",")
-	// priority, _ := strconv.Atoi(parts[2])
-	// code, _ := strconv.Atoi(parts[3])
-	// printer.Printf("DEBUG: pr.PageRule target = %v\n", target)
-	// printer.Printf("DEBUG: pr.PageRule target = %v\n", parts[0])
-	// printer.Printf("DEBUG: pr.PageRule url    = %v\n", parts[1])
-	// printer.Printf("DEBUG: pr.PageRule code   = %v\n", code)
 	priority := cfr.PRPriority
 	code := cfr.Code
 	prWhen := cfr.PRWhen
@@ -570,5 +561,5 @@ type pageRuleConstraint struct {
 
 type pageRuleFwdInfo struct {
 	URL        string `json:"url"`
-	StatusCode int    `json:"status_code"`
+	StatusCode uint16 `json:"status_code"`
 }
