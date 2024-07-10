@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-func FromUserInput(target string, code int, priority int) (*models.CloudflareSingleRedirectConfig, error) {
+func FromUserInput(target string, code uint16, priority int) (*models.CloudflareSingleRedirectConfig, error) {
 	// target: matcher,replacement,priority,code
 	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1,1,302
 

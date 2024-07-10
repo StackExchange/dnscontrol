@@ -6,7 +6,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-func FromAPIData(sm, sr string, code int) *models.CloudflareSingleRedirectConfig {
+func FromAPIData(sm, sr string, code uint16) *models.CloudflareSingleRedirectConfig {
 	r := &models.CloudflareSingleRedirectConfig{
 		PRWhen:    "UNKNOWABLE",
 		PRThen:    "UNKNOWABLE",

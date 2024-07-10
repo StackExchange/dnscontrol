@@ -2,7 +2,6 @@ package cfsingleredirect
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
@@ -14,34 +13,18 @@ func init() {
 
 func FromRaw(rc *models.RecordConfig, items []any) error {
 
-	var err error
-
 	// Validate types.
-	if err := rtypecontrol.CheckArgTypes(items, "siss"); err != nil {
+	if err := rtypecontrol.PaveArgs(items, "siss"); err != nil {
 		return err
 	}
 
 	// Unpack the args:
 	var name, when, then string
-	var code int
+	var code uint16
 
 	name = items[0].(string)
 
-	ucode := items[1]
-	switch v := ucode.(type) {
-	case int:
-		code = v
-	case float64:
-		code = int(v)
-	case string:
-		code, err = strconv.Atoi(v)
-		if err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("code %q unexpected type %T", ucode, v)
-	}
-
+	code = items[1].(uint16)
 	if code != 301 && code != 302 {
 		return fmt.Errorf("code (%03d) is not 301 or 302", code)
 	}
