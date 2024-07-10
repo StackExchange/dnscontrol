@@ -37,7 +37,7 @@ func PostProcess(domains []*models.DomainConfig) error {
 			switch rawRec.Type {
 
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
+				err = cfsingleredirect.FromRawArgs(rec, rawRec.Args)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)

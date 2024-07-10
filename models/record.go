@@ -97,6 +97,7 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Rdata     Rdataer           // The Resource Record data (RData)
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -145,6 +146,9 @@ type RecordConfig struct {
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
 	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+}
+
+type Rdataer interface {
 }
 
 // CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.

@@ -307,7 +307,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srWhen := pr.Expression
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
-		sr := cfsingleredirect.FromAPIData(srWhen, srThen, code)
+		sr := cfsingleredirect.MakeRdata(srWhen, srThen, code)
 		//sr.SRRRuleList = rulelist
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
 		sr.SRDisplay = pr.Description
