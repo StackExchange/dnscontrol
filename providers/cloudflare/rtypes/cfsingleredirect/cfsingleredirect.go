@@ -32,8 +32,8 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	when, then = items[2].(string), items[3].(string)
 
 	rc.Name = name
-	rc.CloudflareRedirect = FromAPIData(when, then, code)
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	rc.CloudflareRedirect = FromAPIData(name, when, then, code)
+	rc.SetTarget(rc.CloudflareRedirect.Display)
 
 	return nil
 }

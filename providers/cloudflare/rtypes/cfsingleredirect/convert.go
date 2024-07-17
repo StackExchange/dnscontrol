@@ -18,7 +18,7 @@ func FromUserInput(target string, code uint16, priority int) (*models.Cloudflare
 	// Break apart the 4-part string and store into the individual fields:
 	parts := strings.Split(target, ",")
 	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
-	r.PRDisplay = fmt.Sprintf("%s,%d,%03d", target, priority, code)
+	r.Display = fmt.Sprintf("%s,%d,%03d", target, priority, code)
 	r.PRWhen = parts[0]
 	r.PRThen = parts[1]
 	r.PRPriority = priority
@@ -44,7 +44,7 @@ func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
 	if err != nil {
 		return err
 	}
-	display := fmt.Sprintf(`%s,%s,%d,%03d matcher=%s replacement=%s`,
+	display := fmt.Sprintf(`%s,%s,%d,%03d when=(%s) then=(%s)`,
 		prWhen, prThen,
 		sr.PRPriority, code,
 		srWhen, srThen,
@@ -53,7 +53,7 @@ func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
 	// Store the results in the fields we're writing to:
 	sr.SRWhen = srWhen
 	sr.SRThen = srThen
-	sr.SRDisplay = display
+	sr.SRName = display
 
 	return nil
 }

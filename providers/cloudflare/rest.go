@@ -286,9 +286,6 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		}
 		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s (%T)", err, err)
 	}
-	//var rulelist []cloudflare.RulesetRule
-	//rulelist = rules.Rules
-	//rulelist := rules.Rules
 
 	//printer.Printf("DEBUG: rules %+v\n", rules)
 	recs := []*models.RecordConfig{}
@@ -304,20 +301,21 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		r.SetLabel("@", domain)
 
 		// Extract the valuables from the rule, use it to make the sr:
+		srName := pr.Description
 		srWhen := pr.Expression
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
-		sr := cfsingleredirect.FromAPIData(srWhen, srThen, code)
+		sr := cfsingleredirect.FromAPIData(srName, srWhen, srThen, code)
 		//sr.SRRRuleList = rulelist
 		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
-		sr.SRDisplay = pr.Description
+		sr.SRName = pr.Description
 		// printer.Printf("DEBUG: PR = %+v\n", pr)
 		// printer.Printf("DEBUG: rules = %+v\n", rules)
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID //correct
 
 		r.CloudflareRedirect = sr
-		r.SetTarget(pr.Description)
+		r.SetTarget(r.CloudflareRedirect.Display)
 
 		recs = append(recs, r)
 	}
@@ -347,7 +345,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	// Redirect expression
 	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = cfr.SRThen
 	// Redirect name
-	newSingleRedirectRules[0].Description = cfr.SRDisplay
+	newSingleRedirectRules[0].Description = cfr.SRName
 	// Rule action, should always be redirect in this case
 	newSingleRedirectRules[0].Action = "redirect"
 	// Phase should always be http_request_dynamic_redirect

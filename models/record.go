@@ -152,15 +152,15 @@ type RecordConfig struct {
 //	When these are used, .target is set to a human-readable version (only to be used for display purposes).
 type CloudflareSingleRedirectConfig struct {
 	//
-	Code uint16 `json:"code,omitempty"` // 301 or 302
+	Code    uint16 `json:"code,omitempty"`       // 301 or 302
+	Display string `json:"pr_display,omitempty"` // How is this displayed to the user (SetTarget)
 	// PR == PageRule
-	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
 	PRWhen     string `json:"pr_when,omitempty"`
 	PRThen     string `json:"pr_then,omitempty"`
 	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
 	//
 	// SR == SingleRedirect
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRName           string `json:"sr_display,omitempty"` // How is this displayed to the user
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`

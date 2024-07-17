@@ -675,14 +675,14 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 func fixPageRule(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) {
 	rc.Type = "PAGE_RULE"
 	rc.TTL = 1
-	rc.SetTarget(sr.PRDisplay)
+	rc.SetTarget(sr.Display)
 	rc.CloudflareRedirect = sr
 }
 
 func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) error {
 	rc.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
 	rc.TTL = 1
-	rc.SetTarget(sr.SRDisplay)
+	rc.SetTarget(sr.Display)
 	rc.CloudflareRedirect = sr
 
 	err := cfsingleredirect.AddNewStyleFields(sr)
