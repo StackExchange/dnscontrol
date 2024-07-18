@@ -29,7 +29,7 @@ func mkPageRuleBlob(priority int, code uint16, when, then string) string {
 }
 
 // makeSingleRedirectFromRawRec updates a RecordConfig to be a
-// CLOUDFLAREAPI_SINGLE_REDIRECT using the data from a RawRecord.
+// SINGLEREDIRECT using the data from a RawRecord.
 func makeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, when, then string) {
 	target := targetFromRaw(name, code, when, then)
 
@@ -61,8 +61,7 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 	)
 }
 
-// MakeSingleRedirectFromAPI updatese a RecordConfig to be a
-// CLOUDFLAREAPI_SINGLE_REDIRECT using data downloaded via the API.
+// MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
 func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) {
 	// The target is the same as the name. It is the responsibility of the record creator to name it something diffable.
 	target := targetFromAPIData(name, code, when, then)
@@ -95,8 +94,7 @@ func targetFromAPIData(name string, code uint16, when, then string) string {
 	)
 }
 
-// makeSingleRedirectFromConvert updates a RecordConfig to be a
-// CLOUDFLAREAPI_SINGLE_REDIRECT using data from a PAGE_RULE conversion.
+// makeSingleRedirectFromConvert updates a RecordConfig to be a SINGLEREDIRECT using data from a PAGE_RULE conversion.
 func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 	priority int,
 	prWhen, prThen string,

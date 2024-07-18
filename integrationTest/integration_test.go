@@ -503,7 +503,7 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, "CLOUDFLAREAPI_SINGLE_REDIRECT")
+	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
 	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
 	if err != nil {
 		panic("Should not happen... cfSingleRedirect")

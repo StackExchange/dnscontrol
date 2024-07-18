@@ -161,7 +161,7 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 
 	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
-		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
+		// For each one, generate a SINGLEREDIRECT record
 		prs, err := c.getSingleRedirects(domainID, domain)
 		if err != nil {
 			return nil, err
@@ -550,12 +550,12 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				// Old-Style only.  No additional work needed.
 
 			} else if !c.manageRedirects && c.manageSingleRedirects {
-				// New-Style only.  Convert PAGE_RULE to CLOUDFLAREAPI_SINGLE_REDIRECT.
+				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
 				cfsingleredirect.TranscodePRtoSR(rec)
 
 			} else {
 				// Both old-style and new-style enabled!
-				// Retain the PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
+				// Retain the PAGE_RULE and append an additional SINGLEREDIRECT.
 
 				// make a copy:
 				newRec, err := rec.Copy()
@@ -571,7 +571,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 
 		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {
-			// CLOUDFLAREAPI_SINGLE_REDIRECT record types. Verify they are enabled.
+			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
