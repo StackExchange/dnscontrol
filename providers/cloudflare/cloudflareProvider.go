@@ -648,7 +648,7 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 	c.tcZone = zone
 
 	// Generate the new command and output.
-	text = text + fmt.Sprintf("    CF_SINGLE_REDIRECT(%q, %03d, '%s', '%s')\n",
+	text = text + fmt.Sprintf("    CF_SINGLE_REDIRECT(%q,\n                       %03d,\n                       '%s',\n                       '%s'\n    ),\n",
 		redirect.SRName, redirect.Code,
 		redirect.SRWhen, redirect.SRThen)
 	_, err := fh.WriteString(text)

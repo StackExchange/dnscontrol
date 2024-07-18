@@ -286,11 +286,13 @@ If you have suggestions on how to handle this better please file a bug.
 
 ### Converting to CF_SINGLE_REDIRECT permanently
 
-DNSControl will help convert your `CF_REDIRECT`/`CF_TEMP_REDIRECT` statements
-into `CF_SINGLE_REDIRECT` statements. You might choose to do this if you do not
-want to rely on the automatic translation forever.
+DNSControl will help convert `CF_REDIRECT`/`CF_TEMP_REDIRECT` statements into
+`CF_SINGLE_REDIRECT` statements. You might choose to do this if you do not want
+to rely on the automatic translation, or if you want to edit the results of the
+translation.
 
-DNSControl will generate a file of the translated statements if you specify a filename using the `transcode_log` meta option.
+DNSControl will generate a file of the translated statements if you specify
+a filename using the `transcode_log` meta option.
 
 ```javascript
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
@@ -299,16 +301,32 @@ var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
 });
 ```
 
-After running `dnscontrol preview` you'll see the contents look something like this example:
+After running `dnscontrol preview` the contents will look something like this:
 
-{% code title="dnsconfig.js" %}
+{% code title="transcode.log" %}
 ```text
 D("example.com", ...
-    CF_SINGLE_REDIRECT("1,302,https://example.com/*,https://i.destination.com/$1", 302, 'http.host eq "example.com"', 'concat("https://i.destination.com", http.request.uri.path)')
-    CF_SINGLE_REDIRECT("2,302,https://img.example.com/*,https://i.destination.com/$1", 302, 'http.host eq "img.example.com"', 'concat("https://i.destination.com", http.request.uri.path)')
-    CF_SINGLE_REDIRECT("3,302,https://i.example.com/*,https://i.destination.com/$1", 302, 'http.host eq "i.example.com"', 'concat("https://i.destination.com", http.request.uri.path)')
-D("example2.com", ...
-    CF_SINGLE_REDIRECT("1,301,https://one.example2.com/,https://www.stackexchange.com/", 301, 'http.host eq "one.example2.com" and http.request.uri.path eq "/"', 'concat("https://www.stackexchange.com/", "")')
+    CF_SINGLE_REDIRECT("1,302,https://example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+    CF_SINGLE_REDIRECT("2,302,https://img.example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "img.example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+    CF_SINGLE_REDIRECT("3,302,https://i.example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "i.example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+D("otherdomain.com", ...
+    CF_SINGLE_REDIRECT("1,301,https://one.otherdomain.com/,https://www.google.com/",
+                       301,
+                       'http.host eq "one.otherdomain.com" and http.request.uri.path eq "/"',
+                       'concat("https://www.google.com/", "")'
+    ),
 ```
 {% endcode %}
 
