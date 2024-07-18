@@ -1820,7 +1820,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   M365_BUILDER({
+ *   M365_BUILDER("example.com", {
  *       initialDomain: "example.onmicrosoft.com",
  *   }),
  * END);
@@ -1832,7 +1832,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   M365_BUILDER({
+ *   M365_BUILDER("example.com", {
  *       label: "test",
  *       mx: false,
  *       autodiscover: false,
