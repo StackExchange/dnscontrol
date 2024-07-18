@@ -10,10 +10,6 @@ func mkPageRuleBlob(priority int, code uint16, when, then string) string {
 	return fmt.Sprintf("%d,%03d,%s,%s", priority, code, when, then)
 }
 
-func mkHybridName(prPriority int, code uint16, prWhen, prThen, srWhen, srThen string) string {
-	return fmt.Sprintf("%d,%03d,%s,%s when=(%s) then=(%s)", prPriority, code, prWhen, prThen, srWhen, srThen)
-}
-
 func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) {
 	display := mkPageRuleBlob(priority, code, when, then)
 
@@ -40,8 +36,7 @@ func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then
 }
 
 func MakeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, when, then string) {
-	target := MakeSingleRedirectTarget(name, code, when, then)
-	rc.SetTarget(target)
+	target := makeSingleRedirectTarget(name, code, when, then)
 
 	rc.Type = TypeName
 	rc.TTL = 1
@@ -60,12 +55,12 @@ func MakeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, wh
 		//SRRRulesetRuleID: "UNSET",
 		SRDisplay: target,
 	}
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
 }
 
 func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) {
 	// The target is the same as the name. It is the responsibility of the record creator to name it something diffable.
-	target := name
-	rc.SetTarget(target)
+	target := mkTargetAPI(name, code, when, then)
 
 	rc.Type = TypeName
 	rc.TTL = 1
@@ -84,4 +79,37 @@ func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when,
 		//SRRRulesetRuleID: "UNSET",
 		SRDisplay: target,
 	}
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+}
+
+func MakeSingleRedirectFromConvert(rc *models.RecordConfig,
+	priority int,
+	prWhen, prThen string,
+	code uint16,
+	srName, srWhen, srThen string) {
+
+	srDisplay := mkDisplayConverted(priority, code, prWhen, prThen, srWhen, srThen)
+
+	rc.Type = TypeName
+	rc.TTL = 1
+	sr := rc.CloudflareRedirect
+	sr.Code = code
+	//
+	//PRWhen:     "UNKNOWABLE",
+	//PRThen:     "UNKNOWABLE",
+	//PRPriority: 0,
+	//PRDisplay:  "UNKNOWABLE",
+	//
+	sr.SRName = srName
+	sr.SRWhen = srWhen
+	sr.SRThen = srThen
+	//SRRRulesetID:     "UNSET",
+	//SRRRulesetRuleID: "UNSET",
+	sr.SRDisplay = srDisplay
+
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+}
+
+func mkDisplayConverted(prPriority int, code uint16, prWhen, prThen, srWhen, srThen string) string {
+	return fmt.Sprintf("%d,%03d,%s,%s code=(%03d) when=(%s) then=(%s)", prPriority, code, prWhen, prThen, code, srWhen, srThen)
 }

@@ -35,34 +35,26 @@ import (
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
 func TranscodePRtoSR(rec *models.RecordConfig) error {
 	rec.Type = TypeName // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
-	sr := rec.CloudflareRedirect
 
 	// Extract the fields we're reading from:
+	sr := rec.CloudflareRedirect
+	code := sr.Code
 	prWhen := sr.PRWhen
 	prThen := sr.PRThen
-	prDisplay := sr.PRDisplay
-	code := sr.Code
+	srName := sr.PRDisplay
 
 	// Convert old-style patterns to new-style rules:
 	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
 	if err != nil {
 		return err
 	}
-	srDisplay := fmt.Sprintf(`%d,%03d,%s,%s when=(%s) then=(%s)`,
-		sr.PRPriority, code,
+
+	// Fix the RecordConfig
+	MakeSingleRedirectFromConvert(rec,
+		sr.PRPriority,
 		prWhen, prThen,
-		srWhen, srThen,
-	)
-
-	// Store the results in the fields we're writing to:
-	sr.SRName = prDisplay
-	sr.SRWhen = srWhen
-	sr.SRThen = srThen
-	sr.SRDisplay = srDisplay
-
-	hybridname := mkHybridName(sr.PRPriority, code, prWhen, prThen, srWhen, srThen)
-	sr.SRDisplay = hybridname
-	rec.SetTarget(hybridname)
+		code,
+		srName, srWhen, srThen)
 
 	return nil
 }

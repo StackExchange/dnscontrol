@@ -4,17 +4,18 @@ import (
 	"fmt"
 )
 
-func MakePageRuleBlob(from, to string, priority, code uint16) string {
-	return fmt.Sprintf("%d,%03d,%s,%s", // $PRIO,$CODE,$FROM,$TO
-		priority,
+func makeSingleRedirectTarget(name string, code uint16, when, then string) string {
+	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
+		name,
 		code,
-		from,
-		to,
+		when,
+		then,
 	)
 }
 
-func MakeSingleRedirectTarget(name string, code uint16, when, then string) string {
-	return fmt.Sprintf("name=(%s) code=(%03d) when=(%s) then=(%s)",
+func mkTargetAPI(name string, code uint16, when, then string) string {
+	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
+		//return fmt.Sprintf("%s when=(%s) then=(%s)",
 		name,
 		code,
 		when,

@@ -354,8 +354,8 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	//printer.Printf("DEBUG: Createing DESC=%q\n", cfr.SRName)
 
 	// {PICK}
-	//newSingleRedirectRules[0].Description = cfr.SRName
-	newSingleRedirectRules[0].Description = cfr.SRDisplay
+	newSingleRedirectRules[0].Description = cfr.SRName
+	//newSingleRedirectRules[0].Description = cfr.SRDisplay
 
 	// Rule action, should always be redirect in this case
 	newSingleRedirectRules[0].Action = "redirect"
