@@ -7,10 +7,14 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
+// SINGLEREDIRECT is the string name for this rType.
+const SINGLEREDIRECT = "CLOUDFLAREAPI_SINGLE_REDIRECT"
+
 func init() {
-	rtypecontrol.Register("CLOUDFLAREAPI_SINGLE_REDIRECT")
+	rtypecontrol.Register(SINGLEREDIRECT)
 }
 
+// FromRaw convert RecordConfig using data from a RawRecordConfig's parameters.
 func FromRaw(rc *models.RecordConfig, items []any) error {
 
 	// Validate types.
@@ -23,17 +27,14 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	var code uint16
 
 	name = items[0].(string)
-
 	code = items[1].(uint16)
 	if code != 301 && code != 302 {
 		return fmt.Errorf("code (%03d) is not 301 or 302", code)
 	}
+	when = items[2].(string)
+	then = items[3].(string)
 
-	when, then = items[2].(string), items[3].(string)
-
-	rc.Name = name
-	rc.CloudflareRedirect = FromAPIData(when, then, code)
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	makeSingleRedirectFromRawRec(rc, code, name, when, then)
 
 	return nil
 }

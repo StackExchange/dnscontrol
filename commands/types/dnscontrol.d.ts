@@ -472,6 +472,11 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issue_critical?: boolean; issuewild: string[]; issuewild_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
+ * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * feature called "Dynamic Single Redirect". DNSControl will automatically
+ * generate "Dynamic Single Redirects" for a limited number of use cases. See
+ * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ *
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
  * generate a HTTP 301 permanent redirect.
  *
@@ -533,6 +538,11 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
 declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * feature called "Dynamic Single Redirect". DNSControl will automatically
+ * generate "Dynamic Single Redirects" for a limited number of use cases. See
+ * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ *
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
@@ -1810,7 +1820,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   M365_BUILDER({
+ *   M365_BUILDER("example.com", {
  *       initialDomain: "example.onmicrosoft.com",
  *   }),
  * END);
@@ -1822,7 +1832,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   M365_BUILDER({
+ *   M365_BUILDER("example.com", {
  *       label: "test",
  *       mx: false,
  *       autodiscover: false,

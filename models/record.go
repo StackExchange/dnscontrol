@@ -154,17 +154,18 @@ type CloudflareSingleRedirectConfig struct {
 	//
 	Code uint16 `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
-	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
 	PRWhen     string `json:"pr_when,omitempty"`
 	PRThen     string `json:"pr_then,omitempty"`
 	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
 	//
 	// SR == SingleRedirect
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
+	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // MarshalJSON marshals RecordConfig.
