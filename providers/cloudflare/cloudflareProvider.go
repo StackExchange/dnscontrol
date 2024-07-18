@@ -87,6 +87,11 @@ type cloudflareProvider struct {
 	cfClient        *cloudflare.API
 	//
 	manageSingleRedirects bool // New "Single Redirects"-style redirects.
+	//
+	// Used by
+	tcLogFilename string   // Transcode Log file name
+	tcLogFh       *os.File // Transcode Log file handle
+	tcZone        string   // Transcode Current zone
 
 	sync.Mutex                      // Protects all access to the following fields:
 	domainIndex map[string]string   // Cache of zone name to zone ID.
@@ -552,6 +557,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
 				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
+					return err
+				}
 
 			} else {
 				// Both old-style and new-style enabled!
@@ -564,6 +572,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 				// The copy becomes the CF SingleRedirect
 				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
+					return err
+				}
 				// Append the copy to the end of the list.
 				dc.Records = append(dc.Records, newRec)
 
@@ -612,6 +623,38 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
+func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.CloudflareSingleRedirectConfig) error {
+	// No filename? Don't log anything.
+	filename := c.tcLogFilename
+	if filename == "" {
+		return nil
+	}
+
+	// File not opened already? Open it.
+	if c.tcLogFh == nil {
+		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+		c.tcLogFh = f
+	}
+	fh := c.tcLogFh
+
+	// Output "D(zone)"  if needed.
+	var text string
+	if c.tcZone != zone {
+		text = fmt.Sprintf("D(%q, ...\n", zone)
+	}
+	c.tcZone = zone
+
+	// Generate the new command and output.
+	text = text + fmt.Sprintf("    CF_SINGLE_REDIRECT(%q, %03d, '%s', '%s')\n",
+		redirect.SRName, redirect.Code,
+		redirect.SRWhen, redirect.SRThen)
+	_, err := fh.WriteString(text)
+	return err
+}
+
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
 	// check api keys from creds json file
@@ -655,7 +698,8 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
 			ManageWorkers   bool     `json:"manage_workers"`
 			//
-			ManageSingleRedirects bool `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
+			ManageSingleRedirects bool   `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
+			TranscodeLogFilename  string `json:"transcode_log"`           // Log the PAGE_RULE conversions.
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
@@ -663,6 +707,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		}
 		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
 		api.manageRedirects = parsedMeta.ManageRedirects
+		api.tcLogFilename = parsedMeta.TranscodeLogFilename
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
