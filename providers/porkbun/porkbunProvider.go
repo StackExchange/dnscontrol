@@ -43,11 +43,6 @@ func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error
 		return nil, fmt.Errorf("missing porkbun api_key or secret_key")
 	}
 
-	// Validate authentication
-	if err := c.ping(); err != nil {
-		return nil, err
-	}
-
 	return c, nil
 }
 
@@ -74,12 +69,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("PORKBUN", newReg)
+	const providerName = "PORKBUN"
+	const providerMaintainer = "@imlonghao"
+	providers.RegisterRegistrarType(providerName, newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("PORKBUN", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

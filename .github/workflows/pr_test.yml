@@ -40,7 +40,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.3.3
+    - uses: actions/upload-artifact@v4.3.4
       with:
         name: unit-tests
         path: ${{ env.TEST_RESULTS }}
@@ -88,7 +88,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -117,6 +117,7 @@ jobs:
       GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
+      HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
@@ -161,6 +162,10 @@ jobs:
       HEXONET_PW: ${{ secrets.HEXONET_PW }}
       HEXONET_UID: ${{ secrets.HEXONET_UID }}
 
+      HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
+      HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
+      HUAWEICLOUD_KEY: ${{ secrets.HUAWEICLOUD_KEY }}
+
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
@@ -201,7 +206,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v4.3.3
+    - uses: actions/upload-artifact@v4.3.4
       with:
         name: integration-tests-${{ matrix.provider }}
         path: ${{ env.TEST_RESULTS }}

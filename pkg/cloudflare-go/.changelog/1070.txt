@@ -1,0 +1,3 @@
+```release-note:bug
+email_routing_rules: Fix response for email routing catch all rule.
+```

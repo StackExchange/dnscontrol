@@ -1,0 +1,3 @@
+```release-note:enhancement
+device_posture_rules: add support for Access client fields in device posture integrations
+```

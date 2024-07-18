@@ -70,11 +70,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "EXOSCALE"
+	const providerMaintainer = "@pierre-emmanuelJ"
 	fns := providers.DspFuncs{
 		Initializer:   NewExoscale,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // EnsureZoneExists creates a zone if it does not exist

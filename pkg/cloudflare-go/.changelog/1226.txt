@@ -1,0 +1,3 @@
+```release-note:enhancement
+added audit_ssh to gateway actions, updated gateway rule settings
+```

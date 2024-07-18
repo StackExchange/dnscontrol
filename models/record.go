@@ -39,6 +39,7 @@ import (
 //	  CF_REDIRECT
 //	  CF_TEMP_REDIRECT
 //	  CF_WORKER_ROUTE
+//	  CLOUDFLAREAPI_SINGLE_REDIRECT
 //	  CLOUDNS_WR
 //	  FRAME
 //	  IMPORT_TRANSFORM
@@ -50,6 +51,8 @@ import (
 //	  URL
 //	  URL301
 //	  WORKER_ROUTE
+//
+// NOTE: All NEW record types should be prefixed with the provider name (Correct: CLOUDFLAREAPI_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
 //
 // Notes about the fields:
 //
@@ -88,8 +91,8 @@ import (
 type RecordConfig struct {
 	Type      string            `json:"type"` // All caps rtype name.
 	Name      string            `json:"name"` // The short name. See above.
+	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
 	SubDomain string            `json:"subdomain,omitempty"`
-	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
@@ -138,6 +141,30 @@ type RecordConfig struct {
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
+
+	// Cloudflare-specific fields:
+	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
+	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+}
+
+// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
+//
+//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
+type CloudflareSingleRedirectConfig struct {
+	//
+	Code uint16 `json:"code,omitempty"` // 301 or 302
+	// PR == PageRule
+	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
+	PRWhen     string `json:"pr_when,omitempty"`
+	PRThen     string `json:"pr_then,omitempty"`
+	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	//
+	// SR == SingleRedirect
+	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRWhen           string `json:"sr_when,omitempty"`
+	SRThen           string `json:"sr_then,omitempty"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -169,6 +196,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+		Args      []any             `json:"args,omitempty"`
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -585,7 +613,7 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "CAA", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+		case "A", "CAA", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
@@ -609,7 +637,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {

@@ -1,0 +1,3 @@
+```release-note:bug
+access_users: ListAccessUsers was returning wrong values in pointer fields due to variable missused in loop
+```

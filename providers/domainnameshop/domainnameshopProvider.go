@@ -47,12 +47,15 @@ var features = providers.DocumentationNotes{
 // Register with the dnscontrol system.
 // This establishes the name (all caps), and the function to call to initialize it.
 func init() {
+	const providerName = "DOMAINNAMESHOP"
+	const providerMaintainer = "@SimenBai"
 	fns := providers.DspFuncs{
 		Initializer:   newDomainNameShopProvider,
 		RecordAuditor: AuditRecords,
 	}
 
-	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // newDomainNameShopProvider creates a Domainnameshop specific DNS provider.

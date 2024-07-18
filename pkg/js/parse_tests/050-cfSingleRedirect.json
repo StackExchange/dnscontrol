@@ -1,0 +1,77 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "A",
+          "name": "name1",
+          "meta": {
+            "meta": "value"
+          },
+          "target": "1.2.3.4"
+        }
+      ],
+      "rawrecords": [
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "args": [
+            "name1",
+            301,
+            "when1",
+            "then1"
+          ]
+        },
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "args": [
+            "name2",
+            302,
+            "when2",
+            "then2"
+          ]
+        },
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "args": [
+            "name3",
+            "301",
+            "when3",
+            "then3"
+          ]
+        },
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "args": [
+            "namettl",
+            302,
+            "whenttl",
+            "thenttl"
+          ],
+          "ttl": 999
+        },
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "args": [
+            "namemeta",
+            302,
+            "whenmeta",
+            "thenmeta"
+          ],
+          "metas": [
+            {
+              "metastr": "stringy"
+            },
+            {
+              "metanum": 22
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+```release_note:enhancement
+rulesets: Add support for Proxy Read Timeout configuration via the Rulesets/Cache Rules API
+```

@@ -1,0 +1,3 @@
+```release-note:enhancement
+device_posture_rule: support last_seen and state for crowdstrike_s2s posture rule
+```

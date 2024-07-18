@@ -1,0 +1,7 @@
+```release-note:enhancement
+pages: add support for Smart Placement. Added `Placement` in `PagesProjectDeploymentConfigEnvironment`.
+```
+
+```release-note:enhancement
+workers: add support for Smart Placement. Added `Placement` in `CreateWorkerParams`.
+```

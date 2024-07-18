@@ -1,0 +1,3 @@
+```release-note:bug
+dns: fix MX record priority not set by UpdateDNSRecord
+```

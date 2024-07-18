@@ -85,6 +85,7 @@
             * [AZURE_ALIAS](language-reference/domain-modifiers/AZURE_ALIAS.md)
         * Cloudflare DNS
             * [CF_REDIRECT](language-reference/domain-modifiers/CF_REDIRECT.md)
+            * [CF_SINGLE_REDIRECT](language-reference/domain-modifiers/CF_SINGLE_REDIRECT.md)
             * [CF_TEMP_REDIRECT](language-reference/domain-modifiers/CF_TEMP_REDIRECT.md)
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
@@ -127,6 +128,7 @@
 * [Hetzner DNS Console](provider/hetzner.md)
 * [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
+* [Huawei Cloud DNS](provider/huaweicloud.md)
 * [Hurricane Electric DNS](provider/hedns.md)
 * [Internet.bs](provider/internetbs.md)
 * [INWX](provider/inwx.md)

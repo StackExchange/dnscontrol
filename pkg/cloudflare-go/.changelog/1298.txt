@@ -1,0 +1,3 @@
+```release-note:enhancement
+custom_hostname: add support for `bundle_method` TLS configuration
+```

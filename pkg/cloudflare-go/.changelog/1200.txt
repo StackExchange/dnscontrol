@@ -1,0 +1,3 @@
+```release-note:enhancement
+dlp_profile: Use int rather than uint for allowed_match_count field
+```

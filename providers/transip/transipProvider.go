@@ -87,11 +87,14 @@ func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func init() {
+	const providerName = "TRANSIP"
+	const providerMaintainer = "@blackshadev"
 	fns := providers.DspFuncs{
 		Initializer:   NewTransip,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("TRANSIP", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func (n *transipProvider) ListZones() ([]string, error) {

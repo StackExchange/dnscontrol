@@ -63,6 +63,8 @@ DNSControl requires the token to have the following permissions:
 * Add: Enable SSL controls (`Zone → SSL and Certificates → Edit`)
 * Editing Page Rules?
   * Add: Edit Page Rules (`Zone → Page Rules → Edit`)
+* Creating Redirects?
+  * Add: Edit Dynamic Redirect (`Zone → Dynamic Redirect → Edit`)
 * Managing Cloudflare Workers? (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
   * Add: Edit Worker Scripts (`Account → Workers Scripts → Edit`)
   * Add: Edit Worker Scripts (`Zone → Workers Routes → Edit`)
@@ -198,6 +200,84 @@ END);
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
+
+
+## Old-style vs new-style redirects
+
+Old-style redirects uses the [Page Rules](https://developers.cloudflare.com/rules/page-rules/) product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
+`CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generate Page Rules.
+
+Enable it using:
+
+```javascript
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
+    "manage_redirects": true
+});
+```
+
+New redirects uses the [Single Redirects](https://developers.cloudflare.com/rules/url-forwarding/) product feature.  In this mode,
+`CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generates Single Redirects.
+
+Enable it using:
+
+```javascript
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
+    "manage_single_redirects": true
+});
+```
+
+{% hint style="warning" %}
+New-style redirects ("Single Redirect Rules") are a new feature of DNSControl
+as of v4.12.0 and may have bugs.  Please test carefully.
+{% endhint %}
+
+
+Conversion mode:
+
+DNSControl can convert from old-style redirects (Page Rules) to new-style
+redirect (Single Redirects). To enable this mode, set both `manage_redirects`
+and `manage_single_redirects` to true.
+
+{% hint style="warning" %}
+The conversion process only handles a few, very simple, patterns.
+See `providers/cloudflare/rtypes/cfsingleredirect/convert_test.go` for a list of patterns
+supported.  Please file bugs if you find problems. PRs welcome!
+{% endhint %}
+
+In conversion mode, DNSControl takes `CF_REDIRECT`/`CF_TEMP_REDIRECT`
+statements and turns each of them into two records: a Page Rules and an
+equivalent Single Redirects rule.
+
+Cloudflare processes Single Redirects before Page Rules, thus it is safe to
+have both at the same time, and provides an easy way to test the new-style
+rules.  If they do not work properly, use the Cloudflare web-based control
+panel to manually delete the new-style rule to expose the old-style rule. (and
+report the bug to DNSControl!)
+
+You'll find the new-style rule in the Cloudflare control panel.  It will have
+a very long name that includes the `CF_REDIRECT`/`CF_TEMP_REDIRECT` operands
+plus matcher and replacement expressions.
+
+There is no mechanism to easily delete the old-style rules.  Either delete them
+manually using the Cloudflare control panel or wait for Cloudflare to remove
+the old-style Page Rule feature.
+
+Once the conversion is complete, change
+`manage_redirects` to `false` then either delete the old redirects
+via the CloudFlare control panel or wait for Cloudflare to remove support for the old-style feature.
+
+{% hint style="warning" %}
+Cloudflare's announcement says that they will convert old-style redirects (Page Rules) to new-style
+redirect (Single Redirects) but they do not give a date for when this will happen.  DNSControl
+will probably see these new redirects as foreign and delete them.
+
+Therefore it is probably safer to do the conversion ahead of them.
+
+On the other hand, if you let them do the conversion, their conversion may be more correct
+than DNSControl's.  However there's no way for DNSControl to manage them since the automatically-generated name will be different.
+
+If you have suggestions on how to handle this better please file a bug.
+{% endhint %}
 
 
 ## Redirects

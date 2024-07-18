@@ -35,11 +35,14 @@ var features = providers.DocumentationNotes{
 
 // init registers the registrar and the domain service provider with dnscontrol.
 func init() {
+	const providerName = "RWTH"
+	const providerMaintainer = "@mistererwin"
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("RWTH", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // New allocates a DNS service provider.

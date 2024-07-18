@@ -39,7 +39,7 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)((akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|gandi|gcloud|gcore|hedns|hetzner|hexonet|hostingde|inwx|linode|loopia|luadns|msdns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|softlayer|transip|vultr).*:)+.*"
+      regexp: "(?i)((akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|gandi|gcloud|gcore|hedns|hetzner|hexonet|hostingde|huaweicloud|inwx|linode|loopia|luadns|msdns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|softlayer|transip|vultr).*:)+.*"
       order: 2
     - title: 'Documentation:'
       regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
@@ -175,12 +175,6 @@ release:
     brew install dnscontrol
     ```
 
-    ##### Install with [MacPorts](https://www.macports.org)
-
-    ```shell
-    sudo port install dnscontrol
-    ```
-
     ##### Using with [Docker](https://www.docker.com)
 
     You can use the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol).
@@ -207,12 +201,6 @@ release:
 
     ```shell
     brew upgrade dnscontrol
-    ```
-
-    ##### Install with [MacPorts](https://www.macports.org)
-
-    ```shell
-    sudo port upgrade dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.

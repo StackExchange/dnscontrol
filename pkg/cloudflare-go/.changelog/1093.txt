@@ -1,0 +1,3 @@
+```release-note:enhancement
+rulesets: add support for `sensitivity_level` to override all rule sensitivity
+```

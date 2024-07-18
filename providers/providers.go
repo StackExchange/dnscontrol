@@ -72,6 +72,15 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 	unwrapProviderCapabilities(name, pm)
 }
 
+var ProviderMaintainers = map[string]string{}
+
+func RegisterMaintainer(
+	providerName string,
+	gitHubUsername string,
+) {
+	ProviderMaintainers[providerName] = gitHubUsername
+}
+
 // CreateRegistrar initializes a registrar instance from given credentials.
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	var err error

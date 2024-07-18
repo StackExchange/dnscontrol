@@ -1,0 +1,3 @@
+```release-note:enhancement
+per_hostname_tls_settings: add support for managing hostname level TLS settings
+```

@@ -24,7 +24,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`CLOUDFLAREAPI`](provider/cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDNS`](provider/cloudns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`CSCGLOBAL`](provider/cscglobal.md) | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
-| [`DESEC`](provider/desec.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ✅ |
+| [`DESEC`](provider/desec.md) | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](provider/digitalocean.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](provider/dnsimple.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](provider/dnsmadeeasy.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
@@ -40,6 +40,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`HETZNER`](provider/hetzner.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`HEXONET`](provider/hexonet.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](provider/hostingde.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`HUAWEICLOUD`](provider/huaweicloud.md) | ❌ | ✅ | ❌ | ❔ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`INTERNETBS`](provider/internetbs.md) | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](provider/inwx.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`LINODE`](provider/linode.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
@@ -130,6 +131,7 @@ Providers in this category and their maintainers are:
 |[`HETZNER`](provider/hetzner.md)|@das7pad|
 |[`HEXONET`](provider/hexonet.md)|@KaiSchwarz-cnic|
 |[`HOSTINGDE`](provider/hostingde.md)|@membero|
+|[`HUAWEICLOUD`](provider/huaweicloud.md)|@huihuimoe|
 |[`INTERNETBS`](provider/internetbs.md)|@pragmaton|
 |[`INWX`](provider/inwx.md)|@patschi|
 |[`LINODE`](provider/linode.md)|@koesie10|

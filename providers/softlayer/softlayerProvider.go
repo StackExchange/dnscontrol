@@ -31,11 +31,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "SOFTLAYER"
+	const providerMaintainer = "NEEDS VOLUNTEER"
 	fns := providers.DspFuncs{
 		Initializer:   newReg,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("SOFTLAYER", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
