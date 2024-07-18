@@ -578,7 +578,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				// Append the copy to the end of the list.
 				dc.Records = append(dc.Records, newRec)
 
-				// The original remains the PAGE_RULE.
+				// The original PAGE_RULE remains untouched.
 			}
 
 		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {

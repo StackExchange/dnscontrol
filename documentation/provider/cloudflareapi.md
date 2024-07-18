@@ -232,11 +232,6 @@ New-style redirects ("Single Redirect Rules") are a new feature of DNSControl
 as of v4.12.0 and may have bugs.  Please test carefully.
 {% endhint %}
 
-{% hint style="info" %}
-When 
-{% endhint %}
-
-
 ### Conversion mode:
 
 DNSControl can convert from old-style redirects (Page Rules) to new-style
