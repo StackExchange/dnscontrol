@@ -39,7 +39,9 @@ func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then
 	//printer.Printf("DEBUG: MakePageRule sr=%+v\n", rc.CloudflareRedirect)
 }
 
-func MakeSingleRedirect(rc *models.RecordConfig, code uint16, name, when, then string) {
+func MakeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, when, then string) {
+	target := MakeSingleRedirectTarget(name, code, when, then)
+	rc.SetTarget(target)
 
 	rc.Type = TypeName
 	rc.TTL = 1
@@ -56,7 +58,30 @@ func MakeSingleRedirect(rc *models.RecordConfig, code uint16, name, when, then s
 		SRThen: then,
 		//SRRRulesetID:     "UNSET",
 		//SRRRulesetRuleID: "UNSET",
-		SRDisplay: name,
+		SRDisplay: target,
 	}
-	rc.SetTarget(name)
+}
+
+func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) {
+	// The target is the same as the name. It is the responsibility of the record creator to name it something diffable.
+	target := name
+	rc.SetTarget(target)
+
+	rc.Type = TypeName
+	rc.TTL = 1
+	rc.CloudflareRedirect = &models.CloudflareSingleRedirectConfig{
+		Code: code,
+		//
+		PRWhen:     "UNKNOWABLE",
+		PRThen:     "UNKNOWABLE",
+		PRPriority: 0,
+		PRDisplay:  "UNKNOWABLE",
+		//
+		SRName: name,
+		SRWhen: when,
+		SRThen: then,
+		//SRRRulesetID:     "UNSET",
+		//SRRRulesetRuleID: "UNSET",
+		SRDisplay: target,
+	}
 }

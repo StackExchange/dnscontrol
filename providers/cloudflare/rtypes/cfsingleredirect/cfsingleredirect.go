@@ -37,7 +37,7 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	// rc.CloudflareRedirect = FromAPIData(name, when, then, code)
 	// rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
 
-	MakeSingleRedirect(rc, code, name, when, then)
+	MakeSingleRedirectFromRawRec(rc, code, name, when, then)
 
 	return nil
 }

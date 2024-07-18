@@ -12,3 +12,12 @@ func MakePageRuleBlob(from, to string, priority, code uint16) string {
 		to,
 	)
 }
+
+func MakeSingleRedirectTarget(name string, code uint16, when, then string) string {
+	return fmt.Sprintf("name=(%s) code=(%03d) when=(%s) then=(%s)",
+		name,
+		code,
+		when,
+		then,
+	)
+}

@@ -314,15 +314,18 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 		// r.CloudflareRedirect = sr
 		// r.SetTarget(r.CloudflareRedirect.SRDisplay)
-		cfsingleredirect.MakeSingleRedirect(r, code, srName, srWhen, srThen)
+		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+
 		sr := r.CloudflareRedirect
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID //correct
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
+		//fmt.Printf("DEBUG: RECS LEN=%d\n", len(recs))
 	}
 
+	//fmt.Printf("DEBUG: RECS =%v\n", recs)
 	return recs, nil
 }
 
