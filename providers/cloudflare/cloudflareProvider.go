@@ -93,17 +93,6 @@ type cloudflareProvider struct {
 	nameservers map[string][]string // Cache of zone name to list of nameservers.
 }
 
-// TODO(dlemenkov): remove this function after deleting all commented code referecing it
-//func labelMatches(label string, matches []string) bool {
-//	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
-//	for _, tst := range matches {
-//		if label == tst {
-//			return true
-//		}
-//	}
-//	return false
-//}
-
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
@@ -162,17 +151,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 	}
 
-	// // FIXME(tlim) Why is this needed???
-	// // I don't know. Let's comment it out and see if anything breaks.
-	// for i := len(records) - 1; i >= 0; i-- {
-	// 	rec := records[i]
-	// 	// Delete ignore labels
-	// 	if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-	// 		printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
-	// 		records = append(records[:i], records[i+1:]...)
-	// 	}
-	// }
-
 	if c.manageRedirects { // if old
 		prs, err := c.getPageRules(domainID, domain)
 		if err != nil {
@@ -184,13 +162,10 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
 		// For each one, generate a CLOUDFLAREAPI_SINGLE_REDIRECT record
-		// Append these records to `records`
 		prs, err := c.getSingleRedirects(domainID, domain)
 		if err != nil {
 			return nil, err
 		}
-		//printer.Printf("DEBUG: Single Redirects")
-		//fmt.Fprintf(os.Stdout, "DEBUG: Single Redirects")
 		records = append(records, prs...)
 	}
 
@@ -284,8 +259,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		case diff2.DELETE:
 			deleteRec := inst.Old[0]
 			deleteRecType := deleteRec.Type
-			//deleteRecOrig := deleteRec.Original
-			//corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
 			corrs = c.mkDeleteCorrection(deleteRecType, deleteRec, domainID, msg)
 			// DS records must always have a corresponding NS record.
 			// Therefore, we remove DS records before any NS records.
@@ -344,7 +317,7 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			Msg: msg,
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
-	case cfsingleredirect.TypeName:
+	case cfsingleredirect.SINGLEREDIRECT:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -364,7 +337,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.TypeName:
+	case cfsingleredirect.SINGLEREDIRECT:
 		idTxt = oldrec.CloudflareRedirect.SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
@@ -379,7 +352,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 				return c.updatePageRule(idTxt, domainID, *newrec.CloudflareRedirect)
 			},
 		}}
-	case cfsingleredirect.TypeName:
+	case cfsingleredirect.SINGLEREDIRECT:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -412,7 +385,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.TypeName:
+	case cfsingleredirect.SINGLEREDIRECT:
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
@@ -427,7 +400,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
-			case cfsingleredirect.TypeName:
+			case cfsingleredirect.SINGLEREDIRECT:
 				return c.deleteSingleRedirects(domainID, *origRec.CloudflareRedirect)
 			default:
 				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
@@ -555,9 +528,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 		}
 
-		// CF_REDIRECT record types. Encode target as
-		// $FROM,$TO,$PRIO,$CODE or build Cfsr struct for new-style
-		// (Single Redirect) versions.
+		// CF_REDIRECT record types:
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
 			if !c.manageRedirects && !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
@@ -571,19 +542,20 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			prWhen, prThen := part[0], part[1]
 			prPriority++
 
+			// Convert this record to a PAGE_RULE.
 			cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen)
 			rec.SetLabel("@", dc.Name)
 
 			if c.manageRedirects && !c.manageSingleRedirects {
-				// Old-Style only.  Convert this record to PAGE_RULE.
-				// nothing to do. Earlier code modified this record as needed.
+				// Old-Style only.  No additional work needed.
 
 			} else if !c.manageRedirects && c.manageSingleRedirects {
-				// New-Style only.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
+				// New-Style only.  Convert PAGE_RULE to CLOUDFLAREAPI_SINGLE_REDIRECT.
 				cfsingleredirect.TranscodePRtoSR(rec)
 
 			} else {
-				// Both!  Convert this record to PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
+				// Both old-style and new-style enabled!
+				// Retain the PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
 
 				// make a copy:
 				newRec, err := rec.Copy()
@@ -595,16 +567,14 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				// Append the copy to the end of the list.
 				dc.Records = append(dc.Records, newRec)
 
-				// The original remains the PAGE_RULE:
-				// nothing to do. Earlier code modified this record as needed.
+				// The original remains the PAGE_RULE.
 			}
 
-		} else if rec.Type == cfsingleredirect.TypeName {
-			// CLOUDFLAREAPI_SINGLE_REDIRECT record types.
+		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {
+			// CLOUDFLAREAPI_SINGLE_REDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
-			// Nothing needs to be done.
 
 		} else if rec.Type == "CF_WORKER_ROUTE" {
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
@@ -641,23 +611,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	return nil
 }
-
-// func fixPageRule(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) {
-// 	rc.Type = "PAGE_RULE"
-// 	rc.TTL = 1
-// 	rc.SetTarget(sr.PRDisplay)
-// 	rc.CloudflareRedirect = sr
-// }
-
-// func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) error {
-// 	rc.Type = cfsingleredirect.TypeName
-// 	rc.TTL = 1
-// 	rc.CloudflareRedirect = sr
-// 	rc.SetTarget(sr.SRDisplay)
-
-// 	err := cfsingleredirect.AddNewStyleFields(sr)
-// 	return err
-// }
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}

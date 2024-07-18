@@ -9,32 +9,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-// func FromPageRule(target string, code uint16, priority int) (*models.CloudflareSingleRedirectConfig, error) {
-// 	// target: when,then
-// 	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1
-
-// 	r := &models.CloudflareSingleRedirectConfig{}
-
-// 	// Break apart the 4-part string and store into the individual fields:
-// 	parts := strings.Split(target, ",")
-// 	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
-// 	//r.Display = fmt.Sprintf("%s,%d,%03d", target, priority, code)
-// 	r.PRDisplay = fmt.Sprintf("%d,%03d,%s", priority, code, target) // When CF_REDIRECT/CF_TEMP_REDIRECT in use, display it to users this way.
-// 	r.PRWhen = parts[0]
-// 	r.PRThen = parts[1]
-// 	r.PRPriority = priority
-// 	r.Code = code
-
-// 	// Convert old-style to new-style:
-// 	if err := ConvertToSingleRedirect(r); err != nil {
-// 		return nil, err
-// 	}
-// 	return r, nil
-// }
-
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
 func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = TypeName // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
 
 	// Extract the fields we're reading from:
 	sr := rec.CloudflareRedirect
@@ -50,7 +27,7 @@ func TranscodePRtoSR(rec *models.RecordConfig) error {
 	}
 
 	// Fix the RecordConfig
-	MakeSingleRedirectFromConvert(rec,
+	makeSingleRedirectFromConvert(rec,
 		sr.PRPriority,
 		prWhen, prThen,
 		code,
