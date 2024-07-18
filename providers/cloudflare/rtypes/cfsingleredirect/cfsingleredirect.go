@@ -7,8 +7,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
+const TypeName = "CLOUDFLAREAPI_SINGLE_REDIRECT"
+
 func init() {
-	rtypecontrol.Register("CLOUDFLAREAPI_SINGLE_REDIRECT")
+	rtypecontrol.Register(TypeName)
 }
 
 func FromRaw(rc *models.RecordConfig, items []any) error {
@@ -31,9 +33,11 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 
 	when, then = items[2].(string), items[3].(string)
 
-	rc.Name = name
-	rc.CloudflareRedirect = FromAPIData(name, when, then, code)
-	rc.SetTarget(rc.CloudflareRedirect.Display)
+	// rc.Name = name
+	// rc.CloudflareRedirect = FromAPIData(name, when, then, code)
+	// rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+
+	MakeSingleRedirect(rc, code, name, when, then)
 
 	return nil
 }

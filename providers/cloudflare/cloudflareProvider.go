@@ -344,10 +344,7 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			Msg: msg,
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		//fmt.Printf("DEBUG: mkCreateSingleRedir: newrec=%+v\n", *newrec)
-		//fmt.Printf("DEBUG: mkCreateSingleRedir: crn=%+v\n", (*newrec).CloudflareRedirect)
-		//fmt.Printf("DEBUG: mkCreateSingleRedir: cr=%+v\n", (*newrec).CloudflareRedirect)
+	case cfsingleredirect.TypeName:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -367,8 +364,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-		//idTxt = oldrec.Original.(cloudflare.RulesetRule).ID
+	case cfsingleredirect.TypeName:
 		idTxt = oldrec.CloudflareRedirect.SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
@@ -383,7 +379,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 				return c.updatePageRule(idTxt, domainID, *newrec.CloudflareRedirect)
 			},
 		}}
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+	case cfsingleredirect.TypeName:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -416,7 +412,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+	case cfsingleredirect.TypeName:
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
@@ -431,12 +427,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
-			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				//o := origRec.Original.(cloudflare.Ruleset)
-				//printer.Printf("DEBUG: DELETE %+v\n", o)
-				// printer.Printf("DEBUG: DELETE ID = %+v\n", o.ID)
-				// printer.Printf("DEBUG: DELETE ACTION %+v\n", o.ActionParameters)
-				// printer.Printf("DEBUG: DELETE FROMVALUE %+v\n", o.ActionParameters.FromValue)
+			case cfsingleredirect.TypeName:
 				return c.deleteSingleRedirects(domainID, *origRec.CloudflareRedirect)
 			default:
 				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
@@ -530,7 +521,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	// iterate backwards so first defined page rules have highest priority
-	currentPrPrio := 1
+	prPriority := 0
 	for i := len(dc.Records) - 1; i >= 0; i-- {
 		rec := dc.Records[i]
 		if rec.Metadata == nil {
@@ -576,60 +567,39 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				code = 302
 			}
 
+			part := strings.SplitN(rec.GetTargetField(), ",", 2)
+			prWhen, prThen := part[0], part[1]
+			prPriority++
+
+			cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen)
+			rec.SetLabel("@", dc.Name)
+
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  Convert this record to PAGE_RULE.
-				//printer.Printf("DEBUG: prepro() target=%q\n", rec.GetTargetField())
-				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
-				if err != nil {
-					return err
-				}
-				fixPageRule(rec, sr)
-				currentPrPrio++
+				// nothing to do. Earlier code modified this record as needed.
+
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert this record to a CLOUDFLAREAPI_SINGLE_REDIRECT.
-				sr, err := cfsingleredirect.FromUserInput(rec.GetTargetField(), code, currentPrPrio)
-				if err != nil {
-					return err
-				}
-				err = fixSingleRedirect(rec, sr)
-				if err != nil {
-					return err
-				}
+				cfsingleredirect.TranscodePRtoSR(rec)
+
 			} else {
 				// Both!  Convert this record to PAGE_RULE and append an additional CLOUDFLAREAPI_SINGLE_REDIRECT.
-
-				target := rec.GetTargetField()
 
 				// make a copy:
 				newRec, err := rec.Copy()
 				if err != nil {
 					return err
 				}
-
 				// The copy becomes the CF SingleRedirect
-				sr, err := cfsingleredirect.FromUserInput(target, code, currentPrPrio)
-				if err != nil {
-					return err
-				}
-				err = fixSingleRedirect(newRec, sr)
-				if err != nil {
-					return err
-				}
-
+				cfsingleredirect.TranscodePRtoSR(rec)
 				// Append the copy to the end of the list.
 				dc.Records = append(dc.Records, newRec)
 
-				// The original becomes the PAGE_RULE:
-				sr, err = cfsingleredirect.FromUserInput(target, code, currentPrPrio)
-				if err != nil {
-					return err
-				}
-				fixPageRule(rec, sr)
-				currentPrPrio++
-
+				// The original remains the PAGE_RULE:
+				// nothing to do. Earlier code modified this record as needed.
 			}
 
-		} else if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
+		} else if rec.Type == cfsingleredirect.TypeName {
 			// CLOUDFLAREAPI_SINGLE_REDIRECT record types.
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
@@ -672,22 +642,22 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
-func fixPageRule(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) {
-	rc.Type = "PAGE_RULE"
-	rc.TTL = 1
-	rc.SetTarget(sr.Display)
-	rc.CloudflareRedirect = sr
-}
+// func fixPageRule(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) {
+// 	rc.Type = "PAGE_RULE"
+// 	rc.TTL = 1
+// 	rc.SetTarget(sr.PRDisplay)
+// 	rc.CloudflareRedirect = sr
+// }
 
-func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) error {
-	rc.Type = "CLOUDFLAREAPI_SINGLE_REDIRECT"
-	rc.TTL = 1
-	rc.SetTarget(sr.Display)
-	rc.CloudflareRedirect = sr
+// func fixSingleRedirect(rc *models.RecordConfig, sr *models.CloudflareSingleRedirectConfig) error {
+// 	rc.Type = cfsingleredirect.TypeName
+// 	rc.TTL = 1
+// 	rc.CloudflareRedirect = sr
+// 	rc.SetTarget(sr.SRDisplay)
 
-	err := cfsingleredirect.AddNewStyleFields(sr)
-	return err
-}
+// 	err := cfsingleredirect.AddNewStyleFields(sr)
+// 	return err
+// }
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}

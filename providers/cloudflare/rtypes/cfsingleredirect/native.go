@@ -1,21 +1,19 @@
 package cfsingleredirect
 
-import (
-	"fmt"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
-)
-
-func FromAPIData(sn, sm, sr string, code uint16) *models.CloudflareSingleRedirectConfig {
-	r := &models.CloudflareSingleRedirectConfig{
-		Code:    code,
-		Display: fmt.Sprintf("name=(%s) code=%03d when=(%v) then=(%v)", sn, code, sm, sr),
-		//
-		PRWhen: "UNKNOWABLE",
-		PRThen: "UNKNOWABLE",
-		SRName: sn,
-		SRWhen: sm,
-		SRThen: sr,
-	}
-	return r
-}
+// // FromAPIData builds a CloudflareSingleRedirectConfig from the data we download
+// // about Single Redirects via the API.
+// func FromAPIData(name, when, then string, code uint16) *models.CloudflareSingleRedirectConfig {
+// 	r := &models.CloudflareSingleRedirectConfig{
+// 		Code: code,
+// 		//
+// 		SRDisplay: fmt.Sprintf("name=(%s) code=(%03d) when=(%v) then=(%v)", name, code, when, then),
+// 		SRName:    name,
+// 		SRWhen:    when,
+// 		SRThen:    then,
+// 		//
+// 		PRDisplay: "UNKNOWNABLE",
+// 		PRWhen:    "UNKNOWABLE",
+// 		PRThen:    "UNKNOWABLE",
+// 	}
+// 	return r
+// }

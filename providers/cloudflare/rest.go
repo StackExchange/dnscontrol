@@ -290,32 +290,35 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	//printer.Printf("DEBUG: rules %+v\n", rules)
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
-		//printer.Printf("DEBUG: %+v\n", pr)
+		//printer.Printf("DEBUG: pr=%+v\n", pr)
 
 		var thisPr = pr
 		r := &models.RecordConfig{
-			Type:     "CLOUDFLAREAPI_SINGLE_REDIRECT",
+			//Type:     "CLOUDFLAREAPI_SINGLE_REDIRECT",
 			Original: thisPr,
-			TTL:      1,
+			//TTL:      1,
 		}
-		r.SetLabel("@", domain)
+		//r.SetLabel("@", domain)
 
 		// Extract the valuables from the rule, use it to make the sr:
 		srName := pr.Description
 		srWhen := pr.Expression
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
-		sr := cfsingleredirect.FromAPIData(srName, srWhen, srThen, code)
-		//sr.SRRRuleList = rulelist
-		//printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
-		sr.SRName = pr.Description
-		// printer.Printf("DEBUG: PR = %+v\n", pr)
-		// printer.Printf("DEBUG: rules = %+v\n", rules)
+		// sr := cfsingleredirect.FromAPIData(srName, srWhen, srThen, code)
+		// //sr.SRRRuleList = rulelist
+		// //printer.Printf("DEBUG: DESCRIPTION = %v\n", pr.Description)
+		// sr.SRName = pr.Description
+		// // printer.Printf("DEBUG: PR = %+v\n", pr)
+		// // printer.Printf("DEBUG: rules = %+v\n", rules)
+
+		// r.CloudflareRedirect = sr
+		// r.SetTarget(r.CloudflareRedirect.SRDisplay)
+		cfsingleredirect.MakeSingleRedirect(r, code, srName, srWhen, srThen)
+		sr := r.CloudflareRedirect
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID //correct
-
-		r.CloudflareRedirect = sr
-		r.SetTarget(r.CloudflareRedirect.Display)
+		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
 	}
@@ -345,7 +348,12 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	// Redirect expression
 	newSingleRedirectRulesActionParameters.FromValue.TargetURL.Expression = cfr.SRThen
 	// Redirect name
-	newSingleRedirectRules[0].Description = cfr.SRName
+	//printer.Printf("DEBUG: Createing DESC=%q\n", cfr.SRName)
+
+	// {PICK}
+	//newSingleRedirectRules[0].Description = cfr.SRName
+	newSingleRedirectRules[0].Description = cfr.SRDisplay
+
 	// Rule action, should always be redirect in this case
 	newSingleRedirectRules[0].Action = "redirect"
 	// Phase should always be http_request_dynamic_redirect
@@ -435,24 +443,41 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		value := pr.Actions[0].Value.(map[string]interface{})
 		var thisPr = pr
 		r := &models.RecordConfig{
-			Type:     "PAGE_RULE",
+			//			Type:     "PAGE_RULE",
 			Original: thisPr,
-			TTL:      1,
+			//			TTL:      1,
 		}
-		r.SetLabel("@", domain)
-		code := intZero(value["status_code"])
-		raw := fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
-			pr.Targets[0].Constraint.Value,
-			value["url"],
-			pr.Priority,
-			code)
-		r.SetTarget(raw)
 
-		cr, err := cfsingleredirect.FromUserInput(raw, code, pr.Priority)
-		if err != nil {
-			return nil, err
-		}
-		r.CloudflareRedirect = cr
+		code := intZero(value["status_code"])
+		//		raw := fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
+		//			pr.Targets[0].Constraint.Value,
+		//			value["url"],
+		//			pr.Priority,
+		//			code)
+		//		// r.SetTarget(raw)
+
+		when := pr.Targets[0].Constraint.Value
+		then := value["url"].(string)
+		//target := when + "," + then.(string)
+		currentPrPrio := pr.Priority
+
+		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		r.SetLabel("@", domain)
+		//		cr, err := cfsingleredirect.FromPageRule(target, code, currentPrPrio)
+		//		if err != nil {
+		//			return nil, err
+		//		}
+		//
+		//		r.SetTarget(target)
+		//		r.CloudflareRedirect = cr
+		//		printer.Printf("DEBUG: getPageRules: r=%+v\n", r)
+		//		printer.Printf("DEBUG: getPageRules: s=%+v\n", r.CloudflareRedirect)
+
+		// cr, err := cfsingleredirect.FromPageRuleX(raw, code, pr.Priority)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		//r.CloudflareRedirect = cr
 
 		recs = append(recs, r)
 	}

@@ -9,34 +9,38 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-func FromUserInput(target string, code uint16, priority int) (*models.CloudflareSingleRedirectConfig, error) {
-	// target: matcher,replacement,priority,code
-	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1,1,302
+// func FromPageRule(target string, code uint16, priority int) (*models.CloudflareSingleRedirectConfig, error) {
+// 	// target: when,then
+// 	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1
 
-	r := &models.CloudflareSingleRedirectConfig{}
+// 	r := &models.CloudflareSingleRedirectConfig{}
 
-	// Break apart the 4-part string and store into the individual fields:
-	parts := strings.Split(target, ",")
-	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
-	r.Display = fmt.Sprintf("%s,%d,%03d", target, priority, code)
-	r.PRWhen = parts[0]
-	r.PRThen = parts[1]
-	r.PRPriority = priority
-	r.Code = code
+// 	// Break apart the 4-part string and store into the individual fields:
+// 	parts := strings.Split(target, ",")
+// 	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
+// 	//r.Display = fmt.Sprintf("%s,%d,%03d", target, priority, code)
+// 	r.PRDisplay = fmt.Sprintf("%d,%03d,%s", priority, code, target) // When CF_REDIRECT/CF_TEMP_REDIRECT in use, display it to users this way.
+// 	r.PRWhen = parts[0]
+// 	r.PRThen = parts[1]
+// 	r.PRPriority = priority
+// 	r.Code = code
 
-	// Convert old-style to new-style:
-	if err := AddNewStyleFields(r); err != nil {
-		return nil, err
-	}
-	return r, nil
-}
+// 	// Convert old-style to new-style:
+// 	if err := ConvertToSingleRedirect(r); err != nil {
+// 		return nil, err
+// 	}
+// 	return r, nil
+// }
 
-// AddNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
-func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
+// TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
+func TranscodePRtoSR(rec *models.RecordConfig) error {
+	rec.Type = TypeName // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	sr := rec.CloudflareRedirect
 
 	// Extract the fields we're reading from:
 	prWhen := sr.PRWhen
 	prThen := sr.PRThen
+	prDisplay := sr.PRDisplay
 	code := sr.Code
 
 	// Convert old-style patterns to new-style rules:
@@ -44,16 +48,21 @@ func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
 	if err != nil {
 		return err
 	}
-	display := fmt.Sprintf(`%s,%s,%d,%03d when=(%s) then=(%s)`,
-		prWhen, prThen,
+	srDisplay := fmt.Sprintf(`%d,%03d,%s,%s when=(%s) then=(%s)`,
 		sr.PRPriority, code,
+		prWhen, prThen,
 		srWhen, srThen,
 	)
 
 	// Store the results in the fields we're writing to:
+	sr.SRName = prDisplay
 	sr.SRWhen = srWhen
 	sr.SRThen = srThen
-	sr.SRName = display
+	sr.SRDisplay = srDisplay
+
+	hybridname := mkHybridName(sr.PRPriority, code, prWhen, prThen, srWhen, srThen)
+	sr.SRDisplay = hybridname
+	rec.SetTarget(hybridname)
 
 	return nil
 }
