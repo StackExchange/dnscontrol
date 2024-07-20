@@ -9,33 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-/*
-func FromUserInput(target string, code uint16, priority int) (*models.CloudflareSingleRedirectConfig, error) {
-	// target: matcher,replacement,priority,code
-	// target: cable.slackoverflow.com/*,https://change.cnn.com/$1,1,302
-
-	r := &models.CloudflareSingleRedirectConfig{}
-
-	// Break apart the 4-part string and store into the individual fields:
-	parts := strings.Split(target, ",")
-	//printer.Printf("DEBUG: cfsrFromOldStyle: parts=%v\n", parts)
-	r.PRDisplay = fmt.Sprintf("%s,%d,%03d", target, priority, code)
-	r.PRWhen = parts[0]
-	r.PRThen = parts[1]
-	r.PRPriority = priority
-	r.Code = code
-
-	// Convert old-style to new-style:
-	if err := AddNewStyleFields(r); err != nil {
-		return nil, err
-	}
-	return r, nil
-}
-
-// AddNewStyleFields takes a PAGE_RULE-style target and populates the CFSRC.
-func AddNewStyleFields(sr *models.CloudflareSingleRedirectConfig) error {
-*/
-
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
 func TranscodePRtoSR(rec *models.RecordConfig) error {
 	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
