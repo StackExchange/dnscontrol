@@ -23,7 +23,10 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("EASYNAME", newEasyname, features)
+	const providerName = "EASYNAME"
+	const providerMaintainer = "@tresni"
+	providers.RegisterRegistrarType(providerName, newEasyname, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newEasyname(m map[string]string) (providers.Registrar, error) {

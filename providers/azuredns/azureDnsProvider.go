@@ -78,12 +78,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "AZURE_DNS"
+	const providerMaintainer = "@vatsalyagoel"
 	fns := providers.DspFuncs{
 		Initializer:   newAzureDNSDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("AZURE_DNS", fns, features)
-	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType("AZURE_ALIAS", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func (a *azurednsProvider) getExistingZones() ([]*adns.Zone, error) {

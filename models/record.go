@@ -96,8 +96,8 @@ type RecordConfig struct {
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-	Rdata     Rdataer           // The Resource Record data (RData)
+	Original  interface{}       `json:"-"`           // Store pointer to provider-specific record object. Used in diffing.
+	Rdata     Rdataer           `json:"-,omitempty"` // The Resource Record data (RData)
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -158,17 +158,18 @@ type CloudflareSingleRedirectConfig struct {
 	//
 	Code uint16 `json:"code,omitempty"` // 301 or 302
 	// PR == PageRule
-	PRDisplay  string `json:"pr_display,omitempty"` // How is this displayed to the user
 	PRWhen     string `json:"pr_when,omitempty"`
 	PRThen     string `json:"pr_then,omitempty"`
 	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
 	//
 	// SR == SingleRedirect
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user
+	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
+	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // MarshalJSON marshals RecordConfig.

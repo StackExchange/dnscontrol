@@ -24,7 +24,10 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("DNSOVERHTTPS", newDNSOverHTTPS, features)
+	const providerName = "DNSOVERHTTPS"
+	const providerMaintainer = "@mikenz"
+	providers.RegisterRegistrarType(providerName, newDNSOverHTTPS, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newDNSOverHTTPS(m map[string]string) (providers.Registrar, error) {

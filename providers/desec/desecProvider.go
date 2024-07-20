@@ -58,11 +58,14 @@ var defaultNameServerNames = []string{
 }
 
 func init() {
+	const providerName = "DESEC"
+	const providerMaintainer = "@D3luxee"
 	fns := providers.DspFuncs{
 		Initializer:   NewDeSec,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("DESEC", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

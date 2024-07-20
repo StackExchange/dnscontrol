@@ -1936,9 +1936,7 @@ var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: 'true' };
 // Go.
 
 function rawrecordBuilder(type) {
-
     return function () {
-
         // Copy the raw args:
         var rawArgs = [];
         for (var i = 0; i < arguments.length; i++) {
@@ -1946,10 +1944,9 @@ function rawrecordBuilder(type) {
         }
 
         return function (d) {
-
-             var record = {
-                 type: type,
-             };
+            var record = {
+                type: type,
+            };
 
             // Process the args: Functions are executed, objects are assumed to
             // be meta and stored, strings are assumed to be args and are
@@ -1964,13 +1961,13 @@ function rawrecordBuilder(type) {
             for (var i = 0; i < rawArgs.length; i++) {
                 var r = rawArgs[i];
                 if (_.isFunction(r)) {
-                  r(record);
+                    r(record);
                 } else if (_.isObject(r)) {
-                  processedMetas.push(r);
+                    processedMetas.push(r);
                 } else {
-                  processedArgs.push(r);
+                    processedArgs.push(r);
                 }
-            };
+            }
             // Store the processed args.
             record.args = processedArgs;
             record.metas = processedMetas;
