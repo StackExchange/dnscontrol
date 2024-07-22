@@ -1,4 +1,4 @@
-package cfsingleredirect
+package rtypemx
 
 import (
 	"fmt"
@@ -10,8 +10,14 @@ import (
 	"github.com/miekg/dns"
 )
 
+const Token = "MX"
+
+type Type struct {
+	dns.MX
+}
+
 func init() {
-	rtypecontrol.Register("MX")
+	rtypecontrol.Register(Token)
 }
 
 // FromRawArgs update a models.RecordConfig using the args (from a
@@ -30,7 +36,7 @@ func FromRawArgs(rc *models.RecordConfig, items []any) error {
 	rc.Name = name // Needs to be shortnamed. Should probably be fixed by the caller.
 
 	r := new(dns.MX)
-	r.Hdr = dns.RR_Header{Name: name, Rrtype: dns.TypeMX, Class: dns.ClassINET, Ttl: 3600}
+	r.Hdr = dns.RR_Header{Name: name, Rrtype: dns.Type, Class: dns.ClassINET, Ttl: 3600}
 	r.Preference = preference
 	r.Mx = mx
 
@@ -39,19 +45,15 @@ func FromRawArgs(rc *models.RecordConfig, items []any) error {
 	return nil
 }
 
-type TypeMX struct {
-	dns.MX
-}
-
 // SetTargetMX sets the MX fields.
-func (rdat *TypeMX) SetTargetMX(pref uint16, target string) error {
+func (rdat *Type) SetTargetMX(pref uint16, target string) error {
 	rdat.Preference = pref
 	rdat.Mx = target
 	return nil
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
-func (rdat *TypeMX) SetTargetMXStrings(pref, target string) error {
+func (rdat *Type) SetTargetMXStrings(pref, target string) error {
 	u64pref, err := strconv.ParseUint(pref, 10, 16)
 	if err != nil {
 		return fmt.Errorf("can't parse MX data: %w", err)
@@ -60,7 +62,7 @@ func (rdat *TypeMX) SetTargetMXStrings(pref, target string) error {
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.
-func (rdat *TypeMX) SetTargetMXString(s string) error {
+func (rdat *Type) SetTargetMXString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 2 {
 		return fmt.Errorf("MX value does not contain 2 fields: (%#v)", s)

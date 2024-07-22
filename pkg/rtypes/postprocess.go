@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	rtypemx "github.com/StackExchange/dnscontrol/v4/rtypes/mx"
 )
 
 func PostProcess(domains []*models.DomainConfig) error {
@@ -36,8 +37,12 @@ func PostProcess(domains []*models.DomainConfig) error {
 			// TODO(tlim): Good candiate for an interface or a lookup table.
 			switch rawRec.Type {
 
-			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+			case cfsingleredirect.SINGLEREDIRECT:
 				err = cfsingleredirect.FromRawArgs(rec, rawRec.Args)
+				rec.SetLabel("@", dc.Name)
+
+			case "MX":
+				err = rtypemx.FromRawArgs(rec, rawRec.Args)
 				rec.SetLabel("@", dc.Name)
 
 			default:
