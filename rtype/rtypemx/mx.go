@@ -12,7 +12,7 @@ import (
 
 const Token = "MX"
 
-type Type struct {
+type MX struct {
 	dns.MX
 }
 
@@ -45,15 +45,28 @@ func FromRawArgs(rc *models.RecordConfig, items []any) error {
 	return nil
 }
 
+func (rdat *MX) FromRawArgs(items []any) error {
+
+}
+
+/*
+
+rc := &models.RecordConfig{}
+rc.Rdata = rtype.MX{}
+rc.Rdata.FromRawArgs(items)
+
+*/
+
+
 // SetTargetMX sets the MX fields.
-func (rdat *Type) SetTargetMX(pref uint16, target string) error {
+func (rdat *MX) SetTargetMX(pref uint16, target string) error {
 	rdat.Preference = pref
 	rdat.Mx = target
 	return nil
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
-func (rdat *Type) SetTargetMXStrings(pref, target string) error {
+func (rdat *MX) SetTargetMXStrings(pref, target string) error {
 	u64pref, err := strconv.ParseUint(pref, 10, 16)
 	if err != nil {
 		return fmt.Errorf("can't parse MX data: %w", err)
@@ -62,7 +75,7 @@ func (rdat *Type) SetTargetMXStrings(pref, target string) error {
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.
-func (rdat *Type) SetTargetMXString(s string) error {
+func (rdat *MX) SetTargetMXString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 2 {
 		return fmt.Errorf("MX value does not contain 2 fields: (%#v)", s)
