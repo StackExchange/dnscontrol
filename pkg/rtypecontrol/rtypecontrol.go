@@ -4,7 +4,7 @@ var validTypes = map[string]RegisterTypeOpts{}
 
 type RegisterTypeOpts = struct {
 	Name          string
-	FromRawArgsFn func(items []any) (any, error)
+	FromRawArgsFn func(items []any) (*any, error)
 }
 
 func Register(ri RegisterTypeOpts) {

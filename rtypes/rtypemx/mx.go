@@ -7,12 +7,13 @@ import (
 	"github.com/miekg/dns"
 )
 
+// Name is the string version of this rtype.
 const Name = "MX"
 
 func init() {
 	rtypecontrol.Register(rtypecontrol.RegisterTypeOpts{
-		Name:          Name,
-		FromRawArgsFn: FromRawArgs,
+		Name: Name,
+		//FromRawArgsFn: FromRawArgs,
 	})
 }
 

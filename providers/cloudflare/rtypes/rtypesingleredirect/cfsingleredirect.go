@@ -6,13 +6,13 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
-// SINGLEREDIRECT is the string name for this rType.
+// Name is the string name for this rType.
 const Name = "CLOUDFLAREAPI_SINGLE_REDIRECT"
 
 func init() {
 	rtypecontrol.Register(rtypecontrol.RegisterTypeOpts{
-		Name:          Name,
-		FromRawArgsFn: FromRawArgs,
+		Name: Name,
+		//FromRawArgsFn: FromRawArgs,
 	})
 }
 
