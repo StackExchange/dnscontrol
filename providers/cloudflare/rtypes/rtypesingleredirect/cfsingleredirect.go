@@ -1,4 +1,4 @@
-package cfsingleredirect
+package rtypesingleredirect
 
 import (
 	"fmt"

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
 )
 
 // SetTargetMX sets the MX fields.
@@ -16,6 +17,9 @@ func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 	if rc.Type != "MX" {
 		panic("assertion failed: SetTargetMX called when .Type is not MX")
 	}
+
+	//rc.Rdata = rtypemx.MX{}
+
 	return nil
 }
 
