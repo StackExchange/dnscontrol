@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 )
 
 func PostProcess(domains []*models.DomainConfig) error {
@@ -36,13 +37,19 @@ func PostProcess(domains []*models.DomainConfig) error {
 			// TODO(tlim): Good candiate for an interface or a lookup table.
 			switch rawRec.Type {
 
-			case rtypesingleredirect.SINGLEREDIRECT:
-				err = rtypesingleredirect.FromRawArgs(rec, rawRec.Args)
-				rec.SetLabel("@", dc.Name)
+			case rtypesingleredirect.Name:
+				rdata, error := rtypesingleredirect.FromRawArgs(rawRec.Args)
+				if error != nil {
+					return err
+				}
+				rec.Seal(rtypesingleredirect.Name, dc.Name, rawRec.Args[0].(string), rdata)
 
 			case "MX":
-				//err = rtypemx.FromRawArgs(dc.Name, rec, rawRec.Args)
-				rec.SetLabel("@", dc.Name)
+				rdata, error := rtypemx.FromRawArgs(rawRec.Args)
+				if error != nil {
+					return err
+				}
+				rec.Seal(rtypemx.Name, dc.Name, rawRec.Args[0].(string), rdata)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)

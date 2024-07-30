@@ -1,48 +1,58 @@
 package rtypemx
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/miekg/dns"
 )
 
-const Token = "MX"
+const Name = "MX"
 
-type TypeMX struct {
+func init() {
+	rtypecontrol.Register(rtypecontrol.RegisterTypeOpts{
+		Name:          Name,
+		FromRawArgsFn: FromRawArgs,
+	})
+}
+
+type MX struct {
 	dns.MX
 }
 
-func init() {
-	rtypecontrol.Register(Token)
+func (rdata *MX) ComputeTarget() string {
+	return rdata.MX.Mx
 }
 
-// // FromRawArgs update a models.RecordConfig using the args (from a
-// // models.RawRecord.Args). In other words, use the data from dnsconfig.js's
-// // rawrecordBuilder to create (actually... update) a models.RecordConfig.
-// func FromRawArgs(zone string, rc *models.RecordConfig, items []any) error {
+func (rdata *MX) ComputeComparable() string {
 
-// 	if err := rtypecontrol.PaveArgs(items, "sis"); err != nil {
-// 		return err
-// 	}
+	header := rdata.Header().String()
+	full := rdata.String()
+	if !strings.HasPrefix(full, header) {
+		panic("assertion failed. dns.Hdr.String() behavior has changed in an incompatible way")
+	}
+	return full[len(header):]
 
-// 	var name = items[0].(string)
-// 	var preference = items[1].(uint16)
-// 	var mx = items[2].(string)
+}
 
-// 	rc.SetLabel(name, zone)
+func FromRawArgs(items []any) (*MX, error) {
 
-// 	r := new(dns.MX)
-// 	r.Hdr = dns.RR_Header{Name: name, Rrtype: dns.TypeMX, Class: dns.ClassINET, Ttl: 3600}
-// 	r.Preference = preference
-// 	r.Mx = mx
+	if err := rtypecontrol.PaveArgs(items, "sis"); err != nil {
+		return nil, err
+	}
 
-// 	rc.Rdata = r
+	//var label = items[0].(string)
+	var preference = items[1].(uint16)
+	var mx = items[2].(string)
 
-// 	return nil
-// }
+	//rdata := new(dns.MX)
+	//rdata.Hdr = dns.RR_Header{Name: label, Rrtype: dns.TypeMX, Class: dns.ClassINET, Ttl: 3600}
+	rdata := &MX{}
+	rdata.Preference = preference
+	rdata.Mx = mx
+
+	return rdata, nil
+}
 
 /*
 
@@ -88,28 +98,3 @@ rc.PopulateFromArgs(origin, rtype, item, item, item)
 	fmt.Println(z)
 
 */
-
-// SetTargetMX sets the MX fields.
-func (rdat *TypeMX) SetTargetMX(pref uint16, target string) error {
-	rdat.Preference = pref
-	rdat.Mx = target
-	return nil
-}
-
-// SetTargetMXStrings is like SetTargetMX but accepts strings.
-func (rdat *TypeMX) SetTargetMXStrings(pref, target string) error {
-	u64pref, err := strconv.ParseUint(pref, 10, 16)
-	if err != nil {
-		return fmt.Errorf("can't parse MX data: %w", err)
-	}
-	return rdat.SetTargetMX(uint16(u64pref), target)
-}
-
-// SetTargetMXString is like SetTargetMX but accepts one big string.
-func (rdat *TypeMX) SetTargetMXString(s string) error {
-	part := strings.Fields(s)
-	if len(part) != 2 {
-		return fmt.Errorf("MX value does not contain 2 fields: (%#v)", s)
-	}
-	return rdat.SetTargetMXStrings(part[0], part[1])
-}

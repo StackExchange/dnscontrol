@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -85,7 +86,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("AZURE_ALIAS", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("AZURE_ALIAS", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 

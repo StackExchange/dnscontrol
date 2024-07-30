@@ -17,6 +17,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -56,7 +57,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("AKAMAICDN", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("AKAMAICDN", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 

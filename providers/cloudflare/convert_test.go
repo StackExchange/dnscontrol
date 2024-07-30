@@ -1,4 +1,4 @@
-package rtypesingleredirect
+package cloudflare
 
 import (
 	"regexp"

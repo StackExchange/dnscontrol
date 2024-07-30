@@ -1,4 +1,4 @@
-package rtypesingleredirect
+package cloudflare
 
 import (
 	"fmt"
@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
 )
 
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
 func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	rec.Type = rtypesingleredirect.Name // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
 
 	// Extract the fields we're reading from:
 	sr := rec.CloudflareRedirect
@@ -34,6 +35,33 @@ func TranscodePRtoSR(rec *models.RecordConfig) error {
 		srName, srWhen, srThen)
 
 	return nil
+}
+
+// makeSingleRedirectFromConvert updates a RecordConfig to be a SINGLEREDIRECT using data from a PAGE_RULE conversion.
+func makeSingleRedirectFromConvert(rc *models.RecordConfig,
+	priority int,
+	prWhen, prThen string,
+	code uint16,
+	srName, srWhen, srThen string) {
+
+	srDisplay := targetFromConverted(priority, code, prWhen, prThen, srWhen, srThen)
+
+	rc.Type = rtypesingleredirect.Name
+	rc.TTL = 1
+	sr := rc.CloudflareRedirect
+	sr.Code = code
+
+	sr.SRName = srName
+	sr.SRWhen = srWhen
+	sr.SRThen = srThen
+	sr.SRDisplay = srDisplay
+
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+}
+
+// targetFromConverted makes the display text used when a redirect was the result of converting a PAGE_RULE.
+func targetFromConverted(prPriority int, code uint16, prWhen, prThen, srWhen, srThen string) string {
+	return fmt.Sprintf("%d,%03d,%s,%s code=(%03d) when=(%s) then=(%s)", prPriority, code, prWhen, prThen, code, srWhen, srThen)
 }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.

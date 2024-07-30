@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -64,7 +65,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
