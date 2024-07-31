@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -103,7 +104,7 @@ type RecordConfig struct {
 	ComparableMini string  `json:"-"`           // Pre-Computed string used to compare equality of two Rdatas
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
-	MxPreference     uint16            `json:"mxpreference,omitempty"`
+	//MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
 	SrvPort          uint16            `json:"srvport,omitempty"`
@@ -422,8 +423,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
 		rr.(*dns.LOC).VertPre = rc.LocVertPre
 	case dns.TypeMX:
-		rr.(*dns.MX).Preference = rc.MxPreference
-		rr.(*dns.MX).Mx = rc.GetTargetField()
+		rr.(*dns.MX).Preference = rc.Rdata.(*rtypemx.MX).Preference
+		rr.(*dns.MX).Mx = rc.Rdata.(*rtypemx.MX).Mx
 	case dns.TypeNAPTR:
 		rr.(*dns.NAPTR).Order = rc.NaptrOrder
 		rr.(*dns.NAPTR).Preference = rc.NaptrPreference

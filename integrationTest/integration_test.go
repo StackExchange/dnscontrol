@@ -17,6 +17,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -608,7 +609,7 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 
 func mx(name string, prio uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
+	r.Rdata.(*rtypemx.MX).SetTargetMX(prio, target)
 	return r
 }
 

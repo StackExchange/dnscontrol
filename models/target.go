@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/miekg/dns"
 )
 
@@ -120,7 +121,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "DNSKEY":
 		content += fmt.Sprintf(" dnskey_flags=%d dnskey_protocol=%d dnskey_algorithm=%d dnskey_publickey=%s", rc.DnskeyFlags, rc.DnskeyProtocol, rc.DnskeyAlgorithm, rc.DnskeyPublicKey)
 	case "MX":
-		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
+		content += fmt.Sprintf(" pref=%d", rc.Rdata.(*rtypemx.MX).Preference)
 	case "NAPTR":
 		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "R53_ALIAS":
