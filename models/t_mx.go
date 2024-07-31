@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 )
 
 // SetTargetMX sets the MX fields.
@@ -18,7 +19,8 @@ func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 		panic("assertion failed: SetTargetMX called when .Type is not MX")
 	}
 
-	//rc.Rdata = rtypemx.MX{}
+	rc.Rdata = &rtypemx.MX{}
+	rc.Rdata.(*rtypemx.MX).SetTargetMX(pref, target)
 
 	return nil
 }

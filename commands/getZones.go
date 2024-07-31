@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/urfave/cli/v2"
 )
 
@@ -206,6 +207,7 @@ func GetZone(args GetZoneArgs) error {
 		}
 		zoneRecs[i] = recs
 	}
+	//rtypes.PostProcess(dnsConfig.Domains)
 
 	// Write the heading:
 
@@ -340,7 +342,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	case "DNSKEY":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DnskeyFlags, rec.DnskeyProtocol, rec.DnskeyAlgorithm, rec.DnskeyPublicKey)
 	case "MX":
-		//target = fmt.Sprintf(`%d, "%s"`, rec.Rdata.(rtypemx.TypeMX).Preference, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, "%s"`, rec.Rdata.(*rtypemx.MX).Preference, rec.GetTargetField())
 	case "NAPTR":
 		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
 			rec.NaptrOrder,                   // 1
