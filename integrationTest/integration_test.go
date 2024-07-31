@@ -504,7 +504,7 @@ func cfSingleRedirectEnabled() bool {
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
 	r := makeRec("@", name, rtypesingleredirect.Name)
-	rdata, err := rtypesingleredirect.FromRawArgs([]any{name, code, when, then})
+	rdata, err := rtypesingleredirect.FromRawArgs([]any{code, when, then}, name)
 	if err != nil {
 		panic("Should not happen... cfSingleRedirect")
 	}

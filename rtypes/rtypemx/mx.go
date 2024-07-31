@@ -42,16 +42,13 @@ func (rdata *MX) ComputeComparable() string {
 
 func FromRawArgs(items []any) (*MX, error) {
 
-	if err := rtypecontrol.PaveArgs(items, "sis"); err != nil {
+	if err := rtypecontrol.PaveArgs(items, "is"); err != nil {
 		return nil, err
 	}
 
-	//var label = items[0].(string)
-	var preference = items[1].(uint16)
-	var mx = items[2].(string)
+	var preference = items[0].(uint16)
+	var mx = items[1].(string)
 
-	//rdata := new(dns.MX)
-	//rdata.Hdr = dns.RR_Header{Name: label, Rrtype: dns.TypeMX, Class: dns.ClassINET, Ttl: 3600}
 	rdata := &MX{}
 	rdata.Preference = preference
 	rdata.Mx = mx

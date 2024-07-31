@@ -35,21 +35,24 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			// Call the proper initialize function.
 			// TODO(tlim): Good candiate for an interface or a lookup table.
+
+			label := rawRec.Args[0].(string)
+			args := rawRec.Args[1:]
 			switch rawRec.Type {
 
 			case rtypesingleredirect.Name:
-				rdata, error := rtypesingleredirect.FromRawArgs(rawRec.Args)
+				rdata, error := rtypesingleredirect.FromRawArgs(args, label)
 				if error != nil {
 					return err
 				}
-				rec.Seal(dc.Name, rawRec.Args[0].(string), rdata)
+				rec.Seal(dc.Name, label, rdata)
 
 			case "MX":
-				rdata, error := rtypemx.FromRawArgs(rawRec.Args)
+				rdata, error := rtypemx.FromRawArgs(args)
 				if error != nil {
 					return err
 				}
-				rec.Seal(dc.Name, rawRec.Args[0].(string), rdata)
+				rec.Seal(dc.Name, label, rdata)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
