@@ -44,7 +44,7 @@ func (rdata *SingleRedirect) ComputeTarget() string {
 	return rdata.SRName
 }
 
-func (rdata *SingleRedirect) ComputeComparable() string {
+func (rdata *SingleRedirect) ComputeComparableMini() string {
 	// The differencing engine uses this.
 	return rdata.SRDisplay
 }

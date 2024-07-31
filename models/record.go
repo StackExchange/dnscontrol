@@ -99,7 +99,8 @@ type RecordConfig struct {
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 	//
-	Rdata Rdataer `json:"-,omitempty"` // The Resource Record data (RData)
+	Rdata          Rdataer `json:"-,omitempty"` // The Resource Record data (RData)
+	ComparableMini string  `json:"-"`           // Pre-Computed string used to compare equality of two Rdatas
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -336,6 +337,14 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+
+	// rtype2.0 records pre-compute this answer. Once all other RecordConfig
+	// types are converted to rtype2.0 this function can be replaced with
+	// accesses to rc.ComparableMini.
+	if rc.ComparableMini != "" {
+		return rc.ComparableMini
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)

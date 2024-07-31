@@ -29,7 +29,7 @@ func (rdata *MX) ComputeTarget() string {
 	return rdata.MX.Mx
 }
 
-func (rdata *MX) ComputeComparable() string {
+func (rdata *MX) ComputeComparableMini() string {
 
 	header := rdata.Header().String()
 	full := rdata.String()

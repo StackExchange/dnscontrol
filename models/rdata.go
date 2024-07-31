@@ -1,8 +1,9 @@
 package models
 
 type Rdataer interface {
-	Name() string
-	ComputeTarget() string
+	Name() string                  // Return the rtype name used in RecordConfig.Name ()"MX", etc.)
+	ComputeTarget() string         // Compute the value stored in RecordConfig.target.
+	ComputeComparableMini() string // Compute the value stored in RecordConfig.ComparableMini.
 }
 
 func (rc *RecordConfig) Seal(zone string, shortLabel string, rdata Rdataer) {
@@ -11,6 +12,5 @@ func (rc *RecordConfig) Seal(zone string, shortLabel string, rdata Rdataer) {
 	rc.SetLabel(shortLabel, zone)
 	rc.Rdata = rdata
 	rc.SetTarget(rdata.ComputeTarget())
-	//rc.SetComparable(rc.Rdata.ComputeComparable())
-
+	rc.ComparableMini = rc.Rdata.ComputeComparableMini()
 }
