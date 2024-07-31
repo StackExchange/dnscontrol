@@ -1,14 +1,13 @@
 package models
 
 type Rdataer interface {
+	Name() string
 	ComputeTarget() string
 }
 
-func (rc *RecordConfig) Seal(typeName string, zone string, shortLabel string, rdata Rdataer) {
+func (rc *RecordConfig) Seal(zone string, shortLabel string, rdata Rdataer) {
 
-	//TODO: Verify that rc.Rdata is of type rc.Type.
-
-	rc.Type = typeName
+	rc.Type = rdata.Name()
 	rc.SetLabel(shortLabel, zone)
 	rc.Rdata = rdata
 	rc.SetTarget(rdata.ComputeTarget())

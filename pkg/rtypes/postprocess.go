@@ -42,14 +42,14 @@ func PostProcess(domains []*models.DomainConfig) error {
 				if error != nil {
 					return err
 				}
-				rec.Seal(rtypesingleredirect.Name, dc.Name, rawRec.Args[0].(string), rdata)
+				rec.Seal(dc.Name, rawRec.Args[0].(string), rdata)
 
 			case "MX":
 				rdata, error := rtypemx.FromRawArgs(rawRec.Args)
 				if error != nil {
 					return err
 				}
-				rec.Seal(rtypemx.Name, dc.Name, rawRec.Args[0].(string), rdata)
+				rec.Seal(dc.Name, rawRec.Args[0].(string), rdata)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)

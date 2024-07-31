@@ -35,6 +35,10 @@ type SingleRedirect struct {
 	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
+func (rdata *SingleRedirect) Name() string {
+	return Name
+}
+
 func (rdata *SingleRedirect) ComputeTarget() string {
 	// The closest equivalent to a target "hostname" is the rule name.
 	return rdata.SRName

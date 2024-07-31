@@ -21,6 +21,10 @@ type MX struct {
 	dns.MX
 }
 
+func (rdata *MX) Name() string {
+	return Name
+}
+
 func (rdata *MX) ComputeTarget() string {
 	return rdata.MX.Mx
 }

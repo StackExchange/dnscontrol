@@ -97,8 +97,9 @@ type RecordConfig struct {
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
-	Original  interface{}       `json:"-"`           // Store pointer to provider-specific record object. Used in diffing.
-	Rdata     Rdataer           `json:"-,omitempty"` // The Resource Record data (RData)
+	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	//
+	Rdata Rdataer `json:"-,omitempty"` // The Resource Record data (RData)
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
