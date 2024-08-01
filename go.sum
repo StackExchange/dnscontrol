@@ -84,8 +84,8 @@ github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QH
 github.com/cenkalti/backoff/v3 v3.0.0 h1:ske+9nBpD9qZsTBoF41nW5L+AIuFBKMeze18XQ3eG1c=
 github.com/cenkalti/backoff/v3 v3.0.0/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
-github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.5 h1:z1yCHpDCxChsS8xZRb/7E4XKW3OfGO8IRpS/msnOfYY=
-github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.5/go.mod h1:VEvVb1+MamCz0hZrwOCDNK3L6RArOazyKF4ZjWVA2Y0=
+github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.6 h1:Y/ysEHH/jbcxiH23ho8+lqWolf8PJEvMfwBlFZkbY3E=
+github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.6/go.mod h1:VEvVb1+MamCz0hZrwOCDNK3L6RArOazyKF4ZjWVA2Y0=
 github.com/chzyer/logex v1.2.1/go.mod h1:JLbx6lG2kDbNRFnfkgvh4eRJRPX1QCoOIWomwysCBrQ=
 github.com/chzyer/test v1.0.0/go.mod h1:2JlltgoNkt4TW/z9V/IzDdFaMTM2JPIi26O1pF38GC8=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
