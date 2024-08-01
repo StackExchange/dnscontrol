@@ -165,9 +165,8 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)
 
 	rc := &models.RecordConfig{
-		Type: r.Type,
-		TTL:  uint32(ttl),
-		//MxPreference: uint16(priority),
+		Type:        r.Type,
+		TTL:         uint32(ttl),
 		SrvPriority: uint16(priority),
 		Original:    r,
 	}

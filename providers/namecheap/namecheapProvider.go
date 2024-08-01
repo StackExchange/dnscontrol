@@ -293,7 +293,6 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 		record := models.RecordConfig{
 			Type: dnsHost.Type,
 			TTL:  uint32(dnsHost.TTL),
-			//MxPreference: uint16(dnsHost.MXPref),
 			Name: dnsHost.Name,
 		}
 		record.AsMX().Preference = uint16(dnsHost.MXPref)

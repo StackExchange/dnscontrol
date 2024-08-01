@@ -80,9 +80,8 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
 	rc := &models.RecordConfig{
-		Type: r.Type,
-		TTL:  uint32(0),
-		//MxPreference: uint16(priority),
+		Type:        r.Type,
+		TTL:         uint32(0),
 		SrvPriority: uint16(priority),
 		SrvWeight:   uint16(0),
 		SrvPort:     uint16(0),

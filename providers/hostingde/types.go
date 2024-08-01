@@ -147,9 +147,8 @@ func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	}
 
 	rc := &models.RecordConfig{
-		Type: "",
-		TTL:  r.TTL,
-		//Rdata.MxPreference: r.Priority,
+		Type:        "",
+		TTL:         r.TTL,
 		SrvPriority: r.Priority,
 		Original:    r,
 	}

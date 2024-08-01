@@ -247,9 +247,8 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		Type: r.Type,
-		TTL:  r.TTLSec,
-		//MxPreference: r.Priority,
+		Type:        r.Type,
+		TTL:         r.TTLSec,
 		SrvPriority: r.Priority,
 		SrvWeight:   r.Weight,
 		SrvPort:     r.Port,

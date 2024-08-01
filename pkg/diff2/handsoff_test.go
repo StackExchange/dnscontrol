@@ -54,7 +54,6 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	if err != nil {
 		panic(err)
 	}
-
 	dc := dnsconfig.FindDomain("f.com")
 	desired := dc.Records
 	absences := dc.EnsureAbsent

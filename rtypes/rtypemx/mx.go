@@ -62,18 +62,6 @@ func (rdata *MX) MarshalJSON() ([]byte, error) {
 // 	return nil
 // }
 
-// //return json.Marshal(rdata.ComputeComparableMini())
-// //return json.Marshal(*rdata)
-// //return json.Marshal("YYYtestYYY")
-
-// //return json.Marshal(*rdata)
-// r, err := json.Marshal(*rdata)
-// fmt.Printf("DEBUG: mx marshal = %q\n", r)
-// //panic("STOP")
-// //r = append(r, []byte("foo")...)
-// return r, err
-//}
-
 func FromRawArgs(items []any) (*MX, error) {
 
 	if err := rtypecontrol.PaveArgs(items, "is"); err != nil {
