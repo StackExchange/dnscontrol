@@ -290,18 +290,19 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	}
 
 	t := &models.RecordConfig{
-		Type:         r.Type,
-		TTL:          uint32(r.TTL),
-		MxPreference: uint16(r.Priority),
-		SrvPriority:  uint16(r.Priority),
-		SrvWeight:    uint16(r.Weight),
-		SrvPort:      uint16(r.Port),
-		Original:     r,
-		CaaTag:       r.Tag,
-		CaaFlag:      uint8(r.Flags),
+		Type:        r.Type,
+		TTL:         uint32(r.TTL),
+		SrvPriority: uint16(r.Priority),
+		SrvWeight:   uint16(r.Weight),
+		SrvPort:     uint16(r.Port),
+		Original:    r,
+		CaaTag:      r.Tag,
+		CaaFlag:     uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, domain)
 	switch rtype := r.Type; rtype {
+	case "MX":
+		t.SetTargetMX(uint16(r.Priority), target)
 	case "TXT":
 		t.SetTargetTXT(target)
 	default:
@@ -322,7 +323,7 @@ func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 		// contain a trailing dot.
 		target = target + "."
 	case "MX":
-		priority = int(rc.MxPreference)
+		priority = int(rc.AsMX().Preference)
 	case "SRV":
 		priority = int(rc.SrvPriority)
 	case "TXT":

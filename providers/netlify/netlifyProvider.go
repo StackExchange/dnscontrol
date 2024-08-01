@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -40,8 +41,8 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType(providerName, providerName, "")
-	providers.RegisterCustomRecordType("NETLIFYv6", providerName, "")
+	rtypecontrol.RegisterCustomRecordType(providerName, providerName, "")
+	rtypecontrol.RegisterCustomRecordType("NETLIFYv6", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -224,7 +225,7 @@ func toReq(rc *models.RecordConfig) *dnsRecordCreate {
 
 	switch rc.Type {
 	case "MX":
-		priority = int64(rc.MxPreference)
+		priority = int64(rc.AsMX().Preference)
 	case "SRV":
 		priority = int64(rc.SrvPriority)
 	case "TXT":

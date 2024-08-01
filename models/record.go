@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -97,9 +99,11 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	//
+	Rdata          Rdataer `json:"rdata,omitempty"` // The Resource Record data (RData)
+	ComparableMini string  `json:"-"`               // Pre-Computed string used to compare equality of two Rdatas
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
-	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
 	SrvPort          uint16            `json:"srvport,omitempty"`
@@ -144,28 +148,7 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
-}
-
-// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
-//
-//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
-type CloudflareSingleRedirectConfig struct {
-	//
-	Code uint16 `json:"code,omitempty"` // 301 or 302
-	// PR == PageRule
-	PRWhen     string `json:"pr_when,omitempty"`
-	PRThen     string `json:"pr_then,omitempty"`
-	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
-	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
-	//
-	// SR == SingleRedirect
-	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
+	CloudflareRedirect *rtypesingleredirect.SingleRedirect `json:"cloudflareapi_redirect,omitempty"`
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -191,15 +174,16 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 
 		Type      string            `json:"type"` // All caps rtype name.
 		Name      string            `json:"name"` // The short name. See above.
+		NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
 		SubDomain string            `json:"subdomain,omitempty"`
-		NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
 		target    string            // If a name, must end with "."
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-		Args      []any             `json:"args,omitempty"`
+		//
+		Rdata          Rdataer `json:"rdata,omitempty"` // The Resource Record data (RData)
+		ComparableMini string  `json:"-"`               // Pre-Computed string used to compare equality of two Rdatas
 
-		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
 		SrvWeight        uint16            `json:"srvweight,omitempty"`
 		SrvPort          uint16            `json:"srvport,omitempty"`
@@ -354,6 +338,14 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+
+	// rtype2.0 records pre-compute this answer. Once all other RecordConfig
+	// types are converted to rtype2.0 this function can be replaced with
+	// accesses to rc.ComparableMini.
+	if rc.ComparableMini != "" {
+		return rc.ComparableMini
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
@@ -431,8 +423,9 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
 		rr.(*dns.LOC).VertPre = rc.LocVertPre
 	case dns.TypeMX:
-		rr.(*dns.MX).Preference = rc.MxPreference
-		rr.(*dns.MX).Mx = rc.GetTargetField()
+		t := rc.AsMX()
+		rr.(*dns.MX).Preference = t.Preference
+		rr.(*dns.MX).Mx = t.Mx
 	case dns.TypeNAPTR:
 		rr.(*dns.NAPTR).Order = rc.NaptrOrder
 		rr.(*dns.NAPTR).Preference = rc.NaptrPreference
@@ -610,7 +603,9 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "MX":
+			// rtype2.0 downcases at creation.
+		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "NS", "NAPTR", "PTR", "SRV", "TLSA":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
@@ -631,14 +626,20 @@ func Downcase(recs []*RecordConfig) {
 
 // CanonicalizeTargets turns Targets into FQDNs
 func CanonicalizeTargets(recs []*RecordConfig, origin string) {
+	//fmt.Printf("DEBUG: ct called = %q\n", origin)
 	originFQDN := origin + "."
 
 	for _, r := range recs {
 		switch r.Type { // #rtype_variations
-		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
+		case rtypemx.Name:
+			r.AsMX().Mx = dnsutil.AddOrigin(r.AsMX().Mx, originFQDN)
+			r.ReSeal()
+		case rtypesingleredirect.Name:
+			// Do nothing.
+		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
