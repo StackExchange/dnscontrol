@@ -292,7 +292,7 @@ func toVultrRecord(rc *models.RecordConfig, vultrID string) *govultr.DomainRecor
 	priority := 0
 
 	if rc.Type == "MX" {
-		priority = int(rc.MxPreference)
+		priority = int(rc.AsMX().Preference)
 	}
 	if rc.Type == "SRV" {
 		priority = int(rc.SrvPriority)

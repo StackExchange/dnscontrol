@@ -8,7 +8,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 )
 
-func PostProcess(domains []*models.DomainConfig) error {
+func ConvertRawRecords(domains []*models.DomainConfig) error {
 
 	var err error
 
@@ -67,6 +67,7 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			dc.Records = append(dc.Records, rec)
 		}
+		clear(dc.RawRecords)
 		dc.RawRecords = nil
 	}
 

@@ -186,7 +186,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			fallthrough
 		case "MX":
 			if record.MxPriority != nil {
-				recConfig.MxPreference = uint16(*record.MxPriority)
+				recConfig.AsMX().Preference = uint16(*record.MxPriority)
 			}
 			fallthrough
 		default:
@@ -200,7 +200,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 }
 
 func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
+	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.AsMX().Preference), *domain.Id
 	var weight, priority, port = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
 	var host, data, newType = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
@@ -270,7 +270,7 @@ func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
+	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.AsMX().Preference)
 	var priority, weight, port = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {

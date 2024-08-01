@@ -1,6 +1,7 @@
 package rtypesingleredirect
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
@@ -47,6 +48,10 @@ func (rdata *SingleRedirect) ComputeTarget() string {
 func (rdata *SingleRedirect) ComputeComparableMini() string {
 	// The differencing engine uses this.
 	return rdata.SRDisplay
+}
+
+func (rdata *SingleRedirect) MarshalJSON() ([]byte, error) {
+	return json.Marshal(*rdata)
 }
 
 // FromRawArgs creates a Rdata...

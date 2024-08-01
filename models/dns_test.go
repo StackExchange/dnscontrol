@@ -1,6 +1,10 @@
 package models
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
+)
 
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
@@ -9,7 +13,6 @@ func TestRR(t *testing.T) {
 		NameFQDN: "foo.example.com",
 		target:   "1.2.3.4",
 		TTL:      0,
-		//MxPreference: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
 	found := experiment.ToRR().String()
@@ -50,9 +53,18 @@ func TestRR(t *testing.T) {
 }
 
 func TestDowncase(t *testing.T) {
+	r1 := &RecordConfig{Type: "MX", Name: "lower"}
+	r1.Rdata = &rtypemx.MX{}
+	r1.AsMX().SetTargetMX(10, "targetmx")
+	r1.ReSeal()
+
+	r2 := &RecordConfig{Type: "MX", Name: "UPPER"}
+	r2.Rdata = &rtypemx.MX{}
+	r2.AsMX().SetTargetMX(10, "TARGETMX")
+	r2.ReSeal()
+
 	dc := DomainConfig{Records: Records{
-		&RecordConfig{Type: "MX", Name: "lower", target: "targetmx"},
-		&RecordConfig{Type: "MX", Name: "UPPER", target: "TARGETMX"},
+		r1, r2,
 	}}
 	Downcase(dc.Records)
 	if !dc.Records.HasRecordTypeName("MX", "lower") {

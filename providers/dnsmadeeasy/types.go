@@ -169,7 +169,7 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 	}
 
 	if record.Type == "MX" {
-		record.MxLevel = int(rc.MxPreference)
+		record.MxLevel = int(rc.AsMX().Preference)
 		record.Value = rc.GetTargetField()
 	} else if record.Type == "SRV" {
 		target := rc.GetTargetField()

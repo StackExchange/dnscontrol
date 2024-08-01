@@ -711,7 +711,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 func getTargetRecordPriority(rc *models.RecordConfig) int {
 	switch rtype := rc.Type; rtype {
 	case "MX":
-		return int(rc.MxPreference)
+		return int(rc.AsMX().Preference)
 	case "SRV":
 		return int(rc.SrvPriority)
 	case "NAPTR":

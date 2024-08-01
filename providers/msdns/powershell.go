@@ -243,7 +243,7 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, ` -Name %q`, rec.Name)
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
 	if rec.Type == "MX" {
-		fmt.Fprintf(&b, ` -RecordData %d,%q`, rec.MxPreference, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -RecordData %d,%q`, rec.AsMX().Preference, rec.GetTargetField())
 	} else if rec.Type == "TXT" {
 		fmt.Fprintf(&b, ` -RecordData %q`, rec.GetTargetTXTJoined())
 	} else if rec.Type == "SRV" {
@@ -328,7 +328,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	case "NS":
 		fmt.Fprintf(&b, ` -NS -NameServer "%s"`, rec.GetTargetField())
 	case "MX":
-		fmt.Fprintf(&b, ` -MX -MailExchange "%s" -Preference %d`, rec.GetTargetField(), rec.MxPreference)
+		fmt.Fprintf(&b, ` -MX -MailExchange "%s" -Preference %d`, rec.GetTargetField(), rec.AsMX().Preference)
 	//case "ISDN":
 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, rec.GetTargetField())
 	//case "HINFO":
@@ -469,7 +469,7 @@ func generatePSModifyTTL(dnsserver, domain string, rec *models.RecordConfig, new
 // 	case "NS":
 // 		fmt.Fprintf(&b, `$_.RecordData.NameServer -eq "%s"`, old.GetTargetField())
 // 	case "MX":
-// 		fmt.Fprintf(&b, `$_.RecordData.MailExchange -eq "%s" -and $_.RecordData.Preference -eq %d`, old.GetTargetField(), old.MxPreference)
+// 		fmt.Fprintf(&b, `$_.RecordData.MailExchange -eq "%s" -and $_.RecordData.Preference -eq %d`, old.GetTargetField(), old.AsMX().Preference)
 // 	//case "ISDN":
 // 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, old.GetTargetField())
 // 	//case "HINFO":
@@ -534,7 +534,7 @@ func generatePSModifyTTL(dnsserver, domain string, rec *models.RecordConfig, new
 // 	case "MX":
 // 		fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
 // 		fmt.Fprintf(&b, " ; ")
-// 		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = "%d"`, rec.MxPreference)
+// 		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = "%d"`, rec.AsMX().Preference)
 // 	//case "ISDN":
 // 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, rec.GetTargetField())
 // 	//case "HINFO":

@@ -178,7 +178,7 @@ func makeAdd(cre diff.Correlation) zoneResourceRecordEdit {
 		zer.NewTag = &tagValue
 		zer.NewFlag = &flagValue
 	case "MX":
-		zer.NewPriority = rec.MxPreference
+		zer.NewPriority = rec.AsMX().Preference
 	case "SRV":
 		zer.NewPriority = rec.SrvPriority
 		zer.NewWeight = rec.SrvWeight
@@ -230,8 +230,8 @@ func makeEdit(m diff.Correlation) zoneResourceRecordEdit {
 			zer.NewFlag = &(rec.CaaFlag)
 		}
 	case "MX":
-		if old.MxPreference != rec.MxPreference {
-			zer.NewPriority = rec.MxPreference
+		if old.AsMX().Preference != rec.AsMX().Preference {
+			zer.NewPriority = rec.AsMX().Preference
 		}
 	case "SRV":
 		zer.NewWeight = rec.SrvWeight

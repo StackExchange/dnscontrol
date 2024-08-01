@@ -557,7 +557,7 @@ func (c *hednsProvider) editZoneRecord(zoneID uint64, recordID uint64, rc *model
 	// Work out the content
 	switch rc.Type {
 	case "MX":
-		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
+		values.Set("Priority", strconv.FormatUint(uint64(rc.AsMX().Preference), 10))
 		values.Set("Content", rc.GetTargetField())
 	case "SRV":
 		values.Del("Content")

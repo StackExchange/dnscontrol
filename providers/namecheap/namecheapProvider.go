@@ -65,7 +65,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*namecheapProvider, error) {
+func newProvider(m map[string]string, _ json.RawMessage) (*namecheapProvider, error) {
 	api := &namecheapProvider{}
 	api.APIUser, api.APIKEY = m["apiuser"], m["apikey"]
 	if api.APIKEY == "" || api.APIUser == "" {
@@ -291,11 +291,12 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 	var records []*models.RecordConfig
 	for _, dnsHost := range result.Hosts {
 		record := models.RecordConfig{
-			Type:         dnsHost.Type,
-			TTL:          uint32(dnsHost.TTL),
-			MxPreference: uint16(dnsHost.MXPref),
-			Name:         dnsHost.Name,
+			Type: dnsHost.Type,
+			TTL:  uint32(dnsHost.TTL),
+			//MxPreference: uint16(dnsHost.MXPref),
+			Name: dnsHost.Name,
 		}
+		record.AsMX().Preference = uint16(dnsHost.MXPref)
 		record.SetLabel(dnsHost.Name, origin)
 
 		switch dnsHost.Type {
@@ -330,7 +331,7 @@ func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
 			Name:    r.GetLabel(),
 			Type:    r.Type,
 			Address: value,
-			MXPref:  int(r.MxPreference),
+			MXPref:  int(r.AsMX().Preference),
 			TTL:     int(r.TTL),
 		}
 		recs = append(recs, rec)

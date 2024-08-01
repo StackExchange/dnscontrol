@@ -13,16 +13,17 @@ func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.
 	target := currentRecord.Data
 
 	t := &models.RecordConfig{
-		Type:         currentRecord.Type,
-		TTL:          fixTTL(uint32(currentRecord.TTL)),
-		MxPreference: uint16(currentRecord.ActualPriority),
-		SrvPriority:  uint16(currentRecord.ActualPriority),
-		SrvWeight:    uint16(currentRecord.ActualWeight),
-		SrvPort:      uint16(currentRecord.ActualPort),
-		Original:     currentRecord,
-		CaaTag:       currentRecord.CAATag,
-		CaaFlag:      uint8(currentRecord.CAAFlag),
+		Type: currentRecord.Type,
+		TTL:  fixTTL(uint32(currentRecord.TTL)),
+		//MxPreference: uint16(currentRecord.ActualPriority),
+		SrvPriority: uint16(currentRecord.ActualPriority),
+		SrvWeight:   uint16(currentRecord.ActualWeight),
+		SrvPort:     uint16(currentRecord.ActualPort),
+		Original:    currentRecord,
+		CaaTag:      currentRecord.CAATag,
+		CaaFlag:     uint8(currentRecord.CAAFlag),
 	}
+	t.AsMX().Preference = uint16(currentRecord.ActualPriority)
 
 	t.SetTarget(target)
 	t.SetLabelFromFQDN(name, domain)
@@ -84,7 +85,7 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 			dnsR.CAATag = "2"
 		}
 	case "MX":
-		dnsR.Priority = strconv.Itoa(int(rc.MxPreference))
+		dnsR.Priority = strconv.Itoa(int(rc.AsMX().Preference))
 	case "SRV":
 		dnsR.Priority = strconv.Itoa(int(rc.SrvPriority))
 	default:

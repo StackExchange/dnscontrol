@@ -156,7 +156,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	}
 	prio := ""
 	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.MxPreference)
+		prio = fmt.Sprintf(" %d ", rec.AsMX().Preference)
 	}
 	if rec.Type == "TXT" {
 		content = rec.GetTargetTXTJoined()
@@ -174,11 +174,10 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 		Msg: msg,
 		F: func() error {
 			cf := cloudflare.CreateDNSRecordParams{
-				Name:     rec.GetLabel(),
-				Type:     rec.Type,
-				TTL:      int(rec.TTL),
-				Content:  content,
-				Priority: &rec.MxPreference,
+				Name:    rec.GetLabel(),
+				Type:    rec.Type,
+				TTL:     int(rec.TTL),
+				Content: content,
 			}
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
@@ -187,6 +186,8 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				cf.Data = cfCaaData(rec)
 				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
+			} else if rec.Type == "MX" {
+				cf.Priority = &rec.AsMX().Preference
 			} else if rec.Type == "TLSA" {
 				cf.Data = cfTlsaData(rec)
 				cf.Name = rec.GetLabelFQDN()
@@ -225,13 +226,12 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	}
 
 	r := cloudflare.UpdateDNSRecordParams{
-		ID:       recID,
-		Proxied:  &proxied,
-		Name:     rec.GetLabel(),
-		Type:     rec.Type,
-		Content:  rec.GetTargetField(),
-		Priority: &rec.MxPreference,
-		TTL:      int(rec.TTL),
+		ID:      recID,
+		Proxied: &proxied,
+		Name:    rec.GetLabel(),
+		Type:    rec.Type,
+		Content: rec.GetTargetField(),
+		TTL:     int(rec.TTL),
 	}
 	if rec.Type == "TXT" {
 		r.Content = rec.GetTargetTXTJoined()
@@ -243,6 +243,8 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		r.Data = cfCaaData(rec)
 		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
+	} else if rec.Type == "MX" {
+		r.Priority = &rec.AsMX().Preference
 	} else if rec.Type == "TLSA" {
 		r.Data = cfTlsaData(rec)
 		r.Name = rec.GetLabelFQDN()

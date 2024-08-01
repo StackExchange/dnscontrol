@@ -137,7 +137,7 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 			}
 
 			if record.Type == "MX" {
-				resourceRecord.Pref = int32(record.MxPreference)
+				resourceRecord.Pref = int32(record.AsMX().Preference)
 			}
 
 			if record.Type == "SRV" {
@@ -249,7 +249,7 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	_ = rc.PopulateFromString(record.Type, record.Value, domain)
 
 	if record.Type == "MX" {
-		rc.MxPreference = uint16(record.Pref)
+		rc.AsMX().Preference = uint16(record.Pref)
 		rc.SetTarget(record.Value)
 	}
 

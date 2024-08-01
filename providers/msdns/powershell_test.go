@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 )
 
 func Test_generatePSZoneAll(t *testing.T) {
@@ -122,16 +123,19 @@ func Test_generatePSModify(t *testing.T) {
 	recA2.SetTarget("10.20.30.40")
 
 	recMX1 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 5,
+		Type: "MX",
+		Name: "@",
 	}
+	recMX1.Rdata = &rtypemx.MX{}
+	recMX1.AsMX().SetTargetMX(5, "foo.com.")
 	recMX1.SetTarget("foo.com.")
+
 	recMX2 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 50,
+		Type: "MX",
+		Name: "@",
 	}
+	recMX2.Rdata = &rtypemx.MX{}
+	recMX2.AsMX().SetTargetMX(50, "foo2.com.")
 	recMX2.SetTarget("foo2.com.")
 
 	type args struct {

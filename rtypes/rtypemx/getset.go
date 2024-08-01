@@ -9,7 +9,7 @@ import (
 // SetTargetMX sets the MX fields.
 func (rdata *MX) SetTargetMX(pref uint16, target string) error {
 	rdata.Preference = pref
-	rdata.Mx = target
+	rdata.Mx = strings.ToLower(target)
 	return nil
 }
 

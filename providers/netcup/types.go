@@ -80,14 +80,15 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
 	rc := &models.RecordConfig{
-		Type:         r.Type,
-		TTL:          uint32(0),
-		MxPreference: uint16(priority),
-		SrvPriority:  uint16(priority),
-		SrvWeight:    uint16(0),
-		SrvPort:      uint16(0),
-		Original:     r,
+		Type: r.Type,
+		TTL:  uint32(0),
+		//MxPreference: uint16(priority),
+		SrvPriority: uint16(priority),
+		SrvWeight:   uint16(0),
+		SrvPort:     uint16(0),
+		Original:    r,
 	}
+	rc.AsMX().Preference = uint16(priority)
 	rc.SetLabel(r.Hostname, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
@@ -134,7 +135,7 @@ func fromRecordConfig(in *models.RecordConfig) *record {
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
 	case "MX":
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
-		rc.Priority = strconv.Itoa(int(in.MxPreference))
+		rc.Priority = strconv.Itoa(int(in.AsMX().Preference))
 	case "NS":
 		return nil // API ignores NS records
 	case "SRV":

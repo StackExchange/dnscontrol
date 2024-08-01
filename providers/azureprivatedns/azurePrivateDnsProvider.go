@@ -470,7 +470,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if recordSet.Properties.MxRecords == nil {
 				recordSet.Properties.MxRecords = []*adns.MxRecord{}
 			}
-			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.AsMX().Preference))})
 		case "SRV":
 			if recordSet.Properties.SrvRecords == nil {
 				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}

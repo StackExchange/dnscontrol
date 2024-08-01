@@ -1,6 +1,7 @@
 package rtypemx
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
@@ -39,6 +40,39 @@ func (rdata *MX) ComputeComparableMini() string {
 	return full[len(header):]
 
 }
+
+// MarshalJSON is: struct to JSON string
+func (rdata *MX) MarshalJSON() ([]byte, error) {
+	return json.Marshal(rdata.ComputeComparableMini())
+}
+
+// UnmarshalJSON is: JSON string to struct
+//func (rdata *MX) UnmarshalJSON(b []byte) error {
+//	return json.Unmarshal(b, rdata)
+//}
+
+// JSON string to struct
+// func (rdata *MX) UnmarshalJSON(b []byte) error {
+// 	mx, err := dns.NewRR(fmt.Sprintf("@ MX %d %s", rdata.Preference, rdata.Mx))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	rdata.Preference = mx.(*dns.MX).Preference
+// 	rdata.Mx = mx.(*dns.MX).Mx
+// 	return nil
+// }
+
+// //return json.Marshal(rdata.ComputeComparableMini())
+// //return json.Marshal(*rdata)
+// //return json.Marshal("YYYtestYYY")
+
+// //return json.Marshal(*rdata)
+// r, err := json.Marshal(*rdata)
+// fmt.Printf("DEBUG: mx marshal = %q\n", r)
+// //panic("STOP")
+// //r = append(r, []byte("foo")...)
+// return r, err
+//}
 
 func FromRawArgs(items []any) (*MX, error) {
 

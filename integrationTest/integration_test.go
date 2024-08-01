@@ -609,7 +609,9 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 
 func mx(name string, prio uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "MX")
-	r.Rdata.(*rtypemx.MX).SetTargetMX(prio, target)
+	r.Rdata = &rtypemx.MX{}
+	r.AsMX().SetTargetMX(prio, target)
+	r.ReSeal()
 	return r
 }
 

@@ -187,7 +187,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	case "CNAME", "NS":
 		req.Content = content[:len(content)-1]
 	case "MX":
-		req.Priority = int(rec.MxPreference)
+		req.Priority = int(rec.AsMX().Preference)
 		if content == "." {
 			req.Content = content
 		} else {

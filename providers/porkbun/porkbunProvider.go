@@ -165,12 +165,13 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)
 
 	rc := &models.RecordConfig{
-		Type:         r.Type,
-		TTL:          uint32(ttl),
-		MxPreference: uint16(priority),
-		SrvPriority:  uint16(priority),
-		Original:     r,
+		Type: r.Type,
+		TTL:  uint32(ttl),
+		//MxPreference: uint16(priority),
+		SrvPriority: uint16(priority),
+		Original:    r,
 	}
+	rc.AsMX().Preference = uint16(priority)
 	rc.SetLabelFromFQDN(r.Name, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
@@ -237,7 +238,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "TXT":
 		req["content"] = rc.GetTargetTXTJoined()
 	case "MX":
-		req["prio"] = strconv.Itoa(int(rc.MxPreference))
+		req["prio"] = strconv.Itoa(int(rc.AsMX().Preference))
 	case "SRV":
 		req["prio"] = strconv.Itoa(int(rc.SrvPriority))
 		req["content"] = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())

@@ -247,15 +247,16 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		Type:         r.Type,
-		TTL:          r.TTLSec,
-		MxPreference: r.Priority,
-		SrvPriority:  r.Priority,
-		SrvWeight:    r.Weight,
-		SrvPort:      r.Port,
-		CaaTag:       r.Tag,
-		Original:     r,
+		Type: r.Type,
+		TTL:  r.TTLSec,
+		//MxPreference: r.Priority,
+		SrvPriority: r.Priority,
+		SrvWeight:   r.Weight,
+		SrvPort:     r.Port,
+		CaaTag:      r.Tag,
+		Original:    r,
 	}
+	rc.AsMX().Preference = r.Priority
 	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
@@ -292,7 +293,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA":
 		// Nothing special.
 	case "MX":
-		req.Priority = int(rc.MxPreference)
+		req.Priority = int(rc.AsMX().Preference)
 		req.Target = fixTarget(req.Target, dc.Name)
 
 		// Linode doesn't use "." for a null MX record, it uses an empty name

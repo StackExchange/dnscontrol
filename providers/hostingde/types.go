@@ -147,12 +147,13 @@ func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	}
 
 	rc := &models.RecordConfig{
-		Type:         "",
-		TTL:          r.TTL,
-		MxPreference: r.Priority,
-		SrvPriority:  r.Priority,
-		Original:     r,
+		Type: "",
+		TTL:  r.TTL,
+		//Rdata.MxPreference: r.Priority,
+		SrvPriority: r.Priority,
+		Original:    r,
 	}
+	rc.AsMX().Preference = r.Priority
 	rc.SetLabelFromFQDN(r.Name, domain)
 
 	var err error
@@ -204,7 +205,7 @@ func recordToNative(rc *models.RecordConfig) *record {
 
 		record.Content = strings.Join(txtStrings, " ")
 	case "MX":
-		record.Priority = rc.MxPreference
+		record.Priority = rc.AsMX().Preference
 		record.Content = strings.TrimSuffix(rc.GetTargetField(), ".")
 		if record.Content == "" {
 			record.Type = "NULLMX"

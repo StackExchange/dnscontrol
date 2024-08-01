@@ -2,10 +2,11 @@ package bunnydns
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
-	"strings"
 )
 
 var fqdnTypes = []recordType{recordTypeCNAME, recordTypeMX, recordTypeNS, recordTypePTR, recordTypeSRV}
@@ -37,7 +38,7 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Flags = rc.CaaFlag
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
-		r.Priority = rc.MxPreference
+		r.Priority = rc.AsMX().Preference
 	}
 
 	return &r, nil

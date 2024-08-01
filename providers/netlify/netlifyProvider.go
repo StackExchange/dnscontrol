@@ -225,7 +225,7 @@ func toReq(rc *models.RecordConfig) *dnsRecordCreate {
 
 	switch rc.Type {
 	case "MX":
-		priority = int64(rc.MxPreference)
+		priority = int64(rc.AsMX().Preference)
 	case "SRV":
 		priority = int64(rc.SrvPriority)
 	case "TXT":

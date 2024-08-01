@@ -312,7 +312,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	}
 	for _, r := range recs {
 		if r.Type == "MX" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()))})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.AsMX().Preference, r.GetTargetField()))})
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{r.GetTargetTXTJoined()}})
 		} else if r.Type == "CAA" {

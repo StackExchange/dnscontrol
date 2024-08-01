@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypes"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
@@ -46,7 +47,10 @@ func ExecuteJavaScript(file string, devMode bool, variables map[string]string) (
 	// Record the directory path leading up to this file.
 	currentDirectory = filepath.Dir(file)
 
-	return ExecuteJavascriptString(script, devMode, variables)
+	dnsConfig, err := ExecuteJavascriptString(script, devMode, variables)
+	rtypes.ConvertRawRecords(dnsConfig.Domains)
+
+	return dnsConfig, err
 }
 
 // ExecuteJavascriptString accepts a string containing javascript and runs it, returning the resulting dnsConfig.
