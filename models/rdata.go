@@ -27,6 +27,7 @@ func (rc *RecordConfig) ReSeal() {
 	if rc.Rdata == nil {
 		panic("Uninitialized Rdata")
 	}
+	//fmt.Printf("DEBUG: RESEAL target=%q\n", rc.Rdata.ComputeTarget())
 	rc.SetTarget(rc.Rdata.ComputeTarget())
 	rc.ComparableMini = rc.Rdata.ComputeComparableMini()
 }

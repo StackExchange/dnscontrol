@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/miekg/dns"
 )
 
@@ -16,6 +17,9 @@ Not the best design, but we're stuck with it until we re-do RecordConfig, possib
 // GetTargetField returns the target. There may be other fields, but they are
 // not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
+	// if rc.Type == "MX" {
+	// 	fmt.Printf("DEBUG: GTF %q %q\n", rc.target, rc.AsMX().Mx)
+	// }
 	return rc.target
 }
 
@@ -149,6 +153,13 @@ func (rc *RecordConfig) GetTargetDebug() string {
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
 func (rc *RecordConfig) SetTarget(target string) error {
+	if rc.Type == "MX" {
+		if rc.Rdata == nil {
+			rc.Rdata = &rtypemx.MX{}
+		}
+		rc.AsMX().SetTargetMX(rc.AsMX().Preference, target)
+	}
+
 	rc.target = target
 	return nil
 }

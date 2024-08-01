@@ -203,9 +203,8 @@ func (api *realtimeregisterAPI) GetRegistrarCorrections(dc *models.DomainConfig)
 func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 
 	recordConfig := &models.RecordConfig{
-		Type: record.Type,
-		TTL:  uint32(record.TTL),
-		//MxPreference: uint16(record.Priority),
+		Type:      record.Type,
+		TTL:       uint32(record.TTL),
 		SrvWeight: uint16(0),
 		SrvPort:   uint16(0),
 		Original:  record,
