@@ -1258,6 +1258,7 @@ var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
+var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')

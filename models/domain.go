@@ -120,7 +120,7 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {
