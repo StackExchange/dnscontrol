@@ -74,7 +74,7 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 it.  [Click here to join](https://groups.google.com/g/dnscontrol-discuss).
 {% endhint %}
 
-## Step 6. Get credit
+## Step 5. Get credit
 
 Mention the fact that you did this release in your weekly accomplishments.
 
