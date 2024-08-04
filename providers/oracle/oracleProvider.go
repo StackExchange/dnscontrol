@@ -35,11 +35,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "ORACLE"
+	const providerMaintainer = "@kallsyms"
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("ORACLE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 type oracleProvider struct {

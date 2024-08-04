@@ -19,7 +19,10 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("OPENSRS", newReg, features)
+	const providerName = "OPENSRS"
+	const providerMaintainer = "@philhug"
+	providers.RegisterRegistrarType(providerName, newReg, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 var defaultNameServerNames = []string{

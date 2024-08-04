@@ -224,8 +224,6 @@ an automated way to test for this bug.  The manual steps are here in
   * Add the provider to the "Providers" list.
 * Create `documentation/provider/PROVIDERNAME.md`:
   * Use one of the other files in that directory as a base.
-* Edit `OWNERS`:
-  * Add the directory name and your GitHub username.
 
 {% hint style="success" %}
 **Need feedback?** Submit a draft PR!  It's a great way to get early feedback, ask about fixing

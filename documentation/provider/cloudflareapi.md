@@ -204,18 +204,19 @@ will automatically add it when `dnscontrol push` is executed.
 
 ## Old-style vs new-style redirects
 
-Old-style redirects uses the [Page Rules][https://developers.cloudflare.com/rules/page-rules/] product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
+Old-style redirects uses the [Page Rules](https://developers.cloudflare.com/rules/page-rules/) product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generate Page Rules.
 
 Enable it using:
 
 ```javascript
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
-    "manage_redirects": true
+    "manage_redirects": true,
+    "transcode_log": "transcode.log",
 });
 ```
 
-New redirects uses the [Single Redirects][https://developers.cloudflare.com/rules/url-forwarding/] product feature.  In this mode, 
+New redirects uses the [Single Redirects](https://developers.cloudflare.com/rules/url-forwarding/) product feature.  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generates Single Redirects.
 
 Enable it using:
@@ -231,8 +232,7 @@ New-style redirects ("Single Redirect Rules") are a new feature of DNSControl
 as of v4.12.0 and may have bugs.  Please test carefully.
 {% endhint %}
 
-
-Conversion mode:
+### Conversion mode:
 
 DNSControl can convert from old-style redirects (Page Rules) to new-style
 redirect (Single Redirects). To enable this mode, set both `manage_redirects`
@@ -240,7 +240,7 @@ and `manage_single_redirects` to true.
 
 {% hint style="warning" %}
 The conversion process only handles a few, very simple, patterns.
-See `providers/cloudflare/singleredirect_test.go` for a list of patterns
+See `providers/cloudflare/rtypes/cfsingleredirect/convert_test.go` for a list of patterns
 supported.  Please file bugs if you find problems. PRs welcome!
 {% endhint %}
 
@@ -268,7 +268,7 @@ via the CloudFlare control panel or wait for Cloudflare to remove support for th
 
 {% hint style="warning" %}
 Cloudflare's announcement says that they will convert old-style redirects (Page Rules) to new-style
-redirect (Single Redirects) but they do not give a date for when this will happen.  DNSControl
+redirect (Single Redirects) but they do not give an exact date for when this will happen.  DNSControl
 will probably see these new redirects as foreign and delete them.
 
 Therefore it is probably safer to do the conversion ahead of them.
@@ -278,6 +278,54 @@ than DNSControl's.  However there's no way for DNSControl to manage them since t
 
 If you have suggestions on how to handle this better please file a bug.
 {% endhint %}
+
+### Converting to CF_SINGLE_REDIRECT permanently
+
+DNSControl will help convert `CF_REDIRECT`/`CF_TEMP_REDIRECT` statements into
+`CF_SINGLE_REDIRECT` statements. You might choose to do this if you do not want
+to rely on the automatic translation, or if you want to edit the results of the
+translation.
+
+DNSControl will generate a file of the translated statements if you specify
+a filename using the `transcode_log` meta option.
+
+```javascript
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {
+    "manage_single_redirects": true,
+    "transcode_log": "transcode.log",
+});
+```
+
+After running `dnscontrol preview` the contents will look something like this:
+
+{% code title="transcode.log" %}
+```text
+D("example.com", ...
+    CF_SINGLE_REDIRECT("1,302,https://example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+    CF_SINGLE_REDIRECT("2,302,https://img.example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "img.example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+    CF_SINGLE_REDIRECT("3,302,https://i.example.com/*,https://replacement.example.com/$1",
+                       302,
+                       'http.host eq "i.example.com"',
+                       'concat("https://replacement.example.com", http.request.uri.path)'
+    ),
+D("otherdomain.com", ...
+    CF_SINGLE_REDIRECT("1,301,https://one.otherdomain.com/,https://www.google.com/",
+                       301,
+                       'http.host eq "one.otherdomain.com" and http.request.uri.path eq "/"',
+                       'concat("https://www.google.com/", "")'
+    ),
+```
+{% endcode %}
+
+Copying the statements to the proper place in `dnsconfig.js` is manual.
 
 
 ## Redirects

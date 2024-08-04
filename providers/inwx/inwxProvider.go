@@ -71,12 +71,15 @@ type inwxAPI struct {
 
 // init registers the registrar and the domain service provider with dnscontrol.
 func init() {
-	providers.RegisterRegistrarType("INWX", newInwxReg)
+	const providerName = "INWX"
+	const providerMaintainer = "@patschi"
+	providers.RegisterRegistrarType(providerName, newInwxReg)
 	fns := providers.DspFuncs{
 		Initializer:   newInwxDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("INWX", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // getOTP either returns the TOTPValue or uses TOTPKey and the current time to generate a valid TOTPValue.

@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypes"
 	"github.com/urfave/cli/v2"
 )
 
@@ -128,6 +129,12 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
+
+	err = rtypes.PostProcess(dnsConfig.Domains)
+	if err != nil {
+		return nil, err
+	}
+
 	return dnsConfig, nil
 }
 

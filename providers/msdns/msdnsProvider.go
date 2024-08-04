@@ -40,11 +40,14 @@ var features = providers.DocumentationNotes{
 //
 //	This establishes the name (all caps), and the function to call to initialize it.
 func init() {
+	const providerName = "MSDNS"
+	const providerMaintainer = "@tlimoncelli"
 	fns := providers.DspFuncs{
 		Initializer:   newDNS,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

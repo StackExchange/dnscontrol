@@ -1,4 +1,4 @@
-package cloudflare
+package cfsingleredirect
 
 import (
 	"regexp"
@@ -94,15 +94,6 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			wantExpr:  `concat("https://survey.stackoverflow.co/2021", "")`,
 			wantErr:   false,
 		},
-		// {
-		// 	name:      "27",
-		// 	pattern:   "*www.stackoverflow.help/*",
-		// 	replace:   "https://stackoverflow.help/$1",
-		/// FIXME(tlim): Should "$1" should be a "$2"?   See dnsconfig.js:4344
-		// 	wantMatch: `FIXME`,
-		// 	wantExpr:  `FIXME`,
-		// 	wantErr:   false,
-		// },
 		{
 			name:      "28",
 			pattern:   "*stackoverflow.help/support/solutions/articles/36000241656-write-an-article",
@@ -224,7 +215,7 @@ func Test_makeSingleDirectRule(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace, true)
+			gotMatch, gotExpr, err := makeRuleFromPattern(tt.pattern, tt.replace)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("makeSingleDirectRule() error = %v, wantErr %v", err, tt.wantErr)
 				return

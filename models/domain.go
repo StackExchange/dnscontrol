@@ -45,6 +45,9 @@ type DomainConfig struct {
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
 
+	// Raw user-input from dnsconfig.js that will be processed into RecordConfigs later:
+	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
+
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
 	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
@@ -127,7 +130,7 @@ func (dc *DomainConfig) Punycode() error {
 				return err
 			}
 			rec.SetTarget(t)
-		case "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			rec.SetTarget(rec.GetTargetField())
 		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "NAPTR", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.

@@ -111,11 +111,14 @@ var defaultNameServerNames = []string{
 }
 
 func init() {
+	const providerName = "HUAWEICLOUD"
+	const providerMaintainer = "@huihuimoe"
 	fns := providers.DspFuncs{
 		Initializer:   newHuaweicloud,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("HUAWEICLOUD", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // huaweicloud has request limiting like above.

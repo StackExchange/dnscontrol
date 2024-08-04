@@ -16,6 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -60,7 +61,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		}
 
 		var metadata json.RawMessage
-		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
 		// requires metadata to enable this feature.
 		// In hindsight, I have no idea why this metadata flag is required to
 		// use this feature. Maybe because we didn't have the capabilities
@@ -497,6 +498,19 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	return r
 }
 
+func cfSingleRedirectEnabled() bool {
+	return ((*enableCFRedirectMode) != "")
+}
+
+func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
+	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
+	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
+	if err != nil {
+		panic("Should not happen... cfSingleRedirect")
+	}
+	return r
+}
+
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_WORKER_ROUTE")
@@ -706,6 +720,9 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
+		if r == nil {
+			continue
+		}
 		switch r.Type {
 		case "IGNORE":
 			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
@@ -806,7 +823,7 @@ func makeTests() []*TestGroup {
 	// Only run this test if all these bool flags are true:
 	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
-	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+	//     not("ROUTE53"), only("GCLOUD"),  // ERROR!
 	// NOTE: All requires()/not()/only() must appear before any tc().
 
 	// tc()
@@ -1917,9 +1934,20 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_REDIRECT_CONVERT",
 			only("CLOUDFLAREAPI"),
+			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+		),
+
+		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			alltrue(cfSingleRedirectEnabled()),
+			tc("start301", cfSingleRedirect(`name1`, `301`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changecode", cfSingleRedirect(`name1`, `302`, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changewhen", cfSingleRedirect(`name1`, `302`, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changethen", cfSingleRedirect(`name1`, `302`, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
+			tc("changename", cfSingleRedirect(`name1bis`, `302`, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
 		),
 
 		// CLOUDFLAREAPI: PROXY

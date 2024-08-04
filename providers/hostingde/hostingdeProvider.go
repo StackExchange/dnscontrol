@@ -37,12 +37,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("HOSTINGDE", newHostingdeReg)
+	const providerName = "HOSTINGDE"
+	const providerMaintainer = "@juliusrickert"
+	providers.RegisterRegistrarType(providerName, newHostingdeReg)
 	fns := providers.DspFuncs{
 		Initializer:   newHostingdeDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("HOSTINGDE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 type providerMeta struct {

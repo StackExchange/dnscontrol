@@ -57,12 +57,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "CLOUDNS"
+	const providerMaintainer = "@pragmaton"
 	fns := providers.DspFuncs{
 		Initializer:   NewCloudns,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
-	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "")
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // GetNameservers returns the nameservers for a domain.

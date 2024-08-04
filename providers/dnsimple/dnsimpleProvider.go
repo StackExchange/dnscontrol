@@ -41,12 +41,15 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("DNSIMPLE", newReg)
+	const providerName = "DNSIMPLE"
+	const providerMaintainer = "@onlyhavecans"
+	providers.RegisterRegistrarType(providerName, newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 const stateRegistered = "registered"

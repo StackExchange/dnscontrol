@@ -10,7 +10,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/dtsFile.go
+//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/dtsFile.go build/generate/ownersFile.go
 
 // Version management. Goals:
 // 1. Someone who just does "go get" has at least some information.

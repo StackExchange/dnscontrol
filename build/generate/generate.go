@@ -6,6 +6,9 @@ func main() {
 	if err := generateFeatureMatrix(); err != nil {
 		log.Fatal(err)
 	}
+	if err := generateOwnersFile(); err != nil {
+		log.Fatal(err)
+	}
 	funcs, err := generateFunctionTypes()
 	if err != nil {
 		log.Fatal(err)
