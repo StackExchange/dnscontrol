@@ -235,7 +235,7 @@ compFn: <nil>
 			got := strings.TrimSpace(cc.String())
 			tt.want = strings.TrimSpace(tt.want)
 			if got != tt.want {
-				d := diff.Diff(got, tt.want)
+				d := diff.Diff(tt.want, got)
 				t.Errorf("NewCompareConfig() = \n%s\n", d)
 			}
 		})
