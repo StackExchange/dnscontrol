@@ -47,6 +47,7 @@ import (
 //	  NO_PURGE
 //	  NS1_URLFWD
 //	  PAGE_RULE
+//	  PORKBUN_URLFWD
 //	  PURGE
 //	  URL
 //	  URL301
