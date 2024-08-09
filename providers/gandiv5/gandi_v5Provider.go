@@ -27,6 +27,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
+	"github.com/go-gandi/go-gandi/livedns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -72,8 +73,10 @@ var features = providers.DocumentationNotes{
 // gandiv5Provider is the gandiv5Provider handle used to store any client-related state.
 type gandiv5Provider struct {
 	apikey    string
+	token     string
 	sharingid string
 	debug     bool
+	apiurl    string
 }
 
 // newDsp generates a DNS Service Provider client handle.
@@ -90,10 +93,12 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error) {
 	api := &gandiv5Provider{}
 	api.apikey = m["apikey"]
-	if api.apikey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+	api.token = m["token"]
+	if (api.apikey == "") && (api.token == "") {
+		return nil, fmt.Errorf("missing Gandi personal access token (or apikey - deprecated)")
 	}
 	api.sharingid = m["sharing_id"]
+	api.apiurl = m["apiurl"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
 	if err == nil {
 		api.debug = debug
@@ -104,15 +109,24 @@ func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error)
 
 // Section 3: Domain Service Provider (DSP) related functions
 
+// newLiveDNSClient returns a client to the Gandi Domains API
+// It expects an API key, available from https://account.gandi.net/en/
+func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
+	g := gandi.NewLiveDNSClient(config.Config{
+		APIKey:              client.apikey,
+		PersonalAccessToken: client.token,
+		SharingID:           client.sharingid,
+		Debug:               client.debug,
+		APIURL:              client.apiurl,
+	})
+	return g
+}
+
 // // ListZones lists the zones on this account.
 // This no longer works. Until we can figure out why, we're removing this
 // feature for Gandi.
 // func (client *gandiv5Provider) ListZones() ([]string, error) {
-// 	g := gandi.NewLiveDNSClient(config.Config{
-// 		APIKey:    client.apikey,
-// 		SharingID: client.sharingid,
-// 		Debug:     client.debug,
-// 	})
+// g := newLiveDNSClient(client)
 
 // 	listResp, err := g.ListDomains()
 // 	if err != nil {
@@ -133,11 +147,7 @@ func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error)
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (client *gandiv5Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+	g := newLiveDNSClient(client)
 
 	// Get all the existing records:
 	records, err := g.GetDomainRecords(domain)
@@ -200,11 +210,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 
 	PrepDesiredRecords(dc)
 
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+	g := newLiveDNSClient(client)
 
 	// Gandi is a "ByLabel" API with the odd exception that changes must be
 	// done one label:rtype at a time.
@@ -301,11 +307,7 @@ func debugRecords(note string, recs []*models.RecordConfig) {
 
 // GetNameservers returns a list of nameservers for domain.
 func (client *gandiv5Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+	g := newLiveDNSClient(client)
 	nameservers, err := g.GetDomainNS(domain)
 	if err != nil {
 		return nil, err
@@ -316,9 +318,11 @@ func (client *gandiv5Provider) GetNameservers(domain string) ([]*models.Nameserv
 // GetRegistrarCorrections returns a list of corrections for this registrar.
 func (client *gandiv5Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	gd := gandi.NewDomainClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
+		APIKey:              client.apikey,
+		PersonalAccessToken: client.token,
+		SharingID:           client.sharingid,
+		Debug:               client.debug,
+		APIURL:              client.apiurl,
 	})
 
 	existingNs, err := gd.GetNameServers(dc.Name)
