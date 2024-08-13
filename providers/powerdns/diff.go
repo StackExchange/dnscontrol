@@ -31,7 +31,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 			corrections = append(corrections, &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					return dsp.client.Zones().AddRecordSetToZone(context.Background(), dsp.ServerName, dc.Name, zones.ResourceRecordSet{
+					return dsp.client.Zones().AddRecordSetToZone(context.Background(), dsp.ServerName, canonical(dc.Name), zones.ResourceRecordSet{
 						Name:       labelName,
 						Type:       labelType,
 						TTL:        labelTTL,
@@ -44,7 +44,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 			corrections = append(corrections, &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					return dsp.client.Zones().RemoveRecordSetFromZone(context.Background(), dsp.ServerName, dc.Name, labelName, labelType)
+					return dsp.client.Zones().RemoveRecordSetFromZone(context.Background(), dsp.ServerName, canonical(dc.Name), labelName, labelType)
 				},
 			})
 		default:
