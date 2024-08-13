@@ -101,13 +101,6 @@ retry:
 	return bodyString, nil
 }
 
-//lint:ignore U1000 staticcheck bug
-func (c *porkbunProvider) ping() error {
-	params := requestParams{}
-	_, err := c.post("/ping", params)
-	return err
-}
-
 func (c *porkbunProvider) createRecord(domain string, rec requestParams) error {
 	if _, err := c.post("/dns/create/"+domain, rec); err != nil {
 		return fmt.Errorf("failed create record (porkbun): %w", err)

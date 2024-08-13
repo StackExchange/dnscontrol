@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
@@ -339,6 +340,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest}})
 		} else if r.Type == "NS1_URLFWD" {
+			printer.Warnf("NS1_URLFWD is deprecated and may stop working anytime now. Please avoid such records going forward.\n")
 			rec.Type = "URLFWD"
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		} else if r.Type == "SVCB" || r.Type == "HTTPS" {
