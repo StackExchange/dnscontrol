@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/create"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -503,14 +503,10 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	// TODO(tlim): Create a generic way to do this.
-	r := makeRec("@", name, rtypesingleredirect.Name)
-	rdata, err := rtypesingleredirect.FromRawArgs([]any{code, when, then}, name)
+	r, err := create.SingleRedirect(300, "@", name, []any{code, when, then})
 	if err != nil {
-		panic("Should not happen... cfSingleRedirect")
+		panic(err)
 	}
-	r.Rdata = rdata
-	r.ReSeal()
 	return r
 }
 

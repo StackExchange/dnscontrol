@@ -96,6 +96,7 @@ var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 
 Implement:
 
+* TODO: init?
 * `const Name`: Same string as the "rtype token" in helpers.js
 * `init()`: Copy verbatim
 * Define the struct.  `type $Name struct` where `$Name` is the rtype name in mixed case.
@@ -210,13 +211,25 @@ func (rc *RecordConfig) AsFOO() *rtypefoo.FOO {
 }
 ```
 
+## Step X: update create.go
+
+This will be automated some day, but in the meanwhile this is done manually.
+
+Edit `pkg/create/create.go`
+
+Add the rtype's module to the imports list.
+
+Add the rtype's `Foo()` function. For example, if you are adding an rtype FOO, add a function`FOO()`.
+
+Follow the examples. It should be exactly the same as `SingleRedirect()` with `SingleRedirect` changed to `FOO`.
+
+## Step X: Add this to a provider
+
+## Step X: Add integration etsts
+
 
 -------------------
 
-
-It is important to leave the `omitempty` flag present so that tests for
-other record types do not start to fail because your new record types insist on
-being present.
 
 ## Step 2: Add a capability for the record
 

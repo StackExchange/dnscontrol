@@ -73,16 +73,13 @@ func FromRawArgs(items []any, name string) (*SingleRedirect, error) {
 	var then = items[2].(string)
 
 	// Use the arguments to perfect the record:
-	return makeSingleRedirectFromRawRec(code, name, when, then)
+	return makeSingleRedirect(code, name, when, then)
 }
 
-// makeSingleRedirectFromRawRec updates a RecordConfig to be a
-// SINGLEREDIRECT using the data from a RawRecord.
-func makeSingleRedirectFromRawRec(code uint16, name, when, then string) (*SingleRedirect, error) {
+// makeSingleRedirect
+func makeSingleRedirect(code uint16, name, when, then string) (*SingleRedirect, error) {
 	target := targetFromRaw(name, code, when, then)
 
-	//rc.Type = SINGLEREDIRECT
-	//rc.TTL = 1
 	rdata := &SingleRedirect{
 		Code: code,
 		//
@@ -96,7 +93,6 @@ func makeSingleRedirectFromRawRec(code uint16, name, when, then string) (*Single
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	//rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
 	return rdata, nil
 }
 
