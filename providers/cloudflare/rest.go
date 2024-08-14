@@ -434,7 +434,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		MakePageRule(r, currentPrPrio, code, when, then)
+		makePageRule(r, currentPrPrio, code, when, then)
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)

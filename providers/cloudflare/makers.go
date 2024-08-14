@@ -7,8 +7,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
 )
 
-// MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
-func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) {
+// makePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
+func makePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) {
 	display := mkPageRuleBlob(priority, code, when, then)
 
 	rc.Type = "PAGE_RULE"

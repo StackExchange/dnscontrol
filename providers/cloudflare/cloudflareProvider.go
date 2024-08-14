@@ -549,7 +549,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			prPriority++
 
 			// Convert this record to a PAGE_RULE.
-			MakePageRule(rec, prPriority, code, prWhen, prThen)
+			makePageRule(rec, prPriority, code, prWhen, prThen)
 			rec.SetLabel("@", dc.Name)
 
 			if c.manageRedirects && !c.manageSingleRedirects {

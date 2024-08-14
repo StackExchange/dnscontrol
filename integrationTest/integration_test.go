@@ -503,6 +503,7 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
+	// TODO(tlim): Create a generic way to do this.
 	r := makeRec("@", name, rtypesingleredirect.Name)
 	rdata, err := rtypesingleredirect.FromRawArgs([]any{code, when, then}, name)
 	if err != nil {
