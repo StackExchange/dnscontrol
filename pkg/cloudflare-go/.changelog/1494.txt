@@ -1,3 +1,0 @@
-```release-note:enhancement
-images_variants: Add support for Images Variants CRUD operations
-```

@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps google.golang.org/protobuf from 1.28.0 to 1.33.0
-```

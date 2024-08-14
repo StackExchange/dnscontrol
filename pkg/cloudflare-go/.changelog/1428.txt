@@ -1,3 +1,0 @@
-```release-note:enhancement
-ip_access_rules: Add ListIPAccessRules() to list IP Access Rules
-```

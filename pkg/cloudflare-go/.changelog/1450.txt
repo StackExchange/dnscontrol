@@ -1,3 +1,0 @@
-```release-note:enhancement
-worker_bindings: Fixing form element name for d1 binding
-```

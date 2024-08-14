@@ -1,3 +1,0 @@
-```release-note:enhancement
-zone: Added `GetRegionalTieredCache` and `UpdateRegionalTieredCache` to allow setting Regional Tiered Cache for a zone.
-```

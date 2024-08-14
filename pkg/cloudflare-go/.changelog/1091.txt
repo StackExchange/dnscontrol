@@ -1,3 +1,0 @@
-```release-note:enhancement
-load_balancing: support adaptive_routing and location_strategy
-```

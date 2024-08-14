@@ -1,3 +1,0 @@
-```release-note:bug
-tunnel_routes: Fix not removing route when it contains virtual network
-```

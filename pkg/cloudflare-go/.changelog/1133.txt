@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: Support for Workers Analytics Engine bindings
-```

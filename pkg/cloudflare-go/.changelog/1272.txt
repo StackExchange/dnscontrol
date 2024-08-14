@@ -1,3 +1,0 @@
-```release-note:enhancement
-logpush: add support for max upload parameters
-```

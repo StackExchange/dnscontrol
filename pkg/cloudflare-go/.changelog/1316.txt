@@ -1,3 +1,0 @@
-```release-note:enhancement
-device_posture_rule: support os_version_extra
-```

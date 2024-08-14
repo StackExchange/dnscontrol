@@ -1,7 +1,0 @@
-```release-note:enhancement
-access_policy: add support for reusable policies
-```
-
-```release-note:enhancement
-access_application: add support for `policies` array
-```

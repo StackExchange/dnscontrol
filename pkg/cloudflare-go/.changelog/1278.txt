@@ -1,3 +1,0 @@
-```release-note:enhancement
-zone: Added `GetCacheReserve` and `UpdateacheReserve` to allow setting Cache Reserve for a zone.
-```

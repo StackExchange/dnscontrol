@@ -1,3 +1,0 @@
-```release-note:bug
-user-agent-blocking-rules: add missing managed_challenge validation and removed the deprecated whitelist one
-```

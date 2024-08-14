@@ -1,3 +1,0 @@
-```release-note:enhancement
-load_balancer_monitor: add support for `consecutive_up`, `consecutive_down`
-```

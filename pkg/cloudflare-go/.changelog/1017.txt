@@ -1,3 +1,0 @@
-```release-note:enhancement
-lockdown: automatically paginate `List` results unless `Page` and `PerPage` are provided
-```

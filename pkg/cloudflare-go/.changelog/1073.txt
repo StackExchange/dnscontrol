@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_account: add support for `os_distro_name` and `os_distro_revision`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp: add support for zt risk behavior configuration
-```

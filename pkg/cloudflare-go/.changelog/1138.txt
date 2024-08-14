@@ -1,3 +1,0 @@
-```release-note:enhancement
-adds OriginRequest field to UnvalidatedIngressRule struct.
-```

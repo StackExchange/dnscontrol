@@ -1,3 +1,0 @@
-```release-note:bug
-zonelockdown: add `Priority` to `ZoneLockdownCreateParams` and `ZoneLockdownUpdateParams`
-```

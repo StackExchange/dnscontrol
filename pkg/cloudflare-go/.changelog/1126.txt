@@ -1,3 +1,0 @@
-```release-note:enhancement
-device_posture_rule: add input fields crowdstrike
-```

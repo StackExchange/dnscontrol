@@ -1,3 +1,0 @@
-```release-note:enhancement
-dns: add support for importing and exporting DNS records using BIND file configurations
-```

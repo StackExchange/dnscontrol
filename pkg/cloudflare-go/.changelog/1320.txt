@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps dependabot/fetch-metadata from 1.5.1 to 1.6.0
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-devices_policy: Add new exclude_office_ips field to policy
-```

@@ -1,7 +1,0 @@
-```release-note:enhancement
-workers: Add support for retrieving and uploading only script content.
-```
-
-```release-note:enhancement
-workers: Add support for retrieving and uploading only script metadata.
-```

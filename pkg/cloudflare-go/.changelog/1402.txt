@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps codecov/codecov-action from 3 to 4
-```

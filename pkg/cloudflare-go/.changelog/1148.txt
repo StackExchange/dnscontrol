@@ -1,3 +1,0 @@
-```release-note:enhancement
-managed_networks: add CRUD functionality for managednetworks
-```

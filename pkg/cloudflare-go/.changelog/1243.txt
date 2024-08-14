@@ -1,3 +1,0 @@
-```release-note:breaking-change
-dns: Changed Create/UpdateDNSRecord method signatures to return (DNSRecord, error)
-```

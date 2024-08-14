@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_rules: adds support for Egress Policies
-```

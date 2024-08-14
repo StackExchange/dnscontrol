@@ -1,3 +1,0 @@
-```release-note:enhancement
-rulesets: add support for `score_per_period` and `score_response_header_name`
-```

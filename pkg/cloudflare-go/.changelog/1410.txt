@@ -1,3 +1,0 @@
-```release-note:bug
-custom_nameservers: change `NSSet` from string to int to match API response
-```

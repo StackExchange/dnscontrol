@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudflare: make it clearer when we hit a server error and to retry later
-```
