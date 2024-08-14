@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -99,7 +100,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterRegistrarType(providerName, newRoute53Reg)
-	providers.RegisterCustomRecordType("R53_ALIAS", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("R53_ALIAS", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 

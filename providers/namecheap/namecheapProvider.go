@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	nc "github.com/billputer/go-namecheap"
 	"golang.org/x/net/publicsuffix"
@@ -50,9 +51,9 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("URL", providerName, "")
-	providers.RegisterCustomRecordType("URL301", providerName, "")
-	providers.RegisterCustomRecordType("FRAME", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("URL", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("URL301", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("FRAME", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
