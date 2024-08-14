@@ -305,7 +305,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		r.SetLabel("@", domain)
 
 		// Store the IDs
-		sr := r.CloudflareRedirect
+		sr := r.AsSingleRedirect()
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
 
@@ -401,10 +401,10 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr rtypesin
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newrec *models.RecordConfig) error {
-	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
+	if err := c.deleteSingleRedirects(domainID, *oldrec.AsSingleRedirect()); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
+	return c.createSingleRedirect(domainID, *newrec.AsSingleRedirect())
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {

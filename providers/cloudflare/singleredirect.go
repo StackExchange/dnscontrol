@@ -14,7 +14,7 @@ func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when,
 
 	rc.Type = rtypesingleredirect.Name
 	rc.TTL = 1
-	rc.CloudflareRedirect = &rtypesingleredirect.SingleRedirect{
+	rc.Rdata = &rtypesingleredirect.SingleRedirect{
 		Code: code,
 		//
 		PRWhen:     "UNKNOWABLE",
@@ -27,7 +27,7 @@ func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when,
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	rc.SetTarget(rc.AsSingleRedirect().SRDisplay)
 }
 
 // targetFromAPIData creates the display text used for a Redirect as received from Cloudflare's API.

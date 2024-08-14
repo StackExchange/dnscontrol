@@ -15,7 +15,7 @@ func TranscodePRtoSR(rec *models.RecordConfig) error {
 	rec.Type = rtypesingleredirect.Name // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
 
 	// Extract the fields we're reading from:
-	sr := rec.AsSingleRedirect().CloudflareRedirect
+	sr := rec.AsSingleRedirect()
 	code := sr.Code
 	prWhen := sr.PRWhen
 	prThen := sr.PRThen
@@ -48,7 +48,7 @@ func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 
 	rc.Type = rtypesingleredirect.Name
 	rc.TTL = 1
-	sr := rc.AsSingleRedirect().CloudflareRedirect
+	sr := rc.AsSingleRedirect()
 	sr.Code = code
 
 	sr.SRName = srName
@@ -56,7 +56,7 @@ func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 	sr.SRThen = srThen
 	sr.SRDisplay = srDisplay
 
-	rc.SetTarget(rc.AsSingleRedirect().CloudflareRedirect.SRDisplay)
+	rc.SetTarget(rc.AsSingleRedirect().SRDisplay)
 }
 
 // targetFromConverted makes the display text used when a redirect was the result of converting a PAGE_RULE.

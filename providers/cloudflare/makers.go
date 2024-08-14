@@ -13,7 +13,7 @@ func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then
 
 	rc.Type = "PAGE_RULE"
 	rc.TTL = 1
-	rc.CloudflareRedirect = &rtypesingleredirect.SingleRedirect{
+	rc.Rdata = &rtypesingleredirect.SingleRedirect{
 		Code: code,
 		//
 		PRWhen:     when,
