@@ -509,6 +509,7 @@ func cfSingleRedirect(name string, code any, when, then string) *models.RecordCo
 		panic("Should not happen... cfSingleRedirect")
 	}
 	r.Rdata = rdata
+	r.ReSeal()
 	return r
 }
 
