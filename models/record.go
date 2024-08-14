@@ -97,6 +97,9 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	//
+	Rdata          Rdataer `json:"rdata,omitempty"` // The Resource Record data (RData)
+	ComparableMini string  `json:"-"`               // Pre-Computed string used to compare equality of two Rdatas
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -141,31 +144,6 @@ type RecordConfig struct {
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 	UnknownTypeName  string            `json:"unknown_type_name,omitempty"`
-
-	// Cloudflare-specific fields:
-	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
-}
-
-// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
-//
-//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
-type CloudflareSingleRedirectConfig struct {
-	//
-	Code uint16 `json:"code,omitempty"` // 301 or 302
-	// PR == PageRule
-	PRWhen     string `json:"pr_when,omitempty"`
-	PRThen     string `json:"pr_then,omitempty"`
-	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
-	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
-	//
-	// SR == SingleRedirect
-	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -197,7 +175,9 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-		Args      []any             `json:"args,omitempty"`
+		//
+		Rdata          Rdataer `json:"rdata,omitempty"` // The Resource Record data (RData)
+		ComparableMini string  `json:"-"`               // Pre-Computed string used to compare equality of two Rdatas
 
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
@@ -354,6 +334,14 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+
+	// rtype2.0 records pre-compute this answer. Once all other RecordConfig
+	// types are converted to rtype2.0 this function can be replaced with
+	// accesses to rc.ComparableMini.
+	if rc.ComparableMini != "" {
+		return rc.ComparableMini
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)

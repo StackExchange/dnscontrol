@@ -46,7 +46,10 @@ func ExecuteJavaScript(file string, devMode bool, variables map[string]string) (
 	// Record the directory path leading up to this file.
 	currentDirectory = filepath.Dir(file)
 
-	return ExecuteJavascriptString(script, devMode, variables)
+	dnsConfig, err := ExecuteJavascriptString(script, devMode, variables)
+	models.ConvertRawRecords(dnsConfig.Domains)
+
+	return dnsConfig, err
 }
 
 // ExecuteJavascriptString accepts a string containing javascript and runs it, returning the resulting dnsConfig.
