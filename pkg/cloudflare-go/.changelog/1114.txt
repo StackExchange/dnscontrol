@@ -1,7 +1,0 @@
-```release-note:breaking-change
-teams_list: updated methods to match the experimental client format
-```
-
-```release-note:enhancement
-teams_list: `List` operations now automatically paginate
-```

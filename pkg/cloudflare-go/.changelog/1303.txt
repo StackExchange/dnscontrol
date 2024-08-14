@@ -1,3 +1,0 @@
-```release-note:breaking-change
-tunnel: swap `ConnectTimeout`, `TLSTimeout`, `TCPKeepAlive` and `KeepAliveTimeout` to `TunnelDuration` instead of `time.Duration`
-```

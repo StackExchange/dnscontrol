@@ -1,3 +1,0 @@
-```release-note:bug
-workers: correctly set `body` value for non-ES module uploads
-```

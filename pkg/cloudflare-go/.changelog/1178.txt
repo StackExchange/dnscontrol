@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_identity_provider: add scim_config field
-```

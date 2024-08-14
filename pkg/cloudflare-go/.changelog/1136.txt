@@ -1,7 +1,0 @@
-```release-note:enhancement
-pages: Updates bindings and other Functions related propreties. Service bindings, secrets, fail open/close and usage model are all now supported.
-```
-
-```release-note:breaking-change
-pages: Changed the type of EnvVars in PagesProjectDeploymentConfigEnvironment & PagesProjectDeployment in order to properly support secrets.
-```

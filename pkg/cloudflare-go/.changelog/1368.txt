@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: add support for tagging Worker scripts
-```

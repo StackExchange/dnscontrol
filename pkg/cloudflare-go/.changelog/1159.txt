@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_organization: add user_seat_expiration_inactive_time field
-```

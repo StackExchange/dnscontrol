@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: Add support for attaching a worker to a domain
-```

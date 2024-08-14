@@ -1,3 +1,0 @@
-```release-note:bug
-dns: don't send "priority" for list operations as it isn't supported and is only used for internal filtering
-```

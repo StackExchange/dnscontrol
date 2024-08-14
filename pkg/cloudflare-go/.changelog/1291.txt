@@ -1,3 +1,0 @@
-```release-note:enhancement
-tunnels: add support for `access` and `http2Origin` keys
-```

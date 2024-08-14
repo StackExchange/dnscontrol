@@ -1,3 +1,0 @@
-```release-note:bug
-email_routing_destination: return encountered error, not `ErrMissingAccountID` all the time
-```

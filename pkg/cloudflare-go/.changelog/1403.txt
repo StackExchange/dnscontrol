@@ -1,7 +1,0 @@
-```release-note:enhancement
-access_application: Add support for tags
-```
-
-```release-note:enhancement
-access_tag: Add support for tags
-```

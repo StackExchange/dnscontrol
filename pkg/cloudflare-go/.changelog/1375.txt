@@ -1,3 +1,0 @@
-```release_note:enhancement
-rulesets: Add support for Additional Cacheable Ports configuration via the Rulesets/Cache Rules API
-```

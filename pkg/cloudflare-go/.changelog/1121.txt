@@ -1,3 +1,0 @@
-```release-note:enhancement
-deps: fix import grouping, code formatting and enable goimports linter
-```

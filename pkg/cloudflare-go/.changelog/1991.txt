@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps bflad/action-milestone-comment from 1 to 2
-```

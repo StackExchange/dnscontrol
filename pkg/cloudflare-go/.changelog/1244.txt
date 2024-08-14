@@ -1,3 +1,0 @@
-```release-note:enhancement
-ssl: make `GeoRestrictions` a pointer inside of ZoneCustomSSL
-```

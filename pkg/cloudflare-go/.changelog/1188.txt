@@ -1,3 +1,0 @@
-```release-note:breaking-change
-queues: UpdateQueue has been updated to match the API and now correctly updates a Queue's name
-```

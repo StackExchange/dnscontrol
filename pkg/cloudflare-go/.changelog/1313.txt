@@ -1,7 +1,0 @@
-```release-note:breaking-change
-virtualdns: remove support in favour of newer DNS firewall methods
-```
-
-```release-note:breaking-change
-dns_firewall: modernise method signatures and conventions to align with the experimental client
-```

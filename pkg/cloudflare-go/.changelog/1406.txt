@@ -1,3 +1,0 @@
-```release-note:enhancement
-api_shield_schema: Add support for managing schemas for API Shield Schema Validation 2.0
-```

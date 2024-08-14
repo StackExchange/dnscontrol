@@ -1,3 +1,0 @@
-```release-note:breaking-change
-certificate_packs: deprecate "custom" configuration for ACM everywhere
-```

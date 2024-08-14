@@ -1,7 +1,0 @@
-```release-note:enhancement
-cloudflare: swap `encoding/json` for `github.com/goccy/go-json`
-```
-
-```release-note:bug
-cache_purge: don't escape HTML entity values in URLs for cache keys
-```

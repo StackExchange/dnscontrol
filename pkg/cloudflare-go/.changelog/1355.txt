@@ -1,3 +1,0 @@
-```release-note:breaking-change
-cloudflare: `Raw` method now returns a RawResponse rather than the raw JSON `Result` message
-```

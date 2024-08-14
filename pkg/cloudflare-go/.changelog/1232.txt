@@ -1,3 +1,0 @@
-```release-note:enhancement
-addressing: Add `Address Map` support
-```

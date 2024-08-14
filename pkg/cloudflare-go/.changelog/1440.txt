@@ -1,3 +1,0 @@
-```release-note:bug
-per_hostname_tls_setting: use `buildURI` for defining the query parameters when sorting
-```

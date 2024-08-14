@@ -1,3 +1,0 @@
-```release-note:bug
-dns: always send `tags` to allow clearing
-```

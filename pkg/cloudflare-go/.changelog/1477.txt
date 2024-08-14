@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_application: Add support for default_relay_state in saas apps
-```

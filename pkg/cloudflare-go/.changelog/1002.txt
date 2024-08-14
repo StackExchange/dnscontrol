@@ -1,3 +1,0 @@
-```release-note:bug
-rulesets: fix sni action parameter
-```

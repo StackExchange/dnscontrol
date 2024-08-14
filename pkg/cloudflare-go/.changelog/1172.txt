@@ -1,3 +1,0 @@
-```release-note:bug
-managednetworks: Update should be PUT
-```

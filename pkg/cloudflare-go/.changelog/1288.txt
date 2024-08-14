@@ -1,3 +1,0 @@
-```release-note:enhancement
-lists: add support for hostname and ASN lists.
-```

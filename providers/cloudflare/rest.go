@@ -388,7 +388,10 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	// }
 	//printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 
-	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cloudflare.DeleteRulesetRuleParams{
+		RulesetID:     cfr.SRRRulesetID,
+		RulesetRuleID: cfr.SRRRulesetRuleID},
+	)
 	// NB(tlim): Yuck. This returns an error even when it is successful. Dig into the JSON for the real status.
 	if strings.Contains(err.Error(), `"success": true,`) {
 		return nil

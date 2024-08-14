@@ -1,3 +1,0 @@
-```release-note:bug
-hyperdrive: password should be nested in origin
-```

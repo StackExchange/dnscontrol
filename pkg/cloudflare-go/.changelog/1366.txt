@@ -1,3 +1,0 @@
-```release-note:enhancement
-device_posture_rule: support eid_last_seen and risk_level and correct total_score for Tanium posture rule
-```

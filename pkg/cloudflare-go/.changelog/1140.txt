@@ -1,3 +1,0 @@
-```release-note:enhancement
-cache_rules: add ignore option to query string struct
-```
