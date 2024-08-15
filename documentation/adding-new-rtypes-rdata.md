@@ -1,57 +1,67 @@
 # Adding DNS Resource Types the "Rdata" way
 
 Terminology:
-* RType: A DNS record type, such as an A, AAAA, CNAME, MX record.
+* RType: A DNS "record type" such as an A, AAAA, CNAME, MX record.
 * RC-style: The original way to add new rtypes.
 * Rdata-style: The new way to add new rtypes, documented here.
 
-In September 2024 DNSControl gained a new way to implement rtypes
-called "Rdata-style".  This can be used to add RFC-standard types
-such as LOC, as well as provider-specific types such as Cloudflare's
-"Single Redirect".
+In September 2024 DNSControl gained a new way to implement rtypes called
+"Rdata-style".  This can be used to add RFC-standard types such as LOC, as well
+as provider-specific types such as Cloudflare's "Single Redirect".
 
-This document explains how RData-style rtypes work and how to add
-a new record type using this method.
+This document explains how RData-style rtypes work and how to add a new record
+type using this method.
 
-The old and new styles work together.  All new rtypes should use
-Rdata-style.  There is no need to convert the old rtypes to use
-RData-style, though we'll gladly accept PRs that convert existing
-rtypes to use Rdata.
+The old and new styles are both supported.  All new rtypes should use
+Rdata-style. There is no need to convert the old rtypes to use RData-style,
+though we'll gladly accept PRs that convert existing rtypes to use Rdata.
 
 ## Goals
 
 Goals of Rdata-style records:
 
-* Goal: Make it considerably easier to add a new rtype.
+* **Goal: Make it considerably easier to add a new rtype.**
   * Problem: RC-Style requires writing code in both Go and JavaScript.
   * Solution: Rdata-style requires only writing Go (plus 1 line of JavaScript)
-* Goal: Make testing easier.
-  * Problem: RC-Style has no support for unit testing in helpers.js.
-  * Solution: Rdata-style permits the user of the standard Go unit testing.
-* Goal: Stop increasing the size of models.RecordConfig:
-  * Problem: RC-Style requires each new rtype to add fields to RecordConfig. This consumes memory for every RecordConfig. For example, the DNSKEY rtype added 4 fields, consuming 14 bytes of memory even when the RecordConfig is not storying a DNSKEY. (Not to pick on DNSKEY... this was the only option at the time!)
-  * Solution: RecordConfig now has one field that is a pointer to struct, which is the right size for the rtype.
-* Goal: Isolate an rtype's implementation in the code base:
-  * Problem: RC-Style spreads implementation all over the
-  : Code that implements the rtype is spread all over the code base.
-  * RData-style: Code is isolated to a specific directory with a few specific exceptions. We hope to eliminate the need for these exceptions over time.
+* **Goal: Make testing easier.**
+  * Problem: RC-Style has no support for unit testing the JavaScript in
+    helpers.js.
+  * Solution: Rdata-style only uses Go (with 1 minor exception) and permits the
+    use of the standard Go unit testing framework.
+* **Goal: Stop increasing the size of models.RecordConfig.**
+  * Problem: RC-Style requires each new rtype to add fields to RecordConfig.
+    This consumes memory for every RecordConfig instance. For example, the
+    DNSKEY rtype added 4 fields, consuming 14 bytes of memory even when the
+    RecordConfig is not storying a DNSKEY. (Not to pick on DNSKEY... this was
+    the only option at the time!)
+  * Solution: RecordConfig now has one field that is a pointer to struct, which
+    is the right size for the rtype.
+* Goal: Isolate an rtype's implementation in the code base.
+  * Problem: RC-Style spreads implementation all over the code base.
+  * RData-style: Code is isolated to a specific directory with many exceptions.
+    The list of exceptions should shrink over time.
 
 ## Conceptual design.
 
+To understand how Rdata-style works, first let's review the old way.
+
 The old way:
 
-RC-style implements a JavaScript function in helpers.js
-that accepts the fields, processes them, and makes a JSON version
-of RecordConfig which is sent to the Go code for use. It is assumed
-that the JSON that is delivered is complete.
+RC-style implements a JavaScript function in helpers.js that accepts the
+user-input fields, processes them, and makes a JSON version of RecordConfig
+which is sent to the Go code for use. It is assumed that the JSON that is
+delivered is complete.
 
 For example, `LOC_BUILDER_DD()` is implemented completely in JavaScript. This
 is a complex function and, since we lack unit-testing in DNSControl's
 JavaScript environment, has no test coverage.
 
-The new way: In RData-style, the helpers.js function simply collects all the parameters
-and delivers them to the Go code unchanged.  A function in Go extracts the parameters
-and uses them to build a struct.  models.RecordConfig.Rdata points to that struct.
+The new way:
+
+In RData-style, the helpers.js function simply collects all the parameters and
+delivers them to the Go code verbatium.  A function in Go extracts the
+parameters and uses them to build a struct.  models.RecordConfig.Rdata points
+to that struct.
 
 For example, `CF_SINGLE_REDIRECT()`'s implementation in helpers.js is one line:
 
@@ -59,12 +69,15 @@ For example, `CF_SINGLE_REDIRECT()`'s implementation in helpers.js is one line:
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 ```
 
-This creates a function called `CF_SINGLE_REDIRECT()` which can be used in `dnsconfig.js`.
+This creates a function called `CF_SINGLE_REDIRECT()` which users can use in `dnsconfig.js`.
 
 All the remaining code is in `dnscontrol/rtypes/rtype$NAME` (global rtypes)
-or `dnscontrol/providers/$PROVIDER/types/rtype$NAME` (provider-specific rtypes).
+or `dnscontrol/providers/$PROVIDER/rtypes/rtype$NAME` (provider-specific rtypes).
 `$PROVIDER` is the name of the provider, and $NAME is the name of the record.
 For example, the Cloudflare Single Redirect type would be in `providers/cloudflare/rtypes/rtypesingleredirect`.
+
+Yes, there is a lot of code outside the rtypes/rtype$NAME directory still.
+However we're working on reducing that.
 
 # How to add a new rtype:
 
@@ -81,7 +94,7 @@ var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 ```
 
 * function name: This is the name that appears in `dnsconfig.js`.
-  * For RFC-standard types this should be the name of the type as it would appear in a zone file.
+  * For RFC-standard types this should be the name of the type as it would appear in a zone file. (Example: `A`, `MX`, `LOC`)
   * For provider-specific types, the prefix should be the provider's name or initials (`CF_` for CloudFlare).
   * For pseudo-types that apply to any provider, use your best judgement.
 * rtype token: The string that is used in the models.RecordConfig.Type field.
@@ -91,18 +104,26 @@ var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 
 ## Step X: Implement the rtype's functions
 
-`providers/cloudflare/rtypes/rtype$NAME/$NAME.go`
-`providers/cloudflare/rtypes/rtypesingleredirect/cfsingleredirect.go`
+General form:
+
+```
+providers/cloudflare/rtypes/rtype$NAME/$NAME.go
+```
+
+Example:
+
+```
+providers/cloudflare/rtypes/rtypesingleredirect/cfsingleredirect.go
+```
 
 Implement:
 
-* TODO: init?
 * `const Name`: Same string as the "rtype token" in helpers.js
 * `init()`: Copy verbatim
 * Define the struct.  `type $Name struct` where `$Name` is the rtype name in mixed case.
 * function `Name`: Copy verbatium
-* function `ComputeTarget`: returns the hostname (or whatever is closest) for the record. For example, an MX Record would return the hostname (not the preference number).
-* function `ComputeComparableMini`: returns a string representation of all the rtype's fields. This string is used for comparing two records. If there are any differences, the two are not considered the same. This string is output in `dnscontrol preview` so make it human-readable. For example, an MX record this would be `50 example.com.`  Note that the label is not included, nor the TTL.
+* function `ComputeTarget`: returns the "target field" for the record. For example, an `MX` Record would return the hostname (not the preference number), an `A` record would return the IP address.
+* function `ComputeComparableMini`: returns a string representation of all the rtype's fields. This string is used for comparing two records. If there are any differences, the two are not considered the same. This string should be human-readable, since it is used in the output of `dnscontrol preview`.  For example, `MX` would output `50 example.com.`  Note that the label is not included, nor the TTL.
 * function `MarshalJSON`: returns a JSON representation of all the rtype's fields. Note that the label is not included, nor the TTL.
 * function `FromRawArgs`: Described below.
 
@@ -110,7 +131,7 @@ Implement:
 
 This function takes the raw items from helpes.js and builds the struct.
 
-Here's how the function works:
+Copy from another rtype.  Here's what the code does:
 
 ```
 // FromRawArgs creates a Rdata...
@@ -148,8 +169,15 @@ If you desire other types, add them to `pkg/rtypecontrol/pave.go`.
 ```
 
 You are now certain of the type of each `item[]`. Assign each one to a variable of the appropriate type.
+This is also where you can validate the inputs. In this example, `code` must be either 301 or 302.
 
-If you are new to go's "type assertions", here's how they work:
+If you are new to go's "type assertions", here's a simple explanation:
+
+* Go doesn't know what type of data is in `item[]` (they are of type `any`). Therefore, we have to tell Go by adding `.(string)` or `.(uint16)`.  We can trust that these are ZZ
+
+Here's the longer version:
+
+here's how they work:
 * Each element of `items[]` is an interface. It can be any type.  Go needs us
   to tell us what type to expect when accessing it. It can't guess for us. This
   isn't Python!
@@ -228,30 +256,26 @@ Follow the examples. It should be exactly the same as `SingleRedirect()` with `S
 ## Step X: Add integration etsts
 
 
--------------------
-
-
 ## Step 2: Add a capability for the record
 
-You'll need to mark which providers support this record type. The
-initial PR should implement this record for the `bind` provider at
-a minimum.
+You'll need to mark which providers support this record type. If BIND supports this record type, add support
+to bind first.  This is the easiest provider to update.  Otherwise choose another provider.
 
 -   Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
     it to the end of the list.)
 -   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
 
-```shell
-pushd; cd providers/;
-stringer -type=Capability
-popd
+Install stringer:
+
 ```
-alternatively
+go install golang.org/x/tools/cmd/stringer@latest
+```
+
+Run stringer:
 
 ```shell
-pushd; cd providers/;
+cd providers
 go generate
-popd
 ```
 
 -   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
@@ -329,22 +353,6 @@ example we removed `providers.CanUseCAA` from the
     capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
     capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
     capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
-```
-
-## Step 3: Add a helper function
-
-Add a function to `pkg/js/helpers.js` for the new record type. This
-is the JavaScript file that defines `dnsconfig.js`'s functions like
-[`A()`](language-reference/domain-modifiers/A.md) and [`MX()`](language-reference/domain-modifiers/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
-examples to use as a base.
-
-Please add the function alphabetically with the others. Also, please run
-[prettier](https://github.com/prettier/prettier) on the file to ensure
-your code conforms to our coding standard:
-
-```shell
-npm install prettier
-node_modules/.bin/prettier --write pkg/js/helpers.js
 ```
 
 ## Step 4: Search for `#rtype_variations`
