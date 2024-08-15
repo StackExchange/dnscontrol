@@ -28,9 +28,9 @@ Info required in `creds.json`:
 
 Record level metadata available:
    - hw_line (refer below Huawei Cloud DNS API documentation for available lines, default "default_view")
-	 					 (https://support.huaweicloud.com/intl/en-us/api-dns/en-us_topic_0085546214.html)
+             (https://support.huaweicloud.com/intl/en-us/api-dns/en-us_topic_0085546214.html)
    - hw_weight (0-1000, default "1")
-	 - hw_rrset_key (default "")
+   - hw_rrset_key (default "")
 
 */
 
@@ -82,7 +82,7 @@ func newHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DN
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanAutoDNSSEC:          providers.Unimplemented("No public api provided, but can be turned on manually in the console."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
