@@ -143,9 +143,6 @@ func collectRecordsByLineAndWeightAndKey(records models.Records) map[string]mode
 		weight := rec.Metadata[metaWeight]
 		rrsetKey := rec.Metadata[metaKey]
 		key := weight + "," + line + "," + rrsetKey
-		if _, ok := recordsByLineAndWeight[key]; !ok {
-			recordsByLineAndWeight[key] = models.Records{}
-		}
 		recordsByLineAndWeight[key] = append(recordsByLineAndWeight[key], rec)
 	}
 	return recordsByLineAndWeight
