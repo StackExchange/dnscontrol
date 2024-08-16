@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypecfsingleredirect"
 )
 
 // makePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
@@ -13,7 +13,7 @@ func makePageRule(rc *models.RecordConfig, priority int, code uint16, when, then
 
 	rc.Type = "PAGE_RULE"
 	rc.TTL = 1
-	rc.Rdata = &rtypesingleredirect.SingleRedirect{
+	rc.Rdata = &rtypecfsingleredirect.SingleRedirect{
 		Code: code,
 		//
 		PRWhen:     when,

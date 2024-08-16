@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypecfsingleredirect"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
 )
@@ -316,18 +316,18 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 	case "PAGE_RULE":
 		return []*models.Correction{{
 			Msg: msg,
-			F:   func() error { return c.createPageRule(domainID, *newrec.AsSingleRedirect()) },
+			F:   func() error { return c.createPageRule(domainID, *newrec.AsCloudflareSingleRedirect()) },
 		}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
-	case rtypesingleredirect.Name:
+	case rtypecfsingleredirect.Name:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.createSingleRedirect(domainID, *newrec.AsSingleRedirect())
+				return c.createSingleRedirect(domainID, *newrec.AsCloudflareSingleRedirect())
 			},
 		}}
 	default:
@@ -343,8 +343,8 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
-	case rtypesingleredirect.Name:
-		idTxt = oldrec.AsSingleRedirect().SRRRulesetID
+	case rtypecfsingleredirect.Name:
+		idTxt = oldrec.AsCloudflareSingleRedirect().SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
 	}
@@ -355,10 +355,10 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.updatePageRule(idTxt, domainID, *newrec.AsSingleRedirect())
+				return c.updatePageRule(idTxt, domainID, *newrec.AsCloudflareSingleRedirect())
 			},
 		}}
-	case rtypesingleredirect.Name:
+	case rtypecfsingleredirect.Name:
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -391,7 +391,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
-	case rtypesingleredirect.Name:
+	case rtypecfsingleredirect.Name:
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
@@ -406,8 +406,8 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
-			case rtypesingleredirect.Name:
-				return c.deleteSingleRedirects(domainID, *origRec.AsSingleRedirect())
+			case rtypecfsingleredirect.Name:
+				return c.deleteSingleRedirects(domainID, *origRec.AsCloudflareSingleRedirect())
 			default:
 				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
 			}
@@ -558,7 +558,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
 				TranscodePRtoSR(rec)
-				if err := c.LogTranscode(dc.Name, rec.AsSingleRedirect()); err != nil {
+				if err := c.LogTranscode(dc.Name, rec.AsCloudflareSingleRedirect()); err != nil {
 					return err
 				}
 
@@ -573,7 +573,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 				// The copy becomes the CF SingleRedirect
 				TranscodePRtoSR(rec)
-				if err := c.LogTranscode(dc.Name, rec.AsSingleRedirect()); err != nil {
+				if err := c.LogTranscode(dc.Name, rec.AsCloudflareSingleRedirect()); err != nil {
 					return err
 				}
 				// Append the copy to the end of the list.
@@ -582,7 +582,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				// The original PAGE_RULE remains untouched.
 			}
 
-		} else if rec.Type == rtypesingleredirect.Name {
+		} else if rec.Type == rtypecfsingleredirect.Name {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
 				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
@@ -624,7 +624,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
-func (c *cloudflareProvider) LogTranscode(zone string, redirect *rtypesingleredirect.SingleRedirect) error {
+func (c *cloudflareProvider) LogTranscode(zone string, redirect *rtypecfsingleredirect.SingleRedirect) error {
 	// No filename? Don't log anything.
 	filename := c.tcLogFilename
 	if filename == "" {

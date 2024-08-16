@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypecfsingleredirect"
 )
 
 // RawRecordConfig stores the user-input from dnsconfig.js for a DNS
@@ -49,8 +49,8 @@ func ConvertRawRecords(domains []*DomainConfig) error {
 			args := rawRec.Args[1:]
 			switch rawRec.Type {
 
-			case rtypesingleredirect.Name:
-				rdata, error := rtypesingleredirect.FromRawArgs(args, label)
+			case rtypecfsingleredirect.Name:
+				rdata, error := rtypecfsingleredirect.FromRawArgs(args, label)
 				if error != nil {
 					return err
 				}
