@@ -1,27 +1,27 @@
 # Adding DNS Resource Types the "Rdata" way
 
-Terminology:
+In September 2024 DNSControl gained a new way to implement rtypes called
+"Rdata-style".  This can be used to add RFC-standard types such as LOC, as well
+as provider-specific types such as Cloudflare's "Single Redirect".
+
+This document explains how Rdata-style rtypes work and how to add a new record
+type using this method.
+
+The old and new styles are both supported.  All new rtypes should use
+Rdata-style. There is no need to convert the old rtypes to use Rdata-style,
+though we'll gladly accept PRs that convert existing rtypes to use Rdata.
+
+## Terminology
 
 * RType: A DNS "record type" such as an A, AAAA, CNAME, MX record.
 * RC-style: The original way to add new rtypes.
 * Rdata-style: The new way to add new rtypes, documented here.
 
-In September 2024 DNSControl gained a new way to implement rtypes called
-"Rdata-style".  This can be used to add RFC-standard types such as LOC, as well
-as provider-specific types such as Cloudflare's "Single Redirect".
-
-This document explains how RData-style rtypes work and how to add a new record
-type using this method.
-
-The old and new styles are both supported.  All new rtypes should use
-Rdata-style. There is no need to convert the old rtypes to use RData-style,
-though we'll gladly accept PRs that convert existing rtypes to use Rdata.
-
 ## Goals
 
 Goals of Rdata-style records:
 
-* **Goal: Make it considerably easier to add a new rtype.**
+* **Goal: Make it significantly easier to add a new rtype.**
   * Problem: RC-Style requires writing code in both Go and JavaScript.
   * Solution: Rdata-style requires only writing Go (plus 1 line of JavaScript)
 * **Goal: Make testing easier.**
@@ -29,7 +29,7 @@ Goals of Rdata-style records:
     helpers.js.
   * Solution: Rdata-style only uses Go (with 1 minor exception) and permits the
     use of the standard Go unit testing framework.
-* **Goal: Stop increasing the size of models.RecordConfig.**
+* **Goal: Reduce (or stop the growth of) models.RecordConfig.**
   * Problem: RC-Style requires each new rtype to add fields to RecordConfig.
     This consumes memory for every RecordConfig instance. For example, the
     DNSKEY rtype added 4 fields, consuming 14 bytes of memory even when the
@@ -37,9 +37,9 @@ Goals of Rdata-style records:
     the only option at the time!)
   * Solution: RecordConfig now has one field that is a pointer to struct, which
     is the right size for the rtype.
-* Goal: Isolate an rtype's implementation in the code base.
+* **Goal: Isolate an rtype's implementation in the code base.**
   * Problem: RC-Style spreads implementation all over the code base.
-  * RData-style: Code is isolated to a specific directory with many exceptions.
+  * Rdata-style: Code is isolated to a specific directory with many exceptions.
     The list of exceptions should shrink over time.
 
 ## Conceptual design
@@ -59,10 +59,9 @@ JavaScript environment, has no test coverage.
 
 The new way:
 
-In RData-style, the helpers.js function simply collects all the parameters and
-delivers them to the Go code verbatium.  A function in Go extracts the
-parameters and uses them to build a struct.  models.RecordConfig.Rdata points
-to that struct.
+In Rdata-style, the helpers.js function simply delivers all parameters to the
+Go code verbatium.  A function in Go extracts the parameters and uses them to
+build a struct.  models.RecordConfig.Rdata points to that struct.
 
 For example, `CF_SINGLE_REDIRECT()`'s implementation in helpers.js is one line:
 
@@ -70,11 +69,12 @@ For example, `CF_SINGLE_REDIRECT()`'s implementation in helpers.js is one line:
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 ```
 
-This creates a function called `CF_SINGLE_REDIRECT()` which users can use in `dnsconfig.js`.
+This creates a function called `CF_SINGLE_REDIRECT()` which users can use in
+`dnsconfig.js`.  It is unaware of how many parameters or their types.
 
 All the remaining code is in `dnscontrol/rtypes/rtype$NAME` (global rtypes)
 or `dnscontrol/providers/$PROVIDER/rtypes/rtype$NAME` (provider-specific rtypes).
-`$PROVIDER` is the name of the provider, and $NAME is the name of the record.
+(`$PROVIDER` is the name of the provider, and $NAME is the name of the record.)
 For example, the Cloudflare Single Redirect type would be in `providers/cloudflare/rtypes/rtypecfsingleredirect`.
 
 Yes, there is a lot of code outside the rtypes/rtype$NAME directory still.
@@ -94,35 +94,39 @@ var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
       function name                        rtype token
 ```
 
-* function name: This is the name that appears in `dnsconfig.js`.
+* function name: This is the name that users will enter in `dnsconfig.js`.
   * For RFC-standard types this should be the name of the type as it would appear in a zone file. (Example: `A`, `MX`, `LOC`)
   * For provider-specific types, the prefix should be the provider's name or initials (`CF_` for CloudFlare).
   * For pseudo-types that apply to any provider, use your best judgement.
 * rtype token: The string that is used in the models.RecordConfig.Type field.
-  * For RFC-standard types this should be the name of the type as it would appear in a zone file.
+  * For RFC-standard types this should be the same as the function name.
   * For provider-specific types, the prefix should be the provider's name exactly as it is used in `creds.json`.
-  * For pseudo-types that apply to any provider, it should be exactly the same as the function name.
+  * For pseudo-types this should be the same as the function name.
 
 ### Step X: Implement the rtype's functions
 
-General form:
+Complete the "Rdataer" interface (which is Go-speak for "write all the functions required for that interface).
+
+Create the file in:
 
 ```text
-providers/cloudflare/rtypes/rtype$NAME/$NAME.go
+providers/$PROVIDER/rtypes/rtype$name/$name.go        # Provider-specific
+rtypes/rtype$name/$name.go                            # Global
 ```
 
-Example:
+Examples:
 
 ```text
 providers/cloudflare/rtypes/rtypecfsingleredirect/cfsingleredirect.go
+rtypes/rtypeloc/loc.go
 ```
 
-Implement:
+In that file implement the following. (Copy from an existing file)
 
 * `const Name`: Same string as the "rtype token" in helpers.js
-* `init()`: Copy verbatim
+* `init()`: Copy verbatim. This is exactly the same for all rtypes.
 * Define the struct.  `type $Name struct` where `$Name` is the rtype name in mixed case.
-* function `Name`: Copy verbatium
+* function `Name`: Copy verbatim. This is exactly the same for all rtypes.
 * function `ComputeTarget`: returns the "target field" for the record. For example, an `MX` Record would return the hostname (not the preference number), an `A` record would return the IP address.
 * function `ComputeComparableMini`: returns a string representation of all the rtype's fields. This string is used for comparing two records. If there are any differences, the two are not considered the same. This string should be human-readable, since it is used in the output of `dnscontrol preview`.  For example, `MX` would output `50 example.com.`  Note that the label is not included, nor the TTL.
 * function `MarshalJSON`: returns a JSON representation of all the rtype's fields. Note that the label is not included, nor the TTL.
@@ -178,20 +182,22 @@ If you are new to go's "type assertions", here's a simple explanation:
 
 Here's the longer version:
 
-Here's how they work:
-
 * Each element of `items[]` is an interface. It can be any type.  Go needs us
   to tell us what type to expect when accessing it. It can't guess for us. This
   isn't Python!
 * We tell Go it is a string by referring to it as `items[1].(string)`.  This is
-  called a "type assertion" because we are asserting the type, since Go can't
-  guess it for us.
+  called a "type assertion" because we are asserting the type instead of allowing Go to figure it out. (because it can't)
 * This works great, except there's a catch: We we assert wrong, the code will
-  panic.  That's why we have to trust `PaveArgs` to do the right thing.
-* Wait!  If Go can't guess the type, how does it know it is wrong?  Well, it
-  does know. An interface stores both the value and the type. Therefore it
-  can check if we've asserted the wrong type. However, it can't generate code that works for all types. The type assertion tells the code generator what to do.
-* The Pave Pattern is something I created for DNSControl to make it easier to work with interfaces.  You won't see it elsewhere.  Most projects make you do all the work yourself.
+  panic.  If we write `item[3].(uint16)` and the data is a `string`, the code
+  will panic at run-time.  That's why we have to trust `PaveArgs` to do the
+  right thing.
+* Wait!  If Go can't guess the type, how does it know when we are wrong?  Ah
+  ha! It does know. An interface stores both the value and the type. Therefore
+  it can check if we've asserted the wrong type. However, it can't generate
+  code that works for all types. The type assertion tells the code generator
+  what to do.
+* The Pave Pattern is something I created for DNSControl to make it easier to
+  work with interfaces.  You won't see it elsewhere.
 * To learn more about Go's type assertions and "type switches", a good tutorial is here: [https://rednafi.com/go/type_assertion_vs_type_switches/](https://rednafi.com/go/type_assertion_vs_type_switches/)
 
 ```go
@@ -200,7 +206,8 @@ Here's how they work:
 }
 ```
 
-This calls a function that makes the struct (actually a pointer to a struct). For simple record types there's no need to make this a separate function.
+This calls a function that makes the struct (actually a pointer to a struct).
+For simple record types there's no need to make this a separate function.
 
 ### Step X: ConvertRawRecords
 
