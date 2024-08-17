@@ -46,6 +46,7 @@ providers/powerdns @jpbede
 providers/realtimeregister @PJEilers
 providers/route53 @tresni
 providers/rwth @mistererwin
+providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
 providers/transip @blackshadev
 providers/vultr @pgaskin

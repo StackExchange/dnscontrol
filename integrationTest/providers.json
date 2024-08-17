@@ -278,6 +278,12 @@
     "TYPE": "ROUTE53",
     "domain": "$ROUTE53_DOMAIN"
   },
+  "SAKURACLOUD": {
+    "TYPE": "SAKURACLOUD",
+    "access_token": "$SAKURACLOUD_ACCESS_TOKEN",
+    "access_token_secret": "$SAKURACLOUD_ACCESS_TOKEN_SECRET",
+    "domain": "$SAKURACLOUD_DOMAIN"
+  },
   "SOFTLAYER": {
     "TYPE": "SOFTLAYER",
     "api_key": "$SL_API_KEY",
