@@ -141,6 +141,7 @@ func TestErrors(t *testing.T) {
 		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
 		{"Dup domains", `D("example.org", "reg"); D("example.org", "reg")`},
 		{"Bad NAMESERVER", `D("example.com","reg", NAMESERVER("@","ns1.foo.com."))`},
+		{"Bad Hash function", `D(HASH("123", "abc"),"reg")`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {
