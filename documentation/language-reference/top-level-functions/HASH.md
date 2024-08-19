@@ -4,7 +4,7 @@ parameters:
   - algorithm
   - value
 parameter_types:
-  algorithm: string
+  algorithm: '"SHA1" | "SHA256" | "SHA512"'
   value: string
 ts_return: string
 ---

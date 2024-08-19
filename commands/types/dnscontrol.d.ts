@@ -1163,7 +1163,7 @@ declare function FRAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/hash
  */
-declare function HASH(algorithm: string, value: string): string;
+declare function HASH(algorithm: "SHA1" | "SHA256" | "SHA512", value: string): string;
 
 /**
  * HTTPS adds an HTTPS record to a domain. The name should be the relative label for the record. Use `@` for the domain apex. The HTTPS record is a special form of the SVCB resource record.
