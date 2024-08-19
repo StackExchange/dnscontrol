@@ -1,4 +1,4 @@
-# Adding DNS Resource Types the "Rdata" way
+# Creating new DNS Resource Types (Rdata-style)
 
 In September 2024 DNSControl gained a new way to implement rtypes called
 "Rdata-style".  This can be used to add RFC-standard types such as LOC, as well

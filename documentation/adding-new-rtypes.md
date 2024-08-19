@@ -1,4 +1,10 @@
-# Creating new DNS Resource Types (rtypes)
+# Creating new DNS Resource Types (RC-Style)
+
+{% hint style="warning" %}
+WARNING: This is the old way to add new resource types. It should not be used
+for new feature. The new way ("RData-style") is easier to implement and easier
+to test. See [Creating new DNS Resource Types (Rdata-style)](adding-new-rtypes-rdata.md)
+{% endhint %}
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes.
 However there are new record types being added all the time.
