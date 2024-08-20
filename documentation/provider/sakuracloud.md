@@ -62,14 +62,10 @@ var REG_NONE = NewRegistrar("none");
 var DSP_SAKURACLOUD = NewDnsProvider("sakuracloud");
 
 D("example.com", REG_NONE, DnsProvider(DSP_SAKURACLOUD),
-  DefaultTTL(3600),
   A("test", "192.0.2.1"),
 END);
 ```
 {% endcode %}
-
-The default TTL of Sakura Cloud is 3600, so it's recommended to set
-`DefaultTTL(3600)`.
 
 `NAMESERVER` does not need to be set as the name servers for the
 Sakura Cloud provider cannot be changed.
