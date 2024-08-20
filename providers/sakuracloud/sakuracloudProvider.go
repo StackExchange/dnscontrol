@@ -38,11 +38,14 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
+	const providerName = "SAKURACLOUD"
+	const providerMaintainer = "@ttkzw"
 	fns := providers.DspFuncs{
 		Initializer:   newSakuracloudDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("SAKURACLOUD", fns, features)
+	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 type sakuracloudProvider struct {
