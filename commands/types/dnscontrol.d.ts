@@ -1137,6 +1137,35 @@ declare function DnsProvider(name: string, nsCount?: number): DomainModifier;
 declare function FRAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `HASH` hashes `value` using the hashing algorithm given in `algorithm`
+ * (accepted values `SHA1`, `SHA256`, and `SHA512`) and returns the hex encoded
+ * hash value.
+ *
+ * example `HASH("SHA1", "abc")` returns `a9993e364706816aba3e25717850c26c9cd0d89d`.
+ *
+ * `HASH()`'s primary use case is for managing [catalog zones](https://datatracker.ietf.org/doc/html/rfc9432):
+ *
+ * > a method for automatic DNS zone provisioning among DNS primary and secondary name
+ * > servers by storing and transferring the catalog of zones to be provisioned as one
+ * > or more regular DNS zones.
+ *
+ * Here's an example of a catalog zone:
+ *
+ * ```javascript
+ * foo_name_suffix = HASH("SHA1", "foo.name") + ".zones"
+ * D("catalog.example"
+ *     [...]
+ *     , TXT("version", "2")
+ *     , PTR(foo_name_suffix, "foo.name.")
+ *     , A("primaries.ext." + foo_name_suffix, "192.168.1.1")
+ * )
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/top-level-functions/hash
+ */
+declare function HASH(algorithm: "SHA1" | "SHA256" | "SHA512", value: string): string;
+
+/**
  * HTTPS adds an HTTPS record to a domain. The name should be the relative label for the record. Use `@` for the domain apex. The HTTPS record is a special form of the SVCB resource record.
  *
  * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
