@@ -25,9 +25,11 @@ Example:
 {% endcode %}
 
 ## Metadata
+
 This provider does not recognize any special metadata fields unique to Oracle Cloud.
 
 ## Usage
+
 An example configuration:
 
 {% code title="dnsconfig.js" %}
@@ -42,3 +44,13 @@ D("example.com", REG_NONE, DnsProvider(DSP_ORACLE),
 END);
 ```
 {% endcode %}
+
+## Notes for developers
+
+Integration does not have the capability to set the TTL set differently when Oracle is the provider being tested.
+You will see an error message behind displayed, such as below, but it can be safely ignored.
+
+```Text
+=== RUN   TestDNSProviders/example.co.uk/Clean_Slate:Empty
+WARNING: Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of 300 for ns1.p201.dns.oraclecloud.net.
+```
