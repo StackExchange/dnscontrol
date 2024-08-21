@@ -20,6 +20,7 @@
   * [DOMAIN_ELSEWHERE_AUTO](language-reference/top-level-functions/DOMAIN_ELSEWHERE_AUTO.md)
   * [D_EXTEND](language-reference/top-level-functions/D_EXTEND.md)
   * [FETCH](language-reference/top-level-functions/FETCH.md)
+  * [HASH](language-reference/top-level-functions/HASH.md)
   * [IP](language-reference/top-level-functions/IP.md)
   * [NewDnsProvider](language-reference/top-level-functions/NewDnsProvider.md)
   * [NewRegistrar](language-reference/top-level-functions/NewRegistrar.md)
