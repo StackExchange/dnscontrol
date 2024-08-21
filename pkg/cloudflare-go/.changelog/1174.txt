@@ -1,3 +1,0 @@
-```release-note:enhancement
-dns: `GetDNSRecord`, `UpdateDNSRecord` and `DeleteDNSRecord` now return the new, dedicated error `ErrMissingDNSRecordID` when an empty DNS record ID is given.
-```

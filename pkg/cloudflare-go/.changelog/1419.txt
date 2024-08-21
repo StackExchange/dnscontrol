@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams: Add `audit_ssh_settings` endpoints
-```

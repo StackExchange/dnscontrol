@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps actions/setup-go from 3 to 4
-```

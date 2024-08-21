@@ -1,3 +1,0 @@
-```release-note:bug
-access_application: fix scim configuration authentication json marshalling
-```

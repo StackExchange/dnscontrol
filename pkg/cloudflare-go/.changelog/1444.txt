@@ -1,3 +1,0 @@
-```release-note:enchancement
-pages_project: Add standard as a usage model
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp_profile: Add new allowed_match_count field to profiles
-```

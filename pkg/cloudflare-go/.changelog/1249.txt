@@ -1,3 +1,0 @@
-```release-note:enhancement
-devices_policy: update `Mode` field to use new `ServiceMode` string type with explicit const service mode values
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-logpush: Add support for Output Options
-```

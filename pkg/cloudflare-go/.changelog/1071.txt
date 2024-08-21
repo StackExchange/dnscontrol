@@ -1,3 +1,0 @@
-```release-note:enhancement
-url_normalization_settings: Add APIs to get and update URL normalization settings
-```

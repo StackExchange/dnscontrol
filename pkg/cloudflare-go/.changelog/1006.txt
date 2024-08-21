@@ -1,3 +1,0 @@
-```release-note:bug
-access_application: fix inability to set bool values to false
-```

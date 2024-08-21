@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps github.com/urfave/cli/v2 from 2.25.6 to 2.25.7
-```

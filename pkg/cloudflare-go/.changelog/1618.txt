@@ -1,3 +1,0 @@
-```release-note:breaking-change
-dns: Remove "locked" flag which is always false
-```

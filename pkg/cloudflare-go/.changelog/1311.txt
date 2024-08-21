@@ -1,3 +1,0 @@
-```release-note:enhancement
-waiting_room: add support for `additional_routes` and `cookie_suffix`
-```

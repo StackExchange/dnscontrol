@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_rules: `AntiVirus` settings includes notification settings
-```

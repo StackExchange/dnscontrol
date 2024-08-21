@@ -1,3 +1,0 @@
-```release-note:bug
-workers_test: Use application/json mime-type in headers
-```

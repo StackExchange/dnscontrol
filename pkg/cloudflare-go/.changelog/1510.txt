@@ -1,3 +1,0 @@
-```release-note:bug
-dlp: added optional ContextAwareness support
-```

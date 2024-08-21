@@ -1,7 +1,0 @@
-```release-note:bug
-stream: Fix a bug that cannot unmarshal video duration number.
-```
-
-```release-note:breaking-change
-stream: StreamVideo.Duration has changed from int to float64.
-```

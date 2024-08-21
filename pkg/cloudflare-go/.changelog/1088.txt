@@ -1,3 +1,0 @@
-```release-note:enhancement
-stream: added metadata support
-```

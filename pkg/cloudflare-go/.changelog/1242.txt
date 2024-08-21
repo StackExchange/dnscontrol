@@ -1,7 +1,0 @@
-```release-note:bug
-teams_rules: `AllowChildBypass` changes from a `bool` to `*bool`
-```
-
-```release-note:bug
-teams_rules: `BypassParentRule` changes from a `bool` to `*bool`
-```

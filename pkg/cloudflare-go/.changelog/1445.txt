@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_group: Add support for email lists
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers_domain: add support for workers domain API
-```

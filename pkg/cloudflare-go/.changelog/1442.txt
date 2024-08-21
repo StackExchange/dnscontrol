@@ -1,3 +1,0 @@
-```release-note:enhancement
-load_balancing: add healthy field to LoadBalancerPool
-```

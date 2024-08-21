@@ -1,3 +1,0 @@
-```release-note:enhancement
-devices_policy: Add missing description field to policy
-```

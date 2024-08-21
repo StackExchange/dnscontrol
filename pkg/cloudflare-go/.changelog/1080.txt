@@ -1,3 +1,0 @@
-```release-note:bug
-cloudflare: exiting closer to the source on context timeouts to improve error messaging and better defend from potential edge cases
-```

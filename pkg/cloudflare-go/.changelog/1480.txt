@@ -1,7 +1,0 @@
-```release-note:bug
-access_seats: UpdateAccessUserSeat: fix parameters not being an array when sending to the api. This caused an error when updating a user's seat
-```
-
-```release-note:enhancement
-access_seats: Add `UpdateAccessUsersSeats` with an array as input for multiple operations
-```

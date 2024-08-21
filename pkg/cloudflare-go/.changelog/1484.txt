@@ -1,3 +1,0 @@
-```release-note:bug
-flarectl: alias zone certs to "ct" instead of duplicating the "c" alias
-```

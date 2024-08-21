@@ -1,3 +1,0 @@
-```release-note:enhancement
-r2: Add support for listing R2 buckets
-```

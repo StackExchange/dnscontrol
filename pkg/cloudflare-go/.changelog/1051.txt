@@ -1,3 +1,0 @@
-```release-note:enhancement
-pages_project: Add compatibility date and compatibility_flags to pages deployment configs
-```

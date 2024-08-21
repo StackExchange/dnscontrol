@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_service_token: add support for refreshing an existing token in place
-```

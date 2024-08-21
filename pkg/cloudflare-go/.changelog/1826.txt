@@ -1,3 +1,0 @@
-```release-note:enhancement
-gateway: added ecs_support field to teams_location resource
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudflare: automatically redact sensitive values from HTTP interactions
-```

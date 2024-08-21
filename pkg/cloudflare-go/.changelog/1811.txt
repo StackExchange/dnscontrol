@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_account: adds custom certificate setting to teams account configuration
-```

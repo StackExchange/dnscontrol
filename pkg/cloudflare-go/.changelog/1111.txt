@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp: Adds support for DLP resources
-```

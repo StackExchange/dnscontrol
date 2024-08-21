@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_application: add support for `name_id_transform_jsonata` in saas apps
-```

@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps golang.org/x/text from 0.3.7 to 0.3.8
-```

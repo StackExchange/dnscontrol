@@ -1,3 +1,0 @@
-```release-note:enhancement
-api_shield_discovery: Add support for Get/Patch API Shield API Discovery Operations
-```

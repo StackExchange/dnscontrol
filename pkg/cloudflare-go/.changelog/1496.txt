@@ -1,7 +1,0 @@
-```release-note:enhancement
-access_application: Add support for `allow_authenticate_via_warp`
-```
-
-```release-note:enhancement
-access_organization: Add support for `allow_authenticate_via_warp` and `warp_auth_session_duration`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-auditlogs: add support for hide_user_logs filter parameter
-```

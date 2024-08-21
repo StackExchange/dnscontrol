@@ -1,3 +1,0 @@
-```release-note:enhancement
-bot_management: add support for bot_management API
-```

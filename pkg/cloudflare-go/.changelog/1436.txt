@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_rules: Add support for resolver policies
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-flarectl: allow for create or update to actually create the record
-```

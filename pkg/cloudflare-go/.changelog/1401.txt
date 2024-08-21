@@ -1,3 +1,0 @@
-```release-note:enhancement
-observatory: add support for observatory API
-```

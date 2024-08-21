@@ -1,3 +1,0 @@
-```release-note:bug
-turnstile: remove `SiteKey` being sent in rotate secret's request body
-```

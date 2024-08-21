@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: `ioutil` package is being deprecated in favor of `io`
-```

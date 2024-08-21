@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_accounts: Add `use_zt_virtual_ip` attribute
-```

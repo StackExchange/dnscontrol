@@ -1,3 +1,0 @@
-```release-note:enhancement
-page_shield: added support for page shield
-```

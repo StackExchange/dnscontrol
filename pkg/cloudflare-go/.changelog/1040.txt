@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: Support for multipart encoding for DownloadWorker on a module-format Worker script
-```

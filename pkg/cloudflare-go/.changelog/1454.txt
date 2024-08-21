@@ -1,3 +1,0 @@
-```release-note:enhancement
-devices_policy: add fields for Opt-In Split Tunnel Overlapping IPs feature.
-```

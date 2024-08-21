@@ -1,3 +1,0 @@
-```release-note:enhancement
-errors: add some error type convenience functions for mocking and inspection
-```
