@@ -151,6 +151,7 @@
 * [PowerDNS](provider/powerdns.md)
 * [Realtime Register](provider/realtimeregister.md)
 * [RWTH DNS-Admin](provider/rwth.md)
+* [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
 * [Vultr](provider/vultr.md)

@@ -57,6 +57,7 @@ Currently supported DNS providers:
 - PowerDNS
 - Realtime Register
 - RWTH DNS-Admin
+- Sakura Cloud
 - SoftLayer
 - TransIP
 - Vultr
