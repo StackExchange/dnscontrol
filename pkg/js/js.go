@@ -74,6 +74,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	vm.Set("REVCOMPAT", reverseCompat)
 	vm.Set("glob", listFiles) // used for require_glob()
 	vm.Set("PANIC", jsPanic)
+	vm.Set("HASH", hashFunc)
 
 	// add cli variables to otto
 	for key, value := range variables {

@@ -51,6 +51,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/realtimeregister"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/route53"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/rwth"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/sakuracloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/transip"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/vultr"
