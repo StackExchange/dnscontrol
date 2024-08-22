@@ -75,11 +75,23 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
+	waitTime := 1
+retry:
 	listResp, err := o.client.ListZones(ctx, dns.ListZonesRequest{
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		return nil, err
+		if listResp.RawResponse.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return nil, err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		} else {
+			return nil, err
+		}
 	}
 
 	zones := make([]string, len(listResp.Items))
@@ -94,6 +106,8 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
+	waitTime := 1
+retry:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
@@ -101,10 +115,24 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	if err == nil {
 		return nil
 	}
-	if getResp.RawResponse.StatusCode != 404 {
-		return err
+	if err != nil {
+		if getResp.RawResponse.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		} else {
+			if getResp.RawResponse.StatusCode != 404 {
+				return err
+			}
+		}
 	}
 
+	waitTime = 1
+retryCreate:
 	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
@@ -113,9 +141,21 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 		},
 	})
 	if err != nil {
-		return err
+		if getResp.RawResponse.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retryCreate
+		} else {
+			return err
+		}
 	}
 
+	waitTime = 1
+retryGetZone:
 	// poll until the zone is ready
 	pollUntilAvailable := func(r common.OCIOperationResponse) bool {
 		if converted, ok := r.Response.(dns.GetZoneResponse); ok {
@@ -128,6 +168,17 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
 	})
+	if err != nil {
+		if getResp.RawResponse.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retryGetZone
+		}
+	}
 
 	return err
 }
@@ -136,12 +187,24 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
+	waitTime := 1
+retry:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		return nil, err
+		if getResp.RawResponse.StatusCode == 429 {
+			waitTime = waitTime * 2
+			if waitTime > 300 {
+				return nil, err
+			}
+			printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+			time.Sleep(time.Duration(waitTime+1) * time.Second)
+			goto retry
+		} else {
+			return nil, err
+		}
 	}
 
 	nss := make([]string, len(getResp.Zone.Nameservers))
@@ -164,9 +227,21 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 	}
 
 	for {
+		waitTime := 1
+retry:
 		getResp, err := o.client.GetZoneRecords(ctx, request)
 		if err != nil {
-			return nil, err
+			if getResp.RawResponse.StatusCode == 429 {
+				waitTime = waitTime * 2
+				if waitTime > 300 {
+					return nil, err
+				}
+				printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+				time.Sleep(time.Duration(waitTime+1) * time.Second)
+				goto retry
+			} else {
+				return nil, err
+			}
 		}
 
 		for _, record := range getResp.Items {
