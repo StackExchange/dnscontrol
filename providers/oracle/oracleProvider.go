@@ -65,6 +65,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, err
 	}
 
+	// Set default retry policy to handle 429 automatically
+	defaultRetryPolicy := common.DefaultRetryPolicy()
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &defaultRetryPolicy,
+	})
+
 	return &oracleProvider{
 		client:      client,
 		compartment: settings["compartment"],
@@ -76,15 +82,10 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retry:
 	listResp, err := o.client.ListZones(ctx, dns.ListZonesRequest{
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		if pauseAndRetry(listResp.HTTPResponse()) {
-			goto retry
-		}
 		return nil, err
 	}
 
@@ -100,8 +101,6 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retryFirstGetZone:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
@@ -110,17 +109,12 @@ retryFirstGetZone:
 		return nil
 	}
 	if err != nil {
-		if pauseAndRetry(getResp.HTTPResponse()) {
-			goto retryFirstGetZone
-		}
 		if getResp.RawResponse.StatusCode != 404 {
 			return err
 		}
 	}
 
-	waitTime = 1
-retryCreate:
-	createResp, err := o.client.CreateZone(ctx, dns.CreateZoneRequest{
+	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
 			Name:          &domain,
@@ -128,14 +122,9 @@ retryCreate:
 		},
 	})
 	if err != nil {
-		if pauseAndRetry(createResp.HTTPResponse()) {
-			goto retryCreate
-		}
 		return err
 	}
 
-	waitTime = 1
-retrySecondGetZone:
 	// poll until the zone is ready
 	pollUntilAvailable := func(r common.OCIOperationResponse) bool {
 		if converted, ok := r.Response.(dns.GetZoneResponse); ok {
@@ -143,16 +132,11 @@ retrySecondGetZone:
 		}
 		return true
 	}
-	getResp, err = o.client.GetZone(ctx, dns.GetZoneRequest{
+	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:    &domain,
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
 	})
-	if err != nil {
-		if pauseAndRetry(createResp.HTTPResponse()) {
-			goto retrySecondGetZone
-		}
-	}
 
 	return err
 }
@@ -161,16 +145,11 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retry:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		if pauseAndRetry(getResp.HTTPResponse()) {
-			goto retry
-		}
 		return nil, err
 	}
 
@@ -194,13 +173,8 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 	}
 
 	for {
-		waitTime = 1
-retry:
 		getResp, err := o.client.GetZoneRecords(ctx, request)
 		if err != nil {
-			if pauseAndRetry(getResp.HTTPResponse()) {
-				goto retry
-			}
 			return nil, err
 		}
 
@@ -253,12 +227,12 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 		recNS := rec.GetTargetField()
 		if rec.GetLabel() == "@" && strings.HasSuffix(recNS, "dns.oraclecloud.com.") {
-			printer.Warnf("Oracle Cloud does not allow changes to built-in apex NS records. Ignoring change to %s...\n", recNS)
+			// printer.Warnf("Oracle Cloud does not allow changes to built-in apex NS records. Ignoring change to %s...\n", recNS)
 			continue
 		}
 
 		if rec.TTL != 86400 {
-			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			// printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}
@@ -345,13 +319,8 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 		}
 		patchReq.Items = ops[batchStart:batchEnd]
 
-		waitTime = 1
-retry:
-		response, err := o.client.PatchZoneRecords(ctx, patchReq)
+		_, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
-			if pauseAndRetry(response.HTTPResponse()) {
-				goto retry
-			}
 			return err
 		}
 	}
@@ -379,22 +348,4 @@ func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOp
 		Ttl:       &ttl,
 		Operation: op,
 	}
-}
-
-// waitTime is the amount of time to sleep if a 429 is received.
-// Must be reset before every query
-var waitTime = 1
-
-func pauseAndRetry(resp *http.Response) bool {
-	if resp.StatusCode == 429 {
-		waitTime = waitTime * 2
-		if waitTime > 300 {
-			printer.Printf("Oracle: max wait for rate-limit reached.\n")
-			return false
-		}
-		printer.Printf("Oracle: API rate-limit hit, pause for %v seconds.\n", waitTime)
-		time.Sleep(time.Duration(waitTime+1) * time.Second)
-		return true
-	}
-	return false
 }
