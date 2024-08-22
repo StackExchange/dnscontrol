@@ -8,7 +8,7 @@ import (
 // PaveArgs converts each arg to its desired type, or returns an error if conversion fails or if the number of arguments is wrong.
 // argTypes is a string where each rune specifies the desired type of the arg in the same position:
 // 'i': uinet16 (will convert strings, truncate floats, etc)
-// 's': Valid only if string.
+// 's': string (will convert non-strings via printf's "%v" verb)
 func PaveArgs(args []any, argTypes string) error {
 
 	if len(args) != len(argTypes) {
@@ -36,7 +36,7 @@ func PaveArgs(args []any, argTypes string) error {
 				return fmt.Errorf("value %q is type %T, expected uint16", arg, arg)
 			}
 
-		case 's':
+		case 's': // string
 			if _, ok := arg.(string); ok {
 				args[i] = arg.(string)
 			} else {

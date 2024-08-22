@@ -782,29 +782,6 @@ function locDMSBuilder(record, args) {
     // }
 }
 
-// LOC(name,d1,m1,s1,ns,d2,m2,s2,ew,alt,siz,hp,vp, recordModifiers...)
-var LOC = recordBuilder('LOC', {
-    args: [
-        ['name', _.isString], //i.e. subdomain
-        ['d1', _.isNumber], // N/S degrees
-        ['m1', _.isNumber], // N/S minutes
-        ['s1', _.isNumber], // N/S seconds
-        ['ns', _.isString], // N/S
-        ['d2', _.isNumber], // E/W degrees
-        ['m2', _.isNumber], // E/W minutes
-        ['s2', _.isNumber], // E/W seconds
-        ['ew', _.isString], // E/W
-        ['alt', _.isNumber], // altitude
-        ['siz', _.isNumber], // size/precision
-        ['hp', _.isNumber], // horizontal precision
-        ['vp', _.isNumber], // vertical precision
-    ],
-    transform: function (record, args, modifiers) {
-        record = locStringBuilder(record, args);
-        record = locDMSBuilder(record, args);
-    },
-});
-
 function ConvertDDToDMS(D, longitude) {
     //stackoverflow, baby. do not re-order the rows.
     return {
@@ -1980,7 +1957,13 @@ function rawrecordBuilder(type) {
     };
 }
 
-// PLEASE KEEP THIS LIST ALPHABETICAL!
+// Universal types:
+var LOC = rawrecordBuilder('LOC'); // RFC 1876
+var LOC_ZONE = rawrecordBuilder('LOC_ZONE'); // RFC 1876
+var LOC_BUILDER_DD = rawrecordBuilder('LOC_BUILDER_DD'); // RFC 1876
+var LOC_BUILDER_DMS_STR = rawrecordBuilder('LOC_BUILDER_DMS_STR'); // RFC 1876
+var LOC_BUILDER_DMM_STR = rawrecordBuilder('LOC_BUILDER_DMM_STR'); // RFC 1876
+var LOC_BUILDER_STR = rawrecordBuilder('LOC_BUILDER_STR'); // RFC 1876
 
-// CLOUDFLAREAPI:
+// CLOUDFLAREAPI
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');

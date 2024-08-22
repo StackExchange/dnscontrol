@@ -41,6 +41,10 @@ Goals of Rdata-style records:
   * Problem: RC-Style spreads implementation all over the code base.
   * Rdata-style: Code is isolated to a specific directory with many exceptions.
     The list of exceptions should shrink over time.
+  * Example: RC-style downcases and normalizes fields in normalize.ValidateAndNormalizeConfig().  Rdata-style pushes that to the rtype's implementation.
+* **Goal: Shift responsibility to the rtype code where possible.**
+  * Problem: RC-Style generates comparison, target, and "display" strings dynamically, requiring other systems to cache this data for speed. It makes more sense to pre-compute these strings because they are always needed. There is no situation where they aren't computed. Therefore, lazy creation and caching is the wrong model.
+  * Rdata-style: The rtype's implementation provides interface functions that do these things. They are called exactly once and the results are stored. Care is taken to reduce memory allocations.
 
 ## Conceptual design
 
@@ -114,6 +118,8 @@ providers/$PROVIDER/rtypes/rtype$name/$name.go        # Provider-specific
 rtypes/rtype$name/$name.go                            # Global
 ```
 
+The go "package" line should be the same as the subdirectory.
+
 Examples:
 
 ```text
@@ -178,7 +184,7 @@ This is also where you can validate the inputs. In this example, `code` must be 
 
 If you are new to go's "type assertions", here's a simple explanation:
 
-* Go doesn't know what type of data is in `item[]` (they are of type `any`). Therefore, we have to tell Go by adding `.(string)` or `.(uint16)`.  We can trust that these are ZZ
+* Go doesn't know what type of data is in `item[]` (they are of type `any`). Therefore, we have to tell Go by adding `.(string)` or `.(uint16)`.  Go will panic at runtime if we specify the wrong type. However we can trust PaveArgs has paved them to the type we expect.
 
 Here's the longer version:
 
@@ -261,6 +267,8 @@ Add the rtype's `Foo()` function. For example, if you are adding an rtype FOO, a
 Follow the examples. It should be exactly the same as `SingleRedirect()` with `SingleRedirect` changed to `FOO`.
 
 ### Step X: Add this to a provider
+
+TODO: Explain Seal and ReSeal.
 
 ### Step X: Add integration etsts
 

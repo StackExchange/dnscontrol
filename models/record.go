@@ -102,27 +102,27 @@ type RecordConfig struct {
 	ComparableMini string  `json:"-"`               // Pre-Computed string used to compare equality of two Rdatas
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
-	MxPreference     uint16            `json:"mxpreference,omitempty"`
-	SrvPriority      uint16            `json:"srvpriority,omitempty"`
-	SrvWeight        uint16            `json:"srvweight,omitempty"`
-	SrvPort          uint16            `json:"srvport,omitempty"`
-	CaaTag           string            `json:"caatag,omitempty"`
-	CaaFlag          uint8             `json:"caaflag,omitempty"`
-	DsKeyTag         uint16            `json:"dskeytag,omitempty"`
-	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
-	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
-	DsDigest         string            `json:"dsdigest,omitempty"`
-	DnskeyFlags      uint16            `json:"dnskeyflags,omitempty"`
-	DnskeyProtocol   uint8             `json:"dnskeyprotocol,omitempty"`
-	DnskeyAlgorithm  uint8             `json:"dnskeyalgorithm,omitempty"`
-	DnskeyPublicKey  string            `json:"dnskeypublickey,omitempty"`
-	LocVersion       uint8             `json:"locversion,omitempty"`
-	LocSize          uint8             `json:"locsize,omitempty"`
-	LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
-	LocVertPre       uint8             `json:"locvertpre,omitempty"`
-	LocLatitude      uint32            `json:"loclatitude,omitempty"`
-	LocLongitude     uint32            `json:"loclongitude,omitempty"`
-	LocAltitude      uint32            `json:"localtitude,omitempty"`
+	MxPreference    uint16 `json:"mxpreference,omitempty"`
+	SrvPriority     uint16 `json:"srvpriority,omitempty"`
+	SrvWeight       uint16 `json:"srvweight,omitempty"`
+	SrvPort         uint16 `json:"srvport,omitempty"`
+	CaaTag          string `json:"caatag,omitempty"`
+	CaaFlag         uint8  `json:"caaflag,omitempty"`
+	DsKeyTag        uint16 `json:"dskeytag,omitempty"`
+	DsAlgorithm     uint8  `json:"dsalgorithm,omitempty"`
+	DsDigestType    uint8  `json:"dsdigesttype,omitempty"`
+	DsDigest        string `json:"dsdigest,omitempty"`
+	DnskeyFlags     uint16 `json:"dnskeyflags,omitempty"`
+	DnskeyProtocol  uint8  `json:"dnskeyprotocol,omitempty"`
+	DnskeyAlgorithm uint8  `json:"dnskeyalgorithm,omitempty"`
+	DnskeyPublicKey string `json:"dnskeypublickey,omitempty"`
+	//LocVersion       uint8             `json:"locversion,omitempty"`
+	//LocSize          uint8             `json:"locsize,omitempty"`
+	//LocHorizPre      uint8             `json:"lochorizpre,omitempty"`
+	//LocVertPre       uint8             `json:"locvertpre,omitempty"`
+	//LocLatitude      uint32            `json:"loclatitude,omitempty"`
+	//LocLongitude     uint32            `json:"loclongitude,omitempty"`
+	//LocAltitude      uint32            `json:"localtitude,omitempty"`
 	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
 	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
 	NaptrFlags       string            `json:"naptrflags,omitempty"`
