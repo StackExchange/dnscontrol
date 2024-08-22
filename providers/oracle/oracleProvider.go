@@ -309,8 +309,20 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 			batchEnd = len(ops)
 		}
 		patchReq.Items = ops[batchStart:batchEnd]
-		_, err := o.client.PatchZoneRecords(ctx, patchReq)
+
+		waitTime := 1
+retry:
+		response, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
+			if response.HTTPResponse().StatusCode == 429 {
+				waitTime = waitTime * 2
+				if waitTime > 300 {
+					return err
+				}
+				printer.Printf("Oracle: API rate-limit hit, pause for %v seconds.\n", waitTime)
+				time.Sleep(time.Duration(waitTime+1) * time.Second)
+				goto retry
+			}
 			return err
 		}
 	}
