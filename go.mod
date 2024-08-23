@@ -39,7 +39,6 @@ require (
 	github.com/mittwald/go-powerdns v0.6.4
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.10.0
-	github.com/oracle/oci-go-sdk/v32 v32.0.0
 	github.com/ovh/go-ovh v1.4.3
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pkg/errors v0.9.1
@@ -69,6 +68,7 @@ require (
 	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
+	github.com/oracle/oci-go-sdk/v65 v65.72.0
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/text v0.17.0
@@ -133,7 +133,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/oracle/oci-go-sdk/v65 v65.72.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/peterhellberg/link v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
