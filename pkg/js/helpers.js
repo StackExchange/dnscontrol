@@ -1244,23 +1244,10 @@ var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
 // y: Decimal Y coordinate.
 // alt: Altitude in m. You imperial measurement system people are suckers for punishment.
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
-
-function LOC_BUILDER_DD(value) {
-    if (!value.x && !value.y) {
-        throw 'LOC_BUILDER_DD requires x and y elements';
-    }
-
-    if (!value.label) {
-        value.label = '@';
-    }
-
-    var lati = ConvertDDToDMS(value.x, false);
-    var long = ConvertDDToDMS(value.y, true);
-
-    dms = { lati: lati, long: long };
-
-    return LOC_builder_push(value, dms);
+function LOC_BUILDER_DD(...args) {
+   return LOC_builder("DD", ...args);
 }
+//https://stackoverflow.com/questions/4706236/how-to-pass-all-arguments-as-collection-to-another-function-and-not-as-single-ar
 
 // LOC_BUILDER_DMM_STR takes an object:
 // label: The DNS label for the LOC record. (default: '@')
@@ -1268,18 +1255,8 @@ function LOC_BUILDER_DD(value) {
 // alt: Altitude in m. You imperial measurement system people are suckers for punishment.
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
-function LOC_BUILDER_DMM_STR(value) {
-    if (!value.str) {
-        throw 'LOC_BUILDER_DMM_STR requires a string of the form 25.24°S 153.15°E';
-    }
-
-    if (!value.label) {
-        value.label = '@';
-    }
-
-    var dms = parseDMMCoordinatesString(value.str);
-
-    return LOC_builder_push(value, dms);
+function LOC_BUILDER_DMM_STR(...args) {
+   return LOC_builder("DMM_STR", ...args);
 }
 
 // LOC_BUILDER_DMS_STR takes an object:
@@ -1288,18 +1265,8 @@ function LOC_BUILDER_DMM_STR(value) {
 // alt: Altitude in m. You imperial measurement system people are suckers for punishment.
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
-function LOC_BUILDER_DMS_STR(value) {
-    if (!value.str) {
-        throw 'LOC_BUILDER_DMS_STR requires a string of the form 33°51′31″S 151°12′51″Es (or 33°51\'31"S 151°12\'51"Es)';
-    }
-
-    if (!value.label) {
-        value.label = '@';
-    }
-
-    var dms = parseDMSCoordinatesString(value.str);
-
-    return LOC_builder_push(value, dms);
+function LOC_BUILDER_DMS_STR(...args) {
+   return LOC_builder("DMS_STR", ...args);
 }
 
 // LOC_BUILDER_STR takes an object:
@@ -1308,110 +1275,8 @@ function LOC_BUILDER_DMS_STR(value) {
 // alt: Altitude in m. You imperial measurement system people are suckers for punishment.
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
-function LOC_BUILDER_STR(value) {
-    if (!value.str) {
-        throw 'LOC_BUILDER_STR requires a string';
-    }
-
-    if (!value.label) {
-        value.label = '@';
-    }
-
-    var dms = parseDMMCoordinatesString(value.str);
-    if (!dms) dms = parseDMSCoordinatesString(value.str);
-
-    return LOC_builder_push(value, dms);
-}
-
-function LOC_builder_push(value, dms) {
-    r = []; // The list of records to return.
-    p = {}; // The metaparameters to set on the LOC record.
-    // rawloc = "";
-
-    // Generate a LOC record with the metaparameters.
-    if (value.ttl) {
-        if (value.alt)
-            r.push(
-                LOC(
-                    value.label,
-                    dms.lati.dg,
-                    dms.lati.mn,
-                    dms.lati.sc,
-                    dms.lati.hemi,
-                    dms.long.dg,
-                    dms.long.mn,
-                    dms.long.sc,
-                    dms.long.hemi,
-                    value.alt,
-                    0,
-                    0,
-                    0,
-                    p,
-                    TTL(value.ttl)
-                )
-            );
-        else
-            r.push(
-                LOC(
-                    value.label,
-                    dms.lati.dg,
-                    dms.lati.mn,
-                    dms.lati.sc,
-                    dms.lati.hemi,
-                    dms.long.dg,
-                    dms.long.mn,
-                    dms.long.sc,
-                    dms.long.hemi,
-                    0,
-                    0,
-                    0,
-                    0,
-                    p,
-                    TTL(value.ttl)
-                )
-            );
-    } else {
-        if (value.alt)
-            r.push(
-                LOC(
-                    value.label,
-                    dms.lati.dg,
-                    dms.lati.mn,
-                    dms.lati.sc,
-                    dms.lati.hemi,
-                    dms.long.dg,
-                    dms.long.mn,
-                    dms.long.sc,
-                    dms.long.hemi,
-                    value.alt,
-                    0,
-                    0,
-                    0,
-                    p
-                )
-            );
-        else
-            r.push(
-                LOC(
-                    value.label,
-                    dms.lati.dg,
-                    dms.lati.mn,
-                    dms.lati.sc,
-                    dms.lati.hemi,
-                    dms.long.dg,
-                    dms.long.mn,
-                    dms.long.sc,
-                    dms.long.hemi,
-                    0,
-                    0,
-                    0,
-                    0,
-                    p
-                )
-            );
-    }
-
-    return r;
+function LOC_BUILDER_STR(...args) {
+   return LOC_builder("STR", ...args);
 }
 
 // SPF_BUILDER takes an object:
@@ -1959,11 +1824,7 @@ function rawrecordBuilder(type) {
 
 // Universal types:
 var LOC = rawrecordBuilder('LOC'); // RFC 1876
-var LOC_ZONE = rawrecordBuilder('LOC_ZONE'); // RFC 1876
-var LOC_BUILDER_DD = rawrecordBuilder('LOC_BUILDER_DD'); // RFC 1876
-var LOC_BUILDER_DMS_STR = rawrecordBuilder('LOC_BUILDER_DMS_STR'); // RFC 1876
-var LOC_BUILDER_DMM_STR = rawrecordBuilder('LOC_BUILDER_DMM_STR'); // RFC 1876
-var LOC_BUILDER_STR = rawrecordBuilder('LOC_BUILDER_STR'); // RFC 1876
+var LOC_builder = rawrecordBuilder('LOC_BUILDER');
 
 // CLOUDFLAREAPI
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
