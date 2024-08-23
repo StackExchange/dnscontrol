@@ -195,7 +195,7 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 
 	for {
 		waitTime = 1
-retry:
+	retry:
 		getResp, err := o.client.GetZoneRecords(ctx, request)
 		if err != nil {
 			if pauseAndRetry(getResp.HTTPResponse()) {
@@ -346,7 +346,7 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 		patchReq.Items = ops[batchStart:batchEnd]
 
 		waitTime = 1
-retry:
+	retry:
 		response, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
 			if pauseAndRetry(response.HTTPResponse()) {
