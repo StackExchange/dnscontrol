@@ -3,7 +3,6 @@ package oracle
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"strings"
 	"time"
 
@@ -11,9 +10,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/oracle/oci-go-sdk/v32/common"
-	"github.com/oracle/oci-go-sdk/v32/dns"
-	"github.com/oracle/oci-go-sdk/v32/example/helpers"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/dns"
+	"github.com/oracle/oci-go-sdk/v65/example/helpers"
 )
 
 var features = providers.DocumentationNotes{
@@ -65,6 +64,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, err
 	}
 
+	// Set default retry policy to handle 429 automatically
+	defaultRetryPolicy := common.DefaultRetryPolicy()
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &defaultRetryPolicy,
+	})
+
 	return &oracleProvider{
 		client:      client,
 		compartment: settings["compartment"],
@@ -76,15 +81,10 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retry:
 	listResp, err := o.client.ListZones(ctx, dns.ListZonesRequest{
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		if pauseAndRetry(listResp.HTTPResponse()) {
-			goto retry
-		}
 		return nil, err
 	}
 
@@ -100,8 +100,6 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retryFirstGetZone:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
@@ -109,18 +107,11 @@ retryFirstGetZone:
 	if err == nil {
 		return nil
 	}
-	if err != nil {
-		if pauseAndRetry(getResp.HTTPResponse()) {
-			goto retryFirstGetZone
-		}
-		if getResp.RawResponse.StatusCode != 404 {
-			return err
-		}
+	if getResp.RawResponse.StatusCode != 404 {
+		return err
 	}
 
-	waitTime = 1
-retryCreate:
-	createResp, err := o.client.CreateZone(ctx, dns.CreateZoneRequest{
+	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
 			Name:          &domain,
@@ -128,14 +119,9 @@ retryCreate:
 		},
 	})
 	if err != nil {
-		if pauseAndRetry(createResp.HTTPResponse()) {
-			goto retryCreate
-		}
 		return err
 	}
 
-	waitTime = 1
-retrySecondGetZone:
 	// poll until the zone is ready
 	pollUntilAvailable := func(r common.OCIOperationResponse) bool {
 		if converted, ok := r.Response.(dns.GetZoneResponse); ok {
@@ -148,11 +134,6 @@ retrySecondGetZone:
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
 	})
-	if err != nil {
-		if pauseAndRetry(createResp.HTTPResponse()) {
-			goto retrySecondGetZone
-		}
-	}
 
 	return err
 }
@@ -161,16 +142,11 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	waitTime = 1
-retry:
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
 	})
 	if err != nil {
-		if pauseAndRetry(getResp.HTTPResponse()) {
-			goto retry
-		}
 		return nil, err
 	}
 
@@ -194,13 +170,8 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 	}
 
 	for {
-		waitTime = 1
-	retry:
 		getResp, err := o.client.GetZoneRecords(ctx, request)
 		if err != nil {
-			if pauseAndRetry(getResp.HTTPResponse()) {
-				goto retry
-			}
 			return nil, err
 		}
 
@@ -345,13 +316,8 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 		}
 		patchReq.Items = ops[batchStart:batchEnd]
 
-		waitTime = 1
-	retry:
-		response, err := o.client.PatchZoneRecords(ctx, patchReq)
+		_, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
-			if pauseAndRetry(response.HTTPResponse()) {
-				goto retry
-			}
 			return err
 		}
 	}
@@ -379,22 +345,4 @@ func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOp
 		Ttl:       &ttl,
 		Operation: op,
 	}
-}
-
-// waitTime is the amount of time to sleep if a 429 is received.
-// Must be reset before every query
-var waitTime = 1
-
-func pauseAndRetry(resp *http.Response) bool {
-	if resp.StatusCode == 429 {
-		waitTime = waitTime * 2
-		if waitTime > 300 {
-			printer.Printf("Oracle: max wait for rate-limit reached.\n")
-			return false
-		}
-		printer.Printf("Oracle: API rate-limit hit, pause for %v seconds.\n", waitTime)
-		time.Sleep(time.Duration(waitTime+1) * time.Second)
-		return true
-	}
-	return false
 }
