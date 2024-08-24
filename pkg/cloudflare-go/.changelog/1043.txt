@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudflare: make it clear when the rate limit retries have been exhausted
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp: add support for EDM and CWL datasets
-```

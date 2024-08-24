@@ -1,3 +1,0 @@
-```release-note:internal
-cloudflare: bump minimum Go version to 1.19
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_application: added custom_non_identity_deny_url
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-magic_transit_ipsec_tunnel: Adds support for replay_protection boolean flag
-```

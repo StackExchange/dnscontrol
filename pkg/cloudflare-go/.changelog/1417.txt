@@ -1,3 +1,0 @@
-```release-note:enhancement
-d1: adds support for d1
-```

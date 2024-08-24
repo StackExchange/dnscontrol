@@ -1,3 +1,0 @@
-```release-note:enhancement
-dex_test: add CRUD functionality for DEX test configurations
-```

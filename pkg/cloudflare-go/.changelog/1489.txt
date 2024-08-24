@@ -1,3 +1,0 @@
-```release-note:enhancement
-pages_project: Add `build_caching` attribute
-```

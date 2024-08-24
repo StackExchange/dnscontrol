@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: script upload now supports Queues bindings
-```

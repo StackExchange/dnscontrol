@@ -1,3 +1,0 @@
-```release-note:enhancement
-waiting_room: add support for waiting room rules
-```

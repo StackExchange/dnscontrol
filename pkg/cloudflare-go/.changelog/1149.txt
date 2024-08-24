@@ -1,3 +1,0 @@
-```release-note:enhancement
-tiered_cache: Add support for Tiered Caching interactions for setting Smart and Generic topologies
-```

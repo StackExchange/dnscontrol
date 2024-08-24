@@ -1,3 +1,0 @@
-```release-note:bug
-flarectl/dns: ensure MX priority value is dereferenced
-```

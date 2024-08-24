@@ -1,3 +1,0 @@
-```release-note:enhancement
-api_shield: add GET/PUT for API Shield Configuration
-```

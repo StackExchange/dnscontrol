@@ -1,3 +1,0 @@
-```release-note:enhancement
-r2: Add in support for creating and deleting R2 buckets
-```

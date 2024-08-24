@@ -1,3 +1,0 @@
-```release-note:enhancement
-access: Add `auto_redirect_to_identity` flag to Access organizations
-```

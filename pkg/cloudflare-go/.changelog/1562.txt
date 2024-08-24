@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_application: add support for `saml_attribute_transform_jsonata` in saas apps
-```

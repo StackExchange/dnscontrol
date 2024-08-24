@@ -1,3 +1,0 @@
-```release-note:bug
-tunnel: Fix 'CreateTunnel' for tunnels using config_src
-```

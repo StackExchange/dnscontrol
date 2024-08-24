@@ -10,9 +10,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/oracle/oci-go-sdk/v32/common"
-	"github.com/oracle/oci-go-sdk/v32/dns"
-	"github.com/oracle/oci-go-sdk/v32/example/helpers"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/dns"
+	"github.com/oracle/oci-go-sdk/v65/example/helpers"
 )
 
 var features = providers.DocumentationNotes{
@@ -63,6 +63,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	if err != nil {
 		return nil, err
 	}
+
+	// Set default retry policy to handle 429 automatically
+	defaultRetryPolicy := common.DefaultRetryPolicy()
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &defaultRetryPolicy,
+	})
 
 	return &oracleProvider{
 		client:      client,
@@ -123,7 +129,7 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 		}
 		return true
 	}
-	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
+	getResp, err = o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:    &domain,
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
@@ -149,7 +155,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	return models.ToNameserversStripTD(nss)
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
@@ -309,6 +315,7 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 			batchEnd = len(ops)
 		}
 		patchReq.Items = ops[batchStart:batchEnd]
+
 		_, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
 			return err

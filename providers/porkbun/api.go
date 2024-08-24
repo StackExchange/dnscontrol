@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"io"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 const (
@@ -108,12 +109,6 @@ retry:
 	}
 
 	return bodyString, nil
-}
-
-func (c *porkbunProvider) ping() error {
-	params := requestParams{}
-	_, err := c.post("/ping", params)
-	return err
 }
 
 func (c *porkbunProvider) createRecord(domain string, rec requestParams) error {

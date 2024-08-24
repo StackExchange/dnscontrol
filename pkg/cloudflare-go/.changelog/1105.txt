@@ -1,3 +1,0 @@
-```release-note:enhancement
-total_tls: adds support for TotalTLS
-```

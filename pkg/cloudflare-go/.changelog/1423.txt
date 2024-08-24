@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams: Add support for body_scanning (Enhanced File Detection) in teams account configuration
-```

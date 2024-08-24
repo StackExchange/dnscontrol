@@ -42,7 +42,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_HWCLOUD),
     A("test", "223.5.5.5", {hw_line: "CN"}), // GEODNS
     A("test", "223.6.6.6", {hw_line: "CN", hw_weight: "10"}), // GEODNS with weight
 
-    // this example will create 3 rrsets with the same name "lb"
+    // this example will create 3 rrsets with the same name "rr-lb"
     A("rr-lb", "10.0.0.1", {hw_weight: "10", hw_rrset_key: "lb-zone-a"}),
     A("rr-lb", "10.0.0.2", {hw_weight: "10", hw_rrset_key: "lb-zone-a"}),
     A("rr-lb", "10.0.1.1", {hw_weight: "10", hw_rrset_key: "lb-zone-b"}),
@@ -95,7 +95,7 @@ The minimum permissions required are as follows:
 }
 ```
 
-To determine the `Region` parameter, refer to the [endpoint page of huaweicloud](https://developer.huaweicloud.com/intl/en-us/endpoint?DNS). For example, on the international site, the `Region` name `ap-southeast-1` is known to work.
+To determine the `Region` parameter, refer to the [endpoint page of huaweicloud](https://console-intl.huaweicloud.com/apiexplorer/#/endpoint/DNS). For example, on the international site, the `Region` name `ap-southeast-1` is known to work.
 
 If that doesn't work, log into Huaweicloud's website and open the [API Explorer](https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/debug?api=ListPublicZones), find the `ListPublicZones` API, select a different Region and click Debug to try and find your Region.
 

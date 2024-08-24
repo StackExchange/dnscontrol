@@ -1,3 +1,0 @@
-```release-note:bug
-load_balancing: Add support for virtual network id in origins
-```

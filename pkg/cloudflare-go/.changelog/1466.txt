@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps golang.org/x/crypto from 0.14.0 to 0.17.0
-```

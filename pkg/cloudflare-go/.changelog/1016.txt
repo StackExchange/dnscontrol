@@ -1,7 +1,0 @@
-```release-note:enhancement
-firewall_rule: fix double endpoint calls & moving towards common method signature
-```
-
-```release-note:enhancement
-filter: fix double endpoint calls & moving towards common method signature
-```

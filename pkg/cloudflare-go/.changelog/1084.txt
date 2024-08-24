@@ -1,3 +1,0 @@
-```release-note:breaking-change
-load_balancing: update method signatures to match experimental conventions
-```

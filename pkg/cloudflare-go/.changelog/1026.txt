@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers-tail: Add in support for Workers tail API
-```

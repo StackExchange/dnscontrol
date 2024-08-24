@@ -1,3 +1,0 @@
-```release-note:bug
-stream: Update pctComplete to string from int
-```

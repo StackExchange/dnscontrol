@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: allow namespaced scripts to be used as Worker tail consumers
-```

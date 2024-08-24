@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps github.com/hashicorp/go-retryablehttp from 0.7.5 to 0.7.6
-```

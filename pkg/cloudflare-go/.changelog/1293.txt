@@ -1,3 +1,0 @@
-```release-note:enhancement
-load_balancing: extend documentation for least_outstanding_requests steering policy
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-access: add support for service token rotation
-```

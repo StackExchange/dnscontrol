@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: Add support for workers logpush enablement on script upload
-```

@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps goreleaser/goreleaser-action from 4.2.0 to 4.3.0
-```

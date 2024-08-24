@@ -1,3 +1,0 @@
-```release-note:enhancement
-dcv_delegation: add GET for DCV Delegation UUID
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-mtls_certificate: add support for managing mTLS certificates and assocations
-```

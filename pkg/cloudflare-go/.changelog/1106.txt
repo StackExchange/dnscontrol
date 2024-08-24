@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudflare: expose `Messages` from the `Response` object
-```

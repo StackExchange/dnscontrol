@@ -1,3 +1,0 @@
-```release-note:enhancement
-web_analytics: add support for web_analytics API
-```

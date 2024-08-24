@@ -112,7 +112,8 @@
   "GANDI_V5": {
     "TYPE": "GANDI_V5",
     "apikey": "$GANDI_V5_APIKEY",
-    "domain": "$GANDI_V5_DOMAIN"
+    "domain": "$GANDI_V5_DOMAIN",
+    "token": "$GANDI_V5_TOKEN"
   },
   "GCLOUD": {
     "TYPE": "GCLOUD",
@@ -277,6 +278,12 @@
     "SecretKey": "$ROUTE53_KEY",
     "TYPE": "ROUTE53",
     "domain": "$ROUTE53_DOMAIN"
+  },
+  "SAKURACLOUD": {
+    "TYPE": "SAKURACLOUD",
+    "access_token": "$SAKURACLOUD_ACCESS_TOKEN",
+    "access_token_secret": "$SAKURACLOUD_ACCESS_TOKEN_SECRET",
+    "domain": "$SAKURACLOUD_DOMAIN"
   },
   "SOFTLAYER": {
     "TYPE": "SOFTLAYER",

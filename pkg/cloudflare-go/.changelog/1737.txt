@@ -1,3 +1,0 @@
-```release-note:enhancement
-workers: support deleting namespaced Workers
-```

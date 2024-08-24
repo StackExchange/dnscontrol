@@ -1,3 +1,0 @@
-```release-note:enhancement
-teams_account: Add Zero Trust connectivity settings
-```

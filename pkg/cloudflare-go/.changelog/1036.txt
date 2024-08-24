@@ -1,3 +1,0 @@
-```release-note:enhancement
-rulesets: add support for `http_config_settings` phase and supporting actions
-```

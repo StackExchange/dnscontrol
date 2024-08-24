@@ -1,3 +1,0 @@
-```release-note:note
-dns_firewall: The `OriginIPs` field has been renamed to `UpstreamIPs`.
-```

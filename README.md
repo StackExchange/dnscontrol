@@ -1,7 +1,6 @@
 # DNSControl
 
 [![StackExchange/dnscontrol/build](https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml/badge.svg)](https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml)
-[![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4)
 
@@ -58,6 +57,7 @@ Currently supported DNS providers:
 - PowerDNS
 - Realtime Register
 - RWTH DNS-Admin
+- Sakura Cloud
 - SoftLayer
 - TransIP
 - Vultr

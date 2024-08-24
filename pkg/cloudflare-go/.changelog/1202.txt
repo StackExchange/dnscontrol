@@ -1,3 +1,0 @@
-```release-note:bug
-stream: renamed `RequiredSignedURLs` to `RequireSignedURLs`
-```

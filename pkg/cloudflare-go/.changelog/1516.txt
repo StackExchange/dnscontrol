@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_mutual_tls_certificates: add support for mutual tls hostname settings
-```

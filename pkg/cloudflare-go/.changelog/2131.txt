@@ -1,3 +1,0 @@
-```release-note:enhancement
-access_application: Add support for Hybrid/Implicit flows and options
-```

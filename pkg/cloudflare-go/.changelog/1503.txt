@@ -1,3 +1,0 @@
-```release-note:enhancement
-magic-transit: Adds IPsec tunnel healthcheck direction & rate parameters
-```

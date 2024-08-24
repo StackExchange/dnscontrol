@@ -1,3 +1,0 @@
-```release-note:enhancement
-load_balancing: support header session affinity policy
-```

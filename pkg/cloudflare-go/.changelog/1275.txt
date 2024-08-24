@@ -1,3 +1,0 @@
-```release-note:bug
-rulesets: allow `PreserveQueryString` to be nullable
-```

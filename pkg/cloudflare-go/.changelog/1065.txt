@@ -1,9 +1,0 @@
-```release-note:enhancement
-pages_project: Add `production_branch` field
-```
-```release-note:enhancement
-pages_project: Add `kv_namespaces`, `durable_object_namespaces`, `r2_buckets`, and `d1_databases` bindings to deployment config
-```
-```release-note:enhancement
-pages_project: Add `preview_deployment_setting`, `preview_branch_includes`, and `preview_branch_excludes` to source config
-```

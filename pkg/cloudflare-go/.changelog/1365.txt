@@ -1,3 +1,0 @@
-```release-note:enhancement
-zone_hold: add support for zone hold API
-```

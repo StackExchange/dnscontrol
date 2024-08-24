@@ -1,3 +1,0 @@
-```release-note:breaking-change
-railgun: remove support for railgun
-```

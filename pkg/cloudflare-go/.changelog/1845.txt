@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps golangci/golangci-lint-action from 4 to 5
-```

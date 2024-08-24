@@ -1,3 +1,0 @@
-```release-note:dependency
-deps: bumps `github.com/goccy/go-json` from 0.10.2 to 0.10.3
-```

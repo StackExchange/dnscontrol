@@ -22,6 +22,7 @@ func getRRSetIDFromRecords(rcs models.Records) []string {
 		}
 		ids = append(ids, *r.Original.(*model.ShowRecordSetByZoneResp).Id)
 	}
+	slices.Sort(ids)
 	return slices.Compact(ids)
 }
 

@@ -74,15 +74,7 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 it.  [Click here to join](https://groups.google.com/g/dnscontrol-discuss).
 {% endhint %}
 
-## Step 5. Announce it via chat
-
-Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
-
-```text
-ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
-```
-
-## Step 6. Get credit
+## Step 5. Get credit
 
 Mention the fact that you did this release in your weekly accomplishments.
 
