@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypeloc"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -411,13 +412,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	case dns.TypeLOC:
 		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
 		// fmt.Printf("ToRR rc: %+v\n", *rc)
-		rr.(*dns.LOC).Version = rc.LocVersion
-		rr.(*dns.LOC).Longitude = rc.LocLongitude
-		rr.(*dns.LOC).Latitude = rc.LocLatitude
-		rr.(*dns.LOC).Altitude = rc.LocAltitude
-		rr.(*dns.LOC).Size = rc.LocSize
-		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
-		rr.(*dns.LOC).VertPre = rc.LocVertPre
+		return rc.Rdata.(*rtypeloc.LOC)
 	case dns.TypeMX:
 		rr.(*dns.MX).Preference = rc.MxPreference
 		rr.(*dns.MX).Mx = rc.GetTargetField()

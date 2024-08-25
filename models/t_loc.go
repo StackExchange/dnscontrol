@@ -5,25 +5,35 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypeloc"
 	"github.com/miekg/dns"
 )
 
 // SetTargetLOC sets the LOC fields from the rr.LOC type properties.
 func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint32, siz uint8, hzp uint8, vtp uint8) error {
-	rc.LocVersion = ver
-	rc.LocLatitude = lat
-	rc.LocLongitude = lon
-	rc.LocAltitude = alt
-	rc.LocSize = siz
-	rc.LocHorizPre = hzp
-	rc.LocVertPre = vtp
-
 	if rc.Type == "" {
 		rc.Type = "LOC"
 	}
 	if rc.Type != "LOC" {
 		panic("assertion failed: SetTargetLOC called when .Type is not LOC")
 	}
+
+	//rc.LocVersion = ver
+	//rc.LocLatitude = lat
+	//rc.LocLongitude = lon
+	//rc.LocAltitude = alt
+	//rc.LocSize = siz
+	//rc.LocHorizPre = hzp
+	//rc.LocVertPre = vtp
+	t := rc.Rdata.(*rtypeloc.LOC)
+	t.Version = ver
+	t.Latitude = lat
+	t.Longitude = lon
+	t.Altitude = alt
+	t.Size = siz
+	t.HorizPre = hzp
+	t.VertPre = vtp
+
 	return nil
 }
 
@@ -110,30 +120,30 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 	lat := uint64((uint32(d1) * LOCDegrees) + (uint32(m1) * LOCHours) + uint32(s1*1000))
 	lon := uint64((uint32(d2) * LOCDegrees) + (uint32(m2) * LOCHours) + uint32(s2*1000))
 	if strings.ToUpper(ns) == "N" {
-		rc.LocLatitude = uint32(LOCEquator + lat)
+		rc.Rdata.(*rtypeloc.LOC).Latitude = uint32(LOCEquator + lat)
 	} else { // "S"
-		rc.LocLatitude = uint32(LOCEquator - lat)
+		rc.Rdata.(*rtypeloc.LOC).Latitude = uint32(LOCEquator - lat)
 	}
 	if strings.ToUpper(ew) == "E" {
-		rc.LocLongitude = uint32(LOCPrimeMeridian + lon)
+		rc.Rdata.(*rtypeloc.LOC).Longitude = uint32(LOCPrimeMeridian + lon)
 	} else { // "W"
-		rc.LocLongitude = uint32(LOCPrimeMeridian - lon)
+		rc.Rdata.(*rtypeloc.LOC).Longitude = uint32(LOCPrimeMeridian - lon)
 	}
 	// Altitude
-	rc.LocAltitude = uint32(al+LOCAltitudeBase) * 100
+	rc.Rdata.(*rtypeloc.LOC).Altitude = uint32(al+LOCAltitudeBase) * 100
 	var err error
 	// Size
-	rc.LocSize, err = getENotationInt(sz)
+	rc.Rdata.(*rtypeloc.LOC).Size, err = getENotationInt(sz)
 	if err != nil {
 		return err
 	}
 	// Horizontal Precision
-	rc.LocHorizPre, err = getENotationInt(hp)
+	rc.Rdata.(*rtypeloc.LOC).HorizPre, err = getENotationInt(hp)
 	if err != nil {
 		return err
 	}
 	// Vertical Precision
-	rc.LocVertPre, err = getENotationInt(vp)
+	rc.Rdata.(*rtypeloc.LOC).VertPre, err = getENotationInt(vp)
 	if err != nil {
 		return err
 	}

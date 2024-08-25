@@ -2,9 +2,10 @@ package rtypeloc
 
 import (
 	"encoding/json"
-	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/miekg/dns"
 )
 
 // https://flyandwire.com/2020/08/10/back-to-basics-latitude-and-longitude-dms-dd-ddm/
@@ -18,15 +19,8 @@ func init() {
 	})
 }
 
-// LOC contains the data fiels for LOC.
 type LOC struct {
-	LocVersion   uint8  `json:"locversion,omitempty"`
-	LocSize      uint8  `json:"locsize,omitempty"`
-	LocHorizPre  uint8  `json:"lochorizpre,omitempty"`
-	LocVertPre   uint8  `json:"locvertpre,omitempty"`
-	LocLatitude  uint32 `json:"loclatitude,omitempty"`
-	LocLongitude uint32 `json:"loclongitude,omitempty"`
-	LocAltitude  uint32 `json:"localtitude,omitempty"`
+	dns.LOC
 }
 
 func (rdata *LOC) Name() string {
@@ -34,17 +28,23 @@ func (rdata *LOC) Name() string {
 }
 
 func (rdata *LOC) ComputeTarget() string {
-	// The closest equivalent to a target "hostname" is the rule name.
-	return rdata.SRName
+	return "target" // FIXME(tlim): Convert to ZONE?
 }
 
 func (rdata *LOC) ComputeComparableMini() string {
-	// The differencing engine uses this.
-	return rdata.SRDisplay
+
+	header := rdata.Header().String()
+	full := rdata.String()
+	if !strings.HasPrefix(full, header) {
+		panic("assertion failed. dns.Hdr.String() behavior has changed in an incompatible way")
+	}
+	return full[len(header):]
+
 }
 
+// MarshalJSON is: struct to JSON string
 func (rdata *LOC) MarshalJSON() ([]byte, error) {
-	return json.Marshal(*rdata)
+	return json.Marshal(rdata.ComputeComparableMini())
 }
 
 // FromRawArgs creates a Rdata...
@@ -58,14 +58,18 @@ func FromRawArgs(items []any) (*LOC, error) {
 		return nil, err
 	}
 
-	// Unpack the arguments:
-	var code = items[0].(uint16)
-	if code != 301 && code != 302 {
-		return nil, fmt.Errorf("code (%03d) is not 301 or 302", code)
-	}
-	var when = items[1].(string)
-	var then = items[2].(string)
+	/*
+		// Unpack the arguments:
+		var code = items[0].(uint16)
+		if code != 301 && code != 302 {
+			return nil, fmt.Errorf("code (%03d) is not 301 or 302", code)
+		}
+		var when = items[1].(string)
+		var then = items[2].(string)
 
-	// Use the arguments to perfect the record:
-	return makeLOC(code, name, when, then)
+		// Use the arguments to perfect the record:
+		return makeLOC(code, name, when, then)
+	*/
+
+	return nil, nil
 }
