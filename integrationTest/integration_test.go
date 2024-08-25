@@ -764,6 +764,15 @@ func ns1Urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS1_URLFWD")
 }
 
+func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.RecordConfig {
+	r := makeRec(name, target, "PORKBUN_URLFWD")
+	r.Metadata = make(map[string]string)
+	r.Metadata["type"] = t
+	r.Metadata["includePath"] = includePath
+	r.Metadata["wildcard"] = wildcard
+	return r
+}
+
 func clear() *TestCase {
 	return tc("Empty")
 }
@@ -2278,6 +2287,15 @@ func makeTests() []*TestGroup {
 				ovhspf("spf", "v=spf1 a mx -all"),
 				ovhdkim("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk72yk6UML8LGIXFobhvx6UDUntqGzmyie2FLMyrOYk1C7CVYR139VMbO9X1rFvZ8TaPnMCkMbuEGWGgWNc27MLYKfI+wP/SYGjRS98TNl9wXxP8tPfr6id5gks95sEMMaYTu8sctnN6sBOvr4hQ2oipVcBn/oxkrfhqvlcat5gQIDAQAB"),
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
+		),
+
+		// PORKBUN features
+
+		testgroup("PORKBUN_URLFWD tests",
+			only("PORKBUN"),
+			tc("Add a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.com", "", "", "")),
+			tc("Update a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.org", "", "", "")),
+			tc("Update a urlfwd with metadata", porkbunUrlfwd("urlfwd1", "http://example.org", "permanent", "no", "no")),
 		),
 
 		// This MUST be the last test.
