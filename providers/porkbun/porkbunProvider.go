@@ -93,6 +93,13 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
+func genComparable(rec *models.RecordConfig) string {
+	if rec.Type == "PORKBUN_URLFWD" {
+		return fmt.Sprintf("type=%s includePath=%s wildcard=%s", rec.Metadata[metaType], rec.Metadata[metaIncludePath], rec.Metadata[metaWildcard])
+	}
+	return ""
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
@@ -103,9 +110,24 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
+		if record.Type == "PORKBUN_URLFWD" {
+			record.TTL = 0
+			if record.Metadata == nil {
+				record.Metadata = make(map[string]string)
+			}
+			if record.Metadata[metaType] == "" {
+				record.Metadata[metaType] = "temporary"
+			}
+			if record.Metadata[metaIncludePath] == "" {
+				record.Metadata[metaIncludePath] = "no"
+			}
+			if record.Metadata[metaWildcard] == "" {
+				record.Metadata[metaWildcard] = "yes"
+			}
+		}
 	}
 
-	changes, err := diff2.ByRecord(existingRecords, dc, nil)
+	changes, err := diff2.ByRecord(existingRecords, dc, genComparable)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +170,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
-					if change.New[0].Type == "PORKBUN_URLFWD" {
+					if change.Old[0].Type == "PORKBUN_URLFWD" {
 						return c.deleteUrlForwardingRecord(dc.Name, id)
 					}
 					return c.deleteRecord(dc.Name, id)

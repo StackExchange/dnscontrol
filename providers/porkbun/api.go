@@ -36,20 +36,16 @@ type domainRecord struct {
 	Content string `json:"content"`
 	TTL     string `json:"ttl"`
 	Prio    string `json:"prio"`
-}
-
-type domainForward struct {
-	ID          string `json:"id"`
+	// Forwarding
 	Subdomain   string `json:"subdomain"`
 	Location    string `json:"location"`
-	Type        string `json:"type"`
 	IncludePath string `json:"includePath"`
 	Wildcard    string `json:"wildcard"`
 }
 
 type recordResponse struct {
-	Records  []domainRecord  `json:"records"`
-	Forwards []domainForward `json:"forwards"`
+	Records  []domainRecord `json:"records"`
+	Forwards []domainRecord `json:"forwards"`
 }
 
 type domainListRecord struct {
@@ -175,13 +171,13 @@ func (c *porkbunProvider) modifyUrlForwardingRecord(domain string, recordID stri
 	if err := c.deleteUrlForwardingRecord(domain, recordID); err != nil {
 		return err
 	}
-	if err := c.createRecord(domain, rec); err != nil {
+	if err := c.createUrlForwardingRecord(domain, rec); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *porkbunProvider) getUrlForwardingRecords(domain string) ([]domainForward, error) {
+func (c *porkbunProvider) getUrlForwardingRecords(domain string) ([]domainRecord, error) {
 	params := requestParams{}
 	var bodyString, err = c.post("/domain/getUrlForwarding/"+domain, params)
 	if err != nil {
@@ -194,7 +190,7 @@ func (c *porkbunProvider) getUrlForwardingRecords(domain string) ([]domainForwar
 		return nil, fmt.Errorf("failed parsing url forwarding record list from porkbun: %w", err)
 	}
 
-	var records []domainForward
+	var records []domainRecord
 	for _, rec := range dr.Forwards {
 		records = append(records, rec)
 	}
