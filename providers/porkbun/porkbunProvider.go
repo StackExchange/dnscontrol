@@ -11,10 +11,18 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+
+	"github.com/miekg/dns/dnsutil"
 )
 
 const (
 	minimumTTL = 600
+)
+
+const (
+	metaType        = "type"
+	metaIncludePath = "includePath"
+	metaWildcard    = "wildcard"
 )
 
 // https://kb.porkbun.com/article/63-how-to-switch-to-porkbuns-nameservers
@@ -78,11 +86,19 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCustomRecordType("PORKBUN_URLFWD", providerName, "")
 }
 
 // GetNameservers returns the nameservers for a domain.
 func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNS)
+}
+
+func genComparable(rec *models.RecordConfig) string {
+	if rec.Type == "PORKBUN_URLFWD" {
+		return fmt.Sprintf("type=%s includePath=%s wildcard=%s", rec.Metadata[metaType], rec.Metadata[metaIncludePath], rec.Metadata[metaWildcard])
+	}
+	return ""
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -95,9 +111,24 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
+		if record.Type == "PORKBUN_URLFWD" {
+			record.TTL = 0
+			if record.Metadata == nil {
+				record.Metadata = make(map[string]string)
+			}
+			if record.Metadata[metaType] == "" {
+				record.Metadata[metaType] = "temporary"
+			}
+			if record.Metadata[metaIncludePath] == "" {
+				record.Metadata[metaIncludePath] = "no"
+			}
+			if record.Metadata[metaWildcard] == "" {
+				record.Metadata[metaWildcard] = "yes"
+			}
+		}
 	}
 
-	changes, err := diff2.ByRecord(existingRecords, dc, nil)
+	changes, err := diff2.ByRecord(existingRecords, dc, genComparable)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +145,9 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: change.Msgs[0],
 				F: func() error {
+					if change.New[0].Type == "PORKBUN_URLFWD" {
+						return c.createUrlForwardingRecord(dc.Name, req)
+					}
 					return c.createRecord(dc.Name, req)
 				},
 			}
@@ -126,6 +160,9 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
+					if change.New[0].Type == "PORKBUN_URLFWD" {
+						return c.modifyUrlForwardingRecord(dc.Name, id, req)
+					}
 					return c.modifyRecord(dc.Name, id, req)
 				},
 			}
@@ -134,6 +171,9 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
+					if change.Old[0].Type == "PORKBUN_URLFWD" {
+						return c.deleteUrlForwardingRecord(dc.Name, id)
+					}
 					return c.deleteRecord(dc.Name, id)
 				},
 			}
@@ -152,9 +192,54 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	if err != nil {
 		return nil, err
 	}
-	existingRecords := make([]*models.RecordConfig, len(records))
+	forwards, err := c.getUrlForwardingRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+	existingRecords := make([]*models.RecordConfig, 0)
 	for i := range records {
-		existingRecords[i] = toRc(domain, &records[i])
+		shouldSkip := false
+		if strings.HasSuffix(records[i].Content, ".porkbun.com") {
+			name := dnsutil.TrimDomainName(records[i].Name, domain)
+			if name == "@" {
+				name = ""
+			}
+			if records[i].Type == "ALIAS" {
+				for _, forward := range forwards {
+					if name == forward.Subdomain {
+						shouldSkip = true
+						break
+					}
+				}
+			}
+			if records[i].Type == "CNAME" {
+				for _, forward := range forwards {
+					if name == "*."+forward.Subdomain {
+						shouldSkip = true
+						break
+					}
+				}
+			}
+		}
+		if shouldSkip {
+			continue
+		}
+		existingRecords = append(existingRecords, toRc(domain, &records[i]))
+	}
+	for i := range forwards {
+		r := &forwards[i]
+		rc := &models.RecordConfig{
+			Type:     "PORKBUN_URLFWD",
+			Original: r,
+			Metadata: map[string]string{
+				metaType:        r.Type,
+				metaIncludePath: r.IncludePath,
+				metaWildcard:    r.Wildcard,
+			},
+		}
+		rc.SetLabel(r.Subdomain, domain)
+		rc.SetTarget(r.Location)
+		existingRecords = append(existingRecords, rc)
 	}
 	return existingRecords, nil
 }
@@ -219,6 +304,20 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 // toReq takes a RecordConfig and turns it into the native format used by the API.
 func toReq(rc *models.RecordConfig) (requestParams, error) {
+	if rc.Type == "PORKBUN_URLFWD" {
+		subdomain := rc.GetLabel()
+		if subdomain == "@" {
+			subdomain = ""
+		}
+		return requestParams{
+			"subdomain":   subdomain,
+			"location":    rc.GetTargetField(),
+			"type":        rc.Metadata[metaType],
+			"includePath": rc.Metadata[metaIncludePath],
+			"wildcard":    rc.Metadata[metaWildcard],
+		}, nil
+	}
+
 	req := requestParams{
 		"type":    rc.Type,
 		"name":    rc.GetLabel(),
