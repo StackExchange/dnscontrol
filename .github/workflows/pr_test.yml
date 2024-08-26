@@ -88,7 +88,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -122,6 +122,7 @@ jobs:
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
+      SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
       # PROVIDER SECRET LIST
@@ -178,6 +179,9 @@ jobs:
 
       ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
       ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+
+      SAKURACLOUD_ACCESS_TOKEN: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN }}
+      SAKURACLOUD_ACCESS_TOKEN_SECRET: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN_SECRET }}
 
       TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
