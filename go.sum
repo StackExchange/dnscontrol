@@ -89,8 +89,8 @@ github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.7/go.mod 
 github.com/chzyer/logex v1.2.1/go.mod h1:JLbx6lG2kDbNRFnfkgvh4eRJRPX1QCoOIWomwysCBrQ=
 github.com/chzyer/test v1.0.0/go.mod h1:2JlltgoNkt4TW/z9V/IzDdFaMTM2JPIi26O1pF38GC8=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudflare/cloudflare-go v0.102.0 h1:+0MGbkirM/yzVLOYpWMgW7CDdKzesSbdwA2Y+rABrWI=
-github.com/cloudflare/cloudflare-go v0.102.0/go.mod h1:BOB41tXf31ti/qtBO9paYhyapotQbGRDbQoLOAF7pSg=
+github.com/cloudflare/cloudflare-go v0.103.0 h1:XXKzgXeUbAo7UTtM4T5wuD2bJPBtNZv7TlZAEy5QI4k=
+github.com/cloudflare/cloudflare-go v0.103.0/go.mod h1:0DrjT4g8wgYFYIxhlqR8xi8dNWfyHFGilUkU3+XV8h0=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cpuguy83/go-md2man/v2 v2.0.4 h1:wfIWP927BUkWJb2NmU/kNDYIBTh/ziUX91+lVfRxZq4=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
