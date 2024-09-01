@@ -36,7 +36,7 @@ require (
 	github.com/hashicorp/vault/api v1.14.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/miekg/dns v1.1.62
-	github.com/mittwald/go-powerdns v0.6.4
+	github.com/mittwald/go-powerdns v0.6.5
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.10.0
 	github.com/ovh/go-ovh v1.4.3
