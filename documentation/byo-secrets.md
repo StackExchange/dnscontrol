@@ -58,6 +58,10 @@ Create a branch as you normally would to submit a PR to the project.
 
 Step 2: Update `pr_test.yml`
 
+{% hint style="info" %}
+Edits to `pr_test.yml` may have already been done for you.
+{% endhint %}
+
 Edit `.github/workflows/pr_test.yml`
 
 1. Add the provider to the `PROVIDERS` list.

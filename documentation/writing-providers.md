@@ -297,6 +297,57 @@ dependencies.
 
 In the repo root, open `.goreleaser.yml` and add the provider to `Provider-specific changes` regexp.
 
+## Step 14: Update `pr_test.yml`
+
+This assures that in the future it will be easy to test this provider using Github Actions.
+
+Edit `.github/workflows/pr_test.yml`
+
+1. Add the provider to the `PROVIDERS` list.
+
+* Add the name of the provider to the PROVIDERS list.
+* Please keep this list sorted alphabetically.
+
+The line looks something like:
+
+{% code title=".github/workflows/pr_test.yml" %}
+```
+        PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+```
+{% endcode %}
+
+2. Add your providers `_DOMAIN` env variable:
+
+* Add it to the `env` section of `integration-tests`.
+* Please keep this list sorted alphabetically.
+
+To find this section, search for `PROVIDER SECRET LIST`.
+
+For example, the entry for BIND looks like:
+
+{% code title=".github/workflows/pr_test.yml" %}
+```
+        BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
+```
+{% endcode %}
+
+3. Add your providers other ENV variables:
+
+Every provider requires different variables set to perform the integration tests.  The list of such variables is in `integrationTest/providers.json`.
+
+You've already added `*_DOMAIN` to `pr_test.yml`. Now we're going to add the remaining ones.
+
+To find this section, search for `PROVIDER SECRET LIST`.
+
+For example, the entry for CLOUDFLAREAPI looks like this:
+
+{% code title=".github/workflows/pr_test.yml" %}
+```
+        CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
+        CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+```
+{% endcode %}
+
 ## Step 14: Check your work
 
 These are the things we'll be checking when you submit the PR.  Please try to complete all or as many of these as possible.
@@ -317,6 +368,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
 5. Re-run the [integration test](#step-7-integration-test) one last time.
   * Post the results as a comment to your PR.
 6. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
+7. [Create an issue (feature request)](https://github.com/StackExchange/dnscontrol/issues/new?title=Add%20label%20for%20PROVIDERNAME) with the text "Please create the GitHub label 'provider-PROVIDERNAME'".
 
 ## Step 15: Submit a PR
 
@@ -329,5 +381,4 @@ submit a PR if you haven't already.
 ## Step 16: After the PR is merged
 
 1. Close any related GitHub issues.
-2. [Create an issue (feature request)](https://github.com/StackExchange/dnscontrol/issues/new?title=Add%20label%20for%20PROVIDERNAME) with the text "Please create the GitHub label 'provider-PROVIDERNAME'".
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
