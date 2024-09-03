@@ -426,7 +426,7 @@ func hasNSDeletion(changes diff2.ChangeList) bool {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 	// Ignoring the SOA, others providers don't manage it either.
 	if len(foundRecords) >= 1 && foundRecords[0].Type == "SOA" {
 		foundRecords = foundRecords[1:]
@@ -466,19 +466,19 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	changes, err := diff2.ByRecord(foundRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecord(foundRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if changes == nil {
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	// A DNS server should silently ignore a DDNS update that removes
@@ -547,5 +547,5 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	if len(reports) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))
 	}
-	return returnValue, nil
+	return returnValue, actualChangeCount, nil
 }

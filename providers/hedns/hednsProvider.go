@@ -186,7 +186,7 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 
 	// Get the SOA record to get the ZoneID, then remove it from the list.
 	zoneID := uint64(0)
@@ -202,10 +202,10 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }
 
-func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
-	changes, err := diff2.ByRecord(records, dc, nil)
+func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, int, error) {
+	changes, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var corrections []*models.Correction
@@ -243,7 +243,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 		}
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // GetZoneRecords returns all the records for the given domain

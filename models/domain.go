@@ -49,9 +49,10 @@ type DomainConfig struct {
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
-	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
-	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
-	pendingCorrectionsOrder []string                   // Call the providers in this order
+	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
+	pendingCorrections       map[string]([]*Correction) // Work to be done for each provider
+	pendingCorrectionsOrder  []string                   // Call the providers in this order
+	pendingActualChangeCount map[string](int)           // Number of changes to report (cumulative)
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -160,6 +161,18 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 		dc.pendingCorrections[providerName] = append(c, corrections...)
 		dc.pendingCorrectionsOrder = append(dc.pendingCorrectionsOrder, providerName)
 	}
+}
+
+// IncrementChangeCount accumulates change cound in a thread-safe way.
+func (dc *DomainConfig) IncrementChangeCount(providerName string, delta int) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingActualChangeCount == nil {
+		// First time storing anything.
+		dc.pendingActualChangeCount = make(map[string](int))
+	}
+	dc.pendingActualChangeCount[providerName] += delta
 }
 
 // GetCorrections returns the accumulated corrections for providerName.

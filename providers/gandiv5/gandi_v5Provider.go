@@ -202,7 +202,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 	if client.debug {
 		debugRecords("GenDC input", existing)
@@ -214,9 +214,9 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 
 	// Gandi is a "ByLabel" API with the odd exception that changes must be
 	// done one label:rtype at a time.
-	instructions, err := diff2.ByLabel(existing, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByLabel(existing, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	for _, inst := range instructions {
 		switch inst.Type {
@@ -292,7 +292,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // debugRecords prints a list of RecordConfig.

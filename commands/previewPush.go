@@ -247,7 +247,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 					continue
 				}
 
-				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				reports, corrections, _, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
 				out.EndProvider(provider.Name, len(corrections), err)
 				if err != nil {
 					anyErrors = true

@@ -228,7 +228,10 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
+		if len(corrections) != actualChangeCount {
+			t.Logf("# corrections != actual (%d, %d)", len(corrections), actualChangeCount)
+		}
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
@@ -261,9 +264,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, actualChangeCount, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
+		}
+		if len(corrections) != actualChangeCount {
+			t.Logf("mismatch len(c) vs acc: (%d, %d)", len(corrections), actualChangeCount)
 		}
 		if count := len(corrections); count != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", count)
@@ -353,7 +359,7 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -378,7 +384,7 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}

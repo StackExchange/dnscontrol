@@ -378,13 +378,15 @@ func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 		}
 
 		// Update the zone's records at the provider:
-		zoneCor, rep := generateZoneCorrections(zone, provider)
+		zoneCor, rep, actualChangeCount := generateZoneCorrections(zone, provider)
 		zone.StoreCorrections(provider.Name, rep)
 		zone.StoreCorrections(provider.Name, zoneCor)
+		zone.IncrementChangeCount(provider.Name, actualChangeCount)
 	}
 
 	// Do the delegation corrections after the zones are updated.
 	zone.StoreCorrections(zone.RegistrarInstance.Name, delegationCorrections)
+	zone.IncrementChangeCount(zone.RegistrarInstance.Name, len(delegationCorrections))
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
@@ -533,12 +535,12 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 	}}
 }
 
-func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction) {
-	reports, zoneCorrections, err := zonerecs.CorrectZoneRecords(provider.Driver, zone)
+func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction, int) {
+	reports, zoneCorrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(provider.Driver, zone)
 	if err != nil {
-		return []*models.Correction{{Msg: fmt.Sprintf("Domain %q provider %s Error: %s", zone.Name, provider.Name, err)}}, nil
+		return []*models.Correction{{Msg: fmt.Sprintf("Domain %q provider %s Error: %s", zone.Name, provider.Name, err)}}, nil, 0
 	}
-	return zoneCorrections, reports
+	return zoneCorrections, reports, actualChangeCount
 }
 
 func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) []*models.Correction {
