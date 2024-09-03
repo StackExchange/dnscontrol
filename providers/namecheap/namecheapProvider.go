@@ -236,7 +236,7 @@ func (n *namecheapProvider) GetZoneRecords(domain string, meta map[string]string
 // }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
 
 	// namecheap does not allow setting @ NS with basic DNS
 	dc.Filter(func(r *models.RecordConfig) bool {
@@ -249,9 +249,9 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 		return true
 	})
 
-	toReport, create, delete, modify, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, create, delete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -283,7 +283,7 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 			})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.RecordConfig, error) {

@@ -45,13 +45,13 @@ func (c *huaweicloudProvider) GetZoneRecords(domain string, meta map[string]stri
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	if err := c.getZones(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	zoneID, ok := c.zoneIDByDomain[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("zone %s not found", dc.Name)
+		return nil, 0, fmt.Errorf("zone %s not found", dc.Name)
 	}
 
 	addDefaultMeta(dc.Records)
@@ -61,9 +61,9 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 	var deletions []*models.Correction
 	var reports []*models.Correction
 
-	changes, err := diff2.ByRecordSet(existing, dc, genComparable)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existing, dc, genComparable)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -133,7 +133,7 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 
 	result := append(reports, deletions...)
 	result = append(result, corrections...)
-	return result, nil
+	return result, actualChangeCount, nil
 }
 
 func collectRecordsByLineAndWeightAndKey(records models.Records) map[string]models.Records {
