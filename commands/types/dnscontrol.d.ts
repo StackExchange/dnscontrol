@@ -2403,6 +2403,27 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
 declare function PANIC(message: string): never;
 
 /**
+ * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     PORKBUN_URLFWD("urlfwd1", "http://example.com"),
+ *     PORKBUN_URLFWD("urlfwd2", "http://example.org", {type: "permanent", includePath: "yes", wildcard: "no"})
+ * );
+ * ```
+ *
+ * The fields are:
+ * * name: the record name
+ * * target: where you'd like to forward the domain to
+ * * type: valid types are: `temporary` (302 / 307) or `permanent` (301), default to `temporary`
+ * * includePath: whether to include the URI path in the redirection. Valid options are `yes` or `no`, default to `no`
+ * * wildcard: forward all subdomains of the domain. Valid options are `yes` or `no`, default to `yes`
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//porkbun_urlfwd
+ */
+declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * PTR adds a PTR record to the domain.
  *
  * The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
