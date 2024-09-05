@@ -171,8 +171,8 @@ func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Reco
 }
 
 // GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
-	return nil, nil
+func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
+	return nil, 0, nil
 }
 
 // GetDomainCorrections returns corrections to update a domain.

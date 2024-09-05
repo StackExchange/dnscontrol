@@ -64,7 +64,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*namecheapProvider, error) {
+func newProvider(m map[string]string, _ json.RawMessage) (*namecheapProvider, error) {
 	api := &namecheapProvider{}
 	api.APIUser, api.APIKEY = m["apiuser"], m["apikey"]
 	if api.APIKEY == "" || api.APIUser == "" {

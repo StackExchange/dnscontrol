@@ -102,7 +102,7 @@ func genComparable(rec *models.RecordConfig) string {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
 	// Block changes to NS records for base domain
@@ -128,9 +128,9 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		}
 	}
 
-	changes, err := diff2.ByRecord(existingRecords, dc, genComparable)
+	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, genComparable)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	for _, change := range changes {
 		var corr *models.Correction
@@ -140,7 +140,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		case diff2.CREATE:
 			req, err := toReq(change.New[0])
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			corr = &models.Correction{
 				Msg: change.Msgs[0],
@@ -155,7 +155,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			id := change.Old[0].Original.(*domainRecord).ID
 			req, err := toReq(change.New[0])
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
@@ -183,7 +183,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

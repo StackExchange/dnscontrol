@@ -9,10 +9,10 @@ import (
 	"github.com/mittwald/go-powerdns/apis/zones"
 )
 
-func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-	changes, err := diff2.ByRecordSet(existing, dc, nil)
+func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
+	changes, actualChangeCount, err := diff2.ByRecordSet(existing, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var corrections []*models.Correction
@@ -52,7 +52,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		}
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // buildRecordList returns a list of records for the PowerDNS resource record set from a change

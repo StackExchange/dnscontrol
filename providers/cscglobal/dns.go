@@ -115,7 +115,7 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 
 				err := client.clearRequests(dc.Name)
 				if err != nil {
-					return 0, err
+					return err
 				}
 				return client.sendZoneEditRequest(dc.Name, edits)
 			},

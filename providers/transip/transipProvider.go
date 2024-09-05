@@ -114,20 +114,20 @@ func (n *transipProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
+func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, int, error) {
 
 	removeOtherNS(dc)
 
-	corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
-	return corrections, err
+	corrections, actualChangeCount, err := n.getCorrectionsUsingDiff2(dc, curRecords)
+	return corrections, actualChangeCount, err
 }
 
-func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
-	instructions, err := diff2.ByRecordSet(records, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByRecordSet(records, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range instructions {
@@ -136,7 +136,7 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 		case diff2.DELETE:
 			oldEntries, err := recordsToNative(change.Old, true)
 			if err != nil {
-				return corrections, err
+				return corrections, 0, err
 			}
 			correction := change.CreateCorrection(
 				wrapChangeFunction(
@@ -149,7 +149,7 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 		case diff2.CREATE:
 			newEntries, err := recordsToNative(change.New, false)
 			if err != nil {
-				return corrections, err
+				return corrections, 0, err
 			}
 			correction := change.CreateCorrection(
 				wrapChangeFunction(
@@ -163,7 +163,7 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 			if canDirectApplyDNSEntries(change) {
 				newEntries, err := recordsToNative(change.New, false)
 				if err != nil {
-					return corrections, err
+					return corrections, 0, err
 				}
 				correction := change.CreateCorrection(
 					wrapChangeFunction(
@@ -184,7 +184,7 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff2.Change) []*models.Correction {
