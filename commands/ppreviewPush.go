@@ -240,7 +240,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			out.StartDNSProvider(provider.Name, skip)
 			if !skip {
 				corrections := zone.GetCorrections(provider.Name)
-				numActions := countActions(corrections)
+				numActions := zone.GetChangeCount(provider.Name)
 				totalCorrections += numActions
 				out.EndProvider2(provider.Name, numActions)
 				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
@@ -253,7 +253,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		out.StartRegistrar(zone.RegistrarName, !skip)
 		if skip {
 			corrections := zone.GetCorrections(zone.RegistrarInstance.Name)
-			numActions := countActions(corrections)
+			numActions := zone.GetChangeCount(zone.RegistrarInstance.Name)
 			out.EndProvider2(zone.RegistrarName, numActions)
 			totalCorrections += numActions
 			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
@@ -281,15 +281,15 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
-func countActions(corrections []*models.Correction) int {
-	r := 0
-	for _, c := range corrections {
-		if c.F != nil {
-			r++
-		}
-	}
-	return r
-}
+//func countActions(corrections []*models.Correction) int {
+//	r := 0
+//	for _, c := range corrections {
+//		if c.F != nil {
+//			r++
+//		}
+//	}
+//	return r
+//}
 
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
 	if filter == "" || filter == "all" {

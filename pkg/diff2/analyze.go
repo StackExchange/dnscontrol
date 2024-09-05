@@ -56,9 +56,9 @@ func analyzeByLabel(cc *CompareConfig) (ChangeList, int) {
 			// for each type at that label...
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
-			dt := diffTargets(ets, dts)
-			actualChangeCount += len(dt)
-			msgs := justMsgs(dt)
+			cs := diffTargets(ets, dts)
+			actualChangeCount += len(cs)
+			msgs := justMsgs(cs)
 			k := models.RecordKey{NameFQDN: label, Type: rt.rType}
 			msgsByKey[k] = msgs
 			accMsgs = append(accMsgs, msgs...)                    // Accumulate the messages

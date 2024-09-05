@@ -163,18 +163,6 @@ func (dc *DomainConfig) StoreCorrections(providerName string, corrections []*Cor
 	}
 }
 
-// IncrementChangeCount accumulates change cound in a thread-safe way.
-func (dc *DomainConfig) IncrementChangeCount(providerName string, delta int) {
-	dc.pendingCorrectionsMutex.Lock()
-	defer dc.pendingCorrectionsMutex.Unlock()
-
-	if dc.pendingActualChangeCount == nil {
-		// First time storing anything.
-		dc.pendingActualChangeCount = make(map[string](int))
-	}
-	dc.pendingActualChangeCount[providerName] += delta
-}
-
 // GetCorrections returns the accumulated corrections for providerName.
 func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 	dc.pendingCorrectionsMutex.Lock()
@@ -188,4 +176,24 @@ func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 		return c
 	}
 	return nil
+}
+
+// IncrementChangeCount accumulates change cound in a thread-safe way.
+func (dc *DomainConfig) IncrementChangeCount(providerName string, delta int) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingActualChangeCount == nil {
+		// First time storing anything.
+		dc.pendingActualChangeCount = make(map[string](int))
+	}
+	dc.pendingActualChangeCount[providerName] += delta
+}
+
+// GetChangeCount accumulates change cound in a thread-safe way.
+func (dc *DomainConfig) GetChangeCount(providerName string) int {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	return dc.pendingActualChangeCount[providerName]
 }
