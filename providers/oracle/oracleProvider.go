@@ -258,7 +258,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			createRecords = append(createRecords, rec.Desired)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
+		//desc = desc[:len(desc)-1]
 	}
 
 	if len(dels) > 0 {
@@ -266,7 +266,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
+		//desc = desc[:len(desc)-1]
 	}
 
 	if len(modify) > 0 {
@@ -275,7 +275,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
+		//desc = desc[:len(desc)-1]
 	}
 
 	// There were corrections. Send them as one big batch:
