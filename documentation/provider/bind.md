@@ -30,10 +30,10 @@ Example:
 
 ## Meta configuration
 
-This provider accepts some optional metadata in the NewDnsProvider() call.
+This provider accepts some optional metadata in the `NewDnsProvider()` call.
 
-* `default_soa`: If no SOA record exists in a zone file, one will be created. The values of the new SOA are specified here.
-* `default_ns`: Inject these NS records into the zone.
+* `default_soa`: If no SOA record exists in a zone file, one will be created based on the values specified here. Use `SOA()` to update existing zone files.
+* `default_ns`: Inject these NS records into the zone.  Use this when `NS()` is insufficient.
 
 In this example we set the default SOA settings and NS records.
 
