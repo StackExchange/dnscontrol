@@ -348,7 +348,7 @@ For example, the entry for CLOUDFLAREAPI looks like this:
 ```
 {% endcode %}
 
-## Step 14: Check your work
+## Step 15: Check your work
 
 These are the things we'll be checking when you submit the PR.  Please try to complete all or as many of these as possible.
 
