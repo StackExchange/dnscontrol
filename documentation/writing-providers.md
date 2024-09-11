@@ -311,7 +311,7 @@ Edit `.github/workflows/pr_test.yml`
 The line looks something like:
 
 {% code title=".github/workflows/pr_test.yml" %}
-```
+```yaml
         PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
 ```
 {% endcode %}
