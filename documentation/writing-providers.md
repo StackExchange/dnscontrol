@@ -299,7 +299,7 @@ In the repo root, open `.goreleaser.yml` and add the provider to `Provider-speci
 
 ## Step 14: Update `pr_test.yml`
 
-This assures that in the future it will be easy to test this provider using Github Actions.
+This assures that in the future it will be easy to test this provider using GitHub Actions.
 
 Edit `.github/workflows/pr_test.yml`
 
