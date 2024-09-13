@@ -364,7 +364,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Fix the parent zone's delegation: (if able/needed)
 	//zone.NameserversMutex.Lock()
-	delegationCorrections := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
+	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
 	//zone.NameserversMutex.Unlock()
 
 	// Loop over the (selected) providers configured for that zone:
@@ -386,7 +386,7 @@ func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 
 	// Do the delegation corrections after the zones are updated.
 	zone.StoreCorrections(zone.RegistrarInstance.Name, delegationCorrections)
-	zone.IncrementChangeCount(zone.RegistrarInstance.Name, len(delegationCorrections))
+	zone.IncrementChangeCount(zone.RegistrarInstance.Name, dcCount)
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
@@ -543,24 +543,24 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 	return zoneCorrections, reports, actualChangeCount
 }
 
-func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) []*models.Correction {
+func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) ([]*models.Correction, int) {
 	//fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
-		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err))
+		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err)), 0
 	}
 	zone.Nameservers = nsList
 	nameservers.AddNSRecords(zone)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
-		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}
+		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}, 0
 	}
 
 	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)
 	if err != nil {
-		return msg(fmt.Sprintf("zone %q; Rprovider %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err))
+		return msg(fmt.Sprintf("zone %q; Rprovider %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err)), 0
 	}
-	return corrections
+	return corrections, len(corrections)
 }
 
 func msg(s string) []*models.Correction {
