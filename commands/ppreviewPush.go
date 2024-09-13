@@ -547,7 +547,7 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	//fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
-		return msg(fmt.Sprintf("DtermineNS: zone %q; Error: %s", zone.Name, err)), 0
+		return msg(fmt.Sprintf("DetermineNS: zone %q; Error: %s", zone.Name, err)), 0
 	}
 	zone.Nameservers = nsList
 	nameservers.AddNSRecords(zone)
