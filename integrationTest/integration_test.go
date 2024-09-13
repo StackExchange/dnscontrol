@@ -384,12 +384,15 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, actualChangeCount, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count := len(cs); count != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", count)
+	if len(cs) != actualChangeCount {
+		t.Logf("mismatch len(cs) vs acc: (%d, %d)", len(cs), actualChangeCount)
+	}
+	if actualChangeCount != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", actualChangeCount)
 		for i, c := range rs {
 			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}
