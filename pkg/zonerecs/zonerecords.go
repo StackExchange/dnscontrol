@@ -7,11 +7,11 @@ import (
 // CorrectZoneRecords calls both GetZoneRecords, does any
 // post-processing, and then calls GetZoneRecordsCorrections.  The
 // name sucks because all the good names were taken.
-func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, []*models.Correction, error) {
+func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, []*models.Correction, int, error) {
 
 	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 
 	// downcase
@@ -26,7 +26,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	// dc.Records.
 	dc, err = dc.Copy()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 
 	// punycode
@@ -34,9 +34,9 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	// FIXME(tlim) It is a waste to PunyCode every iteration.
 	// This should be moved to where the JavaScript is processed.
 
-	everything, err := driver.GetZoneRecordsCorrections(dc, existingRecords)
+	everything, actualChangeCount, err := driver.GetZoneRecordsCorrections(dc, existingRecords)
 	reports, corrections := splitReportsAndCorrections(everything)
-	return reports, corrections, err
+	return reports, corrections, actualChangeCount, err
 }
 
 func splitReportsAndCorrections(everything []*models.Correction) (reports, corrections []*models.Correction) {

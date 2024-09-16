@@ -53,7 +53,7 @@ func (s *sakuracloudProvider) GetZoneRecords(domain string, meta map[string]stri
 }
 
 // GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
-func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
 	// The name servers for the Sakura cloud provider cannot be changed.
@@ -65,12 +65,12 @@ func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		}
 	}
 
-	msgs, changes, err := diff2.ByZone(existing, dc, nil)
+	msgs, changes, actualChangeCount, err := diff2.ByZone(existing, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if !changes {
-		return nil, nil
+		return nil, actualChangeCount, nil
 	}
 	msg := strings.Join(msgs, "\n")
 
@@ -87,5 +87,5 @@ func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		},
 	)
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }

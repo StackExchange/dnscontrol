@@ -103,11 +103,11 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 // 	return api.GetZoneRecordsCorrections(dc, existingRecords)
 // }
 
-func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domainName := dc.Name
 	domain, err := api.findDomain(domainName)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, rec := range dc.Records {
@@ -120,9 +120,9 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		}
 	}
 
-	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -186,7 +186,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // EnsureZoneExists creates a zone if it does not exist

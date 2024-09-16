@@ -74,7 +74,7 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domain := dc.Name
 
 	// Setting the TTL is not supported for netcup
@@ -91,9 +91,9 @@ func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 	dc.Records = newRecords
 
-	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -133,5 +133,5 @@ func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }

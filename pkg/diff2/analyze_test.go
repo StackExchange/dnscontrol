@@ -127,7 +127,13 @@ func compareCL(t *testing.T, fnname, testname, testpart string, gotcl ChangeList
 	if d != "" {
 		t.Errorf("%s()/%s (wantChange%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
 	}
+}
 
+func compareACC(t *testing.T, fnname, testname, testpart string, gotacc int, wantacc int) {
+	t.Helper()
+	if gotacc != wantacc {
+		t.Errorf("%s()/%s (wantChange%s):\n===got===\n%v\n===want===\n%v\n", fnname, testname, testpart, gotacc, wantacc)
+	}
 }
 
 func Test_analyzeByRecordSet(t *testing.T) {
@@ -150,6 +156,7 @@ func Test_analyzeByRecordSet(t *testing.T) {
 		wantChangeRec   string
 		wantMsgsRec     string
 		wantChangeZone  string
+		wantChangeCount int
 	}{
 
 		{
@@ -159,6 +166,7 @@ func Test_analyzeByRecordSet(t *testing.T) {
 				existing: models.Records{testDataAA1234},
 				desired:  models.Records{testDataAA1234clone},
 			},
+			wantChangeCount: 0,
 			wantMsgs:        "", // Empty
 			wantChangeRSet:  "ChangeList: len=0",
 			wantChangeLabel: "ChangeList: len=0",
@@ -172,7 +180,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 				existing: models.Records{testDataAA1234, testDataAMX10a},
 				desired:  models.Records{testDataAA1234clone, testDataAMX20b},
 			},
-			wantMsgs: "± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)",
+			wantChangeCount: 1,
+			wantMsgs:        "± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)",
 			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
@@ -206,7 +215,8 @@ ChangeList: len=1
 				existing: models.Records{testDataAA1234, testDataApexMX1aaa},
 				desired:  models.Records{testDataAA1234clone, testDataApexMX22bbb},
 			},
-			wantMsgs: "± MODIFY f.com MX (1 aaa.f.com. ttl=300) -> (22 bbb.f.com. ttl=300)",
+			wantChangeCount: 1,
+			wantMsgs:        "± MODIFY f.com MX (1 aaa.f.com. ttl=300) -> (22 bbb.f.com. ttl=300)",
 			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
@@ -240,6 +250,7 @@ ChangeList: len=1
 				existing: models.Records{testDataAA1234, testDataAMX10a},
 				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
 			},
+			wantChangeCount: 2,
 			wantMsgs: `
 ± MODIFY laba.f.com MX (10 laba.f.com. ttl=300) -> (20 labb.f.com. ttl=300)
 + CREATE laba.f.com A 1.2.3.5 ttl=300
@@ -290,6 +301,7 @@ ChangeList: len=2
 				existing: models.Records{testDataAA1234, testDataCCa},
 				desired:  models.Records{d13, d3},
 			},
+			wantChangeCount: 3,
 			wantMsgs: `
 + CREATE labe.f.com A 10.10.10.95 ttl=300
 ± MODIFY labc.f.com CNAME (laba.f.com. ttl=300) -> (labe.f.com. ttl=300)
@@ -352,6 +364,7 @@ ChangeList: len=3
 				existing: models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11},
 				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12},
 			},
+			wantChangeCount: 11,
 			wantMsgs: `
 + CREATE labf.f.com TXT "foo" ttl=300
 ± MODIFY labg.f.com NS (labc.f.com. ttl=300) -> (labf.f.com. ttl=300)
@@ -525,21 +538,24 @@ ChangeList: len=11
 		// Therefore we have to run NewCompareConfig() each time.
 
 		t.Run(tt.name, func(t *testing.T) {
-			cl := analyzeByRecordSet(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			cl, actualChangeCount := analyzeByRecordSet(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
 			compareMsgs(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantMsgsRSet, tt.wantMsgs)
 			compareCL(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantChangeRSet)
+			compareACC(t, "analyzeByRecordSet", tt.name, "ACC", actualChangeCount, tt.wantChangeCount)
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
-			cl := analyzeByLabel(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			cl, actualChangeCount := analyzeByLabel(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
 			compareMsgs(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantMsgsLabel, tt.wantMsgs)
 			compareCL(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantChangeLabel)
+			compareACC(t, "analyzeByLabel", tt.name, "ACC", actualChangeCount, tt.wantChangeCount)
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
-			cl := analyzeByRecord(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			cl, actualChangeCount := analyzeByRecord(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
 			compareMsgs(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantMsgsRec, tt.wantMsgs)
 			compareCL(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantChangeRec)
+			compareACC(t, "analyzeByRecord", tt.name, "ACC", actualChangeCount, tt.wantChangeCount)
 		})
 
 		// NB(tlim): There is no analyzeByZone().  diff2.ByZone() uses analyzeByRecord().

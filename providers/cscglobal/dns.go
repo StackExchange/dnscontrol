@@ -75,11 +75,11 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 
-	toReport, creates, dels, modifications, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
+	toReport, creates, dels, modifications, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -123,7 +123,7 @@ func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		corrections = append(corrections, c)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func makePurge(cor diff.Correlation) zoneResourceRecordEdit {

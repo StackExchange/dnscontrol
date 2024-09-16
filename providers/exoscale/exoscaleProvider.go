@@ -187,18 +187,18 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
 	removeOtherNS(dc)
 	domain, err := c.findDomainByName(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	domainID := *domain.ID
 
-	toReport, create, toDelete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, toDelete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -228,7 +228,7 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // Returns a function that can be invoked to create a record in a zone.

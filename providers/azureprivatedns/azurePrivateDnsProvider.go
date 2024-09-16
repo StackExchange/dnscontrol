@@ -187,12 +187,12 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
-	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -225,7 +225,7 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		}
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
