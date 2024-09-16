@@ -213,7 +213,7 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var err error
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
@@ -234,9 +234,9 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 	}
 
-	toReport, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, dels, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -258,7 +258,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			createRecords = append(createRecords, rec.Desired)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	if len(dels) > 0 {
@@ -266,7 +265,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	if len(modify) > 0 {
@@ -275,7 +273,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	// There were corrections. Send them as one big batch:
@@ -288,7 +285,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, domain string) error {

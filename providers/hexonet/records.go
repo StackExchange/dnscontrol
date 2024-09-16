@@ -56,10 +56,10 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
-	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
+func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
+	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -76,7 +76,7 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 		rec := cre.Desired
 		recordString, err := n.createRecordString(rec, dc.Name)
 		if err != nil {
-			return corrections, err
+			return corrections, 0, err
 		}
 		params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
 		addrridx++
@@ -96,7 +96,7 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old)
 		newRecordString, err := n.createRecordString(new, dc.Name)
 		if err != nil {
-			return corrections, err
+			return corrections, 0, err
 		}
 		params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
 		addrridx++
@@ -113,7 +113,7 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func toRecord(r *HXRecord, origin string) *models.RecordConfig {

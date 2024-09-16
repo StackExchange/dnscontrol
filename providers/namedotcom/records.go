@@ -28,7 +28,7 @@ func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
 	checkNSModifications(dc)
 
 	for _, rec := range dc.Records {
@@ -37,9 +37,9 @@ func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		}
 	}
 
-	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -67,7 +67,7 @@ func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, c)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func checkNSModifications(dc *models.DomainConfig) {

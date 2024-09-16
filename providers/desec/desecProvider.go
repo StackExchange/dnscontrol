@@ -154,10 +154,10 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	minTTL, ok, err := c.searchDomainIndex(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if !ok {
 		minTTL = 3600
@@ -165,15 +165,15 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 
 	PrepDesiredRecords(dc, minTTL)
 
-	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existing)
+	keysToUpdate, toReport, actualChangeCount, err := diff.NewCompat(dc).ChangedGroups(existing)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
 
 	if len(corrections) == 0 && len(keysToUpdate) == 0 {
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	desiredRecords := dc.Records.GroupedByKey()
@@ -245,7 +245,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	// be to just remove the sort.
 	//sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // ListZones return all the zones in the account

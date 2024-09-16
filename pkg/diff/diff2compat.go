@@ -32,10 +32,10 @@ type differCompat struct {
 
 // IncrementalDiff usees pkg/diff2 to generate output compatible with systems
 // still using NewCompat().
-func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, toCreate, toDelete, toModify Changeset, err error) {
-	instructions, err := diff2.ByRecord(existing, d.dc, nil)
+func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportMsgs []string, toCreate, toDelete, toModify Changeset, actualChangeCount int, err error) {
+	instructions, actualChangeCount, err := diff2.ByRecord(existing, d.dc, nil)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, err
 	}
 
 	for _, inst := range instructions {
@@ -71,11 +71,11 @@ func GenerateMessageCorrections(msgs []string) (corrections []*models.Correction
 }
 
 // ChangedGroups provides the same results as IncrementalDiff but grouped by key.
-func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, error) {
+func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, int, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	toReport, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
+	toReport, toCreate, toDelete, toModify, actualChangeCount, err := d.IncrementalDiff(existing)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 	for _, c := range toCreate {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
@@ -86,5 +86,5 @@ func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[model
 	for _, m := range toModify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
-	return changedKeys, toReport, nil
+	return changedKeys, toReport, actualChangeCount, nil
 }

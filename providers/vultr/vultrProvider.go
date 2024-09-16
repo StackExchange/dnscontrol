@@ -115,7 +115,7 @@ func (api *vultrProvider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
+func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
 	for _, rec := range dc.Records {
@@ -124,7 +124,7 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToUnicode(rec.GetTargetField())
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			rec.SetTarget(t)
 		default:
@@ -132,10 +132,9 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 		}
 	}
 
-	changes, err := diff2.ByRecord(curRecords, dc, nil)
-
+	changes, actualChangeCount, err := diff2.ByRecord(curRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -172,7 +171,7 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 		}
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // GetNameservers gets the Vultr nameservers for a domain

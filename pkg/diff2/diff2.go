@@ -151,7 +151,7 @@ func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func
 // www.example.com, A, and a list of all the desired IP addresses.
 //
 // Examples include: AZURE_DNS, GCORE, NS1, ROUTE53
-func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByRecordSet, existing, dc, compFunc)
 }
 
@@ -163,7 +163,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 // to be served at a particular label, or the label itself is deleted.
 //
 // Examples include: GANDI_V5
-func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByLabel, existing, dc, compFunc)
 }
 
@@ -179,7 +179,7 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 // A delete always has exactly 1 old: .Old[0]
 //
 // Examples include: CLOUDFLAREAPI, HEDNS, INWX, MSDNS, OVH, PORKBUN, VULTR
-func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByRecord, existing, dc, compFunc)
 }
 
@@ -205,23 +205,16 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //	}
 //
 // Example providers include: BIND, AUTODNS
-func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
+func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, int, error) {
 	// Only return the messages.  The caller has the list of records needed to build the new zone.
-	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
-	changes := false
-	for i := range instructions {
-		//fmt.Printf("DEBUG: ByZone #%d: %v\n", i, ii)
-		if instructions[i].Type != REPORT {
-			changes = true
-		}
-	}
-	return justMsgs(instructions), changes, err
+	instructions, actualChangeCount, err := byHelper(analyzeByRecord, existing, dc, compFunc)
+	return justMsgs(instructions), actualChangeCount > 0, actualChangeCount, err
 }
 
 //
 
 // byHelper does 90% of the work for the By*() calls.
-func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func byHelper(fn func(cc *CompareConfig) (ChangeList, int), existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 
 	// Process NO_PURGE/ENSURE_ABSENT and IGNORE*().
 	desired, msgs, err := handsoff(
@@ -232,14 +225,14 @@ func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc
 		dc.KeepUnknown,
 	)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Regroup existing/desiredd for easy comparison:
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 
 	// Analyze and generate the instructions:
-	instructions := fn(cc)
+	instructions, actualChangeCount := fn(cc)
 
 	// If we have msgs, create a change to output them:
 	if len(msgs) != 0 {
@@ -252,5 +245,5 @@ func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc
 		instructions = append([]Change{chg}, instructions...)
 	}
 
-	return instructions, nil
+	return instructions, actualChangeCount, nil
 }

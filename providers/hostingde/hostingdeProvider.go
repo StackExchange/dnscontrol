@@ -123,7 +123,7 @@ func soaToString(s soaValues) string {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	var err error
 
 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
@@ -140,12 +140,12 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	zone, err := hp.getZone(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	toReport, create, del, mod, err := diff.NewCompat(dc).IncrementalDiff(records)
+	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(records)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -225,7 +225,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	if existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
 		currentDNSSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if !currentDNSSecOptions.PublishKSK {
 			msg = append(msg, "Enabling publishKsk for AutoDNSSec")
@@ -246,7 +246,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
 		currentDNSSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		msg = append(msg, "Disable AutoDNSSEC")
 		zone.ZoneConfig.DNSSECMode = "off"
@@ -254,7 +254,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		// Remove auto dnssec keys from domain
 		DomainConfig, err := hp.getDomainConfig(dc.Name)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		for _, entry := range DomainConfig.DNSSecEntries {
 			for _, autoDNSKey := range currentDNSSecOptions.Keys {
@@ -267,7 +267,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	if !zoneChanged {
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	corrections = append(corrections, &models.Correction{
@@ -306,7 +306,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, correction)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func firstNonZero(items ...uint32) uint32 {

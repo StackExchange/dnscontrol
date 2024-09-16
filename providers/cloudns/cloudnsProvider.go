@@ -114,16 +114,16 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 // }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
 	domainID, ok := c.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
+		return nil, 0, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	// Get a list of available TTL values.
@@ -134,9 +134,9 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	toReport, create, del, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -168,7 +168,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	for _, m := range create {
 		req, err := toReq(m.Desired)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
@@ -203,7 +203,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		id := m.Existing.Original.(*domainRecord).ID
 		req, err := toReq(m.Desired)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
@@ -221,7 +221,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 
 }
 

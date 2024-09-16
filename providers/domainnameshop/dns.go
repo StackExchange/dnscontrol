@@ -25,7 +25,7 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
 	// Merge TXT strings to one string
 	for _, rc := range dc.Records {
@@ -39,9 +39,9 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	toReport, create, delete, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, delete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -65,7 +65,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		corr := &models.Correction{
@@ -81,7 +81,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		dnsR.ID = r.Existing.Original.(*domainNameShopRecord).ID
@@ -94,7 +94,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (api *domainNameShopProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {

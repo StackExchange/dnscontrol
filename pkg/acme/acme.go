@@ -276,7 +276,7 @@ func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correcti
 		if err != nil {
 			return nil, err
 		}
-		reports, corrections, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
+		reports, corrections, _, err := zonerecs.CorrectZoneRecords(p.Driver, dc)
 		if err != nil {
 			return nil, err
 		}
