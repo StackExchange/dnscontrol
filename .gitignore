@@ -23,7 +23,7 @@ stack.sh
 .idea/
 *.nupkg
 .DS_Store
-.vscode/launch.json
+.vscode
 .jekyll-cache
 types-dnscontrol.d.ts
 
