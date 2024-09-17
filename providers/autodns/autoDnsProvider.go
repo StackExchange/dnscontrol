@@ -71,14 +71,14 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domain := dc.Name
 
 	var corrections []*models.Correction
 
-	msgs, changed, err := diff2.ByZone(existingRecords, dc, nil)
+	msgs, changed, actualChangeCount, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if changed {
 
@@ -107,7 +107,7 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*ResourceRecord) {

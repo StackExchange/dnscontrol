@@ -241,14 +241,14 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
-	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(changes) == 0 {
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	var corrections []*models.Correction
@@ -280,7 +280,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			newAdds = nil
 			newDels = change.Old[0].Original.(*gdns.ResourceRecordSet)
 		default:
-			return nil, fmt.Errorf("GCLOUD unhandled change.TYPE %s", change.Type)
+			return nil, 0, fmt.Errorf("GCLOUD unhandled change.TYPE %s", change.Type)
 		}
 
 		// If the work would overflow the current batch, process what we have so far and start a new batch.
@@ -308,7 +308,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 	// Process the remaining work.
 	corrections = g.mkCorrection(corrections, accumlatedMsgs, batch, dc.Name)
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs

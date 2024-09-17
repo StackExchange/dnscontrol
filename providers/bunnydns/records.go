@@ -2,6 +2,7 @@ package bunnydns
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
@@ -53,7 +54,7 @@ func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string)
 	return recs, nil
 }
 
-func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	// Bunny DNS never returns NS records for the apex domain, so these are artificially added when retrieving records.
 	// As no TTL can be configured or retrieved for these NS records, we set it to 0 to avoid unnecessary updates.
 	for _, rc := range dc.Records {
@@ -68,12 +69,12 @@ func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 
 	zone, err := b.findZoneByDomain(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	instructions, err := diff2.ByRecord(existing, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByRecord(existing, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var corrections []*models.Correction
@@ -100,7 +101,7 @@ func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		}
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (b *bunnydnsProvider) mkCreateCorrection(zoneID int64, newRec *models.RecordConfig, msg string) *models.Correction {

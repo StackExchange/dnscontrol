@@ -100,21 +100,21 @@ func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
 	checkNS(dc)
 
 	domainID, err := l.getDomainID(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var corrs []*models.Correction
 
-	changes, err := diff2.ByRecord(records, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -133,7 +133,7 @@ func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, reco
 		}
 		corrections = append(corrections, corrs...)
 	}
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (l *luadnsProvider) makeCreateCorrection(newrec *models.RecordConfig, domainID uint32, msg string) []*models.Correction {

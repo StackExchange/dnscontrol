@@ -107,10 +107,10 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	keysToUpdate, toReport, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
+func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	keysToUpdate, toReport, actualChangeCount, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -180,7 +180,7 @@ func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	// AutoDnsSec correction
 	existingAutoDNSSecEnabled, err := isAutoDNSSecEnabled(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
@@ -205,7 +205,7 @@ func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		printer.Debugf("autoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 // GetNameservers returns the nameservers for a domain.

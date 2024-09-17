@@ -247,17 +247,17 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 					continue
 				}
 
-				reports, corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
-				out.EndProvider(provider.Name, len(corrections), err)
+				reports, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(provider.Driver, domain)
+				out.EndProvider(provider.Name, actualChangeCount, err)
 				if err != nil {
 					anyErrors = true
 					return
 				}
-				totalCorrections += len(corrections)
+				totalCorrections += actualChangeCount
 				printReports(domain.Name, provider.Name, reports, out, push, notifier)
 				reportItems = append(reportItems, ReportItem{
 					Domain:      domain.Name,
-					Corrections: len(corrections),
+					Corrections: actualChangeCount,
 					Provider:    provider.Name,
 				})
 				anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors

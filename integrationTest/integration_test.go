@@ -228,13 +228,13 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
 		if tst.Changeless {
-			if count := len(corrections); count != 0 {
-				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
+			if actualChangeCount != 0 {
+				t.Logf("Expected 0 corrections on FIRST run, but found %d.", actualChangeCount)
 				for i, c := range corrections {
 					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 				}
@@ -261,12 +261,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, actualChangeCount, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count := len(corrections); count != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", count)
+		if actualChangeCount != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", actualChangeCount)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
@@ -353,7 +353,7 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -378,12 +378,12 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, actualChangeCount, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count := len(cs); count != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", count)
+	if actualChangeCount != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", actualChangeCount)
 		for i, c := range rs {
 			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}

@@ -141,11 +141,11 @@ func (c *ovhProvider) GetZoneRecords(domain string, meta map[string]string) (mod
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
 
-	corrections, err := c.getDiff2DomainCorrections(dc, actual)
+	corrections, actualChangeCount, err := c.getDiff2DomainCorrections(dc, actual)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Only refresh zone if there's a real modification
@@ -166,14 +166,14 @@ func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual 
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
-func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
-	instructions, err := diff2.ByRecord(actual, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByRecord(actual, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, inst := range instructions {
@@ -200,7 +200,7 @@ func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual 
 			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 	}
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {

@@ -204,7 +204,7 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -213,14 +213,14 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	if err := c.preprocessConfig(dc); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	checkNSModifications(dc)
 
 	domainID, err := c.getDomainID(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, rec := range dc.Records {
@@ -237,9 +237,9 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	var corrections []*models.Correction
 
 	// Cloudflare is a "ByRecord" API.
-	instructions, err := diff2.ByRecord(records, dc, genComparable)
+	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, genComparable)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, inst := range instructions {
@@ -291,7 +291,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func genComparable(rec *models.RecordConfig) string {

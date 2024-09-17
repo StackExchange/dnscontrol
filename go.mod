@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v4
 
-go 1.22.1
+go 1.23.0
 
 retract v4.8.0
 
