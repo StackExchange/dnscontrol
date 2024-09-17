@@ -40,6 +40,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
@@ -134,12 +135,18 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		record.TTL = fixTTL(record.TTL)
 	}
 
+	dnssecFixes, err := c.getDNSSECCorrections(dc)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
+	corrections = append(corrections, dnssecFixes...)
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {
@@ -223,6 +230,34 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 	return corrections, actualChangeCount, nil
 
+}
+
+// getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
+func (c *cloudnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	enabled, err := c.isDnssecEnabled(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if enabled && dc.AutoDNSSEC == "off" {
+		return []*models.Correction{
+			{
+				Msg: "Disable DNSSEC",
+				F:   func() error { err := c.setDnssec(dc.Name, false); return err },
+			},
+		}, nil
+	}
+
+	if !enabled && dc.AutoDNSSEC == "on" {
+		return []*models.Correction{
+			{
+				Msg: "Enable DNSSEC",
+				F:   func() error { err := c.setDnssec(dc.Name, true); return err },
+			},
+		}, nil
+	}
+
+	return []*models.Correction{}, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
