@@ -196,6 +196,43 @@ func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 	return records, nil
 }
 
+func (c *cloudnsProvider) isDnssecEnabled(id string) (bool, error) {
+	params := requestParams{"domain-name": id}
+
+	var bodyString, err = c.get("/dns/get-dnssec-ds-records.json", params)
+	if err != nil {
+		// DNSSEC disabled is indicated by an error fetching the DS records.
+		var errResp errorResponse
+		err = json.Unmarshal(bodyString, &errResp)
+		if err == nil {
+			if errResp.Description == "The DNSSEC is not active." {
+				return false, nil
+			}
+			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %s", err)
+		}
+	}
+
+	return true, nil
+}
+
+func (c *cloudnsProvider) setDnssec(id string, enabled bool) error {
+	params := requestParams{"domain-name": id}
+
+	var endpoint string
+	if enabled {
+		endpoint = "/dns/activate-dnssec.json"
+	} else {
+		endpoint = "/dns/deactivate-dnssec.json"
+	}
+
+	var _, err = c.get(endpoint, params)
+	if err != nil {
+		return fmt.Errorf("failed setting DNSSEC at ClouDNS: %s", err)
+	}
+
+	return nil
+}
+
 func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
