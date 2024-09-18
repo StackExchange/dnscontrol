@@ -22,7 +22,6 @@ updates:
       - dependency-name: "github.com/exoscale/egoscale"
       - dependency-name: "github.com/ovh/go-ovh"
       - dependency-name: "github.com/vultr/govultr"
-      - dependency-name: "gopkg.in/ns1/ns1-go.v2"
 
   # Maintain dependencies for Docker
   - package-ecosystem: "docker"
