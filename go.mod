@@ -52,7 +52,7 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.28.0
-	golang.org/x/oauth2 v0.22.0
+	golang.org/x/oauth2 v0.23.0
 	google.golang.org/api v0.195.0
 	gopkg.in/ns1/ns1-go.v2 v2.12.0
 )
