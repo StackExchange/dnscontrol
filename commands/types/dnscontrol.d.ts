@@ -1909,20 +1909,21 @@ declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover
 declare function MX(name: string, priority: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `NAMESERVER()` instructs DNSControl to inform the domain"s registrar where to find this zone.
+ * `NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone.
  * For some registrars this will also add NS records to the zone itself.
  *
  * This takes exactly one argument: the name of the nameserver. It must end with
  * a "." if it is a FQDN, just like all targets.
  *
  * This is different than the [`NS()`](NS.md) function, which inserts NS records
- * in the current zone and accepts a label. [`NS()`](NS.md) is useful for downward
+ * in the current zone and accepts a label. [`NS()`](NS.md) is for downward
  * delegations. `NAMESERVER()` is for informing upstream delegations.
  *
  * For more information, refer to [this page](../../nameservers.md).
  *
  * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ * D("example.com", REG_MY_PROVIDER,
+ *   DnsProvider(DSP_MY_PROVIDER),
  *   DnsProvider(route53, 0),
  *   // Replace the nameservers:
  *   NAMESERVER("ns1.myserver.com."),
@@ -1941,7 +1942,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * Nameservers are one of the least
  * understood parts of DNS, so a little extra explanation is required.
  *
- * * [`NS()`](NS.md) lets you add an NS record to a zone, just like [`A()`](A.md) adds an A
+ * * [`NS()`](NS.md) adds an NS record to a zone, just like [`A()`](A.md) adds an A
  *   record to the zone. This is generally used to delegate a subzone.
  *
  * * The `NAMESERVER()` directive speaks to the Registrar about how the parent should delegate the zone.
@@ -2401,6 +2402,27 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/panic
  */
 declare function PANIC(message: string): never;
+
+/**
+ * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     PORKBUN_URLFWD("urlfwd1", "http://example.com"),
+ *     PORKBUN_URLFWD("urlfwd2", "http://example.org", {type: "permanent", includePath: "yes", wildcard: "no"})
+ * );
+ * ```
+ *
+ * The fields are:
+ * * name: the record name
+ * * target: where you'd like to forward the domain to
+ * * type: valid types are: `temporary` (302 / 307) or `permanent` (301), default to `temporary`
+ * * includePath: whether to include the URI path in the redirection. Valid options are `yes` or `no`, default to `no`
+ * * wildcard: forward all subdomains of the domain. Valid options are `yes` or `no`, default to `yes`
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//porkbun_urlfwd
+ */
+declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * PTR adds a PTR record to the domain.

@@ -40,7 +40,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
     - name: Enforce Go Formatted Code
       run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.3.6
+    - uses: actions/upload-artifact@v4.4.0
       with:
         name: unit-tests
         path: ${{ env.TEST_RESULTS }}
@@ -88,7 +88,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -96,7 +96,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:1.22
+      image: golang:1.23
     needs:
     - integration-test-providers
     env:
@@ -122,63 +122,67 @@ jobs:
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
+      SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
 
       # PROVIDER SECRET LIST
       # The above providers have additional env variables they
       # need for credentials and such.
-
+      #
       AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
       AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
       AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP }}
       AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
       AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
-
+      #
       BUNNY_DNS_API_KEY: ${{ secrets.BUNNY_DNS_API_KEY }}
-
+      #
       CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
       CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
-
+      #
       CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
       CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
-
+      #
       CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY }}
       CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN }}
-
+      #
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
-
+      #
       GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
-
+      #
       GCLOUD_EMAIL: ${{ secrets.GCLOUD_EMAIL }}
       GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
       GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
       GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE }}
-
+      #
       HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
       HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
       HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
-
+      #
       HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
       HEXONET_PW: ${{ secrets.HEXONET_PW }}
       HEXONET_UID: ${{ secrets.HEXONET_UID }}
-
+      #
       HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
       HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
       HUAWEICLOUD_KEY: ${{ secrets.HUAWEICLOUD_KEY }}
-
+      #
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
-
+      #
       NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
-
+      #
       POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
       POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
       POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
-
+      #
       ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
       ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
-
+      #
+      SAKURACLOUD_ACCESS_TOKEN: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN }}
+      SAKURACLOUD_ACCESS_TOKEN_SECRET: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN_SECRET }}
+      #
       TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
 
@@ -206,7 +210,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v4.3.6
+    - uses: actions/upload-artifact@v4.4.0
       with:
         name: integration-tests-${{ matrix.provider }}
         path: ${{ env.TEST_RESULTS }}

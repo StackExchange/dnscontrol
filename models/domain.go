@@ -49,9 +49,10 @@ type DomainConfig struct {
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
-	pendingCorrectionsMutex sync.Mutex                 // Protect pendingCorrections*
-	pendingCorrections      map[string]([]*Correction) // Work to be done for each provider
-	pendingCorrectionsOrder []string                   // Call the providers in this order
+	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
+	pendingCorrections       map[string]([]*Correction) // Work to be done for each provider
+	pendingCorrectionsOrder  []string                   // Call the providers in this order
+	pendingActualChangeCount map[string](int)           // Number of changes to report (cumulative)
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -123,7 +124,7 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {
@@ -175,4 +176,24 @@ func (dc *DomainConfig) GetCorrections(providerName string) []*Correction {
 		return c
 	}
 	return nil
+}
+
+// IncrementChangeCount accumulates change count in a thread-safe way.
+func (dc *DomainConfig) IncrementChangeCount(providerName string, delta int) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingActualChangeCount == nil {
+		// First time storing anything.
+		dc.pendingActualChangeCount = make(map[string](int))
+	}
+	dc.pendingActualChangeCount[providerName] += delta
+}
+
+// GetChangeCount accumulates change count in a thread-safe way.
+func (dc *DomainConfig) GetChangeCount(providerName string) int {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	return dc.pendingActualChangeCount[providerName]
 }

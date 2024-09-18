@@ -8,21 +8,22 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`NAMESERVER()` instructs DNSControl to inform the domain"s registrar where to find this zone.
+`NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone.
 For some registrars this will also add NS records to the zone itself.
 
 This takes exactly one argument: the name of the nameserver. It must end with
 a "." if it is a FQDN, just like all targets.
 
 This is different than the [`NS()`](NS.md) function, which inserts NS records
-in the current zone and accepts a label. [`NS()`](NS.md) is useful for downward
+in the current zone and accepts a label. [`NS()`](NS.md) is for downward
 delegations. `NAMESERVER()` is for informing upstream delegations.
 
 For more information, refer to [this page](../../nameservers.md).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+D("example.com", REG_MY_PROVIDER,
+  DnsProvider(DSP_MY_PROVIDER),
   DnsProvider(route53, 0),
   // Replace the nameservers:
   NAMESERVER("ns1.myserver.com."),
@@ -43,7 +44,7 @@ END);
 Nameservers are one of the least
 understood parts of DNS, so a little extra explanation is required.
 
-* [`NS()`](NS.md) lets you add an NS record to a zone, just like [`A()`](A.md) adds an A
+* [`NS()`](NS.md) adds an NS record to a zone, just like [`A()`](A.md) adds an A
   record to the zone. This is generally used to delegate a subzone.
 
 * The `NAMESERVER()` directive speaks to the Registrar about how the parent should delegate the zone.

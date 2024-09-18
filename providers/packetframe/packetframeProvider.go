@@ -106,15 +106,15 @@ func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]st
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	zone, err := api.getZone(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
+		return nil, 0, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
-	toReport, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, dels, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -122,7 +122,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	for _, m := range create {
 		req, err := toReq(zone.ID, m.Desired)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		corr := &models.Correction{
 			Msg: m.String(),
@@ -168,7 +168,7 @@ func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func toReq(zoneID string, rc *models.RecordConfig) (*domainRecord, error) {

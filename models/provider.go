@@ -4,7 +4,7 @@ package models
 type DNSProvider interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
 	GetZoneRecords(domain string, meta map[string]string) (Records, error)
-	GetZoneRecordsCorrections(dc *DomainConfig, existing Records) ([]*Correction, error)
+	GetZoneRecordsCorrections(dc *DomainConfig, existing Records) ([]*Correction, int, error)
 }
 
 // Registrar is an interface for Registrar plug-ins.

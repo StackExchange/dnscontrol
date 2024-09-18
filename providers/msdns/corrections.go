@@ -8,14 +8,14 @@ import (
 )
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
 	models.PostProcessRecords(foundRecords)
 
-	changes, err := diff2.ByRecord(foundRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecord(foundRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var corr *models.Correction
@@ -66,7 +66,7 @@ func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, corr)
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (client *msdnsProvider) deleteOneRecord(dnsserver, zonename string, oldrec *models.RecordConfig) error {

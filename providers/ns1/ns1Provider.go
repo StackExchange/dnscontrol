@@ -199,7 +199,7 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 	domain := dc.Name
 
@@ -208,9 +208,9 @@ func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecor
 		corrections = append(corrections, dnssecCorrections)
 	}
 
-	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -241,7 +241,7 @@ func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecor
 		}
 
 	}
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (n *nsone) add(recs models.Records, domain string) error {

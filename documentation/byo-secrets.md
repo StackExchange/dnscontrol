@@ -58,6 +58,10 @@ Create a branch as you normally would to submit a PR to the project.
 
 Step 2: Update `pr_test.yml`
 
+{% hint style="info" %}
+Edits to `pr_test.yml` may have already been done for you.
+{% endhint %}
+
 Edit `.github/workflows/pr_test.yml`
 
 1. Add the provider to the `PROVIDERS` list.
@@ -68,8 +72,10 @@ Edit `.github/workflows/pr_test.yml`
 The line looks something like:
 
 {% code title=".github/workflows/pr_test.yml" %}
-```
-        PROVIDERS: "['AZURE_DNS','BIND','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','TRANSIP']"
+```yaml
+      env:
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        ENV_CONTEXT: ${{ toJson(env) }}
 ```
 {% endcode %}
 

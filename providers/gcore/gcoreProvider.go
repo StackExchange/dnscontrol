@@ -137,7 +137,7 @@ func generateChangeMsg(updates []string) string {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 
 	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction
@@ -151,9 +151,9 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 		}
 	}
 
-	changes, err := diff2.ByRecordSet(existing, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existing, dc, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, change := range changes {
@@ -196,7 +196,7 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 
 	dnssecEnabled, err := c.dnssdkGetDNSSEC(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if !dnssecEnabled && dc.AutoDNSSEC == "on" {
@@ -221,5 +221,5 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 
 	result := append(reports, deletions...)
 	result = append(result, corrections...)
-	return result, nil
+	return result, actualChangeCount, nil
 }

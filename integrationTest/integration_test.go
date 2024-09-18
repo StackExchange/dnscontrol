@@ -228,13 +228,13 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		_, corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
+		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
 		if tst.Changeless {
-			if count := len(corrections); count != 0 {
-				t.Logf("Expected 0 corrections on FIRST run, but found %d.", count)
+			if actualChangeCount != 0 {
+				t.Logf("Expected 0 corrections on FIRST run, but found %d.", actualChangeCount)
 				for i, c := range corrections {
 					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 				}
@@ -261,12 +261,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		_, corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
+		_, corrections, actualChangeCount, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count := len(corrections); count != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", count)
+		if actualChangeCount != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", actualChangeCount)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
@@ -353,7 +353,7 @@ func TestDualProviders(t *testing.T) {
 	run := func() {
 		dom, _ := dc.Copy()
 
-		rs, cs, err := zonerecs.CorrectZoneRecords(p, dom)
+		rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -378,12 +378,12 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	rs, cs, err := zonerecs.CorrectZoneRecords(p, dc)
+	rs, cs, actualChangeCount, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count := len(cs); count != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", count)
+	if actualChangeCount != 0 {
+		t.Logf("Expect no corrections on second run, but found %d.", actualChangeCount)
 		for i, c := range rs {
 			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
 		}
@@ -761,6 +761,15 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 
 func ns1Urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS1_URLFWD")
+}
+
+func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.RecordConfig {
+	r := makeRec(name, target, "PORKBUN_URLFWD")
+	r.Metadata = make(map[string]string)
+	r.Metadata["type"] = t
+	r.Metadata["includePath"] = includePath
+	r.Metadata["wildcard"] = wildcard
+	return r
 }
 
 func clear() *TestCase {
@@ -2277,6 +2286,15 @@ func makeTests() []*TestGroup {
 				ovhspf("spf", "v=spf1 a mx -all"),
 				ovhdkim("dkim", "v=DKIM1;t=s;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk72yk6UML8LGIXFobhvx6UDUntqGzmyie2FLMyrOYk1C7CVYR139VMbO9X1rFvZ8TaPnMCkMbuEGWGgWNc27MLYKfI+wP/SYGjRS98TNl9wXxP8tPfr6id5gks95sEMMaYTu8sctnN6sBOvr4hQ2oipVcBn/oxkrfhqvlcat5gQIDAQAB"),
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
+		),
+
+		// PORKBUN features
+
+		testgroup("PORKBUN_URLFWD tests",
+			only("PORKBUN"),
+			tc("Add a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.com", "", "", "")),
+			tc("Update a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.org", "", "", "")),
+			tc("Update a urlfwd with metadata", porkbunUrlfwd("urlfwd1", "http://example.org", "permanent", "no", "no")),
 		),
 
 		// This MUST be the last test.

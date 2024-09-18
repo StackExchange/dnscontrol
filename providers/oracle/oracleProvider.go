@@ -10,9 +10,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/oracle/oci-go-sdk/v32/common"
-	"github.com/oracle/oci-go-sdk/v32/dns"
-	"github.com/oracle/oci-go-sdk/v32/example/helpers"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/dns"
+	"github.com/oracle/oci-go-sdk/v65/example/helpers"
 )
 
 var features = providers.DocumentationNotes{
@@ -63,6 +63,12 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	if err != nil {
 		return nil, err
 	}
+
+	// Set default retry policy to handle 429 automatically
+	defaultRetryPolicy := common.DefaultRetryPolicy()
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &defaultRetryPolicy,
+	})
 
 	return &oracleProvider{
 		client:      client,
@@ -123,7 +129,7 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 		}
 		return true
 	}
-	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
+	getResp, err = o.client.GetZone(ctx, dns.GetZoneRequest{
 		ZoneNameOrId:    &domain,
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
@@ -149,7 +155,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	return models.ToNameserversStripTD(nss)
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
@@ -207,7 +213,7 @@ func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (mo
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var err error
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
@@ -228,9 +234,9 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 	}
 
-	toReport, create, dels, modify, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, create, dels, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
@@ -252,7 +258,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			createRecords = append(createRecords, rec.Desired)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	if len(dels) > 0 {
@@ -260,7 +265,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	if len(modify) > 0 {
@@ -269,7 +273,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			deleteRecords = append(deleteRecords, rec.Existing)
 			desc += rec.String() + "\n"
 		}
-		desc = desc[:len(desc)-1]
 	}
 
 	// There were corrections. Send them as one big batch:
@@ -282,7 +285,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		})
 	}
 
-	return corrections, nil
+	return corrections, actualChangeCount, nil
 }
 
 func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, domain string) error {
@@ -309,6 +312,7 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 			batchEnd = len(ops)
 		}
 		patchReq.Items = ops[batchStart:batchEnd]
+
 		_, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
 			return err
