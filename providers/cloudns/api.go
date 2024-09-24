@@ -265,7 +265,9 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	err = json.Unmarshal(bodyString, &errResp)
 	if err == nil {
 		if errResp.Status == "Failed" {
-			return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+			// For debug only - req.URL.RequestURI() contains the authentication params:
+			// return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+			return bodyString, fmt.Errorf("ClouDNS API error: %s", errResp.Description)
 		}
 	}
 
