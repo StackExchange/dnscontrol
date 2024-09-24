@@ -67,6 +67,18 @@ type domainRecord struct {
 	DsAlgorithm      string `json:"dsalgorithm,omitempty"`
 	DsDigestType     string `json:"digest_type,omitempty"`
 	DsDigest         string `json:"dsdigest,omitempty"`
+	LocLatDeg        string `json:"lat_deg,omitempty"`
+	LocLatMin        string `json:"lat_min,omitempty"`
+	LocLatSec        string `json:"lat_sec,omitempty"`
+	LocLatDir        string `json:"lat_dir,omitempty"`
+	LocLongDeg       string `json:"long_deg,omitempty"`
+	LocLongMin       string `json:"long_min,omitempty"`
+	LocLongSec       string `json:"long_sec,omitempty"`
+	LocLongDir       string `json:"long_dir,omitempty"`
+	LocAltitude      string `json:"altitude,omitempty"`
+	LocSize          string `json:"size,omitempty"`
+	LocHPrecision    string `json:"h_precision,omitempty"`
+	LocVPrecision    string `json:"v_precision,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
