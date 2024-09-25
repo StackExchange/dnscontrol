@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -170,21 +169,40 @@ func getENotationInt(x float32) (uint8, error) {
 	   1cm = 1e0 == 16 (1^4 + 0) or 0<<4 + 0
 	   0cm = 0e0 == 0
 	*/
-	// get int from cm value:
-	num := strconv.Itoa(int(x * 100))
-	// fmt.Printf("num: %s\n", num)
-	// split string on zeroes to count zeroes:
-	arr := strings.Split(num, "0")
-	// fmt.Printf("arr: %s\n", arr)
-	// get the leading digit:
-	prefix, err := strconv.Atoi(arr[0])
-	if err != nil {
-		return 0, fmt.Errorf("can't unpack LOC base/mantissa: %w", err)
+	if x == 0 {
+		return 0, nil // both mantissa and exponent will be zero
 	}
-	// fmt.Printf("prefix: %d\n", prefix)
-	// fmt.Printf("lenArr-1: %d\n", len(arr)-1)
-	// construct our x^e uint8
-	value := uint8((prefix << 4) | (len(arr) - 1))
-	// fmt.Printf("m_e: %d\n", value)
-	return value, err
+
+	// get cm value
+	num := float64(x) * 100
+
+	// Get exponent (base 10)
+	exp := int(math.Floor(math.Log10(num)))
+
+	// Normalize the mantissa
+	mantissa := num / math.Pow(10, float64(exp))
+
+	// Adjust mantissa and exponent to fit into 4-bit ranges (0-15)
+	for mantissa < 1 && exp > 0 {
+		mantissa *= 10
+		exp--
+	}
+
+	// Truncate the mantissa (integer value) and ensure it's within 4 bits
+	mantissaInt := int(math.Floor(mantissa))
+	if mantissaInt > 9 {
+		mantissaInt = 9 // Cap mantissa at 9
+	}
+
+	// Ensure exponent is within 4 bits
+	if exp < 0 {
+		exp = 0 // Cap negative exponents at 0
+	} else if exp > 9 {
+		exp = 9 // Cap exponent at 9
+	}
+
+	// Pack mantissa and exponent into a single uint8
+	packedValue := uint8((mantissaInt << 4) | (exp & 0x0F))
+
+	return packedValue, nil
 }

@@ -683,10 +683,33 @@ function getENotationInt(x) {
        0cm = 0e0 == 0
     */
     size = x * 100; // get cm value
-    // get the m^e version of size
-    array = size.toExponential(0).split('e+').map(Number);
+
+    // Convert the number to scientific notation
+    var exp = Math.floor(Math.log10(size)); // Get the exponent (base 10)
+    var mantissa = size / Math.pow(10, exp); // Normalize mantissa
+
+    // Normalize the mantissa to fit into 4 bits (between 0 and 15)
+    while (mantissa < 1 && exp > 0) {
+        mantissa *= 10;
+        exp -= 1;
+    }
+
+    /* Four-bit values greater than 9 are undefined, as are values with a base
+    of zero and a non-zero exponent.
+    */
+
+    // Ensure mantissa and exponent are within 4-bit range (0-15) but no greater than 9
+    mantissa = Math.floor(mantissa); // We truncate decimals
+    if (mantissa > 9) {
+        mantissa = 9; // Cap mantissa at 9
+    }
+    if (exp < 0) {
+        exp = 0; // We cap negative exponents at 0
+    } else if (exp > 9) {
+        exp = 9; // Cap exponent at 9
+    }
     // convert it to 4bit:4bit uint8
-    m_e = (array[0] << 4) | array[1];
+    m_e = (mantissa << 4) | (exp & 0xf);
     return m_e;
 }
 
@@ -734,6 +757,7 @@ function locStringBuilder(record, args) {
         ewstring += ew + ' ';
     }
 
+    // handle altitude, size, horizontal precision, vertical precision
     // alt -100000.00 .. 42849672.95m
     // size, horizontal precision, vertical precision 0 .. 90000000.00m
     precisionbuffer =
@@ -742,9 +766,22 @@ function locStringBuilder(record, args) {
             : args.alt > 42849672.95
               ? 42849672.95
               : args.alt.toString()) + 'm';
-    precisionbuffer += ' ' + args.siz.toString() + 'm';
-    precisionbuffer += ' ' + args.hp.toString() + 'm';
-    precisionbuffer += ' ' + args.vp.toString() + 'm';
+    precisionbuffer +=
+        ' ' +
+        (args.siz > 90000000
+            ? 90000000
+            : args.siz < 0
+              ? 0
+              : args.siz.toString()) +
+        'm';
+    precisionbuffer +=
+        ' ' +
+        (args.hp > 90000000 ? 90000000 : args.hp < 0 ? 0 : args.hp.toString()) +
+        'm';
+    precisionbuffer +=
+        ' ' +
+        (args.vp > 90000000 ? 90000000 : args.vp < 0 ? 0 : args.vp.toString()) +
+        'm';
 
     record.target = nsstring + ewstring + precisionbuffer;
 
@@ -782,17 +819,10 @@ function locDMSBuilder(record, args) {
     // Horizontal Precision
     m_e = args.hp;
     record.lochorizpre = getENotationInt(args.hp);
-    // if (m_e != 0) {
-    // } else {
-    //     record.lochorizpre = 22; // 10,000m default
-    // }
+
     // Vertical Precision
     m_e = args.vp;
     record.locvertpre = getENotationInt(args.vp);
-    // if (m_e != 0) {
-    // } else {
-    //     record.locvertpre = 19; // 10m default
-    // }
 }
 
 // LOC(name,d1,m1,s1,ns,d2,m2,s2,ew,alt,siz,hp,vp, recordModifiers...)

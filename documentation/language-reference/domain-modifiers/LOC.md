@@ -101,6 +101,8 @@ where:
  altitude: [-100000.00 .. 42849672.95] BY .01 (altitude in meters)
  size, horizontal_precision, vertical_precision: [0 .. 90000000.00] (size/precision in meters)
 
+values outside of the above ranges are gated to within the ranges.
+
 ## Examples ##
 
 {% code title="dnsconfig.js" %}

@@ -9,6 +9,15 @@ d-alt-highest    IN LOC   42 21 28.764 N 71 00 51.617 W 42849672.95m 2000m 0.00m
 d-alt-lowest     IN LOC   42 21 28.764 N 71 00 51.617 W -100000m 2000m 0.00m 0.00m
 d-alt-toohigh    IN LOC   42 21 28.764 N 71 00 51.617 W 42849672.95m 2000m 0.00m 0.00m
 d-alt-toolow     IN LOC   42 21 28.764 N 71 00 51.617 W -100000m 2000m 0.00m 0.00m
+d-horizprecision-hi IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 90000000m 0.00m
+d-horizprecision-toohi IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 90000000m 0.00m
+d-horizprecision-toolow IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 0.00m 0.00m
+d-size-hi        IN LOC   42 21 28.764 N 71 00 51.617 W 0m 90000000m 0.00m 0.00m
+d-size-toohi     IN LOC   42 21 28.764 N 71 00 51.617 W 0m 90000000m 0.00m 0.00m
+d-size-toolow    IN LOC   42 21 28.764 N 71 00 51.617 W 0m 0.00m 0.00m 0.00m
+d-vertprecision-hi IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 0.00m 90000000m
+d-vertprecision-toohi IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 0.00m 90000000m
+d-vertprecision-toolow IN LOC 42 21 28.764 N 71 00 51.617 W 0m 1m 0.00m 0.00m
 fraser-island    IN LOC   25 14 24.000 S 153 09 0.000 E 3m 0.00m 0.00m 0.00m
 guinness-brewery IN LOC   53 20 40.000 N 06 17 20.000 W 300m 0.00m 0.00m 0.00m
 hawaii           IN LOC   21 30 0.000 N 158 00 0.000 W 920m 0.00m 0.00m 0.00m
