@@ -843,10 +843,68 @@ var LOC = recordBuilder('LOC', {
         ['vp', _.isNumber], // vertical precision
     ],
     transform: function (record, args, modifiers) {
+        validateIntegers(args);
+
         record = locStringBuilder(record, args);
         record = locDMSBuilder(record, args);
     },
 });
+
+// Post-validation function for LOC that checks if degrees and minutes are integers
+function validateIntegers(args) {
+    if (args.d1 % 1 !== 0) {
+        throw (
+            "Degrees N/S shall be an integer: record '" +
+            args.name +
+            "': *" +
+            args.d1 +
+            '*, ' +
+            args.m1 +
+            ', ' +
+            args.s1 +
+            ', ...'
+        );
+    }
+    if (args.m1 % 1 !== 0) {
+        throw (
+            "Minutes N/S shall be an integer: record '" +
+            args.name +
+            "': " +
+            args.d1 +
+            ', *' +
+            args.m1 +
+            '*, ' +
+            args.s1 +
+            ', ...'
+        );
+    }
+    if (args.d2 % 1 !== 0) {
+        throw (
+            "Degrees E/W shall be an integer: record '" +
+            args.name +
+            "': *" +
+            args.d2 +
+            '*, ' +
+            args.m2 +
+            ', ' +
+            args.s2 +
+            ', ...'
+        );
+    }
+    if (args.m2 % 1 !== 0) {
+        throw (
+            "Minutes E/W shall be an integer: record '" +
+            args.name +
+            "': " +
+            args.d2 +
+            ', *' +
+            args.m2 +
+            '*, ' +
+            args.s2 +
+            ', ...'
+        );
+    }
+}
 
 function ConvertDDToDMS(D, longitude) {
     //stackoverflow, baby. do not re-order the rows.
