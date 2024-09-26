@@ -734,8 +734,14 @@ function locStringBuilder(record, args) {
         ewstring += ew + ' ';
     }
 
-    // handle altitude, size, horizontal precision, vertical precision
-    precisionbuffer = args.alt.toString() + 'm';
+    // alt -100000.00 .. 42849672.95m
+    // size, horizontal precision, vertical precision 0 .. 90000000.00m
+    precisionbuffer =
+        (args.alt < -100000
+            ? -100000
+            : args.alt > 42849672.95
+              ? 42849672.95
+              : args.alt.toString()) + 'm';
     precisionbuffer += ' ' + args.siz.toString() + 'm';
     precisionbuffer += ' ' + args.hp.toString() + 'm';
     precisionbuffer += ' ' + args.vp.toString() + 'm';
@@ -763,7 +769,14 @@ function locDMSBuilder(record, args) {
     // W
     else record.loclongitude = LOCPrimeMeridian - lon;
     // Altitude
-    record.localtitude = (args.alt + LOCAltitudeBase) * 100;
+    record.localtitude = parseInt((args.alt + LOCAltitudeBase) * 100);
+    // 'cast' altitude to fit 'uint32'
+    record.localtitude =
+        record.localtitude > 4294967295
+            ? 4294967295
+            : record.localtitude < 0
+              ? 0
+              : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -778,7 +791,7 @@ function locDMSBuilder(record, args) {
     record.locvertpre = getENotationInt(args.vp);
     // if (m_e != 0) {
     // } else {
-    //     record.lochorizpre = 19; // 10m default
+    //     record.locvertpre = 19; // 10m default
     // }
 }
 

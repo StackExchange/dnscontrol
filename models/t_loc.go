@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -31,7 +32,7 @@ func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint
 // for further processing to the LOC native 7 input binary format:
 // LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre
 func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) error {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
 
 	err := rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
@@ -78,18 +79,17 @@ func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error
 // the 12 variable inputs of integers and strings.
 func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 	var d1, m1, d2, m2 uint8
-	var al int32
+	var al float32
 	var s1, s2 float32
 	var ns, ew string
 	var sz, hp, vp float32
 
-	var err error
-	_, err = fmt.Sscanf(input+"~", "%d %d %f %s %d %d %f %s %dm %fm %fm %fm~",
+	_, err := fmt.Sscanf(input+"~", "%d %d %f %s %d %d %f %s %fm %fm %fm %fm~",
 		&d1, &m1, &s1, &ns, &d2, &m2, &s2, &ew, &al, &sz, &hp, &vp)
 	if err != nil {
-		return fmt.Errorf("extractLOCFieldsFromStringInput: can't unpack LOC tex input data: %w", err)
+		return fmt.Errorf("extractLOCFieldsFromStringInput: can't unpack LOC text input data: %w", err)
 	}
-	// fmt.Printf("\ngot: %d %d %g %s %d %d %g %s %dm %0.2fm %0.2fm %0.2fm \n", d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	// fmt.Printf("\ngot: %d %d %g %s %d %d %g %s %0.2fm %0.2fm %0.2fm %0.2fm \n", d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
 	rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
@@ -98,7 +98,7 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 
 // calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields
 func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) error {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
 	const LOCEquator uint64 = 0x80000000       // 1 << 31 // RFC 1876, Section 2.
@@ -120,7 +120,10 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 		rc.LocLongitude = uint32(LOCPrimeMeridian - lon)
 	}
 	// Altitude
-	rc.LocAltitude = uint32(al+LOCAltitudeBase) * 100
+	altitude := (float64(al) + float64(LOCAltitudeBase)) * 100
+	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
+	rc.LocAltitude = uint32(clampedAltitude)
+
 	var err error
 	// Size
 	rc.LocSize, err = getENotationInt(sz)
