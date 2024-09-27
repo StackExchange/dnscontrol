@@ -27,6 +27,7 @@ OPTIONS:
    --full                                                     Add headings, providers names, notifications of no changes, etc (default: false)
    --bindserial value                                         Force BIND serial numbers to this value (for reproducibility) (default: 0)
    --report value                                             (push) Generate a JSON-formatted report of the number of changes made.
+   --cmode value                                              Set to "none" to disable concurrency (see below)
    --help, -h                                                 show help
 ```
 
@@ -96,18 +97,31 @@ OPTIONS:
     performed corrections in the file named `name`. If no name is specified, no
     report is generated.
 
-## ppreview/ppush
-
-{% hint style="info" %}
-Starting in v4.9
-{% endhint %}
-
-The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
-data is gathered concurrently. The commands will go away when
-they replace the existing `preview`/`push` commands.
-
 * `--cmode value`
   * Concurrency mode. Specifies what kind of providers should be run concurrently.
     * `default` -- Providers are run sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
-    * `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
-    * `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.
+    * `none` -- All providers are run sequentially. This is the safest mode. This is useful if concurrency bugs are discovered.
+    * `all` -- This is unsafe. It runs all providers concurrently, including the ones that have not be validated to run concurrently. This is useful for demonstrating bugs.
+
+## Concurrency
+
+The first phase of `preview`/`push` is to gather information about the zones.
+This can be quite time consuming. Each zone's information is gathered
+concurrently, when possible, to reduce run-time. However not all providers have
+been throughly tested to verify they support concurrent operation. Zones from
+those providers are run sequentially after the concurrent providers complete.
+The `--cmode` flag can be used to force zones to run sequentially or
+concurrently.
+
+Originally zone information was gathered sequentially.  In v4.9.0 concurrent
+gathering was introduced via new commands: `ppreview`/`ppush`.  In v4.14.0
+concurrency became the default: `preview`/`push` became aliases for `ppreview`/`ppush`
+the original sequentially commands were renamed `oldpreview`/`oldpush`.
+In the future the `oldpreview`/`oldpush` code will disappear.
+
+| Version    | `preview`/`push` | `oldpreview`/`oldpush` | `ppreview`/`ppush` |
+|------------|------------------|------------------------|--------------------|
+| pre-v4.9   | sequential code  |  n/a                   | n/a                |
+| v4.9       | sequential code  |  n/a                   | concurrent code    |
+| v4.14      | concurrent code  | serial code            | concurrent code    |
+| future     | concurrent code  | removed                | concurrent code    |
