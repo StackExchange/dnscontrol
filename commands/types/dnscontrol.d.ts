@@ -1559,7 +1559,7 @@ declare function INCLUDE(domain: string): DomainModifier;
 declare function IP(ip: string): number;
 
 /**
- * The parameter number types are as follows:
+ * The parameter number types ingested are as follows:
  *
  * ```
  * name: string
@@ -1570,7 +1570,7 @@ declare function IP(ip: string): number;
  * deg2: uint32
  * min2: uint32
  * sec2: float32
- * altitude: uint32
+ * altitude: float32
  * size: float32
  * horizontal_precision: float32
  * vertical_precision: float32
@@ -1627,15 +1627,21 @@ declare function IP(ip: string): number;
  *
  * `degrees,minutes,seconds,[NnSs],deg,min,sec,[EeWw],altitude,size,horizontal_precision,vertical_precision`
  *
+ * where:
+ *  altitude: [-100000.00 .. 42849672.95] BY .01 (altitude in meters)
+ *  size, horizontal_precision, vertical_precision: [0 .. 90000000.00] (size/precision in meters)
+ *
+ * values outside of the above ranges are gated to within the ranges.
+ *
  * ## Examples ##
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   // LOC "subdomain", d1, m1, s1, "[NnSs]", d2, m2, s2, "[EeWw]", alt, siz, hp, vp)
  *   //42 21 54     N  71 06  18     W -24m 30m
- *   LOC("@", 42, 21, 54,     "N", 71,  6, 18,     "W", -24,   30,    0,  0),
+ *   LOC("@", 42, 21, 54,     "N", 71,  6, 18,     "W", -24.01,   30,    0,  0),
  *   //42 21 43.952 N  71 5   6.344  W -24m 1m 200m 10m
- *   LOC("a", 42, 21, 43.952, "N", 71,  5,  6.344, "W", -24,    1,  200, 10),
+ *   LOC("a", 42, 21, 43.952, "N", 71,  5,  6.344, "W", -24.33,    1,  200, 10),
  *   //52 14 05     N  00 08  50     E 10m
  *   LOC("b", 52, 14,  5,     "N",  0,  8, 50,     "E",  10,    0,    0,  0),
  *   //32  7 19     S 116  2  25     E 10m

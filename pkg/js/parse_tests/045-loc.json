@@ -25,16 +25,16 @@
           "locvertpre": 19,
           "loclatitude": 2299987600,
           "loclongitude": 1891577304,
-          "localtitude": 9997600,
-          "target": "42 21 43.952 N 71 5 6.344 W -24m 1m 200m 10m"
+          "localtitude": 9997599,
+          "target": "42 21 43.952 N 71 5 6.344 W -24.01m 1m 200m 10m"
         },
         {
           "type": "LOC",
           "name": "b",
           "loclatitude": 2335528648,
           "loclongitude": 2148013648,
-          "localtitude": 10001000,
-          "target": "52 14 5 N 0 8 50 E 10m 0m 0m 0m"
+          "localtitude": 10001033,
+          "target": "52 14 5 N 0 8 50 E 10.33m 0m 0m 0m"
         },
         {
           "type": "LOC",
@@ -52,6 +52,124 @@
           "loclongitude": 1891832031,
           "localtitude": 9995600,
           "target": "42 21 28.764 N 71 0 51.617 W -44m 2000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-alt-highest",
+          "locsize": 37,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 4294967295,
+          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-alt-lowest",
+          "locsize": 37,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-alt-toohigh",
+          "locsize": 37,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 4294967295,
+          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-alt-toolow",
+          "locsize": 37,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-horizprecision-hi",
+          "locsize": 18,
+          "lochorizpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-horizprecision-toohi",
+          "locsize": 18,
+          "lochorizpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-horizprecision-toolow",
+          "locsize": 18,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-size-toohi",
+          "locsize": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-size-toolow",
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 0m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-size-hi",
+          "locsize": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-vertprecision-hi",
+          "locsize": 18,
+          "locvertpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-vertprecision-toohi",
+          "locsize": 18,
+          "locvertpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m"
+        },
+        {
+          "type": "LOC",
+          "name": "d-vertprecision-toolow",
+          "locsize": 18,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "localtitude": 10000000,
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m"
         },
         {
           "type": "LOC",

@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"strconv"
+	"math"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -31,7 +31,7 @@ func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint
 // for further processing to the LOC native 7 input binary format:
 // LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre
 func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) error {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
 
 	err := rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
@@ -78,18 +78,17 @@ func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error
 // the 12 variable inputs of integers and strings.
 func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 	var d1, m1, d2, m2 uint8
-	var al int32
+	var al float32
 	var s1, s2 float32
 	var ns, ew string
 	var sz, hp, vp float32
 
-	var err error
-	_, err = fmt.Sscanf(input+"~", "%d %d %f %s %d %d %f %s %dm %fm %fm %fm~",
+	_, err := fmt.Sscanf(input+"~", "%d %d %f %s %d %d %f %s %fm %fm %fm %fm~",
 		&d1, &m1, &s1, &ns, &d2, &m2, &s2, &ew, &al, &sz, &hp, &vp)
 	if err != nil {
-		return fmt.Errorf("extractLOCFieldsFromStringInput: can't unpack LOC tex input data: %w", err)
+		return fmt.Errorf("extractLOCFieldsFromStringInput: can't unpack LOC text input data: %w", err)
 	}
-	// fmt.Printf("\ngot: %d %d %g %s %d %d %g %s %dm %0.2fm %0.2fm %0.2fm \n", d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	// fmt.Printf("\ngot: %d %d %g %s %d %d %g %s %0.2fm %0.2fm %0.2fm %0.2fm \n", d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
 	rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
@@ -98,7 +97,7 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 
 // calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields
 func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) error {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
 	const LOCEquator uint64 = 0x80000000       // 1 << 31 // RFC 1876, Section 2.
@@ -120,7 +119,10 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 		rc.LocLongitude = uint32(LOCPrimeMeridian - lon)
 	}
 	// Altitude
-	rc.LocAltitude = uint32(al+LOCAltitudeBase) * 100
+	altitude := (float64(al) + float64(LOCAltitudeBase)) * 100
+	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
+	rc.LocAltitude = uint32(clampedAltitude)
+
 	var err error
 	// Size
 	rc.LocSize, err = getENotationInt(sz)
@@ -167,21 +169,40 @@ func getENotationInt(x float32) (uint8, error) {
 	   1cm = 1e0 == 16 (1^4 + 0) or 0<<4 + 0
 	   0cm = 0e0 == 0
 	*/
-	// get int from cm value:
-	num := strconv.Itoa(int(x * 100))
-	// fmt.Printf("num: %s\n", num)
-	// split string on zeroes to count zeroes:
-	arr := strings.Split(num, "0")
-	// fmt.Printf("arr: %s\n", arr)
-	// get the leading digit:
-	prefix, err := strconv.Atoi(arr[0])
-	if err != nil {
-		return 0, fmt.Errorf("can't unpack LOC base/mantissa: %w", err)
+	if x == 0 {
+		return 0, nil // both mantissa and exponent will be zero
 	}
-	// fmt.Printf("prefix: %d\n", prefix)
-	// fmt.Printf("lenArr-1: %d\n", len(arr)-1)
-	// construct our x^e uint8
-	value := uint8((prefix << 4) | (len(arr) - 1))
-	// fmt.Printf("m_e: %d\n", value)
-	return value, err
+
+	// get cm value
+	num := float64(x) * 100
+
+	// Get exponent (base 10)
+	exp := int(math.Floor(math.Log10(num)))
+
+	// Normalize the mantissa
+	mantissa := num / math.Pow(10, float64(exp))
+
+	// Adjust mantissa and exponent to fit into 4-bit ranges (0-15)
+	for mantissa < 1 && exp > 0 {
+		mantissa *= 10
+		exp--
+	}
+
+	// Truncate the mantissa (integer value) and ensure it's within 4 bits
+	mantissaInt := int(math.Floor(mantissa))
+	if mantissaInt > 9 {
+		mantissaInt = 9 // Cap mantissa at 9
+	}
+
+	// Ensure exponent is within 4 bits
+	if exp < 0 {
+		exp = 0 // Cap negative exponents at 0
+	} else if exp > 9 {
+		exp = 9 // Cap exponent at 9
+	}
+
+	// Pack mantissa and exponent into a single uint8
+	packedValue := uint8((mantissaInt << 4) | (exp & 0x0F))
+
+	return packedValue, nil
 }
