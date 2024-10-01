@@ -9,7 +9,7 @@ require google.golang.org/protobuf v1.34.2 // indirect
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.7.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.2.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.3.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
 	github.com/PuerkitoBio/goquery v1.10.0
