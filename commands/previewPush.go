@@ -27,9 +27,21 @@ var _ = cmd(catMain, func() *cli.Command {
 	var args PreviewArgs
 	return &cli.Command{
 		Name:  "preview",
-		Usage: "read live configuration and identify changes to be made, without applying them",
+		Usage: "read live configuration and identify changes to be made, without applying them (CONCURRENT)",
 		Action: func(ctx *cli.Context) error {
 			return exit(Preview(args))
+		},
+		Flags: args.flags(),
+	}
+}())
+
+var _ = cmd(catMain, func() *cli.Command {
+	var args PreviewArgs
+	return &cli.Command{
+		Name:  "oldpreview",
+		Usage: "read live configuration and identify changes to be made, without applying them (not subject to SemVer)",
+		Action: func(ctx *cli.Context) error {
+			return exit(OldPreview(args))
 		},
 		Flags: args.flags(),
 	}
@@ -107,6 +119,18 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
+var _ = cmd(catMain, func() *cli.Command {
+	var args PushArgs
+	return &cli.Command{
+		Name:  "oldpush",
+		Usage: "identify changes to be made, and perform them (not subject to SemVer)",
+		Action: func(ctx *cli.Context) error {
+			return exit(OldPush(args))
+		},
+		Flags: args.flags(),
+	}
+}())
+
 // PushArgs contains all data/flags needed to run push, independently of CLI
 type PushArgs struct {
 	PreviewArgs
@@ -129,13 +153,30 @@ func (args *PushArgs) flags() []cli.Flag {
 	return flags
 }
 
+const pwarn = "WARNING: This command will receive a major upgrade in the next release (v4.15). Try the new behavior by using ppreview/ppush. Please test and report any bugs ASAP. The older code will be available as oldpreview/oldpush for a limited number of releases."
+const owarn = "WARNING: oldpreview/preview are temporary commands and may go away in a future release without warning. They are not subject to SemVer. Please upgrade to ppreview/ppush instead."
+
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
+	printer.Println(pwarn)
+	return run(args, false, false, printer.DefaultPrinter, nil)
+}
+
+// OldPreview implements the oldpreview subcommand.
+func OldPreview(args PreviewArgs) error {
+	printer.Println(owarn)
 	return run(args, false, false, printer.DefaultPrinter, nil)
 }
 
 // Push implements the push subcommand.
 func Push(args PushArgs) error {
+	printer.Println(pwarn)
+	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
+}
+
+// OldPush implements the push subcommand.
+func OldPush(args PushArgs) error {
+	printer.Println(owarn)
 	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
