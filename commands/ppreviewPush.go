@@ -218,7 +218,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
-		out.Printf("Serially Gathering: %q\n", zone.Name)
+		out.Debugf("Serially Gathering: %q\n", zone.Name)
 		oneZone(zone, args, zcache)
 	}
 	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")

@@ -153,8 +153,13 @@ func (args *PushArgs) flags() []cli.Flag {
 	return flags
 }
 
-const pwarn = "WARNING: This command will receive a major upgrade in the next release (v4.15). Try the new behavior by using ppreview/ppush. Please test and report any bugs ASAP. The older code will be available as oldpreview/oldpush for a limited number of releases."
-const owarn = "WARNING: oldpreview/oldpush are temporary commands and may go away in a future release without warning. They are not subject to SemVer. Please upgrade to ppreview/ppush instead."
+const pwarn = "WARNING: The preview/push commands will receive a major upgrade in the next release (v4.15)." +
+	" Try the new behavior by using ppreview/ppush." +
+	" Please test and report any bugs ASAP." +
+	" See https://docs.dnscontrol.org/commands/preview-push"
+const owarn = "WARNING: oldpreview/oldpush are temporary commands and should only be used as a temporary work-around." +
+	" They may go away in a future release without warning and are not subject to SemVer." +
+	" See https://docs.dnscontrol.org/commands/preview-push"
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
