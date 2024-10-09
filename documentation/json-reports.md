@@ -1,10 +1,21 @@
 # JSON Reports
 
-DNSControl has build in functionality to generate a machine-parseable report after pushing changes. This report is JSON formated and contains the zonename, the provider or registrar name and the amount of performed changes.
+DNSControl can generate a machine-parseable report of changes.
 
-## Usage
+The report is JSON formated and contains the zonename, the provider or
+registrar name, and the number of changes.
 
-To enable the report option you must use the `push` operation in combination with the `--report <filename>` option. This generates the json file.
+To generate the report, add the `--report <filename>` option to a preview or
+push command (this includes `preview`, `ppreview`, `oldpreview`, `push`,
+`ppush`, `oldpush`).
+
+
+The report lists the changes that would be (preview) or are (push) attempted,
+whether they are successful or not.
+
+If a fatal error happens during the run, no report is generated.
+
+## Sample output.
 
 {% code title="report.json" %}
 ```json

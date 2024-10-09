@@ -96,7 +96,7 @@ func (args *PreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "report",
 		Destination: &args.Report,
-		Usage:       `Generate a machine-parseable report of performed corrections.`,
+		Usage:       `Generate a machine-parseable report of corrections counts.`,
 	})
 	return flags
 }

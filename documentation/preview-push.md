@@ -26,7 +26,7 @@ OPTIONS:
    --no-populate                                              Use this flag to not auto-create non-existing zones at the provider (default: false)
    --full                                                     Add headings, providers names, notifications of no changes, etc (default: false)
    --bindserial value                                         Force BIND serial numbers to this value (for reproducibility) (default: 0)
-   --report value                                             (push) Generate a JSON-formatted report of the number of changes made.
+   --report value                                             Generate a JSON-formatted report of the number of changes.
    --help, -h                                                 show help
 ```
 
@@ -92,9 +92,9 @@ OPTIONS:
     generally used for reproducibility in testing pipelines.
 
 * `--report name`
-  * (`push` only!)  Generate a machine-parseable report of
-    performed corrections in the file named `name`. If no name is specified, no
-    report is generated.
+  * Write a machine-parseable report of
+    corrections to the file named `name`. If no name is specified, no
+    report is generated. See [JSON Reports](../advanced-features/json-reports.md)
 
 ## ppreview/ppush
 
