@@ -174,7 +174,7 @@ func Push(args PushArgs) error {
 	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
-// OldPush implements the push subcommand.
+// OldPush implements the oldpush subcommand.
 func OldPush(args PushArgs) error {
 	printer.Println(owarn)
 	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
