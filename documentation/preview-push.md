@@ -111,3 +111,44 @@ they replace the existing `preview`/`push` commands.
     * `default` -- Providers are run sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
     * `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
     * `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.
+
+## oldpreview/oldpush and release plan
+
+The new concurrent implementation is 100% backwards compatible with the original
+serial implementation.  To be cautious, however, both implementations will be
+available in case bugs are discovered.
+
+* The new (concurrent) code will be available by using the `ppreview`/`ppush`
+  commands.  These commands will not be removed until a major release (v5.x or
+  later).  The `p` stands for "parallel" (later we realized that "concurrent" is
+  more accurate.)  
+* The older (serial) code will be available by using the `oldpreview`/`oldpush`
+  commands, to be introduced in v4.14.  These commands are a temporary work-around
+  and will not be subject to SemVer.  They may be removed at any time.
+* The `preview`/`push` commands will evolve from using the serial to the
+  concurrent implementations.  
+
+If you find a bug in the concurrent version:
+
+1. [Report the bug ASAP!](https://github.com/StackExchange/dnscontrol/issues)
+2. Add the `--mode none` flag to see if that works around the problem.
+3. If that doesn't work, use `oldpreview`/`oldpush` until the bug is fixed.
+
+Here is the release plan:
+
+* Prior to v4.14:
+  * oldpreview/oldpush: does not exist
+  * preview/push: old (serial) implementation
+  * **ppreview/ppush: new (concurrent) implementation**
+* v4.14:
+  * oldpreview/oldpush: old (serial) implementation (with warning it may go away)
+  * preview/push: old (serial) implementation (with suggestion to test ppreview/ppush)
+  * **ppreview/ppush: new (concurrent) implementation**
+* v4.15:
+  * oldpreview/oldpush: old (serial) implementation (with warning)
+  * **preview/push: new (concurrent) implementation**
+  * **ppreview/ppush: new (concurrent) implementation (with suggestion to use preview/push)**
+* Future release (at least 2 months, target date Jan 1, 2024 or later)
+  * oldpreview/oldpush: removed from code-base
+  * **preview/push: new (concurrent) implementation**
+  * **ppreview/ppush: new (concurrent) implementation (with suggestion to use preview/push)**
