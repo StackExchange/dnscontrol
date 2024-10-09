@@ -94,7 +94,7 @@ OPTIONS:
 * `--report name`
   * Write a machine-parseable report of
     corrections to the file named `name`. If no name is specified, no
-    report is generated. See [JSON Reports](../advanced-features/json-reports.md)
+    report is generated. See [JSON Reports](json-reports.md)
 
 ## ppreview/ppush
 
