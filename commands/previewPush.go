@@ -26,7 +26,7 @@ import (
 var _ = cmd(catMain, func() *cli.Command {
 	var args PreviewArgs
 	return &cli.Command{
-		Name:  "oldpreview",
+		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
 		Action: func(ctx *cli.Context) error {
 			return exit(Preview(args))
@@ -98,7 +98,7 @@ func (args *PreviewArgs) flags() []cli.Flag {
 var _ = cmd(catMain, func() *cli.Command {
 	var args PushArgs
 	return &cli.Command{
-		Name:  "oldpush",
+		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
 			return exit(Push(args))
