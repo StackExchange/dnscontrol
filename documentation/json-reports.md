@@ -15,7 +15,7 @@ whether they are successful or not.
 
 If a fatal error happens during the run, no report is generated.
 
-## Sample output.
+## Sample output
 
 {% code title="report.json" %}
 ```json
