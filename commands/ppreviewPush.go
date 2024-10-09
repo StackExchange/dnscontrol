@@ -155,7 +155,7 @@ func (args *PPushArgs) flags() []cli.Flag {
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	return prun(args, false, false, printer.DefaultPrinter, "")
+	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.

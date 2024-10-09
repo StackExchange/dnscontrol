@@ -131,7 +131,7 @@ func (args *PushArgs) flags() []cli.Flag {
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.DefaultPrinter, nil)
+	return run(args, false, false, printer.DefaultPrinter, &args.Report)
 }
 
 // Push implements the push subcommand.
