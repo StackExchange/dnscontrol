@@ -50,6 +50,7 @@ type PPreviewArgs struct {
 	ConcurMode  string
 	NoPopulate  bool
 	DePopulate  bool
+	Report      string
 	Full        bool
 }
 
@@ -116,6 +117,11 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &bindserial.ForcedValue,
 		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
 	})
+	flags = append(flags, &cli.StringFlag{
+		Name:        "report",
+		Destination: &args.Report,
+		Usage:       `Generate a machine-parseable report of corrections.`,
+	})
 	return flags
 }
 
@@ -135,7 +141,6 @@ var _ = cmd(catMain, func() *cli.Command {
 type PPushArgs struct {
 	PPreviewArgs
 	Interactive bool
-	Report      string
 }
 
 func (args *PPushArgs) flags() []cli.Flag {
@@ -145,17 +150,12 @@ func (args *PPushArgs) flags() []cli.Flag {
 		Destination: &args.Interactive,
 		Usage:       "Interactive. Confirm or Exclude each correction before they run",
 	})
-	flags = append(flags, &cli.StringFlag{
-		Name:        "report",
-		Destination: &args.Report,
-		Usage:       `Generate a machine-parseable report of performed corrections.`,
-	})
 	return flags
 }
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	return prun(args, false, false, printer.DefaultPrinter, "")
+	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.
