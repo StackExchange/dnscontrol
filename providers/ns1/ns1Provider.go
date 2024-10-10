@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -50,7 +51,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("NS1_URLFWD", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -312,7 +313,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	}
 	for _, r := range recs {
 		if r.Type == "MX" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()))})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.AsMX().Preference, r.GetTargetField()))})
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{r.GetTargetTXTJoined()}})
 		} else if r.Type == "CAA" {

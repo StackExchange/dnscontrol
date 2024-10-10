@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -65,7 +66,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -294,14 +295,15 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	port, _ := strconv.ParseUint(r.Port, 10, 16)
 
 	rc := &models.RecordConfig{
-		Type:         r.Type,
-		TTL:          uint32(ttl),
-		MxPreference: uint16(priority),
-		SrvPriority:  uint16(priority),
-		SrvWeight:    uint16(weight),
-		SrvPort:      uint16(port),
-		Original:     r,
+		Type: r.Type,
+		TTL:  uint32(ttl),
+		//MxPreference: uint16(priority),
+		SrvPriority: uint16(priority),
+		SrvWeight:   uint16(weight),
+		SrvPort:     uint16(port),
+		Original:    r,
 	}
+	rc.AsMX().Preference = uint16(priority)
 	rc.SetLabel(r.Host, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
@@ -382,7 +384,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "CLOUDNS_WR":
 		req["record-type"] = "WR"
 	case "MX":
-		req["priority"] = strconv.Itoa(int(rc.MxPreference))
+		req["priority"] = strconv.Itoa(int(rc.AsMX().Preference))
 	case "SRV":
 		req["priority"] = strconv.Itoa(int(rc.SrvPriority))
 		req["weight"] = strconv.Itoa(int(rc.SrvWeight))

@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 )
 
-func PostProcess(domains []*models.DomainConfig) error {
+func ConvertRawRecords(domains []*models.DomainConfig) error {
 
 	var err error
 
@@ -34,11 +35,24 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			// Call the proper initialize function.
 			// TODO(tlim): Good candiate for an interface or a lookup table.
+
+			label := rawRec.Args[0].(string)
+			args := rawRec.Args[1:]
 			switch rawRec.Type {
 
-			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
-				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
-				rec.SetLabel("@", dc.Name)
+			case rtypesingleredirect.Name:
+				rdata, error := rtypesingleredirect.FromRawArgs(args, label)
+				if error != nil {
+					return err
+				}
+				rec.Seal(dc.Name, label, rdata)
+
+			case "MX":
+				rdata, error := rtypemx.FromRawArgs(args)
+				if error != nil {
+					return err
+				}
+				rec.Seal(dc.Name, label, rdata)
 
 			default:
 				err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
@@ -53,6 +67,7 @@ func PostProcess(domains []*models.DomainConfig) error {
 
 			dc.Records = append(dc.Records, rec)
 		}
+		clear(dc.RawRecords)
 		dc.RawRecords = nil
 	}
 

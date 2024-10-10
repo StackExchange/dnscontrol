@@ -62,10 +62,10 @@ func (z *ZoneGenData) Less(i, j int) bool {
 		return bytes.Compare(ipa, ipb) == -1
 	case "MX":
 		// sort by priority. If they are equal, sort by Mx.
-		if a.MxPreference == b.MxPreference {
+		if a.AsMX().Preference == b.AsMX().Preference {
 			return a.GetTargetField() < b.GetTargetField()
 		}
-		return a.MxPreference < b.MxPreference
+		return a.AsMX().Preference < b.AsMX().Preference
 	case "SRV":
 		//ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
 		pa, pb := a.SrvPort, b.SrvPort

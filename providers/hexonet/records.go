@@ -225,7 +225,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 		Type:       rc.Type,
 		Answer:     rc.GetTargetField(),
 		TTL:        rc.TTL,
-		Priority:   uint32(rc.MxPreference),
+		Priority:   uint32(rc.AsMX().Preference),
 	}
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":

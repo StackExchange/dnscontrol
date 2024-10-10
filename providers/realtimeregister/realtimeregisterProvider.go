@@ -205,13 +205,13 @@ func (api *realtimeregisterAPI) GetRegistrarCorrections(dc *models.DomainConfig)
 func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 
 	recordConfig := &models.RecordConfig{
-		Type:         record.Type,
-		TTL:          uint32(record.TTL),
-		MxPreference: uint16(record.Priority),
-		SrvWeight:    uint16(0),
-		SrvPort:      uint16(0),
-		Original:     record,
+		Type:      record.Type,
+		TTL:       uint32(record.TTL),
+		SrvWeight: uint16(0),
+		SrvPort:   uint16(0),
+		Original:  record,
 	}
+	recordConfig.AsMX().Preference = uint16(record.Priority)
 
 	recordConfig.SetLabelFromFQDN(record.Name, domain)
 
@@ -280,7 +280,7 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 			record.Content = "."
 			record.Priority = -1
 		} else {
-			record.Priority = int(recordConfig.MxPreference)
+			record.Priority = int(recordConfig.AsMX().Preference)
 		}
 	case "LOC":
 		parts := strings.Fields(recordConfig.GetTargetCombined())

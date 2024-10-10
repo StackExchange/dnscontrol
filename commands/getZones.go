@@ -206,6 +206,7 @@ func GetZone(args GetZoneArgs) error {
 		}
 		zoneRecs[i] = recs
 	}
+	//rtypes.PostProcess(dnsConfig.Domains)
 
 	// Write the heading:
 
@@ -340,7 +341,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	case "DNSKEY":
 		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.DnskeyFlags, rec.DnskeyProtocol, rec.DnskeyAlgorithm, rec.DnskeyPublicKey)
 	case "MX":
-		target = fmt.Sprintf(`%d, "%s"`, rec.MxPreference, rec.GetTargetField())
+		target = fmt.Sprintf(`%d, "%s"`, rec.AsMX().Preference, rec.GetTargetField())
 	case "NAPTR":
 		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
 			rec.NaptrOrder,                   // 1
