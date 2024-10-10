@@ -14,62 +14,86 @@
             "meta": "value"
           },
           "target": "1.2.3.4"
-        }
-      ],
-      "rawrecords": [
-        {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
-          "args": [
-            "name1",
-            301,
-            "when1",
-            "then1"
-          ]
         },
         {
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
-          "args": [
-            "name2",
-            302,
-            "when2",
-            "then2"
-          ]
+          "name": "name1",
+          "rdata": {
+            "code": 301,
+            "pr_when": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_display": "UNKNOWABLE",
+            "sr_name": "name1",
+            "sr_when": "when1",
+            "sr_then": "then1",
+            "sr_display": "name1 code=(301) when=(when1) then=(then1)"
+          },
+          "target": "name1"
         },
         {
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
-          "args": [
-            "name3",
-            "301",
-            "when3",
-            "then3"
-          ]
+          "name": "name2",
+          "rdata": {
+            "code": 302,
+            "pr_when": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_display": "UNKNOWABLE",
+            "sr_name": "name2",
+            "sr_when": "when2",
+            "sr_then": "then2",
+            "sr_display": "name2 code=(302) when=(when2) then=(then2)"
+          },
+          "target": "name2"
         },
         {
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
-          "args": [
-            "namettl",
-            302,
-            "whenttl",
-            "thenttl"
-          ],
-          "ttl": 999
+          "name": "name3",
+          "rdata": {
+            "code": 301,
+            "pr_when": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_display": "UNKNOWABLE",
+            "sr_name": "name3",
+            "sr_when": "when3",
+            "sr_then": "then3",
+            "sr_display": "name3 code=(301) when=(when3) then=(then3)"
+          },
+          "target": "name3"
         },
         {
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
-          "args": [
-            "namemeta",
-            302,
-            "whenmeta",
-            "thenmeta"
-          ],
-          "metas": [
-            {
-              "metastr": "stringy"
-            },
-            {
-              "metanum": 22
-            }
-          ]
+          "name": "namettl",
+          "ttl": 999,
+          "rdata": {
+            "code": 302,
+            "pr_when": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_display": "UNKNOWABLE",
+            "sr_name": "namettl",
+            "sr_when": "whenttl",
+            "sr_then": "thenttl",
+            "sr_display": "namettl code=(302) when=(whenttl) then=(thenttl)"
+          },
+          "target": "namettl"
+        },
+        {
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "name": "namemeta",
+          "meta": {
+            "metanum": "22",
+            "metastr": "stringy"
+          },
+          "rdata": {
+            "code": 302,
+            "pr_when": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_display": "UNKNOWABLE",
+            "sr_name": "namemeta",
+            "sr_when": "whenmeta",
+            "sr_then": "thenmeta",
+            "sr_display": "namemeta code=(302) when=(whenmeta) then=(thenmeta)"
+          },
+          "target": "namemeta"
         }
       ]
     }

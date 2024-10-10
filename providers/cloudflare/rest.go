@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypecfsingleredirect"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -301,11 +301,12 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		makeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		r.ReSeal()
 		r.SetLabel("@", domain)
 
 		// Store the IDs
-		sr := r.CloudflareRedirect
+		sr := r.AsCloudflareSingleRedirect()
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
 
@@ -315,7 +316,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr rtypecfsingleredirect.SingleRedirect) error {
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
@@ -359,7 +360,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr rtypecfsingleredirect.SingleRedirect) error {
 
 	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
 	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
@@ -401,10 +402,10 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newrec *models.RecordConfig) error {
-	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
+	if err := c.deleteSingleRedirects(domainID, *oldrec.AsCloudflareSingleRedirect()); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
+	return c.createSingleRedirect(domainID, *newrec.AsCloudflareSingleRedirect())
 }
 
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
@@ -433,7 +434,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		makePageRule(r, currentPrPrio, code, when, then)
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
@@ -445,7 +446,7 @@ func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
 	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
 }
 
-func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr rtypecfsingleredirect.SingleRedirect) error {
 	// maybe someday?
 	//c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
 	if err := c.deletePageRule(recordID, domainID); err != nil {
@@ -454,7 +455,7 @@ func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr model
 	return c.createPageRule(domainID, cfr)
 }
 
-func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) createPageRule(domainID string, cfr rtypecfsingleredirect.SingleRedirect) error {
 	priority := cfr.PRPriority
 	code := cfr.Code
 	prWhen := cfr.PRWhen
