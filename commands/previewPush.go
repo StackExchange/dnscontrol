@@ -26,7 +26,7 @@ import (
 var _ = cmd(catMain, func() *cli.Command {
 	var args PreviewArgs
 	return &cli.Command{
-		Name:  "oldpreview",
+		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
 		Action: func(ctx *cli.Context) error {
 			return exit(Preview(args))
@@ -44,6 +44,7 @@ type PreviewArgs struct {
 	WarnChanges bool
 	NoPopulate  bool
 	Full        bool
+	Report      string
 }
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
@@ -92,13 +93,18 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &bindserial.ForcedValue,
 		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
 	})
+	flags = append(flags, &cli.StringFlag{
+		Name:        "report",
+		Destination: &args.Report,
+		Usage:       `Generate a machine-parseable report of corrections counts.`,
+	})
 	return flags
 }
 
 var _ = cmd(catMain, func() *cli.Command {
 	var args PushArgs
 	return &cli.Command{
-		Name:  "oldpush",
+		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
 			return exit(Push(args))
@@ -111,7 +117,6 @@ var _ = cmd(catMain, func() *cli.Command {
 type PushArgs struct {
 	PreviewArgs
 	Interactive bool
-	Report      string
 }
 
 func (args *PushArgs) flags() []cli.Flag {
@@ -121,17 +126,12 @@ func (args *PushArgs) flags() []cli.Flag {
 		Destination: &args.Interactive,
 		Usage:       "Interactive. Confirm or Exclude each correction before they run",
 	})
-	flags = append(flags, &cli.StringFlag{
-		Name:        "report",
-		Destination: &args.Report,
-		Usage:       `Generate a machine-parseable report of performed corrections.`,
-	})
 	return flags
 }
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.DefaultPrinter, nil)
+	return run(args, false, false, printer.DefaultPrinter, &args.Report)
 }
 
 // Push implements the push subcommand.
