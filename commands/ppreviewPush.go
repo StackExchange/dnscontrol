@@ -28,12 +28,46 @@ type zoneCache struct {
 	sync.Mutex
 }
 
+const cmodewarn = `WARN: In v4.14 --cmode will default to "concurrent".` +
+	` Please test and report any bugs ASAP.` +
+	` See https://docs.dnscontrol.org/commands/preview-push` +
+	"\n"
+
+const ppreviewwarn = `WARN: ppreview is going away in v4.16 or later.` +
+	` Use "preview --cmode=%s" instead.` +
+	"\n"
+
+const ppushwarn = `WARN: ppush is going away in v4.16 or later.` +
+	` Use "push --cmode=%s" instead.` +
+	"\n"
+
+var _ = cmd(catMain, func() *cli.Command {
+	var args PPreviewArgs
+	return &cli.Command{
+		Name:  "preview",
+		Usage: "read live configuration and identify changes to be made, without applying them",
+		Action: func(ctx *cli.Context) error {
+			if args.ConcurMode == "legacy" {
+				fmt.Fprint(os.Stderr, cmodewarn)
+				return exit(Preview(args))
+			}
+			fmt.Fprintf(os.Stderr, "WARN: NO WARNING NEEDED (remove this before merge)\n")
+			return exit(PPreview(args))
+		},
+		Flags: args.flags(),
+	}
+}())
+
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPreviewArgs
 	return &cli.Command{
 		Name:  "ppreview",
-		Usage: "read live configuration and identify changes to be made, without applying them",
+		Usage: "Deprecated. Same as: preview --cmode=concurrent",
 		Action: func(ctx *cli.Context) error {
+			fmt.Fprintf(os.Stderr, ppreviewwarn, args.ConcurMode)
+			if args.ConcurMode == "legacy" {
+				return exit(Preview(args))
+			}
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -79,11 +113,11 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
-		Value:       "default",
-		Usage:       `Which providers to run concurrently: all, default, none`,
+		Value:       "legacy",
+		Usage:       `Which providers to run concurrently: legacy, concurrent, none, all`,
 		Action: func(c *cli.Context, s string) error {
-			if !slices.Contains([]string{"all", "default", "none"}, s) {
-				fmt.Printf("%q is not a valid option for --cmode.  Valie are: all, default, none", s)
+			if !slices.Contains([]string{"legacy", "concurrent", "none", "all"}, s) {
+				fmt.Printf("%q is not a valid option for --cmode.  Values are: legacy, concurrent, none, all\n", s)
 			}
 			return nil
 		},
@@ -128,9 +162,30 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPushArgs
 	return &cli.Command{
+		Name:  "push",
+		Usage: "identify changes to be made, and perform them",
+		Action: func(ctx *cli.Context) error {
+			if args.ConcurMode == "legacy" {
+				fmt.Fprint(os.Stderr, cmodewarn)
+				return exit(Push(args))
+			}
+			fmt.Fprintf(os.Stderr, "WARN: NO WARNING NEEDED (remove this before merge)\n")
+			return exit(PPush(args))
+		},
+		Flags: args.flags(),
+	}
+}())
+
+var _ = cmd(catMain, func() *cli.Command {
+	var args PPushArgs
+	return &cli.Command{
 		Name:  "ppush",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
+			fmt.Fprintf(os.Stderr, ppushwarn, args.ConcurMode)
+			if args.ConcurMode == "legacy" {
+				return exit(Push(args))
+			}
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
@@ -155,12 +210,14 @@ func (args *PPushArgs) flags() []cli.Flag {
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
+	fmt.Fprintf(os.Stderr, "DEBUG: NEW PREVIEW cmode=%q\n", args.ConcurMode)
 	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
-	return prun(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, args.Report)
+	fmt.Fprintf(os.Stderr, "DEBUG: NEW PUSH cmode=%q\n", args.ConcurMode)
+	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
 var pobsoleteDiff2FlagUsed = false

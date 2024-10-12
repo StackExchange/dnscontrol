@@ -23,17 +23,17 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var _ = cmd(catMain, func() *cli.Command {
-	var args PreviewArgs
-	return &cli.Command{
-		Name:  "preview",
-		Usage: "read live configuration and identify changes to be made, without applying them",
-		Action: func(ctx *cli.Context) error {
-			return exit(Preview(args))
-		},
-		Flags: args.flags(),
-	}
-}())
+// var _ = cmd(catMain, func() *cli.Command {
+// 	var args PPreviewArgs
+// 	return &cli.Command{
+// 		Name:  "preview",
+// 		Usage: "read live configuration and identify changes to be made, without applying them",
+// 		Action: func(ctx *cli.Context) error {
+// 			return exit(Preview(args))
+// 		},
+// 		Flags: args.flags(),
+// 	}
+// }())
 
 // PreviewArgs contains all data/flags needed to run preview, independently of CLI
 type PreviewArgs struct {
@@ -101,17 +101,17 @@ func (args *PreviewArgs) flags() []cli.Flag {
 	return flags
 }
 
-var _ = cmd(catMain, func() *cli.Command {
-	var args PushArgs
-	return &cli.Command{
-		Name:  "push",
-		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
-			return exit(Push(args))
-		},
-		Flags: args.flags(),
-	}
-}())
+// var _ = cmd(catMain, func() *cli.Command {
+// 	var args PPushArgs
+// 	return &cli.Command{
+// 		Name:  "push",
+// 		Usage: "identify changes to be made, and perform them",
+// 		Action: func(ctx *cli.Context) error {
+// 			return exit(Push(args))
+// 		},
+// 		Flags: args.flags(),
+// 	}
+// }())
 
 // PushArgs contains all data/flags needed to run push, independently of CLI
 type PushArgs struct {
@@ -130,19 +130,21 @@ func (args *PushArgs) flags() []cli.Flag {
 }
 
 // Preview implements the preview subcommand.
-func Preview(args PreviewArgs) error {
+func Preview(args PPreviewArgs) error {
+	fmt.Fprintf(os.Stderr, "DEBUG: OLD PREVIEW\n")
 	return run(args, false, false, printer.DefaultPrinter, &args.Report)
 }
 
 // Push implements the push subcommand.
-func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
+func Push(args PPushArgs) error {
+	fmt.Fprintf(os.Stderr, "DEBUG: OLD PUSH\n")
+	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
 var obsoleteDiff2FlagUsed = false
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
+func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
 	// This is a hack until we have the new printer replacement.
