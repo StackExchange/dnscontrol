@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	baseURL = "https://porkbun.com/api/json/v3"
+	baseURL = "https://api.porkbun.com/api/json/v3"
 )
 
 type porkbunProvider struct {
