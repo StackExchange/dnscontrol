@@ -131,13 +131,13 @@ func (args *PushArgs) flags() []cli.Flag {
 
 // Preview implements the preview subcommand.
 func Preview(args PPreviewArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: OLD PREVIEW\n")
+	fmt.Fprintf(os.Stderr, "DEBUG: OLD PREVIEW (delete before merge)\n")
 	return run(args, false, false, printer.DefaultPrinter, &args.Report)
 }
 
 // Push implements the push subcommand.
 func Push(args PPushArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: OLD PUSH\n")
+	fmt.Fprintf(os.Stderr, "DEBUG: OLD PUSH (delete before merge)\n")
 	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 

@@ -30,15 +30,16 @@ type zoneCache struct {
 
 const cmodewarn = `WARN: In v4.14 --cmode will default to "concurrent".` +
 	` Please test and report any bugs ASAP.` +
+	` In v4.16 or later, "legacy" will go away.` +
 	` See https://docs.dnscontrol.org/commands/preview-push` +
 	"\n"
 
 const ppreviewwarn = `WARN: ppreview is going away in v4.16 or later.` +
-	` Use "preview --cmode=%s" instead.` +
+	` Use "preview --cmode=concurrent" instead.` +
 	"\n"
 
 const ppushwarn = `WARN: ppush is going away in v4.16 or later.` +
-	` Use "push --cmode=%s" instead.` +
+	` Use "push --cmode=concurrent" instead.` +
 	"\n"
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -64,7 +65,7 @@ var _ = cmd(catMain, func() *cli.Command {
 		Name:  "ppreview",
 		Usage: "Deprecated. Same as: preview --cmode=concurrent",
 		Action: func(ctx *cli.Context) error {
-			fmt.Fprintf(os.Stderr, ppreviewwarn, args.ConcurMode)
+			fmt.Fprint(os.Stderr, ppreviewwarn)
 			if args.ConcurMode == "legacy" {
 				return exit(Preview(args))
 			}
@@ -182,7 +183,7 @@ var _ = cmd(catMain, func() *cli.Command {
 		Name:  "ppush",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
-			fmt.Fprintf(os.Stderr, ppushwarn, args.ConcurMode)
+			fmt.Fprint(os.Stderr, ppushwarn)
 			if args.ConcurMode == "legacy" {
 				return exit(Push(args))
 			}
@@ -210,13 +211,13 @@ func (args *PPushArgs) flags() []cli.Flag {
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: NEW PREVIEW cmode=%q\n", args.ConcurMode)
+	fmt.Fprintf(os.Stderr, "DEBUG: NEW PREVIEW cmode=%q (delete before merge)\n", args.ConcurMode)
 	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: NEW PUSH cmode=%q\n", args.ConcurMode)
+	fmt.Fprintf(os.Stderr, "DEBUG: NEW PUSH cmode=%q (delete before merge)\n", args.ConcurMode)
 	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
