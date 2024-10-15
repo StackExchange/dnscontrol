@@ -417,9 +417,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 
 func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Fix the parent zone's delegation: (if able/needed)
-	//zone.NameserversMutex.Lock()
 	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
-	//zone.NameserversMutex.Unlock()
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
