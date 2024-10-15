@@ -52,7 +52,6 @@ var _ = cmd(catMain, func() *cli.Command {
 				fmt.Fprint(os.Stderr, cmodewarn)
 				return exit(Preview(args))
 			}
-			fmt.Fprintf(os.Stderr, "WARN: NO WARNING NEEDED (remove this before merge)\n")
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -170,7 +169,6 @@ var _ = cmd(catMain, func() *cli.Command {
 				fmt.Fprint(os.Stderr, cmodewarn)
 				return exit(Push(args))
 			}
-			fmt.Fprintf(os.Stderr, "WARN: NO WARNING NEEDED (remove this before merge)\n")
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
@@ -211,13 +209,11 @@ func (args *PPushArgs) flags() []cli.Flag {
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: NEW PREVIEW cmode=%q (delete before merge)\n", args.ConcurMode)
 	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
-	fmt.Fprintf(os.Stderr, "DEBUG: NEW PUSH cmode=%q (delete before merge)\n", args.ConcurMode)
 	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
