@@ -146,7 +146,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				Msg: change.Msgs[0],
 				F: func() error {
 					if change.New[0].Type == "PORKBUN_URLFWD" {
-						return c.createUrlForwardingRecord(dc.Name, req)
+						return c.createURLForwardingRecord(dc.Name, req)
 					}
 					return c.createRecord(dc.Name, req)
 				},
@@ -161,7 +161,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
 					if change.New[0].Type == "PORKBUN_URLFWD" {
-						return c.modifyUrlForwardingRecord(dc.Name, id, req)
+						return c.modifyURLForwardingRecord(dc.Name, id, req)
 					}
 					return c.modifyRecord(dc.Name, id, req)
 				},
@@ -172,7 +172,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
 					if change.Old[0].Type == "PORKBUN_URLFWD" {
-						return c.deleteUrlForwardingRecord(dc.Name, id)
+						return c.deleteURLForwardingRecord(dc.Name, id)
 					}
 					return c.deleteRecord(dc.Name, id)
 				},
@@ -192,7 +192,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	if err != nil {
 		return nil, err
 	}
-	forwards, err := c.getUrlForwardingRecords(domain)
+	forwards, err := c.getURLForwardingRecords(domain)
 	if err != nil {
 		return nil, err
 	}
