@@ -28,7 +28,7 @@ type zoneCache struct {
 	sync.Mutex
 }
 
-const cmodewarn = `WARN: In v4.14 --cmode will default to "concurrent".` +
+const cmodewarn = `WARN: In v4.15 --cmode will default to "concurrent".` +
 	` Please test and report any bugs ASAP.` +
 	` In v4.16 or later, "legacy" will go away.` +
 	` See https://docs.dnscontrol.org/commands/preview-push` +

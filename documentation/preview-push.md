@@ -120,7 +120,7 @@ The default value of `--cmode` will change over time:
 ## ppreview/ppush
 
 {% hint style="warning" %}
-These commands will go away in v4.16 or later.  Staring in v4.14, please use
+These commands will go away in v4.16 or later.  Starting in v4.14, please use
 `preview`/`push` with `--cmode concurrent` instead.
 {% endhint %}
 
