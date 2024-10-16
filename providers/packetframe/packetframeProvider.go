@@ -183,7 +183,7 @@ func toReq(zoneID string, rc *models.RecordConfig) (*domainRecord, error) {
 	case "A", "AAAA", "PTR", "TXT", "CNAME", "NS":
 		req.Value = rc.GetTargetField()
 	case "MX":
-		req.Value = fmt.Sprintf("%d %s", rc.MxPreference, rc.GetTargetField())
+		req.Value = fmt.Sprintf("%d %s", rc.AsMX().Preference, rc.GetTargetField())
 	case "SRV":
 		req.Value = fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:

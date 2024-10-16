@@ -1,4 +1,4 @@
-package cfsingleredirect
+package cloudflare
 
 import (
 	"regexp"

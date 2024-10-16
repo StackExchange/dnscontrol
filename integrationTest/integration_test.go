@@ -16,7 +16,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -192,23 +193,25 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
+			//fmt.Printf("DEBUG: before = target=%q\n", rc.GetTargetField())
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
 			}
+			//fmt.Printf("DEBUG: after  = target=%q\n", rc.GetTargetField())
+
 			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
 			}
 			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
 				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
 			}
-			//if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
 			if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
 			}
 			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
 			}
-			//}
+
 			dom.Records = append(dom.Records, &rc)
 		}
 		if *providerToRun == "AXFRDDNS" {
@@ -503,11 +506,12 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
+	r := makeRec("@", name, rtypesingleredirect.Name)
+	rdata, err := rtypesingleredirect.FromRawArgs([]any{code, when, then}, name)
 	if err != nil {
 		panic("Should not happen... cfSingleRedirect")
 	}
+	r.Rdata = rdata
 	return r
 }
 
@@ -607,7 +611,9 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 
 func mx(name string, prio uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
+	r.Rdata = &rtypemx.MX{}
+	r.AsMX().SetTargetMX(prio, target)
+	r.ReSeal()
 	return r
 }
 

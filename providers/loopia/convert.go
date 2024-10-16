@@ -57,7 +57,7 @@ func recordToNative(rc *models.RecordConfig, id ...uint32) paramStruct {
 	case "TXT":
 		zrec.Rdata = rc.GetTargetTXTJoined()
 	case "MX":
-		zrec.Priority = rc.MxPreference
+		zrec.Priority = rc.AsMX().Preference
 		zrec.Rdata = rc.GetTargetField()
 	case "SRV":
 		zrec.Priority = rc.SrvPriority

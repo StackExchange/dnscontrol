@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/rtypes/rtypemx"
 	"github.com/miekg/dns"
 )
 
@@ -16,6 +17,9 @@ Not the best design, but we're stuck with it until we re-do RecordConfig, possib
 // GetTargetField returns the target. There may be other fields, but they are
 // not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
+	// if rc.Type == "MX" {
+	// 	fmt.Printf("DEBUG: GTF %q %q\n", rc.target, rc.AsMX().Mx)
+	// }
 	return rc.target
 }
 
@@ -120,7 +124,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "DNSKEY":
 		content += fmt.Sprintf(" dnskey_flags=%d dnskey_protocol=%d dnskey_algorithm=%d dnskey_publickey=%s", rc.DnskeyFlags, rc.DnskeyProtocol, rc.DnskeyAlgorithm, rc.DnskeyPublicKey)
 	case "MX":
-		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
+		content += fmt.Sprintf(" pref=%d", rc.AsMX().Preference)
 	case "NAPTR":
 		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "R53_ALIAS":
@@ -149,6 +153,13 @@ func (rc *RecordConfig) GetTargetDebug() string {
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
 func (rc *RecordConfig) SetTarget(target string) error {
+	if rc.Type == "MX" {
+		if rc.Rdata == nil {
+			rc.Rdata = &rtypemx.MX{}
+		}
+		rc.AsMX().SetTargetMX(rc.AsMX().Preference, target)
+	}
+
 	rc.target = target
 	return nil
 }

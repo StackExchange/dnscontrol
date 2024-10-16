@@ -241,8 +241,8 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 		if rc.Type == "MX" {
 			target = rc.GetTargetField()
 
-			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
+			if rc.AsMX().Preference != 0 {
+				p := int64(rc.AsMX().Preference)
 				prio = &p
 			}
 		}
@@ -301,8 +301,8 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 		if rc.Type == "MX" {
 			target = rc.GetTargetField()
 
-			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
+			if rc.AsMX().Preference != 0 {
+				p := int64(rc.AsMX().Preference)
 				record.Priority = &p
 			}
 		}

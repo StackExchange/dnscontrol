@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/rtypesingleredirect"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -156,7 +156,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	}
 	prio := ""
 	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.MxPreference)
+		prio = fmt.Sprintf(" %d ", rec.AsMX().Preference)
 	}
 	if rec.Type == "TXT" {
 		content = rec.GetTargetTXTJoined()
@@ -174,11 +174,10 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 		Msg: msg,
 		F: func() error {
 			cf := cloudflare.CreateDNSRecordParams{
-				Name:     rec.GetLabel(),
-				Type:     rec.Type,
-				TTL:      int(rec.TTL),
-				Content:  content,
-				Priority: &rec.MxPreference,
+				Name:    rec.GetLabel(),
+				Type:    rec.Type,
+				TTL:     int(rec.TTL),
+				Content: content,
 			}
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
@@ -187,6 +186,8 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				cf.Data = cfCaaData(rec)
 				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
+			} else if rec.Type == "MX" {
+				cf.Priority = &rec.AsMX().Preference
 			} else if rec.Type == "TLSA" {
 				cf.Data = cfTlsaData(rec)
 				cf.Name = rec.GetLabelFQDN()
@@ -225,13 +226,12 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	}
 
 	r := cloudflare.UpdateDNSRecordParams{
-		ID:       recID,
-		Proxied:  &proxied,
-		Name:     rec.GetLabel(),
-		Type:     rec.Type,
-		Content:  rec.GetTargetField(),
-		Priority: &rec.MxPreference,
-		TTL:      int(rec.TTL),
+		ID:      recID,
+		Proxied: &proxied,
+		Name:    rec.GetLabel(),
+		Type:    rec.Type,
+		Content: rec.GetTargetField(),
+		TTL:     int(rec.TTL),
 	}
 	if rec.Type == "TXT" {
 		r.Content = rec.GetTargetTXTJoined()
@@ -243,6 +243,8 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		r.Data = cfCaaData(rec)
 		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
+	} else if rec.Type == "MX" {
+		r.Priority = &rec.AsMX().Preference
 	} else if rec.Type == "TLSA" {
 		r.Data = cfTlsaData(rec)
 		r.Name = rec.GetLabelFQDN()
@@ -301,7 +303,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
 		r.SetLabel("@", domain)
 
 		// Store the IDs
@@ -315,7 +317,40 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+// MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
+func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) {
+	// The target is the same as the name. It is the responsibility of the record creator to name it something diffable.
+	target := targetFromAPIData(name, code, when, then)
+
+	rc.Type = rtypesingleredirect.Name
+	rc.TTL = 1
+	rc.CloudflareRedirect = &rtypesingleredirect.SingleRedirect{
+		Code: code,
+		//
+		PRWhen:     "UNKNOWABLE",
+		PRThen:     "UNKNOWABLE",
+		PRPriority: 0,
+		PRDisplay:  "UNKNOWABLE",
+		//
+		SRName:    name,
+		SRWhen:    when,
+		SRThen:    then,
+		SRDisplay: target,
+	}
+	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+}
+
+// targetFromAPIData creates the display text used for a Redirect as received from Cloudflare's API.
+func targetFromAPIData(name string, code uint16, when, then string) string {
+	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
+		name,
+		code,
+		when,
+		then,
+	)
+}
+
+func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr rtypesingleredirect.SingleRedirect) error {
 
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
@@ -359,7 +394,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr rtypesingleredirect.SingleRedirect) error {
 
 	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
 	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
@@ -433,7 +468,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		MakePageRule(r, currentPrPrio, code, when, then)
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
@@ -445,7 +480,7 @@ func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
 	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
 }
 
-func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr rtypesingleredirect.SingleRedirect) error {
 	// maybe someday?
 	//c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
 	if err := c.deletePageRule(recordID, domainID); err != nil {
@@ -454,7 +489,7 @@ func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr model
 	return c.createPageRule(domainID, cfr)
 }
 
-func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) createPageRule(domainID string, cfr rtypesingleredirect.SingleRedirect) error {
 	priority := cfr.PRPriority
 	code := cfr.Code
 	prWhen := cfr.PRWhen

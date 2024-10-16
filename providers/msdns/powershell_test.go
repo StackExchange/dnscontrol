@@ -121,18 +121,8 @@ func Test_generatePSModify(t *testing.T) {
 	}
 	recA2.SetTarget("10.20.30.40")
 
-	recMX1 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 5,
-	}
-	recMX1.SetTarget("foo.com.")
-	recMX2 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 50,
-	}
-	recMX2.SetTarget("foo2.com.")
+	recMX1 := models.NewMX("@", "foo.com", 5, "foo.com.")
+	recMX2 := models.NewMX("@", "foo.com", 50, "foo2.com.")
 
 	type args struct {
 		domain    string
@@ -161,7 +151,7 @@ func Test_generatePSModify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := generatePSModify(tt.args.dnsserver, tt.args.domain, tt.args.old, tt.args.rec); strings.TrimSpace(got) != strings.TrimSpace(tt.want) {
-				t.Errorf("generatePSModify() = got=(\n%s\n) want=(\n%s\n)", got, tt.want)
+				t.Errorf("generatePSModify() = got=(\n       %s\n) want=(\n%s\n)", got, tt.want)
 			}
 		})
 	}

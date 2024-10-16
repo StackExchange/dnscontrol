@@ -10,8 +10,8 @@
         {
           "type": "MX",
           "name": "@",
-          "target": "foo.com.",
-          "mxpreference": 15
+          "rdata": "15 foo.com.",
+          "target": "foo.com."
         }
       ]
     }

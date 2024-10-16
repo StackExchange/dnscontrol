@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	nc "github.com/billputer/go-namecheap"
 	"golang.org/x/net/publicsuffix"
@@ -50,9 +51,9 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("URL", providerName, "")
-	providers.RegisterCustomRecordType("URL301", providerName, "")
-	providers.RegisterCustomRecordType("FRAME", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("URL", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("URL301", providerName, "")
+	rtypecontrol.RegisterCustomRecordType("FRAME", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -290,11 +291,11 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 	var records []*models.RecordConfig
 	for _, dnsHost := range result.Hosts {
 		record := models.RecordConfig{
-			Type:         dnsHost.Type,
-			TTL:          uint32(dnsHost.TTL),
-			MxPreference: uint16(dnsHost.MXPref),
-			Name:         dnsHost.Name,
+			Type: dnsHost.Type,
+			TTL:  uint32(dnsHost.TTL),
+			Name: dnsHost.Name,
 		}
+		record.AsMX().Preference = uint16(dnsHost.MXPref)
 		record.SetLabel(dnsHost.Name, origin)
 
 		switch dnsHost.Type {
@@ -329,7 +330,7 @@ func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
 			Name:    r.GetLabel(),
 			Type:    r.Type,
 			Address: value,
-			MXPref:  int(r.MxPreference),
+			MXPref:  int(r.AsMX().Preference),
 			TTL:     int(r.TTL),
 		}
 		recs = append(recs, rec)

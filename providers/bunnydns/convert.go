@@ -38,7 +38,7 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Flags = rc.CaaFlag
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
-		r.Priority = rc.MxPreference
+		r.Priority = rc.AsMX().Preference
 	}
 
 	return &r, nil
