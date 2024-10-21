@@ -1850,7 +1850,7 @@ function M365_BUILDER(name, value) {
             );
         }
 
-        value.domainGUID = name.replace('.', '-');
+        value.domainGUID = name.replace(/\./g, '-');
     }
 
     if (value.dkim && !value.initialDomain) {
