@@ -390,6 +390,14 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
+		case "REDIRECT":
+			// NS1 returns REDIRECTs as records, but there is only one and dummy answer:
+			// "NS1 MANAGED RECORD"
+			// Redirects are managed via a different API endpoint https://api.nsone.net/v1/redirect
+			// It also involves cert management
+			// We may simpply ignore REDIRECTs for now until we support it
+			printer.Warnf("NS1_REDIRECT is NOT supported by dnscontrol and all existing redirects are ignored.\n")
+			continue
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
 				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
