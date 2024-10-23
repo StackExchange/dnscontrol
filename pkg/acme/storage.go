@@ -1,6 +1,6 @@
 package acme
 
-import "github.com/go-acme/lego/certificate"
+import "github.com/go-acme/lego/v4/certificate"
 
 // Storage is an abstracrion around how certificates, keys, and account info are stored on disk or elsewhere.
 type Storage interface {
