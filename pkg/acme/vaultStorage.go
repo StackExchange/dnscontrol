@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/v4/certificate"
 	"github.com/hashicorp/vault/api"
 )
 
