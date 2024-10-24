@@ -19,9 +19,14 @@ func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordCon
 
 	// Split G-Core's RRset into individual records
 	for _, value := range n.Records {
+		metadata, err := nativeMetadataToRecords(&n, &value)
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
+		}
 		rc := &models.RecordConfig{
 			TTL:      uint32(n.TTL),
 			Original: n,
+			Metadata: metadata,
 		}
 		rc.SetLabelFromFQDN(recName, zoneName)
 		switch recType {
@@ -61,10 +66,13 @@ func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordCon
 	return rcs, nil
 }
 
-func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *dnssdk.RRSet {
+func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) (*dnssdk.RRSet, error) {
 	// Merge DNSControl records into G-Core RRsets
 
 	var result *dnssdk.RRSet
+	var resultRRSetFilters []dnssdk.RecordFilter = nil
+	var resultRRSetMeta map[string]any = nil
+	var resultRRSetMetaSourceRecord *models.RecordConfig = nil
 
 	for _, r := range rcs {
 		label := r.GetLabel()
@@ -77,6 +85,33 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 			continue
 		}
 
+		rrsetFilters, rrsetMeta, recordMeta, err := recordsMetadataToNative(r.Metadata)
+		if err != nil {
+			return nil, err
+		}
+
+		if resultRRSetMeta == nil {
+			resultRRSetFilters = rrsetFilters
+			resultRRSetMeta = rrsetMeta
+			resultRRSetMetaSourceRecord = r
+		} else {
+			isRRSetFilterEqual, err := isListStructEqual(resultRRSetFilters, rrsetFilters)
+			if err != nil {
+				return nil, err
+			}
+			if !isRRSetFilterEqual {
+				return nil, fmt.Errorf("filter is not consistent between %s and %s in RRSet %s", resultRRSetMetaSourceRecord, r, expectedKey)
+			}
+
+			isRRSetMetaEqual, err := isStructEqual(resultRRSetMeta, rrsetMeta)
+			if err != nil {
+				return nil, err
+			}
+			if !isRRSetMetaEqual {
+				return nil, fmt.Errorf("metadata is not consistent between %s and %s in RRSet %s", resultRRSetMetaSourceRecord, r, expectedKey)
+			}
+		}
+
 		var rr dnssdk.ResourceRecord
 		switch key.Type {
 		case "CAA": // G-Core API don't need quotes around CAA with whitespace
@@ -86,26 +121,26 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 					r.CaaTag,
 					r.GetTargetField(),
 				},
-				Meta:    nil,
+				Meta:    recordMeta,
 				Enabled: true,
 			}
 		case "TXT": // Avoid double quoting for TXT records
 			rr = dnssdk.ResourceRecord{
 				Content: convertTxtSliceToSdkAnySlice(r.GetTargetTXTJoined()),
-				Meta:    nil,
+				Meta:    recordMeta,
 				Enabled: true,
 			}
 		case "SVCB":
 			// GCore mistypes "SVCB" as "SCVB"
 			rr = dnssdk.ResourceRecord{
 				Content: dnssdk.ContentFromValue("SCVB", r.GetTargetCombined()),
-				Meta:    nil,
+				Meta:    recordMeta,
 				Enabled: true,
 			}
 		default:
 			rr = dnssdk.ResourceRecord{
 				Content: dnssdk.ContentFromValue(key.Type, r.GetTargetCombined()),
-				Meta:    nil,
+				Meta:    recordMeta,
 				Enabled: true,
 			}
 		}
@@ -113,7 +148,6 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 		if result == nil {
 			result = &dnssdk.RRSet{
 				TTL:     int(r.TTL),
-				Filters: nil,
 				Records: []dnssdk.ResourceRecord{rr},
 			}
 		} else {
@@ -128,7 +162,12 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *
 		}
 	}
 
-	return result
+	if result != nil {
+		result.Filters = resultRRSetFilters
+		result.Meta = resultRRSetMeta
+	}
+
+	return result, nil
 }
 
 func convertTxtSliceToSdkAnySlice(record string) []any {
