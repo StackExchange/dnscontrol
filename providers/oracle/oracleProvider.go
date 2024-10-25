@@ -155,7 +155,11 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	if &domain.OracleRemoveTrailingDot {
+		return models.ToNameserversStripTD(nss)
+	} else {
+		return models.ToNameservers(nss)
+	}
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {

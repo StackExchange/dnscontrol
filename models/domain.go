@@ -32,6 +32,8 @@ type DomainConfig struct {
 	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
 
+	OracleRemoveTrailingDot bool `json:"oracleremovetrailingdot,omitempty"` // ORACLE_REMOVE_TRAILING_DOT
+
 	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 

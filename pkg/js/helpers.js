@@ -1052,6 +1052,11 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// ORACLE_NO_TRAILING_DOT()
+function ORACLE_REMOVE_TRAILING_DOT(d) {
+    d.OracleRemoveTrailingDot = true;
+}
+
 // ENSURE_ABSENT_REC()
 // Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_REC())
 function ENSURE_ABSENT_REC() {
