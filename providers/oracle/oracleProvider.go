@@ -155,7 +155,18 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	nssNoStrip, err := models.ToNameservers(nss)
+
+	if err != nil {
+		nssStrip, err := models.ToNameserversStripTD(nss)
+		if err != nil {
+			return nil, fmt.Errorf("Could not determine if trailing dots should be stripped or not...")
+		}
+
+		return nssStrip, nil
+	}
+
+	return nssNoStrip, nil
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
@@ -231,10 +242,6 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		if rec.TTL != 86400 {
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
-		}
-
-		if dc.OracleRemoveTrailingDot {
-			rec.SetTarget(strings.TrimSuffix(recNS, "."))
 		}
 	}
 
