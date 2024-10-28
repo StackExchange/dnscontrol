@@ -374,7 +374,7 @@ func TestDualProviders(t *testing.T) {
 	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
 	dc.Nameservers = append(dc.Nameservers, nslist...)
 	nameservers.AddNSRecords(dc)
-	t.Log("Adding nameservers from another provider")
+	t.Log("Adding test nameservers")
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
@@ -392,6 +392,20 @@ func TestDualProviders(t *testing.T) {
 		}
 		t.FailNow()
 	}
+
+	t.Log("Removing test nameservers")
+	dc.Records = []*models.RecordConfig{}
+	n := 0
+	for _, ns := range dc.Nameservers {
+		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
+			continue
+		}
+		dc.Nameservers[n] = ns
+		n++
+	}
+	dc.Nameservers = dc.Nameservers[:n]
+	nameservers.AddNSRecords(dc)
+	run()
 }
 
 func TestNameserverDots(t *testing.T) {
