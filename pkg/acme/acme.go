@@ -16,12 +16,12 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/go-acme/lego/certcrypto"
-	"github.com/go-acme/lego/certificate"
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/lego"
-	acmelog "github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/certificate"
+	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/lego"
+	acmelog "github.com/go-acme/lego/v4/log"
 )
 
 // CertConfig describes a certificate's configuration.
@@ -141,7 +141,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		} else {
 			log.Println("Renewing cert")
 			action = func() (*certificate.Resource, error) {
-				return client.Certificate.Renew(*existing, true, cfg.MustStaple)
+				return client.Certificate.Renew(*existing, true, cfg.MustStaple, "")
 			}
 		}
 	}

@@ -374,7 +374,7 @@ func TestDualProviders(t *testing.T) {
 	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
 	dc.Nameservers = append(dc.Nameservers, nslist...)
 	nameservers.AddNSRecords(dc)
-	t.Log("Adding nameservers from another provider")
+	t.Log("Adding test nameservers")
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
@@ -392,6 +392,20 @@ func TestDualProviders(t *testing.T) {
 		}
 		t.FailNow()
 	}
+
+	t.Log("Removing test nameservers")
+	dc.Records = []*models.RecordConfig{}
+	n := 0
+	for _, ns := range dc.Nameservers {
+		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
+			continue
+		}
+		dc.Nameservers[n] = ns
+		n++
+	}
+	dc.Nameservers = dc.Nameservers[:n]
+	nameservers.AddNSRecords(dc)
+	run()
 }
 
 func TestNameserverDots(t *testing.T) {
@@ -456,6 +470,11 @@ func (tc *TestCase) UnsafeIgnore() *TestCase {
 func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
+}
+
+func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
+	record.Metadata = metadata
+	return record
 }
 
 func a(name, target string) *models.RecordConfig {
@@ -2296,6 +2315,44 @@ func makeTests() []*TestGroup {
 			tc("Add a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.com", "", "", "")),
 			tc("Update a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.org", "", "", "")),
 			tc("Update a urlfwd with metadata", porkbunUrlfwd("urlfwd1", "http://example.org", "permanent", "no", "no")),
+		),
+
+		// GCORE features
+
+		testgroup("GCORE metadata tests",
+			only("GCORE"),
+			tc("Add record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"gcore_filters":            "geodistance,false;first_n,false,2",
+				"gcore_asn":                "1234,2345",
+				"gcore_continents":         "as,na,an,sa,oc,eu,af",
+				"gcore_countries":          "cn,us",
+				"gcore_latitude":           "12.34",
+				"gcore_longitude":          "67.89",
+				"gcore_notes":              "test",
+				"gcore_weight":             "12",
+				"gcore_ip":                 "1.2.3.4",
+			})),
+			tc("Update record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"gcore_filters":            "healthcheck,false;geodns,false;first_n,false,3",
+				"gcore_failover_protocol":  "HTTP",
+				"gcore_failover_port":      "443",
+				"gcore_failover_frequency": "30",
+				"gcore_failover_timeout":   "10",
+				"gcore_failover_method":    "POST",
+				"gcore_failover_url":       "/test",
+				"gcore_failover_tls":       "false",
+				"gcore_failover_regexp":    "",
+				"gcore_failover_host":      "example.com",
+				"gcore_asn":                "2345,3456",
+				"gcore_continents":         "as,na",
+				"gcore_countries":          "gb,fr",
+				"gcore_latitude":           "12.89",
+				"gcore_longitude":          "34.56",
+				"gcore_notes":              "test2",
+				"gcore_weight":             "34",
+				"gcore_ip":                 "4.3.2.1",
+			})),
+			tc("Delete metadata from record", a("@", "1.2.3.4")),
 		),
 
 		// This MUST be the last test.

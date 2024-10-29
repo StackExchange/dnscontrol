@@ -93,6 +93,22 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	for i, zone := range listResp.Items {
 		zones[i] = *zone.Name
 	}
+
+	for listResp.OpcNextPage != nil {
+		listResp, err = o.client.ListZones(ctx, dns.ListZonesRequest{
+			CompartmentId: &o.compartment,
+			Page:         listResp.OpcNextPage,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, zone := range listResp.Items {
+			zones = append(zones, *zone.Name)
+		}
+	}
+
 	return zones, nil
 }
 
@@ -240,7 +256,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			continue
 		}
 
-		if rec.TTL != 86400 {
+		if rec.GetLabel() == "@" && rec.TTL != 86400 {
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}

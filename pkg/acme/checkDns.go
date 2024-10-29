@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
 func (c *certManager) preCheckDNS(domain, fqdn, value string, native dns01.PreCheckFunc) (bool, error) {

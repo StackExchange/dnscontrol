@@ -34,6 +34,7 @@ type gcoreRRSetExtended struct {
 	TTL     int                     `json:"ttl"`
 	Records []dnssdk.ResourceRecord `json:"resource_records"`
 	Filters []dnssdk.RecordFilter   `json:"filters"`
+	Meta    *gcoreMetadata          `json:"meta"`
 }
 
 func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri string, bodyParams interface{}, dest interface{}) error {
