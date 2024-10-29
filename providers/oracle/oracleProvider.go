@@ -3,6 +3,7 @@ package oracle
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -171,7 +172,18 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	nssNoStrip, err := models.ToNameservers(nss)
+
+	if err != nil {
+		nssStrip, err := models.ToNameserversStripTD(nss)
+		if err != nil {
+			return nil, fmt.Errorf("Could not determine if trailing dots should be stripped or not...")
+		}
+
+		return nssStrip, nil
+	}
+
+	return nssNoStrip, nil
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
