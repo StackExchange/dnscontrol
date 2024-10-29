@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
@@ -151,13 +152,16 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 		}
 	}
 
-	changes, actualChangeCount, err := diff2.ByRecordSet(existing, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existing, dc, comparableFunc)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	for _, change := range changes {
-		record := recordsToNative(change.New, change.Key)
+		record, err := recordsToNative(change.New, change.Key)
+		if err != nil {
+			return nil, 0, err
+		}
 
 		// Copy all params to avoid overwrites
 		zone := dc.Name
@@ -222,4 +226,20 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	result := append(reports, deletions...)
 	result = append(result, corrections...)
 	return result, actualChangeCount, nil
+}
+
+func comparableFunc(rec *models.RecordConfig) string {
+	if len(rec.Metadata) == 0 {
+		return ""
+	}
+
+	// json.Marshal always serialize all fields in alphabetical order,
+	// so the metadata string will be consistent between runs
+	result, err := json.Marshal(rec.Metadata)
+	if err != nil {
+		printer.Warnf("Cannot serialize metadata of record %s", rec)
+		return ""
+	}
+
+	return string(result)
 }
