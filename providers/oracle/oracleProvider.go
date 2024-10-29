@@ -92,6 +92,22 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	for i, zone := range listResp.Items {
 		zones[i] = *zone.Name
 	}
+
+	for listResp.OpcNextPage != nil {
+		listResp, err = o.client.ListZones(ctx, dns.ListZonesRequest{
+			CompartmentId: &o.compartment,
+			Page:         listResp.OpcNextPage,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, zone := range listResp.Items {
+			zones = append(zones, *zone.Name)
+		}
+	}
+
 	return zones, nil
 }
 
