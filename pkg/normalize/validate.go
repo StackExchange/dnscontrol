@@ -119,7 +119,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	}
 	if label == domain || strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
-			return fmt.Errorf(errorRepeat(label, domain))
+			return fmt.Errorf("%s", errorRepeat(label, domain))
 		}
 	}
 
@@ -247,8 +247,27 @@ func transformCNAME(target, oldDomain, newDomain string) string {
 	return dnsutil.AddOrigin(result, newDomain) + "."
 }
 
+func newRec(rec *models.RecordConfig, ttl uint32) *models.RecordConfig {
+	rec2, _ := rec.Copy()
+	if ttl != 0 {
+		rec2.TTL = ttl
+	}
+	return rec2
+}
+
+func transformLabel(label, suffixstrip string) (string, error) {
+	if suffixstrip == "" {
+		return label, nil
+	}
+	if !strings.HasSuffix(label, suffixstrip) {
+		return "", fmt.Errorf("label %q does not end with %q", label, suffixstrip)
+	}
+	return label[:len(label)-len(suffixstrip)], nil
+}
+
 // import_transform imports the records of one zone into another, modifying records along the way.
-func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IPConversion, ttl uint32) error {
+func importTransform(srcDomain, dstDomain *models.DomainConfig,
+	transforms []transform.IPConversion, ttl uint32, suffixstrip string) error {
 	// Read srcDomain.Records, transform, and append to dstDomain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
 	// 2. Append destDomainname to the end of the label.
@@ -259,15 +278,6 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 		if dstDomain.Records.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
 			continue
 		}
-		newRec := func() *models.RecordConfig {
-			rec2, _ := rec.Copy()
-			newlabel := rec2.GetLabelFQDN()
-			rec2.SetLabel(newlabel, dstDomain.Name)
-			if ttl != 0 {
-				rec2.TTL = ttl
-			}
-			return rec2
-		}
 		switch rec.Type {
 		case "A":
 			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
@@ -275,12 +285,22 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.GetTargetField(), transforms, err)
 			}
 			for _, tr := range trs {
-				r := newRec()
+				r := newRec(rec, ttl)
+				l, err := transformLabel(r.GetLabelFQDN(), suffixstrip)
+				if err != nil {
+					return err
+				}
+				r.SetLabel(l, dstDomain.Name)
 				r.SetTarget(tr.String())
 				dstDomain.Records = append(dstDomain.Records, r)
 			}
 		case "CNAME":
-			r := newRec()
+			r := newRec(rec, ttl)
+			l, err := transformLabel(r.GetLabelFQDN(), suffixstrip)
+			if err != nil {
+				return err
+			}
+			r.SetLabel(l, dstDomain.Name)
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
 		default:
@@ -445,6 +465,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		for _, rec := range domain.Records {
 			if rec.Type == "IMPORT_TRANSFORM" {
+				suffixstrip := rec.Metadata["transform_suffixstrip"]
 				table, err := transform.DecodeTransformTable(rec.Metadata["transform_table"])
 				if err != nil {
 					errs = append(errs, err)
@@ -455,7 +476,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					err = fmt.Errorf("IMPORT_TRANSFORM mentions non-existant domain %q", rec.GetTargetField())
 					errs = append(errs, err)
 				}
-				err = importTransform(c, domain, table, rec.TTL)
+				err = importTransform(c, domain, table, rec.TTL, suffixstrip)
 				if err != nil {
 					errs = append(errs, err)
 				}
