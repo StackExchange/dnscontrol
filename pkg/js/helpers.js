@@ -1031,7 +1031,7 @@ function IGNORE_TARGET(target, rType) {
     return IGNORE('*', rType, target);
 }
 
-// IMPORT_TRANSFORM(translation_table, domain)
+// IMPORT_TRANSFORM(translation_table, domain, ttl)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
     args: [['translation_table'], ['domain'], ['ttl', _.isNumber]],
     transform: function (record, args, modifiers) {
@@ -1039,6 +1039,18 @@ var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
         record.target = args.domain;
         record.meta['transform_table'] = format_tt(args.translation_table);
         record.ttl = args.ttl;
+    },
+});
+
+// IMPORT_TRANSFORM_STRIP(translation_table, domain, ttl, suffixstrip)
+var IMPORT_TRANSFORM_STRIP = recordBuilder('IMPORT_TRANSFORM', {
+    args: [['translation_table'], ['domain'], ['ttl', _.isNumber], ['suffixstrip']],
+    transform: function (record, args, modifiers) {
+        record.name = '@';
+        record.target = args.domain;
+        record.meta['transform_table'] = format_tt(args.translation_table);
+        record.ttl = args.ttl;
+        record.meta['transform_suffixstrip'] = args.suffixstrip;
     },
 });
 
