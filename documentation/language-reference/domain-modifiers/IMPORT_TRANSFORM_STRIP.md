@@ -1,8 +1,10 @@
 ---
-name: IMPORT_TRANSFORM
+name: IMPORT_TRANSFORM_STRIP
 parameters:
   - transform table
   - domain
+  - ttl
+  - suffixstrip
   - modifiers...
 ts_ignore: true
 ---

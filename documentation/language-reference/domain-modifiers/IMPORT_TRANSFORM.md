@@ -3,6 +3,7 @@ name: IMPORT_TRANSFORM
 parameters:
   - transform table
   - domain
+  - ttl
   - modifiers...
 ts_ignore: true
 ---
