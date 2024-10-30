@@ -97,7 +97,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	for listResp.OpcNextPage != nil {
 		listResp, err = o.client.ListZones(ctx, dns.ListZonesRequest{
 			CompartmentId: &o.compartment,
-			Page:         listResp.OpcNextPage,
+			Page:          listResp.OpcNextPage,
 		})
 
 		if err != nil {
