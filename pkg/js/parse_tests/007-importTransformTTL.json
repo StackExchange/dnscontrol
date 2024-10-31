@@ -18,9 +18,9 @@
           "name": "@",
           "ttl": 60,
           "meta": {
-            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 4.4.4.4 ~ "
+            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 4.4.4.4 ~  ; 7.7.7.7 ~ 8.8.8.8 ~ 9.9.9.9 ~ "
           },
-          "target": "int2.com"
+          "target": "foo1.com"
         }
       ]
     },
@@ -37,7 +37,7 @@
             "transform_suffixstrip": ".com",
             "transform_table": "0.0.0.0 ~ 1.1.1.1 ~  ~ 2.2.2.2"
           },
-          "target": "int3.com"
+          "target": "foo1.com"
         }
       ]
     }
