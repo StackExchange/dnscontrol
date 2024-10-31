@@ -53,6 +53,7 @@
     * [IGNORE_NAME](language-reference/domain-modifiers/IGNORE_NAME.md)
     * [IGNORE_TARGET](language-reference/domain-modifiers/IGNORE_TARGET.md)
     * [IMPORT_TRANSFORM](language-reference/domain-modifiers/IMPORT_TRANSFORM.md)
+    * [IMPORT_TRANSFORM_STRIP](language-reference/domain-modifiers/IMPORT_TRANSFORM_STRIP.md)
     * [INCLUDE](language-reference/domain-modifiers/INCLUDE.md)
     * [LOC](language-reference/domain-modifiers/LOC.md)
     * [LOC_BUILDER_DD](language-reference/domain-modifiers/LOC_BUILDER_DD.md)

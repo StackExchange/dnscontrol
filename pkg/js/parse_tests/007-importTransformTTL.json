@@ -1,28 +1,45 @@
 {
+  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
+      "name": "foo1.com",
+      "registrar": "reg",
       "dnsProviders": {},
-      "name": "foo2.com",
-      "records": [],
-      "registrar": "reg"
+      "records": []
     },
     {
+      "name": "foo2.com",
+      "registrar": "reg",
       "dnsProviders": {},
-      "name": "foo.com",
       "records": [
         {
-          "meta": {
-            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 2.2.2.2 ~ "
-          },
+          "type": "IMPORT_TRANSFORM",
           "name": "@",
-          "target": "foo2.com",
           "ttl": 60,
-          "type": "IMPORT_TRANSFORM"
+          "meta": {
+            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 4.4.4.4 ~  ; 7.7.7.7 ~ 8.8.8.8 ~ 9.9.9.9 ~ "
+          },
+          "target": "foo1.com"
         }
-      ],
-      "registrar": "reg"
+      ]
+    },
+    {
+      "name": "foo3.com",
+      "registrar": "reg",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "IMPORT_TRANSFORM",
+          "name": "@",
+          "ttl": 99,
+          "meta": {
+            "transform_suffixstrip": ".com",
+            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~  ~ 2.2.2.2"
+          },
+          "target": "foo1.com"
+        }
+      ]
     }
-  ],
-  "registrars": []
+  ]
 }
