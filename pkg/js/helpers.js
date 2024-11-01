@@ -1044,7 +1044,12 @@ var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
 
 // IMPORT_TRANSFORM_STRIP(translation_table, domain, ttl, suffixstrip)
 var IMPORT_TRANSFORM_STRIP = recordBuilder('IMPORT_TRANSFORM', {
-    args: [['translation_table'], ['domain'], ['ttl', _.isNumber], ['suffixstrip']],
+    args: [
+        ['translation_table'],
+        ['domain'],
+        ['ttl', _.isNumber],
+        ['suffixstrip'],
+    ],
     transform: function (record, args, modifiers) {
         record.name = '@';
         record.target = args.domain;
