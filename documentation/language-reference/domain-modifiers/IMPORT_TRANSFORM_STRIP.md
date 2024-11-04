@@ -16,10 +16,13 @@ Don't use this feature. It was added for a very specific situation at Stack Over
 `IMPORT_TRANSFORM_STRIP` is the same as `IMPORT_TRANSFORM` with an additional parameter: `suffixstrip`.
 
 When `IMPORT_TRANSFORM_STRIP` is generating the label for new records, it
-checks the label.  If the label ends with `suffixstrip`, that suffix is removed.
+checks the label.  If the label ends with `.` + `suffixstrip`, that suffix is removed.
 If the label does not end with `suffixstrip`, an error is returned.
+
+For CNAMEs, the `suffixstrip` is stripped from the beginning (prefix) of the target domain.
 
 For example, if the domain is `com.extra` and the label is `foo.com`,
 `IMPORT_TRANSFORM` would generate a label `foo.com.com.extra`.
 `IMPORT_TRANSFORM_STRIP(... , '.com')` would generate
 the label `foo.com.extra` instead.
+A CNAME's target would be `foo.com.extra`.
