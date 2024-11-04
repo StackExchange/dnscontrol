@@ -1879,13 +1879,21 @@ function M365_BUILDER(name, value) {
 
     var r = [];
 
+    // MX host (default: "mail.protection.outlook.com")
+    if (!value.mxHost) {
+        value.mx = "mail.protection.outlook.com";
+    }
+
     // MX (default: true)
     if (value.mx) {
         r.push(
             MX(
                 value.label,
                 0,
-                value.domainGUID + '.mail.protection.outlook.com.'
+                value.domainGUID +
+                '.' +
+                value.mxHost +
+                '.'
             )
         );
     }
