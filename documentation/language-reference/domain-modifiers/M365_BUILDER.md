@@ -66,6 +66,7 @@ This sets up Mobile Device Management only.
 
 * `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
 * `mx` Set an `MX` record? (default: `true`)
+* `mxHost` Set your MX host for Exchange Online (default: `mail.protection.outlook.com`)
 * `autodiscover` Set Autodiscover `CNAME` record? (default: `true`)
 * `dkim` Set DKIM `CNAME` records? (default: `true`)
 * `skypeForBusiness` Set Skype for Business/Microsoft Teams records? (default: `false`)
