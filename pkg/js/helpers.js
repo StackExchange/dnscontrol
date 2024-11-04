@@ -1881,21 +1881,12 @@ function M365_BUILDER(name, value) {
 
     // MX host (default: "mail.protection.outlook.com")
     if (!value.mxHost) {
-        value.mx = "mail.protection.outlook.com";
+        value.mx = 'mail.protection.outlook.com';
     }
 
     // MX (default: true)
     if (value.mx) {
-        r.push(
-            MX(
-                value.label,
-                0,
-                value.domainGUID +
-                '.' +
-                value.mxHost +
-                '.'
-            )
-        );
+        r.push(MX(value.label, 0, value.domainGUID + '.' + value.mxHost + '.'));
     }
 
     // Autodiscover (default: true)
