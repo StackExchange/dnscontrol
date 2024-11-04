@@ -9,7 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -239,13 +238,14 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 }
 
 func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
-	// Canonicalize. If it isn't a FQDN, add the newDomain.
-	result := dnsutil.AddOrigin(target, oldDomain)
-	if dns.IsFqdn(result) {
-		result = result[:len(result)-1]
+	// Canonicalize the target.  Add the newDomain minus the suffixstrip.
+	//  foo -> foo.oldDomain.newDomain
+	//  foo. -> foo.newDomain
+	nd := strings.TrimPrefix(newDomain, suffixstrip+".")
+	if strings.HasSuffix(target, ".") {
+		return target + nd + "."
 	}
-	result = strings.TrimSuffix(result, suffixstrip)
-	return dnsutil.AddOrigin(result, newDomain) + "."
+	return dnsutil.AddOrigin(target, oldDomain) + "." + nd + "."
 }
 
 func newRec(rec *models.RecordConfig, ttl uint32) *models.RecordConfig {
@@ -260,6 +260,7 @@ func transformLabel(label, suffixstrip string) (string, error) {
 	if suffixstrip == "" {
 		return label, nil
 	}
+	suffixstrip = "." + suffixstrip
 	if !strings.HasSuffix(label, suffixstrip) {
 		return "", fmt.Errorf("label %q does not end with %q", label, suffixstrip)
 	}
