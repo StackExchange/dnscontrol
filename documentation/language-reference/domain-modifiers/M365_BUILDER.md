@@ -62,6 +62,29 @@ END);
 
 This sets up Mobile Device Management only.
 
+### Example with all services and DNSSEC MX
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  M365_BUILDER("example.com", {
+      mx: true, // Can be omitted as default: true
+      mxHost: "o-v1.mx.microsoft", // Override the default mail.protection.outlook.com
+      autodiscover: true, // Can be omitted as default: true
+      dkim: true, // Can be omitted as default: true
+      skypeForBusiness: true,
+      mdm: true,
+      initialDomain: "example.onmicrosoft.com",
+  }),
+END);
+```
+{% endcode %}
+
+This sets up MX (custom), AutoDiscover, DKIM, Skype for Business/Microsoft Teams and Mobile Device Management records.
+
+Instead of the default MX target ending in `mail.protection.outlook.com`, this example uses `<random-id>.mx.microsoft` which is a DNSSEC signed zone.
+`<random-id>` is obtained from Microsoft after [enabling DNSSEC functionality for the domain](https://learn.microsoft.com/purview/how-smtp-dane-works#inbound-smtp-dane-with-dnssec) within Exchange Online.
+
 ### Parameters
 
 * `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
