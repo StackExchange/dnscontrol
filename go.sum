@@ -393,8 +393,8 @@ github.com/smartystreets/assertions v1.2.0/go.mod h1:tcbTF8ujkAEcZ8TElKY+i30BzYl
 github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9QV7WQ/tjFTllLA=
 github.com/smartystreets/goconvey v1.7.2 h1:9RBaZCeXEQ3UselpuwUQHltGVXvdwm6cv1hgR6gDIPg=
 github.com/smartystreets/goconvey v1.7.2/go.mod h1:Vw0tHAZW6lzCRk3xgdin6fKYcG+G3Pg9vgXWeJpQFMM=
-github.com/softlayer/softlayer-go v1.1.5 h1:UFFtgKxiw0yIuUw93XBCFIiIMYR5eLgmm4a5DqMHXGg=
-github.com/softlayer/softlayer-go v1.1.5/go.mod h1:WeJrBLoTJcaT8nO1azeyHyNpo/fDLtbpbvh+pzts+Qw=
+github.com/softlayer/softlayer-go v1.1.7 h1:SgTL+pQZt1h+5QkAhVmHORM/7N9c1X0sljJhuOIHxWE=
+github.com/softlayer/softlayer-go v1.1.7/go.mod h1:WeJrBLoTJcaT8nO1azeyHyNpo/fDLtbpbvh+pzts+Qw=
 github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e h1:3OgWYFw7jxCZPcvAg+4R8A50GZ+CCkARF10lxu2qDsQ=
 github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e/go.mod h1:fKZCUVdirrxrBpwd9wb+lSoVixvpwAu8eHzbQB2tums=
 github.com/sony/gobreaker v0.5.0 h1:dRCvqm0P490vZPmy7ppEk2qCnCieBooFJ+YoXGYB+yg=

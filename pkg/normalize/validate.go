@@ -238,12 +238,13 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	return
 }
 
-func transformCNAME(target, oldDomain, newDomain string) string {
+func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
 	// Canonicalize. If it isn't a FQDN, add the newDomain.
 	result := dnsutil.AddOrigin(target, oldDomain)
 	if dns.IsFqdn(result) {
 		result = result[:len(result)-1]
 	}
+	result = strings.TrimSuffix(result, suffixstrip)
 	return dnsutil.AddOrigin(result, newDomain) + "."
 }
 
@@ -301,7 +302,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 				return err
 			}
 			r.SetLabel(l, dstDomain.Name)
-			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
+			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name, suffixstrip))
 			dstDomain.Records = append(dstDomain.Records, r)
 		default:
 			// Anything else is ignored.
