@@ -42,7 +42,7 @@ END);
 
 This sets up `MX` records, Autodiscover, and DKIM.
 
-### Advanced example
+### Example with MDM only
 
 {% code title="dnsconfig.js" %}
 ```javascript
