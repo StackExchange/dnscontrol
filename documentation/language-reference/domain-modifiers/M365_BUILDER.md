@@ -13,6 +13,7 @@ parameters_object: true
 parameter_types:
   label: string?
   mx: boolean?
+  mxHost: string?
   autodiscover: boolean?
   dkim: boolean?
   skypeForBusiness: boolean?
