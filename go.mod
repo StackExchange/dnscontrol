@@ -44,7 +44,7 @@ require (
 	github.com/pquerna/otp v1.4.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/robertkrimen/otto v0.4.0
-	github.com/softlayer/softlayer-go v1.1.5
+	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.9.0
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/urfave/cli/v2 v2.27.5
@@ -64,7 +64,7 @@ require (
 	github.com/go-acme/lego/v4 v4.19.2
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.117
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.120
 	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
