@@ -16,9 +16,9 @@ Don't use this feature. It was added for a very specific situation at Stack Over
 domain, after making certain transformations and resetting the TTL.
 
 Not all records are copied and transformed:
-* The record must be type A or CNAME.
-* Records are skipped if a record of the same label+type already exist in the destination domain.
+* The record must be record type A or CNAME.
 * Records are skipped if they have a metadata key `import_transform_skip` (any non-null value).
+* Records are skipped if a record of the same label+type already exist in the destination domain.
 
 Example:
 
