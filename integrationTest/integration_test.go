@@ -779,10 +779,6 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
-func ns1Urlfwd(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS1_URLFWD")
-}
-
 func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.RecordConfig {
 	r := makeRec(name, target, "PORKBUN_URLFWD")
 	r.Metadata = make(map[string]string)
@@ -2078,14 +2074,6 @@ func makeTests() []*TestGroup {
 				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
 				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
-		),
-
-		// NS1 features
-
-		testgroup("NS1_URLFWD tests",
-			only("NS1"),
-			tc("Add a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//// IGNORE* features
