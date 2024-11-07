@@ -277,6 +277,11 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 	// 4. For As, change the target as described the transforms.
 
 	for _, rec := range srcDomain.Records {
+		// If this record is marked to be skipped, skip it.
+		if rec.Metadata["import_transform_skip"] != "" {
+			continue
+		}
+		// If the dstDomain already has a record with this type+label, skip it.
 		if dstDomain.Records.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
 			continue
 		}

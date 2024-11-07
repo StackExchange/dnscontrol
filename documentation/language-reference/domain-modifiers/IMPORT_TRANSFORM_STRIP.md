@@ -25,4 +25,5 @@ For example, if the domain is `com.extra` and the label is `foo.com`,
 `IMPORT_TRANSFORM` would generate a label `foo.com.com.extra`.
 `IMPORT_TRANSFORM_STRIP(... , '.com')` would generate
 the label `foo.com.extra` instead.
-A CNAME's target would be `foo.com.extra`.
+
+In the case of a CNAME, if the target is `foo.com.`, the new target would be `foo.com.extra`.
