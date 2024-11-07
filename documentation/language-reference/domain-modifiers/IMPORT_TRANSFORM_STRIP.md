@@ -23,7 +23,7 @@ For CNAMEs, the `suffixstrip` is stripped from the beginning (prefix) of the tar
 
 For example, if the domain is `com.extra` and the label is `foo.com`,
 `IMPORT_TRANSFORM` would generate a label `foo.com.com.extra`.
-`IMPORT_TRANSFORM_STRIP(... , '.com')` would generate
+`IMPORT_TRANSFORM_STRIP(... , 'com')` would generate
 the label `foo.com.extra` instead.
 
 In the case of a CNAME, if the target is `foo.com.`, the new target would be `foo.com.extra`.
