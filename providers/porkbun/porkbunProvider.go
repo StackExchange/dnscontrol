@@ -61,7 +61,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Cannot(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUseCAA:              providers.Unimplemented(), // CAA record for base domain is pinning to a fixed set once configure
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
 	providers.CanUseLOC:              providers.Cannot(),
