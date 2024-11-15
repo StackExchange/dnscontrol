@@ -25,6 +25,7 @@ Currently supported DNS providers:
 - Bunny DNS
 - Cloudflare
 - ClouDNS
+- CentralNic Reseller (CNR) - formerly RRPProxy
 - deSEC
 - DigitalOcean
 - DNS Made Easy
@@ -66,6 +67,7 @@ Currently supported Domain Registrars:
 
 - AWS Route 53
 - CSC Global
+- CentralNic Reseller (formerly RRPProxy)
 - DNSOVERHTTPS
 - Dynadot
 - easyname
