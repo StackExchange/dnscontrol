@@ -25,7 +25,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`CLOUDNS`](provider/cloudns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`CSCGLOBAL`](provider/cscglobal.md) | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |
 | [`DESEC`](provider/desec.md) | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ✅ |
-| [`DIGITALOCEAN`](provider/digitalocean.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
+| [`DIGITALOCEAN`](provider/digitalocean.md) | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](provider/dnsimple.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](provider/dnsmadeeasy.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❌ | ❔ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](provider/dnsoverhttps.md) | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
@@ -51,7 +51,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`NAMECHEAP`](provider/namecheap.md) | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ❔ | ❌ | ❔ | ❌ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](provider/namedotcom.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ❔ | ❔ | ❔ | ❌ | ❔ | ❌ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❌ | ✅ |
 | [`NETCUP`](provider/netcup.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❌ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ❌ |
-| [`NETLIFY`](provider/netlify.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
+| [`NETLIFY`](provider/netlify.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`NS1`](provider/ns1.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ |
 | [`OPENSRS`](provider/opensrs.md) | ❌ | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`ORACLE`](provider/oracle.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
