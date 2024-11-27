@@ -106,6 +106,7 @@ func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report
 						zones, err := lister.ListZones()
 						if err != nil {
 							out.Errorf("ERROR: %s\n", err.Error())
+							anyErrors = true
 							return
 						}
 						aceZoneName, _ := idna.ToASCII(domain.Name)
