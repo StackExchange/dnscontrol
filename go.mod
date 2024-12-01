@@ -52,7 +52,7 @@ require (
 	golang.org/x/crypto v0.29.0 // indirect
 	golang.org/x/net v0.31.0
 	golang.org/x/oauth2 v0.24.0
-	google.golang.org/api v0.207.0
+	google.golang.org/api v0.209.0
 	gopkg.in/ns1/ns1-go.v2 v2.12.2
 )
 
