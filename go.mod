@@ -25,7 +25,7 @@ require (
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.7
 	github.com/cloudflare/cloudflare-go v0.109.0
-	github.com/digitalocean/godo v1.130.0
+	github.com/digitalocean/godo v1.131.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale v0.102.4
