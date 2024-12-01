@@ -43,7 +43,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.4.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/robertkrimen/otto v0.4.0
+	github.com/robertkrimen/otto v0.5.1
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.9.0
 	github.com/transip/gotransip/v6 v6.26.0
