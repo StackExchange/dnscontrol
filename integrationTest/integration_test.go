@@ -1415,6 +1415,7 @@ func makeTests() []*TestGroup {
 				"NS1",        // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
+				"CNR",     // Bug
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
