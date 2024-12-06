@@ -114,7 +114,7 @@ func (n *CNRClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mo
 			msg = fmt.Sprintf("GENERATE_ZONE: %s\n%sPROVIDER CNR, API COMMAND PARAMETERS:\n%s", dc.Name, buf.String(), builder.String())
 		}
 		corrections = append(corrections, &models.Correction{
-			Msg: msg,			
+			Msg: msg,
 			F: func() error {
 				return n.updateZoneBy(params, dc.Name)
 			},
@@ -187,7 +187,7 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		"COMMAND": "QueryDNSZoneRRList",
 		"DNSZONE": domain,
 		"ORDERBY": "type",
-		"FIRST":  "0",
+		"FIRST":   "0",
 		"LIMIT":   "1",
 	}
 	r := n.client.Request(cmd)
@@ -257,7 +257,7 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 			return nil, fmt.Errorf("error compiling regex in getRecords: %s", err)
 		}
 		if re.MatchString(data["TYPE"]) && !strings.HasSuffix(data["CONTENT"], ".") {
-			data["CONTENT"] = fmt.Sprintf("%s.", data["CONTENT"]);
+			data["CONTENT"] = fmt.Sprintf("%s.", data["CONTENT"])
 		}
 
 		// Only append domain if it's not already a fully qualified domain name
@@ -380,5 +380,5 @@ func (n *CNRClient) debugCommand(r *response.Response) error {
 		fmt.Printf("%s", r.GetPlain())
 		fmt.Printf("----------------------------------------------------------\n")
 	}
-	return nil;
+	return nil
 }
