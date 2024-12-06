@@ -121,10 +121,10 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
 }
 
 func (c *cloudnsProvider) fetchDomainList() error {
-	// FIXME(tlim): This should return nil if c.domainIndex != nil.  Then all
-	// the callers won't have to check if c.domainIndex == nil before calling.
+	if c.domainIndex != nil {
+		return nil
+	}
 
-	c.domainIndex = map[string]string{}
 	rowsPerPage := 100
 	page := 1
 	for {
@@ -139,6 +139,10 @@ func (c *cloudnsProvider) fetchDomainList() error {
 			return fmt.Errorf("failed fetching domain list from ClouDNS: %s", err)
 		}
 		json.Unmarshal(bodyString, &dr)
+
+		if c.domainIndex == nil {
+			c.domainIndex = map[string]string{}
+		}
 
 		for _, domain := range dr {
 			c.domainIndex[domain.Name] = domain.Name
