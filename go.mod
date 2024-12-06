@@ -62,7 +62,7 @@ require (
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.0
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
-	github.com/go-acme/lego/v4 v4.20.2
+	github.com/go-acme/lego/v4 v4.20.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.122
