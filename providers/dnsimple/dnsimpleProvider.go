@@ -729,7 +729,7 @@ func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 		e := strings.Join(errors, "& ")
 		message += fmt.Sprintf(": %s %s", field, e)
 	}
-	return fmt.Errorf(message)
+	return fmt.Errorf("%s", message)
 }
 
 // Return true if the string ends in one of DNSimple's name server domains

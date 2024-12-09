@@ -98,7 +98,7 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 					if err != nil {
-						return fmt.Errorf(err.Error())
+						return fmt.Errorf("%s", err.Error())
 					}
 
 					return nil

@@ -28,7 +28,7 @@ jobs:
       with:
         go-version: stable
     - name: restore_cache
-      uses: actions/cache@v4.1.2
+      uses: actions/cache@v4.2.0
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -88,7 +88,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -111,6 +111,7 @@ jobs:
       BUNNY_DNS_DOMAIN: ${{ vars.BUNNY_DNS_DOMAIN }}
       CLOUDFLAREAPI_DOMAIN: ${{ vars.CLOUDFLAREAPI_DOMAIN }}
       CLOUDNS_DOMAIN: ${{ vars.CLOUDNS_DOMAIN }}
+      CNR_DOMAIN: ${{ vars.CNR_DOMAIN }}
       CSCGLOBAL_DOMAIN: ${{ vars.CSCGLOBAL_DOMAIN }}
       DIGITALOCEAN_DOMAIN: ${{ vars.DIGITALOCEAN_DOMAIN }}
       GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
@@ -146,6 +147,10 @@ jobs:
       CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY }}
       CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN }}
       #
+      CNR_UID: ${{ secrets.CNR_UID }}
+      CNR_PW: ${{ secrets.CNR_PW }}
+      CNR_ENTITY: ${{ secrets.CNR_ENTITY }}
+      #      
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
       #
       GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
@@ -196,7 +201,7 @@ jobs:
     - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
-      uses: actions/cache@v4.1.2
+      uses: actions/cache@v4.2.0
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}

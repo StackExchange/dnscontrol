@@ -20,13 +20,14 @@ func (c *cloudflareProvider) cacheDomainList() error {
 		return nil
 	}
 
-	c.domainIndex = map[string]string{}
-	c.nameservers = map[string][]string{}
 	//fmt.Printf("DEBUG: CLOUDFLARE POPULATING CACHE\n")
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %s", c.cfClient.APIEmail, err)
 	}
+
+	c.domainIndex = map[string]string{}
+	c.nameservers = map[string][]string{}
 
 	for _, zone := range zones {
 		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
