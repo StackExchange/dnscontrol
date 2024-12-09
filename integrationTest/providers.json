@@ -72,6 +72,14 @@
     "notification_emails": "$CSCGLOBAL_NOTIFICATION",
     "user-token": "$CSCGLOBAL_USERTOKEN"
   },
+  "CNR": {
+    "TYPE": "CNR",
+    "apientity": "$CNR_ENTITY",
+    "apilogin": "$CNR_UID",
+    "apipassword": "$CNR_PW",
+    "debugmode": "$CNR_DEBUGMODE",
+    "domain": "$CNR_DOMAIN"
+  },
   "DESEC": {
     "TYPE": "DESEC",
     "auth-token": "$DESEC_TOKEN",

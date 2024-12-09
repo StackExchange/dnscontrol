@@ -29,11 +29,6 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 		return nil, fmt.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
 	}
 
-	// Get a domain to validate authentication
-	if err := c.fetchDomainList(); err != nil {
-		return nil, err
-	}
-
 	return c, nil
 }
 
