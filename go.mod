@@ -59,6 +59,7 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0
 	github.com/G-Core/gcore-dns-sdk-go v0.2.9
+	github.com/containrrr/shoutrrr v0.8.0
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.3
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
