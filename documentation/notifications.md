@@ -95,7 +95,7 @@ This is Stack Overflow's built in chat system. This is probably not useful for m
 
 Configure `bonfire_url` to be the full url including room and api key.
 
-### Others
+### Shoutrrr (email, Discord, Pushover, etc.)
 
 DNSControl can use many other notification methods via Shoutrrr, such as email (SMTP), Discord, Pushover and others. See the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/) for a list of supported methods and configuration instructions.
 
