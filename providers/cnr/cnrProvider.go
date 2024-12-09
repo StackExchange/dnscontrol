@@ -50,7 +50,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseRoute53Alias:	  providers.Cannot(), // can only be supported by AWS Route53 provider
 	providers.CanUseSOA:			  providers.Unimplemented(),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
-	providers.CanUseSSHFP:			  providers.Unimplemented(),
+	providers.CanUseSSHFP:			  providers.Can(),
 	providers.CanUseSVCB:			  providers.Unimplemented(),
 	providers.CanUseTLSA:             providers.Can(),
 }

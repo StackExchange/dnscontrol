@@ -293,6 +293,11 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		if domain == host {
 			host = fmt.Sprintf(`%s.`, host)
 		}
+	case "SSHFP":
+		answer = fmt.Sprintf(`%v %v %s`, rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
+		if domain == host {
+			host = fmt.Sprintf(`%s.`, host)
+		}
 	case "NAPTR":
 		answer = fmt.Sprintf(`%v %v "%v" "%v" "%v" %v`, rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.GetTargetField())
 		if domain == host {
