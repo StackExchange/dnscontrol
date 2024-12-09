@@ -177,7 +177,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	if err != nil {
 		nssStrip, err := models.ToNameserversStripTD(nss)
 		if err != nil {
-			return nil, fmt.Errorf("Could not determine if trailing dots should be stripped or not...")
+			return nil, fmt.Errorf("could not determine if trailing dots should be stripped or not")
 		}
 
 		return nssStrip, nil

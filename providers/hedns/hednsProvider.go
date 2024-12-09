@@ -690,7 +690,7 @@ func (c *hednsProvider) parseResponseForDocumentAndErrors(response *http.Respons
 				return true
 			}
 		}
-		err = fmt.Errorf(element.Text())
+		err = fmt.Errorf("%s", element.Text())
 		return false
 	})
 

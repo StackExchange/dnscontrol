@@ -19,7 +19,8 @@ Notifications are set up in your credentials JSON file. They will use the `notif
   } ,
   "notifications": {
       "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
-      "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000"
+      "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000",
+      "shoutrrr_url": "discover://token@id"
   }
 ```
 {% endcode %}
@@ -93,6 +94,12 @@ Configure `telegram_bot_token` and `telegram_chat_id` to these values.
 This is Stack Overflow's built in chat system. This is probably not useful for most people.
 
 Configure `bonfire_url` to be the full url including room and api key.
+
+### Shoutrrr (email, Discord, Pushover, etc.)
+
+DNSControl can use many other notification methods via Shoutrrr, such as email (SMTP), Discord, Pushover and others. See the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/) for a list of supported methods and configuration instructions.
+
+Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
 
 ## Future work
 
