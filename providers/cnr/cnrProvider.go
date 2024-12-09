@@ -24,19 +24,35 @@ type CNRClient struct {
 }
 
 var features = providers.DocumentationNotes{
-	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:            providers.Can(),
+	// The default for unlisted capabilities is 'Cannot'.
+	// --- Supported Features ---
+	providers.CanAutoDNSSEC:		  providers.Unimplemented("Ask for this feature."),
 	providers.CanConcur:              providers.Can(),
-	providers.CanUseAlias:            providers.Cannot("Not supported. You may use CNAME records instead. An Alternative solution is planned."),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
-	providers.CanUseTLSA:             providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
+	// --- Supported record types ---
+	providers.CanUseAKAMAICDN: 	      providers.Cannot(), // can only be supported by Akamai EdgeDns provider
+	providers.CanUseAlias:            providers.Cannot("Not supported. You may use CNAME records instead. An Alternative solution is planned."),
+	providers.CanUseAzureAlias:		  providers.Cannot(), // can only be supported by Azure provider
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:			  providers.Unimplemented(),
+	providers.CanUseDNAME:            providers.Unimplemented(),
+	providers.CanUseDNSKEY:           providers.Unimplemented(),
+	providers.CanUseDS:               providers.Unimplemented(),
+	providers.CanUseDSForChildren:	  providers.Unimplemented(), // CanUseDS implies CanUseDSForChildren
+	providers.CanUseHTTPS:			  providers.Unimplemented(),
+	providers.CanUseLOC:              providers.Unimplemented(),
+	providers.CanUseNAPTR:			  providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRoute53Alias:	  providers.Cannot(), // can only be supported by AWS Route53 provider
+	providers.CanUseSOA:			  providers.Unimplemented(),
+	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
+	providers.CanUseSSHFP:			  providers.Unimplemented(),
+	providers.CanUseSVCB:			  providers.Unimplemented(),
+	providers.CanUseTLSA:             providers.Can(),
 }
 
 func newProvider(conf map[string]string) (*CNRClient, error) {
