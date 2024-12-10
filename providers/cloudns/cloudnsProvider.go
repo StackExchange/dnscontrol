@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/time/rate"
 )
 
 /*
@@ -22,6 +23,7 @@ Info required in `creds.json`:
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &cloudnsProvider{}
+	c.requestLimit = rate.NewLimiter(10, 10)
 
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 

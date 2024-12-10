@@ -1,13 +1,15 @@
 package cloudns
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
+
+	"golang.org/x/time/rate"
 )
 
 // Api layer for ClouDNS
@@ -17,6 +19,8 @@ type cloudnsProvider struct {
 		password string
 		subid    string
 	}
+
+	requestLimit *rate.Limiter
 
 	sync.Mutex       // Protects all access to the following fields:
 	domainIndex      map[string]string
@@ -275,9 +279,9 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	req.URL.RawQuery = q.Encode()
 
 	// ClouDNS has a rate limit (not documented) of 10 request/second
-	// so we do a very primitive rate-limiting here - delay every request for 100ms - so max. 10 requests/second ...
-	time.Sleep(100 * time.Millisecond)
+	c.requestLimit.Wait(context.Background())
 	resp, err := client.Do(req)
+
 	if err != nil {
 		return []byte{}, err
 	}
