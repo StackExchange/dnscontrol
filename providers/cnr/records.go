@@ -195,7 +195,10 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		if r.GetCode() == 545 {
 			// If dns zone does not exist create a new one automatically
 			if !isNoPopulate() {
-				n.EnsureZoneExists(domain)
+				err := n.EnsureZoneExists(domain)
+				if err != nil {
+					return nil, err
+				}
 			} else {
 				// Return specific error if the zone does not exist
 				return nil, n.GetCNRApiError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
