@@ -77,7 +77,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	// If request sending too fast, the server will fail with the following error:
 	// porkbun API error: Create error: We were unable to create the DNS record.
 retry:
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(time.Second)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err
@@ -85,13 +85,13 @@ retry:
 
 	bodyString, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode == 202 {
+	if resp.StatusCode == 202 || resp.StatusCode == 503 {
 		retrycnt += 1
 		if retrycnt == 5 {
 			return bodyString, fmt.Errorf("rate limiting exceeded")
 		}
-		printer.Warnf("Rate limiting.. waiting for %d minute(s)\n", retrycnt)
-		time.Sleep(time.Minute * time.Duration(retrycnt))
+		printer.Warnf("Rate limiting.. waiting for %d second(s)\n", retrycnt*10)
+		time.Sleep(time.Second * time.Duration(retrycnt*10))
 		goto retry
 	}
 
