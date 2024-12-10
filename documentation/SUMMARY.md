@@ -112,6 +112,7 @@
 * [Azure Private DNS](provider/azure_private_dns.md)
 * [BIND](provider/bind.md)
 * [Bunny DNS](provider/bunny\_dns.md)
+* [CentralNic Reseller (fka RRPproxy)](provider/cnr.md)
 * [Cloudflare](provider/cloudflareapi.md)
 * [ClouDNS](provider/cloudns.md)
 * [CSC Global](provider/cscglobal.md)
