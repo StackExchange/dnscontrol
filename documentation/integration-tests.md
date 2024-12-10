@@ -47,12 +47,13 @@ go test -v -verbose -provider ROUTE53 -end 5
 go test -v -verbose -provider ROUTE53 -start 16 -end 20
 ```
 
-For some providers it may be necessary to increase the test timeout using `-test`. The default is 10 minutes.
+For some providers it may be necessary to increase the test timeout using `-test`. The default is 10 minutes.  `0` is "no limit".  Typical Go durations work too (`1h` for 1 hour, etc).
 
 ```shell
-go test -v -verbose -provider CLOUDNS -timeout 0
+go test -timeout 0 -v -verbose -provider CLOUDNS 
 ```
 
+FYI: The order of the flags matters.  Flags native to the Go testing suite (`-timeout` and `-v`) must come before flags that are part of the DNSControl integration tests (`-verbose`, `-provider`). Yeah, that sucks and is confusing.
 The actual tests are in the file `integrationTest/integration_test.go`.  The
 tests are in a little language which can be used to describe just about any
 interaction with the API.  Look for the comment `START HERE` or the line
