@@ -62,7 +62,7 @@ func newProvider(conf map[string]string) (*CNRClient, error) {
 	}
 	api.client.SetUserAgent("DNSControl", version)
 	api.APILogin, api.APIPassword, api.APIEntity = conf["apilogin"], conf["apipassword"], conf["apientity"]
-	if conf["debugmode"] == "1" {
+	if conf["debugmode"] == "2" {
 		api.client.EnableDebugMode()
 	}
 	if api.APIEntity != "OTE" && api.APIEntity != "LIVE" {
