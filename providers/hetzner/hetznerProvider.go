@@ -15,7 +15,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
@@ -68,9 +68,11 @@ func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 		}
 	}
 
-	// reset zone cache
-	api.zones = nil
-	return api.createZone(domain)
+	if err = api.createZone(domain); err != nil {
+		return err
+	}
+	api.resetZoneCache()
+	return nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -167,12 +169,13 @@ func (api *hetznerProvider) GetZoneRecords(domain string, meta map[string]string
 
 // ListZones lists the zones on this account.
 func (api *hetznerProvider) ListZones() ([]string, error) {
-	if err := api.getAllZones(); err != nil {
+	zones, err := api.getAllZones()
+	if err != nil {
 		return nil, err
 	}
-	zones := make([]string, 0, len(api.zones))
-	for domain := range api.zones {
-		zones = append(zones, domain)
+	domains := make([]string, 0, len(zones))
+	for domain := range zones {
+		domains = append(domains, domain)
 	}
-	return zones, nil
+	return domains, nil
 }
