@@ -95,13 +95,3 @@ Configure `bonfire_url` to be the full url including room and api key.
 DNSControl can use many other notification methods via Shoutrrr, such as email (SMTP), Discord, Pushover and others. See the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/) for a list of supported methods and configuration instructions.
 
 Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
-
-## Future work
-
-Yes, this seems pretty limited right now in what it can do. We didn't want to add a bunch of notification types if nobody was going to use them. The good news is, it should
-be really simple to add more. We gladly welcome any PRs with new notification destinations. Some easy possibilities:
-
-- Email
-- Generic Webhooks
-
-Please update this documentation if you add anything.
