@@ -86,7 +86,7 @@ retry:
 	bodyString, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode == 202 || resp.StatusCode == 503 {
-		retrycnt += 1
+		retrycnt++
 		if retrycnt == 5 {
 			return bodyString, fmt.Errorf("rate limiting exceeded")
 		}
