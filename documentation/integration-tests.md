@@ -54,6 +54,7 @@ go test -timeout 0 -v -verbose -provider CLOUDNS
 ```
 
 FYI: The order of the flags matters.  Flags native to the Go testing suite (`-timeout` and `-v`) must come before flags that are part of the DNSControl integration tests (`-verbose`, `-provider`). Yeah, that sucks and is confusing.
+
 The actual tests are in the file `integrationTest/integration_test.go`.  The
 tests are in a little language which can be used to describe just about any
 interaction with the API.  Look for the comment `START HERE` or the line
