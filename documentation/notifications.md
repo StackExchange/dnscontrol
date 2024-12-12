@@ -64,7 +64,7 @@ Successfully ran correction for **example.com[my_provider]** - CREATE foo.exampl
 
 ## Notification services
 
-### Shoutrrr (email, Discord, Pushover, etc.)
+### Shoutrrr
 
 DNSControl supports various notification methods via Shoutrrr, including email (SMTP), Discord, Pushover, and many others. For detailed setup instructions, click on the desired service:
 
