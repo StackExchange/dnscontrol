@@ -59,8 +59,8 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0
 	github.com/G-Core/gcore-dns-sdk-go v0.2.9
-	github.com/containrrr/shoutrrr v0.8.0
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.3
+	github.com/containrrr/shoutrrr v0.8.0
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/go-acme/lego/v4 v4.20.4
@@ -74,6 +74,7 @@ require (
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d
 	golang.org/x/text v0.21.0
+	golang.org/x/time v0.8.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -158,7 +159,6 @@ require (
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/time v0.8.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241113202542-65e8d215514f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241118233622-e639e219e697 // indirect
