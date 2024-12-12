@@ -116,3 +116,13 @@ DNSControl supports various notification methods via Shoutrrr, including email (
 For a full overview of supported methods and configuration details, refer to the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/).
 
 Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
+
+{% code title="creds.json" %}
+```json
+{
+  "notifications": {
+    "shoutrrr_url": "discover://token@id"
+  }
+}
+```
+{% endcode %}
