@@ -1,5 +1,6 @@
-// Package CNR implements a registrar that uses the CNR api to set name servers. It will self register it's providers when imported.
 package cnr
+
+// Package CNR implements a registrar that uses the CNR api to set name servers. It will self register it's providers when imported.
 
 import (
 	"encoding/json"

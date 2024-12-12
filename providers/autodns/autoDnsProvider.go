@@ -2,6 +2,7 @@ package autodns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -98,7 +99,7 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 					if err != nil {
-						return fmt.Errorf("%s", err.Error())
+						return errors.New(err.Error())
 					}
 
 					return nil
