@@ -28,18 +28,17 @@ type zoneCache struct {
 	sync.Mutex
 }
 
-const cmodewarn = `WARN: In v4.15 --cmode will default to "concurrent".` +
-	` Please test and report any bugs ASAP.` +
-	` In v4.16 or later, "legacy" will go away.` +
-	` See https://docs.dnscontrol.org/commands/preview-push` +
+const legacywarn = `WARNING: --cmode=legacy will go away in v4.16 or later.` +
+	` Please test --cmode=concurrent and report any bugs ASAP.` +
+	` See https://docs.dnscontrol.org/commands/preview-push#cmode` +
 	"\n"
 
-const ppreviewwarn = `WARN: ppreview is going away in v4.16 or later.` +
-	` Use "preview --cmode=concurrent" instead.` +
+const ppreviewwarn = `WARNING: ppreview is going away in v4.16 or later.` +
+	` Use "preview" instead.` +
 	"\n"
 
-const ppushwarn = `WARN: ppush is going away in v4.16 or later.` +
-	` Use "push --cmode=concurrent" instead.` +
+const ppushwarn = `WARNING: ppush is going away in v4.16 or later.` +
+	` Use "push" instead.` +
 	"\n"
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -49,7 +48,7 @@ var _ = cmd(catMain, func() *cli.Command {
 		Usage: "read live configuration and identify changes to be made, without applying them",
 		Action: func(ctx *cli.Context) error {
 			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, cmodewarn)
+				fmt.Fprint(os.Stderr, legacywarn)
 				return exit(Preview(args))
 			}
 			return exit(PPreview(args))
@@ -113,7 +112,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
-		Value:       "legacy",
+		Value:       "concurrent",
 		Usage:       `Which providers to run concurrently: legacy, concurrent, none, all`,
 		Action: func(c *cli.Context, s string) error {
 			if !slices.Contains([]string{"legacy", "concurrent", "none", "all"}, s) {
@@ -166,7 +165,7 @@ var _ = cmd(catMain, func() *cli.Command {
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
 			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, cmodewarn)
+				fmt.Fprint(os.Stderr, legacywarn)
 				return exit(Push(args))
 			}
 			return exit(PPush(args))
