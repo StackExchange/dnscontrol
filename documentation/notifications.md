@@ -11,17 +11,15 @@ Notifications are set up in your credentials JSON file. They will use the `notif
 
 {% code title="creds.json" %}
 ```json
-  "r53": {
-      ...
-    },
-  "gcloud": {
-        ...
-  } ,
+{
+  "r53": {},
+  "gcloud": {},
   "notifications": {
-      "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
-      "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000",
-      "shoutrrr_url": "discover://token@id"
+    "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
+    "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000",
+    "shoutrrr_url": "discover://token@id"
   }
+}
 ```
 {% endcode %}
 
