@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/time/rate"
 )
 
 /*
@@ -22,6 +23,7 @@ Info required in `creds.json`:
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &cloudnsProvider{}
+	c.requestLimit = rate.NewLimiter(10, 10)
 
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
@@ -37,7 +39,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
@@ -66,10 +68,12 @@ func init() {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if len(c.nameserversNames) == 0 {
-		c.fetchAvailableNameservers()
+	names, err := c.fetchAvailableNameservers()
+	if err != nil {
+		return nil, err
 	}
-	return models.ToNameservers(c.nameserversNames)
+
+	return models.ToNameservers(names)
 }
 
 // // GetDomainCorrections returns the corrections for a domain.
@@ -111,23 +115,23 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, 0, err
-		}
-	}
-	domainID, ok := c.domainIndex[dc.Name]
-	if !ok {
+	domainID, ok, err := c.fetchDomainIndex(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	} else if !ok {
 		return nil, 0, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	// Get a list of available TTL values.
 	// The TTL list needs to be obtained for each domain, so get it first here.
-	c.fetchAvailableTTLValues(dc.Name)
+	allowedTTLValues, err := c.fetchAvailableTTLValues(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = fixTTL(allowedTTLValues, record.TTL)
 	}
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
@@ -270,11 +274,9 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
-	if err := c.fetchDomainList(); err != nil {
+	if _, ok, err := c.fetchDomainIndex(domain); err != nil {
 		return err
-	}
-	// zone already exists
-	if _, ok := c.domainIndex[domain]; ok {
+	} else if ok { // zone already exists
 		return nil
 	}
 	return c.createDomain(domain)
