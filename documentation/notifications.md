@@ -4,7 +4,7 @@ DNSControl includes built-in support for notifications, enabling you to post mes
 
 ## Configuration
 
-Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
+Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification services.
 
 {% code title="creds.json" %}
 ```json
@@ -62,7 +62,7 @@ dnscontrol push --notify
 Successfully ran correction for **example.com[my_provider]** - CREATE foo.example.com A 1.2.3.4 ttl=86400
 ```
 
-## Notification types
+## Notification services
 
 ### Slack/Mattermost
 
