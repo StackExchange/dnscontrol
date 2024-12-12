@@ -92,6 +92,27 @@ Configure `bonfire_url` to be the full url including room and api key.
 
 ### Shoutrrr (email, Discord, Pushover, etc.)
 
-DNSControl can use many other notification methods via Shoutrrr, such as email (SMTP), Discord, Pushover and others. See the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/) for a list of supported methods and configuration instructions.
+DNSControl supports various notification methods via Shoutrrr, including email (SMTP), Discord, Pushover, and many others. For detailed setup instructions, click on the desired service:
+
+* [Bark](https://containrrr.dev/shoutrrr/latest/services/bark/)
+* [Discord](https://containrrr.dev/shoutrrr/latest/services/discord/)
+* [Email](https://containrrr.dev/shoutrrr/latest/services/email/)
+* [Google Chat](https://containrrr.dev/shoutrrr/latest/services/googlechat/)
+* [Gotify](https://containrrr.dev/shoutrrr/latest/services/gotify/)
+* [IFTTT](https://containrrr.dev/shoutrrr/latest/services/ifttt/)
+* [Join](https://containrrr.dev/shoutrrr/latest/services/join/)
+* [Matrix](https://containrrr.dev/shoutrrr/latest/services/matrix/)
+* [Mattermost](https://containrrr.dev/shoutrrr/latest/services/mattermost/)
+* [Ntfy](https://containrrr.dev/shoutrrr/latest/services/ntfy/)
+* [OpsGenie](https://containrrr.dev/shoutrrr/latest/services/opsgenie/)
+* [Pushbullet](https://containrrr.dev/shoutrrr/latest/services/pushbullet/)
+* [Pushover](https://containrrr.dev/shoutrrr/latest/services/pushover/)
+* [Rocketchat](https://containrrr.dev/shoutrrr/latest/services/rocketchat/)
+* [Slack](https://containrrr.dev/shoutrrr/latest/services/slack/)
+* [Teams](https://containrrr.dev/shoutrrr/latest/services/teams/)
+* [Telegram](https://containrrr.dev/shoutrrr/latest/services/telegram/)
+* [Zulip Chat](https://containrrr.dev/shoutrrr/latest/services/zulip/)
+
+For a full overview of supported methods and configuration details, refer to the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/).
 
 Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
