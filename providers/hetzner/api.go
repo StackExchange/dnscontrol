@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
@@ -18,7 +19,8 @@ const (
 
 type hetznerProvider struct {
 	apiKey             string
-	zones              map[string]zone
+	mu                 sync.Mutex
+	cachedZones        map[string]zone
 	requestRateLimiter requestRateLimiter
 }
 
@@ -103,9 +105,17 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 	return records, nil
 }
 
-func (api *hetznerProvider) getAllZones() error {
-	if api.zones != nil {
-		return nil
+func (api *hetznerProvider) resetZoneCache() {
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	api.cachedZones = nil
+}
+
+func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	if api.cachedZones != nil {
+		return api.cachedZones, nil
 	}
 	var zones map[string]zone
 	page := 1
@@ -124,7 +134,7 @@ func (api *hetznerProvider) getAllZones() error {
 		response := getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
 		if err := api.request(url, "GET", nil, &response, statusOK); err != nil {
-			return fmt.Errorf("failed fetching zones: %w", err)
+			return nil, fmt.Errorf("failed fetching zones: %w", err)
 		}
 		if zones == nil {
 			zones = make(map[string]zone, response.Meta.Pagination.TotalEntries)
@@ -138,15 +148,16 @@ func (api *hetznerProvider) getAllZones() error {
 		}
 		page++
 	}
-	api.zones = zones
-	return nil
+	api.cachedZones = zones
+	return zones, nil
 }
 
 func (api *hetznerProvider) getZone(name string) (*zone, error) {
-	if err := api.getAllZones(); err != nil {
+	zones, err := api.getAllZones()
+	if err != nil {
 		return nil, err
 	}
-	z, ok := api.zones[name]
+	z, ok := zones[name]
 	if !ok {
 		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
 	}
@@ -213,18 +224,28 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 }
 
 type requestRateLimiter struct {
+	mu          sync.Mutex
 	delay       time.Duration
 	lastRequest time.Time
+	resetAt     time.Time
 }
 
 func (rrl *requestRateLimiter) delayRequest() {
-	time.Sleep(time.Until(rrl.lastRequest.Add(rrl.delay)))
-
+	rrl.mu.Lock()
 	// When not rate-limited, include network/server latency in delay.
-	rrl.lastRequest = time.Now()
+	next := rrl.lastRequest.Add(rrl.delay)
+	if next.After(rrl.resetAt) {
+		// Do not stack delays past the reset point.
+		next = rrl.resetAt
+	}
+	rrl.lastRequest = next
+	rrl.mu.Unlock()
+	time.Sleep(time.Until(next))
 }
 
 func (rrl *requestRateLimiter) handleResponse(resp *http.Response) (bool, error) {
+	rrl.mu.Lock()
+	defer rrl.mu.Unlock()
 	if resp.StatusCode == http.StatusTooManyRequests {
 		printer.Printf("Rate-Limited. Consider contacting the Hetzner Support for raising your quota. URL: %q, Headers: %q\n", resp.Request.URL, resp.Header)
 
@@ -264,5 +285,6 @@ func (rrl *requestRateLimiter) handleResponse(resp *http.Response) (bool, error)
 		// ... then spread requests evenly throughout the window.
 		rrl.delay = reset / time.Duration(remaining+1)
 	}
+	rrl.resetAt = time.Now().Add(reset)
 	return false, nil
 }

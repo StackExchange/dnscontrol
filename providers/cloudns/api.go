@@ -1,23 +1,30 @@
 package cloudns
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
-	"time"
+	"sync"
+
+	"golang.org/x/time/rate"
 )
 
 // Api layer for ClouDNS
 type cloudnsProvider struct {
-	domainIndex      map[string]string
-	nameserversNames []string
-	creds            struct {
+	creds struct {
 		id       string
 		password string
 		subid    string
 	}
+
+	requestLimit *rate.Limiter
+
+	sync.Mutex       // Protects all access to the following fields:
+	domainIndex      map[string]string
+	nameserversNames []string
 }
 
 type requestParams map[string]string
@@ -83,76 +90,81 @@ type domainRecord struct {
 
 type recordResponse map[string]domainRecord
 
-var allowedTTLValues = []uint32{}
+func (c *cloudnsProvider) fetchAvailableNameservers() ([]string, error) {
+	c.Lock()
+	defer c.Unlock()
 
-func (c *cloudnsProvider) fetchAvailableNameservers() error {
-	c.nameserversNames = nil
+	if c.nameserversNames == nil {
 
-	var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
-	if err != nil {
-		return fmt.Errorf("failed fetching available nameservers list from ClouDNS: %s", err)
-	}
-
-	var nr nameserverResponse
-	json.Unmarshal(bodyString, &nr)
-
-	for _, nameserver := range nr {
-		if nameserver.Type == "premium" {
-			c.nameserversNames = append(c.nameserversNames, nameserver.Name)
+		var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
+		if err != nil {
+			return nil, fmt.Errorf("failed fetching available nameservers list from ClouDNS: %s", err)
 		}
 
+		var nr nameserverResponse
+		json.Unmarshal(bodyString, &nr)
+
+		for _, nameserver := range nr {
+			if nameserver.Type == "premium" {
+				c.nameserversNames = append(c.nameserversNames, nameserver.Name)
+			}
+
+		}
 	}
-	return nil
+	return c.nameserversNames, nil
 }
 
-func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
-	allowedTTLValues = nil
+func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) ([]uint32, error) {
+	allowedTTLValues := make([]uint32, 0)
 	params := requestParams{
 		"domain-name": domain,
 	}
 
 	var bodyString, err = c.get("/dns/get-available-ttl.json", params)
 	if err != nil {
-		return fmt.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
+		return nil, fmt.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
 	}
 
 	json.Unmarshal(bodyString, &allowedTTLValues)
-	return nil
+	return allowedTTLValues, nil
 }
 
-func (c *cloudnsProvider) fetchDomainList() error {
-	if c.domainIndex != nil {
-		return nil
+func (c *cloudnsProvider) fetchDomainIndex(name string) (string, bool, error) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.domainIndex == nil {
+		rowsPerPage := 100
+		page := 1
+		for {
+			var dr zoneResponse
+			params := requestParams{
+				"page":          strconv.Itoa(page),
+				"rows-per-page": strconv.Itoa(rowsPerPage),
+			}
+			endpoint := "/dns/list-zones.json"
+			var bodyString, err = c.get(endpoint, params)
+			if err != nil {
+				return "", false, fmt.Errorf("failed fetching domain list from ClouDNS: %s", err)
+			}
+			json.Unmarshal(bodyString, &dr)
+
+			if c.domainIndex == nil {
+				c.domainIndex = map[string]string{}
+			}
+
+			for _, domain := range dr {
+				c.domainIndex[domain.Name] = domain.Name
+			}
+			if len(dr) < rowsPerPage {
+				break
+			}
+			page++
+		}
 	}
 
-	rowsPerPage := 100
-	page := 1
-	for {
-		var dr zoneResponse
-		params := requestParams{
-			"page":          strconv.Itoa(page),
-			"rows-per-page": strconv.Itoa(rowsPerPage),
-		}
-		endpoint := "/dns/list-zones.json"
-		var bodyString, err = c.get(endpoint, params)
-		if err != nil {
-			return fmt.Errorf("failed fetching domain list from ClouDNS: %s", err)
-		}
-		json.Unmarshal(bodyString, &dr)
-
-		if c.domainIndex == nil {
-			c.domainIndex = map[string]string{}
-		}
-
-		for _, domain := range dr {
-			c.domainIndex[domain.Name] = domain.Name
-		}
-		if len(dr) < rowsPerPage {
-			break
-		}
-		page++
-	}
-	return nil
+	index, ok := c.domainIndex[name]
+	return index, ok, nil
 }
 
 func (c *cloudnsProvider) createDomain(domain string) error {
@@ -267,9 +279,9 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	req.URL.RawQuery = q.Encode()
 
 	// ClouDNS has a rate limit (not documented) of 10 request/second
-	// so we do a very primitive rate-limiting here - delay every request for 100ms - so max. 10 requests/second ...
-	time.Sleep(100 * time.Millisecond)
+	c.requestLimit.Wait(context.Background())
 	resp, err := client.Do(req)
+
 	if err != nil {
 		return []byte{}, err
 	}
@@ -290,7 +302,7 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	return bodyString, nil
 }
 
-func fixTTL(ttl uint32) uint32 {
+func fixTTL(allowedTTLValues []uint32, ttl uint32) uint32 {
 	// if the TTL is larger than the largest allowed value, return the largest allowed value
 	if ttl > allowedTTLValues[len(allowedTTLValues)-1] {
 		return allowedTTLValues[len(allowedTTLValues)-1]
