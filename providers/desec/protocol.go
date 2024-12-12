@@ -3,6 +3,7 @@ package desec
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -114,11 +115,11 @@ func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
-				return nil, fmt.Errorf("failed fetching domains: %s", err)
+				return nil, fmt.Errorf("failed fetching domains: %w", err)
 			}
 			domainIndex, err = appendDomainIndexFromResponse(domainIndex, bodyString)
 			if err != nil {
-				return nil, fmt.Errorf("failed fetching domains: %s", err)
+				return nil, fmt.Errorf("failed fetching domains: %w", err)
 			}
 			links = convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
@@ -130,7 +131,7 @@ func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 
 	//no pagination required
 	if err != nil && resp.StatusCode != 400 {
-		return nil, fmt.Errorf("failed fetching domains: %s", err)
+		return nil, fmt.Errorf("failed fetching domains: %w", err)
 	}
 	domainIndex, err = appendDomainIndexFromResponse(domainIndex, bodyString)
 	if err != nil {
@@ -196,11 +197,11 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 				if resp.StatusCode == 404 {
 					return rrsNew, nil
 				}
-				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %s", err)
+				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %w", err)
 			}
 			tmp, err := generateRRSETfromResponse(bodyString)
 			if err != nil {
-				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %w", domain, err)
 			}
 			rrsNew = append(rrsNew, tmp...)
 			links = convertLinks(resp.Header.Get("Link"))
@@ -212,7 +213,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	}
 	//no pagination
 	if err != nil {
-		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %w", domain, err)
 	}
 	tmp, err := generateRRSETfromResponse(bodyString)
 	if err != nil {
@@ -252,7 +253,7 @@ func (c *desecProvider) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("failed domain create (deSEC): %v", err)
+		return fmt.Errorf("failed domain create (deSEC): %w", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
@@ -269,7 +270,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("failed create RRset (deSEC): %v", err)
+		return fmt.Errorf("failed create RRset (deSEC): %w", err)
 	}
 	return nil
 }
@@ -279,7 +280,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 //func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 //	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 //	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
-//		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
+//		return fmt.Errorf("failed delete RRset (deSEC): %w", err)
 //	}
 //	return nil
 //}
@@ -316,7 +317,7 @@ retry:
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
 					if wait > 180 {
-						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
+						return []byte{}, resp, errors.New("rate limiting exceeded")
 					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds\n", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
@@ -331,12 +332,12 @@ retry:
 		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, resp, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp, errors.New(errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
 		if err == nil && len(nfieldErrors) > 0 {
 			if len(nfieldErrors[0].Errors) > 0 {
-				return bodyString, resp, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+				return bodyString, resp, errors.New(nfieldErrors[0].Errors[0])
 			}
 		}
 		return bodyString, resp, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
@@ -383,7 +384,7 @@ retry:
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
 					if wait > 180 {
-						return []byte{}, fmt.Errorf("rate limiting exceeded")
+						return []byte{}, errors.New("rate limiting exceeded")
 					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds\n", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
@@ -403,7 +404,7 @@ retry:
 		err = json.Unmarshal(bodyString, &nfieldErrors)
 		if err == nil && len(nfieldErrors) > 0 {
 			if len(nfieldErrors[0].Errors) > 0 {
-				return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+				return bodyString, errors.New(nfieldErrors[0].Errors[0])
 			}
 		}
 		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)

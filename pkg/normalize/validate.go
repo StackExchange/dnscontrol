@@ -1,6 +1,7 @@
 package normalize
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"sort"
@@ -118,7 +119,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	}
 	if label == domain || strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
-			return fmt.Errorf("%s", errorRepeat(label, domain))
+			return errors.New(errorRepeat(label, domain))
 		}
 	}
 
@@ -147,22 +148,22 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 
 func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox string) error {
 	if expire <= 0 {
-		return fmt.Errorf("SOA Expire must be > 0")
+		return errors.New("SOA Expire must be > 0")
 	}
 	if minttl <= 0 {
-		return fmt.Errorf("SOA Minimum TTL must be > 0")
+		return errors.New("SOA Minimum TTL must be > 0")
 	}
 	if refresh <= 0 {
-		return fmt.Errorf("SOA Refresh must be > 0")
+		return errors.New("SOA Refresh must be > 0")
 	}
 	if retry <= 0 {
-		return fmt.Errorf("SOA Retry must be > 0")
+		return errors.New("SOA Retry must be > 0")
 	}
 	if mbox == "" {
-		return fmt.Errorf("SOA MBox must be specified")
+		return errors.New("SOA MBox must be specified")
 	}
 	if strings.ContainsRune(mbox, '@') {
-		return fmt.Errorf("SOA MBox must have '.' instead of '@'")
+		return errors.New("SOA MBox must have '.' instead of '@'")
 	}
 	return nil
 }
@@ -190,12 +191,12 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "CNAME":
 		check(checkTarget(target))
 		if label == "@" {
-			check(fmt.Errorf("cannot create CNAME record for bare domain"))
+			check(errors.New("cannot create CNAME record for bare domain"))
 		}
 		labelFQDN := dnsutil.AddOrigin(label, domain)
 		targetFQDN := dnsutil.AddOrigin(target, domain)
 		if labelFQDN == targetFQDN {
-			check(fmt.Errorf("CNAME loop (target points at itself)"))
+			check(errors.New("CNAME loop (target points at itself)"))
 		}
 	case "DNAME":
 		check(checkTarget(target))
@@ -209,11 +210,11 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "NS":
 		check(checkTarget(target))
 		if label == "@" {
-			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
+			check(errors.New("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "NS1_URLFWD":
 		if len(strings.Fields(target)) != 5 {
-			check(fmt.Errorf("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
+			check(errors.New("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
 		}
 	case "PTR":
 		check(checkTarget(target))
@@ -221,7 +222,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaMbox))
 		check(checkTarget(target))
 		if label != "@" {
-			check(fmt.Errorf("SOA record is only valid for bare domain"))
+			check(errors.New("SOA record is only valid for bare domain"))
 		}
 	case "SRV":
 		check(checkTarget(target))
@@ -457,7 +458,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			rec.SetLabel(rec.GetLabel(), domain.Name)
 
 			if _, ok := rec.Metadata["ignore_name_disable_safety_check"]; ok {
-				errs = append(errs, fmt.Errorf("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
+				errs = append(errs, errors.New("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
 			}
 
 		}
