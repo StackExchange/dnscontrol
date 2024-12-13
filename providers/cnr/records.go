@@ -195,7 +195,10 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		if r.GetCode() == 545 {
 			// If dns zone does not exist create a new one automatically
 			if !isNoPopulate() {
-				n.EnsureZoneExists(domain)
+				err := n.EnsureZoneExists(domain)
+				if err != nil {
+					return nil, err
+				}
 			} else {
 				// Return specific error if the zone does not exist
 				return nil, n.GetCNRApiError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
@@ -293,6 +296,16 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		if domain == host {
 			host = fmt.Sprintf(`%s.`, host)
 		}
+	case "SSHFP":
+		answer = fmt.Sprintf(`%v %v %s`, rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
+		if domain == host {
+			host = fmt.Sprintf(`%s.`, host)
+		}
+	case "NAPTR":
+		answer = fmt.Sprintf(`%v %v "%v" "%v" "%v" %v`, rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.GetTargetField())
+		if domain == host {
+			host = fmt.Sprintf(`%s.`, host)
+		}
 	case "TLSA":
 		answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case "CAA":
@@ -363,5 +376,5 @@ func isNoPopulate() bool {
 
 // Function to check if debug mode is enabled
 func (n *CNRClient) isDebugOn() bool {
-	return n.conf["debugmode"] == "1"
+	return n.conf["debugmode"] == "1" || n.conf["debugmode"] == "2"
 }
