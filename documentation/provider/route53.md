@@ -74,7 +74,7 @@ var DSP_R53 = NewDnsProvider("r53_main");
 
 D("example.com", REG_NONE, DnsProvider(DSP_R53),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -94,13 +94,13 @@ D("testzone.net!private", REG_NONE,
     DnsProvider(DSP_R53),
     R53_ZONE("Z111111111JCCCP1V7UW"),
     TXT("me", "private testzone.net"),
-END);
+);
 
 D("testzone.net!public", REG_NONE,
     DnsProvider(DSP_R53),
     R53_ZONE("Z222222222INNG98SHJQ2"),
     TXT("me", "public testzone.net"),
-END);
+);
 ```
 {% endcode %}
 

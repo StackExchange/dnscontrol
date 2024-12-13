@@ -106,6 +106,6 @@ var DSP_CF = NewDnsProvider("cloudflare");
 
 D("example.com", REG_INWX, DnsProvider(DSP_CF),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

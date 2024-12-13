@@ -48,7 +48,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
       "mailto:mailauth-reports@example.com",
     ],
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -79,7 +79,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     failureOptions: "1",
     reportInterval: "1h",
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -97,7 +97,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
         DKIM: true,
     },
   }),
-END);
+);
 ```
 {% endcode %}
 

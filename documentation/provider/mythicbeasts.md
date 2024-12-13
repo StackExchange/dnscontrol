@@ -34,6 +34,6 @@ var DSP_MYTHIC = NewDnsProvider("mythicbeasts");
 
 D("example.com", REG_NONE, DnsProvider(DSP_MYTHIC),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

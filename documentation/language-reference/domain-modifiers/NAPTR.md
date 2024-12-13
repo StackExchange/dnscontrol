@@ -167,7 +167,7 @@ D("3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("8",  10, 10, "u", "E2U+SIP", "!^.*$!sip:mike@example.com!", "."),
   NAPTR("9",  10, 10, "u", "E2U+SIP", "!^.*$!sip:linda@example.com!", "."),
   NAPTR("0",  10, 10, "u", "E2U+SIP", "!^.*$!sip:fax@example.com!", "."),
-END);
+);
 ```
 {% endcode %}
 
@@ -178,7 +178,7 @@ D("4.3.2.1.5.5.5.0.0.8.1.e164.arpa.", REG_MY_PROVIDER, DnsProvider(R53),
   NAPTR("@", 100, 50, "u", "E2U+SIP", "!^.*$!sip:customer-service@example.com!", "."),
   NAPTR("@", 101, 50, "u", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
   NAPTR("@", 101, 50, "u", "smtp+E2U", "!^.*$!mailto:information@example.com!", "."),
-END);
+);
 ```
 {% endcode %}
 
@@ -199,7 +199,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("sip", "192.0.2.2"),
   AAAA("sip", "2001:db8::85a3"),
   // and so on
-END);
+);
 ```
 {% endcode %}
 
@@ -217,7 +217,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   SRV("_z3950._tcp", 0, 0, 1000, "z3950.beast.example.com."),
   SRV("_http._tcp", 10, 0, 80, "foo.example.com."),
   // and so on
-END);
+);
 ```
 {% endcode %}
 

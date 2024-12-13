@@ -119,6 +119,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   LOC("c", 32,  7, 19,     "S",116,  2, 25,     "E",  10,    0,    0,  0),
   //42 21 28.764 N  71 00  51.617 W -44m 2000m
   LOC("d", 42, 21, 28.764, "N", 71,  0, 51.617, "W", -44, 2000,    0,  0),
-END);
+);
 ```
 {% endcode %}

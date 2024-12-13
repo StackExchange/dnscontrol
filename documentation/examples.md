@@ -13,7 +13,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     TXT("the", "message"),
     NS("department2", "ns1.dnsexample.com."), // use different nameservers
     NS("department2", "ns2.dnsexample.com."), // for department2.example.com
-END);
+);
 ```
 {% endcode %}
 
@@ -32,7 +32,7 @@ D("example.com", REG_MY_PROVIDER,
 
     A("@", "1.2.3.4", TTL("10m")), // individual record
     CNAME("mail", "mx01"), // TTL of 5m, as defined per DefaultTTL()
-END);
+);
 ```
 {% endcode %}
 
@@ -46,7 +46,7 @@ var DSP_R53 = NewDnsProvider("route53_user1");
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
     A("@", addrA), // 1.2.3.4
     A("www", addrA + 1), // 1.2.3.5
-END);
+);
 ```
 {% endcode %}
 
@@ -72,7 +72,7 @@ var activeDC = dcA;
 
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
     A("@", activeDC + 5), // fixed address based on activeDC
-END);
+);
 ```
 {% endcode %}
 
@@ -100,7 +100,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
    GOOGLE_APPS_MX_RECORDS,
    GOOGLE_APPS_CNAME_RECORDS,
    A("@", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -123,7 +123,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
       "~all"
     ]
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -134,7 +134,7 @@ DEFAULTS(
     NAMESERVER_TTL("24h"),
     DefaultTTL("12h"),
     CF_PROXY_DEFAULT_OFF,
-END);
+);
 ```
 {% endcode %}
 
@@ -149,19 +149,19 @@ var DSP_GCLOUD = NewDnsProvider("gcloud_admin");
 
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD),
    A("@", "1.2.3.4"),
-END);
+);
 
 // above zone uses 8 NS records total (4 from each provider dynamically gathered)
 // below zone will only take 2 from each for a total of 4. May be better for performance reasons.
 
 D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_R53, 2), DnsProvider(DSP_GCLOUD ,2),
    A("@", "1.2.3.4"),
-END);
+);
 
 // or set a Provider as a non-authoritative backup (don"t register its nameservers)
 D("example3.com", REG_MY_PROVIDER, DnsProvider(DSP_R53), DnsProvider(DSP_GCLOUD, 0),
    A("@", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -204,7 +204,7 @@ var DSP_R53_MAIN = NewDnsProvider("r53_main");
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,
     FASTMAIL_DKIM("example.com"),
-END);
+);
 ```
 {% endcode %}
 

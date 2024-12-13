@@ -38,7 +38,7 @@ var DSP_DNSIMPLE = NewDnsProvider("dnsimple");
 
 D("example.com", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

@@ -43,7 +43,7 @@ var DSP_CLOUDNS = NewDnsProvider("cloudns");
 D("example.com", REG_NONE, DnsProvider(DSP_CLOUDNS),
   CLOUDNS_WR("@", "http://example.com/"),
   CLOUDNS_WR("www", "http://example.com/"),
-END)
+);
 ```
 {% endcode %}
 
@@ -57,7 +57,7 @@ var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_CLOUDNS),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

@@ -1,10 +1,10 @@
 Loopia is a 💩 provider of DNS. Using DNSControl hides some of the 💩.
 If you are stuck with Loopia, hopefully this will reduce the pain.
 
-They provide DNS services, both as a registrar, and a provider. 
+They provide DNS services, both as a registrar, and a provider.
 They provide support in English and other regional variants (Norwegian, Serbian, Swedish).
 
-This plugin is based on API documents found at 
+This plugin is based on API documents found at
 [https://www.loopia.com/api/](https://www.loopia.com/api/)
 and by observing API responses. Hat tip to GitHub @hazzeh whose code for the
 LEGO Loopia implementation was helpful.
@@ -50,7 +50,7 @@ Example:
     "TYPE": "LOOPIA",
     "username": "your-loopia-api-account-id@loopiaapi",
     "password": "your-loopia-api-account-password",
-    "debug": "true" // Set to true for extra debug output. Remove or set to false to prevent extra debug output. 
+    "debug": "true" // Set to true for extra debug output. Remove or set to false to prevent extra debug output.
   }
 }
 ```
@@ -60,7 +60,7 @@ Example:
 
 * `username` - string - your @loopiaapi created username
 * `password` - string - your loopia API password
-* `debug` - string - Set to true for extra debug output. Remove or set to false to prevent extra debug output. 
+* `debug` - string - Set to true for extra debug output. Remove or set to false to prevent extra debug output.
 * `rate_limit_per` - string - See [Rate Limiting](#rate-limiting) below.
 * `region` - string - See [Regions](#regions) below.
 * `modify_name_servers` - string - See [Modify Name Servers](#modify-name-servers) below.
@@ -69,7 +69,7 @@ Example:
 There is no test endpoint. Fly free, grasshopper.
 
 Turning on debug will show the XML requests and responses, and include the
-username and password from your `creds.json` file. If you want to share these, 
+username and password from your `creds.json` file. If you want to share these,
 like for a GitHub issue, be sure to redact those from the XML.
 
 ### Fetch Apex NS Entries
@@ -114,7 +114,7 @@ This setting defaults to "false" (off).
 `creds.json` setting: `region`
 
 
-Loopia operate in a few regions. Norway (`no`), Serbia (`rs`), Sweden (`se`). 
+Loopia operate in a few regions. Norway (`no`), Serbia (`rs`), Sweden (`se`).
 
 For the parameter `region`, specify one of `no`, `rs`, `se`, or omit, or leave empty for the default `se` Sweden.
 
@@ -167,7 +167,7 @@ In your `creds.json` for all `LOOPIA` provider entries:
     "TYPE": "LOOPIA",
     "username": "your-loopia-api-account-id@loopiaapi",
     "password": "your-loopia-api-account-password",
-    "debug": "true", // Set to true for extra debug output. Remove or set to false to prevent extra debug output. 
+    "debug": "true", // Set to true for extra debug output. Remove or set to false to prevent extra debug output.
     "rate_limit_per": "Minute"
   }
 }
@@ -199,7 +199,7 @@ D("example.com", REG_LOOPIA, DnsProvider(DSP_LOOPIA),
     //NAMESERVER("ns2.loopia.se."), //default
     A("elk1", "192.0.2.1"),
     A("test", "192.0.2.2"),
-END);
+);
 ```
 {% endcode %}
 
@@ -217,7 +217,7 @@ This provider does not recognize any special metadata fields unique to LOOPIA.
 
 ## get-zones
 
-`dnscontrol get-zones` is implemented for this provider. 
+`dnscontrol get-zones` is implemented for this provider.
 
 
 ## New domains

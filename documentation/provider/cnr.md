@@ -88,7 +88,7 @@ D("example.com", REG_CNR, DnsProvider(DSP_CNR),
     NAMESERVER("ns4.rrpproxy.net"),
     A("elk1", "10.190.234.178"),
     A("test", "56.123.54.12"),
-END);
+);
 ```
 {% endcode %}
 

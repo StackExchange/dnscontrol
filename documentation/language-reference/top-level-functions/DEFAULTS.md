@@ -20,11 +20,11 @@ var COMMON = NewDnsProvider("foo");
 DEFAULTS(
   DnsProvider(COMMON, 0),
   DefaultTTL("1d"),
-END);
+);
 
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -37,6 +37,6 @@ DEFAULTS();
 
 D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

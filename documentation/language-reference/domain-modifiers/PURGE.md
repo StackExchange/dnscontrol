@@ -25,7 +25,7 @@ Purge is the default, but we set it anyway:
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   PURGE,
-END);
+);
 ```
 {% endcode %}
 
@@ -39,6 +39,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   PURGE,
   NO_PURGE,
   PURGE,
-END);
+);
 ```
 {% endcode %}

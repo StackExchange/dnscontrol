@@ -48,7 +48,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     str: "53°20′40″N 6°17′20″W",
     alt: 300,
   }),
-END);
+);
 ```
 {% endcode %}
 

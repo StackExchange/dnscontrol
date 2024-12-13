@@ -43,6 +43,6 @@ var DSP_RTR = NewDnsProvider("realtimeregister");
 
 D("example.com", REG_RTR, DnsProvider(DSP_RTR),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

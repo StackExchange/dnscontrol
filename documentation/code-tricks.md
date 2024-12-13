@@ -59,7 +59,7 @@ Let's apply the same A-record 'foo' to the domain using the `END` constant.
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("foo", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -69,7 +69,7 @@ This will generate the cleaner version-control diff below:
 ```diff
    A("foo", "1.2.3.4"),
 +  A("bar", "4.3.2.1"),
-END);
+);
 ```
 {% endcode %}
 
@@ -133,7 +133,7 @@ function PARKED_R53(name) {
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
         SPF_NONE, //deters spammers from using the domain in From: lines.
-        END);
+        );
 }
 
 PARKED_R53("example1.tld");
@@ -156,7 +156,7 @@ _.each(
     D(d, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
-    END);
+    );
   }
 );
 ```

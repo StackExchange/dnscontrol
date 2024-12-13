@@ -42,7 +42,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE(labelSpec, typeSpec, targetSpec),
   IGNORE(labelSpec, typeSpec),
   IGNORE(labelSpec),
-END);
+);
 ```
 {% endcode %}
 
@@ -80,7 +80,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
   IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
   IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
-END);
+);
 ```
 {% endcode %}
 
@@ -91,7 +91,7 @@ Ignore Let's Encrypt (ACME) validation records:
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("_acme-challenge", "TXT"),
   IGNORE("_acme-challenge.**", "TXT"),
-END);
+);
 ```
 {% endcode %}
 
@@ -116,7 +116,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   IGNORE("domaindnszones.**", "A"),
   IGNORE("forestdnszones", "A"),
   IGNORE("forestdnszones.**", "A"),
-END);
+);
 ```
 {% endcode %}
 
@@ -139,7 +139,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     CNAME("cfull", "www.plts.org."),
     CNAME("cfull2", "www.bar.plts.org."),
     CNAME("cfull3", "bar.www.plts.org."),
-END);
+);
 
 D_EXTEND("more.example.com",
     A("foo", "1.1.1.1"),
@@ -148,7 +148,7 @@ D_EXTEND("more.example.com",
     CNAME("mfull", "www.plts.org."),
     CNAME("mfull2", "www.bar.plts.org."),
     CNAME("mfull3", "bar.www.plts.org."),
-END);
+);
 ```
 {% endcode %}
 
@@ -156,7 +156,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("@", "", ""),
-END);
+);
 ```
 {% endcode %}
 
@@ -169,7 +169,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("example.com.", "", ""),
-END);
+);
 ```
 {% endcode %}
 
@@ -181,7 +181,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("foo", "", ""),
-END);
+);
 ```
 {% endcode %}
 
@@ -193,7 +193,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("foo.**", "", ""),
-END);
+);
 ```
 {% endcode %}
 
@@ -205,7 +205,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www", "", ""),
-END);
+);
     //    www.example.com. A 174.136.107.196
 ```
 {% endcode %}
@@ -214,7 +214,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.*", "", ""),
-END);
+);
     //    nothing
 ```
 {% endcode %}
@@ -227,7 +227,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.example.com", "", ""),
-END);
+);
     //    nothing
 ```
 {% endcode %}
@@ -240,7 +240,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("www.example.com.", "", ""),
-END);
+);
 ```
 {% endcode %}
 
@@ -252,7 +252,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     //IGNORE("", "", "1.1.1.*"),
-END);
+);
 ```
 {% endcode %}
 
@@ -265,7 +265,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     //IGNORE("", "", "www"),
-END);
+);
 ```
 {% endcode %}
 
@@ -277,7 +277,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("", "", "*bar*"),
-END);
+);
 ```
 {% endcode %}
 
@@ -292,7 +292,7 @@ END);
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     IGNORE("", "", "bar.**"),
-END);
+);
 ```
 {% endcode %}
 
@@ -346,7 +346,7 @@ instead.
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
-END);
+);
 ```
 {% endcode %}
 

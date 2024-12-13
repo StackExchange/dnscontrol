@@ -69,17 +69,17 @@ D("foo.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("two","1.2.3.2"),
   A("three","1.2.3.13"),
   A("four","1.2.3.14"),
-END);
+);
 
 D("bar.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("www","123.123.123.123"),
   IMPORT_TRANSFORM(TRANSFORM_CF, "foo.com", 300),
-END);
+);
 
 D("baz.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("www","123.123.123.123"),
   IMPORT_TRANSFORM(TRANSFORM_FSTLY, "foo.com", 300),
-END);
+);
 ```
 {% endcode %}
 

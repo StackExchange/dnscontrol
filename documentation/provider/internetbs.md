@@ -32,7 +32,7 @@ var REG_INTERNETBS = NewRegistrar("internetbs");
 D("example.com", REG_INTERNETBS,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
-END);
+);
 ```
 {% endcode %}
 

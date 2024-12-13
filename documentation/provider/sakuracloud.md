@@ -63,7 +63,7 @@ var DSP_SAKURACLOUD = NewDnsProvider("sakuracloud");
 
 D("example.com", REG_NONE, DnsProvider(DSP_SAKURACLOUD),
   A("test", "192.0.2.1"),
-END);
+);
 ```
 {% endcode %}
 

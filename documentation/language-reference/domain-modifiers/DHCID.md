@@ -18,6 +18,6 @@ Digest should be a string.
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DHCID("example.com", "ABCDEFG"),
-END);
+);
 ```
 {% endcode %}

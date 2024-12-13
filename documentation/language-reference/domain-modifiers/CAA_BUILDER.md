@@ -43,7 +43,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     ],
     issuewild: "none",
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -56,7 +56,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   CAA("@", "issue", "letsencrypt.org"),
   CAA("@", "issue", "comodoca.com"),
   CAA("@", "issuewild", ";"),
-END);
+);
 ```
 {% endcode %}
 
@@ -88,7 +88,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     issuewild: "none",
     issuewild_critical: true,
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -101,7 +101,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL),
   CAA("@", "issue", "comodoca.com", CAA_CRITICAL),
   CAA("@", "issuewild", ";", CAA_CRITICAL),
-END);
+);
 ```
 {% endcode %}
 

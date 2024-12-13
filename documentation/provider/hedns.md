@@ -112,6 +112,6 @@ var DSP_HEDNS = NewDnsProvider("hedns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_HEDNS),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

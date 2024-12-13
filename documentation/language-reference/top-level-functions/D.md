@@ -27,7 +27,7 @@ Modifier arguments are processed according to type as follows:
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com."),
-END);
+);
 
 // "macro" for records that can be mixed into any zone
 var GOOGLE_APPS_DOMAIN_MX = [
@@ -42,7 +42,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX,
-END);
+);
 ```
 {% endcode %}
 
@@ -64,15 +64,15 @@ var DNS_OUTSIDE = NewDnsProvider("bind");
 
 D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
   A("www", "10.10.10.10"),
-END);
+);
 
 D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
   A("www", "20.20.20.20"),
-END);
+);
 
 D_EXTEND("example.com!inside",
   A("internal", "10.99.99.99"),
-END);
+);
 ```
 {% endcode %}
 

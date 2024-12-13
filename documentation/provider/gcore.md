@@ -91,7 +91,7 @@ var DSP_GCORE = NewDnsProvider("gcore");
 
 D("example.com", REG_NONE, DnsProvider(DSP_GCORE),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -145,7 +145,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_GCORE),
         gcore_weight: '34',
         gcore_ip: '1.2.3.5',
     }),
-END);
+);
 ```
 {% endcode %}
 
