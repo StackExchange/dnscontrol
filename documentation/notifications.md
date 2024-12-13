@@ -72,7 +72,7 @@ Successfully ran correction for **example.com[my_provider]** - CREATE foo.exampl
 ### Slack/Mattermost
 
 If you want to use the Slack integration, you need to create a webhook in Slack.
-Please see the [Slack documentation](https://api.slack.com/messaging/webhooks) or the [Mattermost documentation](https://docs.mattermost.com/developer/webhooks-incoming.html)
+Please see the [Slack documentation](https://api.slack.com/messaging/webhooks) or the [Mattermost documentation](https://developers.mattermost.com/integrate/webhooks/incoming/)
 
 Configure `slack_url` to this webhook. Mattermost works as well, as they share the same api,
 
