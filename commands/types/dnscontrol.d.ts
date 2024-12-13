@@ -51,7 +51,7 @@ type Duration =
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@", "1.2.3.4"),
- * END);
+ * );
  *
  * FETCH("https://example.com", {
  *   // All three options below are optional
@@ -191,7 +191,7 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
  *   A("foo", "2.3.4.5"),
  *   A("test.foo", IP("1.2.3.4"), TTL(5000)),
  *   A("*", "1.2.3.4", {foo: 42}),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/a
@@ -213,7 +213,7 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
  *   AAAA("foo", addrV6),
  *   AAAA("test.foo", addrV6, TTL(5000)),
  *   AAAA("*", addrV6, {foo: 42}),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/aaaa
@@ -240,7 +240,7 @@ declare function AKAMAICDN(name: string, target: string, ...modifiers: RecordMod
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   ALIAS("@", "google.com."), // example.com -> google.com
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/alias
@@ -277,12 +277,12 @@ declare const AUTODNSSEC_OFF: DomainModifier;
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   AUTODNSSEC_ON,  // Enable AutoDNSSEC.
  *   A("@", "10.1.1.1"),
- * END);
+ * );
  *
  * D("insecure.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   AUTODNSSEC_OFF,  // Disable AutoDNSSEC.
  *   A("@", "10.2.2.2"),
- * END);
+ * );
  * ```
  *
  * If neither `AUTODNSSEC_ON` or `AUTODNSSEC_OFF` is specified for a
@@ -332,7 +332,7 @@ declare const AUTODNSSEC_ON: DomainModifier;
  * D("example.com", REG_MY_PROVIDER, DnsProvider("AZURE_DNS"),
  *   AZURE_ALIAS("foo", "A", "/subscriptions/726f8cd6-6459-4db4-8e6d-2cd2716904e2/resourceGroups/test/providers/Microsoft.Network/trafficManagerProfiles/testpp2"), // record for traffic manager
  *   AZURE_ALIAS("foo", "CNAME", "/subscriptions/726f8cd6-6459-4db4-8e6d-2cd2716904e2/resourceGroups/test/providers/Microsoft.Network/dnszones/example.com/A/quux."), // record in the same zone
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/azure-dns/azure_alias
@@ -361,7 +361,7 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
  *   // Report all violation to test@example.com. If CA does not support
  *   // this record then refuse to issue any certificate
  *   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL),
- * END);
+ * );
  * ```
  *
  * DNSControl contains a [`CAA_BUILDER`](CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.
@@ -392,7 +392,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *     ],
  *     issuewild: "none",
  *   }),
- * END);
+ * );
  * ```
  *
  * `CAA_BUILDER()` builds multiple records:
@@ -403,7 +403,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *   CAA("@", "issue", "letsencrypt.org"),
  *   CAA("@", "issue", "comodoca.com"),
  *   CAA("@", "issuewild", ";"),
- * END);
+ * );
  * ```
  *
  * which in turns yield the following records:
@@ -433,7 +433,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *     issuewild: "none",
  *     issuewild_critical: true,
  *   }),
- * END);
+ * );
  * ```
  *
  * `CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
@@ -444,7 +444,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *   CAA("@", "issue", "letsencrypt.org", CAA_CRITICAL),
  *   CAA("@", "issue", "comodoca.com", CAA_CRITICAL),
  *   CAA("@", "issuewild", ";", CAA_CRITICAL),
- * END);
+ * );
  * ```
  *
  * which in turns yield the following records:
@@ -500,7 +500,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   CF_REDIRECT("example.com/*", "https://www.example.com/$1"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_redirect
@@ -521,7 +521,7 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  *   CF_SINGLE_REDIRECT("name", 301, "when", "then"),
  *   CF_SINGLE_REDIRECT('redirect www.example.com', 301, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
  *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 301, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
- * END);
+ * );
  * ```
  *
  * The fields are:
@@ -559,7 +559,7 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   CF_TEMP_REDIRECT("example.example.com/*", "https://otherplace.yourdomain.com/$1"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_temp_redirect
@@ -585,7 +585,7 @@ declare function CF_TEMP_REDIRECT(source: string, destination: string, ...modifi
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     CF_WORKER_ROUTE("api.example.com/*", "my-worker"),
  *     CF_WORKER_ROUTE("example.com/api/*", "my-worker"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_worker_route
@@ -610,7 +610,7 @@ declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordMo
  *   CNAME("foo", "google.com."), // foo.example.com -> google.com
  *   CNAME("abc", "@"), // abc.example.com -> example.com
  *   CNAME("def", "test"), // def.example.com -> test.example.com
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/cname
@@ -634,7 +634,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),
  *   CNAME("test", "foo.example2.com."),
- * END);
+ * );
  *
  * // "macro" for records that can be mixed into any zone
  * var GOOGLE_APPS_DOMAIN_MX = [
@@ -649,7 +649,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *   A("@","1.2.3.4"),
  *   CNAME("test", "foo.example2.com."),
  *   GOOGLE_APPS_DOMAIN_MX,
- * END);
+ * );
  * ```
  *
  * # Split Horizon DNS
@@ -669,15 +669,15 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
  *   A("www", "10.10.10.10"),
- * END);
+ * );
  *
  * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
  *   A("www", "20.20.20.20"),
- * END);
+ * );
  *
  * D_EXTEND("example.com!inside",
  *   A("internal", "10.99.99.99"),
- * END);
+ * );
  * ```
  *
  * A domain name without a `!` is assigned a tag that is the empty
@@ -718,11 +718,11 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * DEFAULTS(
  *   DnsProvider(COMMON, 0),
  *   DefaultTTL("1d"),
- * END);
+ * );
  *
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * If you want to clear the defaults, you can do the following.
@@ -733,7 +733,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  *
  * D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/defaults
@@ -748,7 +748,7 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   DHCID("example.com", "ABCDEFG"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dhcid
@@ -796,7 +796,7 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  *       "mailto:mailauth-reports@example.com",
  *     ],
  *   }),
- * END);
+ * );
  * ```
  *
  * This yield the following record:
@@ -825,7 +825,7 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  *     failureOptions: "1",
  *     reportInterval: "1h",
  *   }),
- * END);
+ * );
  * ```
  *
  * ```javascript
@@ -841,7 +841,7 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  *         DKIM: true,
  *     },
  *   }),
- * END);
+ * );
  * ```
  *
  * This yields the following records:
@@ -884,7 +884,7 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   DNAME("sub", "example.net."),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dname
@@ -905,7 +905,7 @@ declare function DNAME(name: string, target: string, ...modifiers: RecordModifie
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   DNSKEY("@", 257, 3, 13, "AABBCCDD"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dnskey
@@ -935,7 +935,7 @@ declare function DNSKEY(name: string, flags: number, protocol: number, algorithm
  *     NO_PURGE,
  *     NAMESERVER("ns1.foo.com"),
  *     NAMESERVER("ns2.foo.com"),
- * END);
+ * );
  * ```
  *
  * NOTE: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used out of abundance of caution but since no
@@ -970,7 +970,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  * D("example.com", REG_NAMEDOTCOM,
  *     NO_PURGE,
  *     DnsProvider(DSP_AZURE),
- * END);
+ * );
  * ```
  *
  * NOTE: The [`NO_PURGE`](../domain-modifiers/NO_PURGE.md) is used to prevent DNSControl from changing the records.
@@ -993,7 +993,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   DS("example.com", 2371, 13, 2, "ABCDEF"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ds
@@ -1031,24 +1031,24 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  *   A("@", "127.0.0.1"), // domain.tld
  *   A("www", "127.0.0.2"), // www.domain.tld
  *   CNAME("a", "b"), // a.domain.tld -> b.domain.tld
- * END);
+ * );
  * D_EXTEND("domain.tld",
  *   A("aaa", "127.0.0.3"), // aaa.domain.tld
  *   CNAME("c", "d"), // c.domain.tld -> d.domain.tld
- * END);
+ * );
  * D_EXTEND("sub.domain.tld",
  *   A("bbb", "127.0.0.4"), // bbb.sub.domain.tld
  *   A("ccc", "127.0.0.5"), // ccc.sub.domain.tld
  *   CNAME("e", "f"), // e.sub.domain.tld -> f.sub.domain.tld
- * END);
+ * );
  * D_EXTEND("sub.sub.domain.tld",
  *   A("ddd", "127.0.0.6"), // ddd.sub.sub.domain.tld
  *   CNAME("g", "h"), // g.sub.sub.domain.tld -> h.sub.sub.domain.tld
- * END);
+ * );
  * D_EXTEND("sub.domain.tld",
  *   A("@", "127.0.0.7"), // sub.domain.tld
  *   CNAME("i", "j"), // i.sub.domain.tld -> j.sub.domain.tld
- * END);
+ * );
  * ```
  *
  * This will end up in the following modifications: (This output assumes the `--full` flag)
@@ -1095,7 +1095,7 @@ declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
  *   DefaultTTL("4h"),
  *   A("@","1.2.3.4"), // uses default
  *   A("foo", "2.3.4.5", TTL(600)), // overrides default
- * END);
+ * );
  * ```
  *
  * The DefaultTTL duration is the same format as [`TTL`](../record-modifiers/TTL.md), an integer number of seconds
@@ -1178,7 +1178,7 @@ declare function HASH(algorithm: "SHA1" | "SHA256" | "SHA512", value: string): s
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   HTTPS("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
  *   HTTPS("@", 1, "test.com", ""),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/https
@@ -1217,7 +1217,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *   IGNORE(labelSpec, typeSpec, targetSpec),
  *   IGNORE(labelSpec, typeSpec),
  *   IGNORE(labelSpec),
- * END);
+ * );
  * ```
  *
  * * `labelSpec` is a glob that matches the DNS label. For example `"foo"` or `"foo*"`.  `"*"` matches all labels, as does the empty string (`""`).
@@ -1253,7 +1253,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *   IGNORE("bar", "A,MX"), // ignore only A and MX records for name bar
  *   IGNORE("*", "*", "dev-*"), // Ignore targets with a `dev-` prefix
  *   IGNORE("*", "A", "1\.2\.3\."), // Ignore targets in the 1.2.3.0/24 CIDR block
- * END);
+ * );
  * ```
  *
  * Ignore Let's Encrypt (ACME) validation records:
@@ -1262,7 +1262,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   IGNORE("_acme-challenge", "TXT"),
  *   IGNORE("_acme-challenge.**", "TXT"),
- * END);
+ * );
  * ```
  *
  * Ignore DNS records typically inserted by Microsoft ActiveDirectory:
@@ -1285,7 +1285,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *   IGNORE("domaindnszones.**", "A"),
  *   IGNORE("forestdnszones", "A"),
  *   IGNORE("forestdnszones.**", "A"),
- * END);
+ * );
  * ```
  *
  * ## Detailed examples
@@ -1306,7 +1306,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     CNAME("cfull", "www.plts.org."),
  *     CNAME("cfull2", "www.bar.plts.org."),
  *     CNAME("cfull3", "bar.www.plts.org."),
- * END);
+ * );
  *
  * D_EXTEND("more.example.com",
  *     A("foo", "1.1.1.1"),
@@ -1315,13 +1315,13 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     CNAME("mfull", "www.plts.org."),
  *     CNAME("mfull2", "www.bar.plts.org."),
  *     CNAME("mfull3", "bar.www.plts.org."),
- * END);
+ * );
  * ```
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("@", "", ""),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1332,7 +1332,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("example.com.", "", ""),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1342,7 +1342,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("foo", "", ""),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1352,7 +1352,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("foo.**", "", ""),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1362,14 +1362,14 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www", "", ""),
- * END);
+ * );
  *     //    www.example.com. A 174.136.107.196
  * ```
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.*", "", ""),
- * END);
+ * );
  *     //    nothing
  * ```
  *
@@ -1380,7 +1380,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.example.com", "", ""),
- * END);
+ * );
  *     //    nothing
  * ```
  *
@@ -1391,7 +1391,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("www.example.com.", "", ""),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1401,7 +1401,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     //IGNORE("", "", "1.1.1.*"),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1412,7 +1412,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     //IGNORE("", "", "www"),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1422,7 +1422,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("", "", "*bar*"),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1435,7 +1435,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     IGNORE("", "", "bar.**"),
- * END);
+ * );
  * ```
  *
  * **Would match**:
@@ -1481,7 +1481,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
  *     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
- * END);
+ * );
  * ```
  *
  * ## Caveats
@@ -1522,12 +1522,12 @@ declare function IGNORE_TARGET(pattern: string, rType: string): DomainModifier;
  * ```javascript
  * D("example.com!external", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("test", "8.8.8.8"),
- * END);
+ * );
  *
  * D("example.com!internal", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   INCLUDE("example.com!external"),
  *   A("home", "127.0.0.1"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/include
@@ -1648,7 +1648,7 @@ declare function IP(ip: string): number;
  *   LOC("c", 32,  7, 19,     "S",116,  2, 25,     "E",  10,    0,    0,  0),
  *   //42 21 28.764 N  71 00  51.617 W -44m 2000m
  *   LOC("d", 42, 21, 28.764, "N", 71,  0, 51.617, "W", -44, 2000,    0,  0),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/loc
@@ -1699,7 +1699,7 @@ declare function LOC(deg1: number, min1: number, sec1: number, deg2: number, min
  *     alt: 19,
  *     ttl: "5m",
  *   }),
- * END);
+ * );
  * ```
  *
  * Part of the series:
@@ -1740,7 +1740,7 @@ declare function LOC_BUILDER_DD(opts: { label?: string; x: number; y: number; al
  *     str: "42°S 147°E",
  *     alt: 3,
  *   }),
- * END);
+ * );
  * ```
  *
  * Part of the series:
@@ -1782,7 +1782,7 @@ declare function LOC_BUILDER_DMM_STR(opts: { label?: string; str: string; alt?: 
  *     alt: 4,
  *     ttl: "5m",
  *   }),
- * END);
+ * );
  * ```
  *
  * Part of the series:
@@ -1829,7 +1829,7 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
  *     str: "53°20′40″N 6°17′20″W",
  *     alt: 300,
  *   }),
- * END);
+ * );
  * ```
  *
  * Part of the series:
@@ -1858,7 +1858,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *   M365_BUILDER("example.com", {
  *       initialDomain: "example.onmicrosoft.com",
  *   }),
- * END);
+ * );
  * ```
  *
  * This sets up `MX` records, Autodiscover, and DKIM.
@@ -1876,7 +1876,7 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
  *       domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
  *       initialDomain: "example.onmicrosoft.com",
  *   }),
- * END);
+ * );
  * ```
  *
  * This sets up Mobile Device Management only.
@@ -1907,7 +1907,7 @@ declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   MX("@", 5, "mail"), // mx example.com -> mail.example.com
  *   MX("sub", 10, "mail.foo.com."),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/mx
@@ -1934,13 +1934,13 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  *   // Replace the nameservers:
  *   NAMESERVER("ns1.myserver.com."),
  *   NAMESERVER("ns2.myserver.com."),
- * END);
+ * );
  *
  * D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   // Add these two additional nameservers to the existing list of nameservers.
  *   NAMESERVER("ns1.myserver.com."),
  *   NAMESERVER("ns2.myserver.com."),
- * END);
+ * );
  * ```
  *
  * # The difference between NS() and NAMESERVER()
@@ -1989,7 +1989,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
  * D("example.com", REG_THIRDPARTY,
  *   ...
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/nameserver
@@ -2005,7 +2005,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   NAMESERVER_TTL("2d"),
  *   NAMESERVER("ns"),
- * END);
+ * );
  * ```
  *
  * Use `NAMESERVER_TTL("3600"),` or `NAMESERVER_TTL("1h"),` for a 1h default TTL for all subsequent `NS` entries:
@@ -2018,7 +2018,7 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  *   NAMESERVER("ns2.provider.com."), //inherits NAMESERVER_TTL
  *   A("@","1.2.3.4"), // inherits DefaultTTL
  *   A("foo", "2.3.4.5", TTL(600)), // overrides DefaultTTL for this record only
- * END);
+ * );
  * ```
  *
  * To apply a default TTL to all other record types, see [`DefaultTTL`](../domain-modifiers/DefaultTTL.md)
@@ -2170,7 +2170,7 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
  *   NAPTR("8",  10, 10, "u", "E2U+SIP", "!^.*$!sip:mike@example.com!", "."),
  *   NAPTR("9",  10, 10, "u", "E2U+SIP", "!^.*$!sip:linda@example.com!", "."),
  *   NAPTR("0",  10, 10, "u", "E2U+SIP", "!^.*$!sip:fax@example.com!", "."),
- * END);
+ * );
  * ```
  *
  * Single e164 zone
@@ -2179,7 +2179,7 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
  *   NAPTR("@", 100, 50, "u", "E2U+SIP", "!^.*$!sip:customer-service@example.com!", "."),
  *   NAPTR("@", 101, 50, "u", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
  *   NAPTR("@", 101, 50, "u", "smtp+E2U", "!^.*$!mailto:information@example.com!", "."),
- * END);
+ * );
  * ```
  *
  * ### Examples for SIP:
@@ -2197,7 +2197,7 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
  *   A("sip", "192.0.2.2"),
  *   AAAA("sip", "2001:db8::85a3"),
  *   // and so on
- * END);
+ * );
  * ```
  *
  * ### Other RFC based examples:
@@ -2212,7 +2212,7 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
  *   SRV("_z3950._tcp", 0, 0, 1000, "z3950.beast.example.com."),
  *   SRV("_http._tcp", 10, 0, 80, "foo.example.com."),
  *   // and so on
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/naptr
@@ -2246,7 +2246,7 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), NO_PURGE,
  *   A("foo","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * The main caveat of `NO_PURGE` is that intentionally deleting records becomes
@@ -2287,7 +2287,7 @@ declare const NO_PURGE: DomainModifier;
  *   NS("foo", "ns2.example2.com."), // Delegate ".foo.example.com" zone to another server.
  *   A("ns1.example2.com", "10.10.10.10"), // Glue records
  *   A("ns2.example2.com", "10.10.10.20"), // Glue records
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ns
@@ -2341,7 +2341,7 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  *
  * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * In [v3.16](../../v316.md) and later:
@@ -2352,7 +2352,7 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  *
  * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
@@ -2380,7 +2380,7 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
  *
  * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * In [v3.16](../../v316.md) and later:
@@ -2391,7 +2391,7 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
  *
  * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
  *   A("@","1.2.3.4"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newregistrar
@@ -2488,13 +2488,13 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *   PTR("3", "baz.example.com."),
  *   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
  *   PTR("1.2.3.10", "ten.example.com."),    // "10"
- * END);
+ * );
  * ```
  *
  * ```javascript
  * D(REV("9.9.9.128/25"), REGISTRAR, DnsProvider(BIND),
  *   PTR("9.9.9.129", "first.example.com."),
- * END);
+ * );
  * ```
  *
  * ```javascript
@@ -2503,7 +2503,7 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
  *   PTR("2001:db8:302::2", "two.example.com."),                          // "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
  *   PTR("2001:db8:302::3", "three.example.com."),                        // "3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
- * END);
+ * );
  * ```
  *
  * # Automatic forward and reverse lookups
@@ -2525,10 +2525,10 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *
  * D("example.com", REGISTRAR, DnsProvider(DSP_NONE),
  *     ...,
- * END);
+ * );
  * D(REV("10.20.30.0/24"), REGISTRAR, DnsProvider(DSP_NONE),
  *     ...,
- * END);
+ * );
  *
  * FORWARD_AND_REVERSE("10.20.30.77", "foo.example.com.");
  * FORWARD_AND_REVERSE("10.20.30.99", "bar.example.com.");
@@ -2559,7 +2559,7 @@ declare function PTR(name: string, target: string, ...modifiers: RecordModifier[
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   PURGE,
- * END);
+ * );
  * ```
  *
  * Since the "last command wins", this is the same as `PURGE`:
@@ -2571,7 +2571,7 @@ declare function PTR(name: string, target: string, ...modifiers: RecordModifier[
  *   PURGE,
  *   NO_PURGE,
  *   PURGE,
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/purge
@@ -2614,7 +2614,7 @@ declare const PURGE: DomainModifier;
  *   R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com.", R53_ZONE("Z368ELLRRE2KJ0"), R53_EVALUATE_TARGET_HEALTH(true)),     // a classic ELB in us-west-1 with target health evaluation enabled
  *   R53_ALIAS("foo", "A", "blahblah.elasticbeanstalk.us-west-2.amazonaws.com.", R53_ZONE("Z38NKT9BP95V3O")),     // an Elastic Beanstalk environment in us-west-2
  *   R53_ALIAS("foo", "A", "blahblah-bucket.s3-website-us-west-1.amazonaws.com.", R53_ZONE("Z2F56UZL2M1ACD")),     // a website S3 Bucket in us-west-1
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/amazon-route-53/r53_alias
@@ -2690,14 +2690,14 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *   PTR("3", "baz.example.com."),
  *   // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
  *   PTR("1.2.3.10", "ten.example.com."),
- * END);
+ * );
  *
  * D(REV("2001:db8:302::/48"), REGISTRAR, DnsProvider(BIND),
  *   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
  *   // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
  *   PTR("2001:db8:302::2", "two.example.com."),                          // 2.0.0...
  *   PTR("2001:db8:302::3", "three.example.com."),                        // 3.0.0...
- * END);
+ * );
  * ```
  *
  * # Automatic forward and reverse record generation
@@ -2758,7 +2758,7 @@ declare function REVCOMPAT(rfc: string): string;
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
- * END);
+ * );
  * ```
  *
  * If you accidentally include an `@` in the email field DNSControl will quietly
@@ -2793,7 +2793,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
- * END)
+ * );
  * ```
  *
  * This has a few problems:
@@ -2831,7 +2831,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *       "450622.spf05.hubspotemail.net" // Rationale: Unlikely to change without warning.
  *     ]
  *   }),
- * END);
+ * );
  * ```
  *
  * By using the `SPF_BUILDER()` we gain many benefits:
@@ -2866,7 +2866,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *   }),
  *   ...
  *   ...
- * END);
+ * );
  * ```
  *
  * The parameters are:
@@ -3050,11 +3050,11 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *     SPF_MYSETTINGS,
- * END);
+ * );
  *
  * D("example2.tld", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *      SPF_MYSETTINGS,
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/spf_builder
@@ -3072,7 +3072,7 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
  *   //               pr  w   port, target
  *   SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
  *   SRV("_sip._tcp", 10, 20, 5060, "smallbox1.example.com."),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/srv
@@ -3105,7 +3105,7 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/sshfp
@@ -3124,7 +3124,7 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   SVCB("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/svcb
@@ -3142,7 +3142,7 @@ declare function SVCB(name: string, priority: number, target: string, params: st
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   // Create TLSA record for certificate used on TCP port 443
  *   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/tlsa
@@ -3175,7 +3175,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
  *   A("foo", "2.3.4.5", TTL(500)), // overrides default
  *   A("demo1", "3.4.5.11", TTL("5d")),  // 5 days
  *   A("demo2", "3.4.5.12", TTL("5w")),  // 5 weeks
- * END);
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/ttl
@@ -3203,7 +3203,7 @@ declare function TTL(ttl: Duration): RecordModifier;
  *       TXT("quoted", "any "quotes" and escapes? ugh; no worries!"),
  *       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
  *       TXT("long", "X".repeat(300)), // Long strings are split automatically.
- *     END);
+ *     );
  * ```
  *
  * NOTE: In the past, long strings had to be annotated with the keyword
