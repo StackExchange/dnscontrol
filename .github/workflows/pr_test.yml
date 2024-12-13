@@ -16,7 +16,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       TEST_RESULTS: "/tmp/test-results"
     steps:
@@ -68,7 +68,7 @@ jobs:
         args: build --snapshot
   integration-test-providers:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
     steps:
@@ -94,7 +94,7 @@ jobs:
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: golang:1.23
     needs:
@@ -150,7 +150,7 @@ jobs:
       CNR_UID: ${{ secrets.CNR_UID }}
       CNR_PW: ${{ secrets.CNR_PW }}
       CNR_ENTITY: ${{ secrets.CNR_ENTITY }}
-      #      
+      #
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
       #
       GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}

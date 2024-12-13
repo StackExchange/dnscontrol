@@ -8,7 +8,7 @@ name: "Release: Make release candidate"
 jobs:
   draft_release:
     name: draft release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
       contents: write
