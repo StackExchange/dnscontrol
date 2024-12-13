@@ -213,7 +213,7 @@ func PPreview(args PPreviewArgs) error {
 
 // PPush implements the push subcommand.
 func PPush(args PPushArgs) error {
-	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
+	return prun(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, args.Report)
 }
 
 var pobsoleteDiff2FlagUsed = false
