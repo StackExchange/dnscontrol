@@ -276,7 +276,7 @@ func GetZone(args GetZoneArgs) error {
 					"// NOTE: CNAME at apex may require manual editing.",
 				)
 				fmt.Fprint(w, out)
-				fmt.Fprint(w, "\nEND);\n\n")
+				fmt.Fprint(w, "\n);\n\n")
 			}
 
 		case "tsv":

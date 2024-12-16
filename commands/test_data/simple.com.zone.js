@@ -22,5 +22,5 @@ D("simple.com", REG_CHANGEME,
 	CNAME("email", "mkto-sj280138.com."),
 	CNAME("info", "stackoverflow.mktoweb.com."),
 	SRV("_sip._tcp", 10, 60, 5060, "bigbox.example.com."),
-END);
+);
 

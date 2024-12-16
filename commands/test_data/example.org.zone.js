@@ -353,5 +353,5 @@ D("example.org", REG_CHANGEME,
 	CNAME("opqrstuvwxyz", "gv-abcdefghijklmn.dv.googlehosted.com."),
 	CNAME("zyxwvutsrqpo", "gv-nmlkjihgfedcba.dv.googlehosted.com."),
 	CNAME("0123456789abcdef0123456789abcdef", "verify.bing.com."),
-END);
+);
 
