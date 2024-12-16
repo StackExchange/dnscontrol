@@ -581,7 +581,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 	}
 
 	return []*models.Correction{{
-		Msg: fmt.Sprintf("Create zone '%s' in the '%s' profile", aceZoneName, provider.Name),
+		Msg: fmt.Sprintf("Ensuring zone %q exists in %q", aceZoneName, provider.Name),
 		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
 	}}
 }
@@ -604,7 +604,10 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	nameservers.AddNSRecords(zone)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
-		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}, 0
+		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns:'true'} to force",
+			zone.RegistrarName,
+			zone.Name,
+		)}}, 0
 	}
 
 	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)

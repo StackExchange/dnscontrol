@@ -35,7 +35,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
@@ -126,8 +126,6 @@ type bindProvider struct {
 	nameservers    []*models.Nameserver
 	directory      string
 	filenameformat string
-	//zonefile       string // Where the zone data is e texpected
-	//zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -184,18 +182,14 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
-		//c.zoneFileFound = false
 		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", zonefile)
 		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("can't open %s: %w", zonefile, err)
 	}
-	//c.zoneFileFound = true
 
-	zonefileName := zonefile
-
-	return ParseZoneContents(string(content), domain, zonefileName)
+	return ParseZoneContents(string(content), domain, zonefile)
 }
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
@@ -215,6 +209,10 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		return nil, fmt.Errorf("error while parsing '%v': %w", zonefileName, err)
 	}
 	return foundRecords, nil
+}
+
+func (n *bindProvider) EnsureZoneExists(_ string) error {
+	return nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
