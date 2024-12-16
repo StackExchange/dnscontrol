@@ -127,7 +127,7 @@ type bindProvider struct {
 	directory      string
 	filenameformat string
 	zonefile       string // Where the zone data is e texpected
-	zoneFileFound  bool   // Did the zonefile exist?
+	//zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -183,14 +183,14 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	content, err := os.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
-		c.zoneFileFound = false
+		//c.zoneFileFound = false
 		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
 	}
-	c.zoneFileFound = true
+	//c.zoneFileFound = true
 
 	zonefileName := c.zonefile
 
