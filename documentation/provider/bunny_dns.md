@@ -48,7 +48,7 @@ var DSP_BUNNY_DNS = NewDnsProvider("bunny_dns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_BUNNY_DNS),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

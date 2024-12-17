@@ -30,7 +30,7 @@ var DSP_LUADNS = NewDnsProvider("luadns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_LUADNS),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

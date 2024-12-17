@@ -58,12 +58,12 @@ var DSP_AZURE_PRIVATE_MAIN = NewDnsProvider("azure_private_dns_main");
 
 D("example.com", REG_NONE, DnsProvider(DSP_AZURE_PRIVATE_MAIN),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
 ## Activation
-DNSControl depends on a standard [Client credentials Authentication](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) with permission to list, create and update private zones.  
+DNSControl depends on a standard [Client credentials Authentication](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) with permission to list, create and update private zones.
 
 ## New domains
 

@@ -35,7 +35,7 @@ Below is an example where we add [the A record](language-reference/domain-modifi
 ```diff
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 + A("foo", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

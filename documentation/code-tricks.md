@@ -11,67 +11,18 @@ Solution: Use a "builder" to construct it for you.
 
 # Trailing commas
 
-**Trailing commas** (sometimes called "final commas") can be useful when adding new Domain Modifiers to your DNSControl code. If you want to add a Domain Modifier, you can add a new line without modifying the previously last line if that line already uses a trailing comma. This makes version-control diffs cleaner and editing code might be less troublesome.
-
-Because the DNSControl JavaScript DSL has no trailing commas, you can use the `END` constant within `D()`.
-
-## Version-control diffs example
-
-{% hint style="info" %}
-**NOTE**: `END` is just an alias for `{}`, which is ignored by DNSControl.
-{% endhint %}
-
-Let's take an example with domain: `example.com`. We have recorded the [A-record](language-reference/domain-modifiers/A.md) 'foo' configured.
+You might encounter `D()` statements in code examples that include `END` at the end, such as:
 
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  A("foo", "1.2.3.4")
-);
-```
-{% endcode %}
-
-Let's say we want to add an [A record](language-reference/domain-modifiers/A.md) 'bar' to this domain.
-
-{% code title="dnsconfig.js" %}
-```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  A("foo", "1.2.3.4"),
-  A("bar", "4.3.2.1")
-);
-```
-{% endcode %}
-
-This will generate the version-control diff below:
-
-{% code title="dnsconfig.js" %}
-```diff
--  A("foo", "1.2.3.4"),
-+  A("foo", "1.2.3.4"),
-+  A("bar", "4.3.2.1")
-);
-```
-{% endcode %}
-
-Let's apply the same A-record 'foo' to the domain using the `END` constant.
-
-{% code title="dnsconfig.js" %}
-```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  A("foo", "1.2.3.4"),
+  A("test", "1.2.3.4"),
 END);
 ```
 {% endcode %}
 
-This will generate the cleaner version-control diff below:
-
-{% code title="dnsconfig.js" %}
-```diff
-   A("foo", "1.2.3.4"),
-+  A("bar", "4.3.2.1"),
-END);
-```
-{% endcode %}
+As of [DNSControl v4.15.0](https://github.com/StackExchange/dnscontrol/releases/tag/v4.15.0), the `END` statements are no longer necessary.
+These were originally included for historical reasons that are now irrelevant. You can safely remove them from your configurations.
 
 # Repeat records in many domains (macros)
 
@@ -133,7 +84,7 @@ function PARKED_R53(name) {
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
         SPF_NONE, //deters spammers from using the domain in From: lines.
-        END);
+        );
 }
 
 PARKED_R53("example1.tld");
@@ -156,7 +107,7 @@ _.each(
     D(d, REG_NAMECOM, DnsProvider(DSP_MY_PROVIDER),
        A("@", "10.2.3.4"),
        CNAME("www", "@"),
-    END);
+    );
   }
 );
 ```

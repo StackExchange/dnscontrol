@@ -28,13 +28,13 @@ D("example.com", REG_MY_PROVIDER,
   // Replace the nameservers:
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
-END);
+);
 
 D("example2.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   // Add these two additional nameservers to the existing list of nameservers.
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
-END);
+);
 ```
 {% endcode %}
 
@@ -86,6 +86,6 @@ It looks like this:
 var REG_THIRDPARTY = NewRegistrar("ThirdParty");
 D("example.com", REG_THIRDPARTY,
   ...
-END);
+);
 ```
 {% endcode %}

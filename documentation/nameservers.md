@@ -46,7 +46,7 @@ Simplicity.
 D("example.com", REG_NAMECOM,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -65,7 +65,7 @@ you want to use a high-performance DNS server.
 D("example.com", REG_NAMECOM,
   DnsProvider(DNS_AWS),
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -86,7 +86,7 @@ updating the zone's records (most likely at a different provider).
 D("example.com", REG_THIRDPARTY,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -108,7 +108,7 @@ D("example.com", REG_NAMECOM,
   NAMESERVER("dns2.p03.nsone.net."),
   NAMESERVER("dns3.p03.nsone.net."),
   NAMESERVER("dns4.p03.nsone.net."),
-END);
+);
 ```
 {% endcode %}
 
@@ -131,7 +131,7 @@ D("example.com", REG_NAMECOM,
   NAMESERVER("kim.ns.cloudflare.com."),
   NAMESERVER("walt.ns.cloudflare.com."),
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -150,7 +150,7 @@ D("example.com", REG_NAMECOM,
   DnsProvider(DNS_NAMECOM),
   NAMESERVER("ns1.myexample.com"),
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -174,7 +174,7 @@ D("example.com", REG_NAMECOM,
   DnsProvider(DNS_CLOUDFLARE, 0), // Quietly send a copy of the zone here.
   DnsProvider(DNS_BIND, 0), // And here too!
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -204,7 +204,7 @@ D("example.com", REG_NAMECOM,
   DnsProvider(DNS_AWS, 2),  // Take 2 nameservers from AWS
   DnsProvider(DNS_GOOGLE, 2),  // Take 2 nameservers from GCP
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -233,7 +233,7 @@ D("example.com", REG_NAMECOM,
   DnsProvider(DNS_NAMECOM),
   DnsProvider(DNS_BIND, 0), // Don't activate any nameservers related to BIND.
   A("@", "10.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -257,7 +257,7 @@ var REG_MONITOR = NewRegistrar("DNS-over-HTTPS");
 D("example.com", REG_MONITOR,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
-END);
+);
 ```
 {% endcode %}
 

@@ -27,7 +27,7 @@ var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
 
 D("example.com", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

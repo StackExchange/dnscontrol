@@ -26,7 +26,7 @@ D("cafferata.dev",
         "v=spf1",
         "-all"
     ].join(" ")),
-END);
+);
 ```
 {% endcode %}
 

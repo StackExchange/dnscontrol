@@ -32,6 +32,6 @@ var DSP_PORKBUN = NewDnsProvider("porkbun");
 
 D("example.com", REG_NONE, DnsProvider(DSP_PORKBUN),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

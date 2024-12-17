@@ -23,6 +23,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("foo", "2.3.4.5"),
   A("test.foo", IP("1.2.3.4"), TTL(5000)),
   A("*", "1.2.3.4", {foo: 42}),
-END);
+);
 ```
 {% endcode %}

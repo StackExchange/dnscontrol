@@ -26,7 +26,7 @@ parameter_types:
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
-END);
+);
 ```
 {% endcode %}
 

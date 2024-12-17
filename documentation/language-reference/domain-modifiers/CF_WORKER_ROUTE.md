@@ -30,6 +30,6 @@ This example assigns the patterns `api.example.com/*` and `example.com/api/*` to
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     CF_WORKER_ROUTE("api.example.com/*", "my-worker"),
     CF_WORKER_ROUTE("example.com/api/*", "my-worker"),
-END);
+);
 ```
 {% endcode %}

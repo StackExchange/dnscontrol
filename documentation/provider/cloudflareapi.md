@@ -164,7 +164,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
     A("www2","1.2.3.12", CF_PROXY_OFF),       // default is OFF, this is a no-op.
     A("www3","1.2.3.13", {"cloudflare_proxy": "on"}), // Old format.
-END);
+);
 ```
 {% endcode %}
 
@@ -183,7 +183,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("another", "1.2.3.6", CF_PROXY_ON),
     ALIAS("@", "www.example.com.", CF_PROXY_ON),
     CNAME("myalias", "www.example.com.", CF_PROXY_ON),
-END);
+);
 
 // Example domain where the CF proxy default is set to "on":
 D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
@@ -193,7 +193,7 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("another", "1.2.3.6"),
     ALIAS("@", "www.example2.tld."),
     CNAME("myalias", "www.example2.tld."),
-END);
+);
 ```
 {% endcode %}
 
@@ -351,7 +351,7 @@ D("chiphacker.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("meta", "1.2.3.4", CF_PROXY_ON),
 
     // ...
-END);
+);
 ```
 {% endcode %}
 
@@ -374,7 +374,7 @@ D("foo.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
-END);
+);
 ```
 {% endcode %}
 

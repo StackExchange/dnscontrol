@@ -25,6 +25,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NS("foo", "ns2.example2.com."), // Delegate ".foo.example.com" zone to another server.
   A("ns1.example2.com", "10.10.10.10"), // Glue records
   A("ns2.example2.com", "10.10.10.20"), // Glue records
-END);
+);
 ```
 {% endcode %}

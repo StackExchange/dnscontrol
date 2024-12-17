@@ -41,7 +41,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     str: "42°S 147°E",
     alt: 3,
   }),
-END);
+);
 ```
 {% endcode %}
 

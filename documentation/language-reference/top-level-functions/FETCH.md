@@ -24,7 +24,7 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@", "1.2.3.4"),
-END);
+);
 
 FETCH("https://example.com", {
   // All three options below are optional

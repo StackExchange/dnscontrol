@@ -36,7 +36,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   M365_BUILDER("example.com", {
       initialDomain: "example.onmicrosoft.com",
   }),
-END);
+);
 ```
 {% endcode %}
 
@@ -56,7 +56,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
       domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
       initialDomain: "example.onmicrosoft.com",
   }),
-END);
+);
 ```
 {% endcode %}
 

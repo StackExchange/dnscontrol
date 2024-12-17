@@ -29,6 +29,6 @@ var DSP_PACKETFRAME = NewDnsProvider("packetframe");
 
 D("example.com", REG_NONE, DnsProvider(DSP_PACKETFRAME),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
