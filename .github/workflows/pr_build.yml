@@ -1,4 +1,4 @@
-name: "PR: Run Unit tests and Build all platforms"
+name: "PR: Run Unit tests and Build artifacts for all platforms"
 
 # When will this pipeline be activated?
 # 1. On any pull-request, or if someone pushes to a branch called
