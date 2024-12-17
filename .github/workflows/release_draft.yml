@@ -49,6 +49,7 @@ jobs:
       run: |
         go install golang.org/x/tools/cmd/stringer@latest
 
+# use GoReleaser to build for all platforms.
     -
       id: release
       name: Goreleaser release

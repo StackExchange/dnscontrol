@@ -26,59 +26,6 @@ env:
 
 jobs:
 
-# build: Use GoReleasere to build binaries for all platforms.
-  build:
-    runs-on: ubuntu-latest
-    env:
-      TEST_RESULTS: "/tmp/test-results"
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: stable
-    - name: restore_cache
-      uses: actions/cache@v4.2.0
-      with:
-        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        path: ${{ env.go-mod-path }}
-    - run: mkdir -p "$TEST_RESULTS"
-    - name: Run unit tests
-      run: |
-        go install gotest.tools/gotestsum@latest
-        gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-    - name: Enforce Go Formatted Code
-      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.4.3
-      with:
-        name: unit-tests
-        path: ${{ env.TEST_RESULTS }}
-
-# Stringer is needed because .goreleaser includes "go generate ./..."
-    - name: Install stringer
-      run: |
-        go install golang.org/x/tools/cmd/stringer@latest
-
-    -
-      id: build_binaries_tagged
-      name: Build binaries (if tagged)
-      if: github.ref_type == 'tag'
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        distribution: goreleaser
-        version: latest
-        args: build
-    -
-      id: build_binaries_not_tagged
-      name: Build binaries (not tagged)
-      if: github.ref_type != 'tag'
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        args: build --snapshot
-
 # integration-test-providers: Determine which providers have a _DOMAIN variable set.
 # That variable enables testing for the provider.  The results are
 # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
