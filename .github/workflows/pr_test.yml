@@ -1,20 +1,32 @@
 name: "PR: Run all tests"
+
+# When will this pipeline be activated?
+# 1. On any pull-request, or if someone pushes to a branch called
+# "tlim_testpr".
 on:
-  # git push origin main:tlim_testpr --force
-  # will trigger a full PR test on the main branch:
-  # https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  pull_request:
+  workflow_dispatch:
+  # Want to trigger all the tests without making a PR?
+  # Run: git push origin main:tlim_testpr --force
+  # This will trigger a full PR test on the main branch.
+  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
   push:
     branches:
       - 'tlim_testpr'
-  pull_request:
-  workflow_dispatch:
 
+# Environment Variables
 env:
-  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  # cache-key: Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  cache-key: 1639697695
+  # go-mod-path: Where go-mod writes temp files
   go-mod-path: /go/pkg/mod
+  # BIND_DOMAIN: BIND is the one providers that we always test. By
+  # defining this here, we know it will always be set.
   BIND_DOMAIN: example.com
 
 jobs:
+
+# build: Use GoReleasere to build binaries for all platforms.
   build:
     runs-on: ubuntu-latest
     env:
@@ -66,6 +78,11 @@ jobs:
       uses: goreleaser/goreleaser-action@v6
       with:
         args: build --snapshot
+
+# integration-test-providers: Determine which providers have a _DOMAIN variable set.
+# That variable enables testing for the provider.  The results are
+# stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
+# where integration-tests can pick it up.
   integration-test-providers:
     needs: build
     runs-on: ubuntu-latest
@@ -92,6 +109,9 @@ jobs:
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
+
+# integration-tests: Run the integration tests on any provider listed
+# in needs.integration-test-providers.outputs.integration_test_providers.
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -150,7 +170,7 @@ jobs:
       CNR_UID: ${{ secrets.CNR_UID }}
       CNR_PW: ${{ secrets.CNR_PW }}
       CNR_ENTITY: ${{ secrets.CNR_ENTITY }}
-      #      
+      #
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
       #
       GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
