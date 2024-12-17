@@ -31,7 +31,7 @@ jobs:
 # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
 # where integration-tests can pick it up.
   integration-test-providers:
-    needs: build
+    #needs: build
     runs-on: ubuntu-latest
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
