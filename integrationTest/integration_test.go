@@ -2372,7 +2372,7 @@ func makeTests() []*TestGroup {
 			),
 			tc("VERIFY PREVIOUS",
 				a("testignore", "8.8.8.8"),
-				a("testdefined", "9.9.9.9"),
+				a("testdefined", "2.2.2.2"),
 			).ExpectNoChanges(),
 		),
 
