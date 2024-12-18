@@ -2463,7 +2463,6 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
-			//not("TRANSIP"), // IGNORE_with_modifyjjj
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
