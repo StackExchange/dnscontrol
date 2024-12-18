@@ -63,3 +63,7 @@ Step 3: Clean up
 $ rm -i $HOME/bin/dnscontrol
 ```
 
+## Other useful docs
+
+* How to run the integrations tests:
+  * [https://docs.dnscontrol.org/developer-info/integration-tests](https://docs.dnscontrol.org/developer-info/integration-tests)
