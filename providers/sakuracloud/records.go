@@ -65,10 +65,11 @@ func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		}
 	}
 
-	msgs, changes, actualChangeCount, err := diff2.ByZone(existing, dc, nil)
+	result, err := diff2.ByZone(existing, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 	if !changes {
 		return nil, actualChangeCount, nil
 	}

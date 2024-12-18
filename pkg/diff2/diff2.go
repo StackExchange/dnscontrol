@@ -205,19 +205,37 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //	}
 //
 // Example providers include: BIND, AUTODNS
-func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, int, error) {
-	// Only return the messages.  The caller has the list of records needed to build the new zone.
-	instructions, actualChangeCount, err := byHelper(analyzeByRecord, existing, dc, compFunc)
-	return justMsgs(instructions), actualChangeCount > 0, actualChangeCount, err
+func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ByResults, error) {
+	// Only return the messages and a list of records needed to build the new zone.
+	result, err := byHelperStruct(analyzeByRecord, existing, dc, compFunc)
+	result.Msgs = justMsgs(result.Instructions)
+	return result, err
 }
 
-//
+// ByResults is the results of ByZone() and perhaps someday all the By*() functions.
+// It is partially populated by // byHelperStruct() and partially by the By*()
+// functions that use it.
+type ByResults struct {
+	// Fields filled in by byHelperStruct():
+	Instructions      ChangeList     // Instructions to turn existing into desired.
+	ActualChangeCount int            // Number of actual changes, not including REPORTs.
+	HasChanges        bool           // True if there are any changes.
+	DesiredPlus       models.Records // Desired + foreign + ignored
+	// Fields filled in by ByZone():
+	Msgs []string // Just the messages from the instructions.
+}
 
-// byHelper does 90% of the work for the By*() calls.
+// byHelper is like byHelperStruct but has a signature that is compatible with legacy code.
+// Deprecated: Use byHelperStruct instead.
 func byHelper(fn func(cc *CompareConfig) (ChangeList, int), existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
+	result, err := byHelperStruct(fn, existing, dc, compFunc)
+	return result.Instructions, result.ActualChangeCount, err
+}
 
+// byHelperStruct does 90% of the work for the By*() calls.
+func byHelperStruct(fn func(cc *CompareConfig) (ChangeList, int), existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ByResults, error) {
 	// Process NO_PURGE/ENSURE_ABSENT and IGNORE*().
-	desired, msgs, err := handsoff(
+	desiredPlus, msgs, err := handsoff(
 		dc.Name,
 		existing, dc.Records, dc.EnsureAbsent,
 		dc.Unmanaged,
@@ -225,13 +243,11 @@ func byHelper(fn func(cc *CompareConfig) (ChangeList, int), existing models.Reco
 		dc.KeepUnknown,
 	)
 	if err != nil {
-		return nil, 0, err
+		return ByResults{}, err
 	}
 
 	// Regroup existing/desiredd for easy comparison:
-	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-
-	dc.Records = desired
+	cc := NewCompareConfig(dc.Name, existing, desiredPlus, compFunc)
 
 	// Analyze and generate the instructions:
 	instructions, actualChangeCount := fn(cc)
@@ -247,5 +263,10 @@ func byHelper(fn func(cc *CompareConfig) (ChangeList, int), existing models.Reco
 		instructions = append([]Change{chg}, instructions...)
 	}
 
-	return instructions, actualChangeCount, nil
+	return ByResults{
+		Instructions:      instructions,
+		ActualChangeCount: actualChangeCount,
+		HasChanges:        actualChangeCount > 0,
+		DesiredPlus:       desiredPlus,
+	}, nil
 }
