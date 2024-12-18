@@ -231,6 +231,8 @@ func byHelper(fn func(cc *CompareConfig) (ChangeList, int), existing models.Reco
 	// Regroup existing/desiredd for easy comparison:
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 
+	dc.Records = desired
+
 	// Analyze and generate the instructions:
 	instructions, actualChangeCount := fn(cc)
 
