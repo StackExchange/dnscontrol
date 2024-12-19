@@ -10,6 +10,7 @@ Please change the version number as appropriate.  Substitute (for example)
 ## Step 0. Update dependencies
 
 ```shell
+git checkout main
 git checkout -b update_deps
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
