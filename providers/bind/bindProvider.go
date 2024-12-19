@@ -211,7 +211,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-func (n *bindProvider) EnsureZoneExists(_ string) error {
+func (c *bindProvider) EnsureZoneExists(_ string) error {
 	return nil
 }
 
@@ -247,12 +247,12 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	}
 
 	var msgs []string
-	var err error
 	var actualChangeCount int
-	msgs, changes, actualChangeCount, err = diff2.ByZone(foundRecords, dc, nil)
+	result, err := diff2.ByZone(foundRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount = result.Msgs, result.HasChanges, result.ActualChangeCount
 	if !changes {
 		return nil, 0, nil
 	}
@@ -299,7 +299,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 				// Beware that if there are any fake types, then they will
 				// be commented out on write, but we don't reverse that when
 				// reading, so there will be a diff on every invocation.
-				err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
+				err = prettyzone.WriteZoneFileRC(zf, result.DesiredPlus, dc.Name, 0, comments)
 
 				if err != nil {
 					return fmt.Errorf("failed WriteZoneFile: %w", err)

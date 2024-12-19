@@ -65,10 +65,11 @@ func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		}
 	}
 
-	msgs, changes, actualChangeCount, err := diff2.ByZone(existing, dc, nil)
+	result, err := diff2.ByZone(existing, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 	if !changes {
 		return nil, actualChangeCount, nil
 	}
@@ -78,8 +79,8 @@ func (s *sakuracloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		&models.Correction{
 			Msg: msg,
 			F: func() error {
-				drs := make([]domainRecord, 0, len(dc.Records))
-				for _, rc := range dc.Records {
+				drs := make([]domainRecord, 0, len(result.DesiredPlus))
+				for _, rc := range result.DesiredPlus {
 					drs = append(drs, toNative(rc))
 				}
 				return s.api.UpdateZone(dc.Name, drs)
