@@ -2,13 +2,13 @@
 
 Instructions for testing DNSControl at a particular PR or branch.
 
-## Using Docker
-
-Using Docker assures you're using the latest version of Go and doesn't require you to install anything on your machine, other than Docker!
-
 Assumptions:
 * `/THE/PATH` -- Change this to the full path to where your dnsconfig.js and other files are located.
 * `INSERT_BRANCH_HERE` -- The branch you want to test.  The branch associated with a PR is listed on [https://github.com/StackExchange/dnscontrol/branches](https://github.com/StackExchange/dnscontrol/branches).
+
+## Using Docker
+
+Using Docker assures you're using the latest version of Go and doesn't require you to install anything on your machine, other than Docker!
 
 ```shell
 docker run -it -v /THE/PATH:/dns golang
@@ -34,12 +34,7 @@ go test -v -verbose -provider INSERT_PROVIDER_NAME -start 1 -end 3
 
 Change `INSERT_PROVIDER_NAME` to the name of your provider (`BIND`, `ROUTE53`, `GCLOUD`, etc.)
 
-
 ## Not using Docker
-
-Assumptions:
-* `/THE/PATH` -- Change this to the full path to where your dnsconfig.js and other files are located.
-* `INSERT_BRANCH_HERE` -- The branch you want to test.  The branch associated with a PR is listed on [https://github.com/StackExchange/dnscontrol/branches](https://github.com/StackExchange/dnscontrol/branches).
 
 Step 1: Install Go
 
