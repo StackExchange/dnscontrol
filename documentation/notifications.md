@@ -1,10 +1,10 @@
 # Notifications
 
-DNSControl includes built-in support for notifications, enabling you to post messages in team chats or send emails whenever DNS changes occur, with the functionality implemented in the [notifications package](https://github.com/StackExchange/dnscontrol/tree/main/pkg/notifications).
+DNSControl's "notifications" feature will log `push` changes to other services in real time. Typically this is used to automatically announce DNS changes in a team chatroom.  The functionality is implemented using the open source [Shoutrrr](https://github.com/containrrr/shoutrrr) library, which knows how to communicate to many different systems.  Some additional services are provided natively, see the [notifications package](https://github.com/StackExchange/dnscontrol/tree/main/pkg/notifications).
 
 ## Configuration
 
-Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification services.
+Notifications are configured in the `creds.json` file, since they often contain API keys or other secrets. The `notifications` key lists the notification service and options.
 
 {% code title="creds.json" %}
 ```json
@@ -87,7 +87,7 @@ DNSControl supports various notification methods via Shoutrrr, including email (
 * [Telegram](https://containrrr.dev/shoutrrr/latest/services/telegram/)
 * [Zulip Chat](https://containrrr.dev/shoutrrr/latest/services/zulip/)
 
-For a full overview of supported methods and configuration details, refer to the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/).
+The above list is accurate as of 2024-Dec. The compete list and all configuration details are in the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/).
 
 Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
 
@@ -103,21 +103,21 @@ Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
 
 ### Slack/Mattermost
 
-If you want to use the Slack integration, you need to create a webhook in Slack.
+To use the Slack integration, you need to create a webhook in Slack.
 Please see the [Slack documentation](https://api.slack.com/messaging/webhooks) or the [Mattermost documentation](https://docs.mattermost.com/developer/webhooks-incoming.html)
 
 Configure `slack_url` to this webhook. Mattermost works as well, as they share the same api,
 
 ### Microsoft Teams
 
-If you want to use the Teams integration, you need to create a webhook in Teams.
+To use the Teams integration, you need to create a webhook in Teams.
 Please see the [Teams documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook#add-an-incoming-webhook-to-a-teams-channel)
 
 Configure `teams_url` to this webhook.
 
 ### Telegram
 
-If you want to use the [Telegram](https://telegram.org/) integration, you need to create a Telegram bot and obtain a Bot Token, as well as a Chat ID. Get a Bot Token by contacting [@BotFather](https://telegram.me/botfather), and a Chat ID by contacting [@myidbot](https://telegram.me/myidbot).
+To use the [Telegram](https://telegram.org/) integration, you need to create a Telegram bot and obtain a Bot Token, as well as a Chat ID. Get a Bot Token by contacting [@BotFather](https://telegram.me/botfather), and a Chat ID by contacting [@myidbot](https://telegram.me/myidbot).
 
 Configure `telegram_bot_token` and `telegram_chat_id` to these values.
 
