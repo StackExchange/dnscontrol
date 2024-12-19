@@ -24,7 +24,7 @@ dnscontrol preview
 ```
 
 If you want to run the integration tests, follow the
-[Integration Tests](https://docs.dnscontrol.org/developer-info/integration-tests) document
+[Integration Tests](integration-tests.md) document
 as usual. The directory to be in is `/go/dnscontrol/integrationTest`.
 
 ```shell
