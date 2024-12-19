@@ -12,9 +12,8 @@ Using Docker assures you're using the latest version of Go and doesn't require y
 
 ```shell
 docker run -it -v /THE/PATH:/dns golang
-git clone https://github.com/StackExchange/dnscontrol.git
+git clone -b INSERT_BRANCH_HERE https://github.com/StackExchange/dnscontrol.git
 cd dnscontrol
-git checkout INSERT_BRANCH_HERE
 go install
 ```
 
@@ -43,9 +42,8 @@ Step 1: Install Go
 Step 2: Check out the software
 
 ```shell
-git clone https://github.com/StackExchange/dnscontrol.git
+git clone -b INSERT_BRANCH_HERE https://github.com/StackExchange/dnscontrol.git
 cd dnscontrol
-git checkout INSERT_BRANCH_HERE
 go install
 ```
 
