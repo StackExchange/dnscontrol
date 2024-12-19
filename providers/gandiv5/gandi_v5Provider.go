@@ -244,7 +244,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 						F: func() error {
 							res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 							if err != nil {
-								return fmt.Errorf("%+v: %w", res, err)
+								return fmt.Errorf("%+v ret=%03d: %w", res, res.Code, err)
 							}
 							return nil
 						},
@@ -263,7 +263,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 					F: func() error {
 						res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
 						if err != nil {
-							return fmt.Errorf("%+v: %w", res, err)
+							return fmt.Errorf("%+v ret=%03d: %w", res, res.Code, err)
 						}
 						return nil
 					},
