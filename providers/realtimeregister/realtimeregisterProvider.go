@@ -107,10 +107,11 @@ func (api *realtimeregisterAPI) GetZoneRecords(domain string, meta map[string]st
 }
 
 func (api *realtimeregisterAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-	msgs, changes, actualChangeCount, err := diff2.ByZone(existing, dc, nil)
+	result, err := diff2.ByZone(existing, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 
 	var corrections []*models.Correction
 
@@ -149,8 +150,8 @@ func (api *realtimeregisterAPI) GetZoneRecordsCorrections(dc *models.DomainConfi
 			&models.Correction{
 				Msg: strings.Join(msgs, "\n"),
 				F: func() error {
-					records := make([]Record, len(dc.Records))
-					for i, r := range dc.Records {
+					records := make([]Record, len(result.DesiredPlus))
+					for i, r := range result.DesiredPlus {
 						records[i] = toRecord(r)
 					}
 					zone := &Zone{Records: records, Dnssec: dnssec}
