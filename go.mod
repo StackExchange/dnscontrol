@@ -6,6 +6,8 @@ retract v4.8.0
 
 require google.golang.org/protobuf v1.35.2 // indirect
 
+require golang.org/x/net v0.33.0
+
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
@@ -50,7 +52,6 @@ require (
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/net v0.32.0
 	golang.org/x/oauth2 v0.24.0
 	google.golang.org/api v0.212.0
 	gopkg.in/ns1/ns1-go.v2 v2.13.0
