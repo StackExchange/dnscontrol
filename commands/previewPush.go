@@ -10,7 +10,6 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
@@ -19,32 +18,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
-
-var _ = cmd(catMain, func() *cli.Command {
-	var args PreviewArgs
-	return &cli.Command{
-		Name:  "preview",
-		Usage: "read live configuration and identify changes to be made, without applying them",
-		Action: func(ctx *cli.Context) error {
-			return exit(Preview(args))
-		},
-		Flags: args.flags(),
-	}
-}())
-
-// PreviewArgs contains all data/flags needed to run preview, independently of CLI
-type PreviewArgs struct {
-	GetDNSConfigArgs
-	GetCredentialsArgs
-	FilterArgs
-	Notify      bool
-	WarnChanges bool
-	NoPopulate  bool
-	Full        bool
-}
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
 type ReportItem struct {
@@ -54,95 +29,20 @@ type ReportItem struct {
 	Registrar   string `json:"registrar,omitempty"`
 }
 
-func (args *PreviewArgs) flags() []cli.Flag {
-	flags := args.GetDNSConfigArgs.flags()
-	flags = append(flags, args.GetCredentialsArgs.flags()...)
-	flags = append(flags, args.FilterArgs.flags()...)
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "notify",
-		Destination: &args.Notify,
-		Usage:       `set to true to send notifications to configured destinations`,
-	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "expect-no-changes",
-		Destination: &args.WarnChanges,
-		Usage:       `set to true for non-zero return code if there are changes`,
-	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "no-populate",
-		Destination: &args.NoPopulate,
-		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
-	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "full",
-		Destination: &args.Full,
-		Usage:       `Add headings, providers names, notifications of no changes, etc`,
-	})
-	flags = append(flags, &cli.IntFlag{
-		Name:   "reportmax",
-		Hidden: true,
-		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, max int) error {
-			printer.MaxReport = max
-			return nil
-		},
-	})
-	flags = append(flags, &cli.Int64Flag{
-		Name:        "bindserial",
-		Destination: &bindserial.ForcedValue,
-		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
-	})
-	return flags
-}
-
-var _ = cmd(catMain, func() *cli.Command {
-	var args PushArgs
-	return &cli.Command{
-		Name:  "push",
-		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
-			return exit(Push(args))
-		},
-		Flags: args.flags(),
-	}
-}())
-
-// PushArgs contains all data/flags needed to run push, independently of CLI
-type PushArgs struct {
-	PreviewArgs
-	Interactive bool
-	Report      string
-}
-
-func (args *PushArgs) flags() []cli.Flag {
-	flags := args.PreviewArgs.flags()
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "i",
-		Destination: &args.Interactive,
-		Usage:       "Interactive. Confirm or Exclude each correction before they run",
-	})
-	flags = append(flags, &cli.StringFlag{
-		Name:        "report",
-		Destination: &args.Report,
-		Usage:       `Generate a machine-parseable report of performed corrections.`,
-	})
-	return flags
-}
-
 // Preview implements the preview subcommand.
-func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.DefaultPrinter, nil)
+func Preview(args PPreviewArgs) error {
+	return run(args, false, false, printer.DefaultPrinter, &args.Report)
 }
 
 // Push implements the push subcommand.
-func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
+func Push(args PPushArgs) error {
+	return run(args.PPreviewArgs, true, args.Interactive, printer.DefaultPrinter, &args.Report)
 }
 
 var obsoleteDiff2FlagUsed = false
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
+func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report *string) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 
 	// This is a hack until we have the new printer replacement.
@@ -206,6 +106,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI, report 
 						zones, err := lister.ListZones()
 						if err != nil {
 							out.Errorf("ERROR: %s\n", err.Error())
+							anyErrors = true
 							return
 						}
 						aceZoneName, _ := idna.ToASCII(domain.Name)

@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/time/rate"
 )
 
 /*
@@ -23,16 +24,12 @@ Info required in `creds.json`:
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &cloudnsProvider{}
+	c.requestLimit = rate.NewLimiter(10, 10)
 
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
 	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
 		return nil, fmt.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
-	}
-
-	// Get a domain to validate authentication
-	if err := c.fetchDomainList(); err != nil {
-		return nil, err
 	}
 
 	return c, nil
@@ -43,12 +40,12 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -72,10 +69,12 @@ func init() {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if len(c.nameserversNames) == 0 {
-		c.fetchAvailableNameservers()
+	names, err := c.fetchAvailableNameservers()
+	if err != nil {
+		return nil, err
 	}
-	return models.ToNameservers(c.nameserversNames)
+
+	return models.ToNameservers(names)
 }
 
 // // GetDomainCorrections returns the corrections for a domain.
@@ -117,23 +116,23 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, 0, err
-		}
-	}
-	domainID, ok := c.domainIndex[dc.Name]
-	if !ok {
+	domainID, ok, err := c.fetchDomainIndex(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	} else if !ok {
 		return nil, 0, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	// Get a list of available TTL values.
 	// The TTL list needs to be obtained for each domain, so get it first here.
-	c.fetchAvailableTTLValues(dc.Name)
+	allowedTTLValues, err := c.fetchAvailableTTLValues(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
 	for _, record := range dc.Records {
-		record.TTL = fixTTL(record.TTL)
+		record.TTL = fixTTL(allowedTTLValues, record.TTL)
 	}
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
@@ -276,11 +275,9 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
-	if err := c.fetchDomainList(); err != nil {
+	if _, ok, err := c.fetchDomainIndex(domain); err != nil {
 		return err
-	}
-	// zone already exists
-	if _, ok := c.domainIndex[domain]; ok {
+	} else if ok { // zone already exists
 		return nil
 	}
 	return c.createDomain(domain)
@@ -341,11 +338,26 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	case "CLOUD_WR":
 		rc.Type = "WR"
 		rc.SetTarget(r.Target)
+	case "LOC":
+		loc := fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s",
+			r.LocLatDeg, r.LocLatMin, r.LocLatSec, r.LocLatDir,
+			r.LocLongDeg, r.LocLongMin, r.LocLongSec, r.LocLongDir,
+			r.LocAltitude, r.LocSize, r.LocHPrecision, r.LocVPrecision)
+		rc.SetTargetLOCString(r.Target, loc)
 	default:
 		rc.SetTarget(r.Target)
 	}
 
 	return rc
+}
+
+func formatLocParam(param string) string {
+	param = strings.Split(param, "m")[0]
+	// API misbehaves with a parameter of "0.00" and treats it as the default, so convert to "0" for this case only
+	if param == "0.00" {
+		param = "0"
+	}
+	return param
 }
 
 // toReq takes a RecordConfig and turns it into the native format used by the API.
@@ -389,6 +401,20 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["algorithm"] = strconv.Itoa(int(rc.DsAlgorithm))
 		req["digest-type"] = strconv.Itoa(int(rc.DsDigestType))
 		req["record"] = rc.DsDigest
+	case "LOC":
+		parts := strings.Fields(rc.GetTargetCombined())
+		req["lat-deg"] = parts[0]
+		req["lat-min"] = parts[1]
+		req["lat-sec"] = parts[2]
+		req["lat-dir"] = parts[3]
+		req["long-deg"] = parts[4]
+		req["long-min"] = parts[5]
+		req["long-sec"] = parts[6]
+		req["long-dir"] = parts[7]
+		req["altitude"] = formatLocParam(parts[8])
+		req["size"] = formatLocParam(parts[9])
+		req["h-precision"] = formatLocParam(parts[10])
+		req["v-precision"] = formatLocParam(parts[11])
 	default:
 		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}

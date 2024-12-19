@@ -30,6 +30,6 @@ Digest must be a string.
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DS("example.com", 2371, 13, 2, "ABCDEF"),
-END);
+);
 ```
 {% endcode %}

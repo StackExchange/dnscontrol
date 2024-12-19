@@ -14,6 +14,6 @@ var DSP_EXOSCALE = NewDnsProvider("exoscale");
 
 D("example.com", REG_NONE, DnsProvider(DSP_EXOSCALE),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}

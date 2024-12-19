@@ -29,7 +29,7 @@ var DSP_RWTH = NewDnsProvider("rwth");
 
 D("example.rwth-aachen.de", REG_NONE, DnsProvider(DSP_RWTH),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

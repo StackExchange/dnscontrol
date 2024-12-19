@@ -49,6 +49,6 @@ D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
   R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com.", R53_ZONE("Z368ELLRRE2KJ0"), R53_EVALUATE_TARGET_HEALTH(true)),     // a classic ELB in us-west-1 with target health evaluation enabled
   R53_ALIAS("foo", "A", "blahblah.elasticbeanstalk.us-west-2.amazonaws.com.", R53_ZONE("Z38NKT9BP95V3O")),     // an Elastic Beanstalk environment in us-west-2
   R53_ALIAS("foo", "A", "blahblah-bucket.s3-website-us-west-1.amazonaws.com.", R53_ZONE("Z2F56UZL2M1ACD")),     // a website S3 Bucket in us-west-1
-END);
+);
 ```
 {% endcode %}

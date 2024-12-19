@@ -2,6 +2,7 @@ package autodns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -76,16 +77,18 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 	var corrections []*models.Correction
 
-	msgs, changed, actualChangeCount, err := diff2.ByZone(existingRecords, dc, nil)
+	result, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changed, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
+
 	if changed {
 
 		msgs = append(msgs, "Zone update for "+domain)
 		msg := strings.Join(msgs, "\n")
 
-		nameServers, zoneTTL, resourceRecords := recordsToNative(dc.Records)
+		nameServers, zoneTTL, resourceRecords := recordsToNative(result.DesiredPlus)
 
 		corrections = append(corrections,
 			&models.Correction{
@@ -98,7 +101,7 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 					if err != nil {
-						return fmt.Errorf(err.Error())
+						return errors.New(err.Error())
 					}
 
 					return nil

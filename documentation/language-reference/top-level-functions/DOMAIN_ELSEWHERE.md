@@ -35,7 +35,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     NO_PURGE,
     NAMESERVER("ns1.foo.com"),
     NAMESERVER("ns2.foo.com"),
-END);
+);
 ```
 {% endcode %}
 

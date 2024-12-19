@@ -22,6 +22,6 @@ Target should be a string representing the target. If it is a single label we wi
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   ALIAS("@", "google.com."), // example.com -> google.com
-END);
+);
 ```
 {% endcode %}

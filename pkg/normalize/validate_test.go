@@ -174,9 +174,55 @@ func Test_transform_cname(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := transformCNAME(test.experiment, "old.com", "new.com")
+		actual := transformCNAME(test.experiment, "old.com", "new.com", "")
 		if test.expected != actual {
 			t.Errorf("%v: expected (%v) got (%v)\n", test.experiment, test.expected, actual)
+		}
+	}
+}
+
+func Test_transform_cname_strip(t *testing.T) {
+	var tests = []struct {
+		p        []string
+		expected string
+	}{
+		{[]string{"ai.meta.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"ai.meta.stackexchange.com.internal."},
+		{[]string{"askubuntu.com.", "askubuntu.com", "com.internal", "com"},
+			"askubuntu.com.internal."},
+		{[]string{"blogoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"blogoverflow.com.internal."},
+		{[]string{"careers.stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"careers.stackoverflow.com.internal."},
+		{[]string{"chat.stackexchange.com.", "askubuntu.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal."},
+		{[]string{"chat.stackexchange.com.", "stackoverflow.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal."},
+		{[]string{"chat.stackexchange.com.", "superuser.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal."},
+		{[]string{"sstatic.net.", "sstatic.net", "net.internal", "net"},
+			"sstatic.net.internal."},
+		{[]string{"stackapps.com.", "stackapps.com", "com.internal", "com"},
+			"stackapps.com.internal."},
+		{[]string{"stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"stackexchange.com.internal."},
+		{[]string{"stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"stackoverflow.com.internal."},
+		{[]string{"superuser.com.", "superuser.com", "com.internal", "com"},
+			"superuser.com.internal."},
+		{[]string{"teststackoverflow.com.", "teststackoverflow.com", "com.internal", "com"},
+			"teststackoverflow.com.internal."},
+		{[]string{"webapps.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"webapps.stackexchange.com.internal."},
+		//
+		{[]string{"sstatic.net.", "sstatic.net", "com.internal", "com"},
+			"sstatic.net.internal."},
+	}
+
+	for _, test := range tests {
+		actual := transformCNAME(test.p[0], test.p[1], test.p[2], test.p[3])
+		if test.expected != actual {
+			t.Errorf("%v: expected (%v) got (%v)\n", test.p, test.expected, actual)
 		}
 	}
 }

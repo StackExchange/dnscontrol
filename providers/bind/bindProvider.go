@@ -35,7 +35,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
@@ -126,8 +126,6 @@ type bindProvider struct {
 	nameservers    []*models.Nameserver
 	directory      string
 	filenameformat string
-	zonefile       string // Where the zone data is e texpected
-	zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -162,6 +160,7 @@ func (c *bindProvider) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	var zonefile string
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
@@ -172,29 +171,25 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 		// This layering violation is needed for tests only.
 		// Otherwise, this is set already.
 		// Note: In this situation there is no "uniquename" or "tag".
-		c.zonefile = filepath.Join(c.directory,
+		zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat, domain, domain, ""))
 	} else {
-		c.zonefile = filepath.Join(c.directory,
+		zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat,
 				meta[models.DomainUniqueName], domain, meta[models.DomainTag]),
 		)
 	}
-	content, err := os.ReadFile(c.zonefile)
+	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
-		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", c.zonefile)
+		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", zonefile)
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
+		return nil, fmt.Errorf("can't open %s: %w", zonefile, err)
 	}
-	c.zoneFileFound = true
 
-	zonefileName := c.zonefile
-
-	return ParseZoneContents(string(content), domain, zonefileName)
+	return ParseZoneContents(string(content), domain, zonefile)
 }
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
@@ -216,9 +211,14 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
+func (c *bindProvider) EnsureZoneExists(_ string) error {
+	return nil
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
+	var zonefile string
 
 	changes := false
 	var msg string
@@ -247,12 +247,12 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	}
 
 	var msgs []string
-	var err error
 	var actualChangeCount int
-	msgs, changes, actualChangeCount, err = diff2.ByZone(foundRecords, dc, nil)
+	result, err := diff2.ByZone(foundRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount = result.Msgs, result.HasChanges, result.ActualChangeCount
 	if !changes {
 		return nil, 0, nil
 	}
@@ -270,7 +270,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
-	c.zonefile = filepath.Join(c.directory,
+	zonefile = filepath.Join(c.directory,
 		makeFileName(c.filenameformat,
 			dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
 	)
@@ -287,8 +287,8 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		&models.Correction{
 			Msg: msg,
 			F: func() error {
-				printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
-				fname, err := preprocessFilename(c.zonefile)
+				printer.Printf("WRITING ZONEFILE: %v\n", zonefile)
+				fname, err := preprocessFilename(zonefile)
 				if err != nil {
 					return fmt.Errorf("could not create zonefile: %w", err)
 				}
@@ -299,7 +299,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 				// Beware that if there are any fake types, then they will
 				// be commented out on write, but we don't reverse that when
 				// reading, so there will be a diff on every invocation.
-				err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
+				err = prettyzone.WriteZoneFileRC(zf, result.DesiredPlus, dc.Name, 0, comments)
 
 				if err != nil {
 					return fmt.Errorf("failed WriteZoneFile: %w", err)

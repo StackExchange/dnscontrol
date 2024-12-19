@@ -115,10 +115,11 @@ func zoneFileToRecords(r io.Reader, origin string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *mythicBeastsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
-	msgs, changes, actualChangeCount, err := diff2.ByZone(actual, dc, nil)
+	result, err := diff2.ByZone(actual, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
+	msgs, changes, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 
 	var corrections []*models.Correction
 	if changes {
@@ -127,7 +128,7 @@ func (n *mythicBeastsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig
 				Msg: strings.Join(msgs, "\n"),
 				F: func() error {
 					var b strings.Builder
-					for _, record := range dc.Records {
+					for _, record := range result.DesiredPlus {
 						switch rr := record.ToRR().(type) {
 						case *dns.SSHFP:
 							// "Hex strings [for SSHFP] must be in lower-case", per Mythic Beasts API docs.

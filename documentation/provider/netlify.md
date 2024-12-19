@@ -31,7 +31,7 @@ var DSP_NETLIFY = NewDnsProvider("netlify");
 
 D("example.com", REG_NETLIFY, DnsProvider(DSP_NETLIFY),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

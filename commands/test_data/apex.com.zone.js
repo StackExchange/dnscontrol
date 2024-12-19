@@ -11,5 +11,5 @@ D("apex.com", REG_CHANGEME,
 	// NOTE: CNAME at apex may require manual editing.
 	CNAME("@", "cnametest1.example.com."),
 	CNAME("www", "cnametest2.example.com."),
-END);
+);
 

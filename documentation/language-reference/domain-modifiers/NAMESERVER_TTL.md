@@ -17,7 +17,7 @@ The value can be an integer or a string. See [`TTL`](../record-modifiers/TTL.md)
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NAMESERVER_TTL("2d"),
   NAMESERVER("ns"),
-END);
+);
 ```
 {% endcode %}
 
@@ -32,7 +32,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   NAMESERVER("ns2.provider.com."), //inherits NAMESERVER_TTL
   A("@","1.2.3.4"), // inherits DefaultTTL
   A("foo", "2.3.4.5", TTL(600)), // overrides DefaultTTL for this record only
-END);
+);
 ```
 {% endcode %}
 

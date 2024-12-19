@@ -30,7 +30,7 @@ var DSP_DOMAINNAMESHOP = NewDnsProvider("mydomainnameshop");
 
 D("example.com", REG_NONE, DnsProvider(DSP_DOMAINNAMESHOP),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

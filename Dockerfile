@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.4
 
-FROM alpine:3.20.2@sha256:0a4eaa0eecf5f8c050e5bba433f58c052be7587ee8af3e8b3910ef9ab5fbe9f5 as RUN
+FROM alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a as RUN
 
 # Add runtime dependencies
 # - tzdata: Go time required external dependency eg: TRANSIP and possibly others

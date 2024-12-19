@@ -29,7 +29,7 @@ var DSP_DESEC = NewDnsProvider("desec");
 
 D("example.com", REG_NONE, DnsProvider(DSP_DESEC),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -42,5 +42,5 @@ deSEC enforces a daily limit of 300 RRset creation/deletion/modification per
 domain. Large changes may have to be done over the course of a few days.  The
 integration test suite can not be run in a single session. See
 [https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling](https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling)
-{% endhint %} 
+{% endhint %}
 

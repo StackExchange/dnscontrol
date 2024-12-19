@@ -7,6 +7,7 @@ providers/bind @tlimoncelli
 providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton
+providers/cnr @KaiSchwarz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @Deraen

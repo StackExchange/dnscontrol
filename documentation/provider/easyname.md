@@ -35,7 +35,7 @@ var REG_EASYNAME = NewRegistrar("easyname");
 D("example.com", REG_EASYNAME,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
-END);
+);
 ```
 {% endcode %}
 

@@ -15,5 +15,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2022-11-19
 
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2024-11-11
+
 	return a.Audit(records)
 }

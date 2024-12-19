@@ -3,6 +3,7 @@ package oracle
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -92,6 +93,22 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	for i, zone := range listResp.Items {
 		zones[i] = *zone.Name
 	}
+
+	for listResp.OpcNextPage != nil {
+		listResp, err = o.client.ListZones(ctx, dns.ListZonesRequest{
+			CompartmentId: &o.compartment,
+			Page:          listResp.OpcNextPage,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, zone := range listResp.Items {
+			zones = append(zones, *zone.Name)
+		}
+	}
+
 	return zones, nil
 }
 
@@ -155,7 +172,18 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameserversStripTD(nss)
+	nssNoStrip, err := models.ToNameservers(nss)
+
+	if err != nil {
+		nssStrip, err := models.ToNameserversStripTD(nss)
+		if err != nil {
+			return nil, fmt.Errorf("could not determine if trailing dots should be stripped or not")
+		}
+
+		return nssStrip, nil
+	}
+
+	return nssNoStrip, nil
 }
 
 func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
@@ -228,7 +256,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			continue
 		}
 
-		if rec.TTL != 86400 {
+		if rec.GetLabel() == "@" && rec.TTL != 86400 {
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}

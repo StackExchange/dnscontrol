@@ -52,7 +52,7 @@ var DSP_BIND = NewDnsProvider("bind");
 
 D("example.com", REG_NAMECHEAP, DnsProvider(DSP_BIND),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -68,7 +68,7 @@ D("example.com", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
   URL("@", "http://example.com/"),
   URL("www", "http://example.com/"),
   URL301("backup", "http://backup.example.com/"),
-END)
+);
 ```
 {% endcode %}
 

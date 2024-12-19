@@ -29,7 +29,7 @@ var DSP_DIGITALOCEAN = NewDnsProvider("mydigitalocean");
 
 D("example.com", REG_NONE, DnsProvider(DSP_DIGITALOCEAN),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

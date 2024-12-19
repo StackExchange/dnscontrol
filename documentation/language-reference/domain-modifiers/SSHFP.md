@@ -40,6 +40,6 @@ parameter_types:
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   SSHFP("@", 1, 1, "00yourAmazingFingerprint00"),
-END);
+);
 ```
 {% endcode %}

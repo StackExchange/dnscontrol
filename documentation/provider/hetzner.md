@@ -32,7 +32,7 @@ var DSP_HETZNER = NewDnsProvider("hetzner");
 
 D("example.com", REG_NONE, DnsProvider(DSP_HETZNER),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

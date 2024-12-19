@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/v4/certificate"
 )
 
 // directoryStorage implements storage in a local file directory

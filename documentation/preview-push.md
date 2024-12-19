@@ -26,7 +26,7 @@ OPTIONS:
    --no-populate                                              Use this flag to not auto-create non-existing zones at the provider (default: false)
    --full                                                     Add headings, providers names, notifications of no changes, etc (default: false)
    --bindserial value                                         Force BIND serial numbers to this value (for reproducibility) (default: 0)
-   --report value                                             (push) Generate a JSON-formatted report of the number of changes made.
+   --report value                                             Generate a JSON-formatted report of the number of changes.
    --help, -h                                                 show help
 ```
 
@@ -91,23 +91,39 @@ OPTIONS:
     serial number generator to output the value specified for all domains. This is
     generally used for reproducibility in testing pipelines.
 
+* `--cmode value`
+  * Concurrency mode. See below.
+
 * `--report name`
-  * (`push` only!)  Generate a machine-parseable report of
-    performed corrections in the file named `name`. If no name is specified, no
-    report is generated.
+  * Write a machine-parseable report of
+    corrections to the file named `name`. If no name is specified, no
+    report is generated. See [JSON Reports](json-reports.md)
+
+## cmode
+
+The `preview`/`push` commands begin with a data-gathering phase that collects current configuration
+from providers and zones.  This collection can be done sequentially or concurrently.  Concurrently is significantly faster.  However since concurrent mode is newer, not all providers have been tested and certified as being compatible with this mode.  Therefore the `--cmode` flag can be used to control concurrency.
+
+The `--cmode` value may be one of the following:
+
+* `legacy` -- Use the older, sequential code.  All data is gathered sequentially. This option and the related code will removed in release v4.16 (or later).  Please test `--cmode concurrent` and [report any bugs](https://github.com/StackExchange/dnscontrol/issues) ASAP.
+* `concurrent` -- Gathering is done either sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
+* `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.  While this is logically the same as `legacy`, it is implemented using the newer concurrent code, with concurrency disabled.
+* `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.
+
+The default value of `--cmode` will change over time:
+
+* v4.14: `--cmode legacy`
+* v4.15: `--cmode concurrent`
+* v4.16 or later (target 1-Jan-2025): The `--cmode legacy` option will be removed, along with the old serial code.
 
 ## ppreview/ppush
 
-{% hint style="info" %}
-Starting in v4.9
+{% hint style="warning" %}
+These commands will go away in v4.16 or later.  Starting in v4.14, please use
+`preview`/`push` with `--cmode concurrent` instead.
 {% endhint %}
 
 The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
 data is gathered concurrently. The commands will go away when
 they replace the existing `preview`/`push` commands.
-
-* `--cmode value`
-  * Concurrency mode. Specifies what kind of providers should be run concurrently.
-    * `default` -- Providers are run sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
-    * `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
-    * `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.

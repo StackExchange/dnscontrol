@@ -61,7 +61,7 @@ D("example.com", REG_NAMECOM, DnsProvider(DNS_NAMECOM), DnsProvider(DNS_BIND),
     A("siteb", host01, TTL(1800)),
     A("sitec", host02, TTL(1800)),
     A("sited", host02, TTL(1800)),
-END);
+);
 ```
 {% endcode %}
 
@@ -87,7 +87,7 @@ CLI_DEFAULTS({
 
 D("example.com", REG_EXAMPLE, DnsProvider(DNS_EXAMPLE),
     A("www", "10.10.10.10"),
-END);
+);
 
 if (emergency) {
     // Emergency mode: Configure A/B/C using CNAMEs to our alternate site.
@@ -96,7 +96,7 @@ if (emergency) {
         CNAME("a", "a.othersite"),
         CNAME("b", "b.othersite"),
         CNAME("c", "c.othersite"),
-    END);
+    );
 
 } else {
     // Normal operation: Configure A/B/C using A records.
@@ -105,7 +105,7 @@ if (emergency) {
         A("a", "10.10.10.10"),
         A("b", "10.10.10.11"),
         A("c", "10.10.10.12"),
-    END);
+    );
 
 }
 ```

@@ -48,7 +48,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_HWCLOUD),
     A("rr-lb", "10.0.1.1", {hw_weight: "10", hw_rrset_key: "lb-zone-b"}),
     A("rr-lb", "10.0.1.2", {hw_weight: "10", hw_rrset_key: "lb-zone-b"}),
     A("rr-lb", "10.0.2.2", {hw_weight: "0",  hw_rrset_key: "lb-zone-c"}),
-END);
+);
 ```
 {% endcode %}
 
@@ -62,7 +62,7 @@ var DSP_HWCLOUD = NewDnsProvider("huaweicloud");
 
 D("example.com", REG_NONE, DnsProvider(DSP_HWCLOUD),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

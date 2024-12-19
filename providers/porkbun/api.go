@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	baseURL = "https://porkbun.com/api/json/v3"
+	baseURL = "https://api.porkbun.com/api/json/v3"
 )
 
 type porkbunProvider struct {
@@ -77,7 +77,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	// If request sending too fast, the server will fail with the following error:
 	// porkbun API error: Create error: We were unable to create the DNS record.
 retry:
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(time.Second)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err
@@ -85,13 +85,13 @@ retry:
 
 	bodyString, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode == 202 {
-		retrycnt += 1
+	if resp.StatusCode == 202 || resp.StatusCode == 503 {
+		retrycnt++
 		if retrycnt == 5 {
 			return bodyString, fmt.Errorf("rate limiting exceeded")
 		}
-		printer.Warnf("Rate limiting.. waiting for %d minute(s)\n", retrycnt)
-		time.Sleep(time.Minute * time.Duration(retrycnt))
+		printer.Warnf("Rate limiting.. waiting for %d second(s)\n", retrycnt*10)
+		time.Sleep(time.Second * time.Duration(retrycnt*10))
 		goto retry
 	}
 
@@ -152,14 +152,14 @@ func (c *porkbunProvider) getRecords(domain string) ([]domainRecord, error) {
 	return records, nil
 }
 
-func (c *porkbunProvider) createUrlForwardingRecord(domain string, rec requestParams) error {
+func (c *porkbunProvider) createURLForwardingRecord(domain string, rec requestParams) error {
 	if _, err := c.post("/domain/addUrlForward/"+domain, rec); err != nil {
 		return fmt.Errorf("failed create url forwarding record (porkbun): %w", err)
 	}
 	return nil
 }
 
-func (c *porkbunProvider) deleteUrlForwardingRecord(domain string, recordID string) error {
+func (c *porkbunProvider) deleteURLForwardingRecord(domain string, recordID string) error {
 	params := requestParams{}
 	if _, err := c.post(fmt.Sprintf("/domain/deleteUrlForward/%s/%s", domain, recordID), params); err != nil {
 		return fmt.Errorf("failed delete url forwarding record (porkbun): %w", err)
@@ -167,17 +167,17 @@ func (c *porkbunProvider) deleteUrlForwardingRecord(domain string, recordID stri
 	return nil
 }
 
-func (c *porkbunProvider) modifyUrlForwardingRecord(domain string, recordID string, rec requestParams) error {
-	if err := c.deleteUrlForwardingRecord(domain, recordID); err != nil {
+func (c *porkbunProvider) modifyURLForwardingRecord(domain string, recordID string, rec requestParams) error {
+	if err := c.deleteURLForwardingRecord(domain, recordID); err != nil {
 		return err
 	}
-	if err := c.createUrlForwardingRecord(domain, rec); err != nil {
+	if err := c.createURLForwardingRecord(domain, rec); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *porkbunProvider) getUrlForwardingRecords(domain string) ([]domainRecord, error) {
+func (c *porkbunProvider) getURLForwardingRecords(domain string) ([]domainRecord, error) {
 	params := requestParams{}
 	var bodyString, err = c.post("/domain/getUrlForwarding/"+domain, params)
 	if err != nil {
@@ -190,11 +190,7 @@ func (c *porkbunProvider) getUrlForwardingRecords(domain string) ([]domainRecord
 		return nil, fmt.Errorf("failed parsing url forwarding record list from porkbun: %w", err)
 	}
 
-	var records []domainRecord
-	for _, rec := range dr.Forwards {
-		records = append(records, rec)
-	}
-	return records, nil
+	return dr.Forwards, nil
 }
 
 func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {

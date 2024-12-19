@@ -374,7 +374,7 @@ func TestDualProviders(t *testing.T) {
 	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
 	dc.Nameservers = append(dc.Nameservers, nslist...)
 	nameservers.AddNSRecords(dc)
-	t.Log("Adding nameservers from another provider")
+	t.Log("Adding test nameservers")
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
@@ -392,6 +392,20 @@ func TestDualProviders(t *testing.T) {
 		}
 		t.FailNow()
 	}
+
+	t.Log("Removing test nameservers")
+	dc.Records = []*models.RecordConfig{}
+	n := 0
+	for _, ns := range dc.Nameservers {
+		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
+			continue
+		}
+		dc.Nameservers[n] = ns
+		n++
+	}
+	dc.Nameservers = dc.Nameservers[:n]
+	nameservers.AddNSRecords(dc)
+	run()
 }
 
 func TestNameserverDots(t *testing.T) {
@@ -456,6 +470,11 @@ func (tc *TestCase) UnsafeIgnore() *TestCase {
 func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
+}
+
+func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
+	record.Metadata = metadata
+	return record
 }
 
 func a(name, target string) *models.RecordConfig {
@@ -580,7 +599,7 @@ func ignore(labelSpec string, typeSpec string, targetSpec string) *models.Record
 }
 
 func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al int32, sz float32, hp float32, vp float32) *models.RecordConfig {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) *models.RecordConfig {
 	r := makeRec(name, "", "LOC")
 	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 	return r
@@ -757,10 +776,6 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	r := makeRec(name, target, "TLSA")
 	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
-}
-
-func ns1Urlfwd(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS1_URLFWD")
 }
 
 func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.RecordConfig {
@@ -1399,6 +1414,7 @@ func makeTests() []*TestGroup {
 				"NS1",        // Free acct only allows 50 records, therefore we skip
 				//"ROUTE53",       // Batches up changes in pages.
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
+				"CNR",     // Test beaks limits.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -1482,16 +1498,16 @@ func makeTests() []*TestGroup {
 		testgroup("LOC",
 			requires(providers.CanUseLOC),
 			//42 21 54     N  71 06  18     W -24m 30m
-			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0)),
+			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24.05, 30, 0, 0)),
 			//42 21 54     N  71 06  18     W -24m 30m
-			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 10, 0)),
+			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24.06, 30, 10, 0)),
 			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
 				//42 21 54     N  71 06  18     W -24m 30m
 				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
 				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
-				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24, 1, 200, 10),
+				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24.33, 1, 200, 10),
 				//52 14 05     N  00 08  50     E 10m
-				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10, 0, 0, 0),
+				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10.22, 0, 0, 0),
 				//32  7 19     S 116  2  25     E 10m
 				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
 				//42 21 28.764 N  71 00  51.617 W -44m 2000m
@@ -2060,14 +2076,6 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// NS1 features
-
-		testgroup("NS1_URLFWD tests",
-			only("NS1"),
-			tc("Add a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
-			tc("Update a urlfwd", ns1Urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
-		),
-
 		//// IGNORE* features
 
 		// Narrative: You're basically done now. These remaining tests
@@ -2078,158 +2086,487 @@ func makeTests() []*TestGroup {
 
 		testgroup("IGNORE main",
 			tc("Create some records",
-				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 			),
-			tc("ignore label=foo",
+
+			tc("ignore label",
+				// NB(tlim): This ignores 1 record of a recordSet. This should
+				// fail for diff2.ByRecordSet() providers if diff2 is not
+				// implemented correctly.
+				//a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				//txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 				ignore("foo", "", ""),
 			).ExpectNoChanges(),
-			tc("ignore type=txt",
+			tc("VERIFY PREVIOUS",
 				a("foo", "1.2.3.4"),
-				a("bar", "5.5.5.5"),
-				ignore("", "TXT", ""),
-			).ExpectNoChanges(),
-			tc("ignore target=1.2.3.4",
+				a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
-				ignore("", "", "1.2.3.4"),
+				cname("mail", "ghs.googlehosted.com."),
 			).ExpectNoChanges(),
+
+			tc("ignore label,type",
+				//a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("foo", "A", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore label,type,target",
+				//a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("foo", "A", "1.2.3.4"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore type",
+				//a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				//a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "A", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore type,target",
+				a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "A", "2.3.4.5"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore target",
+				a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "", "2.3.4.5"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			// Many types:
 			tc("ignore manytypes",
+				//a("foo", "1.2.3.4"),
+				//a("foo", "2.3.4.5"),
+				//txt("foo", "simple"),
+				//a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A,TXT", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			// Target with wildcard:
+			tc("ignore label,type,target=*",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				//cname("mail", "ghs.googlehosted.com."),
+				ignore("", "CNAME", "*.googlehosted.com."),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.2.3.4"),
+				a("foo", "2.3.4.5"),
+				txt("foo", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 			).ExpectNoChanges(),
 		),
 
+		// Same as "main" but with an apex ("@") record.
 		testgroup("IGNORE apex",
 			tc("Create some records",
-				txt("@", "simple"),
 				a("@", "1.2.3.4"),
-			).UnsafeIgnore(),
-			tc("ignore label=apex",
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			),
+
+			tc("apex label",
+				// NB(tlim): This ignores 1 record of a recordSet. This should
+				// fail for diff2.ByRecordSet() providers if diff2 is not
+				// implemented correctly.
+				//a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				//txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 				ignore("@", "", ""),
+				//ignore("", "NS", ""),
+				// NB(tlim): .UnsafeIgnore is needed because the NS records
+				// that providers injects into zones are treated like input
+				// from dnsconfig.js.
 			).ExpectNoChanges().UnsafeIgnore(),
-			tc("ignore type=txt",
+			tc("VERIFY PREVIOUS",
 				a("@", "1.2.3.4"),
-				ignore("", "TXT", ""),
-			).ExpectNoChanges().UnsafeIgnore(),
-			tc("ignore target=1.2.3.4",
+				a("@", "2.3.4.5"),
 				txt("@", "simple"),
-				ignore("", "", "1.2.3.4"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("apex label,type",
+				//a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("@", "A", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("apex label,type,target",
+				//a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("@", "A", "1.2.3.4"),
+				// NB(tlim): .UnsafeIgnore is needed because the NS records
+				// that providers injects into zones are treated like input
+				// from dnsconfig.js.
 			).ExpectNoChanges().UnsafeIgnore(),
-			tc("ignore manytypes",
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("apex type",
+				//a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				//a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "A", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("apex type,target",
+				a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "A", "2.3.4.5"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("apex target",
+				a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+				ignore("", "", "2.3.4.5"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			// Many types:
+			tc("apex manytypes",
+				//a("@", "1.2.3.4"),
+				//a("@", "2.3.4.5"),
+				//txt("@", "simple"),
+				//a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A,TXT", ""),
-			).ExpectNoChanges().UnsafeIgnore(),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("@", "1.2.3.4"),
+				a("@", "2.3.4.5"),
+				txt("@", "simple"),
+				a("bar", "5.5.5.5"),
+				cname("mail", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
 		),
 
-		// Legacy IGNORE_NAME and IGNORE_TARGET tests.
+		// IGNORE with unsafe notation
 
-		testgroup("IGNORE_NAME function",
+		testgroup("IGNORE unsafe",
 			tc("Create some records",
 				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
-				a("bar", "1.2.3.4"),
+				txt("@", "asimple"),
+				a("@", "2.2.2.2"),
 			),
-			tc("ignore foo",
-				ignoreName("foo"),
-				a("bar", "1.2.3.4"),
-			).ExpectNoChanges(),
-			clear(),
-			tc("Create some records",
-				txt("bar.foo", "simple"),
-				a("bar.foo", "1.2.3.4"),
-				a("bar", "1.2.3.4"),
-			),
-			tc("ignore *.foo",
-				ignoreName("*.foo"),
-				a("bar", "1.2.3.4"),
-			).ExpectNoChanges(),
-			clear(),
-			tc("Create some records",
-				txt("bar.foo", "simple"),
-				a("bar.foo", "1.2.3.4"),
-			),
-			tc("ignore *.foo while we add 1",
-				ignoreName("*.foo"),
-				a("bar", "1.2.3.4"),
-			),
-		),
 
-		testgroup("IGNORE_NAME apex",
-			tc("Create some records",
-				txt("@", "simple"),
-				a("@", "1.2.3.4"),
-				txt("bar", "stringbar"),
-				a("bar", "2.4.6.8"),
-			).UnsafeIgnore(),
-			tc("ignore apex",
-				ignoreName("@"),
-				txt("bar", "stringbar"),
-				a("bar", "2.4.6.8"),
+			tc("ignore unsafe apex",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				txt("@", "asimple"),
+				a("@", "2.2.2.2"),
+				ignore("@", "", ""),
 			).ExpectNoChanges().UnsafeIgnore(),
-			clear(),
-			tc("Add a new record - ignoring apex",
-				ignoreName("@"),
-				txt("bar", "stringbar"),
-				a("bar", "2.4.6.8"),
-				a("added", "4.6.8.9"),
-			).UnsafeIgnore(),
-		),
-
-		testgroup("IGNORE_TARGET function CNAME",
-			tc("Create some records",
-				cname("foo", "test.foo.com."),
-				cname("keep", "keeper.example.com."),
-			),
-			tc("ignoring CNAME=test.foo.com.",
-				ignoreTarget("test.foo.com.", "CNAME"),
-				cname("keep", "keeper.example.com."),
+			tc("VERIFY PREVIOUS",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				txt("@", "asimple"),
+				a("@", "2.2.2.2"),
 			).ExpectNoChanges(),
-			tc("ignoring CNAME=test.foo.com. and add",
-				ignoreTarget("test.foo.com.", "CNAME"),
-				cname("keep", "keeper.example.com."),
-				a("adding", "1.2.3.4"),
-				cname("another", "www.example.com."),
+
+			tc("ignore unsafe label",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				txt("@", "asimple"),
+				a("@", "2.2.2.2"),
+				ignore("foo", "", ""),
+			).ExpectNoChanges().UnsafeIgnore(),
+			tc("VERIFY PREVIOUS",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				txt("@", "asimple"),
+				a("@", "2.2.2.2"),
+			).ExpectNoChanges(),
+		),
+
+		// IGNORE with wildcards
+
+		testgroup("IGNORE wilds",
+			tc("Create some records",
+				a("foo.bat", "1.2.3.4"),
+				a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
 			),
+
+			tc("ignore label=foo.*",
+				//a("foo.bat", "1.2.3.4"),
+				//a("foo.bat", "2.3.4.5"),
+				//txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
+				ignore("foo.*", "", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo.bat", "1.2.3.4"),
+				a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore label=foo.bat,type",
+				//a("foo.bat", "1.2.3.4"),
+				//a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				//a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
+				ignore("*.bat", "A", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo.bat", "1.2.3.4"),
+				a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
+
+			tc("ignore target=*.domain",
+				a("foo.bat", "1.2.3.4"),
+				a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				//cname("mail.bat", "ghs.googlehosted.com."),
+				ignore("", "", "*.googlehosted.com."),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("foo.bat", "1.2.3.4"),
+				a("foo.bat", "2.3.4.5"),
+				txt("foo.bat", "simple"),
+				a("bar.bat", "5.5.5.5"),
+				cname("mail.bat", "ghs.googlehosted.com."),
+			).ExpectNoChanges(),
 		),
 
-		testgroup("IGNORE_TARGET function CNAME*",
+		// IGNORE with changes
+		testgroup("IGNORE with modify",
 			tc("Create some records",
-				cname("foo1", "test.foo.com."),
-				cname("foo2", "my.test.foo.com."),
-				cname("bar", "test.example.com."),
-			).UnsafeIgnore(),
-			tc("ignoring CNAME=test.foo.com.",
-				ignoreTarget("*.foo.com.", "CNAME"),
-				cname("foo2", "my.test.foo.com."),
-				cname("bar", "test.example.com."),
-			).ExpectNoChanges().UnsafeIgnore(),
-			tc("ignoring CNAME=test.foo.com. and add",
-				ignoreTarget("*.foo.com.", "CNAME"),
-				cname("foo2", "my.test.foo.com."),
-				cname("bar", "test.example.com."),
-				a("adding", "1.2.3.4"),
-				cname("another", "www.example.com."),
-			).UnsafeIgnore(),
+				a("foo", "1.1.1.1"),
+				a("foo", "10.10.10.10"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			),
+
+			// ByZone: Change (anywhere)
+			tc("IGNORE change ByZone",
+				ignore("zzz", "A", ""),
+				a("foo", "1.1.1.1"),
+				a("foo", "11.11.11.11"), // CHANGE
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				//a("zzz", "3.3.3.3"),
+				//a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.1.1.1"),
+				a("foo", "11.11.11.11"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			).ExpectNoChanges(),
+
+			// ByLabel: Change within a (name) while we ignore the rest
+			tc("IGNORE change ByLabel",
+				ignore("foo", "MX", ""),
+				a("foo", "1.1.1.1"),
+				a("foo", "12.12.12.12"), // CHANGE
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				//mx("foo", 10, "aspmx.l.google.com."),
+				//mx("foo", 20, "alt1.aspmx.l.google.com"),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.1.1.1"),
+				a("foo", "12.12.12.12"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			).ExpectNoChanges(),
+
+			// ByRecordSet: Change within a (name+type) while we ignore the rest
+			tc("IGNORE change ByRecordSet",
+				ignore("foo", "MX,AAAA", ""),
+				a("foo", "1.1.1.1"),
+				a("foo", "13.13.13.13"), // CHANGE
+				//aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				//mx("foo", 10, "aspmx.l.google.com."),
+				//mx("foo", 20, "alt1.aspmx.l.google.com"),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.1.1.1"),
+				a("foo", "13.13.13.13"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			).ExpectNoChanges(),
+
+			// Change within a (name+type+data) ("ByRecord")
+			tc("IGNORE change ByRecord",
+				ignore("foo", "A", "1.1.1.1"),
+				//a("foo", "1.1.1.1"),
+				a("foo", "14.14.14.14"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			),
+			tc("VERIFY PREVIOUS",
+				a("foo", "1.1.1.1"),
+				a("foo", "14.14.14.14"),
+				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				mx("foo", 10, "aspmx.l.google.com."),
+				mx("foo", 20, "alt1.aspmx.l.google.com."),
+				a("zzz", "3.3.3.3"),
+				a("zzz", "4.4.4.4"),
+				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
+			).ExpectNoChanges(),
 		),
 
-		testgroup("IGNORE_TARGET function CNAME**",
-			tc("Create some records",
-				cname("foo1", "test.foo.com."),
-				cname("foo2", "my.test.foo.com."),
-				cname("bar", "test.example.com."),
-			).UnsafeIgnore(),
-			tc("ignoring CNAME=test.foo.com.",
-				ignoreTarget("**.foo.com.", "CNAME"),
-				cname("bar", "test.example.com."),
-			).ExpectNoChanges().UnsafeIgnore(),
-			tc("ignoring CNAME=test.foo.com. and add",
-				ignoreTarget("**.foo.com.", "CNAME"),
-				cname("bar", "test.example.com."),
-				a("adding", "1.2.3.4"),
-				cname("another", "www.example.com."),
-			).UnsafeIgnore(),
-		),
+		// IGNORE repro bug reports
 
 		// https://github.com/StackExchange/dnscontrol/issues/2285
 		testgroup("IGNORE_TARGET b2285",
@@ -2239,6 +2576,10 @@ func makeTests() []*TestGroup {
 			),
 			tc("Add a new record - ignoring test.foo.com.",
 				ignoreTarget("**.acm-validations.aws.", "CNAME"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				cname("foo", "redact1.acm-validations.aws."),
+				cname("bar", "redact2.acm-validations.aws."),
 			).ExpectNoChanges(),
 		),
 
@@ -2262,7 +2603,51 @@ func makeTests() []*TestGroup {
 				ignore("dyndns-city1", "A,AAAA", ""),
 				ignore("dyndns-city2", "A,AAAA", ""),
 			).ExpectNoChanges().UnsafeIgnore(),
+			tc("VERIFY PREVIOUS",
+				a("dyndns-city1", "91.42.1.1"),
+				a("dyndns-city2", "91.42.1.2"),
+				aaaa("dyndns-city1", "2003:dd:d7ff::fe71:ce77"),
+				aaaa("dyndns-city2", "2003:dd:d7ff::fe71:ce78"),
+			).ExpectNoChanges(),
 		),
+
+		// https://github.com/StackExchange/dnscontrol/issues/3227
+		testgroup("IGNORE w/change b3227",
+			tc("Create some records",
+				a("testignore", "8.8.8.8"),
+				a("testdefined", "9.9.9.9"),
+			),
+			tc("ignore",
+				//a("testignore", "8.8.8.8"),
+				a("testdefined", "9.9.9.9"),
+				ignore("testignore", "", ""),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("testignore", "8.8.8.8"),
+				a("testdefined", "9.9.9.9"),
+			).ExpectNoChanges(),
+
+			tc("Verify nothing changed",
+				a("testignore", "8.8.8.8"),
+				a("testdefined", "9.9.9.9"),
+			).ExpectNoChanges(),
+			tc("VERIFY PREVIOUS",
+				a("testignore", "8.8.8.8"),
+				a("testdefined", "9.9.9.9"),
+			).ExpectNoChanges(),
+
+			tc("ignore with change",
+				//a("testignore", "8.8.8.8"),
+				a("testdefined", "2.2.2.2"),
+				ignore("testignore", "", ""),
+			),
+			tc("VERIFY PREVIOUS",
+				a("testignore", "8.8.8.8"),
+				a("testdefined", "2.2.2.2"),
+			).ExpectNoChanges(),
+		),
+
+		// OVH features
 
 		testgroup("structured TXT",
 			only("OVH"),
@@ -2295,6 +2680,44 @@ func makeTests() []*TestGroup {
 			tc("Add a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.com", "", "", "")),
 			tc("Update a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.org", "", "", "")),
 			tc("Update a urlfwd with metadata", porkbunUrlfwd("urlfwd1", "http://example.org", "permanent", "no", "no")),
+		),
+
+		// GCORE features
+
+		testgroup("GCORE metadata tests",
+			only("GCORE"),
+			tc("Add record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"gcore_filters":    "geodistance,false;first_n,false,2",
+				"gcore_asn":        "1234,2345",
+				"gcore_continents": "as,na,an,sa,oc,eu,af",
+				"gcore_countries":  "cn,us",
+				"gcore_latitude":   "12.34",
+				"gcore_longitude":  "67.89",
+				"gcore_notes":      "test",
+				"gcore_weight":     "12",
+				"gcore_ip":         "1.2.3.4",
+			})),
+			tc("Update record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"gcore_filters":            "healthcheck,false;geodns,false;first_n,false,3",
+				"gcore_failover_protocol":  "HTTP",
+				"gcore_failover_port":      "443",
+				"gcore_failover_frequency": "30",
+				"gcore_failover_timeout":   "10",
+				"gcore_failover_method":    "POST",
+				"gcore_failover_url":       "/test",
+				"gcore_failover_tls":       "false",
+				"gcore_failover_regexp":    "",
+				"gcore_failover_host":      "example.com",
+				"gcore_asn":                "2345,3456",
+				"gcore_continents":         "as,na",
+				"gcore_countries":          "gb,fr",
+				"gcore_latitude":           "12.89",
+				"gcore_longitude":          "34.56",
+				"gcore_notes":              "test2",
+				"gcore_weight":             "34",
+				"gcore_ip":                 "4.3.2.1",
+			})),
+			tc("Delete metadata from record", a("@", "1.2.3.4")),
 		),
 
 		// This MUST be the last test.

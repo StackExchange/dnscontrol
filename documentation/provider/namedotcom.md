@@ -45,7 +45,7 @@ var DSP_NAMECOM = NewDnsProvider("name.com");
 
 D("example.com", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
     A("test", "1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 
@@ -59,7 +59,7 @@ var DSP_R53 = NewDnsProvider("r53");
 
 D("example.com", REG_NAMECOM, DnsProvider(DSP_R53),
     A("test","1.2.3.4"),
-END);
+);
 ```
 {% endcode %}
 

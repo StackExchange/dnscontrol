@@ -24,12 +24,12 @@ correct syntax is `AUTODNSSEC_ON` not `AUTODNSSEC_ON()`
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   AUTODNSSEC_ON,  // Enable AutoDNSSEC.
   A("@", "10.1.1.1"),
-END);
+);
 
 D("insecure.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   AUTODNSSEC_OFF,  // Disable AutoDNSSEC.
   A("@", "10.2.2.2"),
-END);
+);
 ```
 {% endcode %}
 

@@ -42,7 +42,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     alt: 4,
     ttl: "5m",
   }),
-END);
+);
 ```
 {% endcode %}
 

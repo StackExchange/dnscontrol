@@ -28,12 +28,45 @@ type zoneCache struct {
 	sync.Mutex
 }
 
+const legacywarn = `WARNING: --cmode=legacy will go away in v4.16 or later.` +
+	` Please test --cmode=concurrent and report any bugs ASAP.` +
+	` See https://docs.dnscontrol.org/commands/preview-push#cmode` +
+	"\n"
+
+const ppreviewwarn = `WARNING: ppreview is going away in v4.16 or later.` +
+	` Use "preview" instead.` +
+	"\n"
+
+const ppushwarn = `WARNING: ppush is going away in v4.16 or later.` +
+	` Use "push" instead.` +
+	"\n"
+
+var _ = cmd(catMain, func() *cli.Command {
+	var args PPreviewArgs
+	return &cli.Command{
+		Name:  "preview",
+		Usage: "read live configuration and identify changes to be made, without applying them",
+		Action: func(ctx *cli.Context) error {
+			if args.ConcurMode == "legacy" {
+				fmt.Fprint(os.Stderr, legacywarn)
+				return exit(Preview(args))
+			}
+			return exit(PPreview(args))
+		},
+		Flags: args.flags(),
+	}
+}())
+
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPreviewArgs
 	return &cli.Command{
 		Name:  "ppreview",
-		Usage: "read live configuration and identify changes to be made, without applying them",
+		Usage: "Deprecated. Same as: preview --cmode=concurrent",
 		Action: func(ctx *cli.Context) error {
+			fmt.Fprint(os.Stderr, ppreviewwarn)
+			if args.ConcurMode == "legacy" {
+				return exit(Preview(args))
+			}
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -50,6 +83,7 @@ type PPreviewArgs struct {
 	ConcurMode  string
 	NoPopulate  bool
 	DePopulate  bool
+	Report      string
 	Full        bool
 }
 
@@ -78,11 +112,11 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
-		Value:       "default",
-		Usage:       `Which providers to run concurrently: all, default, none`,
+		Value:       "concurrent",
+		Usage:       `Which providers to run concurrently: legacy, concurrent, none, all`,
 		Action: func(c *cli.Context, s string) error {
-			if !slices.Contains([]string{"all", "default", "none"}, s) {
-				fmt.Printf("%q is not a valid option for --cmode.  Valie are: all, default, none", s)
+			if !slices.Contains([]string{"legacy", "concurrent", "none", "all"}, s) {
+				fmt.Printf("%q is not a valid option for --cmode.  Values are: legacy, concurrent, none, all\n", s)
 			}
 			return nil
 		},
@@ -116,8 +150,29 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &bindserial.ForcedValue,
 		Usage:       `Force BIND serial numbers to this value (for reproducibility)`,
 	})
+	flags = append(flags, &cli.StringFlag{
+		Name:        "report",
+		Destination: &args.Report,
+		Usage:       `Generate a machine-parseable report of corrections.`,
+	})
 	return flags
 }
+
+var _ = cmd(catMain, func() *cli.Command {
+	var args PPushArgs
+	return &cli.Command{
+		Name:  "push",
+		Usage: "identify changes to be made, and perform them",
+		Action: func(ctx *cli.Context) error {
+			if args.ConcurMode == "legacy" {
+				fmt.Fprint(os.Stderr, legacywarn)
+				return exit(Push(args))
+			}
+			return exit(PPush(args))
+		},
+		Flags: args.flags(),
+	}
+}())
 
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPushArgs
@@ -125,6 +180,10 @@ var _ = cmd(catMain, func() *cli.Command {
 		Name:  "ppush",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
+			fmt.Fprint(os.Stderr, ppushwarn)
+			if args.ConcurMode == "legacy" {
+				return exit(Push(args))
+			}
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
@@ -135,7 +194,6 @@ var _ = cmd(catMain, func() *cli.Command {
 type PPushArgs struct {
 	PPreviewArgs
 	Interactive bool
-	Report      string
 }
 
 func (args *PPushArgs) flags() []cli.Flag {
@@ -145,17 +203,12 @@ func (args *PPushArgs) flags() []cli.Flag {
 		Destination: &args.Interactive,
 		Usage:       "Interactive. Confirm or Exclude each correction before they run",
 	})
-	flags = append(flags, &cli.StringFlag{
-		Name:        "report",
-		Destination: &args.Report,
-		Usage:       `Generate a machine-parseable report of performed corrections.`,
-	})
 	return flags
 }
 
 // PPreview implements the preview subcommand.
 func PPreview(args PPreviewArgs) error {
-	return prun(args, false, false, printer.DefaultPrinter, "")
+	return prun(args, false, false, printer.DefaultPrinter, args.Report)
 }
 
 // PPush implements the push subcommand.
@@ -363,9 +416,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 
 func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Fix the parent zone's delegation: (if able/needed)
-	//zone.NameserversMutex.Lock()
 	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
-	//zone.NameserversMutex.Unlock()
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -530,7 +581,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 	}
 
 	return []*models.Correction{{
-		Msg: fmt.Sprintf("Create zone '%s' in the '%s' profile", aceZoneName, provider.Name),
+		Msg: fmt.Sprintf("Ensuring zone %q exists in %q", aceZoneName, provider.Name),
 		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
 	}}
 }
@@ -553,7 +604,10 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	nameservers.AddNSRecords(zone)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
-		return []*models.Correction{{Msg: fmt.Sprintf("No nameservers declared for domain %q; skipping registrar. Add {no_ns:'true'} to force", zone.Name)}}, 0
+		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns:'true'} to force",
+			zone.RegistrarName,
+			zone.Name,
+		)}}, 0
 	}
 
 	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)

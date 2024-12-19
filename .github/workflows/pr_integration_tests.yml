@@ -1,73 +1,37 @@
-name: "PR: Run all tests"
+name: "PR: Run integration tests"
+
+# When will this pipeline be activated?
+# 1. On any pull-request, or if someone pushes to a branch called
+# "tlim_testpr".
 on:
-  # git push origin main:tlim_testpr --force
-  # will trigger a full PR test on the main branch:
-  # https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  pull_request:
+  workflow_dispatch:
+  # Want to trigger all the tests without making a PR?
+  # Run: git push origin main:tlim_testpr --force
+  # This will trigger a full PR test on the main branch.
+  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
   push:
     branches:
       - 'tlim_testpr'
-  pull_request:
-  workflow_dispatch:
 
+# Environment Variables
 env:
-  cache-key: 1639697695 #Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  # cache-key: Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  cache-key: 1639697695
+  # go-mod-path: Where go-mod writes temp files
   go-mod-path: /go/pkg/mod
+  # BIND_DOMAIN: BIND is the one providers that we always test. By
+  # defining this here, we know it will always be set.
   BIND_DOMAIN: example.com
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      TEST_RESULTS: "/tmp/test-results"
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: stable
-    - name: restore_cache
-      uses: actions/cache@v4.0.1
-      with:
-        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        path: ${{ env.go-mod-path }}
-    - run: mkdir -p "$TEST_RESULTS"
-    - name: Run unit tests
-      run: |
-        go install gotest.tools/gotestsum@latest
-        gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-    - name: Enforce Go Formatted Code
-      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.4.0
-      with:
-        name: unit-tests
-        path: ${{ env.TEST_RESULTS }}
 
-# Stringer is needed because .goreleaser includes "go generate ./..."
-    - name: Install stringer
-      run: |
-        go install golang.org/x/tools/cmd/stringer@latest
-
-    -
-      id: build_binaries_tagged
-      name: Build binaries (if tagged)
-      if: github.ref_type == 'tag'
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        distribution: goreleaser
-        version: latest
-        args: build
-    -
-      id: build_binaries_not_tagged
-      name: Build binaries (not tagged)
-      if: github.ref_type != 'tag'
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        args: build --snapshot
+# integration-test-providers: Determine which providers have a _DOMAIN variable set.
+# That variable enables testing for the provider.  The results are
+# stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
+# where integration-tests can pick it up.
   integration-test-providers:
-    needs: build
+    #needs: build
     runs-on: ubuntu-latest
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
@@ -88,10 +52,13 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
+
+# integration-tests: Run the integration tests on any provider listed
+# in needs.integration-test-providers.outputs.integration_test_providers.
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -111,6 +78,7 @@ jobs:
       BUNNY_DNS_DOMAIN: ${{ vars.BUNNY_DNS_DOMAIN }}
       CLOUDFLAREAPI_DOMAIN: ${{ vars.CLOUDFLAREAPI_DOMAIN }}
       CLOUDNS_DOMAIN: ${{ vars.CLOUDNS_DOMAIN }}
+      CNR_DOMAIN: ${{ vars.CNR_DOMAIN }}
       CSCGLOBAL_DOMAIN: ${{ vars.CSCGLOBAL_DOMAIN }}
       DIGITALOCEAN_DOMAIN: ${{ vars.DIGITALOCEAN_DOMAIN }}
       GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
@@ -145,6 +113,10 @@ jobs:
       #
       CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY }}
       CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN }}
+      #
+      CNR_UID: ${{ secrets.CNR_UID }}
+      CNR_PW: ${{ secrets.CNR_PW }}
+      CNR_ENTITY: ${{ secrets.CNR_ENTITY }}
       #
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
       #
@@ -196,7 +168,7 @@ jobs:
     - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
-      uses: actions/cache@v4.0.1
+      uses: actions/cache@v4.2.0
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -210,7 +182,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       with:
         name: integration-tests-${{ matrix.provider }}
         path: ${{ env.TEST_RESULTS }}
