@@ -7,10 +7,19 @@ GitHub Actions (GHA) will do most of the work for you. You will need to edit the
 Please change the version number as appropriate.  Substitute (for example)
 `v4.2.0` any place you see `$VERSION` in this doc.
 
+## Step 0. Update dependencies
+
+```shell
+git checkout -b update_deps
+go install github.com/oligot/go-mod-upgrade@latest
+go-mod-upgrade
+go mod tidy
+git commit -a -m "CHORE: Update dependencies"
+```
+
 ## Step 1. Rebuild generated files
 
 ```shell
-export VERSION=v4.x.0
 git checkout main
 git pull
 go fmt ./...
