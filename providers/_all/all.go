@@ -2,6 +2,8 @@
 package all
 
 import (
+	_ "github.com/StackExchange/dnscontrol/v4/rtypes"
+
 	// Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/StackExchange/dnscontrol/v4/providers/akamaiedgedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/autodns"
@@ -10,9 +12,9 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/azureprivatedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/bunnydns"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/cnr"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cloudns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/cnr"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cscglobal"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/desec"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/digitalocean"

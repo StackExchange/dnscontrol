@@ -99,6 +99,9 @@ type RecordConfig struct {
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
+	Comparable string `json:"-"`
+	Display    string `json:"-"`
+
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`

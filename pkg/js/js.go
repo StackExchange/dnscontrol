@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
@@ -24,6 +25,10 @@ import (
 //go:embed helpers.js
 var helpersJsStatic string
 var helpersJsFileName = "pkg/js/helpers.js"
+
+//go:embed helpers-types.js
+var helpersTypesJsStatic string
+var helpersTypesJsFileName = "pkg/js/helpers-types.js"
 
 // currentDirectory is the current directory as used by require().
 // This is used to emulate nodejs-style require() directory handling.
@@ -110,6 +115,12 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	if err = json.Unmarshal([]byte(str), conf); err != nil {
 		return nil, err
 	}
+
+	err = rtypectl.TransformRawRecords(conf.Domains)
+	if err != nil {
+		return nil, err
+	}
+
 	return conf, nil
 }
 
@@ -117,15 +128,19 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 func GetHelpers(devMode bool) string {
 	if devMode {
 		// Load the file:
-		b, err := os.ReadFile(helpersJsFileName)
+		a, err := os.ReadFile(helpersJsFileName)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return string(b)
+		b, err := os.ReadFile(helpersTypesJsFileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return string(a) + "\n" + string(b)
 	}
 
 	// Return the embedded bytes:
-	return helpersJsStatic
+	return helpersJsStatic + "\n" + helpersTypesJsStatic
 }
 
 func require(call otto.FunctionCall) otto.Value {

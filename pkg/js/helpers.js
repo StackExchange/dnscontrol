@@ -2082,6 +2082,9 @@ function rawrecordBuilder(type) {
                 if (_.isFunction(r)) {
                     r(record);
                 } else if (_.isObject(r)) {
+                    if (r.transform && _.isArray(r.transform)) {
+                        r.transform = format_tt(r.transform);
+                    }
                     processedMetas.push(r);
                 } else {
                     processedArgs.push(r);
