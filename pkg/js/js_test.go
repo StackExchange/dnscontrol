@@ -49,6 +49,11 @@ func TestParsedFiles(t *testing.T) {
 			// 	normalize.UpdateNameSplitHorizon(dc)
 			// }
 
+			for _, dc := range conf.Domains {
+				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
+				dc.Records = ps.Records
+			}
+
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
 				var pcfg = map[string]string{}
