@@ -3,12 +3,10 @@ package namedotcom
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -95,7 +93,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc.SetLabelFromFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXTs(decodeTxt(r.Answer))
+		rc.SetTargetTXT(r.Answer)
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
@@ -155,7 +153,7 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 	// nothing
 	case "TXT":
-		record.Answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
+		record.Answer = rc.GetTargetTXTJoined()
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -169,25 +167,6 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	}
 	_, err := n.client.CreateRecord(record)
 	return err
-}
-
-// finds a string surrounded by quotes that might contain an escaped quote character.
-var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
-
-// decodeTxt decodes the TXT record as received from name.com and
-// returns the list of strings.
-// NB(tlim): This is very similar to txtutil.ParseQuoted. Maybe replace it some day?
-func decodeTxt(s string) []string {
-
-	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-		txtStrings := []string{}
-		for _, t := range quotedStringRegexp.FindAllStringSubmatch(s, -1) {
-			txtString := strings.Replace(t[1], `\"`, `"`, -1)
-			txtStrings = append(txtStrings, txtString)
-		}
-		return txtStrings
-	}
-	return []string{s}
 }
 
 func (n *namedotcomProvider) deleteRecord(id int32, domain string) error {
