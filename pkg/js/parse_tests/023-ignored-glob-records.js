@@ -1,3 +1,3 @@
 D("foo.com", "none",
-  IGNORE("\\*.testignore"),
+    IGNORE("\\*.testignore"),
 );
