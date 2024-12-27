@@ -4,5 +4,5 @@ var domain = "foo.com"
 var ip = domains["foo.com"]
 
 D(domain, "none",
-    A("@", ip)
+    A("@", ip),
 );

@@ -8,5 +8,5 @@ D_EXTEND("sub.foo.com",
     A("test3.foo.com", "10.2.3.3"),
     CF_REDIRECT("test1.foo.com", "https://goo.com/$1"),
     CF_TEMP_REDIRECT("test2.foo.com", "https://goo.com/$1"),
-    CF_WORKER_ROUTE("test3.foo.com", "test-worker")
+    CF_WORKER_ROUTE("test3.foo.com", "test-worker"),
 );

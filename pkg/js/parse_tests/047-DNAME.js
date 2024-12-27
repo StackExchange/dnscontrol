@@ -1,3 +1,3 @@
 D("foo.com", "none",
-    DNAME("@", "bar.com.")
+    DNAME("@", "bar.com."),
 );

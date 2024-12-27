@@ -3,6 +3,7 @@ var TRANSFORM_NEWIP = [{
     high: "1.1.1.1",
     newIP: "2.2.2.2"
 }];
+
 var TRANSFORM_BASE = [{
     low: "0.0.0.0",
     high: "1.1.1.1",

@@ -3,5 +3,5 @@ D("with.com", "none",
     AUTODNSSEC_ON
 );
 D("without.com", "none",
-    AUTODNSSEC_OFF
+    AUTODNSSEC_OFF,
 );

@@ -10,5 +10,5 @@ D("foo.com", "none",
         metastr: "stringy"
     }, {
         metanum: 22
-    })
+    }),
 );
