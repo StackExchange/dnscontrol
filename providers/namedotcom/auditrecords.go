@@ -18,13 +18,13 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2020-12-28
 
-	a.Add("TXT", MaxLengthNDC) // Last verified 2021-03-01
+	a.Add("TXT", MaxLengthNDC) // Last verified 2024-12-17
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-11-18
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2024-12-17
 
-	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2023-11-18
-	// Backslashes may be allowed in the API but the current
-	// encodeTxt/decodeTxt functions don't support backslashes.
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2024-12-17
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2024-12-17
 
 	return a.Audit(records)
 }
