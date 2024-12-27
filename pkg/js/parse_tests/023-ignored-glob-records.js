@@ -1,3 +1,1 @@
-D("foo.com", "none"
-  , IGNORE("\\*.testignore")
-);
+D("foo.com", "none", IGNORE("\\*.testignore"));

@@ -11,8 +11,7 @@ var TRANSFORM_BASE = [{
     low: "7.7.7.7",
     high: "8.8.8.8",
     newBase: "9.9.9.9"
-},
-];
+}, ];
 
 D("foo1.com", "reg");
 

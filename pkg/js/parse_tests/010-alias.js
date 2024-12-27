@@ -1,3 +1,3 @@
-D("foo.com","none",
-    ALIAS("@","foo.com.")
+D("foo.com", "none",
+    ALIAS("@", "foo.com.")
 );
