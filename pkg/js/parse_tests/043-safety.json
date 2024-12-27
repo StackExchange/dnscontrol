@@ -1,19 +1,19 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "unsafe.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "unsafe.com",
       "records": [],
+      "registrar": "none",
       "unmanaged_disable_safety_check": true
     },
     {
-      "name": "safe.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": []
+      "name": "safe.com",
+      "records": [],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

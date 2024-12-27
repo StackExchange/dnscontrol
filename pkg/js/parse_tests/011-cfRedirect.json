@@ -1,23 +1,23 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "CF_REDIRECT",
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1"
+          "target": "test.foo.com,https://goo.com/$1",
+          "type": "CF_REDIRECT"
         },
         {
-          "type": "CF_TEMP_REDIRECT",
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1"
+          "target": "test.foo.com,https://goo.com/$1",
+          "type": "CF_TEMP_REDIRECT"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

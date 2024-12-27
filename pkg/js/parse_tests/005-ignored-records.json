@@ -1,12 +1,11 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "testignore",
@@ -51,10 +50,10 @@
       ]
     },
     {
-      "name": "diff2.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "diff2.com",
       "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "mylabel",
@@ -101,5 +100,6 @@
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }

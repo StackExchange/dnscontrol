@@ -9,6 +9,7 @@ import (
 	"testing"
 	"unicode"
 
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -48,6 +49,15 @@ func TestParsedFiles(t *testing.T) {
 			// for _, dc := range conf.Domains {
 			// 	normalize.UpdateNameSplitHorizon(dc)
 			// }
+
+			for _, dc := range conf.Domains {
+				//fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
+				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
+				dc.Records = ps.Records
+				if len(dc.Records) == 0 {
+					dc.Records = models.Records{}
+				}
+			}
 
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
