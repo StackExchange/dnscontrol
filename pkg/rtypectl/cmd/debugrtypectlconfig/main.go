@@ -12,7 +12,7 @@ import (
 	"os"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
