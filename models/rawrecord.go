@@ -10,4 +10,7 @@ type RawRecordConfig struct {
 	Metas     []map[string]any `json:"metas,omitempty"`
 	TTL       uint32           `json:"ttl,omitempty"`
 	SubDomain string           `json:"subdomain,omitempty"`
+
+	// Override NO_PURGE and delete this record
+	EnsureAbsent bool `json:"ensure_absent,omitempty"`
 }

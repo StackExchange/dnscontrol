@@ -15,18 +15,29 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 			// Prepare the label.
 			label := rawRec.Args[0].(string) // Default to the first arg.
 			if rawRec.SubDomain != "" {      // If D_EXTEND() is in use, append the subdomain.
+				oldlabel := label
 				if label == "@" {
 					label = rawRec.SubDomain
 				} else {
 					label = label + "." + rawRec.SubDomain
 				}
+				fmt.Printf("DEBUG: subdomain=%q %q->%q\n", rawRec.SubDomain, oldlabel, label)
+			}
+
+			var labelFQDN string
+			if label == "@" {
+				labelFQDN = rawRec.SubDomain + "." + dc.Name
+			} else {
+				labelFQDN = label + "." + dc.Name
 			}
 
 			rec := &models.RecordConfig{
-				Type:     rawRec.Type,
-				TTL:      rawRec.TTL,
-				Name:     label,
-				Metadata: map[string]string{},
+				Type:      rawRec.Type,
+				TTL:       rawRec.TTL,
+				Name:      label,
+				NameFQDN:  labelFQDN,
+				SubDomain: rawRec.SubDomain,
+				Metadata:  map[string]string{},
 			}
 
 			// Copy the metadata (convert everything to string)
@@ -61,7 +72,11 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 			clear(rawRec.Args)
 			rawRec.Args = nil
 
-			dc.Records = append(dc.Records, rec)
+			if rawRec.EnsureAbsent {
+				dc.EnsureAbsent = append(dc.EnsureAbsent, rec)
+			} else {
+				dc.Records = append(dc.Records, rec)
+			}
 		}
 		dc.RawRecords = nil
 	}

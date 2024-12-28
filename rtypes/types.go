@@ -52,8 +52,8 @@ func PopulateFromRawA(rc *models.RecordConfig, origin string, rawfields []any, m
 	rc.SetTargetIP(n.A[:])
 
 	// Update the record:
-	rc.SetLabel(rawfields[0].(string), origin) // Label
-	maps.Copy(rc.Metadata, meta)               // Add the metadata
+	//rc.SetLabel(rawfields[0].(string), origin) // Label
+	maps.Copy(rc.Metadata, meta) // Add the metadata
 	rc.Comparable = fmt.Sprintf("%s", n.A)
 	rc.Display = fmt.Sprintf("%s", n.A)
 
