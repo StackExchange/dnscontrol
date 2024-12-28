@@ -5,8 +5,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 type FromRawFn func(*models.RecordConfig, string, []any, map[string]string) error
@@ -30,7 +28,7 @@ var validTypes = map[string]struct{}{}
 
 func Register(typeName string, opts RegisterOpts) error {
 
-	printer.Printf("rtypectl.Register(%q)\n", typeName)
+	//printer.Printf("rtypectl.Register(%q)\n", typeName)
 
 	if rtypeDB == nil {
 		rtypeDB = map[string]RegisterOpts{}

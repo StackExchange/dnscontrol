@@ -209,7 +209,7 @@ func RegisterCustomRecordType(name, provider, realType string) {
 
 // GetCustomRecordType returns a registered custom record type, or nil if none
 func GetCustomRecordType(rType string) *CustomRType {
-	log.Printf("DEBUG: customRecordTypes: %+v", customRecordTypes)
+	//log.Printf("DEBUG: customRecordTypes: %+v", customRecordTypes)
 	return customRecordTypes[rType]
 }
 
