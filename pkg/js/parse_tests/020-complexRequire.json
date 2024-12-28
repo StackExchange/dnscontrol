@@ -3,32 +3,41 @@
   "domains": [
     {
       "dnsProviders": {},
-      "name": "foo.com",
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "sortfoo.com"
+      },
+      "name": "sortfoo.com",
       "records": [
-        {
-          "name": "A",
-          "target": "foo.com.",
-          "type": "CNAME"
-        },
-        {
-          "name": "C",
-          "target": "foo.com.",
-          "type": "CNAME"
-        },
-        {
-          "name": "D",
-          "target": "foo.com.",
-          "type": "CNAME"
-        },
-        {
-          "name": "B",
-          "target": "foo.com.",
-          "type": "CNAME"
-        },
         {
           "name": "@",
           "target": "1.2.3.4",
+          "ttl": 300,
           "type": "A"
+        },
+        {
+          "name": "a",
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "CNAME"
+        },
+        {
+          "name": "b",
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "CNAME"
+        },
+        {
+          "name": "c",
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "CNAME"
+        },
+        {
+          "name": "d",
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "CNAME"
         }
       ],
       "registrar": "none"

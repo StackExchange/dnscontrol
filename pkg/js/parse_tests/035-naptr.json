@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -13,6 +17,7 @@
           "naptrregexp": "!^.*$!sip:customer-service@example.com!",
           "naptrservice": "E2U+sip",
           "target": "example",
+          "ttl": 300,
           "type": "NAPTR"
         },
         {
@@ -23,6 +28,7 @@
           "naptrregexp": "!^.*$!mailto:information@example.com!",
           "naptrservice": "E2U+email",
           "target": "example",
+          "ttl": 300,
           "type": "NAPTR"
         },
         {
@@ -33,6 +39,7 @@
           "naptrregexp": "!^.*$!mailto:information@example.com!",
           "naptrservice": "E2U+email",
           "target": ".",
+          "ttl": 300,
           "type": "NAPTR"
         },
         {
@@ -43,6 +50,7 @@
           "naptrregexp": "!^.*$!mailto:information@example.com!",
           "naptrservice": "E2U+email",
           "target": ".",
+          "ttl": 300,
           "type": "NAPTR"
         }
       ],

@@ -29,6 +29,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 
 	// If we are at the apex, use "@" in the sorting.
 	compA, compB := a.NameFQDN, b.NameFQDN
+	//fmt.Printf("DEBUG: LabelLess(%q, %q) = %v %q %q\n", compA, compB, LabelLess(compA, compB), a.Name, b.Name)
 	if compA != compB {
 		if a.Name == "@" {
 			compA = "@"
@@ -122,6 +123,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	default:
 		// pass through. String comparison is sufficient.
 	}
+	//fmt.Printf("DEBUG: Less %q < %q == %v\n", a.String(), b.String(), a.String() < b.String())
 	return a.String() < b.String()
 }
 

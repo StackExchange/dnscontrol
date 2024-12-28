@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -12,6 +16,7 @@
           "dskeytag": 1,
           "name": "@",
           "target": "",
+          "ttl": 300,
           "type": "DS"
         },
         {
@@ -21,6 +26,7 @@
           "dskeytag": 1000,
           "name": "@",
           "target": "",
+          "ttl": 300,
           "type": "DS"
         }
       ],

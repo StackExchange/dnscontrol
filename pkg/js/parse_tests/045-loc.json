@@ -3,22 +3,50 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
-          "localtitude": 10092000,
-          "loclatitude": 2224883648,
-          "loclongitude": 1578683648,
-          "name": "hawaii",
-          "target": "21 30 0 N 158 0 0 W 920m 0m 0m 0m",
+          "localtitude": 9997600,
+          "loclatitude": 2299997648,
+          "loclongitude": 1891505648,
+          "locsize": 51,
+          "name": "@",
+          "target": "42 21 54 N 71 6 18 W -24m 30m 0m 0m",
+          "ttl": 300,
           "type": "LOC"
         },
         {
-          "localtitude": 10000300,
-          "loclatitude": 2056619648,
-          "loclongitude": 2698823648,
-          "name": "fraser-island",
-          "target": "25 14 24 S 153 9 0 E 3m 0m 0m 0m",
+          "localtitude": 9997599,
+          "lochorizpre": 36,
+          "loclatitude": 2299987600,
+          "loclongitude": 1891577304,
+          "locsize": 18,
+          "locvertpre": 19,
+          "name": "a",
+          "target": "42 21 43.952 N 71 5 6.344 W -24.01m 1m 200m 10m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10001033,
+          "loclatitude": 2335528648,
+          "loclongitude": 2148013648,
+          "name": "b",
+          "target": "52 14 5 N 0 8 50 E 10.33m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000600,
+          "loclatitude": 2332886681,
+          "loclongitude": 2147034997,
+          "name": "big-ben",
+          "target": "51 30 3.033 N 0 7 28.651 W 6m 0m 0m 0m",
+          "ttl": 300,
           "type": "LOC"
         },
         {
@@ -27,14 +55,183 @@
           "loclongitude": 2565228648,
           "name": "c",
           "target": "32 7 19 S 116 2 25 E 10m 0m 0m 0m",
+          "ttl": 300,
           "type": "LOC"
         },
         {
-          "localtitude": 10000400,
-          "loclatitude": 2025592648,
-          "loclongitude": 2691854648,
-          "name": "opera-house3",
-          "target": "33 51 31 S 151 12 51 E 4m 0m 0m 0m",
+          "localtitude": 9995600,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 37,
+          "name": "d",
+          "target": "42 21 28.764 N 71 0 51.617 W -44m 2000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 4294967295,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 37,
+          "name": "d-alt-highest",
+          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 37,
+          "name": "d-alt-lowest",
+          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 4294967295,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 37,
+          "name": "d-alt-toohigh",
+          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 37,
+          "name": "d-alt-toolow",
+          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "lochorizpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "name": "d-horizprecision-hi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "lochorizpre": 153,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "name": "d-horizprecision-toohi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "name": "d-horizprecision-toolow",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 153,
+          "name": "d-size-hi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 153,
+          "name": "d-size-toohi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "name": "d-size-toolow",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "locvertpre": 153,
+          "name": "d-vertprecision-hi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "locvertpre": 153,
+          "name": "d-vertprecision-toohi",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000000,
+          "loclatitude": 2299972412,
+          "loclongitude": 1891832031,
+          "locsize": 18,
+          "name": "d-vertprecision-toolow",
+          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000300,
+          "loclatitude": 2056619648,
+          "loclongitude": 2698823648,
+          "name": "fraser-island",
+          "target": "25 14 24 S 153 9 0 E 3m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10030000,
+          "loclatitude": 2339523648,
+          "loclongitude": 2124843648,
+          "name": "guinness-brewery",
+          "target": "53 20 40 N 6 17 20 W 300m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10092000,
+          "loclatitude": 2224883648,
+          "loclongitude": 1578683648,
+          "name": "hawaii",
+          "target": "21 30 0 N 158 0 0 W 920m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10224000,
+          "loclatitude": 2307541648,
+          "loclongitude": 1748502648,
+          "name": "old-faithful",
+          "target": "44 27 38 N 110 49 41 W 2240m 0m 0m 0m",
           "ttl": 300,
           "type": "LOC"
         },
@@ -60,8 +257,35 @@
           "localtitude": 10000400,
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
+          "name": "opera-house3",
+          "target": "33 51 31 S 151 12 51 E 4m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000400,
+          "loclatitude": 2025592648,
+          "loclongitude": 2691854648,
           "name": "opera-house4",
           "target": "33 51 31 S 151 12 51 E 4m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10030000,
+          "loclatitude": 2342641648,
+          "loclongitude": 2138950648,
+          "name": "ribblehead-viaduct",
+          "target": "54 12 38 N 2 22 13 W 300m 0m 0m 0m",
+          "ttl": 300,
+          "type": "LOC"
+        },
+        {
+          "localtitude": 10000300,
+          "loclatitude": 1996283648,
+          "loclongitude": 2676683648,
+          "name": "tasmania",
+          "target": "42 0 0 S 147 0 0 E 3m 0m 0m 0m",
           "ttl": 300,
           "type": "LOC"
         },
@@ -72,201 +296,6 @@
           "name": "white-house",
           "target": "38 53 51.935 N 77 2 11.584 W 19m 0m 0m 0m",
           "ttl": 300,
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000300,
-          "loclatitude": 1996283648,
-          "loclongitude": 2676683648,
-          "name": "tasmania",
-          "target": "42 0 0 S 147 0 0 E 3m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 37,
-          "name": "d-alt-toolow",
-          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 37,
-          "name": "d-alt-lowest",
-          "target": "42 21 28.764 N 71 0 51.617 W -100000m 2000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 9995600,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 37,
-          "name": "d",
-          "target": "42 21 28.764 N 71 0 51.617 W -44m 2000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "name": "d-size-toolow",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "name": "d-horizprecision-toolow",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "name": "d-vertprecision-toolow",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "locvertpre": 153,
-          "name": "d-vertprecision-hi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "locvertpre": 153,
-          "name": "d-vertprecision-toohi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 0m 90000000m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "lochorizpre": 153,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "name": "d-horizprecision-toohi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "lochorizpre": 153,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 18,
-          "name": "d-horizprecision-hi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 1m 90000000m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 153,
-          "name": "d-size-hi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000000,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 153,
-          "name": "d-size-toohi",
-          "target": "42 21 28.764 N 71 0 51.617 W 0m 90000000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 4294967295,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 37,
-          "name": "d-alt-toohigh",
-          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 4294967295,
-          "loclatitude": 2299972412,
-          "loclongitude": 1891832031,
-          "locsize": 37,
-          "name": "d-alt-highest",
-          "target": "42 21 28.764 N 71 0 51.617 W 42849672.95m 2000m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 9997599,
-          "lochorizpre": 36,
-          "loclatitude": 2299987600,
-          "loclongitude": 1891577304,
-          "locsize": 18,
-          "locvertpre": 19,
-          "name": "a",
-          "target": "42 21 43.952 N 71 5 6.344 W -24.01m 1m 200m 10m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 9997600,
-          "loclatitude": 2299997648,
-          "loclongitude": 1891505648,
-          "locsize": 51,
-          "name": "@",
-          "target": "42 21 54 N 71 6 18 W -24m 30m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10224000,
-          "loclatitude": 2307541648,
-          "loclongitude": 1748502648,
-          "name": "old-faithful",
-          "target": "44 27 38 N 110 49 41 W 2240m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10000600,
-          "loclatitude": 2332886681,
-          "loclongitude": 2147034997,
-          "name": "big-ben",
-          "target": "51 30 3.033 N 0 7 28.651 W 6m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10001033,
-          "loclatitude": 2335528648,
-          "loclongitude": 2148013648,
-          "name": "b",
-          "target": "52 14 5 N 0 8 50 E 10.33m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10030000,
-          "loclatitude": 2339523648,
-          "loclongitude": 2124843648,
-          "name": "guinness-brewery",
-          "target": "53 20 40 N 6 17 20 W 300m 0m 0m 0m",
-          "type": "LOC"
-        },
-        {
-          "localtitude": 10030000,
-          "loclatitude": 2342641648,
-          "loclongitude": 2138950648,
-          "name": "ribblehead-viaduct",
-          "target": "54 12 38 N 2 22 13 W 300m 0m 0m 0m",
           "type": "LOC"
         }
       ],

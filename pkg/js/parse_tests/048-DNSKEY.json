@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -12,6 +16,7 @@
           "dnskeypublickey": "AABBCCDD",
           "name": "@",
           "target": "",
+          "ttl": 300,
           "type": "DNSKEY"
         }
       ],

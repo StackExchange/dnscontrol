@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -10,6 +14,7 @@
           "sshfpalgorithm": 1,
           "sshfpfingerprint": 1,
           "target": "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -17,6 +22,7 @@
           "sshfpalgorithm": 1,
           "sshfpfingerprint": 2,
           "target": "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -24,6 +30,7 @@
           "sshfpalgorithm": 2,
           "sshfpfingerprint": 1,
           "target": "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -31,6 +38,7 @@
           "sshfpalgorithm": 2,
           "sshfpfingerprint": 2,
           "target": "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -38,6 +46,7 @@
           "sshfpalgorithm": 3,
           "sshfpfingerprint": 1,
           "target": "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -45,6 +54,7 @@
           "sshfpalgorithm": 3,
           "sshfpfingerprint": 2,
           "target": "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -52,6 +62,7 @@
           "sshfpalgorithm": 4,
           "sshfpfingerprint": 1,
           "target": "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c",
+          "ttl": 300,
           "type": "SSHFP"
         },
         {
@@ -59,6 +70,7 @@
           "sshfpalgorithm": 4,
           "sshfpfingerprint": 2,
           "target": "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc",
+          "ttl": 300,
           "type": "SSHFP"
         }
       ],

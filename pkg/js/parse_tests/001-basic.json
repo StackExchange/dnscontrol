@@ -10,11 +10,16 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
           "name": "@",
           "target": "1.2.3.4",
+          "ttl": 300,
           "type": "A"
         }
       ],

@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -10,6 +14,7 @@
           "caatag": "iodef",
           "name": "@",
           "target": "https://example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
@@ -17,24 +22,28 @@
           "caatag": "iodef",
           "name": "@",
           "target": "mailto:test@example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
           "caatag": "iodef",
           "name": "@",
           "target": "http://example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
           "caatag": "issue",
           "name": "@",
           "target": "letsencrypt.org",
+          "ttl": 300,
           "type": "CAA"
         },
         {
           "caatag": "issuewild",
           "name": "@",
           "target": ";",
+          "ttl": 300,
           "type": "CAA"
         }
       ],

@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "rawrecords": [
         {
@@ -67,6 +71,7 @@
           },
           "name": "name1",
           "target": "1.2.3.4",
+          "ttl": 300,
           "type": "A"
         }
       ],

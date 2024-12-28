@@ -3,12 +3,17 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
           "mxpreference": 15,
           "name": "@",
           "target": "foo.com.",
+          "ttl": 300,
           "type": "MX"
         }
       ],
