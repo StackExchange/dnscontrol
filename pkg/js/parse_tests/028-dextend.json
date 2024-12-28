@@ -89,11 +89,6 @@
           "target": "10.6.6.6",
           "ttl": 300,
           "type": "A"
-        },
-        {
-          "name": "www",
-          "target": "10.6.6.6",
-          "type": "A"
         }
       ],
       "registrar": "Third-Party"
