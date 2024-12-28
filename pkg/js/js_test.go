@@ -50,8 +50,14 @@ func TestParsedFiles(t *testing.T) {
 			// 	normalize.UpdateNameSplitHorizon(dc)
 			// }
 
+			errs := normalize.ValidateAndNormalizeConfig(conf)
+			if len(errs) != 0 {
+				t.Fatal(errs[0])
+			}
+
 			for _, dc := range conf.Domains {
-				fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
+				//fmt.Printf("DEBUG: PrettySort: domain=%q #rec=%d\n", dc.Name, len(dc.Records))
+				//fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
 				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
 				dc.Records = ps.Records
 				if len(dc.Records) == 0 {
@@ -100,11 +106,6 @@ func TestParsedFiles(t *testing.T) {
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
-
-			errs := normalize.ValidateAndNormalizeConfig(conf)
-			if len(errs) != 0 {
-				t.Fatal(errs[0])
-			}
 
 			var dCount int
 			for _, dc := range conf.Domains {

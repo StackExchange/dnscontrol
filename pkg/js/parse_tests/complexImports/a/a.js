@@ -1,3 +1,3 @@
 function a() {
-    return CNAME("A", "foo.com.")
+    return CNAME("a", "foo.com.")
 }

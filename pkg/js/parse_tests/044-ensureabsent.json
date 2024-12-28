@@ -3,11 +3,16 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.com"
+      },
       "name": "example.com",
       "records": [
         {
           "name": "normal",
           "target": "1.1.1.1",
+          "ttl": 300,
           "type": "A"
         }
       ],

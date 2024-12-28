@@ -10,16 +10,22 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
           "name": "@",
           "target": "10.1.1.1",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "www",
           "target": "10.2.2.2",
+          "ttl": 300,
           "type": "A"
         }
       ],
@@ -28,17 +34,23 @@
     {
       "dnsProviders": {
         "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "bar.foo.com"
       },
       "name": "bar.foo.com",
       "records": [
         {
           "name": "@",
           "target": "10.3.3.3",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "www",
           "target": "10.4.4.4",
+          "ttl": 300,
           "type": "A"
         }
       ],
@@ -48,21 +60,34 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.edu"
+      },
       "name": "foo.edu",
       "records": [
         {
           "name": "@",
           "target": "10.5.5.5",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "more1",
           "target": "10.7.7.7",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "more2",
           "target": "10.8.8.8",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "10.6.6.6",
+          "ttl": 300,
           "type": "A"
         },
         {

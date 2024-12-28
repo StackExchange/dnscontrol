@@ -10,60 +10,73 @@
       "dnsProviders": {
         "bind": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "3.2.1.in-addr.arpa"
+      },
       "name": "3.2.1.in-addr.arpa",
       "records": [
         {
-          "name": "1.2.3.2",
-          "target": "bar.example.com.",
-          "type": "PTR"
-        },
-        {
-          "meta": {
-            "skip_fqdn_check": "true"
-          },
-          "name": "3.3.2.1.in-addr.arpa",
-          "target": "baz.example.com.",
-          "type": "PTR"
-        },
-        {
-          "name": "6.3.2.1.in-addr.arpa",
-          "subdomain": "6",
-          "target": "billy.example.com.",
-          "type": "PTR"
-        },
-        {
-          "name": "1.2.3.8",
-          "target": "fair.example.com.",
-          "type": "PTR"
-        },
-        {
           "name": "1",
           "target": "foo.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "2",
+          "target": "bar.example.com.",
+          "ttl": 300,
           "type": "PTR"
         },
         {
           "meta": {
             "skip_fqdn_check": "true"
           },
-          "name": "9.3.2.1.in-addr.arpa",
-          "target": "lady.example.com.",
-          "type": "PTR"
-        },
-        {
-          "name": "7",
-          "target": "my.example.com.",
+          "name": "3",
+          "target": "baz.example.com.",
+          "ttl": 300,
           "type": "PTR"
         },
         {
           "name": "4",
           "subdomain": "4",
           "target": "silly.example.com.",
+          "ttl": 300,
           "type": "PTR"
         },
         {
-          "name": "1.2.3.5",
+          "name": "5",
           "subdomain": "5",
           "target": "willy.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "6",
+          "subdomain": "6",
+          "target": "billy.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "7",
+          "target": "my.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "8",
+          "target": "fair.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "meta": {
+            "skip_fqdn_check": "true"
+          },
+          "name": "9",
+          "target": "lady.example.com.",
+          "ttl": 300,
           "type": "PTR"
         }
       ],

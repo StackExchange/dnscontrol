@@ -10,17 +10,15 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.net"
+      },
       "name": "foo.net",
       "records": [
         {
           "name": "@",
           "target": "10.1.1.1",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www",
-          "target": "10.2.2.2",
           "ttl": 300,
           "type": "A"
         },
@@ -51,6 +49,12 @@
           "target": "10.26.26.26",
           "ttl": 300,
           "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "10.2.2.2",
+          "ttl": 300,
+          "type": "A"
         }
       ],
       "registrar": "Third-Party"
@@ -58,6 +62,10 @@
     {
       "dnsProviders": {
         "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.tld"
       },
       "name": "foo.tld",
       "records": [
@@ -68,14 +76,14 @@
           "type": "A"
         },
         {
-          "name": "www",
-          "target": "20.6.6.6",
+          "name": "a",
+          "target": "20.10.10.10",
           "ttl": 300,
           "type": "A"
         },
         {
-          "name": "a",
-          "target": "20.10.10.10",
+          "name": "www",
+          "target": "20.6.6.6",
           "ttl": 300,
           "type": "A"
         }
@@ -85,6 +93,10 @@
     {
       "dnsProviders": {
         "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "bar.foo.tld"
       },
       "name": "bar.foo.tld",
       "records": [
@@ -95,14 +107,14 @@
           "type": "A"
         },
         {
-          "name": "www",
-          "target": "30.8.8.8",
+          "name": "a",
+          "target": "30.9.9.9",
           "ttl": 300,
           "type": "A"
         },
         {
-          "name": "a",
-          "target": "30.9.9.9",
+          "name": "www",
+          "target": "30.8.8.8",
           "ttl": 300,
           "type": "A"
         }
@@ -113,16 +125,14 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.help"
+      },
       "name": "foo.help",
       "records": [
         {
           "name": "@",
-          "target": "40.12.12.12",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www",
           "target": "40.12.12.12",
           "ttl": 300,
           "type": "A"
@@ -140,6 +150,12 @@
           "target": "40.18.18.18",
           "ttl": 300,
           "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "40.12.12.12",
+          "ttl": 300,
+          "type": "A"
         }
       ],
       "registrar": "Third-Party"
@@ -147,6 +163,10 @@
     {
       "dnsProviders": {
         "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "bar.foo.help"
       },
       "name": "bar.foo.help",
       "records": [
@@ -183,6 +203,10 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.here"
+      },
       "name": "foo.here",
       "records": [
         {
@@ -192,22 +216,9 @@
           "type": "A"
         },
         {
-          "name": "www",
-          "target": "60.20.20.20",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
           "name": "bar",
           "subdomain": "bar",
           "target": "60.21.21.21",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www.bar",
-          "subdomain": "bar",
-          "target": "60.22.22.22",
           "ttl": 300,
           "type": "A"
         },
@@ -224,6 +235,19 @@
           "target": "60.24.24.24",
           "ttl": 300,
           "type": "A"
+        },
+        {
+          "name": "www.bar",
+          "subdomain": "bar",
+          "target": "60.22.22.22",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "60.20.20.20",
+          "ttl": 300,
+          "type": "A"
         }
       ],
       "registrar": "Third-Party"
@@ -232,17 +256,15 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.com"
+      },
       "name": "example.com",
       "records": [
         {
           "name": "@",
           "target": "10.0.0.1",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www",
-          "target": "10.0.0.2",
           "ttl": 300,
           "type": "A"
         },
@@ -257,6 +279,12 @@
           "name": "www.d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.4",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "10.0.0.2",
           "ttl": 300,
           "type": "A"
         },
@@ -281,6 +309,10 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "d\u00fcsseldorf.example.net"
+      },
       "name": "d\u00fcsseldorf.example.net",
       "records": [
         {
@@ -290,8 +322,16 @@
           "type": "A"
         },
         {
-          "name": "www",
-          "target": "10.0.0.8",
+          "name": "d\u00fcsseltal",
+          "subdomain": "d\u00fcsseltal",
+          "target": "10.0.0.11",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www.d\u00fcsseltal",
+          "subdomain": "d\u00fcsseltal",
+          "target": "10.0.0.12",
           "ttl": 300,
           "type": "A"
         },
@@ -310,16 +350,8 @@
           "type": "A"
         },
         {
-          "name": "d\u00fcsseltal",
-          "subdomain": "d\u00fcsseltal",
-          "target": "10.0.0.11",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www.d\u00fcsseltal",
-          "subdomain": "d\u00fcsseltal",
-          "target": "10.0.0.12",
+          "name": "www",
+          "target": "10.0.0.8",
           "ttl": 300,
           "type": "A"
         },
@@ -344,6 +376,10 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "\u00fc.example.net"
+      },
       "name": "\u00fc.example.net",
       "records": [
         {
@@ -353,8 +389,16 @@
           "type": "A"
         },
         {
-          "name": "www",
-          "target": "10.0.0.16",
+          "name": "d\u00fcsseldorf",
+          "subdomain": "d\u00fcsseldorf",
+          "target": "10.0.0.19",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www.d\u00fcsseldorf",
+          "subdomain": "d\u00fcsseldorf",
+          "target": "10.0.0.20",
           "ttl": 300,
           "type": "A"
         },
@@ -373,16 +417,8 @@
           "type": "A"
         },
         {
-          "name": "d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
-          "target": "10.0.0.19",
-          "ttl": 300,
-          "type": "A"
-        },
-        {
-          "name": "www.d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
-          "target": "10.0.0.20",
+          "name": "www",
+          "target": "10.0.0.16",
           "ttl": 300,
           "type": "A"
         },
@@ -407,26 +443,23 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.tld"
+      },
       "name": "example.tld",
       "records": [
         {
-          "name": "b.sub",
-          "subdomain": "sub",
-          "target": "@",
-          "ttl": 300,
-          "type": "CNAME"
-        },
-        {
           "name": "a.sub",
           "subdomain": "sub",
-          "target": "b",
+          "target": "b.sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
-          "name": "e.sub",
+          "name": "b.sub",
           "subdomain": "sub",
-          "target": "otherdomain.tld.",
+          "target": "sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
@@ -434,6 +467,13 @@
           "name": "c.sub",
           "subdomain": "sub",
           "target": "sub.example.tld.",
+          "ttl": 300,
+          "type": "CNAME"
+        },
+        {
+          "name": "e.sub",
+          "subdomain": "sub",
+          "target": "otherdomain.tld.",
           "ttl": 300,
           "type": "CNAME"
         }

@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "unsafe.com"
+      },
       "name": "unsafe.com",
       "records": [],
       "registrar": "none",
@@ -10,6 +14,10 @@
     },
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "safe.com"
+      },
       "name": "safe.com",
       "records": [],
       "registrar": "none"

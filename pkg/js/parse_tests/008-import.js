@@ -1,1 +1,1 @@
-require("./import.js")
+require("./import.js");

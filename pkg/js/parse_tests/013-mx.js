@@ -1,3 +1,3 @@
 D("foo.com", "none",
-    MX("@", 15, "foo.com.")
+    MX("@", 15, "foo.com."),
 );

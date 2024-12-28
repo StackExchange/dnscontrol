@@ -3,46 +3,29 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
-          "name": "atest",
-          "r53_alias": {
-            "evaluate_target_health": "false",
-            "type": "A"
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
           },
-          "target": "foo.com.",
-          "type": "R53_ALIAS"
-        },
-        {
-          "name": "aevaltargethealthtest",
-          "r53_alias": {
-            "evaluate_target_health": "true",
-            "type": "A"
-          },
-          "target": "foo.com.",
-          "type": "R53_ALIAS"
-        },
-        {
-          "name": "atest",
-          "r53_alias": {
-            "evaluate_target_health": "false",
-            "type": "A",
-            "zone_id": "Z2FTEDLFRTF"
-          },
-          "target": "foo.com.",
-          "type": "R53_ALIAS"
-        },
-        {
           "name": "aaaatest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "AAAA"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "aaaatest",
           "r53_alias": {
             "evaluate_target_health": "false",
@@ -50,78 +33,151 @@
             "zone_id": "ERERTFGFGF"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
+          "name": "aevaltargethealthtest",
+          "r53_alias": {
+            "evaluate_target_health": "true",
+            "type": "A"
+          },
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "R53_ALIAS"
+        },
+        {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
+          "name": "atest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "A"
+          },
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "R53_ALIAS"
+        },
+        {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
+          "name": "atest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "A",
+            "zone_id": "Z2FTEDLFRTF"
+          },
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "R53_ALIAS"
+        },
+        {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "caatest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "CAA"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "cnametest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "CNAME"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "mxtest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "MX"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "naptrtest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "NAPTR"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "ptrtest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "PTR"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "spftest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "SPF"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "srvtest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "SRV"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         },
         {
+          "meta": {
+            "orig_custom_type": "R53_ALIAS"
+          },
           "name": "txttest",
           "r53_alias": {
             "evaluate_target_health": "false",
             "type": "TXT"
           },
           "target": "foo.com.",
+          "ttl": 300,
           "type": "R53_ALIAS"
         }
       ],
