@@ -9,14 +9,14 @@ import (
 )
 
 // SINGLEREDIRECT is the string name for this rType.
-const SINGLEREDIRECT = "CLOUDFLAREAPI_SINGLE_REDIRECT"
+const SINGLEREDIRECT = "CF_SINGLE_REDIRECT"
 
 //type CF_SINGLE_REDIRECT struct {
 //}
 
 func init() {
 	//rtypecontrol.Register(SINGLEREDIRECT)
-	rtypectl.Register("CLOUDFLAREAPI_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	rtypectl.Register("CF_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
 	rtypectl.Register("CF_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
 	//fmt.Printf("DEBUG: REGISTERED CF_SINGLE_REDIRECT\n")
 }

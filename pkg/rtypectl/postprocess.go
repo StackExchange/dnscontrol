@@ -60,7 +60,7 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 					err)
 			}
 
-			// case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+			// case "CF_SINGLE_REDIRECT":
 			// 	err = cfsingleredirect.FromRaw(rec, rawRec.Args)
 			// 	rec.SetLabel("@", dc.Name)
 

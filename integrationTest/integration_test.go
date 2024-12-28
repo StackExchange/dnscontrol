@@ -61,7 +61,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		}
 
 		var metadata json.RawMessage
-		// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
+		// CLOUDFLAREAPI tests related to CF_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
 		// requires metadata to enable this feature.
 		// In hindsight, I have no idea why this metadata flag is required to
 		// use this feature. Maybe because we didn't have the capabilities
@@ -1962,7 +1962,7 @@ func makeTests() []*TestGroup {
 			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 		),
 
-		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
+		testgroup("CF_SINGLE_REDIRECT",
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfSingleRedirect(`name1`, 301, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),

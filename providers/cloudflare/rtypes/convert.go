@@ -11,7 +11,7 @@ import (
 
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
 func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	rec.Type = SINGLEREDIRECT // This record is now a CF_SINGLE_REDIRECT
 
 	// Extract the fields we're reading from:
 	sr := rec.CloudflareRedirect
