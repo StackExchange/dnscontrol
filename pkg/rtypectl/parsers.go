@@ -37,14 +37,6 @@ func ParseIPv4(raw any) ([4]byte, error) {
 	return ip, nil
 }
 
-func ParseString(raw any) (string, error) {
-	switch v := raw.(type) {
-	case string:
-		return v, nil
-	default:
-		return fmt.Sprintf("%v", v), nil
-	}
-}
 func ParseLabel(raw any) (string, error) { return ParseString(raw) }
 
 func ParseRedirectCode(raw any) (uint16, error) {
@@ -67,4 +59,13 @@ func ParseRedirectCode(raw any) (uint16, error) {
 		return n, nil
 	}
 	return 0, fmt.Errorf("invalid redirect code: %q", raw)
+}
+
+func ParseString(raw any) (string, error) {
+	switch v := raw.(type) {
+	case string:
+		return v, nil
+	default:
+		return fmt.Sprintf("%v", v), nil
+	}
 }
