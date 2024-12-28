@@ -6,6 +6,11 @@
       "name": "foo.com",
       "records": [
         {
+          "name": "@",
+          "target": "1.2.3.4",
+          "type": "A"
+        },
+        {
           "name": "A",
           "target": "foo.com.",
           "type": "CNAME"
@@ -24,11 +29,6 @@
           "name": "B",
           "target": "foo.com.",
           "type": "CNAME"
-        },
-        {
-          "name": "@",
-          "target": "1.2.3.4",
-          "type": "A"
         }
       ],
       "registrar": "none"
