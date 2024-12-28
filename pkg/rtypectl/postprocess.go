@@ -9,6 +9,7 @@ import (
 func TransformRawRecords(domains []*models.DomainConfig) error {
 
 	for _, dc := range domains {
+		//fmt.Printf("DEBUG: dc.DefaultTTL = %d\n", dc.DefaultTTL)
 
 		for _, rawRec := range dc.RawRecords {
 
@@ -29,6 +30,10 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 				labelFQDN = rawRec.SubDomain + "." + dc.Name
 			} else {
 				labelFQDN = label + "." + dc.Name
+			}
+
+			if rawRec.TTL == 0 {
+				rawRec.TTL = dc.DefaultTTL
 			}
 
 			rec := &models.RecordConfig{

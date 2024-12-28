@@ -47,6 +47,7 @@ type DomainConfig struct {
 
 	// Raw user-input from dnsconfig.js that will be processed into RecordConfigs later:
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
+	DefaultTTL uint32            `json:"defaultTTL,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
