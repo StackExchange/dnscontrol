@@ -1,4 +1,4 @@
-name: "PR: Run integration tests"
+name: "PR: Run INTEGRATION tests"
 
 # When will this pipeline be activated?
 # 1. On any pull-request, or if someone pushes to a branch called
