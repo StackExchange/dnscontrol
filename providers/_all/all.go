@@ -2,6 +2,7 @@
 package all
 
 import (
+	// Define all rtypes.
 	_ "github.com/StackExchange/dnscontrol/v4/rtypes"
 
 	// Define all known providers here. They should each register themselves with the providers package via init function.

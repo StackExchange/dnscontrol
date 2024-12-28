@@ -31,9 +31,10 @@ type A struct {
 
 func init() {
 	rtypectl.Register("A", rtypectl.RegisterOpts{FromRaw: PopulateFromRawA})
-	fmt.Printf("DEBUG: REGISTERED A\n")
+	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
 
+// PopulateFromRawA updates rc to be an A record with contents from origin, rawfields and meta.
 func PopulateFromRawA(rc *models.RecordConfig, origin string, rawfields []any, meta map[string]string) error {
 
 	// Error checking

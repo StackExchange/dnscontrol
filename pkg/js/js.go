@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	_ "github.com/StackExchange/dnscontrol/v4/rtypes"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 	"github.com/xddxdd/ottoext/fetch"

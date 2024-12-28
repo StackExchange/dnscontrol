@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	cfsingleredirect "github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes"
 	"github.com/cloudflare/cloudflare-go"
 )
 

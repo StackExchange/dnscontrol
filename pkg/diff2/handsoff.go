@@ -5,6 +5,7 @@ package diff2
 // NO_PURGE, ENSURE_ABSENT and IGNORE*() features.
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -138,7 +139,7 @@ func handsoff(
 			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
 		if !unmanagedSafely {
-			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
+			return nil, nil, errors.New(strings.Join(msgs, "\n") +
 				"\nERROR: Unsafe to continue. Add DISABLE_IGNORE_SAFETY_CHECK to D() to override")
 		}
 	}

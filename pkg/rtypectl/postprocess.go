@@ -15,13 +15,13 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 			// Prepare the label.
 			label := rawRec.Args[0].(string) // Default to the first arg.
 			if rawRec.SubDomain != "" {      // If D_EXTEND() is in use, append the subdomain.
-				oldlabel := label
+				//oldlabel := label
 				if label == "@" {
 					label = rawRec.SubDomain
 				} else {
 					label = label + "." + rawRec.SubDomain
 				}
-				fmt.Printf("DEBUG: subdomain=%q %q->%q\n", rawRec.SubDomain, oldlabel, label)
+				//fmt.Printf("DEBUG: subdomain=%q %q->%q\n", rawRec.SubDomain, oldlabel, label)
 			}
 
 			var labelFQDN string

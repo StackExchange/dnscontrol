@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
@@ -25,11 +26,11 @@ type RegisterOpts struct {
 
 var rtypeDB map[string]RegisterOpts
 
+var validTypes = map[string]struct{}{}
+
 func Register(typeName string, opts RegisterOpts) error {
 
 	printer.Printf("rtypectl.Register(%q)\n", typeName)
-
-	// TODO(tlim): check for duplicates.
 
 	if rtypeDB == nil {
 		rtypeDB = map[string]RegisterOpts{}
@@ -40,5 +41,19 @@ func Register(typeName string, opts RegisterOpts) error {
 	}
 	rtypeDB[typeName] = opts
 
+	// Legacy version:
+
+	// Does this already exist?
+	if _, ok := validTypes[typeName]; ok {
+		panic("rtype %q already registered. Can't register it a second time!")
+	}
+	validTypes[typeName] = struct{}{}
+	providers.RegisterCustomRecordType(typeName, "CLOUDFLAREAPI", "")
+
 	return nil
+}
+
+func IsValid(t string) bool {
+	_, ok := validTypes[t]
+	return ok
 }

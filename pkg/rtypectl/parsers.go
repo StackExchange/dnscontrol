@@ -3,6 +3,7 @@ package rtypectl
 import (
 	"fmt"
 	"net/netip"
+	"strconv"
 )
 
 func ParseIPv4(raw any) ([4]byte, error) {
@@ -34,5 +35,36 @@ func ParseIPv4(raw any) ([4]byte, error) {
 		return ip, fmt.Errorf("unsupported type for ipv4 (%T)", raw)
 	}
 	return ip, nil
+}
 
+func ParseString(raw any) (string, error) {
+	switch v := raw.(type) {
+	case string:
+		return v, nil
+	default:
+		return fmt.Sprintf("%v", v), nil
+	}
+}
+func ParseLabel(raw any) (string, error) { return ParseString(raw) }
+
+func ParseRedirectCode(raw any) (uint16, error) {
+	var n uint16
+
+	switch v := raw.(type) {
+	case float64:
+		n = uint16(v)
+	case string:
+		nt, err := strconv.Atoi(v)
+		if err != nil {
+			return 0, err
+		}
+		n = uint16(nt)
+	default:
+		return 0, fmt.Errorf("unsupported type for redirect code (%T)", raw)
+	}
+
+	if n == 301 || n == 302 {
+		return n, nil
+	}
+	return 0, fmt.Errorf("invalid redirect code: %q", raw)
 }

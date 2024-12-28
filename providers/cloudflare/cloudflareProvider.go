@@ -17,7 +17,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	cfsingleredirect "github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/fatih/color"
 )
