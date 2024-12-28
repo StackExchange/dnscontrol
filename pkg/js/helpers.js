@@ -288,9 +288,6 @@ function DnsProvider(name, nsCount) {
     };
 }
 
-// A(name,ip, recordModifiers...)
-var A = recordBuilder('A');
-
 // AAAA(name,ip, recordModifiers...)
 var AAAA = recordBuilder('AAAA');
 
@@ -2110,8 +2107,3 @@ function rawrecordBuilder(type) {
         };
     };
 }
-
-// PLEASE KEEP THIS LIST ALPHABETICAL!
-
-// CLOUDFLAREAPI:
-var CF_SINGLE_REDIRECT = rawrecordBuilder('CF_SINGLE_REDIRECT');

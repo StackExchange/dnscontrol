@@ -15,8 +15,6 @@ const SINGLEREDIRECT = "CF_SINGLE_REDIRECT"
 //}
 
 func init() {
-	//rtypecontrol.Register(SINGLEREDIRECT)
-	rtypectl.Register("CF_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
 	rtypectl.Register("CF_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
 	//fmt.Printf("DEBUG: REGISTERED CF_SINGLE_REDIRECT\n")
 }
