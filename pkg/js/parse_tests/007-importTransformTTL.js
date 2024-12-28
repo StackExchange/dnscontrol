@@ -3,6 +3,7 @@ var TRANSFORM_NEWIP = [{
     high: "1.1.1.1",
     newIP: "2.2.2.2"
 }];
+
 var TRANSFORM_BASE = [{
     low: "0.0.0.0",
     high: "1.1.1.1",
@@ -11,8 +12,7 @@ var TRANSFORM_BASE = [{
     low: "7.7.7.7",
     high: "8.8.8.8",
     newBase: "9.9.9.9"
-},
-];
+}, ];
 
 D("foo1.com", "reg");
 

@@ -1,10 +1,4 @@
 {
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
-    }
-  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -13,37 +7,43 @@
   ],
   "domains": [
     {
-      "name": "foo.com!external",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "name": "foo.com!external",
       "records": [
         {
-          "type": "A",
           "name": "@",
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
     },
     {
-      "name": "foo.com!internal",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "name": "foo.com!internal",
       "records": [
         {
-          "type": "A",
           "name": "@",
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "local",
-          "target": "127.0.0.1"
+          "target": "127.0.0.1",
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
     }
   ]
 }

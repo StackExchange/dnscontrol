@@ -1,5 +1,7 @@
+var CLOUDFLARE = NewRegistrar("Cloudflare", "CLOUDFLAREAPI");
 
-var CLOUDFLARE = NewRegistrar("Cloudflare","CLOUDFLAREAPI");
-D("foo.com",CLOUDFLARE,
-    A("@","1.2.3.4",{"cloudflare_proxy":"ON"})
+D("foo.com", CLOUDFLARE,
+    A("@", "1.2.3.4", {
+        "cloudflare_proxy": "ON"
+    })
 );

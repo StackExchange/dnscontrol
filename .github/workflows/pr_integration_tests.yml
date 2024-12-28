@@ -182,7 +182,7 @@ jobs:
           echo "Skip test for ${{ matrix.provider }} provider"
         fi
       working-directory: integrationTest
-    - uses: actions/upload-artifact@v4.4.3
+    - uses: actions/upload-artifact@v4.5.0
       with:
         name: integration-tests-${{ matrix.provider }}
         path: ${{ env.TEST_RESULTS }}

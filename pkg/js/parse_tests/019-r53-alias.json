@@ -1,132 +1,132 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "R53_ALIAS",
-          "name": "mxtest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "MX",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
           "name": "atest",
-          "target": "foo.com.",
           "r53_alias": {
-            "type": "A",
-            "evaluate_target_health": "false"
-          }
+            "evaluate_target_health": "false",
+            "type": "A"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
-          "name": "atest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "A",
-            "zone_id": "Z2FTEDLFRTF",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
           "name": "aevaltargethealthtest",
-          "target": "foo.com.",
           "r53_alias": {
+            "evaluate_target_health": "true",
+            "type": "A"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "atest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
             "type": "A",
-            "evaluate_target_health": "true"
-          }
+            "zone_id": "Z2FTEDLFRTF"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "aaaatest",
-          "target": "foo.com.",
           "r53_alias": {
-            "type": "AAAA",
-            "evaluate_target_health": "false"
-          }
+            "evaluate_target_health": "false",
+            "type": "AAAA"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "aaaatest",
-          "target": "foo.com.",
           "r53_alias": {
+            "evaluate_target_health": "false",
             "type": "AAAA",
-            "zone_id": "ERERTFGFGF",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
-          "name": "cnametest",
+            "zone_id": "ERERTFGFGF"
+          },
           "target": "foo.com.",
-          "r53_alias": {
-            "type": "CNAME",
-            "evaluate_target_health": "false"
-          }
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
-          "name": "ptrtest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "PTR",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
-          "name": "txttest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "TXT",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
-          "name": "srvtest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "SRV",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
-          "name": "spftest",
-          "target": "foo.com.",
-          "r53_alias": {
-            "type": "SPF",
-            "evaluate_target_health": "false"
-          }
-        },
-        {
-          "type": "R53_ALIAS",
           "name": "caatest",
-          "target": "foo.com.",
           "r53_alias": {
-            "type": "CAA",
-            "evaluate_target_health": "false"
-          }
+            "evaluate_target_health": "false",
+            "type": "CAA"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
-          "name": "naptrtest",
-          "target": "foo.com.",
+          "name": "cnametest",
           "r53_alias": {
-            "type": "NAPTR",
-            "evaluate_target_health": "false"
-          }
+            "evaluate_target_health": "false",
+            "type": "CNAME"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "mxtest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "MX"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "naptrtest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "NAPTR"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "ptrtest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "PTR"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "spftest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "SPF"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "srvtest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "SRV"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
+        },
+        {
+          "name": "txttest",
+          "r53_alias": {
+            "evaluate_target_health": "false",
+            "type": "TXT"
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

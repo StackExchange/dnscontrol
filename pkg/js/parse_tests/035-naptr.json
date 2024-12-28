@@ -32,7 +32,7 @@
           "naptrpreference": 10,
           "naptrregexp": "!^.*$!mailto:information@example.com!",
           "naptrservice": "E2U+email",
-          "target": "",
+          "target": ".",
           "type": "NAPTR"
         },
         {
