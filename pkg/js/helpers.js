@@ -21,6 +21,8 @@ var conf = {
 
 var defaultArgs = [];
 
+var global_currentExtendSubDomain = ''; // The current D_EXTEND() zone (minus the parent zonename).
+
 function initialize() {
     conf = {
         registrars: [],
@@ -140,6 +142,7 @@ function processDargs(m, domain) {
 
 // D(name,registrar): Create a DNS Domain. Use the parameters as records and mods.
 function D(name, registrar) {
+    global_currentExtendSubDomain = '';
     var domain = newDomain(name, registrar);
     for (var i = 0; i < defaultArgs.length; i++) {
         processDargs(defaultArgs[i], domain);
@@ -177,10 +180,14 @@ function D_EXTEND(name) {
             ' was not declared yet and therefore cannot be updated. Use D() before.'
         );
     }
-    domain.obj.subdomain = name.substr(
+    global_currentExtendSubDomain = name.substr(
         0,
         name.length - domain.obj.name.length - 1
     );
+    domain.obj.subdomain = global_currentExtendSubDomain;
+    // global_currentExtendSubDomain is used by RawRecords. (new)
+    // domain.obj.subdomain is used by recordBuilder(). (legacy)
+
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -2065,6 +2072,7 @@ function rawrecordBuilder(type) {
         return function (d) {
             var record = {
                 type: type,
+                subdomain: global_currentExtendSubDomain,
             };
 
             // Process the args: Functions are executed, objects are assumed to

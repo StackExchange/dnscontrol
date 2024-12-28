@@ -11,10 +11,21 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 
 		for _, rawRec := range dc.RawRecords {
+
+			// Prepare the label.
+			label := rawRec.Args[0].(string) // Default to the first arg.
+			if rawRec.SubDomain != "" {      // If D_EXTEND() is in use, append the subdomain.
+				if label == "@" {
+					label = rawRec.SubDomain
+				} else {
+					label = label + "." + rawRec.SubDomain
+				}
+			}
+
 			rec := &models.RecordConfig{
 				Type:     rawRec.Type,
 				TTL:      rawRec.TTL,
-				Name:     rawRec.Args[0].(string),
+				Name:     label,
 				Metadata: map[string]string{},
 			}
 

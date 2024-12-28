@@ -51,7 +51,7 @@ func TestParsedFiles(t *testing.T) {
 			// }
 
 			for _, dc := range conf.Domains {
-				//fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
+				fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
 				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
 				dc.Records = ps.Records
 				if len(dc.Records) == 0 {
