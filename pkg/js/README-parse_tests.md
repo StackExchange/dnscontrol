@@ -9,7 +9,7 @@ scans for files named `DDD-*.js` where `DDD` is a three-digit number.
 * `parse_tests/001-basic.json.ACTUAL` -- The ACTUAL output of "print-ir" for the `.js` file (not saved in git)
 * `parse_tests/001-basic/foo.com.zone` -- Zonefiles from the domains mentioned in dnsconfig.js
 
-NOTE: The zonefiles are only generated if a matching `DDD-name/DOMAINNAME.zone` file exists.
+NOTE: The zonefiles are only tested if a matching `DDD-name/DOMAINNAME.zone` file exists.
 
 Any files committed to Git should be in standard format.
 
@@ -33,7 +33,7 @@ fmtjson *.json *.json.ACTUAL
 
 Back-port the ACTUAL results to the expected results:
 
-(This is dangerous.  Carefully inspect the resulting PR.)
+(This is dangerous. You may be committing buggy results to the "expected" files. Carefully inspect the resulting PR.)
 
 ```
 cd parse_tests

@@ -17,9 +17,9 @@ var TRANSFORM_BASE = [{
 D("foo1.com", "reg");
 
 D("foo2.com", "reg",
-    IMPORT_TRANSFORM(TRANSFORM_BASE, "foo1.com", 60)
+    IMPORT_TRANSFORM(TRANSFORM_BASE, "foo1.com", 60),
 );
 
 D("foo3.com", "reg",
-    IMPORT_TRANSFORM_STRIP(TRANSFORM_NEWIP, "foo1.com", 99, ".com")
+    IMPORT_TRANSFORM_STRIP(TRANSFORM_NEWIP, "foo1.com", 99, ".com"),
 );

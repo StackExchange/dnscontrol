@@ -9,5 +9,5 @@ D("foo.com", "none",
     // Optionally report violation to http://example.com
     CAA("@", "iodef", "http://example.com"),
     // Report violation to https://example.com
-    CAA("@", "iodef", "https://example.com", CAA_CRITICAL)
+    CAA("@", "iodef", "https://example.com", CAA_CRITICAL),
 );
