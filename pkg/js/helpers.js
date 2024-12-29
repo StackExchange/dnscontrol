@@ -921,19 +921,19 @@ function ConvertDDToDMS(D, longitude) {
     };
 }
 
-// MX(name,priority,target, recordModifiers...)
-var MX = recordBuilder('MX', {
-    args: [
-        ['name', _.isString],
-        ['priority', _.isNumber],
-        ['target', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.mxpreference = args.priority;
-        record.target = args.target;
-    },
-});
+// // MX(name,priority,target, recordModifiers...)
+// var MX = recordBuilder('MX', {
+//     args: [
+//         ['name', _.isString],
+//         ['priority', _.isNumber],
+//         ['target', _.isString],
+//     ],
+//     transform: function (record, args, modifiers) {
+//         record.name = args.name;
+//         record.mxpreference = args.priority;
+//         record.target = args.target;
+//     },
+// });
 
 // NS(name,target, recordModifiers...)
 var NS = recordBuilder('NS');
