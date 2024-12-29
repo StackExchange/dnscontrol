@@ -1,4 +1,4 @@
-name: "Release: Make release candidate"
+name: "RELEASE: Make release candidate"
 
 on:
   push:
