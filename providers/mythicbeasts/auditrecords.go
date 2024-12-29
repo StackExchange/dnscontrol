@@ -10,6 +10,8 @@ import (
 // supported, an empty list is returned.
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes)
-	return nil
+	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2024-12-29
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2024-12-29
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2024-12-29
+	return a.Audit(records)
 }
