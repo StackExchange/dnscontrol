@@ -316,6 +316,67 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
+// SetLabel3 sets the .Name/.NameFQDN fields given 3 pieces of info: a short name, subdomain, and origin.
+func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
+	label, labelFQDN, err := setLabel3Helper(short, subdomain, origin)
+	if err != nil {
+		return err
+	}
+	rc.Name = label
+	rc.NameFQDN = labelFQDN
+	return nil
+}
+
+func lastCharIs(s string, c rune) bool {
+	return strings.HasSuffix(s, string(c))
+}
+
+func setLabel3Helper(short, subdomain, origin string) (string, string, error) {
+
+	// Make sure the function is being used correctly:
+	if strings.HasSuffix(origin, ".") {
+		return "", "", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
+	}
+	if strings.ToLower(origin) != origin {
+		return "", "", fmt.Errorf("origin (%s) must be lowercase", origin)
+	}
+	if strings.ToLower(subdomain) != subdomain {
+		return "", "", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
+	}
+	if short == "." {
+		return "", "", fmt.Errorf("label (%s) must not be just a dot", short)
+
+	}
+
+	short = strings.ToLower(short)
+
+	if lastCharIs(short, '.') {
+		if short == (origin + ".") {
+			return "@", origin, nil
+		}
+		if strings.HasSuffix(short, "."+origin+".") {
+			// short.origin.
+			// 0123456789012
+			return short[0 : len(short)-len(origin)-2], short[:len(short)-1], nil
+		}
+		return "", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
+	}
+
+	if subdomain != "" {
+		// If D_EXTEND() is in use...
+		if short == "" || short == "@" {
+			return subdomain, subdomain + "." + origin, nil
+		}
+		return short + "." + subdomain, short + "." + subdomain + "." + origin, nil
+	}
+
+	if short == "" || short == "@" {
+		return "@", origin, nil
+	}
+
+	return short, short + "." + origin, nil
+}
+
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.

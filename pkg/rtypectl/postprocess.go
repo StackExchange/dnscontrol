@@ -13,25 +13,6 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 
 		for _, rawRec := range dc.RawRecords {
 
-			// Prepare the label.
-			label := rawRec.Args[0].(string) // Default to the first arg.
-			if rawRec.SubDomain != "" {      // If D_EXTEND() is in use, append the subdomain.
-				//oldlabel := label
-				if label == "@" {
-					label = rawRec.SubDomain
-				} else {
-					label = label + "." + rawRec.SubDomain
-				}
-				//fmt.Printf("DEBUG: subdomain=%q %q->%q\n", rawRec.SubDomain, oldlabel, label)
-			}
-
-			var labelFQDN string
-			if label == "@" {
-				labelFQDN = rawRec.SubDomain + "." + dc.Name
-			} else {
-				labelFQDN = label + "." + dc.Name
-			}
-
 			if rawRec.TTL == 0 {
 				rawRec.TTL = dc.DefaultTTL
 			}
@@ -39,17 +20,15 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 			rec := &models.RecordConfig{
 				Type:      rawRec.Type,
 				TTL:       rawRec.TTL,
-				Name:      label,
-				NameFQDN:  labelFQDN,
 				SubDomain: rawRec.SubDomain,
 				Metadata:  map[string]string{},
 			}
 
-			// Copy the metadata (convert everything to string)
+			// Copy the metadata (convert values to string)
 			for _, m := range rawRec.Metas {
 				for mk, mv := range m {
 					if v, ok := mv.(string); ok {
-						rec.Metadata[mk] = v // Already a string. No new malloc.
+						rec.Metadata[mk] = v // Already a string
 					} else {
 						rec.Metadata[mk] = fmt.Sprintf("%v", mv)
 					}
@@ -64,14 +43,6 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 					dc.Name,
 					err)
 			}
-
-			// case "CF_SINGLE_REDIRECT":
-			// 	err = cfsingleredirect.FromRaw(rec, rawRec.Args)
-			// 	rec.SetLabel("@", dc.Name)
-
-			// default:
-			// 	err = fmt.Errorf("unknown rawrec type=%q", rawRec.Type)
-			// }
 
 			// Free memeory:
 			clear(rawRec.Args)
@@ -89,11 +60,11 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 	return nil
 }
 
-func FromRaw(rc *models.RecordConfig, origin string, typeName string, args []any, meta map[string]string) error {
+func FromRaw(rc *models.RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
-		fmt.Printf("DEBUG: %+v\n", rtypeDB)
+		//fmt.Printf("DEBUG: %+v\n", rtypeDB)
 		return fmt.Errorf("unknown rtype %q", typeName)
 	}
 

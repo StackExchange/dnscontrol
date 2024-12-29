@@ -35,7 +35,8 @@ func init() {
 }
 
 // PopulateFromRawA updates rc to be an A record with contents from origin, rawfields and meta.
-func PopulateFromRawA(rc *models.RecordConfig, origin string, rawfields []any, meta map[string]string) error {
+func PopulateFromRawA(rc *models.RecordConfig, origin string, rawfields []string, meta map[string]string) error {
+	var err error
 
 	// Error checking
 
@@ -43,17 +44,21 @@ func PopulateFromRawA(rc *models.RecordConfig, origin string, rawfields []any, m
 		return fmt.Errorf("rtype %q wants %d field(s), found %d: %+v", "A", 1, len(rawfields)-1, rawfields[1:])
 	}
 
-	// Create the struct
-
+	// Create the struct.
 	n := A{}
-	var err error
+
+	// Process each rawfield:
+
+	rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+
 	if n.A, err = rtypectl.ParseIPv4(rawfields[1]); err != nil {
 		return err
 	}
+
+	// Update legacy fields.
 	rc.SetTargetIP(n.A[:])
 
-	// Update the record:
-	//rc.SetLabel(rawfields[0].(string), origin) // Label
+	// Update the RecordConfig:
 	maps.Copy(rc.Metadata, meta) // Add the metadata
 	rc.Comparable = fmt.Sprintf("%s", n.A)
 	rc.Display = fmt.Sprintf("%s", n.A)

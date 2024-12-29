@@ -7,15 +7,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-type FromRawFn func(*models.RecordConfig, string, []any, map[string]string) error
-
-// type FromRawResult struct {
-// 	LabelShort, LabelFQDN string
-// 	//LabelDisplayFQDN      string
-// 	Fields     interface{}
-// 	Comparable string
-// 	Display    string
-// }
+type FromRawFn func(*models.RecordConfig, string, []string, map[string]string) error
 
 type RegisterOpts struct {
 	Enum    int

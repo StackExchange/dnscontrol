@@ -6,7 +6,7 @@ package models
 // legacy types will be converted.
 type RawRecordConfig struct {
 	Type      string           `json:"type"`
-	Args      []any            `json:"args,omitempty"`
+	Args      []string         `json:"args,omitempty"`
 	Metas     []map[string]any `json:"metas,omitempty"`
 	TTL       uint32           `json:"ttl,omitempty"`
 	SubDomain string           `json:"subdomain,omitempty"`

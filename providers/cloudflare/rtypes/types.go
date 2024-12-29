@@ -37,7 +37,8 @@ func init() {
 //	makeSingleRedirectFromRawRec(rc, code, name, when, then)
 
 // PopulateFromRawCFSINGLEREDIRECT updates rc to be a CF_SINGLE_REDIRECT record with contents from origin, rawfields and meta.
-func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, origin string, rawfields []any, meta map[string]string) error {
+func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, origin string, rawfields []string, meta map[string]string) error {
+	var err error
 
 	// Error checking
 
@@ -49,26 +50,34 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, origin string, raw
 
 	//n := CF_SINGLE_REDIRECT{}
 	//n := models.CloudflareSingleRedirectConfig{}
-	var err error
 
-	var name, when, then string
-	var code uint16
-	if name, err = rtypectl.ParseLabel(rawfields[0]); err != nil {
+	// Process each rawfield:
+
+	var name string
+	if name, err = rtypectl.ParseStringTrimmed(rawfields[0]); err != nil {
 		return err
 	}
+	rc.SetLabel(rawfields[0], origin) // Label
+
+	var code uint16
 	if code, err = rtypectl.ParseRedirectCode(rawfields[1]); err != nil {
 		return err
 	}
-	if when, err = rtypectl.ParseString(rawfields[2]); err != nil {
+
+	var when string
+	if when, err = rtypectl.ParseStringTrimmed(rawfields[2]); err != nil {
 		return err
 	}
-	if then, err = rtypectl.ParseString(rawfields[3]); err != nil {
+
+	var then string
+	if then, err = rtypectl.ParseStringTrimmed(rawfields[3]); err != nil {
 		return err
 	}
+
+	// Update legacy fields.
 	MakeSingleRedirectFromRawRec(rc, code, name, when, then)
 
 	// Update the record:
-	//rc.SetLabel(rawfields[0].(string), origin) // Label
 	maps.Copy(rc.Metadata, meta) // Add the metadata
 	//rc.Comparable = fmt.Sprintf("%s", n.A)
 	rc.Display = rc.CloudflareRedirect.SRDisplay

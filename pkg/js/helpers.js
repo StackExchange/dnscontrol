@@ -2093,7 +2093,8 @@ function rawrecordBuilder(type) {
                     }
                     processedMetas.push(r);
                 } else {
-                    processedArgs.push(r);
+                    processedArgs.push('' + r);
+                  // NB(tlim): According to https://stackoverflow.com/a/5765401/71978 this is the fastest way to convert ints to strings.
                 }
             }
             // Store the processed args.
