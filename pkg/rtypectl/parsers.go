@@ -40,3 +40,16 @@ func ParseRedirectCode(raw string) (uint16, error) {
 func ParseStringTrimmed(raw string) (string, error) {
 	return strings.TrimSpace(raw), nil
 }
+
+func ParseUint16(raw string) (uint16, error) {
+	nt, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, fmt.Errorf("invalid uint16: %q", raw)
+	}
+	return uint16(nt), nil
+}
+
+func ParseDottedHost(raw, subdomain, origin string) (string, error) {
+
+	return raw + "." + subdomain + "." + origin, nil
+}
