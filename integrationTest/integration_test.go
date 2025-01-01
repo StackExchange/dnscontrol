@@ -215,12 +215,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		if *providerToRun == "AXFRDDNS" {
-			// Bind will refuse a DDNS update when the resulting zone
-			// contains a NS record without an associated address
-			// records (A or AAAA)
-			dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
-		}
+		//if *providerToRun == "AXFRDDNS" {
+		// Bind will refuse a DDNS update when the resulting zone
+		// contains a NS record without an associated address
+		// records (A or AAAA)
+		//dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
+		//}
 		dom.Unmanaged = tst.Unmanaged
 		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
 		models.PostProcessRecords(dom.Records)
