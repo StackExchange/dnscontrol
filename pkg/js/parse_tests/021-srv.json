@@ -1,51 +1,51 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "SRV",
           "name": "_ntp._udp",
-          "target": "one.foo.com.",
+          "srvport": 123,
           "srvpriority": 1,
           "srvweight": 100,
-          "srvport": 123
+          "target": "one.foo.com.",
+          "type": "SRV"
         },
         {
-          "type": "SRV",
           "name": "_ntp._udp",
-          "target": "two",
+          "srvport": 123,
           "srvpriority": 2,
           "srvweight": 100,
-          "srvport": 123
+          "target": "two",
+          "type": "SRV"
         },
         {
-          "type": "SRV",
           "name": "_ntp._udp",
-          "target": "localhost",
+          "srvport": 123,
           "srvpriority": 3,
           "srvweight": 100,
-          "srvport": 123
+          "target": "localhost",
+          "type": "SRV"
         },
         {
-          "type": "SRV",
           "name": "_ntp._udp",
-          "target": "three.example.com.",
+          "srvport": 123,
           "srvpriority": 4,
           "srvweight": 100,
-          "srvport": 123
+          "target": "three.example.com.",
+          "type": "SRV"
         },
         {
-          "type": "SRV",
           "name": "_ntp._udp",
+          "srvport": 1,
           "target": "zeros",
-          "srvport": 1
+          "type": "SRV"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

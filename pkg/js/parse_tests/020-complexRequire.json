@@ -1,38 +1,38 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "A",
           "name": "@",
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "type": "A"
         },
         {
-          "type": "CNAME",
           "name": "A",
-          "target": "foo.com."
+          "target": "foo.com.",
+          "type": "CNAME"
         },
         {
-          "type": "CNAME",
           "name": "C",
-          "target": "foo.com."
+          "target": "foo.com.",
+          "type": "CNAME"
         },
         {
-          "type": "CNAME",
           "name": "D",
-          "target": "foo.com."
+          "target": "foo.com.",
+          "type": "CNAME"
         },
         {
-          "type": "CNAME",
           "name": "B",
-          "target": "foo.com."
+          "target": "foo.com.",
+          "type": "CNAME"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

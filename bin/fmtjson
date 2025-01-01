@@ -1,0 +1,63 @@
+#!/usr/bin/python3
+
+"""
+Convert JSON data to human-readable form.
+
+Usage:
+  fmtjson.py inputFile [inputFile2...]
+  or
+  fmtjson.py <input >output
+
+  -n		Dry run mode.
+"""
+
+import sys
+import json
+
+def main(args):
+  problem = False
+  if len(args) and args[0] == '-n':
+    files = args[1:]
+    readonly = True
+  else:
+    files = args
+    readonly = False
+
+  if not files:
+    if readonly:
+      json.loads(sys.stdin.read())
+    else:
+      print(
+              json.dumps(
+                  json.loads(sys.stdin.read()),
+                  sort_keys=True,
+                  indent=2,
+                  separators=(',', ': ')
+                  )
+              )
+  else:
+    for filename in files:
+      orig = {}
+      with open(filename, 'r') as f:
+        try:
+          orig_data = f.read()
+          orig = json.loads(orig_data)
+        except ValueError as e:
+          print('Reformatting: %s' % filename)
+          print('ERROR:', str(e))
+          problem = True
+      if (not problem) and (not readonly):
+        fixed_data = json.dumps(orig,
+            sort_keys=True, indent=2, separators=(',', ': ')) + '\n'
+        if orig_data != fixed_data:
+          print('Reformatting: %s' % filename)
+          with open(filename, 'w') as f:
+            f.write(fixed_data)
+  return problem
+
+def usage():
+  print(__doc__)
+
+
+if __name__ == "__main__":
+  sys.exit(main(sys.argv[1:]))

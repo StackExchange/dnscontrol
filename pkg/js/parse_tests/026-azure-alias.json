@@ -1,37 +1,37 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "AZURE_ALIAS",
-          "name": "atest",
-          "target": "foo.com.",
           "azure_alias": {
             "type": "A"
-          }
+          },
+          "name": "atest",
+          "target": "foo.com.",
+          "type": "AZURE_ALIAS"
         },
         {
-          "type": "AZURE_ALIAS",
-          "name": "aaaatest",
-          "target": "foo.com.",
           "azure_alias": {
             "type": "AAAA"
-          }
+          },
+          "name": "aaaatest",
+          "target": "foo.com.",
+          "type": "AZURE_ALIAS"
         },
         {
-          "type": "AZURE_ALIAS",
-          "name": "cnametest",
-          "target": "foo.com.",
           "azure_alias": {
             "type": "CNAME"
-          }
+          },
+          "name": "cnametest",
+          "target": "foo.com.",
+          "type": "AZURE_ALIAS"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
