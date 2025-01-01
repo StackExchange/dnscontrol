@@ -71,7 +71,7 @@ require (
 	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
-	github.com/oracle/oci-go-sdk/v65 v65.80.0
+	github.com/oracle/oci-go-sdk/v65 v65.81.1
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e
 	golang.org/x/text v0.21.0
