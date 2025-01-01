@@ -9,7 +9,7 @@ on:
   # Want to trigger all the tests without making a PR?
   # Run: git push origin main:tlim_testpr --force
   # This will trigger a full PR test on the main branch.
-  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_build.yml?query=branch%3Atlim_testpr
   push:
     branches:
       - 'tlim_testpr'

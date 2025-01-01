@@ -56,13 +56,13 @@ Step 1: Create a branch
 
 Create a branch as you normally would to submit a PR to the project.
 
-Step 2: Update `pr_test.yml`
+Step 2: Update `pr_integration_tests.yml`
 
 {% hint style="info" %}
-Edits to `pr_test.yml` may have already been done for you.
+Edits to `pr_integration_tests.yml` may have already been done for you.
 {% endhint %}
 
-Edit `.github/workflows/pr_test.yml`
+Edit `.github/workflows/pr_integration_tests.yml`
 
 1. Add the provider to the `PROVIDERS` list.
 
@@ -71,7 +71,7 @@ Edit `.github/workflows/pr_test.yml`
 
 The line looks something like:
 
-{% code title=".github/workflows/pr_test.yml" %}
+{% code title=".github/workflows/pr_integration_tests.yml" %}
 ```yaml
       env:
         PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
@@ -88,7 +88,7 @@ To find this section, search for `PROVIDER SECRET LIST`.
 
 For example, the entry for BIND looks like:
 
-{% code title=".github/workflows/pr_test.yml" %}
+{% code title=".github/workflows/pr_integration_tests.yml" %}
 ```
         BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
 ```
@@ -98,13 +98,13 @@ For example, the entry for BIND looks like:
 
 Every provider requires different variables set to perform the integration tests.  The list of such variables is in `integrationTest/providers.json`.
 
-You've already added `*_DOMAIN` to `pr_test.yml`. Now we're going to add the remaining ones.
+You've already added `*_DOMAIN` to `pr_integration_tests.yml`. Now we're going to add the remaining ones.
 
 To find this section, search for `PROVIDER SECRET LIST`.
 
 For example, the entry for CLOUDFLAREAPI looks like this:
 
-{% code title=".github/workflows/pr_test.yml" %}
+{% code title=".github/workflows/pr_integration_tests.yml" %}
 ```
         CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
         CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}

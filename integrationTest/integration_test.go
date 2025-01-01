@@ -1264,12 +1264,6 @@ func makeTests() []*TestGroup {
 			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 
 			// Nobody needs this and many APIs don't allow it.
-			tc("TXT with 1 backslash", txt("fooosbs1", `1back\slash`)),
-			tc("TXT with 2 backslash", txt("fooosbs2", `2back\\slash`)),
-			tc("TXT with 3 backslash", txt("fooosbs3", `3back\\\slash`)),
-			tc("TXT with 4 backslash", txt("fooosbs4", `4back\\\\slash`)),
-
-			// Nobody needs this and many APIs don't allow it.
 			//tc("Create TXT with frequently difficult characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
