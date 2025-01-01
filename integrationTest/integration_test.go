@@ -53,30 +53,23 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		return nil, "", nil
 	}
 
-	// Which profile are we using? Use the profile but default to the provider.
-	targetProfile := *profileFlag
-	if targetProfile == "" {
-		targetProfile = *providerFlag
-	}
-
-	// // If the user forgot the -profile flag, use the -provider flag.
-	// if *providerFlag == "" {
-	// 	providerFlag = profileFlag
-	// }
-	// // If the user forgot the -provider flag, use the -profile flag.
-	// if *profileFlag == "" {
-	// 	profileFlag = providerFlag
-	// }
+	// Load the profile values
 
 	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
 
-	// Find the profile we want to use.
+	// Which profile are we using? Use the profile but default to the provider.
+	targetProfile := *profileFlag
+	if targetProfile == "" {
+		targetProfile = *providerFlag
+	}
+
 	var profileName, profileType string
 	var cfg map[string]string
 
+	// Find the profile we want to use.
 	for p, c := range jsons {
 		if p == targetProfile {
 			cfg = c
@@ -85,7 +78,6 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 			if profileType == "" {
 				t.Fatalf("providers.json profile %q does not have a TYPE field", *profileFlag)
 			}
-			//*providerFlag = profileType // Override -provider with the provider we know is being used.
 			break
 		}
 	}
@@ -94,11 +86,18 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		return nil, "", nil
 	}
 
+	// Fill in -profile if blank.
 	if *profileFlag == "" {
 		*profileFlag = profileName
 	}
 
-	fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
+	// Fix legacy use of -provider.
+	if *providerFlag != profileType {
+		fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
+		*providerFlag = profileType
+	}
+
+	//fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
 	fmt.Printf("Testing Profile=%q TYPE=%q\n", profileName, profileType)
 
 	var metadata json.RawMessage
