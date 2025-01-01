@@ -47,6 +47,8 @@ go test -v -verbose -provider ROUTE53 -end 5
 go test -v -verbose -provider ROUTE53 -start 16 -end 20
 ```
 
+The `start` and `end` flags are both inclusive (i.e. `-start 16 -end 20` will run `[16, 17, 18, 19, 20]`).
+
 For some providers it may be necessary to increase the test timeout using `-test`. The default is 10 minutes.  `0` is "no limit".  Typical Go durations work too (`1h` for 1 hour, etc).
 
 ```shell
