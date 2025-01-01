@@ -98,6 +98,7 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Fields    interface{}       `json:"-"` // Pointer to struct with fields.
 
 	Comparable string `json:"-"`
 	Display    string `json:"-"`

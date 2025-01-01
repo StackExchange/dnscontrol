@@ -16,6 +16,7 @@ func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 	if rc.Type != "MX" {
 		panic("assertion failed: SetTargetMX called when .Type is not MX")
 	}
+	rtypescompat.FixMX(rc, "", []string{fmt.Printf("%v", rc.MxPreference), target}, nil)
 	return nil
 }
 

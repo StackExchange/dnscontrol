@@ -79,6 +79,7 @@ func PopulateFromRawMX(rc *models.RecordConfig, origin string, rawfields []strin
 
 	// Create the struct.
 	n := MX{}
+	rc.Fields = n
 
 	// Process each rawfield:
 
