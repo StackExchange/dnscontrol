@@ -18,12 +18,21 @@
   },
   "AXFRDDNS": {
     "TYPE": "AXFRDDNS",
+    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_UPDATE_KEY",
-    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME"
+    "update-key": "$AXFRDDNS_UPDATE_KEY"
+  },
+  "AXFRDDNS_DNSSEC": {
+    "TYPE": "AXFRDDNS",
+    "buggy-cname": "$AXFRDDNS_DNSSEC_BUGGY_CNAME",
+    "domain": "$AXFRDDNS_DNSSEC_DOMAIN",
+    "master": "$AXFRDDNS_DNSSEC_MASTER",
+    "nameservers": "$AXFRDDNS_DNSSEC_NAMESERVERS",
+    "transfer-key": "$AXFRDDNS_DNSSEC_TRANSFER_KEY",
+    "update-key": "$AXFRDDNS_DNSSEC_UPDATE_KEY"
   },
   "AZURE_DNS": {
     "ClientID": "$AZURE_DNS_CLIENT_ID",
@@ -40,8 +49,8 @@
   },
   "BUNNY_DNS": {
     "TYPE": "BUNNY_DNS",
-    "domain": "$BUNNY_DNS_DOMAIN",
-    "api_key": "$BUNNY_DNS_API_KEY"
+    "api_key": "$BUNNY_DNS_API_KEY",
+    "domain": "$BUNNY_DNS_DOMAIN"
   },
   "CLOUDFLAREAPI": {
     "TYPE": "CLOUDFLAREAPI",
@@ -65,13 +74,6 @@
     "domain": "$CLOUDNS_DOMAIN",
     "sub-auth-id": "$CLOUDNS_SUB_AUTH_ID"
   },
-  "CSCGLOBAL": {
-    "TYPE": "CSCGLOBAL",
-    "api-key": "$CSCGLOBAL_APIKEY",
-    "domain": "$CSCGLOBAL_DOMAIN",
-    "notification_emails": "$CSCGLOBAL_NOTIFICATION",
-    "user-token": "$CSCGLOBAL_USERTOKEN"
-  },
   "CNR": {
     "TYPE": "CNR",
     "apientity": "$CNR_ENTITY",
@@ -79,6 +81,13 @@
     "apipassword": "$CNR_PW",
     "debugmode": "$CNR_DEBUGMODE",
     "domain": "$CNR_DOMAIN"
+  },
+  "CSCGLOBAL": {
+    "TYPE": "CSCGLOBAL",
+    "api-key": "$CSCGLOBAL_APIKEY",
+    "domain": "$CSCGLOBAL_DOMAIN",
+    "notification_emails": "$CSCGLOBAL_NOTIFICATION",
+    "user-token": "$CSCGLOBAL_USERTOKEN"
   },
   "DESEC": {
     "TYPE": "DESEC",
@@ -164,11 +173,11 @@
     "domain": "$HOSTINGDE_DOMAIN"
   },
   "HUAWEICLOUD": {
-    "TYPE": "HUAWEICLOUD",
-    "domain": "$HUAWEICLOUD_DOMAIN",
-    "Region": "$HUAWEICLOUD_REGION",
     "KeyId": "$HUAWEICLOUD_KEY_ID",
-    "SecretKey": "$HUAWEICLOUD_KEY"
+    "Region": "$HUAWEICLOUD_REGION",
+    "SecretKey": "$HUAWEICLOUD_KEY",
+    "TYPE": "HUAWEICLOUD",
+    "domain": "$HUAWEICLOUD_DOMAIN"
   },
   "INWX": {
     "TYPE": "INWX",
@@ -202,9 +211,9 @@
   },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
+    "domain": "$MYTHICBEASTS_DOMAIN",
     "keyID": "$MYTHICBEASTS_KEYID",
-    "secret": "$MYTHICBEASTS_SECRET",
-    "domain": "$MYTHICBEASTS_DOMAIN"
+    "secret": "$MYTHICBEASTS_SECRET"
   },
   "NAMECHEAP": {
     "BaseURL": "$NAMECHEAP_BASEURL",
@@ -277,9 +286,9 @@
   "REALTIMEREGISTER": {
     "TYPE": "REALTIMEREGISTER",
     "apikey": "$REALTIMEREGISTER_APIKEY",
-    "sandbox" : "$REALTIMEREGISTER_SANDBOX",
     "domain": "$REALTIMEREGISTER_DOMAIN",
-    "premium": "$REALTIMEREGISTER_PREMIUM"
+    "premium": "$REALTIMEREGISTER_PREMIUM",
+    "sandbox": "$REALTIMEREGISTER_SANDBOX"
   },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",

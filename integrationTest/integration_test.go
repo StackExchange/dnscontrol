@@ -59,6 +59,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		if *providerToRun != name {
 			continue
 		}
+		// Handle the situation where the provider name doesn't match the TYPE.
+		name = cfg["TYPE"]
+		fmt.Printf("TYPE=%q using providers.json:%q\n", name, *providerToRun)
+		*providerToRun = name
 
 		var metadata json.RawMessage
 		// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
