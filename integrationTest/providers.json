@@ -25,15 +25,6 @@
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
     "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
-  "AXFRDDNS_DNSSEC": {
-    "TYPE": "AXFRDDNS",
-    "buggy-cname": "$AXFRDDNS_DNSSEC_BUGGY_CNAME",
-    "domain": "$AXFRDDNS_DNSSEC_DOMAIN",
-    "master": "$AXFRDDNS_DNSSEC_MASTER",
-    "nameservers": "$AXFRDDNS_DNSSEC_NAMESERVERS",
-    "transfer-key": "$AXFRDDNS_DNSSEC_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_DNSSEC_UPDATE_KEY"
-  },
   "AZURE_DNS": {
     "ClientID": "$AZURE_DNS_CLIENT_ID",
     "ClientSecret": "$AZURE_DNS_CLIENT_SECRET",

@@ -1,31 +1,31 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "DS",
+          "dsalgorithm": 13,
+          "dsdigest": "AABBCCDDEEFF",
+          "dsdigesttype": 2,
+          "dskeytag": 1000,
           "name": "@",
           "target": "",
-          "dskeytag": 1000,
-          "dsalgorithm": 13,
-          "dsdigesttype": 2,
-          "dsdigest": "AABBCCDDEEFF"
+          "type": "DS"
         },
         {
-          "type": "DS",
+          "dsalgorithm": 1,
+          "dsdigest": "FFFF",
+          "dsdigesttype": 1,
+          "dskeytag": 1,
           "name": "@",
           "target": "",
-          "dskeytag": 1,
-          "dsalgorithm": 1,
-          "dsdigesttype": 1,
-          "dsdigest": "FFFF"
+          "type": "DS"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
