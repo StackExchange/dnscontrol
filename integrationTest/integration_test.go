@@ -52,14 +52,21 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		t.Log("No -provider or -profile specified")
 		return nil, "", nil
 	}
-	// If the user forgot the -profile flag, use the -provider flag.
-	if *providerFlag == "" {
-		providerFlag = profileFlag
+
+	// Which profile are we using? Use the profile but default to the provider.
+	targetProfile := *profileFlag
+	if targetProfile == "" {
+		targetProfile = *providerFlag
 	}
-	// If the user forgot the -provider flag, use the -profile flag.
-	if *profileFlag == "" {
-		profileFlag = providerFlag
-	}
+
+	// // If the user forgot the -profile flag, use the -provider flag.
+	// if *providerFlag == "" {
+	// 	providerFlag = profileFlag
+	// }
+	// // If the user forgot the -provider flag, use the -profile flag.
+	// if *profileFlag == "" {
+	// 	profileFlag = providerFlag
+	// }
 
 	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
@@ -71,20 +78,24 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 	var cfg map[string]string
 
 	for p, c := range jsons {
-		if p == *profileFlag {
+		if p == targetProfile {
 			cfg = c
 			profileName = p
 			profileType = cfg["TYPE"]
 			if profileType == "" {
 				t.Fatalf("providers.json profile %q does not have a TYPE field", *profileFlag)
 			}
-			*providerFlag = profileType // Override -provider with the provider we know is being used.
+			//*providerFlag = profileType // Override -provider with the provider we know is being used.
 			break
 		}
 	}
 	if profileName == "" {
 		t.Fatalf("Profile not found: -profile=%q -provider=%q", *profileFlag, *providerFlag)
 		return nil, "", nil
+	}
+
+	if *profileFlag == "" {
+		*profileFlag = profileName
 	}
 
 	fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
@@ -326,7 +337,8 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Abide by filter
-		if err := testPermitted(*providerFlag, *group); err != nil {
+		fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
+		if err := testPermitted(*profileFlag, *group); err != nil {
 			//t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
 			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
 			continue
