@@ -161,6 +161,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"transfer-server",
 			"update-mode",
 			"transfer-mode",
+			"buggy-cname",
 			"domain",
 			"TYPE":
 			continue
