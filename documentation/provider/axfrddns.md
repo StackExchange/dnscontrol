@@ -20,7 +20,7 @@ using this provider.
 The following two parameters in `creds.json` allow switching
 to TCP or TCP over TLS.
 
-* `update-mode`: May contain `udp` (the default), `tcp`, or `tcp-tls`.
+* `update-mode`: May contain `tcp` (the default), `udp`, or `tcp-tls`.
 * `transfer-mode`: May contain `tcp` (the default), or `tcp-tls`.
 
 ### Authentication

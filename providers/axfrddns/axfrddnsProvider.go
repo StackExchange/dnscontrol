@@ -105,7 +105,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			printer.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
 		}
 	} else {
-		api.updateMode = ""
+		api.updateMode = "tcp"
 	}
 	if config["transfer-mode"] != "" {
 		switch config["transfer-mode"] {
