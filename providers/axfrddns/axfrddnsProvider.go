@@ -39,10 +39,11 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
-	providers.CanGetZones:            providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
+	providers.CanUseDNAME:            providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
@@ -51,9 +52,20 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	// Possible to support via catalog zones (RFC 9432), but those are not
+	// directly supported by DNSControl right now (although nothing is stopping
+	// you from manually updating a catalog zone using DNSControl if you wish).
+	providers.CanGetZones:      providers.Cannot(),
+	providers.DocCreateDomains: providers.Cannot(),
+	// Not a valid RR type, so impossible to encode in an RFC-compliant DNS
+	// packet.
+	providers.CanUseAlias: providers.Cannot(),
+	// These are both supported by RFC 2136 (DDNS), but neither work with
+	// DNSControl right now.
+	providers.CanUseSOA:    providers.Cannot(),
+	providers.CanUseDNSKEY: providers.Cannot(),
 }
 
 // axfrddnsProvider stores the client info for the provider.
