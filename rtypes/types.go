@@ -89,7 +89,7 @@ func PopulateFromRawMX(rc *models.RecordConfig, origin string, rawfields []strin
 		return err
 	}
 
-	if n.Mx, err = rtypectl.ParseDottedHost(rawfields[2]); err != nil {
+	if n.Mx, err = rtypectl.ParseDottedHost(rawfields[2], "", origin); err != nil {
 		return err
 	}
 

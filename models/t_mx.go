@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/fixlegacy"
 )
 
 // SetTargetMX sets the MX fields.
@@ -16,7 +18,7 @@ func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 	if rc.Type != "MX" {
 		panic("assertion failed: SetTargetMX called when .Type is not MX")
 	}
-	rtypescompat.FixMX(rc, "", []string{fmt.Printf("%v", rc.MxPreference), target}, nil)
+	fixlegacy.CopyLegacyToNewMX(rc, rc.MxPreference, target)
 	return nil
 }
 
