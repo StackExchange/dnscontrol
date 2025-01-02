@@ -18,7 +18,6 @@
   },
   "AXFRDDNS": {
     "TYPE": "AXFRDDNS",
-    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
@@ -27,7 +26,6 @@
   },
   "AXFRDDNS_DNSSEC": {
     "TYPE": "AXFRDDNS",
-    "buggy-cname": "$AXFRDDNS_DNSSEC_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DNSSEC_DOMAIN",
     "master": "$AXFRDDNS_DNSSEC_MASTER",
     "nameservers": "ns.example.com",

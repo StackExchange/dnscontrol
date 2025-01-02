@@ -26,7 +26,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/fatih/color"
 	"github.com/miekg/dns"
 )
 
@@ -59,16 +58,15 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand                *rand.Rand
-	master              string
-	updateMode          string
-	transferServer      string
-	transferMode        string
-	nameservers         []*models.Nameserver
-	transferKey         *Key
-	updateKey           *Key
-	hasDnssecRecords    bool
-	serverHasBuggyCNAME bool
+	rand             *rand.Rand
+	master           string
+	updateMode       string
+	transferServer   string
+	transferMode     string
+	nameservers      []*models.Nameserver
+	transferKey      *Key
+	updateKey        *Key
+	hasDnssecRecords bool
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -148,9 +146,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	}
 	switch strings.ToLower(strings.TrimSpace(config["buggy-cname"])) {
 	case "yes", "true":
-		api.serverHasBuggyCNAME = true
-	default:
-		api.serverHasBuggyCNAME = false
+		printer.Warnf("'buggy-cname' is deprecated as it is no longer necessary.\n")
 	}
 	for key := range config {
 		switch key {
@@ -394,19 +390,6 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	}
 }
 
-// hasDeletionForName returns true if there exist a corrections for [name] which is a deletion
-func hasDeletionForName(changes diff2.ChangeList, name string) bool {
-	for _, change := range changes {
-		switch change.Type {
-		case diff2.DELETE:
-			if change.Old[0].Name == name {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // hasNSDeletion returns true if there exist a correction that deletes or changes an NS record
 func hasNSDeletion(changes diff2.ChangeList) bool {
 	for _, change := range changes {
@@ -456,14 +439,9 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	var msgs []string
 	var reports []string
-	var msgs2 []string
 	update := new(dns.Msg)
 	update.SetUpdate(dc.Name + ".")
 	update.Id = uint16(c.rand.Intn(math.MaxUint16))
-	update2 := new(dns.Msg)
-	update2.SetUpdate(dc.Name + ".")
-	update2.Id = uint16(c.rand.Intn(math.MaxUint16))
-	hasTwoCorrections := false
 
 	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
 	if err != nil {
@@ -504,30 +482,31 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		switch change.Type {
 		case diff2.DELETE:
 			msgs = append(msgs, change.Msgs[0])
-			update.Remove([]dns.RR{change.Old[0].ToRR()})
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if change.Old[0].Type == "CNAME" {
+				update.RemoveName([]dns.RR{change.Old[0].ToRR()})
+			} else {
+				update.Remove([]dns.RR{change.Old[0].ToRR()})
+			}
 		case diff2.CREATE:
-			if c.serverHasBuggyCNAME &&
-				change.New[0].Type == "CNAME" &&
-				hasDeletionForName(changes, change.New[0].Name) {
-				hasTwoCorrections = true
-				msgs2 = append(msgs2, change.Msgs[0])
-				update2.Insert([]dns.RR{change.New[0].ToRR()})
-			} else {
-				msgs = append(msgs, change.Msgs[0])
-				update.Insert([]dns.RR{change.New[0].ToRR()})
+			msgs = append(msgs, change.Msgs[0])
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if change.New[0].Type == "CNAME" {
+				update.RemoveName([]dns.RR{change.New[0].ToRR()})
 			}
+			update.Insert([]dns.RR{change.New[0].ToRR()})
 		case diff2.CHANGE:
-			if c.serverHasBuggyCNAME && change.New[0].Type == "CNAME" {
-				msgs = append(msgs, change.Msgs[0]+color.RedString(" (delete)"))
-				update.Remove([]dns.RR{change.Old[0].ToRR()})
-				hasTwoCorrections = true
-				msgs2 = append(msgs2, change.Msgs[0]+color.GreenString(" (create)"))
-				update2.Insert([]dns.RR{change.New[0].ToRR()})
+			msgs = append(msgs, change.Msgs[0])
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if (change.New[0].Type == "CNAME") || (change.Old[0].Type == "CNAME") {
+				update.RemoveName([]dns.RR{change.Old[0].ToRR()})
 			} else {
-				msgs = append(msgs, change.Msgs[0])
 				update.Remove([]dns.RR{change.Old[0].ToRR()})
-				update.Insert([]dns.RR{change.New[0].ToRR()})
 			}
+			update.Insert([]dns.RR{change.New[0].ToRR()})
 		case diff2.REPORT:
 			reports = append(reports, change.Msgs...)
 		}
@@ -541,9 +520,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	if len(msgs) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, update))
-	}
-	if hasTwoCorrections && len(msgs2) > 0 {
-		returnValue = append(returnValue, c.BuildCorrection(dc, msgs2, update2))
 	}
 	if len(reports) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))

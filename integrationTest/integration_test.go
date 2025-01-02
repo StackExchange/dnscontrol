@@ -983,7 +983,6 @@ func makeTests() []*TestGroup {
 		// CNAME
 
 		testgroup("CNAME",
-			not("AXFRDDNS_DNSSEC"),
 			tc("Create a CNAME", cname("testcname", "www.google.com.")),
 			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
 		),
@@ -1116,7 +1115,6 @@ func makeTests() []*TestGroup {
 		// changes properly for you. Let's verify that we got it right!
 
 		testgroup("TypeChangeHard",
-			not("AXFRDDNS_DNSSEC"),
 			tc("Create a CNAME", cname("foo", "google.com.")),
 			tc("Change to A record", a("foo", "1.2.3.4")),
 			tc("Change back to CNAME", cname("foo", "google2.com.")),
