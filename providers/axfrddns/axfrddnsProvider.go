@@ -16,8 +16,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"math"
-	"math/rand"
 	"net"
 	"strings"
 	"time"
@@ -70,7 +68,6 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand             *rand.Rand
 	master           string
 	updateMode       string
 	transferServer   string
@@ -85,9 +82,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	// config -- the key/values from creds.json
 	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
-	api := &axfrddnsProvider{
-		rand: rand.New(rand.NewSource(int64(time.Now().Nanosecond()))),
-	}
+	api := &axfrddnsProvider{}
 	param := &Param{}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, param)
@@ -457,7 +452,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	var reports []string
 	update := new(dns.Msg)
 	update.SetUpdate(dc.Name + ".")
-	update.Id = uint16(c.rand.Intn(math.MaxUint16))
 
 	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
