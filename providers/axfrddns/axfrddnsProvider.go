@@ -447,11 +447,11 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	update.SetUpdate(dc.Name + ".")
 	update.Id = uint16(c.rand.Intn(math.MaxUint16))
 
-	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
 		return nil, 0, err
 	}
-	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
 		return nil, 0, err
 	}
