@@ -205,8 +205,12 @@ func readKey(raw string, kind string) (*Key, error) {
 		algo = dns.HmacMD5
 	case "hmac-sha1", "sha1":
 		algo = dns.HmacSHA1
+	case "hmac-sha224", "sha224":
+		algo = dns.HmacSHA224
 	case "hmac-sha256", "sha256":
 		algo = dns.HmacSHA256
+	case "hmac-sha384", "sha384":
+		algo = dns.HmacSHA384
 	case "hmac-sha512", "sha512":
 		algo = dns.HmacSHA512
 	default:
