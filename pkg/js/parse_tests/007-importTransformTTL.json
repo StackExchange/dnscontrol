@@ -8,27 +8,66 @@
         "dnscontrol_uniquename": "foo1.com"
       },
       "name": "foo1.com",
-      "records": [],
+      "records": [
+        {
+          "name": "bar",
+          "target": "1.1.1.1",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "foo",
+          "target": "5.5.5.5",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
       "registrar": "reg"
     },
     {
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo2.com"
+        "dnscontrol_uniquename": "inny"
       },
-      "name": "foo2.com",
-      "records": [],
+      "name": "inny",
+      "records": [
+        {
+          "name": "bar.foo1.com",
+          "target": "4.4.4.101",
+          "ttl": 60,
+          "type": "A"
+        },
+        {
+          "name": "foo.foo1.com",
+          "target": "6.6.6.3",
+          "ttl": 60,
+          "type": "A"
+        }
+      ],
       "registrar": "reg"
     },
     {
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo3.com"
+        "dnscontrol_uniquename": "com.inny"
       },
-      "name": "foo3.com",
-      "records": [],
+      "name": "com.inny",
+      "records": [
+        {
+          "name": "bar.foo1",
+          "target": "1.1.1.1",
+          "ttl": 99,
+          "type": "A"
+        },
+        {
+          "name": "foo.foo1",
+          "target": "7.7.7.7",
+          "ttl": 99,
+          "type": "A"
+        }
+      ],
       "registrar": "reg"
     }
   ],
