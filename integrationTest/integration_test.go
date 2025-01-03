@@ -20,7 +20,8 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-var providerToRun = flag.String("provider", "", "Provider to run")
+var providerFlag = flag.String("provider", "", "Provider to run (if empty, deduced from -profile)")
+var profileFlag = flag.String("profile", "", "Entry in providers.json to use (if empty, copied from -provider)")
 var startIdx = flag.Int("start", -1, "Test number to begin with")
 var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
@@ -47,60 +48,96 @@ func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "exa
 // ---
 
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string]string) {
-	if *providerToRun == "" {
-		t.Log("No provider specified with -provider")
+	if *providerFlag == "" && *profileFlag == "" {
+		t.Log("No -provider or -profile specified")
 		return nil, "", nil
 	}
+
+	// Load the profile values
+
 	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
-	for name, cfg := range jsons {
-		if *providerToRun != name {
-			continue
-		}
 
-		var metadata json.RawMessage
-		// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
-		// requires metadata to enable this feature.
-		// In hindsight, I have no idea why this metadata flag is required to
-		// use this feature. Maybe because we didn't have the capabilities
-		// feature at the time?
-		if name == "CLOUDFLAREAPI" {
-			items := []string{}
-			if *enableCFWorkers {
-				items = append(items, `"manage_workers": true`)
-			}
-			switch *enableCFRedirectMode {
-			case "":
-				items = append(items, `"manage_redirects": true`)
-			case "c":
-				items = append(items, `"manage_redirects": true`)
-				items = append(items, `"manage_single_redirects": true`)
-			case "n":
-				items = append(items, `"manage_single_redirects": true`)
-			case "o":
-			}
-			metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
-		}
-
-		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if name == "CLOUDFLAREAPI" && *enableCFWorkers {
-			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
-			if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
-				t.Fatal(err)
-			}
-		}
-
-		return provider, cfg["domain"], cfg
+	// Which profile are we using? Use the profile but default to the provider.
+	targetProfile := *profileFlag
+	if targetProfile == "" {
+		targetProfile = *providerFlag
 	}
 
-	t.Fatalf("Provider %s not found", *providerToRun)
-	return nil, "", nil
+	var profileName, profileType string
+	var cfg map[string]string
+
+	// Find the profile we want to use.
+	for p, c := range jsons {
+		if p == targetProfile {
+			cfg = c
+			profileName = p
+			profileType = cfg["TYPE"]
+			if profileType == "" {
+				t.Fatalf("providers.json profile %q does not have a TYPE field", *profileFlag)
+			}
+			break
+		}
+	}
+	if profileName == "" {
+		t.Fatalf("Profile not found: -profile=%q -provider=%q", *profileFlag, *providerFlag)
+		return nil, "", nil
+	}
+
+	// Fill in -profile if blank.
+	if *profileFlag == "" {
+		*profileFlag = profileName
+	}
+
+	// Fix legacy use of -provider.
+	if *providerFlag != profileType {
+		fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
+		*providerFlag = profileType
+	}
+
+	//fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
+	fmt.Printf("Testing Profile=%q TYPE=%q\n", profileName, profileType)
+
+	var metadata json.RawMessage
+
+	// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
+	// requires metadata to enable this feature.
+	// In hindsight, I have no idea why this metadata flag is required to
+	// use this feature. Maybe because we didn't have the capabilities
+	// feature at the time?
+	if profileType == "CLOUDFLAREAPI" {
+		items := []string{}
+		if *enableCFWorkers {
+			items = append(items, `"manage_workers": true`)
+		}
+		switch *enableCFRedirectMode {
+		case "":
+			items = append(items, `"manage_redirects": true`)
+		case "c":
+			items = append(items, `"manage_redirects": true`)
+			items = append(items, `"manage_single_redirects": true`)
+		case "n":
+			items = append(items, `"manage_single_redirects": true`)
+		case "o":
+		}
+		metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
+	}
+
+	provider, err := providers.CreateDNSProvider(profileType, cfg, metadata)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if profileType == "CLOUDFLAREAPI" && *enableCFWorkers {
+		// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+		if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	return provider, cfg["domain"], cfg
 }
 
 func TestDNSProviders(t *testing.T) {
@@ -155,7 +192,7 @@ func testPermitted(p string, f TestGroup) error {
 	// If there are any required capabilities, make sure they all exist.
 	if len(f.required) != 0 {
 		for _, c := range f.required {
-			if !providers.ProviderHasCapability(*providerToRun, c) {
+			if !providers.ProviderHasCapability(*providerFlag, c) {
 				return fmt.Errorf("%s not supported", c)
 			}
 		}
@@ -211,18 +248,18 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		if *providerToRun == "AXFRDDNS" {
-			// Bind will refuse a DDNS update when the resulting zone
-			// contains a NS record without an associated address
-			// records (A or AAAA)
-			dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
-		}
+		//if *providerToRun == "AXFRDDNS" {
+		// Bind will refuse a DDNS update when the resulting zone
+		// contains a NS record without an associated address
+		// records (A or AAAA)
+		//dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
+		//}
 		dom.Unmanaged = tst.Unmanaged
 		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
-		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
+		if err := providers.AuditRecords(*providerFlag, dom.Records); err != nil {
 			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
 			return
 		}
@@ -299,7 +336,8 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Abide by filter
-		if err := testPermitted(*providerToRun, *group); err != nil {
+		//fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
+		if err := testPermitted(*profileFlag, *group); err != nil {
 			//t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
 			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
 			continue
@@ -345,7 +383,7 @@ func TestDualProviders(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+	if !providers.ProviderHasCapability(*providerFlag, providers.DocDualHost) {
 		t.Skip("Skipping.  DocDualHost == Cannot")
 		return
 	}
@@ -423,7 +461,7 @@ func TestNameserverDots(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+	if !providers.ProviderHasCapability(*providerFlag, providers.DocDualHost) {
 		t.Skip("Skipping.  DocDualHost == Cannot")
 		return
 	}
