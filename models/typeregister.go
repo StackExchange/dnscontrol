@@ -1,13 +1,10 @@
-package rtypectl
+package models
 
 import (
 	"fmt"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-type FromRawFn func(*models.RecordConfig, string, []string, map[string]string) error
+type FromRawFn func(rc *RecordConfig, rawfields []string, metadata map[string]string, origin string) error
 
 type RegisterOpts struct {
 	Enum    int
@@ -18,7 +15,7 @@ var rtypeDB map[string]RegisterOpts
 
 var validTypes = map[string]struct{}{}
 
-func Register(typeName string, opts RegisterOpts) error {
+func RegisterType(typeName string, opts RegisterOpts) error {
 
 	//printer.Printf("rtypectl.Register(%q)\n", typeName)
 
@@ -38,7 +35,7 @@ func Register(typeName string, opts RegisterOpts) error {
 		panic("rtype %q already registered. Can't register it a second time!")
 	}
 	validTypes[typeName] = struct{}{}
-	providers.RegisterCustomRecordType(typeName, "CLOUDFLAREAPI", "")
+	//providers.RegisterCustomRecordType(typeName, "CLOUDFLAREAPI", "")
 
 	return nil
 }

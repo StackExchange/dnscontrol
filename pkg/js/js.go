@@ -12,9 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	_ "github.com/StackExchange/dnscontrol/v4/rtypes"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 	"github.com/xddxdd/ottoext/fetch"
@@ -117,7 +115,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 		return nil, err
 	}
 
-	err = rtypectl.TransformRawRecords(conf.Domains)
+	err = models.TransformRawRecords(conf.Domains)
 	if err != nil {
 		return nil, err
 	}

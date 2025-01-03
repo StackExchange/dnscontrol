@@ -6,6 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 // SINGLEREDIRECT is the string name for this rType.
@@ -15,7 +16,8 @@ const SINGLEREDIRECT = "CF_SINGLE_REDIRECT"
 //}
 
 func init() {
-	rtypectl.Register("CF_SINGLE_REDIRECT", rtypectl.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	models.RegisterType("CF_SINGLE_REDIRECT", models.RegisterOpts{FromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	providers.RegisterCustomRecordType("CF_SINGLE_REDIRECT", "CLOUDFLAREAPI", "") // Legacy
 	//fmt.Printf("DEBUG: REGISTERED CF_SINGLE_REDIRECT\n")
 }
 
@@ -37,7 +39,7 @@ func init() {
 //	makeSingleRedirectFromRawRec(rc, code, name, when, then)
 
 // PopulateFromRawCFSINGLEREDIRECT updates rc to be a CF_SINGLE_REDIRECT record with contents from origin, rawfields and meta.
-func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, origin string, rawfields []string, meta map[string]string) error {
+func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking

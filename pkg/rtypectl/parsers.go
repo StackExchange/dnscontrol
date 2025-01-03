@@ -6,10 +6,12 @@ import (
 	"net/netip"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
-func ParseIPv4(raw string) ([4]byte, error) {
-	var ip [4]byte
+func ParseIPv4(raw string) (fieldtypes.IPv4, error) {
+	var ip fieldtypes.IPv4
 
 	// Is this formatted as a.b.c.d?
 	addr, err := netip.ParseAddr(raw)

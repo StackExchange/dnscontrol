@@ -1,12 +1,10 @@
-package rtypectl
+package models
 
 import (
 	"fmt"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-func TransformRawRecords(domains []*models.DomainConfig) error {
+func TransformRawRecords(domains []*DomainConfig) error {
 
 	for _, dc := range domains {
 		//fmt.Printf("DEBUG: dc.DefaultTTL = %d\n", dc.DefaultTTL)
@@ -17,7 +15,7 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 				rawRec.TTL = dc.DefaultTTL
 			}
 
-			rec := &models.RecordConfig{
+			rec := &RecordConfig{
 				Type:      rawRec.Type,
 				TTL:       rawRec.TTL,
 				SubDomain: rawRec.SubDomain,
@@ -35,7 +33,12 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 				}
 			}
 
-			err := FromRaw(rec, dc.Name, rawRec.Type, rawRec.Args, rec.Metadata)
+			rt, ok := rtypeDB[rawRec.Type]
+			if !ok {
+				return fmt.Errorf("unknown rtype %q", rawRec.Type)
+			}
+
+			err := rt.FromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
 					rawRec.Type,
@@ -60,7 +63,7 @@ func TransformRawRecords(domains []*models.DomainConfig) error {
 	return nil
 }
 
-func FromRaw(rc *models.RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
+func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
@@ -69,5 +72,7 @@ func FromRaw(rc *models.RecordConfig, origin string, typeName string, args []str
 	}
 
 	fn := rt.FromRaw
-	return fn(rc, origin, args, meta)
+	return fn(rc, args, meta, origin)
 }
+
+// type FromRawFn func(rawfields []string, metadata map[string]string, origin string) error
