@@ -1,18 +1,16 @@
-package cloudflaretypes
+package models
 
 import (
 	"fmt"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
-func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) {
+func MakePageRule(rc *RecordConfig, priority int, code uint16, when, then string) {
 	display := mkPageRuleBlob(priority, code, when, then)
 
 	rc.Type = "PAGE_RULE"
 	rc.TTL = 1
-	rc.CloudflareRedirect = &models.CloudflareSingleRedirectConfig{
+	rc.Fields = &CFSINGLEREDIRECT{
 		Code: code,
 		//
 		PRWhen:     when,
@@ -30,12 +28,12 @@ func mkPageRuleBlob(priority int, code uint16, when, then string) string {
 
 // MakeSingleRedirectFromRawRec updates a RecordConfig to be a
 // SINGLEREDIRECT using the data from a RawRecord.
-func MakeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, when, then string) {
+func MakeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, then string) {
 	target := targetFromRaw(name, code, when, then)
 
-	rc.Type = SINGLEREDIRECT
+	rc.Type = "CF_SINGLE_REDIRECT"
 	rc.TTL = 1
-	rc.CloudflareRedirect = &models.CloudflareSingleRedirectConfig{
+	rc.Fields = &CFSINGLEREDIRECT{
 		Code: code,
 		//
 		PRWhen:     "UNKNOWABLE",
@@ -48,7 +46,7 @@ func MakeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, wh
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
 }
 
 // targetFromRaw create the display text used for a normal Redirect.
@@ -62,13 +60,13 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 }
 
 // MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
-func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) {
+func MakeSingleRedirectFromAPI(rc *RecordConfig, code uint16, name, when, then string) {
 	// The target is the same as the name. It is the responsibility of the record creator to name it something diffable.
 	target := targetFromAPIData(name, code, when, then)
 
-	rc.Type = SINGLEREDIRECT
+	rc.Type = "CF_SINGLE_REDIRECT"
 	rc.TTL = 1
-	rc.CloudflareRedirect = &models.CloudflareSingleRedirectConfig{
+	rc.Fields = &CFSINGLEREDIRECT{
 		Code: code,
 		//
 		PRWhen:     "UNKNOWABLE",
@@ -81,7 +79,7 @@ func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when,
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
 }
 
 // targetFromAPIData creates the display text used for a Redirect as received from Cloudflare's API.
@@ -95,7 +93,7 @@ func targetFromAPIData(name string, code uint16, when, then string) string {
 }
 
 // makeSingleRedirectFromConvert updates a RecordConfig to be a SINGLEREDIRECT using data from a PAGE_RULE conversion.
-func makeSingleRedirectFromConvert(rc *models.RecordConfig,
+func makeSingleRedirectFromConvert(rc *RecordConfig,
 	priority int,
 	prWhen, prThen string,
 	code uint16,
@@ -103,9 +101,9 @@ func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 
 	srDisplay := targetFromConverted(priority, code, prWhen, prThen, srWhen, srThen)
 
-	rc.Type = SINGLEREDIRECT
+	rc.Type = "CF_SINGLE_REDIRECT"
 	rc.TTL = 1
-	sr := rc.CloudflareRedirect
+	sr := rc.AsCFSINGLEREDIRECT()
 	sr.Code = code
 
 	sr.SRName = srName
@@ -113,7 +111,7 @@ func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 	sr.SRThen = srThen
 	sr.SRDisplay = srDisplay
 
-	rc.SetTarget(rc.CloudflareRedirect.SRDisplay)
+	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
 }
 
 // targetFromConverted makes the display text used when a redirect was the result of converting a PAGE_RULE.

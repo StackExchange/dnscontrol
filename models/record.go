@@ -98,17 +98,17 @@ type RecordConfig struct {
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-	Fields    interface{}       `json:"-"` // Pointer to struct with fields.
+	Original  interface{}       `json:"-"`                // Store pointer to provider-specific record object. Used in diffing.
+	Fields    interface{}       `json:"Fields,omitempty"` // Pointer to struct with fields.
 
 	Comparable string `json:"-"`
 	Display    string `json:"-"`
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
-	MxPreference     uint16            `json:"mxpreference,omitempty"`
-	SrvPriority      uint16            `json:"srvpriority,omitempty"`
-	SrvWeight        uint16            `json:"srvweight,omitempty"`
-	SrvPort          uint16            `json:"srvport,omitempty"`
+	MxPreference     uint16            `json:"-"`
+	SrvPriority      uint16            `json:"-"`
+	SrvWeight        uint16            `json:"-"`
+	SrvPort          uint16            `json:"-"`
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
 	DsKeyTag         uint16            `json:"dskeytag,omitempty"`
@@ -150,7 +150,7 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+	//CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
 }
 
 // CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
@@ -205,10 +205,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
-		MxPreference     uint16            `json:"mxpreference,omitempty"`
-		SrvPriority      uint16            `json:"srvpriority,omitempty"`
-		SrvWeight        uint16            `json:"srvweight,omitempty"`
-		SrvPort          uint16            `json:"srvport,omitempty"`
+		MxPreference     uint16            `json:"-"`
+		SrvPriority      uint16            `json:"-"`
+		SrvWeight        uint16            `json:"-"`
+		SrvPort          uint16            `json:"-"`
 		CaaTag           string            `json:"caatag,omitempty"`
 		CaaFlag          uint8             `json:"caaflag,omitempty"`
 		DsKeyTag         uint16            `json:"dskeytag,omitempty"`

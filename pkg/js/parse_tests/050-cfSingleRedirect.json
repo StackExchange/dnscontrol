@@ -10,6 +10,9 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.2.3.4"
+          },
           "meta": {
             "meta": "value"
           },
@@ -19,7 +22,7 @@
           "type": "A"
         },
         {
-          "cloudflareapi_redirect": {
+          "Fields": {
             "code": 301,
             "pr_display": "UNKNOWABLE",
             "pr_then": "UNKNOWABLE",
@@ -38,7 +41,7 @@
           "type": "CF_SINGLE_REDIRECT"
         },
         {
-          "cloudflareapi_redirect": {
+          "Fields": {
             "code": 302,
             "pr_display": "UNKNOWABLE",
             "pr_then": "UNKNOWABLE",
@@ -57,7 +60,7 @@
           "type": "CF_SINGLE_REDIRECT"
         },
         {
-          "cloudflareapi_redirect": {
+          "Fields": {
             "code": 301,
             "pr_display": "UNKNOWABLE",
             "pr_then": "UNKNOWABLE",
@@ -76,7 +79,7 @@
           "type": "CF_SINGLE_REDIRECT"
         },
         {
-          "cloudflareapi_redirect": {
+          "Fields": {
             "code": 302,
             "pr_display": "UNKNOWABLE",
             "pr_then": "UNKNOWABLE",
@@ -97,7 +100,7 @@
           "type": "CF_SINGLE_REDIRECT"
         },
         {
-          "cloudflareapi_redirect": {
+          "Fields": {
             "code": 302,
             "pr_display": "UNKNOWABLE",
             "pr_then": "UNKNOWABLE",

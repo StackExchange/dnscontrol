@@ -58,9 +58,8 @@ func lastCharIs(s string, c rune) bool {
 }
 
 // HostnameDot is a hostname with a trailing dot.
-type HostnameDot string
 
-func ParseHostnameDot(short, subdomain, origin string) (HostnameDot, error) {
+func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -84,26 +83,22 @@ func ParseHostnameDot(short, subdomain, origin string) (HostnameDot, error) {
 	}
 
 	if lastCharIs(short, '.') {
-		return HostnameDot(short), nil
+		return short, nil
 	}
 
 	if subdomain != "" {
 		// If D_EXTEND() is in use...
 		if short == "" || short == "@" {
-			return HostnameDot(subdomain + "." + origin + "."), nil
+			return (subdomain + "." + origin + "."), nil
 		}
-		return HostnameDot(short + "." + subdomain + "." + origin + "."), nil
+		return (short + "." + subdomain + "." + origin + "."), nil
 	}
 
 	if short == "@" {
-		return HostnameDot(origin + "."), nil
+		return (origin + "."), nil
 	}
 
-	return HostnameDot(short + "." + origin + "."), nil
-}
-
-func (a *HostnameDot) String() string {
-	return string(*a)
+	return (short + "." + origin + "."), nil
 }
 
 // IPv4 is an IPv4 address.
@@ -133,6 +128,19 @@ func ParseIPv4(raw string) (IPv4, error) {
 func (a *IPv4) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", a[0], a[1], a[2], a[3])
 }
+func (a IPv4) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%d.%d.%d.%d"`, a[0], a[1], a[2], a[3])), nil
+}
+func (a *IPv4) UnmarshalJSON(data []byte) error {
+	// Remove the quotes from the JSON string
+	str := strings.Trim(string(data), `"`)
+	parsedIP, err := ParseIPv4(str)
+	if err != nil {
+		return err
+	}
+	*a = parsedIP
+	return nil
+}
 
 type RedirectCode uint16
 
@@ -144,22 +152,18 @@ func ParseRedirectCode(raw string) (RedirectCode, error) {
 	return RedirectCode(nt), nil
 }
 
-type StringTrimmed string
+//type StringTrimmed string
 
 func ParseStringTrimmed(raw string) (string, error) {
 	return strings.TrimSpace(raw), nil
 }
 
-type Uint16 uint16
+//type Uint16 uint16
 
-func ParseUint16(raw string) (Uint16, error) {
+func ParseUint16(raw string) (uint16, error) {
 	nt, err := strconv.Atoi(raw)
 	if err != nil {
 		return 0, fmt.Errorf("invalid uint16: %q", raw)
 	}
-	return Uint16(nt), nil
-}
-
-func (a Uint16) String() string {
-	return strconv.Itoa(int(a))
+	return uint16(nt), nil
 }

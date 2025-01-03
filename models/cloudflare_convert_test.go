@@ -1,4 +1,4 @@
-package cloudflaretypes
+package models
 
 import (
 	"regexp"

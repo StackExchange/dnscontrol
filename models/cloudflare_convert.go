@@ -1,20 +1,18 @@
-package cloudflaretypes
+package models
 
 import (
 	"fmt"
 	"net"
 	"net/url"
 	"strings"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
-func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = SINGLEREDIRECT // This record is now a CF_SINGLE_REDIRECT
+func TranscodePRtoSR(rec *RecordConfig) error {
+	rec.Type = "CF_SINGLE_REDIRECT" // This record is now a CF_SINGLE_REDIRECT
 
 	// Extract the fields we're reading from:
-	sr := rec.CloudflareRedirect
+	sr := rec.AsCFSINGLEREDIRECT()
 	code := sr.Code
 	prWhen := sr.PRWhen
 	prThen := sr.PRThen
