@@ -1,10 +1,4 @@
 {
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
-    }
-  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -13,8 +7,6 @@
   ],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -22,35 +14,43 @@
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
+      "name": "foo.com",
       "records": [
         {
-          "type": "A",
-          "name": "@",
-          "ttl": 300,
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
-          "target": "3.3.3.3"
+          "name": "@",
+          "target": "3.3.3.3",
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
-          "name": "@",
-          "ttl": 300,
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
-          "target": "4.4.4.4"
+          "name": "@",
+          "target": "4.4.4.4",
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
-          "name": "@",
-          "ttl": 300,
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
-          "target": "5.5.5.5"
+          "name": "@",
+          "target": "5.5.5.5",
+          "ttl": 300,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
     }
   ]
 }
