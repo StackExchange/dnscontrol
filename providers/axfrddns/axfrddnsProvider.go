@@ -16,8 +16,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"math"
-	"math/rand"
 	"net"
 	"strings"
 	"time"
@@ -26,7 +24,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/fatih/color"
 	"github.com/miekg/dns"
 )
 
@@ -40,44 +37,52 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
-	providers.CanGetZones:            providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
+	providers.CanUseDNAME:            providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	// Possible to support via catalog zones (RFC 9432), but those are not
+	// directly supported by DNSControl right now (although nothing is stopping
+	// you from manually updating a catalog zone using DNSControl if you wish).
+	providers.CanGetZones:      providers.Cannot(),
+	providers.DocCreateDomains: providers.Cannot(),
+	// Not a valid RR type, so impossible to encode in an RFC-compliant DNS
+	// packet.
+	providers.CanUseAlias: providers.Cannot(),
+	// These are both supported by RFC 2136 (DDNS), but neither work with
+	// DNSControl right now.
+	providers.CanUseSOA:    providers.Cannot(),
+	providers.CanUseDNSKEY: providers.Cannot(),
 }
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand                *rand.Rand
-	master              string
-	updateMode          string
-	transferServer      string
-	transferMode        string
-	nameservers         []*models.Nameserver
-	transferKey         *Key
-	updateKey           *Key
-	hasDnssecRecords    bool
-	serverHasBuggyCNAME bool
+	master           string
+	updateMode       string
+	transferServer   string
+	transferMode     string
+	nameservers      []*models.Nameserver
+	transferKey      *Key
+	updateKey        *Key
+	hasDnssecRecords bool
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
-	api := &axfrddnsProvider{
-		rand: rand.New(rand.NewSource(int64(time.Now().Nanosecond()))),
-	}
+	api := &axfrddnsProvider{}
 	param := &Param{}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, param)
@@ -107,7 +112,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			printer.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
 		}
 	} else {
-		api.updateMode = ""
+		api.updateMode = "tcp"
 	}
 	if config["transfer-mode"] != "" {
 		switch config["transfer-mode"] {
@@ -148,9 +153,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	}
 	switch strings.ToLower(strings.TrimSpace(config["buggy-cname"])) {
 	case "yes", "true":
-		api.serverHasBuggyCNAME = true
-	default:
-		api.serverHasBuggyCNAME = false
+		printer.Warnf("'buggy-cname' is deprecated as it is no longer necessary.\n")
 	}
 	for key := range config {
 		switch key {
@@ -161,6 +164,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"transfer-server",
 			"update-mode",
 			"transfer-mode",
+			"buggy-cname",
 			"domain",
 			"TYPE":
 			continue
@@ -208,8 +212,12 @@ func readKey(raw string, kind string) (*Key, error) {
 		algo = dns.HmacMD5
 	case "hmac-sha1", "sha1":
 		algo = dns.HmacSHA1
+	case "hmac-sha224", "sha224":
+		algo = dns.HmacSHA224
 	case "hmac-sha256", "sha256":
 		algo = dns.HmacSHA256
+	case "hmac-sha384", "sha384":
+		algo = dns.HmacSHA384
 	case "hmac-sha512", "sha512":
 		algo = dns.HmacSHA512
 	default:
@@ -393,19 +401,6 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	}
 }
 
-// hasDeletionForName returns true if there exist a corrections for [name] which is a deletion
-func hasDeletionForName(changes diff2.ChangeList, name string) bool {
-	for _, change := range changes {
-		switch change.Type {
-		case diff2.DELETE:
-			if change.Old[0].Name == name {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // hasNSDeletion returns true if there exist a correction that deletes or changes an NS record
 func hasNSDeletion(changes diff2.ChangeList) bool {
 	for _, change := range changes {
@@ -455,20 +450,14 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	var msgs []string
 	var reports []string
-	var msgs2 []string
 	update := new(dns.Msg)
 	update.SetUpdate(dc.Name + ".")
-	update.Id = uint16(c.rand.Intn(math.MaxUint16))
-	update2 := new(dns.Msg)
-	update2.SetUpdate(dc.Name + ".")
-	update2.Id = uint16(c.rand.Intn(math.MaxUint16))
-	hasTwoCorrections := false
 
-	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
 		return nil, 0, err
 	}
-	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS 255.255.255.255")
+	dummyNs2, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -503,30 +492,31 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		switch change.Type {
 		case diff2.DELETE:
 			msgs = append(msgs, change.Msgs[0])
-			update.Remove([]dns.RR{change.Old[0].ToRR()})
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if change.Old[0].Type == "CNAME" {
+				update.RemoveName([]dns.RR{change.Old[0].ToRR()})
+			} else {
+				update.Remove([]dns.RR{change.Old[0].ToRR()})
+			}
 		case diff2.CREATE:
-			if c.serverHasBuggyCNAME &&
-				change.New[0].Type == "CNAME" &&
-				hasDeletionForName(changes, change.New[0].Name) {
-				hasTwoCorrections = true
-				msgs2 = append(msgs2, change.Msgs[0])
-				update2.Insert([]dns.RR{change.New[0].ToRR()})
-			} else {
-				msgs = append(msgs, change.Msgs[0])
-				update.Insert([]dns.RR{change.New[0].ToRR()})
+			msgs = append(msgs, change.Msgs[0])
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if change.New[0].Type == "CNAME" {
+				update.RemoveName([]dns.RR{change.New[0].ToRR()})
 			}
+			update.Insert([]dns.RR{change.New[0].ToRR()})
 		case diff2.CHANGE:
-			if c.serverHasBuggyCNAME && change.New[0].Type == "CNAME" {
-				msgs = append(msgs, change.Msgs[0]+color.RedString(" (delete)"))
-				update.Remove([]dns.RR{change.Old[0].ToRR()})
-				hasTwoCorrections = true
-				msgs2 = append(msgs2, change.Msgs[0]+color.GreenString(" (create)"))
-				update2.Insert([]dns.RR{change.New[0].ToRR()})
+			msgs = append(msgs, change.Msgs[0])
+			// It's semantically invalid for any RRs to exist alongside a
+			// CNAME RR
+			if (change.New[0].Type == "CNAME") || (change.Old[0].Type == "CNAME") {
+				update.RemoveName([]dns.RR{change.Old[0].ToRR()})
 			} else {
-				msgs = append(msgs, change.Msgs[0])
 				update.Remove([]dns.RR{change.Old[0].ToRR()})
-				update.Insert([]dns.RR{change.New[0].ToRR()})
 			}
+			update.Insert([]dns.RR{change.New[0].ToRR()})
 		case diff2.REPORT:
 			reports = append(reports, change.Msgs...)
 		}
@@ -540,9 +530,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	if len(msgs) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, update))
-	}
-	if hasTwoCorrections && len(msgs2) > 0 {
-		returnValue = append(returnValue, c.BuildCorrection(dc, msgs2, update2))
 	}
 	if len(reports) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))

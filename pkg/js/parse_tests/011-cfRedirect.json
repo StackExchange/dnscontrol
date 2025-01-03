@@ -1,23 +1,35 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "CF_REDIRECT",
+          "meta": {
+            "orig_custom_type": "CF_REDIRECT"
+          },
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1"
+          "target": "test.foo.com,https://goo.com/$1",
+          "ttl": 300,
+          "type": "CF_REDIRECT"
         },
         {
-          "type": "CF_TEMP_REDIRECT",
+          "meta": {
+            "orig_custom_type": "CF_TEMP_REDIRECT"
+          },
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1"
+          "target": "test.foo.com,https://goo.com/$1",
+          "ttl": 300,
+          "type": "CF_TEMP_REDIRECT"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

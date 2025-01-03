@@ -186,6 +186,7 @@
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
 * [Integration Tests](integration-tests.md)
+* [Test a branch](test-a-branch.md)
 * [Unit Testing DNS Data](unittests.md)
 * [Bug Triage Process](bug-triage.md)
 * [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)

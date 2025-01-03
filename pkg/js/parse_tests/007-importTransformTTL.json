@@ -1,45 +1,75 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo1.com"
+      },
       "name": "foo1.com",
-      "registrar": "reg",
-      "dnsProviders": {},
-      "records": []
-    },
-    {
-      "name": "foo2.com",
-      "registrar": "reg",
-      "dnsProviders": {},
       "records": [
         {
-          "type": "IMPORT_TRANSFORM",
-          "name": "@",
+          "name": "bar",
+          "target": "1.1.1.1",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "foo",
+          "target": "5.5.5.5",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "reg"
+    },
+    {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "inny"
+      },
+      "name": "inny",
+      "records": [
+        {
+          "name": "bar.foo1.com",
+          "target": "4.4.4.101",
           "ttl": 60,
-          "meta": {
-            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 4.4.4.4 ~  ; 7.7.7.7 ~ 8.8.8.8 ~ 9.9.9.9 ~ "
-          },
-          "target": "foo1.com"
+          "type": "A"
+        },
+        {
+          "name": "foo.foo1.com",
+          "target": "6.6.6.3",
+          "ttl": 60,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "reg"
     },
     {
-      "name": "foo3.com",
-      "registrar": "reg",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "com.inny"
+      },
+      "name": "com.inny",
       "records": [
         {
-          "type": "IMPORT_TRANSFORM",
-          "name": "@",
+          "name": "bar.foo1",
+          "target": "1.1.1.1",
           "ttl": 99,
-          "meta": {
-            "transform_suffixstrip": ".com",
-            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~  ~ 2.2.2.2"
-          },
-          "target": "foo1.com"
+          "type": "A"
+        },
+        {
+          "name": "foo.foo1",
+          "target": "7.7.7.7",
+          "ttl": 99,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "reg"
     }
-  ]
+  ],
+  "registrars": []
 }

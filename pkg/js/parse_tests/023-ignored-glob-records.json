@@ -1,12 +1,15 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
           "label_pattern": "\\*.testignore",
@@ -15,5 +18,6 @@
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }

@@ -1,18 +1,23 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "DNAME",
           "name": "@",
-          "target": "bar.com."
+          "target": "bar.com.",
+          "ttl": 300,
+          "type": "DNAME"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

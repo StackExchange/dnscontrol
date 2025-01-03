@@ -1,19 +1,24 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "MX",
+          "mxpreference": 15,
           "name": "@",
           "target": "foo.com.",
-          "mxpreference": 15
+          "ttl": 300,
+          "type": "MX"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

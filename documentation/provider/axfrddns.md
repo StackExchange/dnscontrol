@@ -20,7 +20,7 @@ using this provider.
 The following two parameters in `creds.json` allow switching
 to TCP or TCP over TLS.
 
-* `update-mode`: May contain `udp` (the default), `tcp`, or `tcp-tls`.
+* `update-mode`: May contain `tcp` (the default), `udp`, or `tcp-tls`.
 * `transfer-mode`: May contain `tcp` (the default), or `tcp-tls`.
 
 ### Authentication
@@ -161,16 +161,6 @@ by a separate server to DDNS requests. Use the `transfer-server` option in
 }
 ```
 {% endcode %}
-
-### Buggy DNS servers regarding CNAME updates
-
-When modifying a CNAME record, or when replacing an A record by a
-CNAME one in a single batched DDNS update, some DNS servers
-(e.g. Knot) will incorrectly reject the update. For this particular
-case, you might set the option `buggy-cname = "yes"` in `creds.json`.
-The changes will then be split in two DDNS updates, applied
-successively by the server. This will allow Knot to successfully apply
-the changes, but you will loose the atomic-update property.
 
 ### Example: local testing
 

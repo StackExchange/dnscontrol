@@ -1,19 +1,27 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "unsafe.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "unsafe.com"
+      },
+      "name": "unsafe.com",
       "records": [],
+      "registrar": "none",
       "unmanaged_disable_safety_check": true
     },
     {
-      "name": "safe.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": []
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "safe.com"
+      },
+      "name": "safe.com",
+      "records": [],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

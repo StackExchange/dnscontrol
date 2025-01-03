@@ -1,22 +1,27 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "DNSKEY",
-          "name": "@",
+          "dnskeyalgorithm": 13,
           "dnskeyflags": 257,
           "dnskeyprotocol": 3,
-          "dnskeyalgorithm": 13,
           "dnskeypublickey": "AABBCCDD",
-          "target": ""
+          "name": "@",
+          "target": "",
+          "ttl": 300,
+          "type": "DNSKEY"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

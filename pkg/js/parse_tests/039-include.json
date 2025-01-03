@@ -1,10 +1,4 @@
 {
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
-    }
-  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -13,37 +7,54 @@
   ],
   "domains": [
     {
-      "name": "foo.com!external",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "external",
+        "dnscontrol_uniquename": "foo.com!external"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "A",
           "name": "@",
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "ttl": 300,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
     },
     {
-      "name": "foo.com!internal",
-      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "internal",
+        "dnscontrol_uniquename": "foo.com!internal"
+      },
+      "name": "foo.com",
       "records": [
         {
-          "type": "A",
           "name": "@",
-          "target": "1.2.3.4"
+          "target": "1.2.3.4",
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
           "name": "local",
-          "target": "127.0.0.1"
+          "target": "127.0.0.1",
+          "ttl": 300,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
     }
   ]
 }

@@ -1,4 +1,4 @@
-name: "PR: Run Unit tests and Build artifacts for all platforms"
+name: "PR: Run UNIT tests and Build artifacts for all platforms"
 
 # When will this pipeline be activated?
 # 1. On any pull-request, or if someone pushes to a branch called
@@ -9,7 +9,7 @@ on:
   # Want to trigger all the tests without making a PR?
   # Run: git push origin main:tlim_testpr --force
   # This will trigger a full PR test on the main branch.
-  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_test.yml?query=branch%3Atlim_testpr
+  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_build.yml?query=branch%3Atlim_testpr
   push:
     branches:
       - 'tlim_testpr'
@@ -53,7 +53,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 #    - name: Enforce Go Formatted Code
 #      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.4.3
+    - uses: actions/upload-artifact@v4.5.0
       with:
         name: unit-tests
         path: ${{ env.TEST_RESULTS }}

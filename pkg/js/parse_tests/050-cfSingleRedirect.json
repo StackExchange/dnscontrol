@@ -1,61 +1,52 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [
-        {
-          "type": "A",
-          "name": "name1",
-          "meta": {
-            "meta": "value"
-          },
-          "target": "1.2.3.4"
-        }
-      ],
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
       "rawrecords": [
         {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
           "args": [
             "name1",
             301,
             "when1",
             "then1"
-          ]
+          ],
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
           "args": [
             "name2",
             302,
             "when2",
             "then2"
-          ]
+          ],
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
           "args": [
             "name3",
             "301",
             "when3",
             "then3"
-          ]
+          ],
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
           "args": [
             "namettl",
             302,
             "whenttl",
             "thenttl"
           ],
-          "ttl": 999
+          "ttl": 999,
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
           "args": [
             "namemeta",
             302,
@@ -69,9 +60,23 @@
             {
               "metanum": 22
             }
-          ]
+          ],
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         }
-      ]
+      ],
+      "records": [
+        {
+          "meta": {
+            "meta": "value"
+          },
+          "name": "name1",
+          "target": "1.2.3.4",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
