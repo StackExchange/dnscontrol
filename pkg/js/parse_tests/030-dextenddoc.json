@@ -10,74 +10,90 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "domain.tld"
+      },
       "name": "domain.tld",
       "records": [
         {
           "name": "@",
           "target": "127.0.0.1",
-          "type": "A"
-        },
-        {
-          "name": "www",
-          "target": "127.0.0.2",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "a",
-          "target": "b",
+          "target": "b.domain.tld.",
+          "ttl": 300,
           "type": "CNAME"
         },
         {
           "name": "aaa",
           "target": "127.0.0.3",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "c",
-          "target": "d",
-          "type": "CNAME"
-        },
-        {
-          "name": "bbb.sub",
-          "subdomain": "sub",
-          "target": "127.0.0.4",
-          "type": "A"
-        },
-        {
-          "name": "ccc.sub",
-          "subdomain": "sub",
-          "target": "127.0.0.5",
-          "type": "A"
-        },
-        {
-          "name": "e.sub",
-          "subdomain": "sub",
-          "target": "f",
-          "type": "CNAME"
-        },
-        {
-          "name": "ddd.sub.sub",
-          "subdomain": "sub.sub",
-          "target": "127.0.0.6",
-          "type": "A"
-        },
-        {
-          "name": "g.sub.sub",
-          "subdomain": "sub.sub",
-          "target": "h",
+          "target": "d.domain.tld.",
+          "ttl": 300,
           "type": "CNAME"
         },
         {
           "name": "sub",
           "subdomain": "sub",
           "target": "127.0.0.7",
+          "ttl": 300,
           "type": "A"
+        },
+        {
+          "name": "bbb.sub",
+          "subdomain": "sub",
+          "target": "127.0.0.4",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "ccc.sub",
+          "subdomain": "sub",
+          "target": "127.0.0.5",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "e.sub",
+          "subdomain": "sub",
+          "target": "f.sub.domain.tld.",
+          "ttl": 300,
+          "type": "CNAME"
         },
         {
           "name": "i.sub",
           "subdomain": "sub",
-          "target": "j",
+          "target": "j.sub.domain.tld.",
+          "ttl": 300,
           "type": "CNAME"
+        },
+        {
+          "name": "ddd.sub.sub",
+          "subdomain": "sub.sub",
+          "target": "127.0.0.6",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "g.sub.sub",
+          "subdomain": "sub.sub",
+          "target": "h.sub.sub.domain.tld.",
+          "ttl": 300,
+          "type": "CNAME"
+        },
+        {
+          "name": "www",
+          "target": "127.0.0.2",
+          "ttl": 300,
+          "type": "A"
         }
       ],
       "registrar": "Third-Party"

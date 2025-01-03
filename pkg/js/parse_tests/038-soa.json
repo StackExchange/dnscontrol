@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
@@ -13,6 +17,7 @@
           "soarefresh": 3600,
           "soaretry": 900,
           "target": "ns1.foo.com.",
+          "ttl": 300,
           "type": "SOA"
         }
       ],

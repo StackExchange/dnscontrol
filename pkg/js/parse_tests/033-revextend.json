@@ -10,17 +10,23 @@
       "dnsProviders": {
         "bind": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "3.1.in-addr.arpa"
+      },
       "name": "3.1.in-addr.arpa",
       "records": [
         {
-          "name": "1.3.1.in-addr.arpa",
+          "name": "1",
           "target": "ns1.example.com.",
+          "ttl": 300,
           "type": "NS"
         },
         {
-          "name": "2.3.1.in-addr.arpa",
+          "name": "2",
           "subdomain": "2",
           "target": "ns2.example.org.",
+          "ttl": 300,
           "type": "NS"
         }
       ],
