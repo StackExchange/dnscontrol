@@ -1,6 +1,0 @@
-- name: CF_SINGLE_REDIRECT
-  fields:
-    - 'Name:Label'
-    - 'Code:RedirCode'
-    - 'When:string'
-    - 'Then:string'

@@ -240,7 +240,7 @@ and `manage_single_redirects` to true.
 
 {% hint style="warning" %}
 The conversion process only handles a few, very simple, patterns.
-See `providers/cloudflare/rtypes/cfsingleredirect/convert_test.go` for a list of patterns
+See `providers/cloudflare/cloudflaretypes/convert_test.go` for a list of patterns
 supported.  Please file bugs if you find problems. PRs welcome!
 {% endhint %}
 

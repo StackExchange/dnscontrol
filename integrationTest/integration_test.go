@@ -16,7 +16,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
-	cfsingleredirect "github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes"
+
+	cloudflaretypes "github.com/StackExchange/dnscontrol/v4/providers/cloudflare/cloudflaretypes"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -560,8 +561,8 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	cfsingleredirect.MakeSingleRedirectFromRawRec(r, code, name, when, then)
+	r := makeRec("@", name, cloudflaretypes.SINGLEREDIRECT)
+	cloudflaretypes.MakeSingleRedirectFromRawRec(r, code, name, when, then)
 	return r
 }
 

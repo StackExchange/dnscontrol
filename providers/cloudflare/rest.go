@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	cfsingleredirect "github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes"
+	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/cloudflaretypes"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -302,7 +302,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		cloudflaretypes.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
 		r.SetLabel("@", domain)
 
 		// Store the IDs
@@ -434,7 +434,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		cloudflaretypes.MakePageRule(r, currentPrPrio, code, when, then)
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
