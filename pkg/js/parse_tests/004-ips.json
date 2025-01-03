@@ -10,21 +10,28 @@
       "dnsProviders": {
         "Cloudflare": 0
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
           "name": "@",
           "target": "1.2.3.4",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "p1",
           "target": "1.2.3.5",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "p255",
           "target": "1.2.4.3",
+          "ttl": 300,
           "type": "A"
         }
       ],

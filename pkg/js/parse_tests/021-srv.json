@@ -3,14 +3,26 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
+        {
+          "name": "_ntp._udp",
+          "srvport": 1,
+          "target": "zeros.foo.com.",
+          "ttl": 300,
+          "type": "SRV"
+        },
         {
           "name": "_ntp._udp",
           "srvport": 123,
           "srvpriority": 1,
           "srvweight": 100,
           "target": "one.foo.com.",
+          "ttl": 300,
           "type": "SRV"
         },
         {
@@ -18,7 +30,8 @@
           "srvport": 123,
           "srvpriority": 2,
           "srvweight": 100,
-          "target": "two",
+          "target": "two.foo.com.",
+          "ttl": 300,
           "type": "SRV"
         },
         {
@@ -26,7 +39,8 @@
           "srvport": 123,
           "srvpriority": 3,
           "srvweight": 100,
-          "target": "localhost",
+          "target": "localhost.foo.com.",
+          "ttl": 300,
           "type": "SRV"
         },
         {
@@ -35,12 +49,7 @@
           "srvpriority": 4,
           "srvweight": 100,
           "target": "three.example.com.",
-          "type": "SRV"
-        },
-        {
-          "name": "_ntp._udp",
-          "srvport": 1,
-          "target": "zeros",
+          "ttl": 300,
           "type": "SRV"
         }
       ],

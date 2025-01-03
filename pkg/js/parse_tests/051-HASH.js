@@ -1,1 +1,1 @@
-D(HASH("SHA1", "abc"), "reg")
+D(HASH("SHA1", "abc"), "reg");

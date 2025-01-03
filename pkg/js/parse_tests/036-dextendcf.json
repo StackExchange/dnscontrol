@@ -10,40 +10,59 @@
       "dnsProviders": {
         "Cloudflare": -1
       },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
+        {
+          "meta": {
+            "orig_custom_type": "CF_REDIRECT"
+          },
+          "name": "@",
+          "target": "test1.foo.com,https://goo.com/$1",
+          "ttl": 300,
+          "type": "CF_REDIRECT"
+        },
+        {
+          "meta": {
+            "orig_custom_type": "CF_TEMP_REDIRECT"
+          },
+          "name": "@",
+          "target": "test2.foo.com,https://goo.com/$1",
+          "ttl": 300,
+          "type": "CF_TEMP_REDIRECT"
+        },
+        {
+          "meta": {
+            "orig_custom_type": "CF_WORKER_ROUTE"
+          },
+          "name": "@",
+          "target": "test3.foo.com,test-worker",
+          "ttl": 300,
+          "type": "CF_WORKER_ROUTE"
+        },
         {
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.1",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.2",
+          "ttl": 300,
           "type": "A"
         },
         {
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.3",
+          "ttl": 300,
           "type": "A"
-        },
-        {
-          "name": "@",
-          "target": "test1.foo.com,https://goo.com/$1",
-          "type": "CF_REDIRECT"
-        },
-        {
-          "name": "@",
-          "target": "test2.foo.com,https://goo.com/$1",
-          "type": "CF_TEMP_REDIRECT"
-        },
-        {
-          "name": "@",
-          "target": "test3.foo.com,test-worker",
-          "type": "CF_WORKER_ROUTE"
         }
       ],
       "registrar": "Third-Party"

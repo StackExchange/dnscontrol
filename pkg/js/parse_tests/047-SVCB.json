@@ -3,20 +3,26 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
-        {
-          "name": "@",
-          "svcpriority": 1,
-          "target": ".",
-          "type": "SVCB"
-        },
         {
           "name": "@",
           "svcparams": "alpn=\"h3,h2\" port=443 ipv4hint=123.123.123.123 ipv6hint=dead::beaf",
           "svcpriority": 2,
           "target": ".",
+          "ttl": 300,
           "type": "HTTPS"
+        },
+        {
+          "name": "@",
+          "svcpriority": 1,
+          "target": ".",
+          "ttl": 300,
+          "type": "SVCB"
         }
       ],
       "registrar": "none"

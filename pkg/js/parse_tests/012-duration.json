@@ -3,6 +3,10 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {

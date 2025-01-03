@@ -3,18 +3,18 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
-          "caatag": "issue",
+          "caaflag": 128,
+          "caatag": "iodef",
           "name": "@",
-          "target": "letsencrypt.org",
-          "type": "CAA"
-        },
-        {
-          "caatag": "issuewild",
-          "name": "@",
-          "target": ";",
+          "target": "https://example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
@@ -22,19 +22,28 @@
           "caatag": "iodef",
           "name": "@",
           "target": "mailto:test@example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
           "caatag": "iodef",
           "name": "@",
           "target": "http://example.com",
+          "ttl": 300,
           "type": "CAA"
         },
         {
-          "caaflag": 128,
-          "caatag": "iodef",
+          "caatag": "issue",
           "name": "@",
-          "target": "https://example.com",
+          "target": "letsencrypt.org",
+          "ttl": 300,
+          "type": "CAA"
+        },
+        {
+          "caatag": "issuewild",
+          "name": "@",
+          "target": ";",
+          "ttl": 300,
           "type": "CAA"
         }
       ],

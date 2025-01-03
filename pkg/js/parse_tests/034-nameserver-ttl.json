@@ -4,6 +4,8 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com",
         "ns_ttl": "86400"
       },
       "name": "foo.com",
@@ -13,6 +15,8 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "bar.com",
         "ns_ttl": "300"
       },
       "name": "bar.com",

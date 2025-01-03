@@ -3,31 +3,40 @@
   "domains": [
     {
       "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
       "name": "foo.com",
       "records": [
         {
           "name": "a",
           "target": "simple",
+          "ttl": 300,
           "type": "TXT"
         },
         {
           "name": "b",
           "target": "ws at end ",
+          "ttl": 300,
           "type": "TXT"
         },
         {
           "name": "c",
           "target": "one",
+          "ttl": 300,
           "type": "TXT"
         },
         {
           "name": "d",
           "target": "bonieclyde",
+          "ttl": 300,
           "type": "TXT"
         },
         {
           "name": "e",
           "target": "strawwoodbrick",
+          "ttl": 300,
           "type": "TXT"
         }
       ],
