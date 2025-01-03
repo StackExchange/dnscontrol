@@ -18,21 +18,23 @@
   },
   "AXFRDDNS": {
     "TYPE": "AXFRDDNS",
-    "buggy-cname": "$AXFRDDNS_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_UPDATE_KEY"
+    "transfer-mode": "AXFRDDNS_TRANSFER_MODE",
+    "update-key": "$AXFRDDNS_UPDATE_KEY",
+    "update-mode": "$AXFRDDNS_UPDATE_MODE"
   },
   "AXFRDDNS_DNSSEC": {
     "TYPE": "AXFRDDNS",
-    "buggy-cname": "$AXFRDDNS_DNSSEC_BUGGY_CNAME",
     "domain": "$AXFRDDNS_DNSSEC_DOMAIN",
     "master": "$AXFRDDNS_DNSSEC_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_DNSSEC_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_DNSSEC_UPDATE_KEY"
+    "transfer-mode": "AXFRDDNS_DNSSEC_TRANSFER_MODE",
+    "update-key": "$AXFRDDNS_DNSSEC_UPDATE_KEY",
+    "update-mode": "$AXFRDDNS_DNSSEC_UPDATE_MODE"
   },
   "AZURE_DNS": {
     "ClientID": "$AZURE_DNS_CLIENT_ID",
