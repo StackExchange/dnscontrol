@@ -28,6 +28,29 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 
 	short = strings.ToLower(short)
 
+	if origin == "" {
+		// Legacy mode (no origin specified because parameters doesn't know it yet)
+
+		if lastCharIs(short, '.') {
+			return "", "", fmt.Errorf("label (%s) can not end in dot in legacy mode", short)
+		}
+
+		if subdomain != "" {
+			// D_EXTEND() mode (subdomain)
+			if short == "" || short == "@" {
+				return subdomain, "", nil
+			}
+			return short + "." + subdomain, "", nil
+		} else {
+			// D() mode (no subdomain)
+			if short == "" || short == "@" {
+				return "@", "", nil
+			}
+			return short, "", nil
+		}
+
+	}
+
 	if lastCharIs(short, '.') {
 		if short == (origin + ".") {
 			return "@", origin, nil

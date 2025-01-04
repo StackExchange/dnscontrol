@@ -2075,4 +2075,4 @@ function rawrecordBuilder(type) {
             return record;
         };
     };
-}
+};
