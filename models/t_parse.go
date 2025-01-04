@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"net"
+	"strings"
 )
 
 // PopulateFromStringFunc populates a RecordConfig by parsing a common RFC1035-like format.
@@ -151,11 +152,7 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	}
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To4() == nil {
-			return fmt.Errorf("invalid IP in A record: %s", contents)
-		}
-		return rc.SetTargetIP(ip) // Reformat to canonical form.
+		return PopulateARaw(rc, []string{rc.Name, contents}, nil, origin)
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
@@ -177,7 +174,7 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
 	case "MX":
-		return rc.SetTargetMXString(contents)
+		return PopulateMXRaw(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
 	case "SOA":
@@ -185,7 +182,7 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SPF", "TXT":
 		return rc.SetTargetTXTs(ParseQuotedTxt(contents))
 	case "SRV":
-		return rc.SetTargetSRVString(contents)
+		return PopulateSRVRaw(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "SSHFP":
 		return rc.SetTargetSSHFPString(contents)
 	case "SVCB", "HTTPS":
