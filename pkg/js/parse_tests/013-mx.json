@@ -18,6 +18,46 @@
           "target": "foo.com.",
           "ttl": 300,
           "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "www.foo.com.",
+            "Preference": 20
+          },
+          "name": "www",
+          "target": "www.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "foo.com.",
+            "Preference": 10
+          },
+          "name": "xxx",
+          "target": "foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "short.foo.com.",
+            "Preference": 20
+          },
+          "name": "yyy",
+          "target": "short.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "my.long.name.foo.com.",
+            "Preference": 30
+          },
+          "name": "zzz",
+          "target": "my.long.name.foo.com.",
+          "ttl": 300,
+          "type": "MX"
         }
       ],
       "registrar": "none"
