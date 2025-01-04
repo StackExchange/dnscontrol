@@ -2,30 +2,23 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
 // SetTargetMX sets the MX fields.
 func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
-	rc.MxPreference = pref
-	rc.SetTarget(target)
 	if rc.Type == "" {
 		rc.Type = "MX"
 	}
 	if rc.Type != "MX" {
 		panic("assertion failed: SetTargetMX called when .Type is not MX")
 	}
-	return nil
+	return rc.PopulateMXFields(pref, target, nil, "")
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
 func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
-	u64pref, err := strconv.ParseUint(pref, 10, 16)
-	if err != nil {
-		return fmt.Errorf("can't parse MX data: %w", err)
-	}
-	return rc.SetTargetMX(uint16(u64pref), target)
+	return PopulateMXRaw(rc, []string{pref, target}, nil, "")
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.

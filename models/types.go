@@ -28,6 +28,7 @@ PopulateAFields()
 func init() {
 	RegisterType("A", RegisterOpts{FromRaw: PopulateARaw})
 	RegisterType("MX", RegisterOpts{FromRaw: PopulateMXRaw})
+	RegisterType("SRV", RegisterOpts{FromRaw: PopulateSRVRaw})
 	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
 
