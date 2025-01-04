@@ -80,7 +80,7 @@ func lastCharIs(s string, c rune) bool {
 	return strings.HasSuffix(s, string(c))
 }
 
-// HostnameDot is a hostname with a trailing dot.
+// ParseHostnameDot is a hostname with a trailing dot.
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 
