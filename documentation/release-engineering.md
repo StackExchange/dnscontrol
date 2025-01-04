@@ -24,6 +24,7 @@ git commit -a -m "CHORE: Update dependencies"
 git checkout main
 git pull
 go fmt ./...
+bin/fmtjson $(find . -type f -name \*.json -print)
 go generate ./...
 go mod tidy
 git status
