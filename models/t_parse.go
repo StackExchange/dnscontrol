@@ -85,8 +85,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
 	case "MX":
-		fmt.Printf("DEBUG: contents=%q\n", contents)
-		fmt.Printf("DEBUG: PopulateMXRaw(rc, fields=%v, nil, %q)\n", append([]string{rc.Name}, strings.Fields(contents)...), origin)
+		//fmt.Printf("DEBUG: contents=%q\n", contents)
+		//fmt.Printf("DEBUG: PopulateMXRaw(rc, fields=%v, nil, %q)\n", append([]string{rc.Name}, strings.Fields(contents)...), origin)
 		return PopulateMXRaw(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)

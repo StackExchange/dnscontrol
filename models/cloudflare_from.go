@@ -18,7 +18,9 @@ func MakePageRule(rc *RecordConfig, priority int, code uint16, when, then string
 		PRPriority: priority,
 		PRDisplay:  display,
 	}
-	rc.SetTarget(display)
+	if err := rc.SetTarget(display); err != nil {
+		panic(err)
+	}
 }
 
 // mkPageRuleBlob creates the 1,301,when,then string used in displays.
@@ -46,7 +48,9 @@ func MakeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, the
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
+	if err := rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay); err != nil {
+		panic(err)
+	}
 }
 
 // targetFromRaw create the display text used for a normal Redirect.
@@ -79,7 +83,9 @@ func MakeSingleRedirectFromAPI(rc *RecordConfig, code uint16, name, when, then s
 		SRThen:    then,
 		SRDisplay: target,
 	}
-	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
+	if err := rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay); err != nil {
+		panic(err)
+	}
 }
 
 // targetFromAPIData creates the display text used for a Redirect as received from Cloudflare's API.
@@ -111,7 +117,9 @@ func makeSingleRedirectFromConvert(rc *RecordConfig,
 	sr.SRThen = srThen
 	sr.SRDisplay = srDisplay
 
-	rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
+	if err := rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay); err != nil {
+		panic(err)
+	}
 }
 
 // targetFromConverted makes the display text used when a redirect was the result of converting a PAGE_RULE.
