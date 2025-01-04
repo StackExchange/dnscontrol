@@ -22,11 +22,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.7
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.48
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.46.4
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.28.1
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.28.2
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.7
-	github.com/cloudflare/cloudflare-go v0.112.0
+	github.com/cloudflare/cloudflare-go v0.113.0
 	github.com/digitalocean/godo v1.132.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.7.0
@@ -52,7 +52,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.25.0
 	google.golang.org/api v0.214.0
 	gopkg.in/ns1/ns1-go.v2 v2.13.0
 )
@@ -60,22 +60,22 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0
 	github.com/G-Core/gcore-dns-sdk-go v0.2.9
-	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.3
+	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.4
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/go-acme/lego/v4 v4.21.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.129
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.130
 	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/oracle/oci-go-sdk/v65 v65.81.1
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
+	golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329
 	golang.org/x/text v0.21.0
-	golang.org/x/time v0.8.0
+	golang.org/x/time v0.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
