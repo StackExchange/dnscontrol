@@ -68,17 +68,35 @@ func (rc *RecordConfig) PopulateAFields(a fieldtypes.IPv4, meta map[string]strin
 		rc.Fields = &A{}
 	}
 
-	// Process each field:
-
-	n := rc.Fields.(*A)
-
-	n.A = a
-	rc.SetTargetIP(n.A[:]) // Legacy
-
 	// Update the RecordConfig:
 	maps.Copy(rc.Metadata, meta) // Add the metadata
-	rc.Comparable = fmt.Sprintf("%s", n.A)
+
+	// Process each field:
+
+	f := rc.Fields.(*A)
+	f.A = a
+
+	return rc.SealA()
+}
+
+// func (rc *RecordConfig) SetTargetA(s string) error {
+// 	a, err := fieldtypes.ParseIPv4(s)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	rc.AsA().A = a
+// 	return rc.SealA()
+// }
+
+func (rc *RecordConfig) SealA() error {
+	f := rc.Fields.(*A)
+
+	// Pre-compute useful things
+	rc.Comparable = f.A.String()
 	rc.Display = rc.Comparable
+
+	// Copy the fields to the legacy fields:
+	rc.target = f.A.String()
 
 	return nil
 }
@@ -122,11 +140,15 @@ func PopulateMXRaw(rc *RecordConfig, rawfields []string, meta map[string]string,
 
 	rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
 
+	// x := rc.Name
+	// if x != strings.ToLower(x) {
+	// 	fmt.Printf("DEBUG: POP RAW MX: %q\n", x)
+	// }
+
 	var preference uint16
 	if preference, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
 		return err
 	}
-
 	var mx string
 	if mx, err = fieldtypes.ParseHostnameDot(rawfields[2], "", origin); err != nil {
 		return err
@@ -142,18 +164,29 @@ func (rc *RecordConfig) PopulateMXFields(preference uint16, mx string, meta map[
 		rc.Fields = &MX{}
 	}
 
+	// Update the RecordConfig:
+	maps.Copy(rc.Metadata, meta) // Add the metadata
+
 	// Process each field:
 
 	n := rc.Fields.(*MX)
 	n.Preference = preference
 	n.Mx = mx
-	rc.MxPreference = uint16(preference) // Legacy
-	rc.SetTarget(string(mx))             // Legacy
 
-	// Update the RecordConfig:
-	maps.Copy(rc.Metadata, meta) // Add the metadata
-	rc.Comparable = fmt.Sprintf("%d %s", preference, mx)
+	return rc.SealMX()
+}
+
+// SealMX updates rc to be an MX record with contents from typed data, meta, and origin.
+func (rc *RecordConfig) SealMX() error {
+	f := rc.Fields.(*MX)
+
+	// Pre-compute useful things
+	rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
 	rc.Display = rc.Comparable
+
+	// Copy the fields to the legacy fields:
+	rc.MxPreference = f.Preference
+	rc.target = f.Mx
 
 	return nil
 }
@@ -226,6 +259,9 @@ func (rc *RecordConfig) PopulateSRVFields(priority, weight, port uint16, target 
 		rc.Fields = &SRV{}
 	}
 
+	// Update the RecordConfig:
+	maps.Copy(rc.Metadata, meta) // Add the metadata
+
 	// Process each field:
 
 	n := rc.Fields.(*SRV)
@@ -234,15 +270,21 @@ func (rc *RecordConfig) PopulateSRVFields(priority, weight, port uint16, target 
 	n.Port = port
 	n.Target = target
 
-	rc.SrvPriority = uint16(priority) // Legacy
-	rc.SrvWeight = uint16(weight)     // Legacy
-	rc.SrvPort = uint16(port)         // Legacy
-	rc.SetTarget(string(target))      // Legacy
+	return rc.SealSRV()
+}
 
-	// Update the RecordConfig:
-	maps.Copy(rc.Metadata, meta) // Add the metadata
-	rc.Comparable = fmt.Sprintf("%d %d %d %s", priority, weight, port, target)
+func (rc *RecordConfig) SealSRV() error {
+	f := rc.Fields.(*SRV)
+
+	// Pre-compute useful things
+	rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
 	rc.Display = rc.Comparable
+
+	// Copy the fields to the legacy fields:
+	rc.SrvPriority = f.Priority
+	rc.SrvWeight = f.Weight
+	rc.SrvPort = f.Port
+	rc.target = f.Target
 
 	return nil
 }

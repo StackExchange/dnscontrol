@@ -94,7 +94,9 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 
 	// Fix legacy use of -provider.
 	if *providerFlag != profileType {
-		fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
+		if *providerFlag != "" {
+			fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
+		}
 		*providerFlag = profileType
 	}
 
@@ -230,6 +232,9 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
+			//fmt.Printf("DEBUG: MAKECHANGES a: %+v\n", r)
+			//fmt.Printf("DEBUG: MAKECHANGES 0: %+v\n", rc)
+			//fmt.Printf("DEBUG: MAKECHANGES 1: %q\n", rc.GetTargetField())
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
 			}
@@ -246,6 +251,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
 			}
+			//fmt.Printf("DEBUG: MAKECHANGES 2: %q\n", rc.GetTargetField())
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
@@ -526,14 +532,27 @@ func makeRec2(typ string) *models.RecordConfig {
 
 func a(name string, a string) *models.RecordConfig {
 	rc := makeRec2("A")
-	models.FromRaw(rc, "**current-domain**", "A", []string{name, a}, nil)
+	if err := models.FromRaw(rc, "**current-domain**", "A", []string{name, a}, nil); err != nil {
+		panic(err)
+	}
 	return rc
 }
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
 	rc := makeRec2("MX")
 	spreference := strconv.Itoa(int(preference))
-	models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil)
+	if err := models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil); err != nil {
+		panic(err)
+	}
+
+	//fmt.Printf("DEBUG: MX Fields %v\n", rc.Fields)
+
+	if rc.Name != strings.ToLower(rc.Name) {
+		panic("MX short must be lowercase")
+	}
+	if rc.NameFQDN != strings.ToLower(rc.NameFQDN) {
+		panic("MX must be lowercase 2")
+	}
 	return rc
 }
 
@@ -542,7 +561,9 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil)
+	if err := models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil); err != nil {
+		panic(err)
+	}
 	return rc
 }
 

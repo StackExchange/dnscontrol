@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 	"github.com/miekg/dns"
 )
 
@@ -16,11 +17,23 @@ Not the best design, but we're stuck with it until we re-do RecordConfig, possib
 // GetTargetField returns the target. There may be other fields, but they are
 // not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
+	switch rc.Type { // #rtype_variations
+	case "A":
+		return rc.AsA().A.String()
+	case "MX":
+		return rc.AsMX().Mx
+	case "SRV":
+		return rc.AsSRV().Target
+	}
 	return rc.target
 }
 
 // GetTargetIP returns the net.IP stored in .target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
+	if rc.Type == "A" {
+		x := rc.AsA().A
+		return net.IPv4(x[0], x[1], x[2], x[3])
+	}
 	if rc.Type != "A" && rc.Type != "AAAA" {
 		panic(fmt.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
 	}
@@ -148,8 +161,21 @@ func (rc *RecordConfig) GetTargetDebug() string {
 }
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
-func (rc *RecordConfig) SetTarget(target string) error {
-	rc.target = target
+func (rc *RecordConfig) SetTarget(s string) error {
+	// Legacy
+	rc.target = s
+
+	switch rc.Type { // #rtype_variations
+	case "A":
+		return rc.SetTargetA(s)
+	case "MX":
+		f := rc.AsMX()
+		return rc.SetTargetMX(f.Preference, s)
+	case "SRV":
+		f := rc.AsSRV()
+		return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
+	}
+
 	return nil
 }
 
@@ -157,5 +183,19 @@ func (rc *RecordConfig) SetTarget(target string) error {
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
 	rc.SetTarget(ip.String())
+
 	return nil
+}
+
+func (rc *RecordConfig) SetTargetA(s string) error {
+	if rc.Fields == nil {
+		rc.Fields = &A{}
+	}
+
+	a, err := fieldtypes.ParseIPv4(s)
+	if err != nil {
+		return err
+	}
+	rc.AsA().A = a
+	return rc.SealA()
 }

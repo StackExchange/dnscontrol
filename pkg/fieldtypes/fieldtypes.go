@@ -82,6 +82,7 @@ func lastCharIs(s string, c rune) bool {
 
 // ParseHostnameDot is a hostname with a trailing dot.
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
+// FYI: This calls ToLower on the string.
 func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 
 	// Make sure the function is being used correctly:
@@ -97,14 +98,20 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 	if short == "" {
 		return "", fmt.Errorf("short must not be empty")
 	}
-	if strings.ToLower(short) != short {
-		return "", fmt.Errorf("short (%s) must be lowercase", short)
-	}
+	short = strings.ToLower(short)
+	// if strings.ToLower(short) != short {
+	// 	return "", fmt.Errorf("short (%s) must be lowercase", short)
+	// }
 	// if short == "." {
 	// 	return "", fmt.Errorf("label (%s) must not be just a dot", short)
 	// }
 
 	if lastCharIs(short, '.') {
+		return short, nil
+	}
+
+	if strings.HasSuffix(short, "**") {
+		// This is a special case for integration tests using `**current-domain**`
 		return short, nil
 	}
 

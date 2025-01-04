@@ -39,7 +39,7 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	var err error
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
-		err = rc.SetTarget(v.A.String())
+		err = rc.SetTargetA(v.A.String())
 	case *dns.AAAA:
 		err = rc.SetTarget(v.AAAA.String())
 	case *dns.CAA:
