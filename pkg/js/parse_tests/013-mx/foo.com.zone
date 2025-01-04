@@ -1,2 +1,6 @@
 $TTL 300
 @                IN MX    15 foo.com.
+www              IN MX    20 www.foo.com.
+xxx              IN MX    10 foo.com.
+yyy              IN MX    20 short.foo.com.
+zzz              IN MX    30 my.long.name.foo.com.
