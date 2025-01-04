@@ -10,6 +10,9 @@
       "name": "example.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "normal",
           "target": "1.1.1.1",
           "ttl": 300,
@@ -18,6 +21,9 @@
       ],
       "recordsabsent": [
         {
+          "Fields": {
+            "A": "2.2.2.2"
+          },
           "name": "helper",
           "target": "2.2.2.2",
           "type": "A"

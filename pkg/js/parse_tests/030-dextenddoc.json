@@ -17,6 +17,9 @@
       "name": "domain.tld",
       "records": [
         {
+          "Fields": {
+            "A": "127.0.0.1"
+          },
           "name": "@",
           "target": "127.0.0.1",
           "ttl": 300,
@@ -29,6 +32,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.3"
+          },
           "name": "aaa",
           "target": "127.0.0.3",
           "ttl": 300,
@@ -41,6 +47,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.7"
+          },
           "name": "sub",
           "subdomain": "sub",
           "target": "127.0.0.7",
@@ -48,6 +57,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.4"
+          },
           "name": "bbb.sub",
           "subdomain": "sub",
           "target": "127.0.0.4",
@@ -55,6 +67,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.5"
+          },
           "name": "ccc.sub",
           "subdomain": "sub",
           "target": "127.0.0.5",
@@ -76,6 +91,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.6"
+          },
           "name": "ddd.sub.sub",
           "subdomain": "sub.sub",
           "target": "127.0.0.6",
@@ -90,6 +108,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.2"
+          },
           "name": "www",
           "target": "127.0.0.2",
           "ttl": 300,

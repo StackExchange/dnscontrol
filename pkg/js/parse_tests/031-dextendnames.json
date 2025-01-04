@@ -17,18 +17,27 @@
       "name": "domain.tld",
       "records": [
         {
+          "Fields": {
+            "A": "127.0.0.1"
+          },
           "name": "@",
           "target": "127.0.0.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.3"
+          },
           "name": "@",
           "target": "127.0.0.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.2"
+          },
           "name": "a",
           "target": "127.0.0.2",
           "ttl": 300,
@@ -41,6 +50,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.4"
+          },
           "name": "d",
           "target": "127.0.0.4",
           "ttl": 300,
@@ -53,6 +65,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.7"
+          },
           "name": "ssub",
           "subdomain": "ssub",
           "target": "127.0.0.7",
@@ -60,6 +75,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.8"
+          },
           "name": "j.ssub",
           "subdomain": "ssub",
           "target": "127.0.0.8",
@@ -74,6 +92,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.0.5"
+          },
           "name": "ub",
           "subdomain": "ub",
           "target": "127.0.0.5",
@@ -81,6 +102,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.0.6"
+          },
           "name": "g.ub",
           "subdomain": "ub",
           "target": "127.0.0.6",
@@ -108,18 +132,27 @@
       "name": "sub.domain.tld",
       "records": [
         {
+          "Fields": {
+            "A": "127.0.1.1"
+          },
           "name": "@",
           "target": "127.0.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.1.3"
+          },
           "name": "@",
           "target": "127.0.1.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "127.0.1.2"
+          },
           "name": "aa",
           "target": "127.0.1.2",
           "ttl": 300,
@@ -132,6 +165,9 @@
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "A": "127.0.1.4"
+          },
           "name": "dd",
           "target": "127.0.1.4",
           "ttl": 300,

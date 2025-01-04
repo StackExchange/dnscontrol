@@ -17,12 +17,18 @@
       "name": "foo.net",
       "records": [
         {
+          "Fields": {
+            "A": "10.1.1.1"
+          },
           "name": "@",
           "target": "10.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.3.3.3"
+          },
           "name": "bar",
           "subdomain": "bar",
           "target": "10.3.3.3",
@@ -30,6 +36,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.4.4.4"
+          },
           "name": "www.bar",
           "subdomain": "bar",
           "target": "10.4.4.4",
@@ -37,6 +46,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.25.25.25"
+          },
           "name": "a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "target": "10.25.25.25",
@@ -44,6 +56,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.26.26.26"
+          },
           "name": "www.a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "target": "10.26.26.26",
@@ -51,6 +66,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.2.2.2"
+          },
           "name": "www",
           "target": "10.2.2.2",
           "ttl": 300,
@@ -70,18 +88,27 @@
       "name": "foo.tld",
       "records": [
         {
+          "Fields": {
+            "A": "20.5.5.5"
+          },
           "name": "@",
           "target": "20.5.5.5",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "20.10.10.10"
+          },
           "name": "a",
           "target": "20.10.10.10",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "20.6.6.6"
+          },
           "name": "www",
           "target": "20.6.6.6",
           "ttl": 300,
@@ -101,18 +128,27 @@
       "name": "bar.foo.tld",
       "records": [
         {
+          "Fields": {
+            "A": "30.7.7.7"
+          },
           "name": "@",
           "target": "30.7.7.7",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "30.9.9.9"
+          },
           "name": "a",
           "target": "30.9.9.9",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "30.8.8.8"
+          },
           "name": "www",
           "target": "30.8.8.8",
           "ttl": 300,
@@ -132,12 +168,18 @@
       "name": "foo.help",
       "records": [
         {
+          "Fields": {
+            "A": "40.12.12.12"
+          },
           "name": "@",
           "target": "40.12.12.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "40.17.17.17"
+          },
           "name": "morty",
           "subdomain": "morty",
           "target": "40.17.17.17",
@@ -145,6 +187,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "40.18.18.18"
+          },
           "name": "www.morty",
           "subdomain": "morty",
           "target": "40.18.18.18",
@@ -152,6 +197,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "40.12.12.12"
+          },
           "name": "www",
           "target": "40.12.12.12",
           "ttl": 300,
@@ -171,18 +219,27 @@
       "name": "bar.foo.help",
       "records": [
         {
+          "Fields": {
+            "A": "50.13.13.13"
+          },
           "name": "@",
           "target": "50.13.13.13",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "50.14.14.14"
+          },
           "name": "www",
           "target": "50.14.14.14",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "50.15.15.15"
+          },
           "name": "zip",
           "subdomain": "zip",
           "target": "50.15.15.15",
@@ -190,6 +247,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "50.16.16.16"
+          },
           "name": "www.zip",
           "subdomain": "zip",
           "target": "50.16.16.16",
@@ -210,12 +270,18 @@
       "name": "foo.here",
       "records": [
         {
+          "Fields": {
+            "A": "60.19.19.19"
+          },
           "name": "@",
           "target": "60.19.19.19",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "60.21.21.21"
+          },
           "name": "bar",
           "subdomain": "bar",
           "target": "60.21.21.21",
@@ -223,6 +289,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "60.23.23.23"
+          },
           "name": "baz.bar",
           "subdomain": "baz.bar",
           "target": "60.23.23.23",
@@ -230,6 +299,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "60.24.24.24"
+          },
           "name": "www.baz.bar",
           "subdomain": "baz.bar",
           "target": "60.24.24.24",
@@ -237,6 +309,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "60.22.22.22"
+          },
           "name": "www.bar",
           "subdomain": "bar",
           "target": "60.22.22.22",
@@ -244,6 +319,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "60.20.20.20"
+          },
           "name": "www",
           "target": "60.20.20.20",
           "ttl": 300,
@@ -263,12 +341,18 @@
       "name": "example.com",
       "records": [
         {
+          "Fields": {
+            "A": "10.0.0.1"
+          },
           "name": "@",
           "target": "10.0.0.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.3"
+          },
           "name": "d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.3",
@@ -276,6 +360,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.4"
+          },
           "name": "www.d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.4",
@@ -283,12 +370,18 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.2"
+          },
           "name": "www",
           "target": "10.0.0.2",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.5"
+          },
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.5",
@@ -296,6 +389,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.6"
+          },
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.6",
@@ -316,12 +412,18 @@
       "name": "d\u00fcsseldorf.example.net",
       "records": [
         {
+          "Fields": {
+            "A": "10.0.0.7"
+          },
           "name": "@",
           "target": "10.0.0.7",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.11"
+          },
           "name": "d\u00fcsseltal",
           "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.11",
@@ -329,6 +431,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.12"
+          },
           "name": "www.d\u00fcsseltal",
           "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.12",
@@ -336,6 +441,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.9"
+          },
           "name": "subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.9",
@@ -343,6 +451,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.10"
+          },
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.10",
@@ -350,12 +461,18 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.8"
+          },
           "name": "www",
           "target": "10.0.0.8",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.13"
+          },
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.13",
@@ -363,6 +480,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.14"
+          },
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.14",
@@ -383,12 +503,18 @@
       "name": "\u00fc.example.net",
       "records": [
         {
+          "Fields": {
+            "A": "10.0.0.15"
+          },
           "name": "@",
           "target": "10.0.0.15",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.19"
+          },
           "name": "d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.19",
@@ -396,6 +522,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.20"
+          },
           "name": "www.d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.20",
@@ -403,6 +532,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.17"
+          },
           "name": "subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.17",
@@ -410,6 +542,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.18"
+          },
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.18",
@@ -417,12 +552,18 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.16"
+          },
           "name": "www",
           "target": "10.0.0.16",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.21"
+          },
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.21",
@@ -430,6 +571,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.0.0.22"
+          },
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.22",

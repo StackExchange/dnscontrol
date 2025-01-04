@@ -44,6 +44,9 @@
           "type": "CF_WORKER_ROUTE"
         },
         {
+          "Fields": {
+            "A": "10.2.3.1"
+          },
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.1",
@@ -51,6 +54,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.2.3.2"
+          },
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.2",
@@ -58,6 +64,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.2.3.3"
+          },
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.3",

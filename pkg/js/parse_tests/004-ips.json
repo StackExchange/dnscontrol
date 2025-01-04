@@ -17,18 +17,27 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.2.3.4"
+          },
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.3.5"
+          },
           "name": "p1",
           "target": "1.2.3.5",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.4.3"
+          },
           "name": "p255",
           "target": "1.2.4.3",
           "ttl": 300,

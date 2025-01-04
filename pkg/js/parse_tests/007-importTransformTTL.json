@@ -10,12 +10,18 @@
       "name": "foo1.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "bar",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "5.5.5.5"
+          },
           "name": "foo",
           "target": "5.5.5.5",
           "ttl": 300,
@@ -33,12 +39,18 @@
       "name": "inny",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "bar.foo1.com",
           "target": "4.4.4.101",
           "ttl": 60,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "5.5.5.5"
+          },
           "name": "foo.foo1.com",
           "target": "6.6.6.3",
           "ttl": 60,
@@ -56,12 +68,18 @@
       "name": "com.inny",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "bar.foo1",
           "target": "1.1.1.1",
           "ttl": 99,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "5.5.5.5"
+          },
           "name": "foo.foo1",
           "target": "7.7.7.7",
           "ttl": 99,

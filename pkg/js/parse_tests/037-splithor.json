@@ -25,12 +25,18 @@
       "name": "example.com",
       "records": [
         {
+          "Fields": {
+            "A": "3.3.3.3"
+          },
           "name": "main",
           "target": "3.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "33.33.33.33"
+          },
           "name": "www",
           "target": "33.33.33.33",
           "ttl": 300,
@@ -50,12 +56,18 @@
       "name": "example.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "main",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "11.11.11.11"
+          },
           "name": "main",
           "target": "11.11.11.11",
           "ttl": 300,
@@ -75,6 +87,9 @@
       "name": "example.com",
       "records": [
         {
+          "Fields": {
+            "A": "8.8.8.8"
+          },
           "name": "main",
           "target": "8.8.8.8",
           "ttl": 300,
