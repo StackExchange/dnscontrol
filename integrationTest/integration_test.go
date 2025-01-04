@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -515,8 +516,34 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func a(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "A")
+func makeRec2(typ string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type: typ,
+		TTL:  300,
+	}
+	return r
+}
+
+func a(name string, a string) *models.RecordConfig {
+	rc := makeRec2("A")
+	models.FromRaw(rc, "**current-domain**", "A", []string{name, a}, nil)
+	return rc
+}
+
+func mx(name string, preference uint16, mx string) *models.RecordConfig {
+	rc := makeRec2("MX")
+	spreference := strconv.Itoa(int(preference))
+	models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil)
+	return rc
+}
+
+func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
+	rc := makeRec2("SRV")
+	spriority := strconv.Itoa(int(priority))
+	sweight := strconv.Itoa(int(weight))
+	sport := strconv.Itoa(int(port))
+	models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil)
+	return rc
 }
 
 func aaaa(name, target string) *models.RecordConfig {
@@ -659,12 +686,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	return recs
 }
 
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
-	return r
-}
-
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
@@ -691,12 +712,6 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
 	r := makeRec(name, "", "SOA")
 	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SRV")
-	r.SetTargetSRV(priority, weight, port, target)
 	return r
 }
 
