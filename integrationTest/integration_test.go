@@ -21,7 +21,7 @@ import (
 )
 
 var providerFlag = flag.String("provider", "", "Provider to run (if empty, deduced from -profile)")
-var profileFlag = flag.String("profile", "", "Entry in providers.json to use (if empty, copied from -provider)")
+var profileFlag = flag.String("profile", "", "Entry in profiles.json to use (if empty, copied from -provider)")
 var startIdx = flag.Int("start", -1, "Test number to begin with")
 var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
@@ -55,7 +55,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 
 	// Load the profile values
 
-	jsons, err := credsfile.LoadProviderConfigs("providers.json")
+	jsons, err := credsfile.LoadProviderConfigs("profiles.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
@@ -76,7 +76,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 			profileName = p
 			profileType = cfg["TYPE"]
 			if profileType == "" {
-				t.Fatalf("providers.json profile %q does not have a TYPE field", *profileFlag)
+				t.Fatalf("profiles.json profile %q does not have a TYPE field", *profileFlag)
 			}
 			break
 		}
