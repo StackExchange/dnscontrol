@@ -1,4 +1,4 @@
-package internets
+package internetbs
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	const providerName = "INTERNETS"
+	const providerName = "INTERNETBS"
 	const providerMaintainer = "@pragmaton"
 	providers.RegisterRegistrarType(providerName, newInternetBs, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
