@@ -62,7 +62,7 @@ export HEXONET_ENTITY=OTE
 export HEXONET_UID=test.user
 export HEXONET_PW=test.passw0rd
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -provider HEXONET
+go test -v -verbose -profile HEXONET
 ```
 
 ## Usage
