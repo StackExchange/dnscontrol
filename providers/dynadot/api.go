@@ -2,6 +2,7 @@ package dynadot
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -44,12 +45,14 @@ type nsContent struct {
 }
 
 func (c *dynadotProvider) getNameservers(domain string) ([]string, error) {
-	var bodyString, err = c.get("get_ns", requestParams{"domain": domain})
+	bodyString, err := c.get("get_ns", requestParams{"domain": domain})
 	if err != nil {
-		return []string{}, fmt.Errorf("failed NS list (Dynadot): %s", err)
+		return []string{}, fmt.Errorf("failed NS list (Dynadot): %w", err)
 	}
 	var ns getNsResponse
-	xml.Unmarshal(bodyString, &ns)
+	if err := xml.Unmarshal(bodyString, &ns); err != nil {
+		return []string{}, fmt.Errorf("failed to unmarshal NS list (Dynadot): %w", err)
+	}
 
 	if ns.GetNsHeader.SuccessCode != 0 {
 		return []string{}, fmt.Errorf("failed NS list (Dynadot): %s", ns.GetNsHeader.Error)
@@ -62,19 +65,19 @@ func (c *dynadotProvider) getNameservers(domain string) ([]string, error) {
 
 func (c *dynadotProvider) updateNameservers(ns []string, domain string) error {
 	if len(ns) > 13 {
-		return fmt.Errorf("failed NS update (Dynadot): only up to 13 nameservers are supported")
+		return errors.New("failed NS update (Dynadot): only up to 13 nameservers are supported")
 	}
 
 	// Nameservers must first be added to the Dynadot account
 	for _, host := range ns {
 		b, err := c.get("add_ns", requestParams{"host": host})
 		if err != nil {
-			return fmt.Errorf("failed NS add (Dynadot): %s", err)
+			return fmt.Errorf("failed NS add (Dynadot): %w", err)
 		}
 		var resp addNsResponse
 		err = xml.Unmarshal(b, &resp)
 		if err != nil {
-			return fmt.Errorf("failed NS add (Dynadot): %s", err)
+			return fmt.Errorf("failed NS add (Dynadot): %w", err)
 		}
 
 		if resp.AddNsHeader.SuccessCode != 0 {
@@ -83,7 +86,6 @@ func (c *dynadotProvider) updateNameservers(ns []string, domain string) error {
 				continue
 			}
 			return fmt.Errorf("failed NS add (Dynadot): %s", resp.AddNsHeader.Error)
-
 		}
 	}
 
@@ -96,13 +98,13 @@ func (c *dynadotProvider) updateNameservers(ns []string, domain string) error {
 
 	b, err := c.get("set_ns", rec)
 	if err != nil {
-		return fmt.Errorf("failed NS set (Dynadot): %s", err)
+		return fmt.Errorf("failed NS set (Dynadot): %w", err)
 	}
 
 	var resp setNsResponse
 	err = xml.Unmarshal(b, &resp)
 	if err != nil {
-		return fmt.Errorf("failed NS add (Dynadot): %s", err)
+		return fmt.Errorf("failed NS add (Dynadot): %w", err)
 	}
 
 	if resp.SetNsHeader.SuccessCode != 0 {
@@ -114,7 +116,7 @@ func (c *dynadotProvider) updateNameservers(ns []string, domain string) error {
 
 func (c *dynadotProvider) get(command string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "https://api.dynadot.com/api3.xml", nil)
+	req, _ := http.NewRequest(http.MethodGet, "https://api.dynadot.com/api3.xml", nil)
 	q := req.URL.Query()
 
 	q.Add("key", c.key)

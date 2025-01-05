@@ -24,7 +24,7 @@ func TestHasRecordTypeName(t *testing.T) {
 }
 
 func TestKey(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		rc       RecordConfig
 		expected RecordKey
 	}{
@@ -136,7 +136,7 @@ func TestRecordConfig_Copy(t *testing.T) {
 				TlsaMatchingType: 3,
 				R53Alias:         map[string]string{"a": "eh", "b": "bee"},
 				AzureAlias:       map[string]string{"az": "az", "ure": "your"},
-				//Original         interface{},
+				// Original         interface{},
 			},
 			want: &RecordConfig{
 				Type:             "type",
@@ -174,7 +174,7 @@ func TestRecordConfig_Copy(t *testing.T) {
 				TlsaMatchingType: 3,
 				R53Alias:         map[string]string{"a": "eh", "b": "bee"},
 				AzureAlias:       map[string]string{"az": "az", "ure": "your"},
-				//Original         interface{},
+				// Original         interface{},
 			},
 		},
 	}

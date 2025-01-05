@@ -30,7 +30,9 @@ func shellCompletionCommand() *cli.Command {
 		BashComplete: func(ctx *cli.Context) {
 			for _, shell := range supportedShells {
 				if strings.HasPrefix(shell, ctx.Args().First()) {
-					ctx.App.Writer.Write([]byte(shell + "\n"))
+					if _, err := ctx.App.Writer.Write([]byte(shell + "\n")); err != nil {
+						panic(err)
+					}
 				}
 			}
 		},

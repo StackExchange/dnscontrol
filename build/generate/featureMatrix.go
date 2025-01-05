@@ -13,7 +13,6 @@ import (
 func generateFeatureMatrix() error {
 	matrix := matrixData()
 	markdownTable, err := markdownTable(matrix)
-
 	if err != nil {
 		return err
 	}
@@ -45,7 +44,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 		tableData = append(tableData, tableDataRow)
 	}
 
-	var markdownTable, err = markdown.NewTableFormatterBuilder().
+	markdownTable, err := markdown.NewTableFormatterBuilder().
 		Build(tableHeaders...).
 		Format(tableData)
 	if err != nil {
@@ -123,7 +122,7 @@ func matrixData() *FeatureMatrix {
 			DomainModifierDnskey,
 			DualHost,
 			CreateDomains,
-			//NoPurge,
+			// NoPurge,
 			GetZones,
 		},
 	}
@@ -346,7 +345,7 @@ func replaceInlineContent(
 	contentBytes = []byte(content)
 	contentBytes = append(contentBytes[:start], append(newContentBytes, contentBytes[end+len(endMarker):]...)...)
 
-	err = os.WriteFile(file, contentBytes, 0644)
+	err = os.WriteFile(file, contentBytes, 0o644)
 	if err != nil {
 		panic(err)
 	}

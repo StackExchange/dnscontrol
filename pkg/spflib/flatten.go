@@ -58,7 +58,6 @@ func (s *SPFRecord) TXTSplit(pattern string, overhead int, txtMaxSize int) map[s
 	m := map[string][]string{}
 	s.split("@", pattern, 1, m, overhead, txtMaxSize)
 	return m
-
 }
 
 func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string][]string, overhead int, txtMaxSize int) {

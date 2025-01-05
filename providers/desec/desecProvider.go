@@ -3,6 +3,7 @@ package desec
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -24,7 +25,7 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	c := &desecProvider{}
 	c.token = strings.TrimSpace(m["auth-token"])
 	if c.token == "" {
-		return nil, fmt.Errorf("missing deSEC auth-token")
+		return nil, errors.New("missing deSEC auth-token")
 	}
 	return c, nil
 }
@@ -105,7 +106,7 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
-	//spew.Dump(records)
+	// spew.Dump(records)
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
@@ -134,7 +135,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// provider.  We try to do minimal changes otherwise it gets
 	// confusing.
 
-	//dc.Punycode()
+	// dc.Punycode()
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -182,8 +183,8 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	// For any key with an update, delete or replace those records.
 	for label := range keysToUpdate {
 		if _, ok := desiredRecords[label]; !ok {
-			//we could not find this RecordKey in the desiredRecords
-			//this means it must be deleted
+			// we could not find this RecordKey in the desiredRecords
+			// this means it must be deleted
 			for i, msg := range keysToUpdate[label] {
 				if i == 0 {
 					rc := resourceRecord{}
@@ -198,12 +199,12 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					fmt.Fprintln(buf, msg)
 					rrs = append(rrs, rc)
 				} else {
-					//just add the message
+					// just add the message
 					fmt.Fprintln(buf, msg)
 				}
 			}
 		} else {
-			//it must be an update or create, both can be done with the same api call.
+			// it must be an update or create, both can be done with the same api call.
 			ns := recordsToNative(desiredRecords[label])
 			if len(ns) > 1 {
 				panic("we got more than one resource record to create / modify")
@@ -213,7 +214,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					rrs = append(rrs, ns[0])
 					fmt.Fprintln(buf, msg)
 				} else {
-					//noop just for printing the additional messages
+					// noop just for printing the additional messages
 					fmt.Fprintln(buf, msg)
 				}
 			}
@@ -243,7 +244,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	// However the code doesn't seem to have such situation.  All tests
 	// pass.  That said, if this breaks anything, the easiest fix might
 	// be to just remove the sort.
-	//sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	// sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, actualChangeCount, nil
 }

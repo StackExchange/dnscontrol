@@ -22,7 +22,6 @@ func SortUsingGraph[T dnsgraph.Graphable](records []T) SortResult[T] {
 	sortState := createDirectedSortState(records)
 
 	for sortState.hasWork() {
-
 		for _, node := range sortState.graph.All {
 			sortState.hasResolvedLastRound = false
 

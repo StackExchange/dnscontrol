@@ -16,7 +16,7 @@ func NewRecordDBFromRecords(recs Records, zone string) *RecordDB {
 	for _, rec := range recs {
 		result.labelAndTypeMap[rec.Key()] = struct{}{}
 	}
-	//fmt.Printf("DEBUG: BUILDING RecordDB: DONE!\n")
+	// fmt.Printf("DEBUG: BUILDING RecordDB: DONE!\n")
 
 	return result
 }

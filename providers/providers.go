@@ -2,6 +2,7 @@ package providers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -121,7 +122,7 @@ func beCompatible(n string, config map[string]string) (string, error) {
 	if n == "" || n == "-" {
 		// But no TYPE exists in creds.json...
 		if ct == "" {
-			return "-", fmt.Errorf("creds.json entry missing TYPE field")
+			return "-", errors.New("creds.json entry missing TYPE field")
 		}
 		// Otherwise, use the value from creds.json.
 		return ct, nil
@@ -137,7 +138,7 @@ func beCompatible(n string, config map[string]string) (string, error) {
 
 	// NB(tlim): My hope is that in 4.0 this entire function will simply be the
 	// following, but I may be wrong:
-	//return config["TYPE"], nil
+	// return config["TYPE"], nil
 }
 
 // AuditRecords calls the RecordAudit function for a provider.

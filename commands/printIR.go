@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -41,7 +42,6 @@ var _ = cmd(catDebug, func() *cli.Command {
 		Name:  "check",
 		Usage: "Check and validate dnsconfig.js. Output to stdout.  Do not access providers.",
 		Action: func(c *cli.Context) error {
-
 			// Create a PrintIRArgs struct and copy our args to the
 			// appropriate fields.
 			var pargs PrintIRArgs
@@ -95,7 +95,7 @@ func PrintIR(args PrintIRArgs) error {
 	if !args.Raw {
 		errs := normalize.ValidateAndNormalizeConfig(cfg)
 		if PrintValidationErrors(errs) {
-			return fmt.Errorf("exiting due to validation errors")
+			return errors.New("exiting due to validation errors")
 		}
 	}
 	return PrintJSON(args.PrintJSONArgs, cfg)
@@ -121,7 +121,7 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 // ExecuteDSL executes the dnsconfig.js contents.
 func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
-		return nil, fmt.Errorf("no config specified")
+		return nil, errors.New("no config specified")
 	}
 
 	dnsConfig, err := js.ExecuteJavaScript(args.JSFile, args.DevMode, stringSliceToMap(args.Variable))

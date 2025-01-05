@@ -57,7 +57,7 @@ As a result, the diff2 algorithm won't delete them because they are desired!
 (Of course "desired" can't have duplicate records. Check before you add.)
 
 This is different than in the old implementation (pkg/diff) which would generate the
-diff but but then do a bunch of checking to see if the record was one that
+diff but then do a bunch of checking to see if the record was one that
 shouldn't be deleted.  Or, in the case of NO_PURGE, would simply not do the
 deletions.  This was complex because there were many edge cases to deal with.
 It was often also wrong. For example, if a provider updates all records in a
@@ -115,13 +115,16 @@ func handsoff(
 		return nil, nil, err
 	}
 
-	var punct = ":"
+	punct := ":"
 	if printer.MaxReport == 0 {
 		punct = "."
 	}
 
 	// Process IGNORE*() and NO_PURGE features:
-	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
+	ignorable, foreign, err := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
+	if err != nil {
+		return nil, nil, err
+	}
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE%s", len(foreign), punct))
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
@@ -173,14 +176,16 @@ func reportSkips(recs models.Records, full bool) []string {
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
-func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
+func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records, error) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
-	compileUnmanagedConfigs(unmanagedConfigs)
+	if err := compileUnmanagedConfigs(unmanagedConfigs); err != nil {
+		return nil, nil, err
+	}
 	for _, rec := range existing {
 		isMatch := matchAny(unmanagedConfigs, rec)
-		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
+		// fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
 		if isMatch {
 			ignorable = append(ignorable, rec)
 		} else {
@@ -195,7 +200,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 			}
 		}
 	}
-	return ignorable, foreign
+	return ignorable, foreign, nil
 }
 
 // findConflicts takes a list of recs and a list of (compiled) UnmanagedConfigs
@@ -248,7 +253,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 
 // matchAny returns true if rec matches any of the uconfigs.
 func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
-	//fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
+	// fmt.Printf("DEBUG: matchAny(%s, %q, %q, %q)\n", models.DebugUnmanagedConfig(uconfigs), rec.NameFQDN, rec.Type, rec.GetTargetField())
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
@@ -258,12 +263,14 @@ func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool
 	}
 	return false
 }
+
 func matchLabel(labelGlob glob.Glob, labelName string) bool {
 	if labelGlob == nil {
 		return true
 	}
 	return labelGlob.Match(labelName)
 }
+
 func matchType(typeMap map[string]struct{}, typeName string) bool {
 	if len(typeMap) == 0 {
 		return true
@@ -271,6 +278,7 @@ func matchType(typeMap map[string]struct{}, typeName string) bool {
 	_, ok := typeMap[typeName]
 	return ok
 }
+
 func matchTarget(targetGlob glob.Glob, targetName string) bool {
 	if targetGlob == nil {
 		return true

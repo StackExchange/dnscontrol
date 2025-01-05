@@ -139,7 +139,6 @@ func (r *route53Provider) ListZones() ([]string, error) {
 }
 
 func (r *route53Provider) getZones() error {
-
 	if r.zonesByDomain != nil {
 		return nil
 	}
@@ -244,7 +243,6 @@ func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
-
 	if err := r.getZones(); err != nil {
 		return r53Types.HostedZone{}, err
 	}
@@ -270,7 +268,7 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 		return nil, err
 	}
 
-	var existingRecords = []*models.RecordConfig{}
+	existingRecords := []*models.RecordConfig{}
 	for _, set := range records {
 		rts, err := nativeToRecords(set, unescape(zone.Name))
 		if err != nil {
@@ -308,14 +306,13 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	instructions = reorderInstructions(instructions)
 	var reports []*models.Correction
 
-	//wasReport := false
+	// wasReport := false
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
 		var chg r53Types.Change
 
 		switch inst.Type {
-
 		case diff2.REPORT:
 			// REPORTs are held in a separate list so that they aren't part of the batching process.
 			reports = append(reports,
@@ -332,7 +329,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			// Make the rrset to be UPSERTed:
 			var rrset *r53Types.ResourceRecordSet
 			if instType == "R53_ALIAS" || strings.HasPrefix(instType, "R53_ALIAS_") {
-				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
+				// A R53_ALIAS_* requires ResourceRecordSet to a single item, not a list.
 				if len(inst.New) != 1 {
 					log.Fatal("Only one R53_ALIAS_ permitted on a label")
 				}
@@ -368,7 +365,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 		default:
 			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
-
 		}
 
 		changes = append(changes, chg)
@@ -407,7 +403,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return append(reports, corrections...), actualChangeCount, nil
-
 }
 
 // reorderInstructions returns changes reordered to comply with AWS's requirements:
@@ -444,7 +439,9 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 			},
 		}
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
-		rc.SetTarget(aws.ToString(set.AliasTarget.DNSName))
+		if err := rc.SetTarget(aws.ToString(set.AliasTarget.DNSName)); err != nil {
+			return nil, err
+		}
 		// rc.Original stores a pointer to the original set for use by
 		// r53Types.ChangeActionDelete and anything else that needs the
 		// native record verbatim.
@@ -667,7 +664,7 @@ func (r *route53Provider) EnsureZoneExists(domain string) error {
 	in := &r53.CreateHostedZoneInput{
 		Name:            &domain,
 		DelegationSetId: r.delegationSet,
-		CallerReference: aws.String(fmt.Sprint(time.Now().UnixNano())),
+		CallerReference: aws.String(strconv.FormatInt(time.Now().UnixNano(), 10)),
 	}
 
 	// reset zone cache

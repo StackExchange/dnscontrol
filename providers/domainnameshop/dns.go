@@ -17,7 +17,10 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string
 
 	var existingRecords []*models.RecordConfig
 	for i := range records {
-		rC := toRecordConfig(domain, &records[i])
+		rC, err := toRecordConfig(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 		existingRecords = append(existingRecords, rC)
 	}
 
@@ -26,11 +29,12 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	// Merge TXT strings to one string
 	for _, rc := range dc.Records {
 		if rc.HasFormatIdenticalToTXT() {
-			rc.SetTargetTXT(rc.GetTargetTXTJoined())
+			if err := rc.SetTargetTXT(rc.GetTargetTXTJoined()); err != nil {
+				return nil, 0, err
+			}
 		}
 	}
 
@@ -105,9 +109,11 @@ func (api *domainNameShopProvider) GetNameservers(domain string) ([]*models.Name
 	return models.ToNameservers(ns)
 }
 
-const minAllowedTTL = 60
-const maxAllowedTTL = 604800
-const multiplierTTL = 60
+const (
+	minAllowedTTL = 60
+	maxAllowedTTL = 604800
+	multiplierTTL = 60
+)
 
 func fixTTL(ttl uint32) uint32 {
 	// if the TTL is larger than the largest allowed value, return the largest allowed value

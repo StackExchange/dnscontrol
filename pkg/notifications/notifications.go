@@ -40,7 +40,6 @@ func stripAnsiColors(colored string) string {
 }
 
 func (m multiNotifier) Notify(domain, provider string, message string, err error, preview bool) {
-
 	// force-remove ansi colors that might come with the message from dnscontrol.
 	// These usually don't render well in notifiers, outputting escape codes.
 	// If a notifier wants to output colors, they should probably implement
@@ -50,6 +49,7 @@ func (m multiNotifier) Notify(domain, provider string, message string, err error
 		n.Notify(domain, provider, nMsg, err, preview)
 	}
 }
+
 func (m multiNotifier) Done() {
 	for _, n := range m {
 		n.Done()

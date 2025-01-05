@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -87,7 +88,6 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 
 // generateZoneFileHelper creates a pretty zonefile.
 func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
-
 	nameShortPrevious := ""
 
 	sort.Sort(z)
@@ -103,7 +103,6 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		}
 	}
 	for i, rr := range z.Records {
-
 		// Fake types are commented out.
 		prefix := ""
 		_, ok := dns.StringToType[rr.Type]
@@ -122,7 +121,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		// ttl
 		ttl := ""
 		if rr.TTL != z.DefaultTTL && rr.TTL != 0 {
-			ttl = fmt.Sprint(rr.TTL)
+			ttl = strconv.FormatUint(uint64(rr.TTL), 10)
 		}
 
 		// type

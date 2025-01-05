@@ -1,6 +1,7 @@
 package easyname
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -33,7 +34,7 @@ func newEasyname(m map[string]string) (providers.Registrar, error) {
 	api := &easynameProvider{}
 
 	if m["email"] == "" || m["userid"] == "" || m["apikey"] == "" || m["authsalt"] == "" || m["signsalt"] == "" {
-		return nil, fmt.Errorf("missing easyname email, userid, apikey, authsalt and/or signsalt")
+		return nil, errors.New("missing easyname email, userid, apikey, authsalt and/or signsalt")
 	}
 
 	api.apikey, api.signSalt = m["apikey"], m["signsalt"]

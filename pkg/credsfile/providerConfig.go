@@ -21,7 +21,7 @@ import (
 
 // LoadProviderConfigs will open or execute the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
 func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
-	var results = map[string]map[string]string{}
+	results := map[string]map[string]string{}
 
 	var dat []byte
 	var err error
@@ -45,7 +45,7 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	r := JsonConfigReader.New(strings.NewReader(s))
 	err = json.NewDecoder(r).Decode(&results)
 	if err != nil {
-		return nil, fmt.Errorf("failed parsing provider credentials file %v: %v", fname, err)
+		return nil, fmt.Errorf("failed parsing provider credentials file %v: %w", fname, err)
 	}
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 
 func isExecutable(filename string) bool {
 	if stat, statErr := os.Stat(filename); statErr == nil {
-		if mode := stat.Mode(); mode&0111 == 0111 {
+		if mode := stat.Mode(); mode&0o111 == 0o111 {
 			return true
 		}
 	}
@@ -81,7 +81,7 @@ func readCredsFile(filename string) ([]byte, error) {
 			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", filename)
 			return []byte{}, nil
 		}
-		return nil, fmt.Errorf("failed reading provider credentials file %v: %v", filename, err)
+		return nil, fmt.Errorf("failed reading provider credentials file %v: %w", filename, err)
 	}
 	return dat, nil
 }

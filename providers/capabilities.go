@@ -143,7 +143,6 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 		default:
 			log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
 		}
-
 	}
 }
 

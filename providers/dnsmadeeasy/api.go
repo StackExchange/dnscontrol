@@ -1,6 +1,7 @@
 package dnsmadeeasy
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -49,7 +50,7 @@ func (api *dnsMadeEasyProvider) loadDomains() error {
 
 	for _, domain := range res.Data {
 		if domain.GtdEnabled {
-			return fmt.Errorf("fetching domains from DNSMADEEASY failed: domains with GTD enabled are not supported")
+			return errors.New("fetching domains from DNSMADEEASY failed: domains with GTD enabled are not supported")
 		}
 
 		domains[domain.Name] = domain
@@ -97,7 +98,7 @@ func (api *dnsMadeEasyProvider) fetchDomainRecords(domainName string) ([]recordR
 	records := make([]recordResponseDataEntry, 0)
 	for _, record := range res.Data {
 		if record.GtdLocation != "DEFAULT" {
-			return nil, fmt.Errorf("fetching records from DNSMADEEASY failed: only records with DEFAULT GTD location are supported")
+			return nil, errors.New("fetching records from DNSMADEEASY failed: only records with DEFAULT GTD location are supported")
 		}
 
 		records = append(records, record)
@@ -127,7 +128,6 @@ func (api *dnsMadeEasyProvider) fetchDomainNameServers(domainName string) ([]str
 
 func (api *dnsMadeEasyProvider) createDomain(domain string) error {
 	_, err := api.restAPI.singleDomainCreate(singleDomainRequestData{Name: domain})
-
 	if err != nil {
 		return err
 	}

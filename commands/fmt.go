@@ -66,7 +66,7 @@ func FmtFile(args FmtArgs) error {
 	if args.OutputFile == "" {
 		fmt.Print(beautified)
 	} else {
-		if err := os.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
+		if err := os.WriteFile(args.OutputFile, []byte(beautified), 0o744); err != nil {
 			return err
 		}
 		fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)

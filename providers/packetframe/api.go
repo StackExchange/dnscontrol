@@ -195,7 +195,9 @@ func (api *packetframeProvider) handleErrors(resp *http.Response) error {
 	}
 
 	dr := &domainResponse{}
-	json.Unmarshal(body, &dr)
+	if err := json.Unmarshal(body, &dr); err != nil {
+		return fmt.Errorf("can not unmarshal API error: %w (%s)", err, string(body))
+	}
 
 	return fmt.Errorf("packetframe API error: %s", dr.Message)
 }

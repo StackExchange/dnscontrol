@@ -1,6 +1,7 @@
 package dynadot
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -36,7 +37,7 @@ func newDynadot(m map[string]string) (providers.Registrar, error) {
 
 	d.key = m["key"]
 	if d.key == "" {
-		return nil, fmt.Errorf("missing Dynadot key")
+		return nil, errors.New("missing Dynadot key")
 	}
 
 	return d, nil

@@ -2,6 +2,7 @@ package softlayer
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -46,7 +47,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
-		return nil, fmt.Errorf("SoftLayer UserName and APIKey must be provided")
+		return nil, errors.New("SoftLayer UserName and APIKey must be provided")
 	}
 
 	// s.Debug = true
@@ -127,7 +128,6 @@ func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, erro
 		Filter(filter.Path("domains.name").Eq(name).Build()).
 		Mask("resourceRecords").
 		GetDomains()
-
 	if err != nil {
 		return nil, err
 	}
@@ -156,11 +156,13 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			TTL:      uint32(*record.Ttl),
 			Original: record,
 		}
-		recConfig.SetTarget(*record.Data)
+		if err := recConfig.SetTarget(*record.Data); err != nil {
+			return nil, err
+		}
 
 		switch recType {
 		case "SRV":
-			var service, protocol = "", "_tcp"
+			service, protocol := "", "_tcp"
 
 			if record.Weight != nil {
 				recConfig.SrvWeight = uint16(*record.Weight)
@@ -180,7 +182,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			recConfig.SetLabel(fmt.Sprintf("%s.%s", service, strings.ToLower(protocol)), *domain.Name)
 		case "TXT":
 			// OLD: recConfig.TxtStrings = append(recConfig.TxtStrings, *record.Data)
-			recConfig.SetTargetTXTs(append(recConfig.GetTargetTXTSegmented(), *record.Data))
+			if err := recConfig.SetTargetTXTs(append(recConfig.GetTargetTXTSegmented(), *record.Data)); err != nil {
+				return nil, err
+			}
 			// NB(tlim) The above code seems too complex.  Can it be simplied to this?
 			// recConfig.SetTargetTXT(*record.Data)
 			fallthrough
@@ -200,9 +204,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 }
 
 func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
-	var weight, priority, port = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
-	var host, data, newType = desired.GetLabel(), desired.GetTargetField(), desired.Type
+	ttl, preference, domainID := verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
+	weight, priority, port := int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
+	host, data, newType := desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
 
 	srvRegexp := regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
@@ -236,7 +240,7 @@ func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domai
 				return fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
 			}
 
-			var serviceName, protocol = result[1], strings.ToLower(result[2])
+			serviceName, protocol := result[1], strings.ToLower(result[2])
 
 			newSrv := datatypes.Dns_Domain_ResourceRecord_SrvType{
 				Dns_Domain_ResourceRecord: newRecord,
@@ -270,11 +274,11 @@ func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
-	var priority, weight, port = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
+	ttl, preference := verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
+	priority, weight, port := int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {
-		var changes = false
+		changes := false
 		var err error
 
 		switch desired.Type {
@@ -305,7 +309,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			}
 
 			if !changes {
-				return fmt.Errorf("didn't find changes when I expect some")
+				return errors.New("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -350,7 +354,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			// delete and recreate?
 
 			if !changes {
-				return fmt.Errorf("didn't find changes when I expect some")
+				return errors.New("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -377,7 +381,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			}
 
 			if !changes {
-				return fmt.Errorf("didn't find changes when I expect some")
+				return errors.New("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)

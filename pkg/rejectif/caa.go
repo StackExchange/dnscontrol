@@ -1,7 +1,7 @@
 package rejectif
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -12,7 +12,7 @@ import (
 // CaaFlagIsNonZero identifies CAA records where tag is no zero.
 func CaaFlagIsNonZero(rc *models.RecordConfig) error {
 	if rc.CaaFlag != 0 {
-		return fmt.Errorf("caa flag is non-zero")
+		return errors.New("caa flag is non-zero")
 	}
 	return nil
 }
@@ -22,7 +22,7 @@ func CaaFlagIsNonZero(rc *models.RecordConfig) error {
 // See https://github.com/StackExchange/dnscontrol/issues/1374
 func CaaTargetContainsWhitespace(rc *models.RecordConfig) error {
 	if strings.ContainsAny(rc.GetTargetField(), " \t\r\n") {
-		return fmt.Errorf("caa target contains whitespace")
+		return errors.New("caa target contains whitespace")
 	}
 	return nil
 }

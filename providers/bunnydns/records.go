@@ -1,12 +1,13 @@
 package bunnydns
 
 import (
+	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"golang.org/x/exp/slices"
 )
 
 func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
@@ -124,7 +125,7 @@ func (b *bunnydnsProvider) mkChangeCorrection(zoneID int64, oldRec, newRec *mode
 		F: func() error {
 			existingID := oldRec.Original.(*record).ID
 			if existingID == 0 {
-				return fmt.Errorf("BUNNY_DNS: cannot change implicit records")
+				return errors.New("BUNNY_DNS: cannot change implicit records")
 			}
 
 			desired, err := fromRecordConfig(newRec)
@@ -143,7 +144,7 @@ func (b *bunnydnsProvider) mkDeleteCorrection(zoneID int64, oldRec *models.Recor
 		F: func() error {
 			existingID := oldRec.Original.(*record).ID
 			if existingID == 0 {
-				return fmt.Errorf("BUNNY_DNS: cannot delete implicit records")
+				return errors.New("BUNNY_DNS: cannot delete implicit records")
 			}
 
 			return b.deleteRecord(zoneID, existingID)

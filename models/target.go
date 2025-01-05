@@ -58,7 +58,6 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
-
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
@@ -95,7 +94,7 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
 	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
-		rc.SetTarget(".")
+		rc.MustSetTarget(".")
 	}
 	rr := rc.ToRR()
 	header := rr.Header().String()
@@ -125,7 +124,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "AZURE_ALIAS":
-		content += fmt.Sprintf(" type=%s", rc.AzureAlias["type"])
+		content += " type=" + rc.AzureAlias["type"]
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
 	case "DS":
@@ -179,12 +178,18 @@ func (rc *RecordConfig) SetTarget(s string) error {
 	return nil
 }
 
+// MustSetTarget is like SetTarget, but panics if an error occurs.
+// It should only be used in _test.go files and in the init() function.
+func (rc *RecordConfig) MustSetTarget(target string) {
+	if err := rc.SetTarget(target); err != nil {
+		panic(err)
+	}
+}
+
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.SetTarget(ip.String())
-
-	return nil
+	return rc.SetTarget(ip.String())
 }
 
 func (rc *RecordConfig) SetTargetA(s string) error {

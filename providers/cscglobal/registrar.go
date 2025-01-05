@@ -1,6 +1,7 @@
 package cscglobal
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -21,7 +22,7 @@ func (client *providerClient) GetRegistrarCorrections(dc *models.DomainConfig) (
 		if ns.Name[len(ns.Name)-1] == '.' {
 			// When this code was written ns.Name never included a single trailing dot.
 			// If that changes, the code should change too.
-			return nil, fmt.Errorf("name server includes a trailing dot, has the API changed?")
+			return nil, errors.New("name server includes a trailing dot, has the API changed?")
 		}
 		expected = append(expected, ns.Name)
 	}

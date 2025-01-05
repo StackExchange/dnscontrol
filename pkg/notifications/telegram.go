@@ -35,7 +35,7 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 		Text   string `json:"text"`
 	}
 
-	var url = fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BotToken)
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BotToken)
 
 	payload.ChatID, _ = strconv.ParseInt(s.ChatID, 10, 64)
 
@@ -50,7 +50,6 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 	marshaledPayload, _ := json.Marshal(payload)
 
 	_, _ = http.Post(url, "application/json", bytes.NewBuffer(marshaledPayload))
-
 }
 
 func (s *telegramNotifier) Done() {}

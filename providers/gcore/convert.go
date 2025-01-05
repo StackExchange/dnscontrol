@@ -79,6 +79,7 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) (
 		if label == "@" {
 			label = ""
 		}
+		_ = label // TODO(tlim): Why do we get label then do nothing with it?
 		key := r.Key()
 
 		if key != expectedKey {

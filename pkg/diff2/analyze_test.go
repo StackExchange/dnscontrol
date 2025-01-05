@@ -60,48 +60,55 @@ func makeRec(label, rtype, content string) *models.RecordConfig {
 	origin := "f.com"
 	r := models.RecordConfig{TTL: 300}
 	r.SetLabel(label, origin)
-	r.PopulateFromString(rtype, content, origin)
+	if err := r.PopulateFromString(rtype, content, origin); err != nil {
+		panic(err)
+	}
 	return &r
 }
+
 func makeRecTTL(label, rtype, content string, ttl uint32) *models.RecordConfig {
 	r := makeRec(label, rtype, content)
 	r.TTL = ttl
 	return r
 }
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               // [ 0]
-var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
-var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
-var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
-var testDataAMX10a = makeRec("laba", "MX", "10 laba")              // [ 1]
-var testDataCCa = makeRec("labc", "CNAME", "laba")                 // [ 2]
-var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             // [ 3]
-var e4 = makeRec("labe", "A", "10.10.10.16")                       // [ 4]
-var e5 = makeRec("labe", "A", "10.10.10.17")                       // [ 5]
-var e6 = makeRec("labe", "A", "10.10.10.18")                       // [ 6]
-var e7 = makeRec("labg", "NS", "laba")                             // [ 7]
-var e8 = makeRec("labg", "NS", "labb")                             // [ 8]
-var e9 = makeRec("labg", "NS", "labc")                             // [ 9]
-var e10 = makeRec("labg", "NS", "labe")                            // [10]
-var e11mx = makeRec("labh", "MX", "22 ttt")                        // [11]
-var e11 = makeRec("labh", "CNAME", "labd")                         // [11]
-var testDataApexMX1aaa = makeRec("", "MX", "1 aaa")
+var (
+	testDataAA1234       = makeRec("laba", "A", "1.2.3.4")         // [ 0]
+	testDataAA5678       = makeRec("laba", "A", "5.6.7.8")         //
+	testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
+	testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
+	testDataAMX10a       = makeRec("laba", "MX", "10 laba")        // [ 1]
+	testDataCCa          = makeRec("labc", "CNAME", "laba")        // [ 2]
+	testDataEA15         = makeRec("labe", "A", "10.10.10.15")     // [ 3]
+	e4                   = makeRec("labe", "A", "10.10.10.16")     // [ 4]
+	e5                   = makeRec("labe", "A", "10.10.10.17")     // [ 5]
+	e6                   = makeRec("labe", "A", "10.10.10.18")     // [ 6]
+	e7                   = makeRec("labg", "NS", "laba")           // [ 7]
+	e8                   = makeRec("labg", "NS", "labb")           // [ 8]
+	e9                   = makeRec("labg", "NS", "labc")           // [ 9]
+	e10                  = makeRec("labg", "NS", "labe")           // [10]
+	e11mx                = makeRec("labh", "MX", "22 ttt")         // [11]
+	e11                  = makeRec("labh", "CNAME", "labd")        // [11]
+	testDataApexMX1aaa   = makeRec("", "MX", "1 aaa")
+)
 
-var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") // [ 0']
-var testDataAA12345 = makeRec("laba", "A", "1.2.3.5")     // [ 1']
-var testDataAMX20b = makeRec("laba", "MX", "20 labb")     // [ 2']
-var d3 = makeRec("labe", "A", "10.10.10.95")              // [ 3']
-var d4 = makeRec("labe", "A", "10.10.10.96")              // [ 4']
-var d5 = makeRec("labe", "A", "10.10.10.97")              // [ 5']
-var d6 = makeRec("labe", "A", "10.10.10.98")              // [ 6']
-var d7 = makeRec("labf", "TXT", "foo")                    // [ 7']
-var d8 = makeRec("labg", "NS", "labf")                    // [ 8']
-var d9 = makeRec("labg", "NS", "laba")                    // [ 9']
-var d10 = makeRec("labg", "NS", "labe")                   // [10']
-var d11 = makeRec("labg", "NS", "labb")                   // [11']
-var d12 = makeRec("labh", "A", "1.2.3.4")                 // [12']
-var d13 = makeRec("labc", "CNAME", "labe")                // [13']
-var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
+var (
+	testDataAA1234clone = makeRec("laba", "A", "1.2.3.4")     // [ 0']
+	testDataAA12345     = makeRec("laba", "A", "1.2.3.5")     // [ 1']
+	testDataAMX20b      = makeRec("laba", "MX", "20 labb")    // [ 2']
+	d3                  = makeRec("labe", "A", "10.10.10.95") // [ 3']
+	d4                  = makeRec("labe", "A", "10.10.10.96") // [ 4']
+	d5                  = makeRec("labe", "A", "10.10.10.97") // [ 5']
+	d6                  = makeRec("labe", "A", "10.10.10.98") // [ 6']
+	d7                  = makeRec("labf", "TXT", "foo")       // [ 7']
+	d8                  = makeRec("labg", "NS", "labf")       // [ 8']
+	d9                  = makeRec("labg", "NS", "laba")       // [ 9']
+	d10                 = makeRec("labg", "NS", "labe")       // [10']
+	d11                 = makeRec("labg", "NS", "labb")       // [11']
+	d12                 = makeRec("labh", "A", "1.2.3.4")     // [12']
+	d13                 = makeRec("labc", "CNAME", "labe")    // [13']
+	testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
+)
 
 func justMsgString(cl ChangeList) string {
 	msgs := justMsgs(cl)
@@ -158,7 +165,6 @@ func Test_analyzeByRecordSet(t *testing.T) {
 		wantChangeZone  string
 		wantChangeCount int
 	}{
-
 		{
 			name: "oneequal",
 			args: args{
@@ -559,7 +565,6 @@ ChangeList: len=11
 		})
 
 		// NB(tlim): There is no analyzeByZone().  diff2.ByZone() uses analyzeByRecord().
-
 	}
 }
 
@@ -586,15 +591,15 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 }
 
 func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
-	var m = map[string]*targetConfig{}
+	m := map[string]*targetConfig{}
 	for _, v := range mkTargetConfig(x...) {
+		v := v
 		m[v.comparableFull] = &v
 	}
 	return m
 }
 
 func Test_diffTargets(t *testing.T) {
-
 	type args struct {
 		existing []targetConfig
 		desired  []targetConfig
@@ -604,7 +609,6 @@ func Test_diffTargets(t *testing.T) {
 		args args
 		want ChangeList
 	}{
-
 		{
 			name: "add1changettl",
 			args: args{
@@ -612,9 +616,10 @@ func Test_diffTargets(t *testing.T) {
 				desired:  mkTargetConfig(testDataAA5678ttl700, testDataAA1234ttl700),
 			},
 			want: ChangeList{
-				Change{Type: CHANGE,
-					Key: models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
-					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
+				Change{
+					Type: CHANGE,
+					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
+					New:  models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
 					Msgs: []string{
 						"± MODIFY-TTL laba.f.com A 5.6.7.8 ttl=(300->700)",
 						"+ CREATE laba.f.com A 1.2.3.4 ttl=700",
@@ -629,7 +634,7 @@ func Test_diffTargets(t *testing.T) {
 				existing: mkTargetConfig(testDataAA1234),
 				desired:  mkTargetConfig(testDataAA1234),
 			},
-			//want: ,
+			// want: ,
 		},
 
 		{
@@ -639,7 +644,8 @@ func Test_diffTargets(t *testing.T) {
 				desired:  mkTargetConfig(testDataAA1234, testDataAMX10a),
 			},
 			want: ChangeList{
-				Change{Type: CREATE,
+				Change{
+					Type: CREATE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					New:  models.Records{makeRec("laba", "MX", "10 laba.f.com.")},
 					Msgs: []string{"+ CREATE laba.f.com MX 10 laba.f.com. ttl=300"},
@@ -654,7 +660,8 @@ func Test_diffTargets(t *testing.T) {
 				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
-				Change{Type: DELETE,
+				Change{
+					Type: DELETE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					Old:  models.Records{makeRec("laba", "MX", "10 laba.f.com.")},
 					Msgs: []string{"- DELETE laba.f.com MX 10 laba.f.com. ttl=300"},
@@ -669,7 +676,8 @@ func Test_diffTargets(t *testing.T) {
 				desired:  mkTargetConfig(testDataAA1234, testDataAMX20b),
 			},
 			want: ChangeList{
-				Change{Type: CHANGE,
+				Change{
+					Type: CHANGE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					Old:  models.Records{testDataAMX10a},
 					New:  models.Records{testDataAMX20b},
@@ -685,7 +693,8 @@ func Test_diffTargets(t *testing.T) {
 				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
-				Change{Type: CHANGE,
+				Change{
+					Type: CHANGE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
 					Old:  models.Records{testDataAA1234, testDataAA5678},
 					New:  models.Records{testDataAA1234},
@@ -696,13 +705,13 @@ func Test_diffTargets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//fmt.Printf("DEBUG: Test %02d\n", i)
+			// fmt.Printf("DEBUG: Test %02d\n", i)
 			got := diffTargets(tt.args.existing, tt.args.desired)
 			g := strings.TrimSpace(justMsgString(got))
 			w := strings.TrimSpace(justMsgString(tt.want))
 			d := diff.Diff(g, w)
 			if d != "" {
-				//fmt.Printf("DEBUG: fail %q %q\n", g, w)
+				// fmt.Printf("DEBUG: fail %q %q\n", g, w)
 				t.Errorf("diffTargets()\n diff=%s", d)
 			}
 		})
@@ -720,7 +729,6 @@ func Test_removeCommon(t *testing.T) {
 		want  []targetConfig
 		want1 []targetConfig
 	}{
-
 		{
 			name: "same",
 			args: args{
@@ -772,7 +780,6 @@ func Test_filterBy(t *testing.T) {
 		args args
 		want []targetConfig
 	}{
-
 		{
 			name: "removeall",
 			args: args{
@@ -821,7 +828,6 @@ func Test_splitTTLOnly(t *testing.T) {
 		wantDesireDiff []targetConfig
 		wantChanges    string
 	}{
-
 		{
 			name: "simple",
 			args: args{
