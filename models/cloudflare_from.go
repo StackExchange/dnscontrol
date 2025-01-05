@@ -36,7 +36,7 @@ func mkPageRuleBlob(priority int, code uint16, when, then string) string {
 
 // MakeSingleRedirectFromRawRec updates a RecordConfig to be a
 // SINGLEREDIRECT using the data from a RawRecord.
-func makeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, then string) error {
+func MakeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, then string) error {
 	target := targetFromRaw(name, code, when, then)
 
 	rc.Type = "CF_SINGLE_REDIRECT"
