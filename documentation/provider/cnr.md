@@ -58,7 +58,7 @@ export CNR_ENTITY=OTE
 export CNR_UID=test.user
 export CNR_PW=test.passw0rd
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -provider CNR
+go test -v -verbose -profile CNR
 ```
 
 ## Usage
