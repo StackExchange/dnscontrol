@@ -79,7 +79,7 @@ func AddNSRecords(dc *models.DomainConfig) {
 			t += "."
 		}
 		if err := rc.SetTarget(t); err != nil {
-			panic(err)
+			fmt.Printf("failed AddNSRecords rc.SetTarget(%q): %s\n", err)
 		}
 
 		dc.Records = append(dc.Records, rc)
