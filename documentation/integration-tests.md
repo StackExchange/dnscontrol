@@ -8,7 +8,7 @@ For each step, it will run the config once and expect changes. It will run it ag
 
 ## Configuration
 
-`providers.json` should have an object for each provider type under test. This is identical to the json expected in `creds.json` for dnscontrol, except it also has a "domain" field specified for the domain to test. The domain does not even need to be registered for most providers. Note that `providers.json` expects environment variables to be specified with the relevant info.
+`profiles.json` should have an object for each provider type under test. This is identical to the json expected in `creds.json` for dnscontrol, except it also has a "domain" field specified for the domain to test. The domain does not even need to be registered for most providers. Note that `profiles.json` expects environment variables to be specified with the relevant info.
 
 ## Running a test
 
@@ -19,7 +19,7 @@ For each step, it will run the config once and expect changes. It will run it ag
 Example:
 
 ```shell
-egrep ROUTE53 providers.json
+egrep ROUTE53 profiles.json
 ```
 
 ```text
@@ -52,7 +52,7 @@ The `start` and `end` flags are both inclusive (i.e. `-start 16 -end 20` will ru
 For some providers it may be necessary to increase the test timeout using `-test`. The default is 10 minutes.  `0` is "no limit".  Typical Go durations work too (`1h` for 1 hour, etc).
 
 ```shell
-go test -timeout 0 -v -verbose -provider CLOUDNS 
+go test -timeout 0 -v -verbose -provider CLOUDNS
 ```
 
 FYI: The order of the flags matters.  Flags native to the Go testing suite (`-timeout` and `-v`) must come before flags that are part of the DNSControl integration tests (`-verbose`, `-provider`). Yeah, that sucks and is confusing.
