@@ -1917,9 +1917,9 @@ func makeTests() []*TestGroup {
 
 		// CLOUDFLAREAPI: Redirects:
 
-		// go test -v -verbose -provider CLOUDFLAREAPI                // PAGE_RULEs
-		// go test -v -verbose -provider CLOUDFLAREAPI -cfredirect=c  // Convert: Convert page rules to Single Redirect
-		// go test -v -verbose -provider CLOUDFLAREAPI -cfredirect=n  // New: Convert old to new Single Redirect
+		// go test -v -verbose -profile CLOUDFLAREAPI                // PAGE_RULEs
+		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=c  // Convert: Convert page rules to Single Redirect
+		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=n  // New: Convert old to new Single Redirect
 		// ProTip: Add this to just run this test:
 		//  -start 59 -end 60
 
