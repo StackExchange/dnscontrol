@@ -36,7 +36,7 @@ type DomainConfig struct {
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
-	//DNSSEC        bool              `json:"dnssec,omitempty"`
+	// DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:

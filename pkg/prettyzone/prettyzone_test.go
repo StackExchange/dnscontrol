@@ -63,6 +63,7 @@ func writeZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
 
 	return WriteZoneFileRC(w, rcs, origin, 0, nil)
 }
+
 func TestMostCommonTtl(t *testing.T) {
 	var records []dns.RR
 	var g, e uint32
@@ -119,7 +120,6 @@ func TestMostCommonTtl(t *testing.T) {
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
-
 }
 
 // func WriteZoneFile
@@ -325,7 +325,6 @@ func TestWriteZoneFileTxt(t *testing.T) {
 		// Reverse the process. Turn the zonefile into a list of records
 		parseAndRegen(t, buf, ez)
 	}
-
 }
 
 // Test 1 of each record type
@@ -556,7 +555,7 @@ func TestZoneLabelLess(t *testing.T) {
 		  zap
 	*/
 
-	var tests = []struct {
+	tests := []struct {
 		e1, e2   string
 		expected bool
 	}{
@@ -608,7 +607,7 @@ func TestZoneRrtypeLess(t *testing.T) {
 		In zonefiles we want to list SOAs, then NSs, then all others.
 	*/
 
-	var tests = []struct {
+	tests := []struct {
 		e1, e2   string
 		expected bool
 	}{

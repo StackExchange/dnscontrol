@@ -2,6 +2,7 @@ package luadns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -51,7 +52,7 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	l := &luadnsProvider{}
 	l.creds.email, l.creds.apikey = m["email"], m["apikey"]
 	if l.creds.email == "" || l.creds.apikey == "" {
-		return nil, fmt.Errorf("missing LuaDNS email or apikey")
+		return nil, errors.New("missing LuaDNS email or apikey")
 	}
 
 	// Get a domain to validate authentication

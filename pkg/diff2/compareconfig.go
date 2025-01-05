@@ -113,7 +113,6 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 
 // verifyCNAMEAssertions verifies assertions about CNAME updates ordering.
 func (cc *CompareConfig) verifyCNAMEAssertions() {
-
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
 	// careful with changes at a label that involve a CNAME.
@@ -121,7 +120,7 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 	//   OLD: a.example.com CNAME b
 	//   NEW: a.example.com A 1.2.3.4
 	//   We must delete the CNAME record THEN create the A record.  If we
-	//   blindly create the the A first, most APIs will reply with an error
+	//   blindly create the A first, most APIs will reply with an error
 	//   because there is already a CNAME at that label.
 	// Example 2:
 	//   OLD: a.example.com A 1.2.3.4
@@ -141,9 +140,7 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
-
 			if td.rType == "CNAME" {
-
 				// This assertion doesn't hold for a site that permits a
 				// recordset with both CNAMEs and other records, such as
 				// Cloudflare.
@@ -167,13 +164,11 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 			}
 		}
 	}
-
 }
 
 // Generate a string that can be used to compare this record to others
 // for equality.
 func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string) (string, string) {
-
 	// Start with the comparable string
 	comp := rc.ToComparableNoTTL()
 
@@ -204,7 +199,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 	z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
 
 	for _, rec := range z.Records {
-
 		key := rec.Key()
 		label := key.NameFQDN
 		rtype := key.Type

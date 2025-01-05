@@ -1,17 +1,20 @@
 package rfc4183
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
 
-var newmode bool
-var modeset bool
+var (
+	newmode bool
+	modeset bool
+)
 
 // SetCompatibilityMode sets REV() compatibility mode.
 func SetCompatibilityMode(m string) error {
 	if modeset {
-		return fmt.Errorf("ERROR: REVCOMPAT() already set")
+		return errors.New("ERROR: REVCOMPAT() already set")
 	}
 	modeset = true
 

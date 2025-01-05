@@ -53,7 +53,7 @@ func (m structMemberInt) structMember() {}
 
 // Uncomment this code in case of using it
 // It was commented out to satisfy `staticcheck` warnings about unused code
-//type structMemberBool struct {
+// type structMemberBool struct {
 //	Name  string `xml:"name"`
 //	Value bool   `xml:"value>boolean"`
 //}
@@ -165,7 +165,7 @@ func (zr *zoneRecord) GetZR() zRec {
 }
 
 func (zrec *zRec) SetZR() zoneRecord {
-	//This method creates a zoneRecord to receive from responses.
+	// This method creates a zoneRecord to receive from responses.
 	return zoneRecord{
 		XMLName: xml.Name{Local: "struct"},
 		Properties: []Property{
@@ -179,7 +179,7 @@ func (zrec *zRec) SetZR() zoneRecord {
 }
 
 func (zrec *zRec) SetPS() paramStruct {
-	//This method creates a paramStruct for sending in requests.
+	// This method creates a paramStruct for sending in requests.
 	return paramStruct{
 		XMLName: xml.Name{Local: "struct"},
 		StructMembers: []structMember{

@@ -1,4 +1,4 @@
-package internetbs
+package internets
 
 import (
 	"encoding/json"
@@ -29,7 +29,7 @@ type domainRecord struct {
 }
 
 func (c *internetbsProvider) getNameservers(domain string) ([]string, error) {
-	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
+	bodyString, err := c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
 		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %w", err)
 	}
@@ -47,14 +47,14 @@ func (c *internetbsProvider) updateNameservers(ns []string, domain string) error
 	rec["Domain"] = domain
 	rec["Ns_list"] = strings.Join(ns, ",")
 	if _, err := c.get("/Domain/Update", rec); err != nil {
-		return fmt.Errorf("failed NS update (Internet.bs): %s", err)
+		return fmt.Errorf("failed NS update (Internet.bs): %w", err)
 	}
 	return nil
 }
 
 func (c *internetbsProvider) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "https://api.internet.bs/"+endpoint, nil)
+	req, _ := http.NewRequest(http.MethodGet, "https://api.internet.bs/"+endpoint, nil)
 	q := req.URL.Query()
 
 	// Add auth params

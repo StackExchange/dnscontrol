@@ -2,6 +2,7 @@ package porkbun
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -48,7 +48,7 @@ func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error
 	c.apiKey, c.secretKey = m["api_key"], m["secret_key"]
 
 	if c.apiKey == "" || c.secretKey == "" {
-		return nil, fmt.Errorf("missing porkbun api_key or secret_key")
+		return nil, errors.New("missing porkbun api_key or secret_key")
 	}
 
 	return c, nil
@@ -229,7 +229,6 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 			return nil, err
 		}
 		existingRecords = append(existingRecords, newr)
-
 	}
 	for i := range forwards {
 		r := &forwards[i]

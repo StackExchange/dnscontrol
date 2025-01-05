@@ -42,6 +42,6 @@ func (s *session) Execute(cmd string) (string, string, error) {
 }
 
 func (s *session) Exit() {
-	_, _, _ = s.upstream.Execute(fmt.Sprintf("Disconnect-PSSession -Session $%s", s.name))
+	_, _, _ = s.upstream.Execute("Disconnect-PSSession -Session $" + s.name)
 	s.upstream.Exit()
 }

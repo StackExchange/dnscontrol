@@ -12,7 +12,6 @@ import (
 
 // extractProps and collects Name/Value pairs into maps for easier access.
 func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error) {
-
 	// Sadly this structure is dynamic JSON i.e. .Value could be an int, string,
 	// or a map. We peek at the first byte to guess at the contents.
 
@@ -113,11 +112,11 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		// updates.
 		return nil, nil
 		// If we weren't ignoring them, the code would look like this:
-		//rc.SetTargetSOA(sprops["PrimaryServer"], sprops["ResponsiblePerson"],
+		// rc.SetTargetSOA(sprops["PrimaryServer"], sprops["ResponsiblePerson"],
 		//	uprops["SerialNumber"], uprops["RefreshInterval"], uprops["RetryDelay"],
 		//	uprops["ExpireLimit"], uprops["MinimumTimeToLive"])
 	case "TXT":
-		//rc.SetTargetTXTString(sprops["DescriptiveText"])
+		// rc.SetTargetTXTString(sprops["DescriptiveText"])
 		err = rc.SetTargetTXT(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(

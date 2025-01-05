@@ -3,6 +3,7 @@ package domainnameshop
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -205,20 +206,20 @@ func (api *domainNameShopProvider) sendChangeRequest(method string, uri string, 
 	}
 
 	switch resp.StatusCode {
-	case 201:
+	case http.StatusCreated:
 		// Record is deleted
 		return nil
-	case 204:
-		//Update successful
+	case http.StatusNoContent:
+		// Update successful
 		return nil
-	case 400:
-		return fmt.Errorf("DNS record failed validation")
-	case 403:
-		return fmt.Errorf("not authorized")
-	case 404:
-		return fmt.Errorf("does not exist")
-	case 409:
-		return fmt.Errorf("collision")
+	case http.StatusBadRequest:
+		return errors.New("DNS record failed validation")
+	case http.StatusForbidden:
+		return errors.New("not authorized")
+	case http.StatusNotFound:
+		return errors.New("does not exist")
+	case http.StatusConflict:
+		return errors.New("collision")
 	default:
 		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
 	}

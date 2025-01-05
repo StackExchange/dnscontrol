@@ -84,7 +84,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	msgs, changed, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 
 	if changed {
-
 		msgs = append(msgs, "Zone update for "+domain)
 		msg := strings.Join(msgs, "\n")
 
@@ -94,7 +93,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-
 					nameServers := nameServers
 					zoneTTL := zoneTTL
 					resourceRecords := resourceRecords
@@ -107,7 +105,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 					return nil
 				},
 			})
-
 	}
 
 	return corrections, actualChangeCount, nil
@@ -119,7 +116,6 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 	var resourceRecords []*ResourceRecord
 
 	for _, record := range recs {
-
 		if record.Type == "NS" && record.Name == "@" {
 			// NS records for the APEX should be handled differently
 			nameServers = append(nameServers, &models.Nameserver{
@@ -169,7 +165,6 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 // GetNameservers returns the nameservers for a domain.
 func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
-
 	if err != nil {
 		return nil, err
 	}

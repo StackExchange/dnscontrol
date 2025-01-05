@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -63,7 +64,7 @@ var defaultNameServerNames = []string{
 // NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("missing Linode token")
+		return nil, errors.New("missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -74,7 +75,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid base URL for Linode")
+		return nil, errors.New("invalid base URL for Linode")
 	}
 
 	api := &linodeProvider{client: client, baseURL: baseURL}
@@ -315,7 +316,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 			return nil, fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
 		}
 
-		var serviceName, protocol = result[1], strings.ToLower(result[2])
+		serviceName, protocol := result[1], strings.ToLower(result[2])
 
 		req.Protocol = protocol
 		req.Service = serviceName

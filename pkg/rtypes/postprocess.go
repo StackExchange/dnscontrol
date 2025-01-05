@@ -8,11 +8,9 @@ import (
 )
 
 func PostProcess(domains []*models.DomainConfig) error {
-
 	var err error
 
 	for _, dc := range domains {
-
 		for _, rawRec := range dc.RawRecords {
 			rec := &models.RecordConfig{
 				Type:     rawRec.Type,
@@ -33,9 +31,8 @@ func PostProcess(domains []*models.DomainConfig) error {
 			}
 
 			// Call the proper initialize function.
-			// TODO(tlim): Good candiate for an interface or a lookup table.
+			// TODO(tlim): Good candidate for an interface or a lookup table.
 			switch rawRec.Type {
-
 			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 				err = cfsingleredirect.FromRaw(rec, rawRec.Args)
 				rec.SetLabel("@", dc.Name)

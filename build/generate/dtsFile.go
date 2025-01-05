@@ -68,5 +68,5 @@ func generateDTSFile(funcs string) error {
 		fileContent += strings.TrimRight(line, " \t") + "\n"
 	}
 	fileContent = strings.TrimRight(fileContent, "\n")
-	return os.WriteFile(join("commands", "types", "dnscontrol.d.ts"), []byte(fileContent+"\n"), 0644)
+	return os.WriteFile(join("commands", "types", "dnscontrol.d.ts"), []byte(fileContent+"\n"), 0o644)
 }

@@ -88,7 +88,7 @@ func TestPreprocess_DefaultProxy_Validation(t *testing.T) {
 }
 
 func TestIpRewriting(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		Given, Expected string
 		Proxy           string
 	}{
@@ -106,7 +106,8 @@ func TestIpRewriting(t *testing.T) {
 		Low:      net.ParseIP("1.2.3.0"),
 		High:     net.ParseIP("1.2.3.40"),
 		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
-		NewIPs:   nil}}
+		NewIPs:   nil,
+	}}
 	for _, tst := range tests {
 		rec := &models.RecordConfig{Type: "A", Metadata: map[string]string{metaProxy: tst.Proxy}}
 		rec.MustSetTarget(tst.Given)

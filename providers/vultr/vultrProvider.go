@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/net/idna"
-	"golang.org/x/oauth2"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/vultr/govultr/v2"
+	"golang.org/x/net/idna"
+	"golang.org/x/oauth2"
 )
 
 /*
@@ -68,7 +67,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, fmt.Errorf("missing Vultr API token")
+		return nil, errors.New("missing Vultr API token")
 	}
 
 	config := &oauth2.Config{}

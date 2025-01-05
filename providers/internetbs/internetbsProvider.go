@@ -1,6 +1,7 @@
-package internetbs
+package internets
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -26,7 +27,7 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	const providerName = "INTERNETBS"
+	const providerName = "INTERNETS"
 	const providerMaintainer = "@pragmaton"
 	providers.RegisterRegistrarType(providerName, newInternetBs, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
@@ -37,7 +38,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 
 	api.key, api.password = m["api-key"], m["password"]
 	if api.key == "" || api.password == "" {
-		return nil, fmt.Errorf("missing Internet.bs api-key and password")
+		return nil, errors.New("missing Internet.bs api-key and password")
 	}
 
 	return api, nil

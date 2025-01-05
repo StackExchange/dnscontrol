@@ -131,8 +131,8 @@ func NewClient(apiUser, apiPassword string, region string, modifyns bool, fetchn
 	}
 }
 
-//CRUD: Create, Read, Update, Delete
-//Create
+// CRUD: Create, Read, Update, Delete
+// Create
 
 // CreateRecordSimulate only prints info about a record addition. Used for debugging.
 func (c *APIClient) CreateRecordSimulate(domain string, subdomain string, record paramStruct) error {
@@ -164,8 +164,8 @@ func (c *APIClient) CreateRecord(domain string, subdomain string, record paramSt
 	return checkResponse(resp.Value)
 }
 
-//CRUD: Create, Read, Update, Delete
-//Read
+// CRUD: Create, Read, Update, Delete
+// Read
 
 // getDomains lists all domains.
 func (c *APIClient) getDomains() ([]domainObject, error) {
@@ -176,7 +176,7 @@ func (c *APIClient) getDomains() ([]domainObject, error) {
 			paramString{Value: c.APIPassword},
 		},
 	}
-	//domainObjectsResponse is basically a zoneRecordsResponse
+	// domainObjectsResponse is basically a zoneRecordsResponse
 	resp := &domainObjectsResponse{}
 
 	err := c.rpcCall(call, resp)
@@ -231,7 +231,7 @@ func (c *APIClient) GetDomainNS(domain string) ([]string, error) {
 		return []string{defaultNS1, defaultNS2}, nil
 	}
 
-	//fetch from the domain - an extra API call.
+	// fetch from the domain - an extra API call.
 	call := &methodCall{
 		MethodName: "getZoneRecords",
 		Params: []param{
@@ -264,8 +264,8 @@ func (c *APIClient) GetDomainNS(domain string) ([]string, error) {
 	return apexNSRecords, err
 }
 
-//CRUD: Create, Read, Update, Delete
-//Update
+// CRUD: Create, Read, Update, Delete
+// Update
 
 // UpdateRecordSimulate only prints info about a record update. Used for debugging.
 func (c *APIClient) UpdateRecordSimulate(domain string, subdomain string, rec paramStruct) error {
@@ -305,8 +305,8 @@ func (c *APIClient) UpdateRecord(domain string, subdomain string, rec paramStruc
 	return checkResponse(resp.Value)
 }
 
-//CRUD: Create, Read, Update, Delete
-//Delete
+// CRUD: Create, Read, Update, Delete
+// Delete
 
 // DeleteRecordSimulate only prints info about a record deletion. Used for debugging.
 func (c *APIClient) DeleteRecordSimulate(domain string, subdomain string, recordID uint32) error {
@@ -388,7 +388,7 @@ func (c *APIClient) rpcCall(call *methodCall, resp response) error {
 		return fmt.Errorf("error unmarshalling the API response XML body: %w", err)
 	}
 
-	//yes - loopia are stoopid - the 429 error code comes from the DB behind the http proxy
+	// yes - loopia are stoopid - the 429 error code comes from the DB behind the http proxy
 	c.requestRateLimiter.handleXMLResponse(resp)
 	if resp.faultCode() == 429 {
 		fmt.Printf("XMLresp: %+v\n", resp)
@@ -421,7 +421,7 @@ func (c *APIClient) httpPost(url string, bodyType string, body io.Reader) ([]byt
 
 	c.requestRateLimiter.handleResponse(*resp)
 	// retry the request when rate-limited
-	if resp.StatusCode == 429 {
+	if resp.StatusCode == http.StatusTooManyRequests {
 		c.requestRateLimiter.handleRateLimitedRequest()
 		cleanupResponseBody()
 	} else if resp.StatusCode != http.StatusOK {
@@ -451,8 +451,8 @@ func checkResponse(value string) error {
 
 // Rate limiting taken from Hetzner implementation. v nice.
 func getHomogenousDelay(headers http.Header, quotaName string) (time.Duration, error) {
-	//Loopia, to my knowledge, are useless, and do not include such headers.
-	//In the event that they one day do, use this.
+	// Loopia, to my knowledge, are useless, and do not include such headers.
+	// In the event that they one day do, use this.
 	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+cases.Title(language.Und, cases.NoLower).String((quotaName)))
 	if err != nil {
 		return 0, err
@@ -545,7 +545,7 @@ func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response)
 	}
 
 	delay := homogenousDelay
-	if resp.StatusCode == 429 {
+	if resp.StatusCode == http.StatusTooManyRequests {
 		retryAfterDelay, err := getRetryAfterDelay(resp.Header)
 		if err == nil {
 			delay = retryAfterDelay

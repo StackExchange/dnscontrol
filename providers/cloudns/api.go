@@ -95,8 +95,7 @@ func (c *cloudnsProvider) fetchAvailableNameservers() ([]string, error) {
 	defer c.Unlock()
 
 	if c.nameserversNames == nil {
-
-		var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
+		bodyString, err := c.get("/dns/available-name-servers.json", requestParams{})
 		if err != nil {
 			return nil, fmt.Errorf("failed fetching available nameservers list from ClouDNS: %w", err)
 		}
@@ -110,7 +109,6 @@ func (c *cloudnsProvider) fetchAvailableNameservers() ([]string, error) {
 			if nameserver.Type == "premium" {
 				c.nameserversNames = append(c.nameserversNames, nameserver.Name)
 			}
-
 		}
 	}
 	return c.nameserversNames, nil
@@ -122,7 +120,7 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) ([]uint32, erro
 		"domain-name": domain,
 	}
 
-	var bodyString, err = c.get("/dns/get-available-ttl.json", params)
+	bodyString, err := c.get("/dns/get-available-ttl.json", params)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching available TTL values list from ClouDNS: %w", err)
 	}
@@ -147,7 +145,7 @@ func (c *cloudnsProvider) fetchDomainIndex(name string) (string, bool, error) {
 				"rows-per-page": strconv.Itoa(rowsPerPage),
 			}
 			endpoint := "/dns/list-zones.json"
-			var bodyString, err = c.get(endpoint, params)
+			bodyString, err := c.get(endpoint, params)
 			if err != nil {
 				return "", false, fmt.Errorf("failed fetching domain list from ClouDNS: %w", err)
 			}
@@ -215,7 +213,7 @@ func (c *cloudnsProvider) modifyRecord(domainID string, recordID string, rec req
 func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 	params := requestParams{"domain-name": id}
 
-	var bodyString, err = c.get("/dns/records.json", params)
+	bodyString, err := c.get("/dns/records.json", params)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching record list from ClouDNS: %w", err)
 	}
@@ -235,7 +233,7 @@ func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 func (c *cloudnsProvider) isDnssecEnabled(id string) (bool, error) {
 	params := requestParams{"domain-name": id}
 
-	var bodyString, err = c.get("/dns/get-dnssec-ds-records.json", params)
+	bodyString, err := c.get("/dns/get-dnssec-ds-records.json", params)
 	if err != nil {
 		// DNSSEC disabled is indicated by an error fetching the DS records.
 		var errResp errorResponse
@@ -261,7 +259,7 @@ func (c *cloudnsProvider) setDnssec(id string, enabled bool) error {
 		endpoint = "/dns/deactivate-dnssec.json"
 	}
 
-	var _, err = c.get(endpoint, params)
+	_, err := c.get(endpoint, params)
 	if err != nil {
 		return fmt.Errorf("failed setting DNSSEC at ClouDNS: %w", err)
 	}
@@ -271,10 +269,10 @@ func (c *cloudnsProvider) setDnssec(id string, enabled bool) error {
 
 func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
+	req, _ := http.NewRequest(http.MethodGet, "https://api.cloudns.net"+endpoint, nil)
 	q := req.URL.Query()
 
-	//TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
+	// TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)
@@ -291,7 +289,6 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 		return nil, err
 	}
 	resp, err := client.Do(req)
-
 	if err != nil {
 		return []byte{}, err
 	}

@@ -11,9 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	errZoneNotFound = errors.Errorf("zone not found")
-)
+var errZoneNotFound = errors.Errorf("zone not found")
 
 type request struct {
 	AuthToken      string  `json:"authToken"`

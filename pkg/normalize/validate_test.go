@@ -9,7 +9,7 @@ import (
 )
 
 func TestSoaLabelAndTarget(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		isError bool
 		label   string
 		target  string
@@ -22,8 +22,10 @@ func TestSoaLabelAndTarget(t *testing.T) {
 	}
 	for _, test := range tests {
 		experiment := fmt.Sprintf("%s %s", test.label, test.target)
-		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{Type: "SOA",
-			SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com"})
+		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{
+			Type:      "SOA",
+			SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com",
+		})
 		err := checkTargets(rc, "foo.com")
 		if err != nil && !test.isError {
 			t.Errorf("%v: Error (%v)\n", experiment, err)
@@ -35,7 +37,7 @@ func TestSoaLabelAndTarget(t *testing.T) {
 }
 
 func TestCheckSoa(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		isError bool
 		expire  uint32
 		minttl  uint32
@@ -75,7 +77,7 @@ func TestCheckSoa(t *testing.T) {
 }
 
 func TestCheckLabel(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		label       string
 		rType       string
 		target      string
@@ -109,7 +111,6 @@ func TestCheckLabel(t *testing.T) {
 				t.Errorf("%02d: Expected error but got none", i)
 			}
 		})
-
 	}
 }
 
@@ -123,7 +124,7 @@ func checkError(t *testing.T, err error, shouldError bool, experiment string) {
 }
 
 func Test_assert_valid_ipv4(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		experiment string
 		isError    bool
 	}{
@@ -140,7 +141,7 @@ func Test_assert_valid_ipv4(t *testing.T) {
 }
 
 func Test_assert_valid_target(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		experiment string
 		isError    bool
 	}{
@@ -162,7 +163,7 @@ func Test_assert_valid_target(t *testing.T) {
 }
 
 func Test_transform_cname(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		experiment string
 		expected   string
 	}{
@@ -182,41 +183,71 @@ func Test_transform_cname(t *testing.T) {
 }
 
 func Test_transform_cname_strip(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		p        []string
 		expected string
 	}{
-		{[]string{"ai.meta.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
-			"ai.meta.stackexchange.com.internal."},
-		{[]string{"askubuntu.com.", "askubuntu.com", "com.internal", "com"},
-			"askubuntu.com.internal."},
-		{[]string{"blogoverflow.com.", "stackoverflow.com", "com.internal", "com"},
-			"blogoverflow.com.internal."},
-		{[]string{"careers.stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
-			"careers.stackoverflow.com.internal."},
-		{[]string{"chat.stackexchange.com.", "askubuntu.com", "com.internal", "com"},
-			"chat.stackexchange.com.internal."},
-		{[]string{"chat.stackexchange.com.", "stackoverflow.com", "com.internal", "com"},
-			"chat.stackexchange.com.internal."},
-		{[]string{"chat.stackexchange.com.", "superuser.com", "com.internal", "com"},
-			"chat.stackexchange.com.internal."},
-		{[]string{"sstatic.net.", "sstatic.net", "net.internal", "net"},
-			"sstatic.net.internal."},
-		{[]string{"stackapps.com.", "stackapps.com", "com.internal", "com"},
-			"stackapps.com.internal."},
-		{[]string{"stackexchange.com.", "stackexchange.com", "com.internal", "com"},
-			"stackexchange.com.internal."},
-		{[]string{"stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
-			"stackoverflow.com.internal."},
-		{[]string{"superuser.com.", "superuser.com", "com.internal", "com"},
-			"superuser.com.internal."},
-		{[]string{"teststackoverflow.com.", "teststackoverflow.com", "com.internal", "com"},
-			"teststackoverflow.com.internal."},
-		{[]string{"webapps.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
-			"webapps.stackexchange.com.internal."},
+		{
+			[]string{"ai.meta.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"ai.meta.stackexchange.com.internal.",
+		},
+		{
+			[]string{"askubuntu.com.", "askubuntu.com", "com.internal", "com"},
+			"askubuntu.com.internal.",
+		},
+		{
+			[]string{"blogoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"blogoverflow.com.internal.",
+		},
+		{
+			[]string{"careers.stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"careers.stackoverflow.com.internal.",
+		},
+		{
+			[]string{"chat.stackexchange.com.", "askubuntu.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal.",
+		},
+		{
+			[]string{"chat.stackexchange.com.", "stackoverflow.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal.",
+		},
+		{
+			[]string{"chat.stackexchange.com.", "superuser.com", "com.internal", "com"},
+			"chat.stackexchange.com.internal.",
+		},
+		{
+			[]string{"sstatic.net.", "sstatic.net", "net.internal", "net"},
+			"sstatic.net.internal.",
+		},
+		{
+			[]string{"stackapps.com.", "stackapps.com", "com.internal", "com"},
+			"stackapps.com.internal.",
+		},
+		{
+			[]string{"stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"stackexchange.com.internal.",
+		},
+		{
+			[]string{"stackoverflow.com.", "stackoverflow.com", "com.internal", "com"},
+			"stackoverflow.com.internal.",
+		},
+		{
+			[]string{"superuser.com.", "superuser.com", "com.internal", "com"},
+			"superuser.com.internal.",
+		},
+		{
+			[]string{"teststackoverflow.com.", "teststackoverflow.com", "com.internal", "com"},
+			"teststackoverflow.com.internal.",
+		},
+		{
+			[]string{"webapps.stackexchange.com.", "stackexchange.com", "com.internal", "com"},
+			"webapps.stackexchange.com.internal.",
+		},
 		//
-		{[]string{"sstatic.net.", "sstatic.net", "com.internal", "com"},
-			"sstatic.net.internal."},
+		{
+			[]string{"sstatic.net.", "sstatic.net", "com.internal", "com"},
+			"sstatic.net.internal.",
+		},
 	}
 
 	for _, test := range tests {
@@ -266,7 +297,7 @@ func TestNS1URLFWDInvalid(t *testing.T) {
 }
 
 func TestTransforms(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		givenIP         string
 		expectedRecords []string
 	}{
@@ -300,7 +331,7 @@ func TestTransforms(t *testing.T) {
 }
 
 func TestCNAMEMutex(t *testing.T) {
-	var recA = &models.RecordConfig{Type: "CNAME"}
+	recA := &models.RecordConfig{Type: "CNAME"}
 	recA.SetLabel("foo", "foo.example.com")
 	recA.MustSetTarget("example.com.")
 	tests := []struct {
@@ -315,7 +346,7 @@ func TestCNAMEMutex(t *testing.T) {
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
-			var recB = &models.RecordConfig{Type: tst.rType}
+			recB := &models.RecordConfig{Type: tst.rType}
 			recB.SetLabel(tst.name, "example.com")
 			recB.MustSetTarget("example2.com.")
 			dc := &models.DomainConfig{
@@ -479,7 +510,8 @@ func TestTLSAValidation(t *testing.T) {
 				RegistrarName: "BIND",
 				Records: []*models.RecordConfig{
 					makeRC("_443._tcp", "_443._tcp.example.com", "abcdef0", models.RecordConfig{
-						Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1}),
+						Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1,
+					}),
 				},
 			},
 		},

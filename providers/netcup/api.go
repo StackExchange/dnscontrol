@@ -13,8 +13,8 @@ const (
 )
 
 type netcupProvider struct {
-	//domainIndex      map[string]string
-	//nameserversNames []string
+	// domainIndex      map[string]string
+	// nameserversNames []string
 	credentials struct {
 		apikey         string
 		customernumber string
@@ -35,7 +35,7 @@ func (api *netcupProvider) createRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to create a record: %s", err)
+		return fmt.Errorf("error while trying to create a record: %w", err)
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (api *netcupProvider) deleteRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to delete a record: %s", err)
+		return fmt.Errorf("error while trying to delete a record: %w", err)
 	}
 	return nil
 }
@@ -71,7 +71,7 @@ func (api *netcupProvider) modifyRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to modify a record: %s", err)
+		return fmt.Errorf("error while trying to modify a record: %w", err)
 	}
 	return nil
 }
@@ -85,12 +85,12 @@ func (api *netcupProvider) getRecords(domain string) ([]record, error) {
 	}
 	rawJSON, err := api.get("infoDnsRecords", data)
 	if err != nil {
-		return nil, fmt.Errorf("failed while trying to login (netcup): %s", err)
+		return nil, fmt.Errorf("failed while trying to login (netcup): %w", err)
 	}
 
 	resp := &records{}
 	if err := json.Unmarshal(rawJSON, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal record response (netcup): %s", err)
+		return nil, fmt.Errorf("failed to unmarshal record response (netcup): %w", err)
 	}
 	return resp.Records, nil
 }
@@ -124,7 +124,7 @@ func (api *netcupProvider) get(action string, params interface{}) (json.RawMessa
 	reqJSON, _ := json.Marshal(reqParam)
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(reqJSON))
+	req, _ := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(reqJSON))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

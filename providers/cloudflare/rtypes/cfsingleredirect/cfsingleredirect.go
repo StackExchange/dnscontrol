@@ -16,7 +16,6 @@ func init() {
 
 // FromRaw convert RecordConfig using data from a RawRecordConfig's parameters.
 func FromRaw(rc *models.RecordConfig, items []any) error {
-
 	// Validate types.
 	if err := rtypecontrol.PaveArgs(items, "siss"); err != nil {
 		return err

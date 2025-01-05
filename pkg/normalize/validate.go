@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -35,7 +36,7 @@ func checkTarget(target string) error {
 		return nil
 	}
 	if target == "" {
-		return fmt.Errorf("empty target")
+		return errors.New("empty target")
 	}
 	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
@@ -53,7 +54,7 @@ func checkTarget(target string) error {
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
 	// #rtype_variations
-	var validTypes = map[string]bool{
+	validTypes := map[string]bool{
 		"A":                true,
 		"AAAA":             true,
 		"ALIAS":            false,
@@ -230,12 +231,12 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
-			return
+			return errs
 		}
 		errs = append(errs, fmt.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
 			rec.Type, domain, rec.GetLabel()))
 	}
-	return
+	return errs
 }
 
 func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
@@ -270,7 +271,8 @@ func transformLabel(label, suffixstrip string) (string, error) {
 
 // import_transform imports the records of one zone into another, modifying records along the way.
 func importTransform(srcDomain, dstDomain *models.DomainConfig,
-	transforms []transform.IPConversion, ttl uint32, suffixstrip string) error {
+	transforms []transform.IPConversion, ttl uint32, suffixstrip string,
+) error {
 	// Read srcDomain.Records, transform, and append to dstDomain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
 	// 2. Append destDomainname to the end of the label.
@@ -290,7 +292,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 		case "A":
 			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
 			if err != nil {
-				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.GetTargetField(), transforms, err)
+				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%w", rec.GetTargetField(), transforms, err)
 			}
 			for _, tr := range trs {
 				r := newRec(rec, ttl)
@@ -380,7 +382,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
-
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
@@ -468,7 +469,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if _, ok := rec.Metadata["ignore_name_disable_safety_check"]; ok {
 				errs = append(errs, errors.New("IGNORE_NAME_DISABLE_SAFETY_CHECK no longer supported. Please use DISABLE_IGNORE_SAFETY_CHECK for the entire domain"))
 			}
-
 		}
 	}
 
@@ -489,7 +489,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				}
 				c := config.FindDomain(rec.GetTargetField())
 				if c == nil {
-					err = fmt.Errorf("IMPORT_TRANSFORM mentions non-existant domain %q", rec.GetTargetField())
+					err = fmt.Errorf("IMPORT_TRANSFORM mentions non-existent domain %q", rec.GetTargetField())
 					errs = append(errs, err)
 				}
 				err = importTransform(c, domain, table, rec.TTL, suffixstrip)
@@ -685,7 +685,6 @@ func checkRecordSetHasMultipleTTLs(records []*models.RecordConfig) (errs []error
 func formatInconsistency(r map[string]map[uint32]bool) string {
 	var rtypeResult []string
 	for rtype, ttlsMap := range r {
-
 		ttlList := make([]int, len(ttlsMap))
 		i := 0
 		for k := range ttlsMap {
@@ -704,7 +703,7 @@ func formatInconsistency(r map[string]map[uint32]bool) string {
 func commaSepInts(list []int) string {
 	slist := make([]string, len(list))
 	for i, v := range list {
-		slist[i] = fmt.Sprintf("%d", v)
+		slist[i] = strconv.Itoa(v)
 	}
 	return strings.Join(slist, ",")
 }
@@ -715,7 +714,7 @@ func commaSepInts(list []int) string {
 var providerCapabilityChecks = []pairTypeCapability{
 	// #rtype_variations
 	// If a zone uses rType X, the provider must support capability Y.
-	//{"X", providers.Y},
+	// {"X", providers.Y},
 	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
@@ -811,7 +810,6 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 					break
 				}
 			}
-
 		}
 		if !hasAny {
 			continue

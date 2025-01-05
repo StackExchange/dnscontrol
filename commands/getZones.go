@@ -26,7 +26,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 			args.CredName = ctx.Args().Get(0)
 			arg1 := ctx.Args().Get(1)
 			args.ProviderName = arg1
-			// In v4.0, skip the first args.ZoneNames if it it equals "-".
+			// In v4.0, skip the first args.ZoneNames if it equals "-".
 			args.ZoneNames = ctx.Args().Slice()[2:]
 
 			if arg1 != "" && arg1 != "-" {
@@ -212,7 +212,6 @@ func GetZone(args GetZoneArgs) error {
 	dspVariableName := "DSP_" + strings.ToUpper(args.CredName)
 
 	if args.OutputFormat == "js" || args.OutputFormat == "djs" {
-
 		if args.ProviderName == "-" {
 			fmt.Fprintf(w, `var %s = NewDnsProvider("%s");`+"\n",
 				dspVariableName, args.CredName)
@@ -229,7 +228,6 @@ func GetZone(args GetZoneArgs) error {
 
 		z := prettyzone.PrettySort(recs, zoneName, 0, nil)
 		switch args.OutputFormat {
-
 		case "zone":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
 			if err := prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil); err != nil {
@@ -283,7 +281,6 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-
 				cfproxy := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
@@ -317,7 +314,6 @@ func jsonQuoted(i string) string {
 }
 
 func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
-
 	target := rec.GetTargetCombined()
 
 	ttl := uint32(0)

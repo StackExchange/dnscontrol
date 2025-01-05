@@ -56,7 +56,6 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			}
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
-
 				overhead1 := 0
 				// overhead1: The first segment of the SPF record
 				// needs to be shorter than the others due to the overhead of
@@ -111,7 +110,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 	}
 	// check if cache is stale
 	for _, e := range cache.ResolveErrors() {
-		errs = append(errs, Warning{fmt.Errorf("problem resolving SPF record: %s", e)})
+		errs = append(errs, Warning{fmt.Errorf("problem resolving SPF record: %w", e)})
 	}
 	if len(cache.ResolveErrors()) == 0 {
 		changed := cache.ChangedRecords()

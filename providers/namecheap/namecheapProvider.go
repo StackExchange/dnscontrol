@@ -2,6 +2,7 @@ package namecheap
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -68,7 +69,7 @@ func newProvider(m map[string]string, _ json.RawMessage) (*namecheapProvider, er
 	api := &namecheapProvider{}
 	api.APIUser, api.APIKEY = m["apiuser"], m["apikey"]
 	if api.APIKEY == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
+		return nil, errors.New("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.APIUser, api.APIKEY, api.APIUser)
 	// if BaseURL is specified in creds, use that url
@@ -142,7 +143,7 @@ func (n *namecheapProvider) GetZoneRecords(domain string, meta map[string]string
 		}
 	}
 
-	// Copying this from GetDomainCorrections.  This seems redundent
+	// Copying this from GetDomainCorrections.  This seems redundant
 	// with what toRecords() does.  Leaving it out.
 	// 	for _, r := range records.Hosts {
 	// 		if r.Type == "SOA" {
@@ -237,7 +238,6 @@ func (n *namecheapProvider) GetZoneRecords(domain string, meta map[string]string
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
-
 	// namecheap does not allow setting @ NS with basic DNS
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.GetLabel() == "@" {
@@ -315,7 +315,6 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 }
 
 func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
-
 	var recs []nc.DomainDNSHost
 
 	id := 1
@@ -385,7 +384,8 @@ func (n *namecheapProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]
 						return err
 					})
 					return
-				}},
+				},
+			},
 		}, nil
 	}
 	return nil, nil

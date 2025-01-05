@@ -15,7 +15,6 @@ import (
 )
 
 func generatePSCreateNaptr(dnsServerName, domain string, rec *models.RecordConfig) string {
-
 	var computername string
 	if dnsServerName != "" {
 		computername = escapePS(dnsServerName) + " "

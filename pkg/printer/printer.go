@@ -65,16 +65,14 @@ func PrintfIf(print bool, fmt string, args ...interface{}) {
 	DefaultPrinter.PrintfIf(print, fmt, args...)
 }
 
-var (
-	// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.
-	DefaultPrinter = &ConsolePrinter{
-		Reader:  bufio.NewReader(os.Stdin),
-		Writer:  os.Stdout,
-		Verbose: false,
-	}
-)
+// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.
+var DefaultPrinter = &ConsolePrinter{
+	Reader:  bufio.NewReader(os.Stdin),
+	Writer:  os.Stdout,
+	Verbose: false,
+}
 
-// SkinnyReport is true to to disable certain print statements.
+// SkinnyReport is true to disable certain print statements.
 // This is a hack until we have the new printer replacement. The long
 // variable name is easy to grep for when we make the conversion.
 var SkinnyReport = true

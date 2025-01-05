@@ -1,6 +1,7 @@
 package cfsingleredirect
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -9,10 +10,10 @@ import (
 // MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
 func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) error {
 	if rc == nil {
-		return fmt.Errorf("RecordConfig cannot be nil")
+		return errors.New("RecordConfig cannot be nil")
 	}
 	if when == "" || then == "" {
-		return fmt.Errorf("when and then parameters cannot be empty")
+		return errors.New("when and then parameters cannot be empty")
 	}
 
 	display := mkPageRuleBlob(priority, code, when, then)
@@ -106,8 +107,8 @@ func makeSingleRedirectFromConvert(rc *models.RecordConfig,
 	priority int,
 	prWhen, prThen string,
 	code uint16,
-	srName, srWhen, srThen string) error {
-
+	srName, srWhen, srThen string,
+) error {
 	srDisplay := targetFromConverted(priority, code, prWhen, prThen, srWhen, srThen)
 
 	rc.Type = SINGLEREDIRECT

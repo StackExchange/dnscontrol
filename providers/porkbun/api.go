@@ -3,6 +3,7 @@ package porkbun
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -70,7 +71,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	}
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", baseURL+endpoint, bytes.NewBuffer(personJSON))
+	req, _ := http.NewRequest(http.MethodPost, baseURL+endpoint, bytes.NewBuffer(personJSON))
 
 	retrycnt := 0
 
@@ -85,10 +86,10 @@ retry:
 
 	bodyString, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode == 202 || resp.StatusCode == 503 {
+	if resp.StatusCode == http.StatusAccepted || resp.StatusCode == http.StatusServiceUnavailable {
 		retrycnt++
 		if retrycnt == 5 {
-			return bodyString, fmt.Errorf("rate limiting exceeded")
+			return bodyString, errors.New("rate limiting exceeded")
 		}
 		printer.Warnf("Rate limiting.. waiting for %d second(s)\n", retrycnt*10)
 		time.Sleep(time.Second * time.Duration(retrycnt*10))
@@ -131,7 +132,7 @@ func (c *porkbunProvider) modifyRecord(domain string, recordID string, rec reque
 
 func (c *porkbunProvider) getRecords(domain string) ([]domainRecord, error) {
 	params := requestParams{}
-	var bodyString, err = c.post("/dns/retrieve/"+domain, params)
+	bodyString, err := c.post("/dns/retrieve/"+domain, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching record list from porkbun: %w", err)
 	}
@@ -179,7 +180,7 @@ func (c *porkbunProvider) modifyURLForwardingRecord(domain string, recordID stri
 
 func (c *porkbunProvider) getURLForwardingRecords(domain string) ([]domainRecord, error) {
 	params := requestParams{}
-	var bodyString, err = c.post("/domain/getUrlForwarding/"+domain, params)
+	bodyString, err := c.post("/domain/getUrlForwarding/"+domain, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching url forwarding record list from porkbun: %w", err)
 	}
@@ -195,7 +196,7 @@ func (c *porkbunProvider) getURLForwardingRecords(domain string) ([]domainRecord
 
 func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
 	params := requestParams{}
-	var bodyString, err = c.post(fmt.Sprintf("/domain/getNs/%s", domain), params)
+	bodyString, err := c.post("/domain/getNs/"+domain, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching nameserver list from porkbun: %w", err)
 	}
@@ -221,7 +222,7 @@ func (c *porkbunProvider) getNameservers(domain string) ([]string, error) {
 func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
 	params := requestParams{}
 	params["ns"] = ns
-	if _, err := c.post(fmt.Sprintf("/domain/updateNs/%s", domain), params); err != nil {
+	if _, err := c.post("/domain/updateNs/"+domain, params); err != nil {
 		return fmt.Errorf("failed NS update (porkbun): %w", err)
 	}
 	return nil
@@ -229,7 +230,7 @@ func (c *porkbunProvider) updateNameservers(ns []string, domain string) error {
 
 func (c *porkbunProvider) listAllDomains() ([]string, error) {
 	params := requestParams{}
-	var bodyString, err = c.post("/domain/listAll", params)
+	bodyString, err := c.post("/domain/listAll", params)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing all domains from porkbun: %w", err)
 	}

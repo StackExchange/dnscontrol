@@ -50,7 +50,7 @@ func (api *autoDNSProvider) request(method string, requestPath string, data inte
 	defer response.Body.Close()
 
 	responseText, _ := io.ReadAll(response.Body)
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 	}
 
@@ -89,7 +89,7 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	}
 
 	// if resolving of a systemNameServer succeeds the system contains this zone
-	var responseData, _ = api.request("GET", "zone/"+domain+"/"+systemNameServer.Name, nil)
+	responseData, _ := api.request("GET", "zone/"+domain+"/"+systemNameServer.Name, nil)
 	var responseObject JSONResponseDataZone
 	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
 	unmErr := json.Unmarshal(responseData, &responseObject)
@@ -102,7 +102,6 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 
 func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
-
 	if err != nil {
 		return err
 	}
@@ -129,7 +128,7 @@ func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*Resourc
 
 	zone.NameServers = append(zone.NameServers, nameServers...)
 
-	var _, putErr = api.request("PUT", "zone/"+domain+"/"+systemNameServer.Name, zone)
+	_, putErr := api.request("PUT", "zone/"+domain+"/"+systemNameServer.Name, zone)
 
 	if putErr != nil {
 		return putErr

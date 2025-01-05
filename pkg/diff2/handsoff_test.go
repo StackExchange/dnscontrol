@@ -11,7 +11,7 @@ import (
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
-// parseZoneContents is copied verbatium from providers/bind/bindProvider.go
+// parseZoneContents is copied verbatim from providers/bind/bindProvider.go
 // because import cycles and... tests shouldn't depend on huge modules.
 func parseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)

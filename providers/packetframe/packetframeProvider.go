@@ -2,6 +2,7 @@ package packetframe
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -24,12 +25,12 @@ type packetframeProvider struct {
 // newPacketframe creates the provider.
 func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("missing Packetframe token")
+		return nil, errors.New("missing Packetframe token")
 	}
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid base URL for Packetframe")
+		return nil, errors.New("invalid base URL for Packetframe")
 	}
 	client := http.Client{}
 
@@ -81,7 +82,6 @@ func (api *packetframeProvider) getZone(domain string) (*zoneInfo, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, fmt.Errorf("no such zone %q in Packetframe account", domain)

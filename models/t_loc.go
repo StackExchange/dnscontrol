@@ -31,8 +31,8 @@ func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint
 // for further processing to the LOC native 7 input binary format:
 // LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre
 func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
-
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
+) error {
 	err := rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
 	return err
@@ -95,7 +95,8 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 
 // calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields
 func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) error {
+	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
+) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
 	const LOCEquator uint64 = 0x80000000       // 1 << 31 // RFC 1876, Section 2.

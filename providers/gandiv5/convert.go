@@ -13,7 +13,6 @@ import (
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
 func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.RecordConfig, err error) {
-
 	// Gandi returns all the values for a given label/rtype pair in each
 	// livedns.DomainRecord.  In other words, if there are multiple A
 	// records for a label, all the IP addresses are listed in
@@ -48,7 +47,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 	// Gandi requires one ZoneRecord for each label:key tuple, therefore we
 	// might collapse many RecordConfig into one ZoneRecord.
 
-	var keys = map[models.RecordKey]*livedns.DomainRecord{}
+	keys := map[models.RecordKey]*livedns.DomainRecord{}
 	var zrs []livedns.DomainRecord
 
 	for _, r := range rcs {
@@ -76,7 +75,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 					zr.RrsetTTL = int(r.TTL)
 				}
 			}
-
 		}
 	}
 

@@ -70,10 +70,10 @@ func txtDecode(s string) (string, error) {
 	/*
 
 		BNF:
-			txttarget := `""`` | item | item ` ` item*
+			txttarget := `""`` | item | item ` item*
 			item := quoteditem | unquoteditem
 			quoteditem := quote innertxt quote
-			quote := `"`
+			:= `"`
 			innertxt := (escaped | printable )*
 			escaped := `\\` | `\"`
 			printable := (printable ASCII chars)
@@ -81,16 +81,14 @@ func txtDecode(s string) (string, error) {
 
 	*/
 
-	//printer.Printf("DEBUG: txtDecode txt inboundv=%v\n", s)
+	// printer.Printf("DEBUG: txtDecode txt inboundv=%v\n", s)
 
 	b := &bytes.Buffer{}
 	state := StateStart
 	for i, c := range s {
-
-		//printer.Printf("DEBUG: state=%v rune=%v\n", state, string(c))
+		// printer.Printf("DEBUG: state=%v rune=%v\n", state, string(c))
 
 		switch state {
-
 		case StateStart:
 			if c == ' ' {
 				// skip whitespace
@@ -133,18 +131,17 @@ func txtDecode(s string) (string, error) {
 			} else {
 				return "", fmt.Errorf("txtDecode expected whitespace after close quote q(%q)", s)
 			}
-
 		}
 	}
 
 	r := b.String()
-	//printer.Printf("DEBUG: txtDecode txt decodedv=%v\n", r)
+	// printer.Printf("DEBUG: txtDecode txt decodedv=%v\n", r)
 	return r, nil
 }
 
 // txtEncode encodes TXT strings in RFC1035 format as interpreted by Tom.
 func txtEncode(ts []string) string {
-	//printer.Printf("DEBUG: txtEncode txt outboundv=%v\n", ts)
+	// printer.Printf("DEBUG: txtEncode txt outboundv=%v\n", ts)
 	if (len(ts) == 0) || (strings.Join(ts, "") == "") {
 		return `""`
 	}
@@ -160,6 +157,6 @@ func txtEncode(ts []string) string {
 	}
 	t := strings.Join(r, ` `)
 
-	//printer.Printf("DEBUG: txtEncode txt  encodedv=%v\n", t)
+	// printer.Printf("DEBUG: txtEncode txt  encodedv=%v\n", t)
 	return t
 }

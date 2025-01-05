@@ -10,7 +10,7 @@ import (
 )
 
 func TestUnescape(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		experiment, expected string
 	}{
 		{"foo", "foo"},
@@ -42,13 +42,13 @@ func (b batch) String() string {
 func Test_changeBatcher(t *testing.T) {
 	genChanges := func(action r53Types.ChangeAction, typ r53Types.RRType, namePattern string, n int, targets ...string) []r53Types.Change {
 		changes := make([]r53Types.Change, n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			changes[i].Action = action
 			changes[i].ResourceRecordSet = &r53Types.ResourceRecordSet{
 				Name: aws.String(fmt.Sprintf(namePattern, i)),
 				Type: typ,
 			}
-			for j := 0; j < len(targets); j++ {
+			for j := range len(targets) {
 				changes[i].ResourceRecordSet.ResourceRecords = append(changes[i].ResourceRecordSet.ResourceRecords, r53Types.ResourceRecord{
 					Value: aws.String(targets[j]),
 				})

@@ -7,7 +7,7 @@ import (
 )
 
 func TestRecordsToNative_1(t *testing.T) {
-	var rcs = []*models.RecordConfig{{}}
+	rcs := []*models.RecordConfig{{}}
 	rcs[0].SetLabelFromFQDN("foo.example.com", "example.com")
 	rcs[0].Type = "A"
 	rcs[0].MustSetTarget("1.2.3.4")
@@ -20,11 +20,10 @@ func TestRecordsToNative_1(t *testing.T) {
 	if len(ns[0].RrsetValues) != 1 {
 		t.Errorf("len(ns[0].RrsetValues) != 1; got=%v", ns[0].RrsetValues)
 	}
-
 }
 
 func TestRecordsToNative_2(t *testing.T) {
-	var rcs = []*models.RecordConfig{{}, {}}
+	rcs := []*models.RecordConfig{{}, {}}
 	rcs[0].SetLabelFromFQDN("foo.example.com", "example.com")
 	rcs[0].Type = "A"
 	rcs[0].MustSetTarget("1.2.3.4")
@@ -40,5 +39,4 @@ func TestRecordsToNative_2(t *testing.T) {
 	if len(ns[0].RrsetValues) != 2 {
 		t.Errorf("len(ns[0].RrsetValues) != 2; got=%v", ns[0].RrsetValues)
 	}
-
 }

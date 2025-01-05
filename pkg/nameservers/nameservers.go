@@ -49,7 +49,7 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 		if n > 0 && n < take {
 			take = n
 		}
-		for i := 0; i < take; i++ {
+		for i := range take {
 			ns = append(ns, nss[i])
 		}
 	}

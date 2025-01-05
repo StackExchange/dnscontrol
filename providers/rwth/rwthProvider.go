@@ -2,7 +2,7 @@ package rwth
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
@@ -48,7 +48,7 @@ func init() {
 // New allocates a DNS service provider.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_token"] == "" {
-		return nil, fmt.Errorf("missing RWTH api_token")
+		return nil, errors.New("missing RWTH api_token")
 	}
 
 	api := &rwthProvider{apiToken: settings["api_token"]}

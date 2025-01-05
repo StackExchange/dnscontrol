@@ -15,6 +15,7 @@ Settings from `creds.json`:
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -95,7 +96,7 @@ func newHelper(m map[string]string, _ json.RawMessage) (*gandiv5Provider, error)
 	api.apikey = m["apikey"]
 	api.token = m["token"]
 	if (api.apikey == "") && (api.token == "") {
-		return nil, fmt.Errorf("missing Gandi personal access token (or apikey - deprecated)")
+		return nil, errors.New("missing Gandi personal access token (or apikey - deprecated)")
 	}
 	api.sharingid = m["sharing_id"]
 	api.apiurl = m["apiurl"]
@@ -220,7 +221,6 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 	}
 	for _, inst := range instructions {
 		switch inst.Type {
-
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
 
@@ -289,7 +289,6 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 		default:
 			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
-
 	}
 
 	return corrections, actualChangeCount, nil
@@ -343,7 +342,8 @@ func (client *gandiv5Provider) GetRegistrarCorrections(dc *models.DomainConfig) 
 				F: func() (err error) {
 					err = gd.UpdateNameServers(dc.Name, desiredNs)
 					return
-				}},
+				},
+			},
 		}, nil
 	}
 	return nil, nil

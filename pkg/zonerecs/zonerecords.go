@@ -8,7 +8,6 @@ import (
 // post-processing, and then calls GetZoneRecordsCorrections.  The
 // name sucks because all the good names were taken.
 func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*models.Correction, []*models.Correction, int, error) {
-
 	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
 		return nil, nil, 0, err

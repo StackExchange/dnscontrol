@@ -42,7 +42,6 @@ func (rc *RecordConfig) SetTargetSOA(ns, mbox string, serial, refresh, retry, ex
 
 // SetTargetSOAStrings is like SetTargetSOA but accepts strings.
 func (rc *RecordConfig) SetTargetSOAStrings(ns, mbox, serial, refresh, retry, expire, minttl string) error {
-
 	u32serial, err := strconv.ParseUint(serial, 10, 32)
 	if err != nil {
 		return fmt.Errorf("SOA serial '%v' is invalid: %w", serial, err)

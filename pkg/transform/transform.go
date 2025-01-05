@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -22,7 +23,7 @@ func ipToUint(i net.IP) (uint32, error) {
 	return r, nil
 }
 
-// UintToIP convert a 32-bit into into a net.IP.
+// UintToIP convert a 32-bit into a net.IP.
 func UintToIP(u uint32) net.IP {
 	return net.IPv4(
 		byte((u>>24)&255),
@@ -51,7 +52,6 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 		parseList := func(s string) ([]net.IP, error) {
 			ips := []net.IP{}
 			for _, ip := range strings.Split(s, ",") {
-
 				if ip == "" {
 					continue
 				}
@@ -77,7 +77,7 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)", ri, con.Low, con.High, transforms)
 		}
 		if len(con.NewBases) > 0 && len(con.NewIPs) > 0 {
-			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
+			return nil, errors.New("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
 		}
 		result = append(result, con)
 	}

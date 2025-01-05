@@ -15,6 +15,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -103,8 +104,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	}
 	if config["update-mode"] != "" {
 		switch config["update-mode"] {
-		case "tcp",
-			"tcp-tls":
+		case "tcp", "tcp-tls":
 			api.updateMode = config["update-mode"]
 		case "udp":
 			api.updateMode = ""
@@ -116,8 +116,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	}
 	if config["transfer-mode"] != "" {
 		switch config["transfer-mode"] {
-		case "tcp",
-			"tcp-tls":
+		case "tcp", "tcp-tls":
 			api.transferMode = config["transfer-mode"]
 		default:
 			printer.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
@@ -133,7 +132,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	} else if len(api.nameservers) != 0 {
 		api.master = api.nameservers[0].Name + ":53"
 	} else {
-		return nil, fmt.Errorf("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
+		return nil, errors.New("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
 	}
 	if config["transfer-server"] != "" {
 		api.transferServer = config["transfer-server"]
@@ -265,8 +264,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 	request.SetAxfr(domain + ".")
 
 	if c.transferKey != nil {
-		transfer.TsigSecret =
-			map[string]string{c.transferKey.id: c.transferKey.secret}
+		transfer.TsigSecret = map[string]string{c.transferKey.id: c.transferKey.secret}
 		request.SetTsig(c.transferKey.id, c.transferKey.algo, 300, time.Now().Unix())
 		if c.transferKey.algo == dns.HmacMD5 {
 			transfer.TsigProvider = md5Provider(c.transferKey.secret)
@@ -291,12 +289,10 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 		rawRecords = append(rawRecords, msg.RR...)
 	}
 	return rawRecords, nil
-
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {
 		return nil, err
@@ -360,7 +356,6 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 	}
 
 	return foundRecords, nil
-
 }
 
 // BuildCorrection return a Correction for a given set of DDNS update and the corresponding message.
@@ -373,13 +368,11 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	return &models.Correction{
 		Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
 		F: func() error {
-
 			client := new(dns.Client)
 			client.Net = c.updateMode
 			client.Timeout = dnsTimeout
 			if c.updateKey != nil {
-				client.TsigSecret =
-					map[string]string{c.updateKey.id: c.updateKey.secret}
+				client.TsigSecret = map[string]string{c.updateKey.id: c.updateKey.secret}
 				update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
 				if c.updateKey.algo == dns.HmacMD5 {
 					client.TsigProvider = md5Provider(c.updateKey.secret)
@@ -474,7 +467,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	// the last NS record of a zone. Since modifying a record is
 	// implemented by successively a deletion of the old record and an
 	// insertion of the new one, then modifying all the NS record of a
-	// zone might will fail (even if the the deletion and insertion
+	// zone might will fail (even if the deletion and insertion
 	// are grouped in a single batched update).
 	//
 	// To avoid this case, we will first insert a dummy NS record,

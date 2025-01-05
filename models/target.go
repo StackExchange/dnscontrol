@@ -45,7 +45,6 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
-
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
@@ -112,7 +111,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "AZURE_ALIAS":
-		content += fmt.Sprintf(" type=%s", rc.AzureAlias["type"])
+		content += " type=" + rc.AzureAlias["type"]
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
 	case "DS":

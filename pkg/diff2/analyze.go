@@ -89,7 +89,6 @@ func analyzeByLabel(cc *CompareConfig) (ChangeList, int) {
 }
 
 func analyzeByRecord(cc *CompareConfig) (ChangeList, int) {
-
 	var instructions ChangeList
 	var actualChangeCount int
 	// For each label, for each type at that label, see if there are any changes.
@@ -136,7 +135,6 @@ func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change 
 }
 
 func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetConfig) {
-
 	// Sort by comparableFull.
 	sort.Slice(existing, func(i, j int) bool { return existing[i].comparableFull < existing[j].comparableFull })
 	sort.Slice(desired, func(i, j int) bool { return desired[i].comparableFull < desired[j].comparableFull })
@@ -159,7 +157,6 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 // findTTLChanges finds the records that ONLY change their TTL. For those, generate a Change.
 // Remove such items from the list.
 func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetConfig, ChangeList) {
-
 	if (len(existing) == 0) || (len(desired) == 0) {
 		return existing, desired, nil
 	}
@@ -251,8 +248,7 @@ func humanDiff(a, b targetConfig) string {
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
-
-	//fmt.Printf("DEBUG: diffTargets(\nexisting=%v\ndesired=%v\nDEBUG.\n", existing, desired)
+	// fmt.Printf("DEBUG: diffTargets(\nexisting=%v\ndesired=%v\nDEBUG.\n", existing, desired)
 
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {
@@ -277,7 +273,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 	// the remaining chunks are changes (regardless of TTL)
 	mi := min(len(existing), len(desired))
-	for i := 0; i < mi; i++ {
+	for i := range mi {
 		er := existing[i].rec
 		dr := desired[i].rec
 

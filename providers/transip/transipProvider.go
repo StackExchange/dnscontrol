@@ -2,6 +2,7 @@ package transip
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -60,13 +61,12 @@ var features = providers.DocumentationNotes{
 
 // NewTransip creates a new TransIP provider.
 func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-
 	if m["AccessToken"] == "" && m["PrivateKey"] == "" {
-		return nil, fmt.Errorf("no TransIP AccessToken or PrivateKey provided")
+		return nil, errors.New("no TransIP AccessToken or PrivateKey provided")
 	}
 
 	if m["PrivateKey"] != "" && m["AccountName"] == "" {
-		return nil, fmt.Errorf("no AccountName given, required for authenticating with PrivateKey")
+		return nil, errors.New("no AccountName given, required for authenticating with PrivateKey")
 	}
 
 	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
@@ -74,7 +74,6 @@ func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 		AccountName:      m["AccountName"],
 		PrivateKeyReader: strings.NewReader(m["PrivateKey"]),
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("TransIP client fail %s", err.Error())
 	}
@@ -115,7 +114,6 @@ func (n *transipProvider) ListZones() ([]string, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, int, error) {
-
 	removeOtherNS(dc)
 
 	corrections, actualChangeCount, err := n.getCorrectionsUsingDiff2(dc, curRecords)
@@ -131,7 +129,6 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	}
 
 	for _, change := range instructions {
-
 		switch change.Type {
 		case diff2.DELETE:
 			oldEntries, err := recordsToNative(change.Old, true)
@@ -181,7 +178,6 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 		case diff2.REPORT:
 			corrections = append(corrections, change.CreateMessage())
 		}
-
 	}
 
 	return corrections, actualChangeCount, nil
@@ -228,7 +224,6 @@ func recordsToNative(records models.Records, useOriginal bool) ([]domain.DNSEntr
 
 	for iX, record := range records {
 		entry, err := recordToNative(record, useOriginal)
-
 		if err != nil {
 			return nil, err
 		}
@@ -242,7 +237,6 @@ func recordsToNative(records models.Records, useOriginal bool) ([]domain.DNSEntr
 func wrapChangeFunction(entries []domain.DNSEntry, executer func(rec domain.DNSEntry) error) func() error {
 	return func() error {
 		for _, entry := range entries {
-
 			if err := executer(entry); err != nil {
 				return err
 			}
@@ -270,7 +264,7 @@ func canDirectApplyDNSEntries(change diff2.Change) bool {
 		return false
 	}
 
-	for i := 0; i < len(desired); i++ {
+	for i := range len(desired) {
 		if !canUpdateDNSEntry(desired[i], existing[i]) {
 			return false
 		}
@@ -284,13 +278,12 @@ func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConf
 }
 
 func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
-
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if err != nil {
 		return nil, err
 	}
 
-	var existingRecords = []*models.RecordConfig{}
+	existingRecords := []*models.RecordConfig{}
 	for _, entry := range entries {
 		rts, err := nativeToRecord(entry, domainName)
 		if err != nil {

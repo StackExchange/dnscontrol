@@ -4,6 +4,7 @@ package acme
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -114,7 +115,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 
 	var client *lego.Client
 
-	var action = func() (*certificate.Resource, error) {
+	action := func() (*certificate.Resource, error) {
 		return client.Certificate.Obtain(certificate.ObtainRequest{
 			Bundle:     true,
 			Domains:    cfg.Names,
@@ -133,7 +134,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		namesOK := dnsNamesEqual(cfg.Names, names)
 		if daysLeft >= float64(renewUnder) && namesOK {
 			log.Println("Nothing to do")
-			//nothing to do
+			// nothing to do
 			return false, nil
 		}
 		if !namesOK {
@@ -176,7 +177,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error) {
 	block, _ := pem.Decode(pemBytes)
 	if block == nil {
-		return nil, 0, fmt.Errorf("invalid certificate PEM data")
+		return nil, 0, errors.New("invalid certificate PEM data")
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
@@ -187,7 +188,7 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	// may be decommed eventually, and since there are no unit tests,
 	// I'm not excited about making this change.
 	// var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
-	var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
+	daysLeft := float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }
 
@@ -225,7 +226,7 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 		nameservers.AddNSRecords(d)
 
 		// make sure we have the latest config before we change anything.
-		// alternately, we could avoid a lot of this trouble if we really really trusted no-purge in all cases
+		// alternately, we could avoid a lot of this trouble if we really trusted no-purge in all cases
 		if err := c.ensureNoPendingCorrections(d); err != nil {
 			return err
 		}

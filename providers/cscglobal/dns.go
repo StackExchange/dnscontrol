@@ -76,7 +76,6 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
-
 	toReport, creates, dels, modifications, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, 0, err
@@ -144,8 +143,8 @@ func makePurge(cor diff.Correlation) zoneResourceRecordEdit {
 	}
 
 	if cor.Existing.Type == "CAA" {
-		var tagValue = cor.Existing.CaaTag
-		//printer.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		tagValue := cor.Existing.CaaTag
+		// printer.Printf("DEBUG: CAA TAG = %q\n", tagValue)
 		zer.CurrentTag = &tagValue
 	}
 
@@ -173,8 +172,8 @@ func makeAdd(cre diff.Correlation) zoneResourceRecordEdit {
 
 	switch rec.Type {
 	case "CAA":
-		var tagValue = rec.CaaTag
-		var flagValue = rec.CaaFlag
+		tagValue := rec.CaaTag
+		flagValue := rec.CaaFlag
 		zer.NewTag = &tagValue
 		zer.NewFlag = &flagValue
 	case "MX":
@@ -222,7 +221,7 @@ func makeEdit(m diff.Correlation) zoneResourceRecordEdit {
 
 	switch old.Type {
 	case "CAA":
-		var tagValue = old.CaaTag
+		tagValue := old.CaaTag
 		zer.CurrentTag = &tagValue
 		if old.CaaTag != rec.CaaTag || old.CaaFlag != rec.CaaFlag || old.TTL != rec.TTL {
 			// If anything changed, we need to update both tag and flag.

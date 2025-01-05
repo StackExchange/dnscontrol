@@ -10,7 +10,6 @@ import (
 // a in-addr name.  IP addresses are assumed to be /32 or /128 CIDR blocks.
 // CIDR host bits are changed to 0s.
 func ReverseDomainName(cidr string) (string, error) {
-
 	// Mask missing? Add it.
 	if !strings.Contains(cidr, "/") {
 		a, err := netip.ParseAddr(cidr)
@@ -75,5 +74,4 @@ func ReverseDomainName(cidr string) (string, error) {
 		return fmt.Sprintf("%d-%d.%d.in-addr.arpa", y, m, x), nil
 	}
 	return "", fmt.Errorf("fewer than 8 mask bits is not reasonable: %v", cidr)
-
 }

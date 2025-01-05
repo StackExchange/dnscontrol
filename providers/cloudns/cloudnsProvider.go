@@ -2,6 +2,7 @@ package cloudns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
 	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
-		return nil, fmt.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
+		return nil, errors.New("missing ClouDNS auth-id or sub-auth-id and auth-password")
 	}
 
 	return c, nil
@@ -228,7 +229,6 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return corrections, actualChangeCount, nil
-
 }
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
@@ -287,7 +287,6 @@ func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
 
 // parses the ClouDNS format into our standard RecordConfig
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
-
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 	weight, _ := strconv.ParseUint(r.Weight, 10, 16)

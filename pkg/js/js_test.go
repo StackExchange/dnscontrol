@@ -59,8 +59,8 @@ func TestParsedFiles(t *testing.T) {
 			}
 
 			for _, dc := range conf.Domains {
-				//fmt.Printf("DEBUG: PrettySort: domain=%q #rec=%d\n", dc.Name, len(dc.Records))
-				//fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
+				// fmt.Printf("DEBUG: PrettySort: domain=%q #rec=%d\n", dc.Name, len(dc.Records))
+				// fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
 				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
 				dc.Records = ps.Records
 				if len(dc.Records) == 0 {
@@ -70,7 +70,7 @@ func TestParsedFiles(t *testing.T) {
 
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
-				var pcfg = map[string]string{}
+				pcfg := map[string]string{}
 
 				if dProv.Type == "-" {
 					// Pretend any "look up provider type in creds.json" results
@@ -105,7 +105,7 @@ func TestParsedFiles(t *testing.T) {
 			as := string(actualJSON)
 			_, _ = es, as
 			// Leave behind the actual result:
-			if err := os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644); err != nil {
+			if err := os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0o644); err != nil {
 				t.Fatal(err)
 			}
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
@@ -133,7 +133,7 @@ func TestParsedFiles(t *testing.T) {
 				as := actualZone
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
-					if err := os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644); err != nil {
+					if err := os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0o644); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -142,9 +142,7 @@ func TestParsedFiles(t *testing.T) {
 			if dCount > 0 && (len(conf.Domains) != dCount) {
 				t.Fatal(fmt.Errorf("only %d of %d domains in %q have zonefiles", dCount, len(conf.Domains), name))
 			}
-
 		})
-
 	}
 }
 
@@ -167,6 +165,5 @@ func TestErrors(t *testing.T) {
 				t.Fatal("Expected error but found none")
 			}
 		})
-
 	}
 }

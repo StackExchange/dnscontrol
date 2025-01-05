@@ -2,7 +2,7 @@ package hetzner
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -47,7 +47,7 @@ func init() {
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	apiKey := settings["api_key"]
 	if apiKey == "" {
-		return nil, fmt.Errorf("missing HETZNER api_key")
+		return nil, errors.New("missing HETZNER api_key")
 	}
 
 	return &hetznerProvider{

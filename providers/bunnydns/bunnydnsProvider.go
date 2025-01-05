@@ -2,7 +2,7 @@ package bunnydns
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -50,7 +50,7 @@ func init() {
 func newBunnydns(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	apiKey := settings["api_key"]
 	if apiKey == "" {
-		return nil, fmt.Errorf("missing BUNNY_DNS api_key")
+		return nil, errors.New("missing BUNNY_DNS api_key")
 	}
 
 	return &bunnydnsProvider{

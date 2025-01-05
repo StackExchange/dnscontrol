@@ -2,13 +2,12 @@ package powerdns
 
 import (
 	"encoding/json"
-	"fmt"
-
-	"github.com/mittwald/go-powerdns/apis/zones"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	pdns "github.com/mittwald/go-powerdns"
+	"github.com/mittwald/go-powerdns/apis/zones"
 )
 
 var features = providers.DocumentationNotes{
@@ -63,17 +62,17 @@ func newDSP(m map[string]string, metadata json.RawMessage) (providers.DNSService
 
 	dsp.APIKey = m["apiKey"]
 	if dsp.APIKey == "" {
-		return nil, fmt.Errorf("PowerDNS API Key is required")
+		return nil, errors.New("PowerDNS API Key is required")
 	}
 
 	dsp.APIUrl = m["apiUrl"]
 	if dsp.APIUrl == "" {
-		return nil, fmt.Errorf("PowerDNS API URL is required")
+		return nil, errors.New("PowerDNS API URL is required")
 	}
 
 	dsp.ServerName = m["serverName"]
 	if dsp.ServerName == "" {
-		return nil, fmt.Errorf("PowerDNS server name is required")
+		return nil, errors.New("PowerDNS server name is required")
 	}
 
 	// load js config

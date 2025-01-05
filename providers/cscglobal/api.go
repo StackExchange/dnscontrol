@@ -3,6 +3,7 @@ package cscglobal
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -170,7 +171,7 @@ type zoneResourceRecordEdit = struct {
 	// See: https://emretanriverdi.medium.com/json-serialization-in-go-a27aeeb968de
 	CurrentTag *string `json:"currentTag,omitempty"`
 	NewTag     *string `json:"newTag,omitempty"`  // "" needs to be sent explicitly.
-	NewFlag    *uint8  `json:"newFlag,omitempty"` // 0 needs to be sent explictly.
+	NewFlag    *uint8  `json:"newFlag,omitempty"` // 0 needs to be sent explicitly.
 }
 
 type zoneEditRequest = struct {
@@ -200,7 +201,7 @@ type zoneEditStatusResultZoneEditStatusResult struct {
 }
 
 func (client *providerClient) getNameservers(domain string) ([]string, error) {
-	var bodyString, err = client.get("/domains/" + domain)
+	bodyString, err := client.get("/domains/" + domain)
 	if err != nil {
 		return nil, err
 	}
@@ -314,14 +315,14 @@ type domainsResult struct {
 }
 
 func (client *providerClient) getDomains() ([]string, error) {
-	var bodyString, err = client.get("/domains")
+	bodyString, err := client.get("/domains")
 	if err != nil {
 		return nil, err
 	}
 
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: GETDOMAINS bodystring  = %s\n", bodyString)
-	//printer.Printf("------------------\n")
+	// printer.Printf("------------------\n")
+	// printer.Printf("DEBUG: GETDOMAINS bodystring  = %s\n", bodyString)
+	// printer.Printf("------------------\n")
 
 	var dr domainsResult
 	if err := json.Unmarshal(bodyString, &dr); err != nil {
@@ -329,7 +330,7 @@ func (client *providerClient) getDomains() ([]string, error) {
 	}
 
 	if dr.Meta.Pages > 1 {
-		return nil, fmt.Errorf("cscglobal getDomains: unimplemented paganation")
+		return nil, errors.New("cscglobal getDomains: unimplemented paganation")
 	}
 
 	var r []string
@@ -337,15 +338,15 @@ func (client *providerClient) getDomains() ([]string, error) {
 		r = append(r, d.QualifiedDomainName)
 	}
 
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
-	//printer.Printf("------------------\n")
+	// printer.Printf("------------------\n")
+	// printer.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
+	// printer.Printf("------------------\n")
 
 	return r, nil
 }
 
 func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, error) {
-	var bodyString, err = client.get("/zones/" + zone)
+	bodyString, err := client.get("/zones/" + zone)
 	if err != nil {
 		return nil, err
 	}
@@ -368,7 +369,6 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 // It is best to send all the changes for a zone in one big request
 // because the zone is locked until the change propagates.
 func (client *providerClient) sendZoneEditRequest(domainname string, edits []zoneResourceRecordEdit) error {
-
 	req := zoneEditRequest{
 		ZoneName: domainname,
 		Edits:    &edits,
@@ -390,7 +390,7 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	var errResp zoneEditRequestResultZoneEditRequestResult
 	err = json.Unmarshal(responseBody, &errResp)
 	if err != nil {
-		return fmt.Errorf("CSC Global API error: %s DATA: %q", err, errResp)
+		return fmt.Errorf("CSC Global API error: %w DATA: %q", err, errResp)
 	}
 	if errResp.Content.Status != "SUCCESS" {
 		return fmt.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
@@ -417,15 +417,15 @@ func (client *providerClient) waitRequestURL(statusURL string, returnEarly bool)
 	for {
 		statusBody, err := client.geturl(statusURL)
 		if err != nil {
-			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
+			return fmt.Errorf("CSC Global API error: %w DATA: %q", err, statusBody)
 		}
 		var statusResp zoneEditStatusResultZoneEditStatusResult
 		err = json.Unmarshal(statusBody, &statusResp)
 		if err != nil {
-			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
+			return fmt.Errorf("CSC Global API error: %w DATA: %q", err, statusBody)
 		}
 		status, msg := statusResp.Content.Status, statusResp.Content.ErrorDescription
-		//fmt.Printf("DEBUG: stat %s %s\n", statusURL, status)
+		// fmt.Printf("DEBUG: stat %s %s\n", statusURL, status)
 
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			dur := time.Since(t1).Round(time.Second)
@@ -480,13 +480,13 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 
 // clearRequests returns after all pending requests for domain are
 // no longer blocking new mutations.  Requests in the FAILED state are
-// cancelled (because CSCG wants a human to acknowlege failures but
+// cancelled (because CSCG wants a human to acknowledge failures but
 // thankfully permits an API call to pretend to be the human).
 func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
 		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
 	}
-	var bodyString, err = client.get(`/zones/edits?size=99999&filter=zoneName==` + domain)
+	bodyString, err := client.get(`/zones/edits?size=99999&filter=zoneName==` + domain)
 	if err != nil {
 		return err
 	}
@@ -499,7 +499,7 @@ func (client *providerClient) clearRequests(domain string) error {
 	// TODO(tlim): Ignore what's beyond the first page.
 	// It is unlikely that there are active jobs beyond the first page.
 	// If there are, the next edit will just wait.
-	//if dr.Meta.Pages > 1 {
+	// if dr.Meta.Pages > 1 {
 	//	return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	//}
 
@@ -525,7 +525,6 @@ func (client *providerClient) clearRequests(domain string) error {
 		default:
 			return fmt.Errorf("cscglobal ClearRequests: unimplemented status: %q", ze.Status)
 		}
-
 	}
 
 	return nil
@@ -538,7 +537,7 @@ func (client *providerClient) cancelRequest(reqID string) error {
 
 func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, error) {
 	hclient := &http.Client{}
-	req, _ := http.NewRequest("PUT", apiBase+endpoint, bytes.NewReader(requestBody))
+	req, _ := http.NewRequest(http.MethodPut, apiBase+endpoint, bytes.NewReader(requestBody))
 
 	// Add headers
 	req.Header.Add("apikey", client.key)
@@ -552,7 +551,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		return bodyString, nil
 	}
 
@@ -572,8 +571,8 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	hclient := &http.Client{}
-	//printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
-	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)
+	// printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
+	req, _ := http.NewRequest(http.MethodDelete, apiBase+endpoint, nil)
 
 	// Add headers
 	req.Header.Add("apikey", client.key)
@@ -587,11 +586,11 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode == 200 {
-		//printer.Printf("DEBUG: Delete successful (200)\n")
+	if resp.StatusCode == http.StatusOK {
+		// printer.Printf("DEBUG: Delete successful (200)\n")
 		return bodyString, nil
 	}
-	//printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
+	// printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
 
 	// Got a error response from API, see if it's json format
 	var errResp errorResponse
@@ -609,7 +608,7 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 
 func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte, error) {
 	hclient := &http.Client{}
-	req, _ := http.NewRequest("POST", apiBase+endpoint, bytes.NewBuffer(requestBody))
+	req, _ := http.NewRequest(http.MethodPost, apiBase+endpoint, bytes.NewBuffer(requestBody))
 
 	// Add headers
 	req.Header.Add("apikey", client.key)
@@ -623,11 +622,11 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
-	//printer.Printf("POST RESPONSE = %s\n", bodyString)
-	//printer.Printf("------------------\n")
-	if resp.StatusCode == 201 {
+	// printer.Printf("------------------\n")
+	// printer.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
+	// printer.Printf("POST RESPONSE = %s\n", bodyString)
+	// printer.Printf("------------------\n")
+	if resp.StatusCode == http.StatusCreated {
 		return bodyString, nil
 	}
 
@@ -651,7 +650,7 @@ func (client *providerClient) get(endpoint string) ([]byte, error) {
 
 func (client *providerClient) geturl(url string) ([]byte, error) {
 	hclient := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	// Add headers
 	req.Header.Add("apikey", client.key)
@@ -659,7 +658,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 	req.Header.Add("Accept", "application/json")
 
 	// Default CSCGlobal rate limit is twenty requests per second
-	var backoff = time.Second
+	backoff := time.Second
 
 	const maxBackoff = time.Second * 25
 
@@ -670,11 +669,11 @@ retry:
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		return bodyString, nil
 	}
 
-	if resp.StatusCode == 400 {
+	if resp.StatusCode == http.StatusBadRequest {
 		// 400, error message is in the body as plain text
 		// Apparently CSCGlobal uses status code 400 for rate limit, grump
 

@@ -9,7 +9,7 @@ func Test_generate_serial_1(t *testing.T) {
 	d1, _ := time.Parse("20060102", "20150108")
 	d4, _ := time.Parse("20060102", "40150108")
 	d12, _ := time.Parse("20060102", "20151231")
-	var tests = []struct {
+	tests := []struct {
 		Given    uint32
 		Today    time.Time
 		Expected uint32

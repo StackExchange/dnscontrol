@@ -1,6 +1,7 @@
 package rejectif
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 // TxtHasBackslash audits TXT records for strings that contains one or more backslashes.
 func TxtHasBackslash(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), `\`) {
-		return fmt.Errorf("txtstring contains backslashes")
+		return errors.New("txtstring contains backslashes")
 	}
 	return nil
 }
@@ -20,7 +21,7 @@ func TxtHasBackslash(rc *models.RecordConfig) error {
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "`") {
-		return fmt.Errorf("txtstring contains backtick")
+		return errors.New("txtstring contains backtick")
 	}
 	return nil
 }
@@ -28,7 +29,7 @@ func TxtHasBackticks(rc *models.RecordConfig) error {
 // TxtHasDoubleQuotes audits TXT records for strings that contain doublequotes.
 func TxtHasDoubleQuotes(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), `"`) {
-		return fmt.Errorf("txtstring contains doublequotes")
+		return errors.New("txtstring contains doublequotes")
 	}
 	return nil
 }
@@ -36,7 +37,7 @@ func TxtHasDoubleQuotes(rc *models.RecordConfig) error {
 // TxtHasSemicolon audits TXT records for strings that contain backticks.
 func TxtHasSemicolon(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), ";") {
-		return fmt.Errorf("txtstring contains semicolon")
+		return errors.New("txtstring contains semicolon")
 	}
 	return nil
 }
@@ -44,7 +45,7 @@ func TxtHasSemicolon(rc *models.RecordConfig) error {
 // TxtHasSingleQuotes audits TXT records for strings that contain single-quotes.
 func TxtHasSingleQuotes(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "'") {
-		return fmt.Errorf("txtstring contains single-quotes")
+		return errors.New("txtstring contains single-quotes")
 	}
 	return nil
 }
@@ -53,7 +54,7 @@ func TxtHasSingleQuotes(rc *models.RecordConfig) error {
 func TxtHasTrailingSpace(rc *models.RecordConfig) error {
 	txt := rc.GetTargetTXTJoined()
 	if txt != "" && txt[ultimate(txt)] == ' ' {
-		return fmt.Errorf("txtstring ends with space")
+		return errors.New("txtstring ends with space")
 	}
 	return nil
 }
@@ -61,7 +62,7 @@ func TxtHasTrailingSpace(rc *models.RecordConfig) error {
 // TxtHasUnpairedDoubleQuotes audits TXT records for strings that contain unpaired doublequotes.
 func TxtHasUnpairedDoubleQuotes(rc *models.RecordConfig) error {
 	if strings.Count(rc.GetTargetTXTJoined(), `"`)%2 == 1 {
-		return fmt.Errorf("txtstring contains unpaired doublequotes")
+		return errors.New("txtstring contains unpaired doublequotes")
 	}
 	return nil
 }
@@ -69,7 +70,7 @@ func TxtHasUnpairedDoubleQuotes(rc *models.RecordConfig) error {
 // TxtIsEmpty audits TXT records for empty strings.
 func TxtIsEmpty(rc *models.RecordConfig) error {
 	if len(rc.GetTargetTXTJoined()) == 0 {
-		return fmt.Errorf("txtstring is empty")
+		return errors.New("txtstring is empty")
 	}
 	return nil
 }
@@ -90,7 +91,7 @@ func TxtLongerThan(maxLength int) func(rc *models.RecordConfig) error {
 func TxtStartsOrEndsWithSpaces(rc *models.RecordConfig) error {
 	txt := rc.GetTargetTXTJoined()
 	if len(txt) > 0 && (txt[0] == ' ' || txt[len(txt)-1] == ' ') {
-		return fmt.Errorf("txtstring starts or ends with spaces")
+		return errors.New("txtstring starts or ends with spaces")
 	}
 	return nil
 }

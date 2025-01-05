@@ -127,12 +127,12 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*opensrsProvide
 	api.APIKey = m["apikey"]
 
 	if api.APIKey == "" {
-		return nil, fmt.Errorf("openSRS apikey must be provided")
+		return nil, errors.New("openSRS apikey must be provided")
 	}
 
 	api.UserName = m["username"]
 	if api.UserName == "" {
-		return nil, fmt.Errorf("openSRS username key must be provided")
+		return nil, errors.New("openSRS username key must be provided")
 	}
 
 	if m["baseurl"] != "" {

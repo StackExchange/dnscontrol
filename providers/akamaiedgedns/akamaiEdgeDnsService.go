@@ -9,6 +9,7 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 */
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -19,7 +20,6 @@ import (
 
 // initialize initializes the "Akamai OPEN EdgeGrid" library
 func initialize(clientSecret string, host string, accessToken string, clientToken string) {
-
 	eg := edgegrid.Config{
 		ClientSecret: clientSecret,
 		Host:         host,
@@ -68,7 +68,7 @@ func createZone(zonename string, contractID string, groupID string) error {
 	// Indirectly create NS and SOA records
 	err = zone.SaveChangelist()
 	if err != nil {
-		return fmt.Errorf("zone initialization failed. SOA and NS records need to be created")
+		return errors.New("zone initialization failed. SOA and NS records need to be created")
 	}
 	err = zone.SubmitChangelist()
 	if err != nil {
@@ -188,7 +188,7 @@ func getAuthorities(contractID string) ([]string, error) {
 // rcToRs converts DNSControl RecordConfig records to an AkamaiEdgeDNS recordset.
 func rcToRs(records []*models.RecordConfig) (*dnsv2.RecordBody, error) {
 	if len(records) == 0 {
-		return nil, fmt.Errorf("no records to replace")
+		return nil, errors.New("no records to replace")
 	}
 
 	akaRecord := &dnsv2.RecordBody{
@@ -242,7 +242,7 @@ func deleteRecordset(records []*models.RecordConfig, zonename string) error {
 	err = akaRecord.Delete(zonename, true)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
-			return fmt.Errorf("recordset not found")
+			return errors.New("recordset not found")
 		}
 		return fmt.Errorf("failed to delete recordset. error: %s", err.Error())
 	}
