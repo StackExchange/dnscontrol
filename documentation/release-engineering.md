@@ -7,10 +7,16 @@ GitHub Actions (GHA) will do most of the work for you. You will need to edit the
 Please change the version number as appropriate.  Substitute (for example)
 `v4.2.0` any place you see `$VERSION` in this doc.
 
-## Step 0. Update dependencies
+## Prepare the git repository
 
 ```shell
 git checkout main
+git pull
+```
+
+## Step 0. Update dependencies
+
+```shell
 git checkout -b update_deps
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
@@ -21,8 +27,6 @@ git commit -a -m "CHORE: Update dependencies"
 ## Step 1. Rebuild generated files
 
 ```shell
-git checkout main
-git pull
 go fmt ./...
 bin/fmtjson $(find . -type f -name \*.json -print)
 go generate ./...
@@ -32,7 +36,7 @@ git status
 
 There should be no modified files. If there are, check them in then start over from the beginning:
 
-```
+```shell
 git checkout -b gogenerate
 git commit -a -m "Update generated files"
 ```
