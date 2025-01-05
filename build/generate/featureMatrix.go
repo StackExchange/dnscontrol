@@ -19,7 +19,7 @@ func generateFeatureMatrix() error {
 	}
 
 	replaceInlineContent(
-		"documentation/providers.md",
+		"documentation/provider/index.md",
 		"<!-- provider-matrix-start -->",
 		"<!-- provider-matrix-end -->",
 		markdownTable,
@@ -38,7 +38,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 		featureMap := matrix.Providers[providerName]
 
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`](provider/"+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
 		for _, featureName := range matrix.Features {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
