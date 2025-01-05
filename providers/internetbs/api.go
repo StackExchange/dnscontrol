@@ -1,4 +1,4 @@
-package internets
+package internetbs
 
 import (
 	"encoding/json"
