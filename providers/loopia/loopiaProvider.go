@@ -370,7 +370,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 
 // debugRecords prints a list of RecordConfig.
 func debugRecords(note string, recs []*models.RecordConfig) {
-	printer.Debugf(note)
+	printer.Debugf("%s", note)
 	for k, v := range recs {
 		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}

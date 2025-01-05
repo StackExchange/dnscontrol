@@ -60,7 +60,7 @@ func generatePSDeleteNaptr(dnsServerName, domain string, rec *models.RecordConfi
 
 // decoding
 
-func decodeRecordDataNaptr(s string) models.RecordConfig {
+func decodeRecordDataNaptr(s string) (models.RecordConfig, error) {
 	// These strings look like this:
 	// C8AFB0B30153075349502B4432540474657374165F7369702E5F7463702E6578616D706C652E6F72672E
 	// The first 2 groups of 16 bits (4 hex digits) are uinet16.
@@ -74,14 +74,16 @@ func decodeRecordDataNaptr(s string) models.RecordConfig {
 	s, rc.NaptrService = eatString(s)
 	s, rc.NaptrRegexp = eatString(s)
 	s, targ := eatString(s)
-	rc.SetTarget(targ)
+	if err := rc.SetTarget(targ); err != nil {
+		return models.RecordConfig{}, err
+	}
 
 	// At this point we should have consumed the entire string.
 	if s != "" {
 		printer.Printf("WARNING: REMAINDER:=%q\n", s)
 	}
 
-	return rc
+	return rc, nil
 }
 
 // eatUint16 consumes the first 16 bits of the string, returns it as a

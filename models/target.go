@@ -82,7 +82,7 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
 	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
-		rc.SetTarget(".")
+		rc.MustSetTarget(".")
 	}
 	rr := rc.ToRR()
 	header := rr.Header().String()
@@ -153,9 +153,16 @@ func (rc *RecordConfig) SetTarget(target string) error {
 	return nil
 }
 
+// MustSetTarget is like SetTarget, but panics if an error occurs.
+// It should only be used in _test.go files and in the init() function.
+func (rc *RecordConfig) MustSetTarget(target string) {
+	if err := rc.SetTarget(target); err != nil {
+		panic(err)
+	}
+}
+
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.SetTarget(ip.String())
-	return nil
+	return rc.SetTarget(ip.String())
 }

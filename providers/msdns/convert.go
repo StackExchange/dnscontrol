@@ -76,27 +76,30 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		if ip == nil || ip.To4() == nil {
 			return nil, fmt.Errorf("invalid IP in A record: %q", contents)
 		}
-		rc.SetTargetIP(ip)
+		err = rc.SetTargetIP(ip)
 	case "AAAA":
 		contents := sprops["IPv6Address"]
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
 			return nil, fmt.Errorf("invalid IPv6 in AAAA record: %q", contents)
 		}
-		rc.SetTargetIP(ip)
+		err = rc.SetTargetIP(ip)
 	case "CNAME":
-		rc.SetTarget(sprops["HostNameAlias"])
+		err = rc.SetTarget(sprops["HostNameAlias"])
 	case "MX":
-		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
+		err = rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
 	case "NS":
-		rc.SetTarget(sprops["NameServer"])
+		err = rc.SetTarget(sprops["NameServer"])
 	case "NAPTR":
-		n := decodeRecordDataNaptr(sprops["Data"])
-		rc.SetTargetNAPTR(n.NaptrOrder, n.NaptrPreference, n.NaptrFlags, n.NaptrService, n.NaptrRegexp, n.GetTargetField())
+		n, e := decodeRecordDataNaptr(sprops["Data"])
+		if e != nil {
+			return nil, err
+		}
+		err = rc.SetTargetNAPTR(n.NaptrOrder, n.NaptrPreference, n.NaptrFlags, n.NaptrService, n.NaptrRegexp, n.GetTargetField())
 	case "PTR":
-		rc.SetTarget(sprops["PtrDomainName"])
+		err = rc.SetTarget(sprops["PtrDomainName"])
 	case "SRV":
-		rc.SetTargetSRV(
+		err = rc.SetTargetSRV(
 			uint16(uprops["Priority"]),
 			uint16(uprops["Weight"]),
 			uint16(uprops["Port"]),
@@ -115,11 +118,14 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		//	uprops["ExpireLimit"], uprops["MinimumTimeToLive"])
 	case "TXT":
 		//rc.SetTargetTXTString(sprops["DescriptiveText"])
-		rc.SetTargetTXT(sprops["DescriptiveText"])
+		err = rc.SetTargetTXT(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(
 			"msdns/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
 			rtype, sprops, uprops)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return rc, nil

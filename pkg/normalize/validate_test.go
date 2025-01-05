@@ -231,7 +231,7 @@ func TestNSAtRoot(t *testing.T) {
 	// do not allow ns records for @
 	rec := &models.RecordConfig{Type: "NS"}
 	rec.SetLabel("test", "foo.com")
-	rec.SetTarget("ns1.name.com.")
+	rec.MustSetTarget("ns1.name.com.")
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {
 		t.Error("Expect no error with ns record on subdomain")
@@ -246,7 +246,7 @@ func TestNSAtRoot(t *testing.T) {
 func TestNS1URLFWDValid(t *testing.T) {
 	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
 	rec.SetLabel("test1", "foo.com")
-	rec.SetTarget("/ http://example.com 302 2 0")
+	rec.MustSetTarget("/ http://example.com 302 2 0")
 
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {
@@ -257,7 +257,7 @@ func TestNS1URLFWDValid(t *testing.T) {
 func TestNS1URLFWDInvalid(t *testing.T) {
 	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
 	rec.SetLabel("test2", "foo.com")
-	rec.SetTarget("/ http://example.com 302 2")
+	rec.MustSetTarget("/ http://example.com 302 2")
 
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) == 0 {
@@ -302,7 +302,7 @@ func TestTransforms(t *testing.T) {
 func TestCNAMEMutex(t *testing.T) {
 	var recA = &models.RecordConfig{Type: "CNAME"}
 	recA.SetLabel("foo", "foo.example.com")
-	recA.SetTarget("example.com.")
+	recA.MustSetTarget("example.com.")
 	tests := []struct {
 		rType string
 		name  string
@@ -317,7 +317,7 @@ func TestCNAMEMutex(t *testing.T) {
 		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
 			var recB = &models.RecordConfig{Type: tst.rType}
 			recB.SetLabel(tst.name, "example.com")
-			recB.SetTarget("example2.com.")
+			recB.MustSetTarget("example2.com.")
 			dc := &models.DomainConfig{
 				Name:    "example.com",
 				Records: []*models.RecordConfig{recA, recB},

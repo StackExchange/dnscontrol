@@ -23,7 +23,10 @@ const (
 )
 
 func init() {
-	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
+	// go up a directory so we helpers.js is in a consistent place.
+	if err := os.Chdir("../.."); err != nil {
+		panic(err)
+	}
 }
 
 func TestParsedFiles(t *testing.T) {
@@ -101,8 +104,10 @@ func TestParsedFiles(t *testing.T) {
 			es := string(expectedJSON)
 			as := string(actualJSON)
 			_, _ = es, as
-			// When debugging, leave behind the actual result:
-			os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644) // Leave behind the actual result:
+			// Leave behind the actual result:
+			if err := os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644); err != nil {
+				t.Fatal(err)
+			}
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
@@ -128,7 +133,9 @@ func TestParsedFiles(t *testing.T) {
 				as := actualZone
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
-					os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644)
+					if err := os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644); err != nil {
+						t.Fatal(err)
+					}
 				}
 				testifyrequire.Equal(t, es, as, "EXPECTING %q =\n```\n%s```", zoneFile, as)
 			}

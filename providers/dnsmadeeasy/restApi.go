@@ -7,11 +7,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 const (
@@ -222,7 +223,7 @@ retry:
 
 	if restApi.dumpHTTPRequest {
 		dump, _ := httputil.DumpRequest(req, true)
-		printer.Printf(string(dump))
+		printer.Printf("%s", string(dump))
 	}
 
 	res, err := restApi.httpClient.Do(req)
@@ -234,7 +235,7 @@ retry:
 
 	if restApi.dumpHTTPResponse {
 		dump, _ := httputil.DumpResponse(res, true)
-		printer.Printf(string(dump))
+		printer.Printf("%s", string(dump))
 	}
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {

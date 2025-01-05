@@ -47,7 +47,7 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 
 	existing, err := parseZoneContents(existingZone, "f.com", "no_file_name")
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
@@ -68,13 +68,16 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 		absences[i].SetLabel(j.GetLabel(), "f.com")
 	}
 
-	ignored, purged := processIgnoreAndNoPurge(
+	ignored, purged, err := processIgnoreAndNoPurge(
 		"f.com",
 		existing, desired,
 		absences,
 		unmanagedConfigs,
 		noPurge,
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ignoredRecs := showRecs(ignored)
 	purgedRecs := showRecs(purged)

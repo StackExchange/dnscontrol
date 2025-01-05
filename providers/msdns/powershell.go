@@ -21,8 +21,8 @@ type psHandle struct {
 
 func eLog(s string) {
 	f, _ := os.OpenFile("powershell.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	f.WriteString(s)
-	f.WriteString("\n")
+	_, _ = f.WriteString(s)
+	_, _ = f.WriteString("\n")
 	f.Close()
 }
 

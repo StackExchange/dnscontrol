@@ -13,7 +13,7 @@ func TestR53Test_1(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	w := `R53_ALIAS("foo", "A", "bar")`
@@ -28,7 +28,7 @@ func TestR53Test_1ttl(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	w := `R53_ALIAS("foo", "A", "bar", TTL(321))`
@@ -43,7 +43,7 @@ func TestR53Test_2(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"
@@ -59,7 +59,7 @@ func TestR53Test_2ttl(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"
@@ -75,7 +75,7 @@ func TestR53Test_3(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["evaluate_target_health"] = "true"
@@ -91,7 +91,7 @@ func TestR53Test_3ttl(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["evaluate_target_health"] = "true"
@@ -107,7 +107,7 @@ func TestR53Test_4(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"
@@ -124,7 +124,7 @@ func TestR53Test_4ttl(t *testing.T) {
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
 	}
-	rec.SetTarget("bar")
+	rec.MustSetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"

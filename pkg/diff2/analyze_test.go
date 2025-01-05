@@ -60,7 +60,9 @@ func makeRec(label, rtype, content string) *models.RecordConfig {
 	origin := "f.com"
 	r := models.RecordConfig{TTL: 300}
 	r.SetLabel(label, origin)
-	r.PopulateFromString(rtype, content, origin)
+	if err := r.PopulateFromString(rtype, content, origin); err != nil {
+		panic(err)
+	}
 	return &r
 }
 func makeRecTTL(label, rtype, content string, ttl uint32) *models.RecordConfig {

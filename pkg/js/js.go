@@ -69,16 +69,26 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 		}
 	}
 
-	vm.Set("require", require)
-	vm.Set("REV", reverse)
-	vm.Set("REVCOMPAT", reverseCompat)
-	vm.Set("glob", listFiles) // used for require_glob()
-	vm.Set("PANIC", jsPanic)
-	vm.Set("HASH", hashFunc)
+	// add functions to otto
+	functions := map[string]interface{}{
+		"require":   require,
+		"REV":       reverse,
+		"REVCOMPAT": reverseCompat,
+		"glob":      listFiles, // used for require_glob()
+		"PANIC":     jsPanic,
+		"HASH":      hashFunc,
+	}
+	for name, fn := range functions {
+		if err := vm.Set(name, fn); err != nil {
+			return nil, err
+		}
+	}
 
 	// add cli variables to otto
 	for key, value := range variables {
-		vm.Set(key, value)
+		if err := vm.Set(key, value); err != nil {
+			return nil, err
+		}
 	}
 
 	helperJs := GetHelpers(devMode)

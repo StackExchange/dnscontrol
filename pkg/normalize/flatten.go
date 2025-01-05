@@ -91,10 +91,14 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 				for _, k := range sortedKeys(recs) {
 					v := recs[k]
 					if k == "@" {
-						txt.SetTargetTXTs(v)
+						if err := txt.SetTargetTXTs(v); err != nil {
+							errs = append(errs, err)
+						}
 					} else {
 						cp, _ := txt.Copy()
-						cp.SetTargetTXTs(v)
+						if err := cp.SetTargetTXTs(v); err != nil {
+							errs = append(errs, err)
+						}
 						cp.SetLabelFromFQDN(k, domain.Name)
 						domain.Records = append(domain.Records, cp)
 					}

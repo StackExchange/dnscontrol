@@ -253,9 +253,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	// Copy the exported fields.
-	copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err := copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		return err
+	}
 	// Set each unexported field.
-	rc.SetTarget(recj.Target)
+	if err := rc.SetTarget(recj.Target); err != nil {
+		return err
+	}
 
 	// Some sanity checks:
 	if recj.Type != rc.Type {

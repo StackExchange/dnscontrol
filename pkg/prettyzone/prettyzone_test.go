@@ -30,7 +30,9 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 
 	// Generate it back:
 	buf2 := &bytes.Buffer{}
-	writeZoneFileRR(buf2, parsed, "bosun.org")
+	if err := writeZoneFileRR(buf2, parsed, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 
 	// Compare:
 	if buf2.String() != expected {
@@ -127,7 +129,9 @@ func TestWriteZoneFileSimple(t *testing.T) {
 	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
 	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 300
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
@@ -148,7 +152,9 @@ func TestWriteZoneFileSimpleTtl(t *testing.T) {
 	r3, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.155")
 	r4, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 100
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
@@ -178,7 +184,9 @@ func TestWriteZoneFileMx(t *testing.T) {
 	r8, _ := dns.NewRR("ccc.bosun.org. IN MX 40 aaa.example.com.")
 	r9, _ := dns.NewRR("ccc.bosun.org. IN MX 1 ttt.example.com.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFMX {
 		t.Log(buf.String())
 		t.Log(testdataZFMX)
@@ -207,7 +215,9 @@ func TestWriteZoneFileSrv(t *testing.T) {
 	r4, _ := dns.NewRR(`bosun.org. 300 IN SRV 20 10 5050 foo.com.`)
 	r5, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org"); err != nil { // 5
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFSRV {
 		t.Log(buf.String())
 		t.Log(testdataZFSRV)

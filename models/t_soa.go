@@ -19,7 +19,10 @@ work that providers do.
 
 // SetTargetSOA sets the SOA fields.
 func (rc *RecordConfig) SetTargetSOA(ns, mbox string, serial, refresh, retry, expire, minttl uint32) error {
-	rc.SetTarget(ns) // The NS field is stored as the .Target
+	// The NS field is stored as the .Target
+	if err := rc.SetTarget(ns); err != nil {
+		return err
+	}
 	rc.SoaMbox = mbox
 	rc.SoaSerial = serial
 	rc.SoaRefresh = refresh

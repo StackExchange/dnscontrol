@@ -232,7 +232,9 @@ func GetZone(args GetZoneArgs) error {
 
 		case "zone":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
-			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
+			if err := prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil); err != nil {
+				return err
+			}
 			fmt.Fprintln(w)
 
 		case "js", "djs":

@@ -130,9 +130,13 @@ func (dc *DomainConfig) Punycode() error {
 			if err != nil {
 				return err
 			}
-			rec.SetTarget(t)
+			if err := rec.SetTarget(t); err != nil {
+				return err
+			}
 		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
-			rec.SetTarget(rec.GetTargetField())
+			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
+				return err
+			}
 		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "NAPTR", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:

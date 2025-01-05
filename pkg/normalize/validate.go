@@ -299,7 +299,9 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 					return err
 				}
 				r.SetLabel(l, dstDomain.Name)
-				r.SetTarget(tr.String())
+				if err := r.SetTarget(tr.String()); err != nil {
+					return err
+				}
 				dstDomain.Records = append(dstDomain.Records, r)
 			}
 		case "CNAME":
@@ -309,7 +311,9 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 				return err
 			}
 			r.SetLabel(l, dstDomain.Name)
-			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name, suffixstrip))
+			if err := r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name, suffixstrip)); err != nil {
+				return err
+			}
 			dstDomain.Records = append(dstDomain.Records, r)
 		default:
 			// Anything else is ignored.
@@ -425,9 +429,13 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.SubDomain != "" {
 					origin = rec.SubDomain + "." + origin
 				}
-				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin))
+				if err := rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin)); err != nil {
+					errs = append(errs, err)
+				}
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
-				rec.SetTarget(net.ParseIP(rec.GetTargetField()).String())
+				if err := rec.SetTarget(net.ParseIP(rec.GetTargetField()).String()); err != nil {
+					errs = append(errs, err)
+				}
 			} else if rec.Type == "PTR" {
 				var err error
 				var name string
@@ -854,14 +862,19 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		}
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
-				rec.SetTarget(newIP.String()) // replace target of first record if different
+				// replace target of first record if different
+				if err := rec.SetTarget(newIP.String()); err != nil {
+					return err
+				}
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
 				copy, err := rec.Copy()
 				if err != nil {
 					return err
 				}
-				copy.SetTarget(newIP.String())
+				if err := copy.SetTarget(newIP.String()); err != nil {
+					return err
+				}
 				domain.Records = append(domain.Records, copy)
 			}
 		}

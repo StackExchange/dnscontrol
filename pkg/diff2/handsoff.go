@@ -5,6 +5,7 @@ package diff2
 // NO_PURGE, ENSURE_ABSENT and IGNORE*() features.
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -120,7 +121,10 @@ func handsoff(
 	}
 
 	// Process IGNORE*() and NO_PURGE features:
-	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
+	ignorable, foreign, err := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
+	if err != nil {
+		return nil, nil, err
+	}
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of NO_PURGE%s", len(foreign), punct))
 		msgs = append(msgs, reportSkips(foreign, !printer.SkinnyReport)...)
@@ -138,7 +142,7 @@ func handsoff(
 			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
 		}
 		if !unmanagedSafely {
-			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
+			return nil, nil, errors.New(strings.Join(msgs, "\n") +
 				"\nERROR: Unsafe to continue. Add DISABLE_IGNORE_SAFETY_CHECK to D() to override")
 		}
 	}
@@ -172,11 +176,13 @@ func reportSkips(recs models.Records, full bool) []string {
 }
 
 // processIgnoreAndNoPurge processes the IGNORE_*() and NO_PURGE/ENSURE_ABSENT() features.
-func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
+func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records, error) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
-	compileUnmanagedConfigs(unmanagedConfigs)
+	if err := compileUnmanagedConfigs(unmanagedConfigs); err != nil {
+		return nil, nil, err
+	}
 	for _, rec := range existing {
 		isMatch := matchAny(unmanagedConfigs, rec)
 		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
@@ -194,7 +200,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 			}
 		}
 	}
-	return ignorable, foreign
+	return ignorable, foreign, nil
 }
 
 // findConflicts takes a list of recs and a list of (compiled) UnmanagedConfigs

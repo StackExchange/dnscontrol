@@ -30,7 +30,9 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	}
 
 	// punycode
-	dc.Punycode()
+	if err := dc.Punycode(); err != nil {
+		return nil, nil, 0, err
+	}
 	// FIXME(tlim) It is a waste to PunyCode every iteration.
 	// This should be moved to where the JavaScript is processed.
 

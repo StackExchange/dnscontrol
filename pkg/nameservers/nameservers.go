@@ -78,7 +78,9 @@ func AddNSRecords(dc *models.DomainConfig) {
 		if !strings.HasSuffix(t, ".") {
 			t += "."
 		}
-		rc.SetTarget(t)
+		if err := rc.SetTarget(t); err != nil {
+			panic(err)
+		}
 
 		dc.Records = append(dc.Records, rc)
 	}

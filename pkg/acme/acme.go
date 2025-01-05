@@ -104,7 +104,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	if !verbose {
 		acmelog.Logger = log.New(io.Discard, "", 0)
 	}
-	defer c.finalCleanUp()
+	defer c.finalCleanUp() //nolint:errcheck
 
 	log.Printf("Checking certificate [%s]", cfg.CertName)
 	existing, err := c.storage.GetCertificate(cfg.CertName)
@@ -159,7 +159,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	}
 	client.Challenge.Remove(challenge.HTTP01)
 	client.Challenge.Remove(challenge.TLSALPN01)
-	client.Challenge.SetDNS01Provider(c, dns01.WrapPreCheck(c.preCheckDNS))
+	client.Challenge.SetDNS01Provider(c, dns01.WrapPreCheck(c.preCheckDNS)) //nolint:errcheck
 
 	certResource, err := action()
 	if err != nil {
@@ -187,7 +187,7 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	// may be decommed eventually, and since there are no unit tests,
 	// I'm not excited about making this change.
 	// var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
-	var daysLeft = float64(cert.NotAfter.Sub(time.Now())) / float64(time.Hour*24)
+	var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }
 
@@ -242,7 +242,9 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 
 	fqdn, val := dns01.GetRecord(domain, keyAuth)
 	txt := &models.RecordConfig{Type: "TXT"}
-	txt.SetTargetTXT(val)
+	if err := txt.SetTargetTXT(val); err != nil {
+		return err
+	}
 	txt.SetLabelFromFQDN(fqdn, d.Name)
 	d.Records = append(d.Records, txt)
 	return c.getAndRunCorrections(d)

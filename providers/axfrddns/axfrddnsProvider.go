@@ -237,8 +237,8 @@ func (c *axfrddnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 func (c *axfrddnsProvider) getAxfrConnection() (*dns.Transfer, error) {
-	var con net.Conn = nil
-	var err error = nil
+	var con net.Conn
+	var err error
 	if c.transferMode == "tcp-tls" {
 		con, err = tls.Dial("tcp", c.transferServer, &tls.Config{})
 	} else {

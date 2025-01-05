@@ -90,9 +90,7 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 	}
 	// fmt.Printf("\ngot: %d %d %g %s %d %d %g %s %0.2fm %0.2fm %0.2fm %0.2fm \n", d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 
-	rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
-
-	return nil
+	return rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 }
 
 // calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields

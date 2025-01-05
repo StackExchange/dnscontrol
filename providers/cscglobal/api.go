@@ -429,7 +429,7 @@ func (client *providerClient) waitRequestURL(statusURL string, returnEarly bool)
 		}
 		if status == "FAILED" {
 			parts := strings.Split(statusResp.Links.Cancel, "/")
-			client.cancelRequest(parts[len(parts)-1])
+			_ = client.cancelRequest(parts[len(parts)-1])
 			return fmt.Errorf("update failed: %s %s", msg, statusURL)
 		}
 		if status == "COMPLETED" {

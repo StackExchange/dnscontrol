@@ -8,7 +8,7 @@ import (
 
 func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
 	rc.SetLabel(label, domain)
-	rc.SetTarget(target)
+	rc.MustSetTarget(target)
 	return &rc
 }
 
