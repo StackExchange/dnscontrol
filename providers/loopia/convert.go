@@ -19,7 +19,9 @@ func nativeToRecord(zr zoneRecord, origin string, subdomain string) (rc *models.
 		Type:     record.Type,
 	}
 	rc.SetLabel(subdomain, origin)
-	rc.SetTarget(record.Rdata)
+	if err := rc.SetTarget(record.Rdata); err != nil {
+		return nil, err
+	}
 
 	switch rtype := record.Type; rtype {
 	case "CAA":

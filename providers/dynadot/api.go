@@ -49,7 +49,9 @@ func (c *dynadotProvider) getNameservers(domain string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed NS list (Dynadot): %s", err)
 	}
 	var ns getNsResponse
-	xml.Unmarshal(bodyString, &ns)
+	if err := xml.Unmarshal(bodyString, &ns); err != nil {
+		return []string{}, fmt.Errorf("failed to unmarshal NS list (Dynadot): %s", err)
+	}
 
 	if ns.GetNsHeader.SuccessCode != 0 {
 		return []string{}, fmt.Errorf("failed NS list (Dynadot): %s", ns.GetNsHeader.Error)

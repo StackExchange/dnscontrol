@@ -548,7 +548,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			prPriority++
 
 			// Convert this record to a PAGE_RULE.
-			cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen)
+			if err := cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen); err != nil {
+				return err
+			}
 			rec.SetLabel("@", dc.Name)
 
 			if c.manageRedirects && !c.manageSingleRedirects {
@@ -556,7 +558,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
-				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
+					return err
+				}
 				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
 					return err
 				}
@@ -571,7 +575,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 					return err
 				}
 				// The copy becomes the CF SingleRedirect
-				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
+					return err
+				}
 				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
 					return err
 				}
@@ -617,7 +623,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			return err
 		}
 		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
-		rec.SetTarget(newIP.String())
+		if err := rec.SetTarget(newIP.String()); err != nil {
+			return err
+		}
 	}
 
 	return nil

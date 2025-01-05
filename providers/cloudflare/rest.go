@@ -302,7 +302,9 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
+			return nil, err
+		}
 		r.SetLabel("@", domain)
 
 		// Store the IDs
@@ -434,7 +436,9 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
+			return nil, err
+		}
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
@@ -492,9 +496,13 @@ func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*model
 			TTL:      1,
 		}
 		r.SetLabel("@", domain)
-		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
+		err := r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
 			pr.Pattern,
 			pr.ScriptName))
+		if err != nil {
+			return nil, err
+		}
+
 		recs = append(recs, r)
 	}
 	return recs, nil

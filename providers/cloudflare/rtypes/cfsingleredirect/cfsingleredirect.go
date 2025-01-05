@@ -34,7 +34,5 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	when = items[2].(string)
 	then = items[3].(string)
 
-	makeSingleRedirectFromRawRec(rc, code, name, when, then)
-
-	return nil
+	return makeSingleRedirectFromRawRec(rc, code, name, when, then)
 }

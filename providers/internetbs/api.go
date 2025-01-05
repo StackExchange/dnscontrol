@@ -31,10 +31,12 @@ type domainRecord struct {
 func (c *internetbsProvider) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
-		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %s", err)
+		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %w", err)
 	}
 	var dr domainRecord
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return []string{}, fmt.Errorf("failed to unmarshal nameservers list (Internet.bs): %w", err)
+	}
 	ns := []string{}
 	ns = append(ns, dr.Nameserver...)
 	return ns, nil

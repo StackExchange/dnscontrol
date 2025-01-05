@@ -166,7 +166,7 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 		switch rtype {
 		case "ALIAS", "URL":
 			rc.Type = rtype
-			rc.SetTarget(rcontent)
+			err = rc.SetTarget(rcontent)
 		case "MX":
 			var prio uint16
 			if record.Priority != nil {

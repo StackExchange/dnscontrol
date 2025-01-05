@@ -67,7 +67,9 @@ func (l *luadnsProvider) fetchAvailableNameservers() error {
 		return fmt.Errorf("failed fetching available nameservers list from LuaDNS: %s", err)
 	}
 	var ui userInfoResponse
-	json.Unmarshal(bodyString, &ui)
+	if err := json.Unmarshal(bodyString, &ui); err != nil {
+		return fmt.Errorf("failed to unmarshal available nameservers list from LuaDNS: %s", err)
+	}
 	l.nameserversNames = ui.NameServers
 	return nil
 }
@@ -79,7 +81,9 @@ func (l *luadnsProvider) fetchDomainList() error {
 		return fmt.Errorf("failed fetching domain list from LuaDNS: %s", err)
 	}
 	var dr zoneResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return fmt.Errorf("failed to unmarshal domain list from LuaDNS: %s", err)
+	}
 	for _, domain := range dr {
 		l.domainIndex[domain.Name] = domain.ID
 	}
@@ -136,7 +140,9 @@ func (l *luadnsProvider) getRecords(domainID uint32) ([]domainRecord, error) {
 		return nil, fmt.Errorf("failed fetching record list from LuaDNS: %s", err)
 	}
 	var dr recordResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal record response from LuaDNS: %s", err)
+	}
 	var records []domainRecord
 	for _, rec := range dr {
 		if rec.Type == "SOA" {
@@ -207,20 +213,21 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 	}
 }
 
-func nativeToRecord(domain string, r *domainRecord) *models.RecordConfig {
+func nativeToRecord(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
 		Original: r,
 	}
 	rc.SetLabelFromFQDN(r.Name, domain)
+	var err error
 	switch rtype := rc.Type; rtype {
 	case "TXT":
-		rc.SetTargetTXT(r.Content)
+		err = rc.SetTargetTXT(r.Content)
 	default:
-		rc.PopulateFromString(rtype, r.Content, domain)
+		err = rc.PopulateFromString(rtype, r.Content, domain)
 	}
-	return rc
+	return rc, err
 }
 
 func recordsToNative(rc *models.RecordConfig) jsonRequestParams {

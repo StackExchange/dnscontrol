@@ -297,11 +297,15 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 		}
 		record.SetLabel(dnsHost.Name, origin)
 
+		var err error
 		switch dnsHost.Type {
 		case "MX":
-			record.SetTargetMX(uint16(dnsHost.MXPref), dnsHost.Address)
+			err = record.SetTargetMX(uint16(dnsHost.MXPref), dnsHost.Address)
 		default:
-			record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+			err = record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+		}
+		if err != nil {
+			return nil, err
 		}
 
 		records = append(records, &record)

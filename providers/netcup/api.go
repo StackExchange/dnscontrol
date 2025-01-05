@@ -89,7 +89,9 @@ func (api *netcupProvider) getRecords(domain string) ([]record, error) {
 	}
 
 	resp := &records{}
-	json.Unmarshal(rawJSON, &resp)
+	if err := json.Unmarshal(rawJSON, &resp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal record response (netcup): %s", err)
+	}
 	return resp.Records, nil
 }
 
@@ -101,11 +103,13 @@ func (api *netcupProvider) login(apikey, password, customernumber string) error 
 	}
 	rawJSON, err := api.get("login", data)
 	if err != nil {
-		return fmt.Errorf("failed while trying to login to (netcup): %s", err)
+		return fmt.Errorf("failed while trying to login to (netcup): %w", err)
 	}
 
 	resp := &responseLogin{}
-	json.Unmarshal(rawJSON, &resp)
+	if err := json.Unmarshal(rawJSON, &resp); err != nil {
+		return fmt.Errorf("failed to unmarshal login response (netcup): %w", err)
+	}
 	api.credentials.apikey = apikey
 	api.credentials.customernumber = customernumber
 	api.credentials.sessionID = resp.SessionID

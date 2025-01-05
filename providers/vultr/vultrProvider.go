@@ -126,7 +126,9 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 			if err != nil {
 				return nil, 0, err
 			}
-			rec.SetTarget(t)
+			if err := rec.SetTarget(t); err != nil {
+				return nil, 0, err
+			}
 		default:
 			// Nothing to do.
 		}

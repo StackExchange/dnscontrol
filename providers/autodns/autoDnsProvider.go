@@ -182,8 +182,11 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	zone, _ := api.getZone(domain)
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
-		existingRecords[i] = toRecordConfig(domain, resourceRecord)
-
+		var err error
+		existingRecords[i], err = toRecordConfig(domain, resourceRecord)
+		if err != nil {
+			return nil, err
+		}
 		// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
 		if existingRecords[i].TTL == 0 {
 			existingRecords[i].TTL = zone.Soa.TTL
@@ -241,7 +244,7 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
-func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig {
+func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
 		TTL:      uint32(record.TTL),
@@ -249,11 +252,15 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	}
 	rc.SetLabel(record.Name, domain)
 
-	_ = rc.PopulateFromString(record.Type, record.Value, domain)
+	if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
+		return nil, err
+	}
 
 	if record.Type == "MX" {
 		rc.MxPreference = uint16(record.Pref)
-		rc.SetTarget(record.Value)
+		if err := rc.SetTarget(record.Value); err != nil {
+			return nil, err
+		}
 	}
 
 	if record.Type == "SRV" {
@@ -261,8 +268,14 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 
 		re := regexp.MustCompile(`(\d+) (\d+) (.+)$`)
 		found := re.FindStringSubmatch(record.Value)
+		if len(found) != 4 {
+			return nil, fmt.Errorf("invalid SRV record value: %s", record.Value)
+		}
 
-		weight, _ := strconv.Atoi(found[1])
+		weight, err := strconv.Atoi(found[1])
+		if err != nil {
+			return nil, err
+		}
 		if weight < 0 {
 			rc.SrvWeight = 0
 		} else if weight > 65535 {
@@ -271,7 +284,10 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 			rc.SrvWeight = uint16(weight)
 		}
 
-		port, _ := strconv.Atoi(found[2])
+		port, err := strconv.Atoi(found[2])
+		if err != nil {
+			return nil, err
+		}
 		if port < 0 {
 			rc.SrvPort = 0
 		} else if port > 65535 {
@@ -280,8 +296,10 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 			rc.SrvPort = uint16(port)
 		}
 
-		rc.SetTarget(found[3])
+		if err := rc.SetTarget(found[3]); err != nil {
+			return nil, err
+		}
 	}
 
-	return rc
+	return rc, nil
 }

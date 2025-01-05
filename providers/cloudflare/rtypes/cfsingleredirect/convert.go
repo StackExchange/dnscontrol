@@ -27,13 +27,11 @@ func TranscodePRtoSR(rec *models.RecordConfig) error {
 	}
 
 	// Fix the RecordConfig
-	makeSingleRedirectFromConvert(rec,
+	return makeSingleRedirectFromConvert(rec,
 		sr.PRPriority,
 		prWhen, prThen,
 		code,
 		srName, srWhen, srThen)
-
-	return nil
 }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.

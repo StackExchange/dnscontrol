@@ -17,7 +17,10 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string
 
 	var existingRecords []*models.RecordConfig
 	for i := range records {
-		rC := toRecordConfig(domain, &records[i])
+		rC, err := toRecordConfig(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 		existingRecords = append(existingRecords, rC)
 	}
 
@@ -30,7 +33,9 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	// Merge TXT strings to one string
 	for _, rc := range dc.Records {
 		if rc.HasFormatIdenticalToTXT() {
-			rc.SetTargetTXT(rc.GetTargetTXTJoined())
+			if err := rc.SetTargetTXT(rc.GetTargetTXTJoined()); err != nil {
+				return nil, 0, err
+			}
 		}
 	}
 

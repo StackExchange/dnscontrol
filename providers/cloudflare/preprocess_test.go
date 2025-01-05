@@ -22,7 +22,7 @@ func makeRCmeta(meta map[string]string) *models.RecordConfig {
 		Metadata: meta,
 	}
 	rc.SetLabel("foo", "example.tld")
-	rc.SetTarget("1.2.3.4")
+	rc.MustSetTarget("1.2.3.4")
 	return &rc
 }
 
@@ -109,7 +109,7 @@ func TestIpRewriting(t *testing.T) {
 		NewIPs:   nil}}
 	for _, tst := range tests {
 		rec := &models.RecordConfig{Type: "A", Metadata: map[string]string{metaProxy: tst.Proxy}}
-		rec.SetTarget(tst.Given)
+		rec.MustSetTarget(tst.Given)
 		domain.Records = append(domain.Records, rec)
 	}
 	err := cf.preprocessConfig(domain)

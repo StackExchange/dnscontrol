@@ -189,7 +189,7 @@ func (api *rwthProvider) request(endpoint string, method string, request url.Val
 	defer cleanupResponseBody()
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		printer.Printf(string(data))
+		printer.Printf("%s", string(data))
 		return fmt.Errorf("bad status code from RWTH: %d not 200", resp.StatusCode)
 	}
 	if target == nil {

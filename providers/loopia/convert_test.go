@@ -13,7 +13,7 @@ func TestRecordToNative_1(t *testing.T) {
 		TTL: 3600,
 	}
 	rc.SetLabel("foo", "example.com")
-	rc.SetTarget("1.2.3.4")
+	rc.MustSetTarget("1.2.3.4")
 	rc.Type = "A"
 
 	ns := recordToNative(rc, 0)

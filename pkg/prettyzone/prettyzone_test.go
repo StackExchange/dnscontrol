@@ -240,7 +240,9 @@ func TestWriteZoneFilePtr(t *testing.T) {
 	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFPTR {
 		t.Log(buf.String())
 		t.Log(testdataZFPTR)
@@ -264,7 +266,9 @@ func TestWriteZoneFileCaa(t *testing.T) {
 	r5, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
 	r6, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFCAA {
 		t.Log(buf.String())
 		t.Log(testdataZFCAA)
@@ -308,7 +312,9 @@ func TestWriteZoneFileTxt(t *testing.T) {
 
 		// Generate the zonefile:
 		buf := &bytes.Buffer{}
-		writeZoneFileRR(buf, []dns.RR{rr}, "bosun.org")
+		if err := writeZoneFileRR(buf, []dns.RR{rr}, "bosun.org"); err != nil {
+			t.Fatal(err)
+		}
 		gz := buf.String()
 		if gz != ez {
 			t.Log("got: " + gz)
@@ -354,7 +360,9 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`bosun.org.           300 IN HTTPS 1 . alpn="h3,h2"`))
 	d = append(d, mustNewRR(`bosun.org.           300 IN SVCB 1 . alpn="h3,h2"`))
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, d, "bosun.org")
+	if err := writeZoneFileRR(buf, d, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFEach {
 		t.Log(buf.String())
 		t.Log(testdataZFEach)
@@ -400,7 +408,9 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	recs = append(recs, rsynz)
 
 	buf := &bytes.Buffer{}
-	WriteZoneFileRC(buf, recs, "bosun.org", 0, []string{"c1", "c2", "c3\nc4"})
+	if err := WriteZoneFileRC(buf, recs, "bosun.org", 0, []string{"c1", "c2", "c3\nc4"}); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 300
 ; c1
 ; c2
@@ -448,7 +458,9 @@ func TestWriteZoneFileOrder(t *testing.T) {
 	}
 
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, records, "stackoverflow.com")
+	if err := writeZoneFileRR(buf, records, "stackoverflow.com"); err != nil {
+		t.Fatal(err)
+	}
 	// Compare
 	if buf.String() != testdataOrder {
 		t.Log("Found:")
@@ -468,7 +480,9 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		}
 		// Generate
 		buf := &bytes.Buffer{}
-		writeZoneFileRR(buf, records, "stackoverflow.com")
+		if err := writeZoneFileRR(buf, records, "stackoverflow.com"); err != nil {
+			t.Fatal(err)
+		}
 		// Compare
 		if buf.String() != testdataOrder {
 			t.Log(buf.String())

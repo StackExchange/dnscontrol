@@ -226,7 +226,10 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 
 	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(defaultNameServerNames))
 	for i := range records {
-		existingRecords[i] = toRc(domain, &records[i])
+		existingRecords[i], err = toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Linode always has read-only NS servers, but these are not mentioned in the API response
@@ -237,7 +240,9 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 			Original: &domainRecord{},
 		}
 		rc.SetLabelFromFQDN(domain, domain)
-		rc.SetTarget(name)
+		if err := rc.SetTarget(name); err != nil {
+			return nil, err
+		}
 
 		existingRecords = append(existingRecords, rc)
 	}
@@ -245,7 +250,7 @@ func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (mod
 	return existingRecords, nil
 }
 
-func toRc(domain string, r *domainRecord) *models.RecordConfig {
+func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:         r.Type,
 		TTL:          r.TTLSec,
@@ -258,17 +263,17 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	}
 	rc.SetLabel(r.Name, domain)
 
+	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "CNAME", "MX", "NS", "SRV":
-		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		// Linode doesn't support CAA flags and just returns the tag and value separately
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	default:
-		rc.PopulateFromString(r.Type, r.Target, domain)
+		err = rc.PopulateFromString(r.Type, r.Target, domain)
 	}
-
-	return rc
+	return rc, err
 }
 
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest, error) {

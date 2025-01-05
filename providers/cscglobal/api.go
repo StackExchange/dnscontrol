@@ -206,7 +206,9 @@ func (client *providerClient) getNameservers(domain string) ([]string, error) {
 	}
 
 	var dr domainRecord
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return nil, fmt.Errorf("CSC Global: Error can't unmarshal NS: %w", err)
+	}
 	ns := []string{}
 	ns = append(ns, dr.Nameserver...)
 	sort.Strings(ns)
@@ -237,7 +239,9 @@ func (client *providerClient) updateNameservers(ns []string, domain string) erro
 	}
 
 	var res nsModRequestResult
-	json.Unmarshal(bodyString, &res)
+	if err := json.Unmarshal(bodyString, &res); err != nil {
+		return fmt.Errorf("CSC Global: Error can't unmarshal NS result: %w", err)
+	}
 	if res.Result.Status.Code != "SUBMITTED" {
 		return fmt.Errorf("CSC Global: Error update NS Code: %s Message: %s AdditionalInfo: %s", res.Result.Status.Code, res.Result.Status.Message, res.Result.Status.AdditionalInformation)
 	}
@@ -320,7 +324,9 @@ func (client *providerClient) getDomains() ([]string, error) {
 	//printer.Printf("------------------\n")
 
 	var dr domainsResult
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return nil, fmt.Errorf("CSC Global: Error can't unmarshal domains: %w", err)
+	}
 
 	if dr.Meta.Pages > 1 {
 		return nil, fmt.Errorf("cscglobal getDomains: unimplemented paganation")
@@ -351,7 +357,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 	}
 
 	var dr zoneResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return nil, fmt.Errorf("CSC Global: Error can't unmarshal zone: %w", err)
+	}
 
 	return &dr, nil
 }
@@ -484,7 +492,9 @@ func (client *providerClient) clearRequests(domain string) error {
 	}
 
 	var dr pagedZoneEditResponsePagedZoneEditResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return fmt.Errorf("CSC Global: Error can't unmarshal zone edits: %w", err)
+	}
 
 	// TODO(tlim): Ignore what's beyond the first page.
 	// It is unlikely that there are active jobs beyond the first page.
@@ -502,10 +512,14 @@ func (client *providerClient) clearRequests(domain string) error {
 		switch ze.Status {
 		case "NEW", "SUBMITTED", "PROCESSING", "PROPAGATING":
 			printer.Printf("INFO: Waiting for id=%s status=%s\n", ze.ID, ze.Status)
-			client.waitRequest(ze.ID)
+			if err := client.waitRequest(ze.ID); err != nil {
+				return err
+			}
 		case "FAILED":
 			printer.Printf("INFO: Deleting request status=%s id=%s\n", ze.Status, ze.ID)
-			client.cancelRequest(ze.ID)
+			if err := client.cancelRequest(ze.ID); err != nil {
+				return err
+			}
 		case "COMPLETED", "CANCELED":
 			continue
 		default:

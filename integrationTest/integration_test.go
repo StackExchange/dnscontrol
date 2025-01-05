@@ -47,6 +47,12 @@ func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "exa
 
 // ---
 
+func panicOnErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string]string) {
 	if *providerFlag == "" && *profileFlag == "" {
 		t.Log("No -provider or -profile specified")
@@ -537,7 +543,7 @@ func azureAlias(name, aliasType, target string) *models.RecordConfig {
 
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
-	r.SetTargetCAA(flag, tag, target)
+	panicOnErr(r.SetTargetCAA(flag, tag, target))
 	return r
 }
 
@@ -561,10 +567,7 @@ func cfSingleRedirectEnabled() bool {
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
 	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
-	if err != nil {
-		panic("Should not happen... cfSingleRedirect")
-	}
+	panicOnErr(cfsingleredirect.FromRaw(r, []any{name, code, when, then})) // Should not happen
 	return r
 }
 
@@ -600,13 +603,13 @@ func dname(name, target string) *models.RecordConfig {
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
-	r.SetTargetDS(keyTag, algorithm, digestType, digest)
+	panicOnErr(r.SetTargetDS(keyTag, algorithm, digestType, digest))
 	return r
 }
 
 func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
 	r := makeRec(name, "", "DNSKEY")
-	r.SetTargetDNSKEY(flags, protocol, algorithm, publicKey)
+	panicOnErr(r.SetTargetDNSKEY(flags, protocol, algorithm, publicKey))
 	return r
 }
 
@@ -640,7 +643,7 @@ func ignore(labelSpec string, typeSpec string, targetSpec string) *models.Record
 func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
 	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) *models.RecordConfig {
 	r := makeRec(name, "", "LOC")
-	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
+	panicOnErr(r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp))
 	return r
 }
 
@@ -650,7 +653,7 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 		TTL:  300,
 	}
 	SetLabel(r, name, "**current-domain**")
-	r.SetTarget(target)
+	r.MustSetTarget(target)
 	return r
 }
 
@@ -674,7 +677,7 @@ func ns(name, target string) *models.RecordConfig {
 
 func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
 	r := makeRec(name, target, "NAPTR")
-	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
+	panicOnErr(r.SetTargetNAPTR(order, preference, flags, service, regexp, target))
 	return r
 }
 
@@ -693,19 +696,19 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 
 func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
 	r := makeRec(name, "", "SOA")
-	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
+	panicOnErr(r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl))
 	return r
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
-	r.SetTargetSRV(priority, weight, port, target)
+	panicOnErr(r.SetTargetSRV(priority, weight, port, target))
 	return r
 }
 
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
-	r.SetTargetSSHFP(algorithm, fingerprint, target)
+	panicOnErr(r.SetTargetSSHFP(algorithm, fingerprint, target))
 	return r
 }
 
@@ -732,7 +735,7 @@ func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
 	r := makeRec(name, "", "TXT")
 	r.Metadata = make(map[string]string)
 	r.Metadata["create_ovh_native_record"] = rType
-	r.SetTarget(target)
+	r.MustSetTarget(target)
 	return r
 }
 
@@ -801,7 +804,7 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 
 func txt(name, target string) *models.RecordConfig {
 	r := makeRec(name, "", "TXT")
-	r.SetTargetTXT(target)
+	panicOnErr(r.SetTargetTXT(target))
 	return r
 }
 
@@ -813,7 +816,7 @@ func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 
 func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "TLSA")
-	r.SetTargetTLSA(usage, selector, matchingtype, target)
+	panicOnErr(r.SetTargetTLSA(usage, selector, matchingtype, target))
 	return r
 }
 

@@ -176,7 +176,9 @@ func (api *domainNameShopProvider) UpdateRecord(dnsR *domainNameShopRecord) erro
 	recordID := strconv.Itoa(dnsR.ID)
 
 	payloadBuf := new(bytes.Buffer)
-	json.NewEncoder(payloadBuf).Encode(&dnsR)
+	if err := json.NewEncoder(payloadBuf).Encode(&dnsR); err != nil {
+		return err
+	}
 
 	return api.sendChangeRequest(http.MethodPut, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, payloadBuf)
 }

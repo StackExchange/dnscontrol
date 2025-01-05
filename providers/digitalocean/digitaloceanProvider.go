@@ -161,7 +161,10 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]s
 
 	var existingRecords []*models.RecordConfig
 	for i := range records {
-		r := toRc(domain, &records[i])
+		r, err := toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 		if r.Type == "SOA" {
 			continue
 		}
@@ -272,7 +275,7 @@ retry:
 	return records, nil
 }
 
-func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
+func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
 	name := dnsutil.AddOrigin(r.Name, domain)
 
@@ -303,11 +306,15 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetLabelFromFQDN(name, domain)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXT(target)
+		if err := t.SetTargetTXT(target); err != nil {
+			return nil, err
+		}
 	default:
-		t.SetTarget(target)
+		if err := t.SetTarget(target); err != nil {
+			return nil, err
+		}
 	}
-	return t
+	return t, nil
 }
 
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {

@@ -103,19 +103,23 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string, meta map[string]strin
 	if err != nil {
 		return nil, err
 	}
-	return hp.APIRecordsToStandardRecordsModel(domain, zone.Records), nil
+	return hp.APIRecordsToStandardRecordsModel(domain, zone.Records)
 }
 
-func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(domain string, src []record) models.Records {
+func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(domain string, src []record) (models.Records, error) {
 	records := []*models.RecordConfig{}
 	for _, r := range src {
 		if r.Type == "SOA" {
 			continue
 		}
-		records = append(records, r.nativeToRecord(domain))
+		newr, err := r.nativeToRecord(domain)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, newr)
 	}
 
-	return records
+	return records, nil
 }
 
 func soaToString(s soaValues) string {

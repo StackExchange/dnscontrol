@@ -65,7 +65,9 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 // GetNameservers returns the nameservers for a domain.
 func (l *luadnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if len(l.nameserversNames) == 0 {
-		l.fetchAvailableNameservers()
+		if err := l.fetchAvailableNameservers(); err != nil {
+			return nil, err
+		}
 	}
 	return models.ToNameserversStripTD(l.nameserversNames)
 }
@@ -94,7 +96,11 @@ func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (
 	}
 	existingRecords := make([]*models.RecordConfig, len(records))
 	for i := range records {
-		existingRecords[i] = nativeToRecord(domain, &records[i])
+		newr, err := nativeToRecord(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
+		existingRecords[i] = newr
 	}
 	return existingRecords, nil
 }

@@ -156,7 +156,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			TTL:      uint32(*record.Ttl),
 			Original: record,
 		}
-		recConfig.SetTarget(*record.Data)
+		if err := recConfig.SetTarget(*record.Data); err != nil {
+			return nil, err
+		}
 
 		switch recType {
 		case "SRV":
@@ -180,7 +182,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) (mo
 			recConfig.SetLabel(fmt.Sprintf("%s.%s", service, strings.ToLower(protocol)), *domain.Name)
 		case "TXT":
 			// OLD: recConfig.TxtStrings = append(recConfig.TxtStrings, *record.Data)
-			recConfig.SetTargetTXTs(append(recConfig.GetTargetTXTSegmented(), *record.Data))
+			if err := recConfig.SetTargetTXTs(append(recConfig.GetTargetTXTSegmented(), *record.Data)); err != nil {
+				return nil, err
+			}
 			// NB(tlim) The above code seems too complex.  Can it be simplied to this?
 			// recConfig.SetTargetTXT(*record.Data)
 			fallthrough

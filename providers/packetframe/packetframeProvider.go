@@ -99,7 +99,10 @@ func (api *packetframeProvider) GetZoneRecords(domain string, meta map[string]st
 	}
 
 	for i := range records {
-		existingRecords[i] = toRc(&dc, &records[i])
+		existingRecords[i], err = toRc(&dc, &records[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return existingRecords, nil
@@ -193,7 +196,7 @@ func toReq(zoneID string, rc *models.RecordConfig) (*domainRecord, error) {
 	return req, nil
 }
 
-func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
+func toRc(dc *models.DomainConfig, r *domainRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      uint32(r.TTL),
@@ -207,22 +210,22 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 	}
 	rc.SetLabel(label, dc.Name)
 
+	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXT(r.Value)
+		err = rc.SetTargetTXT(r.Value)
 	case "SRV":
 		spl := strings.Split(r.Value, " ")
 		prio, _ := strconv.ParseUint(spl[0], 10, 16)
 		weight, _ := strconv.ParseUint(spl[1], 10, 16)
 		port, _ := strconv.ParseUint(spl[2], 10, 16)
-		rc.SetTargetSRV(uint16(prio), uint16(weight), uint16(port), spl[3])
+		err = rc.SetTargetSRV(uint16(prio), uint16(weight), uint16(port), spl[3])
 	case "MX":
 		spl := strings.Split(r.Value, " ")
 		prio, _ := strconv.ParseUint(spl[0], 10, 16)
-		rc.SetTargetMX(uint16(prio), spl[1])
+		err = rc.SetTargetMX(uint16(prio), spl[1])
 	default:
-		rc.SetTarget(r.Value)
+		err = rc.SetTarget(r.Value)
 	}
-
-	return rc
+	return rc, err
 }

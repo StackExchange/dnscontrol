@@ -9,7 +9,7 @@ import (
 )
 
 func mkRC(target string, rec *models.RecordConfig) *models.RecordConfig {
-	rec.SetTarget(target)
+	rec.MustSetTarget(target)
 	return rec
 }
 
