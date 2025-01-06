@@ -79,15 +79,6 @@ func (rc *RecordConfig) PopulateAFields(a fieldtypes.IPv4, meta map[string]strin
 	return rc.SealA()
 }
 
-// func (rc *RecordConfig) SetTargetA(s string) error {
-// 	a, err := fieldtypes.ParseIPv4(s)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	rc.AsA().A = a
-// 	return rc.SealA()
-// }
-
 func (rc *RecordConfig) SealA() error {
 	if rc.Type == "" {
 		rc.Type = "A"
