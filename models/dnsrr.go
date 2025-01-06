@@ -31,10 +31,11 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
 	header := rr.Header()
-	rc := new(RecordConfig)
-	rc.Type = dns.TypeToString[header.Rrtype]
-	rc.TTL = header.Ttl
-	rc.Original = rr
+	rc := &RecordConfig{
+		Type:     dns.TypeToString[header.Rrtype],
+		TTL:      header.Ttl,
+		Original: rr,
+	}
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	var err error
 	switch v := rr.(type) { // #rtype_variations
@@ -92,5 +93,6 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	if err != nil {
 		return *rc, fmt.Errorf("unparsable record received: %w", err)
 	}
+	rc.ImportFromLegacy(origin)
 	return *rc, nil
 }

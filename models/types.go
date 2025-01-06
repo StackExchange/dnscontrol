@@ -89,6 +89,13 @@ func (rc *RecordConfig) PopulateAFields(a fieldtypes.IPv4, meta map[string]strin
 // }
 
 func (rc *RecordConfig) SealA() error {
+	if rc.Type == "" {
+		rc.Type = "A"
+	}
+	if rc.Type != "A" {
+		panic("assertion failed: SealA called when .Type is not A")
+	}
+
 	f := rc.Fields.(*A)
 
 	// Pre-compute useful things
@@ -178,6 +185,13 @@ func (rc *RecordConfig) PopulateMXFields(preference uint16, mx string, meta map[
 
 // SealMX updates rc to be an MX record with contents from typed data, meta, and origin.
 func (rc *RecordConfig) SealMX() error {
+	if rc.Type == "" {
+		rc.Type = "MX"
+	}
+	if rc.Type != "MX" {
+		panic("assertion failed: SealMX called when .Type is not MX")
+	}
+
 	f := rc.Fields.(*MX)
 
 	// Pre-compute useful things
@@ -225,7 +239,7 @@ func PopulateSRVRaw(rc *RecordConfig, rawfields []string, meta map[string]string
 	// Error checking
 
 	if len(rawfields) <= 4 {
-		return fmt.Errorf("rtype SRV wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
+		return fmt.Errorf("rtype SRV wants %d field(s), found %d: %+v", 4, len(rawfields)-1, rawfields[1:])
 	}
 
 	// Convert each rawfield.
@@ -274,6 +288,13 @@ func (rc *RecordConfig) PopulateSRVFields(priority, weight, port uint16, target 
 }
 
 func (rc *RecordConfig) SealSRV() error {
+	if rc.Type == "" {
+		rc.Type = "SRV"
+	}
+	if rc.Type != "SRV" {
+		panic("assertion failed: SetTargetSRV called when .Type is not SRV")
+	}
+
 	f := rc.Fields.(*SRV)
 
 	// Pre-compute useful things

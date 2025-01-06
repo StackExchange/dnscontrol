@@ -304,20 +304,22 @@ func TestCNAMEMutex(t *testing.T) {
 	recA.SetLabel("foo", "foo.example.com")
 	recA.SetTarget("example.com.")
 	tests := []struct {
-		rType string
-		name  string
-		fail  bool
+		rType  string
+		name   string
+		target string
+		fail   bool
 	}{
-		{"A", "foo", true},
-		{"A", "foo2", false},
-		{"CNAME", "foo", true},
-		{"CNAME", "foo2", false},
+		{"A", "foo", "1.1.1.1", true},
+		{"A", "foo2", "2.2.2.2", false},
+		{"CNAME", "foo", "dest.example.com.", true},
+		{"CNAME", "foo2", "dest2.example.com.", false},
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
 			var recB = &models.RecordConfig{Type: tst.rType}
 			recB.SetLabel(tst.name, "example.com")
-			recB.SetTarget("example2.com.")
+			recB.MustSetTarget(tst.target)
+			recB.ImportFromLegacy("example.com")
 			dc := &models.DomainConfig{
 				Name:    "example.com",
 				Records: []*models.RecordConfig{recA, recB},

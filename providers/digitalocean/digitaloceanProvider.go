@@ -161,7 +161,10 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]s
 
 	var existingRecords []*models.RecordConfig
 	for i := range records {
-		r := toRc(domain, &records[i])
+		r, err := toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 		if r.Type == "SOA" {
 			continue
 		}
@@ -272,7 +275,7 @@ retry:
 	return records, nil
 }
 
-func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
+func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
 	name := dnsutil.AddOrigin(r.Name, domain)
 
@@ -307,10 +310,13 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	default:
 		t.SetTarget(target)
 	}
-	return t
+	t.ImportFromLegacy(domain)
+	return t, nil
 }
 
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
+	rc.MustValidate()
+
 	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
 	target := rc.GetTargetField() // DO uses the target field only for a single value
 	priority := 0                 // DO uses the same property for MX and SRV priority

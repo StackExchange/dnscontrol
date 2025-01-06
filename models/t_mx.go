@@ -7,18 +7,12 @@ import (
 
 // SetTargetMX sets the MX fields.
 func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
-	if rc.Type == "" {
-		rc.Type = "MX"
-	}
-	if rc.Type != "MX" {
-		panic("assertion failed: SetTargetMX called when .Type is not MX")
-	}
 	return rc.PopulateMXFields(pref, target, nil, "")
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
 func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
-	return PopulateMXRaw(rc, []string{pref, target}, nil, "")
+	return PopulateMXRaw(rc, []string{rc.Name, pref, target}, nil, "")
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.

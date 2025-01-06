@@ -5,7 +5,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 	"github.com/miekg/dns"
 )
 
@@ -179,6 +178,13 @@ func (rc *RecordConfig) SetTarget(s string) error {
 	return nil
 }
 
+func (rc *RecordConfig) MustSetTarget(s string) {
+	err := rc.SetTarget(s)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
@@ -188,14 +194,5 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 }
 
 func (rc *RecordConfig) SetTargetA(s string) error {
-	if rc.Fields == nil {
-		rc.Fields = &A{}
-	}
-
-	a, err := fieldtypes.ParseIPv4(s)
-	if err != nil {
-		return err
-	}
-	rc.AsA().A = a
-	return rc.SealA()
+	return PopulateARaw(rc, []string{rc.Name, s}, nil, "")
 }

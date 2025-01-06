@@ -114,25 +114,29 @@ func Test_generatePSModify(t *testing.T) {
 		Type: "A",
 		Name: "@",
 	}
-	recA1.SetTarget("1.2.3.4")
+	recA1.ImportFromLegacy("example.com")
+	recA1.MustSetTarget("1.2.3.4")
 	recA2 := &models.RecordConfig{
 		Type: "A",
 		Name: "@",
 	}
-	recA2.SetTarget("10.20.30.40")
+	recA2.MustSetTarget("10.20.30.40")
+	recA2.ImportFromLegacy("example.com")
 
 	recMX1 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
 		MxPreference: 5,
 	}
-	recMX1.SetTarget("foo.com.")
+	recMX1.MustSetTarget("foo.com.")
+	recMX1.ImportFromLegacy("example.com")
 	recMX2 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
 		MxPreference: 50,
 	}
-	recMX2.SetTarget("foo2.com.")
+	recMX2.MustSetTarget("foo2.com.")
+	recMX2.ImportFromLegacy("example.com")
 
 	type args struct {
 		domain    string
