@@ -167,7 +167,7 @@ invalid. Perhaps you meant to specify a `-` on a command-line tool?
 
 The fix is to change the `TYPE` subkey entry in `creds.json` from `-` to
 a valid service provider identifier, as listed
-in [the service provider list](providers.md).
+in [the service provider list](provider/index.md).
 
 
 ## Using a different file name
