@@ -8,7 +8,6 @@
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
 * [TypeScript autocomplete and type checking](typescript.md)
-* [Providers](providers.md)
 
 ## Language Reference
 
@@ -104,6 +103,7 @@
 
 ## Provider
 
+* [Supported providers](provider/index.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)

@@ -8,7 +8,7 @@ and the system takes care of the rest.
 Please do note that if you submit a new provider you will be
 assigned bugs related to the provider in the future (unless
 you designate someone else as the maintainer). More details
-[here](providers.md).
+[here](provider/index.md).
 
 Please follow the [DNSControl Code Style Guide](styleguide-code.md) and the [DNSControl Documentation Style Guide](styleguide-doc.md).
 
@@ -219,7 +219,7 @@ an automated way to test for this bug.  The manual steps are here in
   * Add the name of the provider to the PROVIDERS list.
 * Edit `documentation/providers.md`:
   * Remove the provider from the `Requested providers` list (near the end of the doc) (if needed).
-  * Add the new provider to the [Providers with "contributor support"](providers.md#providers-with-contributor-support) section.
+  * Add the new provider to the [Providers with "contributor support"](provider/index.md#providers-with-contributor-support) section.
 * Edit `documentation/SUMMARY.md`:
   * Add the provider to the "Providers" list.
 * Create `documentation/provider/PROVIDERNAME.md`:
@@ -367,7 +367,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
 4. Verify you're using the most recent version of anything you import.  (See [Step 12](#step-12-dependencies))
 5. Re-run the [integration test](#step-7-integration-test) one last time.
   * Post the results as a comment to your PR.
-6. Re-read the [maintainer's responsibilities](providers.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
+6. Re-read the [maintainer's responsibilities](provider/index.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
 ## Step 15: Submit a PR
 
