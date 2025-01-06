@@ -43,9 +43,9 @@ func (api *autoDNSProvider) request(method string, requestPath string, data inte
 		request.Body = io.NopCloser(buffer)
 	}
 
-	response, error := client.Do(request)
-	if error != nil {
-		return nil, error
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
 	}
 	defer response.Body.Close()
 

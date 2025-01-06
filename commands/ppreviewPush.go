@@ -141,8 +141,8 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:   "reportmax",
 		Hidden: true,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, max int) error {
-			printer.MaxReport = max
+		Action: func(ctx *cli.Context, maxreport int) error {
+			printer.MaxReport = maxreport
 			return nil
 		},
 	})

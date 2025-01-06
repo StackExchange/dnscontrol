@@ -249,7 +249,7 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 		return true
 	})
 
-	toReport, create, delete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	toReport, toCreate, toDelete, toModify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -261,13 +261,13 @@ func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, a
 	// changes though
 
 	var desc []string
-	for _, i := range create {
+	for _, i := range toCreate {
 		desc = append(desc, "\n"+i.String())
 	}
-	for _, i := range delete {
+	for _, i := range toDelete {
 		desc = append(desc, "\n"+i.String())
 	}
-	for _, i := range modify {
+	for _, i := range toModify {
 		desc = append(desc, "\n"+i.String())
 	}
 

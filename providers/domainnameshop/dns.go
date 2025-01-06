@@ -43,7 +43,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	toReport, create, delete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	toReport, toCreate, toDelete, toModify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -51,7 +51,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	corrections := diff.GenerateMessageCorrections(toReport)
 
 	// Delete record
-	for _, r := range delete {
+	for _, r := range toDelete {
 		domainID := r.Existing.Original.(*domainNameShopRecord).DomainID
 		recordID := strconv.Itoa(r.Existing.Original.(*domainNameShopRecord).ID)
 
@@ -63,7 +63,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	}
 
 	// Create records
-	for _, r := range create {
+	for _, r := range toCreate {
 		// Retrieve the domain name that is targeted. I.e. example.com instead of sub.example.com
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
 
@@ -80,7 +80,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 		corrections = append(corrections, corr)
 	}
 
-	for _, r := range modify {
+	for _, r := range toModify {
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)

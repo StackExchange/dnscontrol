@@ -218,11 +218,11 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, mod := range modify {
-		old := mod.Existing.Original.(*egoscale.DNSDomainRecord)
-		new := mod.Desired
+		old_ := mod.Existing.Original.(*egoscale.DNSDomainRecord)
+		new_ := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, domainID),
+			F:   c.updateRecordFunc(old_, new_, domainID),
 		})
 	}
 

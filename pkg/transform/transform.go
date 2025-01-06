@@ -104,15 +104,15 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 		return nil, err
 	}
 	for _, conv := range transforms {
-		min, err := ipToUint(conv.Low)
+		min_, err := ipToUint(conv.Low)
 		if err != nil {
 			return nil, err
 		}
-		max, err := ipToUint(conv.High)
+		max_, err := ipToUint(conv.High)
 		if err != nil {
 			return nil, err
 		}
-		if (thisIP >= min) && (thisIP <= max) {
+		if (thisIP >= min_) && (thisIP <= max_) {
 			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
@@ -122,7 +122,7 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 				if err != nil {
 					return nil, err
 				}
-				list = append(list, UintToIP(newbase+(thisIP-min)))
+				list = append(list, UintToIP(newbase+(thisIP-min_)))
 			}
 			return list, nil
 		}

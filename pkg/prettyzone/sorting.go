@@ -161,15 +161,15 @@ func LabelLess(a, b string) bool {
 	ia := len(as) - 1
 	ib := len(bs) - 1
 
-	var min int
+	var fewestSegments int
 	if ia < ib {
-		min = len(as) - 1
+		fewestSegments = len(as) - 1
 	} else {
-		min = len(bs) - 1
+		fewestSegments = len(bs) - 1
 	}
 
 	// Skip the matching highest elements, then compare the next item.
-	for i, j := ia, ib; min >= 0; i, j, min = i-1, j-1, min-1 {
+	for i, j := ia, ib; fewestSegments >= 0; i, j, fewestSegments = i-1, j-1, fewestSegments-1 {
 		// Compare as[i] < bs[j]
 		// Sort @ at the top, then *, then everything else.
 		// i.e. @ always is less. * is less than everything but @.

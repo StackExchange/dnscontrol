@@ -866,14 +866,14 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 				}
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
-				copy, err := rec.Copy()
+				cpy, err := rec.Copy()
 				if err != nil {
 					return err
 				}
-				if err := copy.SetTarget(newIP.String()); err != nil {
+				if err := cpy.SetTarget(newIP.String()); err != nil {
 					return err
 				}
-				domain.Records = append(domain.Records, copy)
+				domain.Records = append(domain.Records, cpy)
 			}
 		}
 	}
