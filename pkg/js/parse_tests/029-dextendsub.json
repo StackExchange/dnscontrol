@@ -30,7 +30,6 @@
             "A": "10.3.3.3"
           },
           "name": "bar",
-          "subdomain": "bar",
           "target": "10.3.3.3",
           "ttl": 300,
           "type": "A"
@@ -40,7 +39,6 @@
             "A": "10.4.4.4"
           },
           "name": "www.bar",
-          "subdomain": "bar",
           "target": "10.4.4.4",
           "ttl": 300,
           "type": "A"
@@ -50,7 +48,6 @@
             "A": "10.25.25.25"
           },
           "name": "a.long.path.of.sub.domains",
-          "subdomain": "a.long.path.of.sub.domains",
           "target": "10.25.25.25",
           "ttl": 300,
           "type": "A"
@@ -60,7 +57,6 @@
             "A": "10.26.26.26"
           },
           "name": "www.a.long.path.of.sub.domains",
-          "subdomain": "a.long.path.of.sub.domains",
           "target": "10.26.26.26",
           "ttl": 300,
           "type": "A"
@@ -181,7 +177,6 @@
             "A": "40.17.17.17"
           },
           "name": "morty",
-          "subdomain": "morty",
           "target": "40.17.17.17",
           "ttl": 300,
           "type": "A"
@@ -191,7 +186,6 @@
             "A": "40.18.18.18"
           },
           "name": "www.morty",
-          "subdomain": "morty",
           "target": "40.18.18.18",
           "ttl": 300,
           "type": "A"
@@ -241,7 +235,6 @@
             "A": "50.15.15.15"
           },
           "name": "zip",
-          "subdomain": "zip",
           "target": "50.15.15.15",
           "ttl": 300,
           "type": "A"
@@ -251,7 +244,6 @@
             "A": "50.16.16.16"
           },
           "name": "www.zip",
-          "subdomain": "zip",
           "target": "50.16.16.16",
           "ttl": 300,
           "type": "A"
@@ -283,7 +275,6 @@
             "A": "60.21.21.21"
           },
           "name": "bar",
-          "subdomain": "bar",
           "target": "60.21.21.21",
           "ttl": 300,
           "type": "A"
@@ -293,7 +284,6 @@
             "A": "60.23.23.23"
           },
           "name": "baz.bar",
-          "subdomain": "baz.bar",
           "target": "60.23.23.23",
           "ttl": 300,
           "type": "A"
@@ -303,7 +293,6 @@
             "A": "60.24.24.24"
           },
           "name": "www.baz.bar",
-          "subdomain": "baz.bar",
           "target": "60.24.24.24",
           "ttl": 300,
           "type": "A"
@@ -313,7 +302,6 @@
             "A": "60.22.22.22"
           },
           "name": "www.bar",
-          "subdomain": "bar",
           "target": "60.22.22.22",
           "ttl": 300,
           "type": "A"
@@ -354,7 +342,6 @@
             "A": "10.0.0.3"
           },
           "name": "d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.3",
           "ttl": 300,
           "type": "A"
@@ -364,7 +351,6 @@
             "A": "10.0.0.4"
           },
           "name": "www.d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.4",
           "ttl": 300,
           "type": "A"
@@ -383,7 +369,6 @@
             "A": "10.0.0.5"
           },
           "name": "\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.5",
           "ttl": 300,
           "type": "A"
@@ -393,7 +378,6 @@
             "A": "10.0.0.6"
           },
           "name": "www.\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.6",
           "ttl": 300,
           "type": "A"
@@ -425,7 +409,6 @@
             "A": "10.0.0.11"
           },
           "name": "d\u00fcsseltal",
-          "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.11",
           "ttl": 300,
           "type": "A"
@@ -435,7 +418,6 @@
             "A": "10.0.0.12"
           },
           "name": "www.d\u00fcsseltal",
-          "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.12",
           "ttl": 300,
           "type": "A"
@@ -445,7 +427,6 @@
             "A": "10.0.0.9"
           },
           "name": "subdomain",
-          "subdomain": "subdomain",
           "target": "10.0.0.9",
           "ttl": 300,
           "type": "A"
@@ -455,7 +436,6 @@
             "A": "10.0.0.10"
           },
           "name": "www.subdomain",
-          "subdomain": "subdomain",
           "target": "10.0.0.10",
           "ttl": 300,
           "type": "A"
@@ -474,7 +454,6 @@
             "A": "10.0.0.13"
           },
           "name": "\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.13",
           "ttl": 300,
           "type": "A"
@@ -484,7 +463,6 @@
             "A": "10.0.0.14"
           },
           "name": "www.\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.14",
           "ttl": 300,
           "type": "A"
@@ -516,7 +494,6 @@
             "A": "10.0.0.19"
           },
           "name": "d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.19",
           "ttl": 300,
           "type": "A"
@@ -526,7 +503,6 @@
             "A": "10.0.0.20"
           },
           "name": "www.d\u00fcsseldorf",
-          "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.20",
           "ttl": 300,
           "type": "A"
@@ -536,7 +512,6 @@
             "A": "10.0.0.17"
           },
           "name": "subdomain",
-          "subdomain": "subdomain",
           "target": "10.0.0.17",
           "ttl": 300,
           "type": "A"
@@ -546,7 +521,6 @@
             "A": "10.0.0.18"
           },
           "name": "www.subdomain",
-          "subdomain": "subdomain",
           "target": "10.0.0.18",
           "ttl": 300,
           "type": "A"
@@ -565,7 +539,6 @@
             "A": "10.0.0.21"
           },
           "name": "\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.21",
           "ttl": 300,
           "type": "A"
@@ -575,7 +548,6 @@
             "A": "10.0.0.22"
           },
           "name": "www.\u00fc",
-          "subdomain": "\u00fc",
           "target": "10.0.0.22",
           "ttl": 300,
           "type": "A"

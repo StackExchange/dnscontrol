@@ -1,93 +1,93 @@
 {
+  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
+      "name": "foo1.com",
+      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo1.com"
       },
-      "name": "foo1.com",
       "records": [
         {
-          "Fields": {
-            "A": "1.1.1.1"
-          },
+          "type": "A",
           "name": "bar",
-          "target": "1.1.1.1",
           "ttl": 300,
-          "type": "A"
+          "Fields": {
+            "A": "4.4.4.101"
+          },
+          "target": "4.4.4.101"
         },
         {
-          "Fields": {
-            "A": "5.5.5.5"
-          },
+          "type": "A",
           "name": "foo",
-          "target": "5.5.5.5",
           "ttl": 300,
-          "type": "A"
+          "Fields": {
+            "A": "6.6.6.3"
+          },
+          "target": "6.6.6.3"
         }
-      ],
-      "registrar": "reg"
+      ]
     },
     {
+      "name": "inny",
+      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "inny"
       },
-      "name": "inny",
       "records": [
         {
-          "Fields": {
-            "A": "1.1.1.1"
-          },
+          "type": "A",
           "name": "bar.foo1.com",
-          "target": "4.4.4.101",
           "ttl": 60,
-          "type": "A"
+          "Fields": {
+            "A": "4.4.4.101"
+          },
+          "target": "4.4.4.101"
         },
         {
-          "Fields": {
-            "A": "5.5.5.5"
-          },
+          "type": "A",
           "name": "foo.foo1.com",
-          "target": "6.6.6.3",
           "ttl": 60,
-          "type": "A"
+          "Fields": {
+            "A": "6.6.6.3"
+          },
+          "target": "6.6.6.3"
         }
-      ],
-      "registrar": "reg"
+      ]
     },
     {
+      "name": "com.inny",
+      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "com.inny"
       },
-      "name": "com.inny",
       "records": [
         {
-          "Fields": {
-            "A": "1.1.1.1"
-          },
+          "type": "A",
           "name": "bar.foo1",
-          "target": "1.1.1.1",
           "ttl": 99,
-          "type": "A"
+          "Fields": {
+            "A": "4.4.4.101"
+          },
+          "target": "4.4.4.101"
         },
         {
-          "Fields": {
-            "A": "5.5.5.5"
-          },
+          "type": "A",
           "name": "foo.foo1",
-          "target": "7.7.7.7",
           "ttl": 99,
-          "type": "A"
+          "Fields": {
+            "A": "6.6.6.3"
+          },
+          "target": "6.6.6.3"
         }
-      ],
-      "registrar": "reg"
+      ]
     }
-  ],
-  "registrars": []
+  ]
 }

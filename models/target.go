@@ -57,6 +57,9 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
+	if IsTypeUpgraded(rc.Type) {
+		return rc.Display
+	}
 
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
