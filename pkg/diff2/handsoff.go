@@ -179,9 +179,9 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		fmt.Printf("DEBUG: matchAny sent: umc=%v rec=%v\n", unmanagedConfigs, rec)
+		//fmt.Printf("DEBUG: matchAny sent: umc=%v rec=%v\n", unmanagedConfigs, rec)
 		isMatch := matchAny(unmanagedConfigs, rec)
-		fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
+		//fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
 		if isMatch {
 			ignorable = append(ignorable, rec)
 		} else {
