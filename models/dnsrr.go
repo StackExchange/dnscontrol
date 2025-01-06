@@ -28,6 +28,7 @@ func RRtoRCTxtBug(rr dns.RR, origin string) (RecordConfig, error) {
 
 // helperRRtoRC converts dns.RR to RecordConfig. If fixBug is true, replaces `\\` to `\` in TXT records to compensate for github.com/miekg/dns/issues/1384.
 func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
+	//fmt.Printf("DEBUG: RRtoRC(%v, %q)\n", rr, origin)
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
 	header := rr.Header()
@@ -36,7 +37,10 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		TTL:      header.Ttl,
 		Original: rr,
 	}
-	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
+	//fmt.Printf("DEBUG:     header.Name=%q origin=%q\n", header.Name, origin)
+	//rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
+	//fmt.Printf("DEBUG:     RRtoRC(%q, %q)\n", rc.Name, rc.NameFQDN)
+	//fmt.Printf("DEBUG:     name=%q nameFQDN=%q\n", rc.Name, rc.NameFQDN)
 	var err error
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
@@ -93,6 +97,9 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	if err != nil {
 		return *rc, fmt.Errorf("unparsable record received: %w", err)
 	}
-	rc.ImportFromLegacy(origin)
+
+	// Must be done after any .SetTarget*(*) calls since they may clear the .NameFQDN field.
+	rc.SetLabelFromFQDN(header.Name, origin)
+	//fmt.Printf("DEBUG:    end RRtoRC(%q, %q)\n", rc.Name, rc.NameFQDN)
 	return *rc, nil
 }

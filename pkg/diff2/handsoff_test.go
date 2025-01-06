@@ -49,6 +49,7 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("DEBUG: existing = %+v\n", existing)
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
 	if err != nil {
@@ -56,16 +57,25 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	}
 	dc := dnsconfig.FindDomain("f.com")
 	desired := dc.Records
+	fmt.Printf("DEBUG: desired = %+v\n", desired)
 	absences := dc.EnsureAbsent
 	unmanagedConfigs := dc.Unmanaged
 	// BUG(tlim): For some reason ExecuteJavascriptString() isn't setting the NameFQDN on records.
 	//            This fixes up the records. It is a crass workaround. We should find the real
 	//            cause and fix it.
+	// for i, j := range existing {
+	// 	existing[i].SetLabel(j.Name, "f.com")
+	// 	fmt.Printf("DEBUG: existing short=%q fqdn=%q\n", j.Name, j.NameFQDN)
+	// }
 	for i, j := range desired {
-		desired[i].SetLabel(j.GetLabel(), "f.com")
+		//desired[i].SetLabel(j.GetLabel(), "f.com")
+		desired[i].SetLabel(j.Name, "f.com")
+		fmt.Printf("DEBUG: desired short=%q fqdn=%q\n", j.Name, j.NameFQDN)
 	}
 	for i, j := range absences {
-		absences[i].SetLabel(j.GetLabel(), "f.com")
+		//absences[i].SetLabel(j.GetLabel(), "f.com")
+		absences[i].SetLabel(j.Name, "f.com")
+		fmt.Printf("DEBUG: abs short=%q fqdn=%q\n", j.Name, j.NameFQDN)
 	}
 
 	ignored, purged := processIgnoreAndNoPurge(
