@@ -171,13 +171,18 @@ func (rc *RecordConfig) SetTarget(s string) error {
 	case "A":
 		return rc.SetTargetA(s)
 	case "MX":
+		if rc.Fields == nil {
+			return rc.SetTargetMX(rc.MxPreference, s)
+		}
 		f := rc.AsMX()
 		return rc.SetTargetMX(f.Preference, s)
 	case "SRV":
+		if rc.Fields == nil {
+			return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
+		}
 		f := rc.AsSRV()
 		return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
 	}
-
 	return nil
 }
 
