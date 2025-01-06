@@ -394,7 +394,7 @@ have access to read/edit Workers. This flag will eventually go away.
 
 ```shell
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
+go test -v -verbose -profile CLOUDFLAREAPI -cfworkers=false
 ```
 
 When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.
