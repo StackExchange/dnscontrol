@@ -58,7 +58,7 @@ func Test_RemoveNode(t *testing.T) {
 
 	// example.com change has been removed
 	nodes := graph.Tree.Get("example.com")
-	assert.Len(t, nodes, 0)
+	assert.Empty(t, nodes)
 
 	nodes = graph.Tree.Get("a.hq.example.com")
 	assert.Len(t, nodes, 1)
