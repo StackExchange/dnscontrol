@@ -7,10 +7,24 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
+// RawRecordConfig stores the user-input from dnsconfig.js for a DNS
+// Record.  This is later processed (in Go) to become a RecordConfig.
+// NOTE: Only newer rtypes are processed this way.  Eventually the
+// legacy types will be converted.
+type RawRecordConfig struct {
+	Type      string           `json:"type"`
+	Args      []string         `json:"args,omitempty"`
+	Metas     []map[string]any `json:"metas,omitempty"`
+	TTL       uint32           `json:"ttl,omitempty"`
+	SubDomain string           `json:"subdomain,omitempty"`
+
+	// Override NO_PURGE and delete this record
+	EnsureAbsent bool `json:"ensure_absent,omitempty"`
+}
+
 func TransformRawRecords(domains []*DomainConfig) error {
 
 	for _, dc := range domains {
-		//fmt.Printf("DEBUG: dc.DefaultTTL = %d\n", dc.DefaultTTL)
 
 		for _, rawRec := range dc.RawRecords {
 
@@ -78,19 +92,9 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 	return fn(rc, args, meta, origin)
 }
 
-// func (rc *RecordConfig) MustValidate() {
-// 	// If A/MX/SRV, Fields should be filled in.
-// 	_, ok := rtypeDB[rc.Type]
-// 	if ok {
-// 		if rc.Fields == nil {
-// 			panic(fmt.Sprintf("RecordConfig %s %s has nil Fields", rc.Type, rc.Name))
-// 		}
-// 	}
-// }
-
 // ImportFromLegacy copies the legacy fields (target, MxPreference,
-// SrvPort, etc.) to the raw-based fields.
-// The reverse of Seal*()
+// SrvPort, etc.) to the .Fields structure.  It is the reverse of
+// Seal*().
 func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 
 	if IsTypeLegacy(rc.Type) {
@@ -111,7 +115,6 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		return rc.PopulateSRVFields(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
 	}
 	panic("Should not happen")
-	//return nil
 }
 
 func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
@@ -121,7 +124,7 @@ func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 		// Was this created wrong?
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
-			log.Warnf("DEBUG: Found LEGACY PROVIDER!!!!!!!! record %s %s %v\n", rec.Type, rec.Name, rec)
+			log.Warnf("LEGACY PROVIDER needs fixing! Created invalid record: %s %s %v\n", rec.Type, rec.Name, rec)
 			rec.ImportFromLegacy(origin)
 		}
 	}
