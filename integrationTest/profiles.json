@@ -22,7 +22,7 @@
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "transfer-mode": "AXFRDDNS_TRANSFER_MODE",
+    "transfer-mode": "$AXFRDDNS_TRANSFER_MODE",
     "update-key": "$AXFRDDNS_UPDATE_KEY",
     "update-mode": "$AXFRDDNS_UPDATE_MODE"
   },
@@ -32,7 +32,7 @@
     "master": "$AXFRDDNS_DNSSEC_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_DNSSEC_TRANSFER_KEY",
-    "transfer-mode": "AXFRDDNS_DNSSEC_TRANSFER_MODE",
+    "transfer-mode": "$AXFRDDNS_DNSSEC_TRANSFER_MODE",
     "update-key": "$AXFRDDNS_DNSSEC_UPDATE_KEY",
     "update-mode": "$AXFRDDNS_DNSSEC_UPDATE_MODE"
   },
