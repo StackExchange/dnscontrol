@@ -310,7 +310,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Fatal(err)
 		}
 		if actualChangeCount != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", actualChangeCount)
+			t.Logf("Expected 0 corrections on SECOND run, but found %d.", actualChangeCount)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}

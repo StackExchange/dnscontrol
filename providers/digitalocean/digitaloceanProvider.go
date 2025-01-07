@@ -192,6 +192,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
+				fmt.Printf("DEBUG: delete req=%+v\n", m)
 				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -209,7 +210,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: m.String(),
 			F: func() error {
 			retry:
-				//fmt.Printf("DEBUG: createrequest req=%+v\n", req)
+				fmt.Printf("DEBUG: createrequest req=%+v\n", req)
 				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -228,6 +229,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
+				fmt.Printf("DEBUG: modify req=%+v\n", req)
 				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -278,7 +280,12 @@ retry:
 
 func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
+	fmt.Printf("DEBUG: DO name=%q\n", r.Name)
 	name := dnsutil.AddOrigin(r.Name, domain)
+	// _, name, err := fieldtypes.ParseLabel3(r.Name, "", domain)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
@@ -312,15 +319,16 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	default:
 		t.SetTarget(target)
 	}
-	t.ImportFromLegacy(domain)
+	//t.ImportFromLegacy(domain)
+	fmt.Printf("DEBUG: DO toRc=%+v\n", t)
 	return t, nil
 }
 
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
-	rc.MustValidate()
 
 	//fmt.Printf("DEBUG: DO toreq short=%q fqdn=%q\n", rc.GetLabel(), rc.NameFQDN)
-	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
+	name := rc.GetLabel() // DO wants the short name or "@" for apex.
+	fmt.Printf("DEBUG: DO toreq name=%q rc=%+v\n", name, rc)
 	target := rc.GetTargetField() // DO uses the target field only for a single value
 	priority := 0                 // DO uses the same property for MX and SRV priority
 
@@ -352,7 +360,7 @@ func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
-	//fmt.Printf("DEBUG: DO create=%+v\n", r)
+	fmt.Printf("DEBUG: DO create=%+v\n", r)
 	return r
 }
 
