@@ -253,7 +253,7 @@ To run the integration test with the BIND provider:
 
 ```shell
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -provider BIND
+go test -v -verbose -profile BIND
 ```
 
 Once the code works for BIND, consider submitting a PR at this point.
@@ -276,7 +276,7 @@ export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID=CHANGE_TO_THE_ID
 export R53_KEY='CHANGE_TO_THE_KEY'
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -provider ROUTE53
+go test -v -verbose -profile ROUTE53
 ```
 
 The test should reveal any bugs. Keep iterating between fixing the
