@@ -226,7 +226,6 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			if gotExpr != tt.wantExpr {
 				t.Errorf("makeSingleDirectRule()  EXPR = %v\n                                                  want %v", gotExpr, tt.wantExpr)
 			}
-			// _ = gotType
 		})
 	}
 }

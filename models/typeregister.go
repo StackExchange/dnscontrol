@@ -40,7 +40,24 @@ func RegisterType(typeName string, opts RegisterOpts) error {
 	return nil
 }
 
+func GetTypeOps(t string) (*RegisterOpts, error) {
+	if opts, ok := rtypeDB[t]; ok {
+		return &opts, nil
+	}
+	return nil, fmt.Errorf("rtype %q not found", t)
+}
+
 func IsValid(t string) bool {
+	_, ok := validTypes[t]
+	return ok
+}
+
+func IsTypeLegacy(t string) bool {
+	_, ok := validTypes[t]
+	return !ok
+}
+
+func IsTypeUpgraded(t string) bool {
 	_, ok := validTypes[t]
 	return ok
 }

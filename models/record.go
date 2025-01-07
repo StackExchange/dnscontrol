@@ -287,6 +287,20 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	err := reprint.FromTo(rc, newR) // Deep copy
 	// Set each unexported field.
 	newR.target = rc.target
+
+	// Copy the fields to new memory so there is no aliasing.
+	switch rc.Type {
+	case "A":
+		newR.Fields = &A{}
+		newR.Fields = rc.Fields
+	case "MX":
+		newR.Fields = &MX{}
+		newR.Fields = rc.Fields
+	case "SRV":
+		newR.Fields = &SRV{}
+		newR.Fields = rc.Fields
+	}
+	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
 	return newR, err
 }
 
@@ -329,6 +343,10 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 	}
 	rc.Name = label
 	rc.NameFQDN = labelFQDN
+	if origin != "" {
+		// We have consumed the SubDomain, so clear it.
+		rc.SubDomain = ""
+	}
 	return nil
 }
 
@@ -631,6 +649,7 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
+			r.ImportFromLegacy("") // Convert legacy fields to raw fields.
 		case "A", "CAA", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":

@@ -5,7 +5,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 	"github.com/miekg/dns"
 )
 
@@ -58,6 +57,10 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
+	if IsTypeUpgraded(rc.Type) {
+		return rc.Display
+	}
+
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
@@ -168,20 +171,26 @@ func (rc *RecordConfig) SetTarget(s string) error {
 	case "A":
 		return rc.SetTargetA(s)
 	case "MX":
+		if rc.Fields == nil {
+			return rc.SetTargetMX(rc.MxPreference, s)
+		}
 		f := rc.AsMX()
 		return rc.SetTargetMX(f.Preference, s)
 	case "SRV":
+		if rc.Fields == nil {
+			return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
+		}
 		f := rc.AsSRV()
 		return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
 	}
-
 	return nil
 }
 
 // MustSetTarget is like SetTarget, but panics if an error occurs.
 // It should only be used in _test.go files and in the init() function.
-func (rc *RecordConfig) MustSetTarget(target string) {
-	if err := rc.SetTarget(target); err != nil {
+func (rc *RecordConfig) MustSetTarget(s string) {
+	err := rc.SetTarget(s)
+	if err != nil {
 		panic(err)
 	}
 }
@@ -193,14 +202,5 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 }
 
 func (rc *RecordConfig) SetTargetA(s string) error {
-	if rc.Fields == nil {
-		rc.Fields = &A{}
-	}
-
-	a, err := fieldtypes.ParseIPv4(s)
-	if err != nil {
-		return err
-	}
-	rc.AsA().A = a
-	return rc.SealA()
+	return PopulateARaw(rc, []string{rc.Name, s}, nil, "")
 }

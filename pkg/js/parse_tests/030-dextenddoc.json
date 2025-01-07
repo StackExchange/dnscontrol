@@ -51,7 +51,6 @@
             "A": "127.0.0.7"
           },
           "name": "sub",
-          "subdomain": "sub",
           "target": "127.0.0.7",
           "ttl": 300,
           "type": "A"
@@ -61,7 +60,6 @@
             "A": "127.0.0.4"
           },
           "name": "bbb.sub",
-          "subdomain": "sub",
           "target": "127.0.0.4",
           "ttl": 300,
           "type": "A"
@@ -71,7 +69,6 @@
             "A": "127.0.0.5"
           },
           "name": "ccc.sub",
-          "subdomain": "sub",
           "target": "127.0.0.5",
           "ttl": 300,
           "type": "A"
@@ -95,7 +92,6 @@
             "A": "127.0.0.6"
           },
           "name": "ddd.sub.sub",
-          "subdomain": "sub.sub",
           "target": "127.0.0.6",
           "ttl": 300,
           "type": "A"

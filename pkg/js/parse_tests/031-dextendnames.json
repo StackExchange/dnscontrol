@@ -69,7 +69,6 @@
             "A": "127.0.0.7"
           },
           "name": "ssub",
-          "subdomain": "ssub",
           "target": "127.0.0.7",
           "ttl": 300,
           "type": "A"
@@ -79,7 +78,6 @@
             "A": "127.0.0.8"
           },
           "name": "j.ssub",
-          "subdomain": "ssub",
           "target": "127.0.0.8",
           "ttl": 300,
           "type": "A"
@@ -96,7 +94,6 @@
             "A": "127.0.0.5"
           },
           "name": "ub",
-          "subdomain": "ub",
           "target": "127.0.0.5",
           "ttl": 300,
           "type": "A"
@@ -106,7 +103,6 @@
             "A": "127.0.0.6"
           },
           "name": "g.ub",
-          "subdomain": "ub",
           "target": "127.0.0.6",
           "ttl": 300,
           "type": "A"

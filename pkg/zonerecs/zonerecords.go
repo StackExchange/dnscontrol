@@ -2,6 +2,7 @@ package zonerecs
 
 import (
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/go-acme/lego/v4/log"
 )
 
 // CorrectZoneRecords calls both GetZoneRecords, does any
@@ -11,6 +12,10 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	existingRecords, err := driver.GetZoneRecords(dc.Name, dc.Metadata)
 	if err != nil {
 		return nil, nil, 0, err
+	}
+
+	if models.CheckAndFixImport(existingRecords, dc.Name) {
+		log.Warnf("Domain %+v sent records not yet converted to new-style Fields storage. Adjusting.", dc.DNSProviderNames)
 	}
 
 	// downcase

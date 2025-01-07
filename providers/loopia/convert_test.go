@@ -9,11 +9,12 @@ import (
 
 func TestRecordToNative_1(t *testing.T) {
 	rc := &models.RecordConfig{
-		TTL: 3600,
+		Type: "A",
+		TTL:  3600,
 	}
 	rc.SetLabel("foo", "example.com")
 	rc.MustSetTarget("1.2.3.4")
-	rc.Type = "A"
+	rc.ImportFromLegacy("example.com")
 
 	ns := recordToNative(rc, 0)
 

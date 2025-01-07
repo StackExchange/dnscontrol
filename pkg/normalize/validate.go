@@ -524,7 +524,10 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, checkRecordSetHasMultipleTTLs(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
-			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
+			//if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
+			// FIXME(tlim): Why was .NameFQDN ever ""?  check the "git blame"
+			if r.Name != "@" && r.NameFQDN != "" && !strings.HasSuffix(r.NameFQDN, d.Name) {
+				fmt.Printf("DEBUG: validate.go: fqdn=%q short=%q dom=%q\n", r.NameFQDN, r.Name, d.Name)
 				errs = append(errs, fmt.Errorf("record named '%s' does not have correct FQDN for domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
 			}
 		}
@@ -858,22 +861,24 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
+		fmt.Printf("DEBUG: transformed ip=%v to ips=%v\n", ip, newIPs)
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
 				// replace target of first record if different
-				if err := rec.SetTarget(newIP.String()); err != nil {
+				if err := rec.SetTargetA(newIP.String()); err != nil {
 					return err
 				}
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
-				copy, err := rec.Copy()
+				cpy, err := rec.Copy()
 				if err != nil {
 					return err
 				}
-				if err := copy.SetTarget(newIP.String()); err != nil {
+				if err := cpy.SetTargetA(newIP.String()); err != nil {
 					return err
 				}
-				domain.Records = append(domain.Records, copy)
+				cpy.Fields = &models.A{}
+				domain.Records = append(domain.Records, cpy)
 			}
 		}
 	}

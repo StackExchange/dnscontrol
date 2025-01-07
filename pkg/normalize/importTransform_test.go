@@ -9,6 +9,7 @@ import (
 func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
 	rc.SetLabel(label, domain)
 	rc.MustSetTarget(target)
+	rc.ImportFromLegacy(domain)
 	return &rc
 }
 

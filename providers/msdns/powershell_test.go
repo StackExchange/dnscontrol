@@ -109,29 +109,14 @@ func Test_generatePSZoneDump(t *testing.T) {
 // }
 
 func Test_generatePSModify(t *testing.T) {
-	recA1 := &models.RecordConfig{
-		Type: "A",
-		Name: "@",
-	}
-	recA1.MustSetTarget("1.2.3.4")
-	recA2 := &models.RecordConfig{
-		Type: "A",
-		Name: "@",
-	}
-	recA2.MustSetTarget("10.20.30.40")
-
-	recMX1 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 5,
-	}
-	recMX1.MustSetTarget("foo.com.")
-	recMX2 := &models.RecordConfig{
-		Type:         "MX",
-		Name:         "@",
-		MxPreference: 50,
-	}
-	recMX2.MustSetTarget("foo2.com.")
+	recA1 := &models.RecordConfig{}
+	recA2 := &models.RecordConfig{}
+	recMX1 := &models.RecordConfig{}
+	recMX2 := &models.RecordConfig{}
+	models.PopulateARaw(recA1, []string{"@", "1.2.3.4"}, nil, "example.com")
+	models.PopulateARaw(recA2, []string{"@", "10.20.30.40"}, nil, "example.com")
+	models.PopulateMXRaw(recMX1, []string{"@", "5", "foo.com."}, nil, "example.com")
+	models.PopulateMXRaw(recMX2, []string{"@", "50", "foo2.com."}, nil, "example.com")
 
 	type args struct {
 		domain    string

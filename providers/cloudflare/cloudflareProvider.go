@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -594,19 +593,24 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	// look for ip conversions and transform records
 	for _, rec := range dc.Records {
+		//fmt.Printf("DEBUG: TRANSFORMING %v\n", rec)
 		// Only transform A records
 		if rec.Type != "A" {
+			//fmt.Printf("DEBUG: NOT A\n")
 			continue
 		}
 		// only transform "full"
 		if rec.Metadata[metaProxy] != "full" {
+			//fmt.Printf("DEBUG: NOT FULL\n")
 			continue
 		}
-		ip := net.ParseIP(rec.GetTargetField())
-		if ip == nil {
-			return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
-		}
-		newIP, err := transform.IP(ip, c.ipConversions)
+		// ip := net.ParseIP(rec.GetTargetField())
+		// if ip == nil {
+		// 	return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
+		// }
+		ip := rec.AsA().A
+		newIP, err := transform.IP(ip[:], c.ipConversions)
+		//fmt.Printf("DEBUG: transform %s -> %s (using %q)\n", ip, newIP, c.ipConversions)
 		if err != nil {
 			return err
 		}

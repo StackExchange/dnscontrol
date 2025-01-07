@@ -70,10 +70,10 @@ func txtDecode(s string) (string, error) {
 	/*
 
 		BNF:
-			txttarget := `""`` | item | item ` item*
+			txttarget := `""`` | item | item ` ` item*
 			item := quoteditem | unquoteditem
 			quoteditem := quote innertxt quote
-			:= `"`
+			quote := `"`
 			innertxt := (escaped | printable )*
 			escaped := `\\` | `\"`
 			printable := (printable ASCII chars)

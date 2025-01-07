@@ -184,6 +184,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 		return nil, nil, err
 	}
 	for _, rec := range existing {
+		//fmt.Printf("DEBUG: matchAny sent: umc=%v rec=%v\n", unmanagedConfigs, rec)
 		isMatch := matchAny(unmanagedConfigs, rec)
 		// fmt.Printf("DEBUG: matchAny returned: %v\n", isMatch)
 		if isMatch {
@@ -191,6 +192,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 		} else {
 			if noPurge {
 				// Is this a candidate for purging?
+				fmt.Printf("DEBUG: ignore_compare sent: short=%q fqdn=%q db=%v\n", rec.Name, rec.NameFQDN, desiredDB)
 				if !desiredDB.ContainsLT(rec) {
 					// Yes, but not if it is an exception!
 					if !absentDB.ContainsLT(rec) {
