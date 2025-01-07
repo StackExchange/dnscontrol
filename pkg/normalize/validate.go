@@ -521,6 +521,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if r.Name != "@" && r.NameFQDN != "" && !strings.HasSuffix(r.NameFQDN, d.Name) {
 				fmt.Printf("DEBUG: validate.go: fqdn=%q short=%q dom=%q\n", r.NameFQDN, r.Name, d.Name)
 				errs = append(errs, fmt.Errorf("record named '%s' does not have correct FQDN for domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
+				panic("")
 			}
 		}
 		// Verify AutoDNSSEC is valid.
