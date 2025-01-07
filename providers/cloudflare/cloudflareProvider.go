@@ -615,7 +615,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			return err
 		}
 		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
-		if err := rec.SetTarget(newIP.String()); err != nil {
+		if err := rec.SetTargetA(newIP.String()); err != nil {
 			return err
 		}
 	}

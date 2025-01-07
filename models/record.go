@@ -354,6 +354,7 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
+
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
@@ -369,6 +370,7 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
+	//fmt.Printf("DEBUG: SetLabelFromFQDN result short=%q fqdn=%q\n", rc.Name, rc.NameFQDN)
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -391,6 +393,10 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if IsTypeUpgraded(rc.Type) {
+		return rc.Comparable
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)

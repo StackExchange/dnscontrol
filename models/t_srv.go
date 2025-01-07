@@ -11,11 +11,6 @@ func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target strin
 	return rc.PopulateSRVFields(priority, weight, port, target, nil, "")
 }
 
-// setTargetSRVIntAndStrings is like SetTargetSRV but accepts priority as an int, the other parameters as strings.
-func (rc *RecordConfig) setTargetSRVIntAndStrings(priority uint16, weight, port, target string) (err error) {
-	return PopulateSRVRaw(rc, []string{rc.Name, strconv.Itoa(int(priority)), weight, port, target}, nil, "")
-}
-
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.
 func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) (err error) {
 	return PopulateSRVRaw(rc, []string{rc.Name, priority, weight, port, target}, nil, "")
@@ -29,9 +24,9 @@ func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) er
 	part := strings.Fields(s)
 	switch len(part) {
 	case 3:
-		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
+		return PopulateSRVRaw(rc, []string{rc.Name, strconv.Itoa(int(priority)), part[0], part[1], part[2]}, nil, "")
 	case 2:
-		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], ".")
+		return PopulateSRVRaw(rc, []string{rc.Name, strconv.Itoa(int(priority)), part[0], part[1], "."}, nil, "")
 	default:
 		return fmt.Errorf("SRV value does not contain 3 fields: (%#v)", s)
 	}

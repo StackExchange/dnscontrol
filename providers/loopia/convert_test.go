@@ -14,7 +14,6 @@ func TestRecordToNative_1(t *testing.T) {
 	}
 	rc.SetLabel("foo", "example.com")
 	rc.MustSetTarget("1.2.3.4")
-	rc.ImportFromLegacy("example.com")
 
 	ns := recordToNative(rc, 0)
 

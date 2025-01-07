@@ -13,16 +13,16 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		return "", "", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
+		return "FAIL1", "", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
 	}
 	if strings.ToLower(origin) != origin {
-		return "", "", fmt.Errorf("origin (%s) must be lowercase", origin)
+		return "FAIL2", "", fmt.Errorf("origin (%s) must be lowercase", origin)
 	}
 	if strings.ToLower(subdomain) != subdomain {
-		return "", "", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
+		return "FAIL3", "", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
 	}
 	if short == "." {
-		return "", "", fmt.Errorf("label (%s) must not be just a dot", short)
+		return "FAIL4", "", fmt.Errorf("label (%s) must not be just a dot", short)
 
 	}
 
@@ -32,7 +32,7 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 		// Legacy mode (no origin specified because parameters doesn't know it yet)
 
 		if lastCharIs(short, '.') {
-			return "", "", fmt.Errorf("label (%s) can not end in dot in legacy mode", short)
+			return "FAIL5", "", fmt.Errorf("label (%s) can not end in dot in legacy mode", short)
 		}
 
 		if subdomain != "" {
@@ -58,7 +58,7 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 		if strings.HasSuffix(short, "."+origin+".") {
 			return short[0 : len(short)-len(origin)-2], short[:len(short)-1], nil
 		}
-		return "", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
+		return "FAIL6", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
 	}
 
 	if subdomain != "" {
@@ -87,16 +87,16 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		return "", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
+		return "FAIL", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
 	}
 	if strings.ToLower(origin) != origin {
-		return "", fmt.Errorf("origin (%s) must be lowercase", origin)
+		return "FAIL", fmt.Errorf("origin (%s) must be lowercase", origin)
 	}
 	if strings.ToLower(subdomain) != subdomain {
-		return "", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
+		return "FAIL", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
 	}
 	if short == "" {
-		return "", fmt.Errorf("short must not be empty")
+		return "FAIL", fmt.Errorf("short must not be empty")
 	}
 	short = strings.ToLower(short)
 	// if strings.ToLower(short) != short {

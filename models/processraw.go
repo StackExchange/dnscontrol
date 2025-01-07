@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+	"github.com/go-acme/lego/v4/log"
 )
 
 func TransformRawRecords(domains []*DomainConfig) error {
@@ -77,15 +78,15 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 	return fn(rc, args, meta, origin)
 }
 
-func (rc *RecordConfig) MustValidate() {
-	// If A/MX/SRV, Fields should be filled in.
-	_, ok := rtypeDB[rc.Type]
-	if ok {
-		if rc.Fields == nil {
-			panic(fmt.Sprintf("RecordConfig %s %s has nil Fields", rc.Type, rc.Name))
-		}
-	}
-}
+// func (rc *RecordConfig) MustValidate() {
+// 	// If A/MX/SRV, Fields should be filled in.
+// 	_, ok := rtypeDB[rc.Type]
+// 	if ok {
+// 		if rc.Fields == nil {
+// 			panic(fmt.Sprintf("RecordConfig %s %s has nil Fields", rc.Type, rc.Name))
+// 		}
+// 	}
+// }
 
 // ImportFromLegacy copies the legacy fields (target, MxPreference,
 // SrvPort, etc.) to the raw-based fields.
@@ -116,9 +117,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 	found := false
 	for _, rec := range recs {
+		//fmt.Printf("DEBUG: Found record %s %s %v\n", rec.Type, rec.Name, rec)
 		// Was this created wrong?
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
+			log.Warnf("DEBUG: Found LEGACY PROVIDER!!!!!!!! record %s %s %v\n", rec.Type, rec.Name, rec)
 			rec.ImportFromLegacy(origin)
 		}
 	}

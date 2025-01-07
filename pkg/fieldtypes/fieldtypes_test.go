@@ -62,15 +62,18 @@ func TestParseLabel3(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotLabel, gotFQDN, err := ParseLabel3(tt.args.short, tt.args.subdomain, tt.args.origin)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ParseLabel3() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotLabel != tt.short {
-				t.Errorf("ParseLabel3() label = %q, want %q", gotLabel, tt.short)
-			}
-			if gotFQDN != tt.fqdn {
-				t.Errorf("ParseLabel3() labelFQDN = %q, want %q", gotFQDN, tt.fqdn)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("ParseLabel3() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			} else {
+				if gotLabel != tt.short {
+					t.Errorf("ParseLabel3() label = %q, want %q", gotLabel, tt.short)
+				}
+				if gotFQDN != tt.fqdn {
+					t.Errorf("ParseLabel3() labelFQDN = %q, want %q", gotFQDN, tt.fqdn)
+				}
 			}
 		})
 	}
