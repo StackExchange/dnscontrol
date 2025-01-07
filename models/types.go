@@ -138,7 +138,9 @@ func PopulateMXRaw(rc *RecordConfig, rawfields []string, meta map[string]string,
 
 	// Convert each rawfield.
 
-	rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+	if origin != "" { //  If we don't know the origin, don't muck with the label.
+		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+	}
 
 	// x := rc.Name
 	// if x != strings.ToLower(x) {
@@ -237,7 +239,9 @@ func PopulateSRVRaw(rc *RecordConfig, rawfields []string, meta map[string]string
 
 	// Convert each rawfield.
 
-	rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+	if origin != "" { //  If we don't know the origin, don't muck with the label.
+		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+	}
 
 	var priority uint16
 	if priority, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {

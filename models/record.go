@@ -351,6 +351,7 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
+	//fmt.Printf("DEBUG: SetLabelFromFQDN called fqdn=%q origin=%q\n", fqdn, origin)
 
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -367,6 +368,7 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
+	//fmt.Printf("DEBUG: SetLabelFromFQDN result short=%q fqdn=%q\n", rc.Name, rc.NameFQDN)
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
