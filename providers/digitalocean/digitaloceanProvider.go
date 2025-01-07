@@ -209,7 +209,7 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: m.String(),
 			F: func() error {
 			retry:
-				fmt.Printf("DEBUG: createrequest req=%+v\n", req)
+				//fmt.Printf("DEBUG: createrequest req=%+v\n", req)
 				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -305,7 +305,7 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 		CaaFlag:      uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, domain)
-	fmt.Printf("DEBUG: DO toRc short=%q fqdn=%q\n", t.Name, t.NameFQDN)
+	//fmt.Printf("DEBUG: DO toRc short=%q fqdn=%q\n", t.Name, t.NameFQDN)
 	switch rtype := r.Type; rtype {
 	case "TXT":
 		t.SetTargetTXT(target)
@@ -319,7 +319,7 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 	rc.MustValidate()
 
-	fmt.Printf("DEBUG: DO toreq short=%q fqdn=%q\n", rc.GetLabel(), rc.NameFQDN)
+	//fmt.Printf("DEBUG: DO toreq short=%q fqdn=%q\n", rc.GetLabel(), rc.NameFQDN)
 	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
 	target := rc.GetTargetField() // DO uses the target field only for a single value
 	priority := 0                 // DO uses the same property for MX and SRV priority
@@ -352,7 +352,7 @@ func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
-	fmt.Printf("DEBUG: DO create=%+v\n", r)
+	//fmt.Printf("DEBUG: DO create=%+v\n", r)
 	return r
 }
 

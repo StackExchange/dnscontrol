@@ -116,10 +116,13 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 	found := false
 	for _, rec := range recs {
+		fmt.Printf("DEBUG: Found record %s %s %v\n", rec.Type, rec.Name, rec)
 		// Was this created wrong?
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
-			rec.ImportFromLegacy(origin)
+			fmt.Printf("DEBUG: Found legacy record %s %s %v\n", rec.Type, rec.Name, rec)
+			panic("")
+			//rec.ImportFromLegacy(origin)
 		}
 	}
 	return found
