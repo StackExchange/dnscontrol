@@ -1,93 +1,93 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo1.com",
-      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo1.com"
       },
+      "name": "foo1.com",
       "records": [
         {
-          "type": "A",
-          "name": "bar",
-          "ttl": 300,
           "Fields": {
             "A": "4.4.4.101"
           },
-          "target": "4.4.4.101"
+          "name": "bar",
+          "target": "4.4.4.101",
+          "ttl": 300,
+          "type": "A"
         },
         {
-          "type": "A",
-          "name": "foo",
-          "ttl": 300,
           "Fields": {
             "A": "6.6.6.3"
           },
-          "target": "6.6.6.3"
+          "name": "foo",
+          "target": "6.6.6.3",
+          "ttl": 300,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "reg"
     },
     {
-      "name": "inny",
-      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "inny"
       },
+      "name": "inny",
       "records": [
         {
-          "type": "A",
-          "name": "bar.foo1.com",
-          "ttl": 60,
           "Fields": {
             "A": "4.4.4.101"
           },
-          "target": "4.4.4.101"
+          "name": "bar.foo1.com",
+          "target": "4.4.4.101",
+          "ttl": 60,
+          "type": "A"
         },
         {
-          "type": "A",
-          "name": "foo.foo1.com",
-          "ttl": 60,
           "Fields": {
             "A": "6.6.6.3"
           },
-          "target": "6.6.6.3"
+          "name": "foo.foo1.com",
+          "target": "6.6.6.3",
+          "ttl": 60,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "reg"
     },
     {
-      "name": "com.inny",
-      "registrar": "reg",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "com.inny"
       },
+      "name": "com.inny",
       "records": [
         {
-          "type": "A",
-          "name": "bar.foo1",
-          "ttl": 99,
           "Fields": {
             "A": "4.4.4.101"
           },
-          "target": "4.4.4.101"
+          "name": "bar.foo1",
+          "target": "4.4.4.101",
+          "ttl": 99,
+          "type": "A"
         },
         {
-          "type": "A",
-          "name": "foo.foo1",
-          "ttl": 99,
           "Fields": {
             "A": "6.6.6.3"
           },
-          "target": "6.6.6.3"
+          "name": "foo.foo1",
+          "target": "6.6.6.3",
+          "ttl": 99,
+          "type": "A"
         }
-      ]
+      ],
+      "registrar": "reg"
     }
-  ]
+  ],
+  "registrars": []
 }
