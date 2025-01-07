@@ -248,14 +248,20 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		//if *providerToRun == "AXFRDDNS" {
-		// Bind will refuse a DDNS update when the resulting zone
-		// contains a NS record without an associated address
-		// records (A or AAAA)
-		//dom.Records = append(dom.Records, a("ns."+domainName+".", "9.8.7.6"))
-		//}
 		dom.Unmanaged = tst.Unmanaged
 		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
+		// Bind will refuse a DDNS update when the resulting zone
+		// contains a NS record without an associated address
+		// records (A or AAAA). In order to run the integration tests
+		// against bind, the initial zone contains the following records:
+		// - `@ NS dummy-ns.example.com`
+		// - `dummy-ns A 9.8.7.6`
+		// We 'hardcode' an ignore rule for the `A` record.
+		dom.Unmanaged = append(dom.Unmanaged, &models.UnmanagedConfig{
+			LabelPattern:  "dummy-ns",
+			RTypePattern:  "A",
+			TargetPattern: "",
+		})
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
