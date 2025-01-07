@@ -192,7 +192,6 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
-				fmt.Printf("DEBUG: delete req=%+v\n", m)
 				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -210,7 +209,6 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: m.String(),
 			F: func() error {
 			retry:
-				fmt.Printf("DEBUG: createrequest req=%+v\n", req)
 				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
@@ -229,7 +227,6 @@ func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConf
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
-				fmt.Printf("DEBUG: modify req=%+v\n", req)
 				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
 				if err != nil {
 					if pauseAndRetry(resp) {

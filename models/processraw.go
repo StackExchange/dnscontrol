@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+	"github.com/go-acme/lego/v4/log"
 )
 
 func TransformRawRecords(domains []*DomainConfig) error {
@@ -120,9 +121,8 @@ func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 		// Was this created wrong?
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
-			fmt.Printf("DEBUG: Found LEGACY !!!!!!!!  record %s %s %v\n", rec.Type, rec.Name, rec)
-			panic("")
-			//rec.ImportFromLegacy(origin)
+			log.Warnf("DEBUG: Found LEGACY PROVIDER!!!!!!!! record %s %s %v\n", rec.Type, rec.Name, rec)
+			rec.ImportFromLegacy(origin)
 		}
 	}
 	return found
