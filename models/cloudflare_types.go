@@ -10,7 +10,6 @@ import (
 
 func init() {
 	RegisterType("CF_SINGLE_REDIRECT", RegisterOpts{FromRaw: PopulateCFSINGLEREDIRECTRaw})
-	//fmt.Printf("DEBUG: REGISTERED CF_SINGLE_REDIRECT\n")
 }
 
 //// CFSINGLEREDIRECT

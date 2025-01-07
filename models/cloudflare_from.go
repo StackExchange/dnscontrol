@@ -5,35 +5,6 @@ import (
 	"fmt"
 )
 
-// MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
-func MakePageRule(rc *RecordConfig, priority int, code uint16, when, then string) error {
-	if rc == nil {
-		return errors.New("RecordConfig cannot be nil")
-	}
-	if when == "" || then == "" {
-		return errors.New("when and then parameters cannot be empty")
-	}
-
-	display := mkPageRuleBlob(priority, code, when, then)
-
-	rc.Type = "PAGE_RULE"
-	rc.TTL = 1
-	rc.Fields = &CFSINGLEREDIRECT{
-		Code: code,
-		//
-		PRWhen:     when,
-		PRThen:     then,
-		PRPriority: priority,
-		PRDisplay:  display,
-	}
-	return rc.SetTarget(display)
-}
-
-// mkPageRuleBlob creates the 1,301,when,then string used in displays.
-func mkPageRuleBlob(priority int, code uint16, when, then string) string {
-	return fmt.Sprintf("%d,%03d,%s,%s", priority, code, when, then)
-}
-
 // MakeSingleRedirectFromRawRec updates a RecordConfig to be a
 // SINGLEREDIRECT using the data from a RawRecord.
 func MakeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, then string) error {
@@ -65,6 +36,35 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 		when,
 		then,
 	)
+}
+
+// MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
+func MakePageRule(rc *RecordConfig, priority int, code uint16, when, then string) error {
+	if rc == nil {
+		return errors.New("RecordConfig cannot be nil")
+	}
+	if when == "" || then == "" {
+		return errors.New("when and then parameters cannot be empty")
+	}
+
+	display := mkPageRuleBlob(priority, code, when, then)
+
+	rc.Type = "PAGE_RULE"
+	rc.TTL = 1
+	rc.Fields = &CFSINGLEREDIRECT{
+		Code: code,
+		//
+		PRWhen:     when,
+		PRThen:     then,
+		PRPriority: priority,
+		PRDisplay:  display,
+	}
+	return rc.SetTarget(display)
+}
+
+// mkPageRuleBlob creates the 1,301,when,then string used in displays.
+func mkPageRuleBlob(priority int, code uint16, when, then string) string {
+	return fmt.Sprintf("%d,%03d,%s,%s", priority, code, when, then)
 }
 
 // MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
