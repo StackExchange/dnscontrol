@@ -122,6 +122,5 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			rtype, sprops, uprops)
 	}
 
-	//rc.ImportFromLegacy(origin)
 	return rc, nil
 }

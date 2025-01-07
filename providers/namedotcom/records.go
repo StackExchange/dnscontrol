@@ -86,13 +86,11 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		TTL:      r.TTL,
 		Original: heapr,
 	}
-	//fmt.Printf("DEBUG: NDC toRecord: names 1: %q/%q\n", rc.Name, rc.NameFQDN)
 	if !strings.HasSuffix(r.Fqdn, ".") {
 		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
 	rc.SetLabelFromFQDN(fqdn, origin)
-	//fmt.Printf("DEBUG: NDC toRecord: names 2: %q/%q\n", rc.Name, rc.NameFQDN)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
 		rc.SetTargetTXT(r.Answer)
@@ -104,7 +102,6 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
 			panic(fmt.Errorf("unparsable SRV record received from ndc: %w", err))
 		}
-		//fmt.Printf("DEBUG: NDC toRecord: names 3: %q/%q\n", rc.Name, rc.NameFQDN)
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
 			panic(fmt.Errorf("unparsable record received from ndc: %w", err))

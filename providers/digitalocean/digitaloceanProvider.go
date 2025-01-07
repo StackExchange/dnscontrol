@@ -277,12 +277,7 @@ retry:
 
 func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
-	//fmt.Printf("DEBUG: DO name=%q\n", r.Name)
 	name := dnsutil.AddOrigin(r.Name, domain)
-	// _, name, err := fieldtypes.ParseLabel3(r.Name, "", domain)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
@@ -309,23 +304,18 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 		CaaFlag:      uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, domain)
-	//fmt.Printf("DEBUG: DO toRc short=%q fqdn=%q combined=%q\n", t.Name, t.NameFQDN, t.GetTargetCombined())
 	switch rtype := r.Type; rtype {
 	case "TXT":
 		t.SetTargetTXT(target)
 	default:
 		t.SetTarget(target)
 	}
-	//t.ImportFromLegacy(domain)
-	//fmt.Printf("DEBUG: DO toRc=%+v\n", t)
 	return t, nil
 }
 
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 
-	//fmt.Printf("DEBUG: DO toreq short=%q fqdn=%q\n", rc.GetLabel(), rc.NameFQDN)
-	name := rc.GetLabel() // DO wants the short name or "@" for apex.
-	//fmt.Printf("DEBUG: DO toreq name=%q rc=%+v\n", name, rc)
+	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
 	target := rc.GetTargetField() // DO uses the target field only for a single value
 	priority := 0                 // DO uses the same property for MX and SRV priority
 
@@ -357,7 +347,6 @@ func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
-	//fmt.Printf("DEBUG: DO create=%+v\n", r)
 	return r
 }
 

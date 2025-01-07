@@ -622,7 +622,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
 		rec.SetTargetA(newIP.String())
-		//rec.ImportFromLegacy(dc.Name)
 	}
 
 	return nil

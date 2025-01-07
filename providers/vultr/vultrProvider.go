@@ -245,17 +245,14 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		if !strings.HasSuffix(data, ".") {
 			data = data + "."
 		}
-		//rc.ImportFromLegacy(domain)
 		return rc, rc.SetTarget(data)
 	case "CAA":
 		// Vultr returns CAA records in the format "[flag] [tag] [value]".
-		//rc.ImportFromLegacy(domain)
 		return rc, rc.SetTargetCAAString(data)
 	case "MX":
 		if !strings.HasSuffix(data, ".") {
 			data = data + "."
 		}
-		//rc.ImportFromLegacy(domain)
 		return rc, rc.SetTargetMX(uint16(r.Priority), data)
 	case "SRV":
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
@@ -272,10 +269,8 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 			// than do the wrong thing.
 			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")
 		}
-		//rc.ImportFromLegacy(domain)
 		return rc, rc.SetTargetTXT(data[1 : len(data)-1])
 	default:
-		//rc.ImportFromLegacy(domain)
 		return rc, rc.PopulateFromString(rtype, r.Data, origin)
 	}
 }
