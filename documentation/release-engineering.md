@@ -10,6 +10,7 @@ Please change the version number as appropriate.  Substitute (for example)
 ## Step 0. Update dependencies
 
 ```shell
+git checkout main
 git checkout -b update_deps
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
@@ -23,6 +24,7 @@ git commit -a -m "CHORE: Update dependencies"
 git checkout main
 git pull
 go fmt ./...
+bin/fmtjson $(find . -type f -name \*.json -print)
 go generate ./...
 go mod tidy
 git status
@@ -32,7 +34,7 @@ There should be no modified files. If there are, check them in then start over f
 
 ```
 git checkout -b gogenerate
-git commit -a -m "Update generated files for $VERSION"
+git commit -a -m "Update generated files"
 ```
 
 ## Step 2. Tag the commit in main that you want to release
