@@ -96,7 +96,7 @@ For example, the entry for BIND looks like:
 
 3. Add your providers other ENV variables:
 
-Every provider requires different variables set to perform the integration tests.  The list of such variables is in `integrationTest/providers.json`.
+Every provider requires different variables set to perform the integration tests.  The list of such variables is in `integrationTest/profiles.json`.
 
 You've already added `*_DOMAIN` to `pr_integration_tests.yml`. Now we're going to add the remaining ones.
 
