@@ -9,14 +9,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -24,12 +20,19 @@ import (
 	r53Types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	r53d "github.com/aws/aws-sdk-go-v2/service/route53domains"
 	r53dTypes "github.com/aws/aws-sdk-go-v2/service/route53domains/types"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 type route53Provider struct {
 	client        *r53.Client
 	registrar     *r53d.Client
 	delegationSet *string
+	zonesMu       sync.Mutex
 	zonesByID     map[string]r53Types.HostedZone
 	zonesByDomain map[string]r53Types.HostedZone
 }
@@ -66,7 +69,13 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		printer.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = aws.String(val)
 	}
-	api := &route53Provider{client: r53.NewFromConfig(config), registrar: r53d.NewFromConfig(config), delegationSet: dls}
+	api := &route53Provider{
+		client:        r53.NewFromConfig(config),
+		registrar:     r53d.NewFromConfig(config),
+		delegationSet: dls,
+		zonesByDomain: make(map[string]r53Types.HostedZone),
+		zonesByID:     make(map[string]r53Types.HostedZone),
+	}
 	err = api.getZones()
 	if err != nil {
 		return nil, err
@@ -132,9 +141,8 @@ func withRetry(f func() error) {
 
 // ListZones lists the zones on this account.
 func (r *route53Provider) ListZones() ([]string, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
+	r.zonesMu.Lock()
+	defer r.zonesMu.Unlock()
 	var zones []string
 	for i := range r.zonesByDomain {
 		zones = append(zones, i)
@@ -142,15 +150,24 @@ func (r *route53Provider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
+func (r *route53Provider) getZoneByDomain(domain string) (r53Types.HostedZone, bool) {
+	r.zonesMu.Lock()
+	defer r.zonesMu.Unlock()
+	zone, ok := r.zonesByDomain[domain]
+	return zone, ok
+}
+
+func (r *route53Provider) getZoneByID(id string) (r53Types.HostedZone, bool) {
+	r.zonesMu.Lock()
+	defer r.zonesMu.Unlock()
+	zone, ok := r.zonesByID[id]
+	return zone, ok
+}
+
 func (r *route53Provider) getZones() error {
-
-	if r.zonesByDomain != nil {
-		return nil
-	}
-
+	r.zonesMu.Lock()
+	defer r.zonesMu.Unlock()
 	var nextMarker *string
-	r.zonesByDomain = make(map[string]r53Types.HostedZone)
-	r.zonesByID = make(map[string]r53Types.HostedZone)
 	for {
 		var out *r53.ListHostedZonesOutput
 		var err error
@@ -165,9 +182,7 @@ func (r *route53Provider) getZones() error {
 			return err
 		}
 		for _, z := range out.HostedZones {
-			domain := strings.TrimSuffix(aws.ToString(z.Name), ".")
-			r.zonesByDomain[domain] = z
-			r.zonesByID[parseZoneID(aws.ToString(z.Id))] = z
+			r.addZoneToCacheLocked(z)
 		}
 		if out.NextMarker != nil {
 			nextMarker = out.NextMarker
@@ -176,6 +191,14 @@ func (r *route53Provider) getZones() error {
 		}
 	}
 	return nil
+}
+
+// addZoneToCacheLocked adds the given zone to the cache.
+// The caller must hold zonesMu.
+func (r *route53Provider) addZoneToCacheLocked(z r53Types.HostedZone) {
+	domain := strings.TrimSuffix(aws.ToString(z.Name), ".")
+	r.zonesByDomain[domain] = z
+	r.zonesByID[parseZoneID(aws.ToString(z.Id))] = z
 }
 
 type errDomainNoExist struct {
@@ -195,11 +218,7 @@ func (e errZoneNoExist) Error() string {
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
-
-	zone, ok := r.zonesByDomain[domain]
+	zone, ok := r.getZoneByDomain(domain)
 	if !ok {
 		return nil, errDomainNoExist{domain}
 	}
@@ -221,15 +240,12 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
-
-	var zone r53Types.HostedZone
-
 	// If the zone_id is specified in meta, use it.
 	if zoneID, ok := meta["zone_id"]; ok {
-		zone = r.zonesByID[zoneID]
+		zone, found := r.getZoneByID(zoneID)
+		if !found {
+			return nil, errZoneNoExist{zoneID}
+		}
 		return r.getZoneRecords(zone)
 	}
 
@@ -239,7 +255,7 @@ func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) 
 	//	}
 
 	// Otherwise, use the domain name to look up the zone.
-	if zone, ok := r.zonesByDomain[domain]; ok {
+	if zone, ok := r.getZoneByDomain(domain); ok {
 		return r.getZoneRecords(zone)
 	}
 
@@ -248,20 +264,15 @@ func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
-
-	if err := r.getZones(); err != nil {
-		return r53Types.HostedZone{}, err
-	}
-
 	if zoneID, ok := dc.Metadata["zone_id"]; ok {
-		zone, ok := r.zonesByID[zoneID]
+		zone, ok := r.getZoneByID(zoneID)
 		if !ok {
 			return r53Types.HostedZone{}, errZoneNoExist{zoneID}
 		}
 		return zone, nil
 	}
 
-	if zone, ok := r.zonesByDomain[dc.Name]; ok {
+	if zone, ok := r.getZoneByDomain(dc.Name); ok {
 		return zone, nil
 	}
 
@@ -656,11 +667,7 @@ func unescape(s *string) string {
 }
 
 func (r *route53Provider) EnsureZoneExists(domain string) error {
-	if err := r.getZones(); err != nil {
-		return err
-	}
-
-	if _, ok := r.zonesByDomain[domain]; ok {
+	if _, ok := r.getZoneByDomain(domain); ok {
 		return nil
 	}
 	if r.delegationSet != nil {
@@ -674,16 +681,19 @@ func (r *route53Provider) EnsureZoneExists(domain string) error {
 		CallerReference: aws.String(fmt.Sprint(time.Now().UnixNano())),
 	}
 
-	// reset zone cache
-	r.zonesByDomain = nil
-	r.zonesByID = nil
-
+	var z *r53.CreateHostedZoneOutput
 	var err error
 	withRetry(func() error {
-		_, err := r.client.CreateHostedZone(context.Background(), in)
+		z, err = r.client.CreateHostedZone(context.Background(), in)
 		return err
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	r.zonesMu.Lock()
+	defer r.zonesMu.Unlock()
+	r.addZoneToCacheLocked(*z.HostedZone)
+	return nil
 }
 
 // changeBatcher takes a set of r53Types.Changes and turns them into a series of
