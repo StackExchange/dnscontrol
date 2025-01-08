@@ -175,6 +175,11 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 	if _, err := c.get("/dns/register.json", params); err != nil {
 		return fmt.Errorf("failed create domain (ClouDNS): %s", err)
 	}
+	c.Lock()
+	defer c.Unlock()
+	if c.domainIndex != nil {
+		c.domainIndex[domain] = domain
+	}
 	return nil
 }
 
