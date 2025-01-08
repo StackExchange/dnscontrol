@@ -62,7 +62,15 @@ func (api *hetznerProvider) createZone(name string) error {
 	request := createZoneRequest{
 		Name: name,
 	}
-	return api.request("/zones", "POST", request, nil, nil)
+	response := createZoneResponse{}
+	err := api.request("/zones", "POST", request, &response, nil)
+	if err != nil {
+		return err
+	}
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	api.cachedZones[name] = response.Zone
+	return nil
 }
 
 func (api *hetznerProvider) deleteRecord(record *record) error {
@@ -105,17 +113,11 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 	return records, nil
 }
 
-func (api *hetznerProvider) resetZoneCache() {
-	api.mu.Lock()
-	defer api.mu.Unlock()
-	api.cachedZones = nil
-}
-
-func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
-	api.mu.Lock()
-	defer api.mu.Unlock()
+// fetchAllZonesLocked populates the zone cache.
+// The caller must hold mu.
+func (api *hetznerProvider) fetchAllZonesLocked() error {
 	if api.cachedZones != nil {
-		return api.cachedZones, nil
+		return nil
 	}
 	var zones map[string]zone
 	page := 1
@@ -134,7 +136,7 @@ func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
 		response := getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
 		if err := api.request(url, "GET", nil, &response, statusOK); err != nil {
-			return nil, fmt.Errorf("failed fetching zones: %w", err)
+			return fmt.Errorf("failed fetching zones: %w", err)
 		}
 		if zones == nil {
 			zones = make(map[string]zone, response.Meta.Pagination.TotalEntries)
@@ -149,15 +151,16 @@ func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
 		page++
 	}
 	api.cachedZones = zones
-	return zones, nil
+	return nil
 }
 
 func (api *hetznerProvider) getZone(name string) (*zone, error) {
-	zones, err := api.getAllZones()
-	if err != nil {
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	if err := api.fetchAllZonesLocked(); err != nil {
 		return nil, err
 	}
-	z, ok := zones[name]
+	z, ok := api.cachedZones[name]
 	if !ok {
 		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
 	}

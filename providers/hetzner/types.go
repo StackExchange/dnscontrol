@@ -17,6 +17,10 @@ type createZoneRequest struct {
 	Name string `json:"name"`
 }
 
+type createZoneResponse struct {
+	Zone zone `json:"zone"`
+}
+
 type getAllRecordsResponse struct {
 	Records []record `json:"records"`
 	Meta    struct {

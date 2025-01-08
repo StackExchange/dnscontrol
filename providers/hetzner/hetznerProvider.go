@@ -71,7 +71,6 @@ func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 	if err = api.createZone(domain); err != nil {
 		return err
 	}
-	api.resetZoneCache()
 	return nil
 }
 
@@ -169,12 +168,14 @@ func (api *hetznerProvider) GetZoneRecords(domain string, meta map[string]string
 
 // ListZones lists the zones on this account.
 func (api *hetznerProvider) ListZones() ([]string, error) {
-	zones, err := api.getAllZones()
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	err := api.fetchAllZonesLocked()
 	if err != nil {
 		return nil, err
 	}
-	domains := make([]string, 0, len(zones))
-	for domain := range zones {
+	domains := make([]string, 0, len(api.cachedZones))
+	for domain := range api.cachedZones {
 		domains = append(domains, domain)
 	}
 	return domains, nil
