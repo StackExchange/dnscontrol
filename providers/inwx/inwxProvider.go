@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nrdcg/goinwx"
+	"github.com/pquerna/otp/totp"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/nrdcg/goinwx"
-	"github.com/pquerna/otp/totp"
 )
 
 /*
@@ -445,11 +446,11 @@ func (api *inwxAPI) EnsureZoneExists(domain string) error {
 		Type:        "MASTER",
 		Nameservers: api.getDefaultNameservers(),
 	}
-	var id int
 	id, err := api.client.Nameservers.Create(request)
 	if err != nil {
 		return err
 	}
 	printer.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	api.domainIndex[domain] = id
 	return nil
 }
