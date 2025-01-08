@@ -8,9 +8,10 @@ import (
 
 	"golang.org/x/net/idna"
 
+	"github.com/cloudflare/cloudflare-go"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
-	"github.com/cloudflare/cloudflare-go"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -30,21 +31,26 @@ func (c *cloudflareProvider) cacheDomainList() error {
 	c.nameservers = map[string][]string{}
 
 	for _, zone := range zones {
-		if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
-			if _, ok := c.domainIndex[encoded]; ok {
-				fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", encoded)
-			}
-			c.domainIndex[encoded] = zone.ID
-			c.nameservers[encoded] = zone.NameServers
-		}
-		if _, ok := c.domainIndex[zone.Name]; ok {
-			fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", zone.Name)
-		}
-		c.domainIndex[zone.Name] = zone.ID
-		c.nameservers[zone.Name] = zone.NameServers
+		c.addZoneToCacheLocked(zone)
 	}
-
 	return nil
+}
+
+// addZoneToCacheLocked adds a given zone to the cache
+// The caller must hold Mutex.
+func (c *cloudflareProvider) addZoneToCacheLocked(zone cloudflare.Zone) {
+	if encoded, err := idna.ToASCII(zone.Name); err == nil && encoded != zone.Name {
+		if _, ok := c.domainIndex[encoded]; ok {
+			fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", encoded)
+		}
+		c.domainIndex[encoded] = zone.ID
+		c.nameservers[encoded] = zone.NameServers
+	}
+	if _, ok := c.domainIndex[zone.Name]; ok {
+		fmt.Printf("WARNING: Zone %q appears twice in this cloudflare account\n", zone.Name)
+	}
+	c.domainIndex[zone.Name] = zone.ID
+	c.nameservers[zone.Name] = zone.NameServers
 }
 
 // get all records for a domain
@@ -70,7 +76,11 @@ func (c *cloudflareProvider) deleteDNSRecord(rec cloudflare.DNSRecord, domainID 
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
 	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.accountID}, "full")
-	return zone.ID, err
+	if err != nil {
+		return "", err
+	}
+	c.addZoneToCacheLocked(zone)
+	return zone.ID, nil
 }
 
 func cfDnskeyData(rec *models.RecordConfig) *cfRecData {

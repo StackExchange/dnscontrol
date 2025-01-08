@@ -12,14 +12,15 @@ import (
 
 	"golang.org/x/net/idna"
 
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/fatih/color"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/fatih/color"
 )
 
 /*
@@ -923,11 +924,12 @@ func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
-	var id string
 	id, err := c.createZone(domain)
+	if err != nil {
+		return err
+	}
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
-	clear(c.domainIndex) // clear the cache so that the next caller has to refresh it, thus loading the new ID.
-	return err
+	return nil
 }
 
 // PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE integration tests.
