@@ -127,13 +127,12 @@ func (api *dnsMadeEasyProvider) fetchDomainNameServers(domainName string) ([]str
 }
 
 func (api *dnsMadeEasyProvider) createDomain(domain string) error {
-	_, err := api.restAPI.singleDomainCreate(singleDomainRequestData{Name: domain})
+	res, err := api.restAPI.singleDomainCreate(singleDomainRequestData{Name: domain})
 	if err != nil {
 		return err
 	}
 
-	// reset cached domains after adding a new one, they will be refetched when needed
-	api.domains = nil
+	api.domains[domain] = res.ID
 
 	return nil
 }
