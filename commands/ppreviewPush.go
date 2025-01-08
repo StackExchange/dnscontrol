@@ -79,13 +79,14 @@ type PPreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify      bool
-	WarnChanges bool
-	ConcurMode  string
-	NoPopulate  bool
-	DePopulate  bool
-	Report      string
-	Full        bool
+	Notify            bool
+	WarnChanges       bool
+	ConcurMode        string
+	NoPopulate        bool
+	DePopulate        bool
+	PopulateOnPreview bool
+	Report            string
+	Full              bool
 }
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
@@ -131,6 +132,12 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "depopulate",
 		Destination: &args.NoPopulate,
 		Usage:       `Delete unknown zones at provider (dangerous!)`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "populate-on-preview",
+		Destination: &args.PopulateOnPreview,
+		Value:       true,
+		Usage:       `Auto-create zones on preview`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "full",
@@ -258,7 +265,58 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
-	out.PrintfIf(fullMode, "PHASE 1: GATHERING data\n")
+
+	var totalCorrections int
+	var reportItems []*ReportItem
+	var anyErrors bool
+
+	// Populate the zones (if desired/needed/able):
+	if !args.NoPopulate {
+		out.PrintfIf(fullMode, "PHASE 1: CHECKING for missing zones\n")
+		var wg sync.WaitGroup
+		wg.Add(len(zonesConcurrent))
+		out.PrintfIf(fullMode, "CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
+		for _, zone := range optimizeOrder(zonesConcurrent) {
+			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
+			go func(zone *models.DomainConfig) {
+				defer wg.Done()
+				oneZonePopulate(zone, args, zcache)
+			}(zone)
+		}
+		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
+		for _, zone := range zonesSerial {
+			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
+			oneZonePopulate(zone, args, zcache)
+		}
+		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
+		wg.Wait()
+		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
+
+		for _, zone := range zonesToProcess {
+			started := false // Do not emit noise when no provider has corrections.
+			providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
+			for _, provider := range zone.DNSProviderInstances {
+				corrections := zone.GetPopulateCorrections(provider.Name)
+				if len(corrections) == 0 {
+					continue // Do not emit noise when zone exists
+				}
+				if !started {
+					out.StartDomain(zone.GetUniqueName())
+					started = true
+				}
+				skip := skipProvider(provider.Name, providersToProcess)
+				out.StartDNSProvider(provider.Name, skip)
+				if !skip {
+					totalCorrections += len(corrections)
+					out.EndProvider2(provider.Name, len(corrections))
+					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, args.PopulateOnPreview, interactive, notifier, report))
+				}
+			}
+		}
+	}
+
+	out.PrintfIf(fullMode, "PHASE 2: GATHERING data\n")
 	var wg sync.WaitGroup
 	wg.Add(len(zonesConcurrent))
 	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
@@ -266,23 +324,20 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 			defer wg.Done()
-			oneZone(zone, args, zcache)
+			oneZone(zone, args)
 		}(zone, args, zcache)
 	}
 	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
 		out.Printf("Serially Gathering: %q\n", zone.Name)
-		oneZone(zone, args, zcache)
+		oneZone(zone, args)
 	}
 	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
 	wg.Wait()
 	out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
 
 	// Now we know what to do, print or do the tasks.
-	out.PrintfIf(fullMode, "PHASE 2: CORRECTIONS\n")
-	var totalCorrections int
-	var reportItems []*ReportItem
-	var anyErrors bool
+	out.PrintfIf(fullMode, "PHASE 3: CORRECTIONS\n")
 	for _, zone := range zonesToProcess {
 		out.StartDomain(zone.GetUniqueName())
 
@@ -413,19 +468,21 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
+	// Loop over all the providers configured for that zone:
+	for _, provider := range zone.DNSProviderInstances {
+		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
+		zone.StorePopulateCorrections(provider.Name, populateCorrections)
+	}
+}
+
+func oneZone(zone *models.DomainConfig, args PPreviewArgs) {
 	// Fix the parent zone's delegation: (if able/needed)
 	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
-		// Populate the zones at the provider (if desired/needed/able):
-		if !args.NoPopulate {
-			populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
-			zone.StoreCorrections(provider.Name, populateCorrections)
-		}
-
 		// Update the zone's records at the provider:
 		zoneCor, rep, actualChangeCount := generateZoneCorrections(zone, provider)
 		zone.StoreCorrections(provider.Name, rep)
