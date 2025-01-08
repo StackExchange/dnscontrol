@@ -27,16 +27,16 @@ func (z *ZoneGenData) Less(i, j int) bool {
 
 	// Sort by name.
 
-	// If we are at the apex, use "@" in the sorting.
+	//fmt.Printf("DEBUG: LabelLess(%q, %q) = %v %q %q\n", compA, compB, LabelLess(compA, compB), a.Name, b.Name)
 	compA, compB := a.NameFQDN, b.NameFQDN
-	// fmt.Printf("DEBUG: LabelLess(%q, %q) = %v %q %q\n", compA, compB, LabelLess(compA, compB), a.Name, b.Name)
+	// Unify FQDNs to "@". LabelLess needs FQDNs to be "@" to work properly.
+	if a.Name == "@" {
+		compA = "@"
+	}
+	if b.Name == "@" {
+		compB = "@"
+	}
 	if compA != compB {
-		if a.Name == "@" {
-			compA = "@"
-		}
-		if b.Name == "@" {
-			compB = "@"
-		}
 		return LabelLess(compA, compB)
 	}
 
@@ -132,8 +132,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 func LabelLess(a, b string) bool {
 	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
 
-	// If they are equal, we are done. All other code is simplified
-	// because we can assume a!=b.
+	// If they are equal, we are done. The remainingi code can assume a != b.
 	if a == b {
 		return false
 	}
@@ -161,15 +160,15 @@ func LabelLess(a, b string) bool {
 	ia := len(as) - 1
 	ib := len(bs) - 1
 
-	var fewestSegments int
+	var minIdx int
 	if ia < ib {
-		fewestSegments = len(as) - 1
+		minIdx = len(as) - 1
 	} else {
-		fewestSegments = len(bs) - 1
+		minIdx = len(bs) - 1
 	}
 
 	// Skip the matching highest elements, then compare the next item.
-	for i, j := ia, ib; fewestSegments >= 0; i, j, fewestSegments = i-1, j-1, fewestSegments-1 {
+	for i, j := ia, ib; minIdx >= 0; i, j, minIdx = i-1, j-1, minIdx-1 {
 		// Compare as[i] < bs[j]
 		// Sort @ at the top, then *, then everything else.
 		// i.e. @ always is less. * is less than everything but @.
