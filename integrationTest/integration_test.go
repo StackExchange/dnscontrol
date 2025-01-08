@@ -868,7 +868,7 @@ func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.Record
 	return r
 }
 
-func clear() *TestCase {
+func tcEmptyZone() *TestCase {
 	return tc("Empty")
 }
 
@@ -941,9 +941,9 @@ func makeTests() []*TestGroup {
 	// whether or not a certain kind of record can be created and
 	// deleted.
 
-	// clear() is the same as tc("Empty").  It removes all records.
-	// Each testgroup() begins with clear() automagically. You do not
-	// have to include the clear() in each testgroup().
+	// emptyzone() is the same as tc("Empty").  It removes all records.
+	// Each testgroup() begins with tcEmptyZone() automagically. You do not
+	// have to include the tcEmptyZone() in each testgroup().
 
 	tests := []*TestGroup{
 		// START HERE
@@ -1074,7 +1074,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("ManyAtOnce",
 			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
-			clear(),
+			tcEmptyZone(),
 			tc("Create an A record", a("www", "1.1.1.1")),
 			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
 			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
@@ -1082,7 +1082,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("manyTypesAtOnce",
 			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
-			clear(),
+			tcEmptyZone(),
 			tc("Create an A record", a("www", "1.1.1.1")),
 			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
 			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
@@ -1320,7 +1320,7 @@ func makeTests() []*TestGroup {
 			tc("a 764-byte TXT", txt("foo764", strings.Repeat("G", 764))), // 255*3-1
 			tc("a 765-byte TXT", txt("foo765", strings.Repeat("H", 765))), // 255*3
 			tc("a 766-byte TXT", txt("foo766", strings.Repeat("J", 766))), // 255*3+1
-			// clear(),
+			// tcEmptyZone(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
@@ -1623,7 +1623,7 @@ func makeTests() []*TestGroup {
 		// SOA
 		testgroup("SOA",
 			requires(providers.CanUseSOA),
-			clear(), // Extra clear required or only the first run passes.
+			tcEmptyZone(), // Required or only the first run passes.
 			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
@@ -1643,7 +1643,7 @@ func makeTests() []*TestGroup {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			clear(),
+			tcEmptyZone(),
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
@@ -1971,12 +1971,12 @@ func makeTests() []*TestGroup {
 
 			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
-			clear(),
+			tcEmptyZone(),
 			tc("multipleA",
 				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
 				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 			),
-			clear(),
+			tcEmptyZone(),
 			tc("multipleB",
 				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
@@ -1991,7 +1991,7 @@ func makeTests() []*TestGroup {
 			),
 
 			// NB(tlim): This test case used to fail but mysteriously started working.
-			clear(),
+			tcEmptyZone(),
 			tc("multiple3",
 				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
@@ -1999,16 +1999,16 @@ func makeTests() []*TestGroup {
 			),
 
 			// Repeat the above tests using CF_TEMP_REDIR instead
-			clear(),
+			tcEmptyZone(),
 			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
-			clear(),
+			tcEmptyZone(),
 			tc("tempmultipleA",
 				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
 				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 			),
-			clear(),
+			tcEmptyZone(),
 			tc("tempmultipleB",
 				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
 				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
@@ -2051,10 +2051,10 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			CfProxyOff(), clear(),
-			CfProxyOn(), clear(),
-			CfProxyFull1(), clear(),
-			CfProxyFull2(), clear(),
+			CfProxyOff(), tcEmptyZone(),
+			CfProxyOn(), tcEmptyZone(),
+			CfProxyFull1(), tcEmptyZone(),
+			CfProxyFull2(), tcEmptyZone(),
 		),
 
 		// These next testgroups attempt every possible transition between off, on, full1 and full2.
@@ -2063,62 +2063,62 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_PROXY A off to X",
 			only("CLOUDFLAREAPI"),
-			// CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
-			CfProxyOff(), CfProxyOn(), clear(),
-			CfProxyOff(), CfProxyFull1(), clear(),
-			CfProxyOff(), CfProxyFull2(), clear(),
+			// CF_PROXY_OFF(), CF_PROXY_OFF(), tcEmptyZone(), // redundant
+			CfProxyOff(), CfProxyOn(), tcEmptyZone(),
+			CfProxyOff(), CfProxyFull1(), tcEmptyZone(),
+			CfProxyOff(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A on to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyOn(), CfProxyOff(), clear(),
-			// CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
-			// CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
-			CfProxyOn(), CfProxyFull2(), clear(),
+			CfProxyOn(), CfProxyOff(), tcEmptyZone(),
+			// CF_PROXY_ON(), CF_PROXY_ON(), tcEmptyZone(), // redundant
+			// CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			CfProxyOn(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A full1 to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyFull1(), CfProxyOff(), clear(),
-			// CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
-			// CF_PROXY_FULL1(), clear(), // redundant
-			CfProxyFull1(), CfProxyFull2(), clear(),
+			CfProxyFull1(), CfProxyOff(), tcEmptyZone(),
+			// CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			// CF_PROXY_FULL1(), tcEmptyZone(), // redundant
+			CfProxyFull1(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A full2 to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyFull2(), CfProxyOff(), clear(),
-			CfProxyFull2(), CfProxyOn(), clear(),
-			CfProxyFull2(), CfProxyFull1(), clear(),
-			// CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
+			CfProxyFull2(), CfProxyOff(), tcEmptyZone(),
+			CfProxyFull2(), CfProxyOn(), tcEmptyZone(),
+			CfProxyFull2(), CfProxyFull1(), tcEmptyZone(),
+			// CF_PROXY_FULL2(), CF_PROXY_FULL2(), tcEmptyZone(), // redundant
 		),
 
 		testgroup("CF_PROXY CNAME create",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOff(), clear(),
-			CfCProxyOn(), clear(),
-			CfCProxyFull(), clear(),
+			CfCProxyOff(), tcEmptyZone(),
+			CfCProxyOn(), tcEmptyZone(),
+			CfCProxyFull(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY CNAME off to X",
 			only("CLOUDFLAREAPI"),
-			// CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
-			CfCProxyOff(), CfCProxyOn(), clear(),
-			CfCProxyOff(), CfCProxyFull(), clear(),
+			// CF_CPROXY_OFF(), CF_CPROXY_OFF(), tcEmptyZone(),  // redundant
+			CfCProxyOff(), CfCProxyOn(), tcEmptyZone(),
+			CfCProxyOff(), CfCProxyFull(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY CNAME on to X",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOn(), CfCProxyOff(), clear(),
-			// CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
-			// CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
+			CfCProxyOn(), CfCProxyOff(), tcEmptyZone(),
+			// CF_CPROXY_ON(), CF_CPROXY_ON(), tcEmptyZone(), // redundant
+			// CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
 		),
 
 		testgroup("CF_PROXY CNAME full to X",
 			only("CLOUDFLAREAPI"),
-			CfCProxyFull(), CfCProxyOff(), clear(),
-			// CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
-			// CF_CPROXY_FULL(), clear(), // redundant
+			CfCProxyFull(), CfCProxyOff(), tcEmptyZone(),
+			// CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			// CF_CPROXY_FULL(), tcEmptyZone(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",
@@ -2128,7 +2128,7 @@ func makeTests() []*TestGroup {
 			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
 			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
 			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
-			clear(),
+			tcEmptyZone(),
 			tc("createMultiple",
 				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
 				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),

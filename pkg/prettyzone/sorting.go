@@ -29,7 +29,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 
 	//fmt.Printf("DEBUG: LabelLess(%q, %q) = %v %q %q\n", compA, compB, LabelLess(compA, compB), a.Name, b.Name)
 	compA, compB := a.NameFQDN, b.NameFQDN
-	// Unify FQDNs to "@". LabelLess() is smarter when it receives "@".
+	// Unify FQDNs to "@". LabelLess needs FQDNs to be "@" to work properly.
 	if a.Name == "@" {
 		compA = "@"
 	}

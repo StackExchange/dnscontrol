@@ -874,10 +874,10 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 				if err != nil {
 					return err
 				}
-				if err := cpy.SetTargetA(newIP.String()); err != nil {
+				cpy.Fields = &models.A{} // Allocate new memory to prevent aliasing.
+				if err := cpy.SetTarget(newIP.String()); err != nil {
 					return err
 				}
-				cpy.Fields = &models.A{}
 				domain.Records = append(domain.Records, cpy)
 			}
 		}

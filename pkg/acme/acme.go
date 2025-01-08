@@ -231,14 +231,14 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 			return err
 		}
 
-		// copy domain and work from copy from now on. That way original config can be used to "restore" when we are all done.
-		copy, err := d.Copy()
+		// Copy domain and work from cpy from now on. That way original config can be used to "restore" when we are all done.
+		cpy, err := d.Copy()
 		if err != nil {
 			return err
 		}
 		c.originalDomains = append(c.originalDomains, d)
-		c.domains[name] = copy
-		d = copy
+		c.domains[name] = cpy
+		d = cpy
 	}
 
 	fqdn, val := dns01.GetRecord(domain, keyAuth)
