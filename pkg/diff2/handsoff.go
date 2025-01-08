@@ -192,7 +192,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 		} else {
 			if noPurge {
 				// Is this a candidate for purging?
-				fmt.Printf("DEBUG: ignore_compare sent: short=%q fqdn=%q db=%v\n", rec.Name, rec.NameFQDN, desiredDB)
+				//fmt.Printf("DEBUG: ignore_compare sent: short=%q fqdn=%q db=%v\n", rec.Name, rec.NameFQDN, desiredDB)
 				if !desiredDB.ContainsLT(rec) {
 					// Yes, but not if it is an exception!
 					if !absentDB.ContainsLT(rec) {
