@@ -22,16 +22,24 @@ type RawRecordConfig struct {
 	EnsureAbsent bool `json:"ensure_absent,omitempty"`
 }
 
-// FromRaw converts the RawRecordConfig into a RecordConfig by calling the
+// MakeFromRaw converts the RawRecordConfig into a RecordConfig by calling the
 // conversion function provided when the rtype was registered.
-func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
+func MakeFromRaw(origin string, typeName string, args []string, meta map[string]string) (*RecordConfig, error) {
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
-		return fmt.Errorf("unknown rtype %q", typeName)
+		return nil, fmt.Errorf("unknown rtype %q", typeName)
 	}
 
-	return rt.FromRaw(rc, args, meta, origin)
+	rc := &RecordConfig{
+		Type: typeName,
+	}
+	err := rt.PopulateFromRaw(rc, args, meta, origin)
+	if err != nil {
+		return nil, err
+	}
+
+	return rc, nil
 }
 
 // CheckAndFixImport checks the records for any that were created with a
@@ -67,14 +75,89 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		if err != nil {
 			return err
 		}
-		return rc.PopulateAFields(ip, nil, origin)
+		return rc.PopulateFromFieldsA(ip, nil, origin)
 	case "MX":
 		return rc.PopulateMXFields(rc.MxPreference, rc.target, nil, origin)
 	case "SRV":
-		return rc.PopulateSRVFields(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
+		return rc.PopulateFromFieldsSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
 	}
 	panic("Should not happen")
 }
+
+// // TransformRawRecords converts the RawRecordConfigs from dnsconfig.js into RecordConfig.
+// func TransformRawRecords(domains []*DomainConfig) error {
+
+// 	for _, dc := range domains {
+
+// 		for _, rawRec := range dc.RawRecords {
+
+// 			rt, ok := rtypeDB[rawRec.Type]
+// 			if !ok {
+// 				return fmt.Errorf("unknown rtype %q", rawRec.Type)
+// 			}
+
+// 			// rc := &RecordConfig{
+// 			// 	Type:      rawRec.Type,
+// 			// 	SubDomain: rawRec.SubDomain,
+// 			// 	Metadata:  map[string]string{},
+// 			// }
+
+// 			// Merge the metadata (convert values to string)
+// 			metadata := map[string]string{}
+// 			for _, m := range rawRec.Metadata {
+// 				for mk, mv := range m {
+// 					if v, ok := mv.(string); ok {
+// 						metadata[mk] = v // Already a string
+// 					} else {
+// 						metadata[mk] = fmt.Sprintf("%v", mv)
+// 					}
+// 				}
+// 			}
+
+// 			var origin string
+// 			if rawRec.SubDomain == "" {
+// 				origin = dc.Name
+// 			} else {
+// 				origin = rawRec.SubDomain + "." + dc.Name
+// 				rawRec.SubDomain = ""
+// 			}
+
+// 			rc, err := rt.MakeFromRaw(rawRec.Args, metadata, origin)
+// 			if err != nil {
+// 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
+// 					rawRec.Type,
+// 					rc.Name,
+// 					dc.Name,
+// 					err)
+// 			}
+
+// 			// Set the TTL
+// 			if rc.TTL == 0 {
+// 				ttl := rawRec.TTL
+// 				if ttl == 0 {
+// 					ttl = dc.DefaultTTL
+// 				}
+// 				rc.TTL = ttl
+// 			}
+
+// 			// Free memeory:
+// 			clear(rawRec.Args)
+// 			rawRec.Args = nil
+
+// 			// Store the RecordConfig in the DomainConfig.
+// 			if rawRec.EnsureAbsent {
+// 				// This is a RecordConfig to be deleted.
+// 				dc.EnsureAbsent = append(dc.EnsureAbsent, rc)
+// 			} else {
+// 				// This is a RecordConfig to be kept.
+// 				dc.Records = append(dc.Records, rc)
+// 			}
+// 		}
+// 		dc.RawRecords = nil
+// 	}
+
+// 	return nil
+// }
 
 // TransformRawRecords converts the RawRecordConfigs from dnsconfig.js into RecordConfig.
 func TransformRawRecords(domains []*DomainConfig) error {
@@ -110,7 +193,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown rtype %q", rawRec.Type)
 			}
 
-			err := rt.FromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
 					rawRec.Type,

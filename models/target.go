@@ -202,5 +202,5 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 }
 
 func (rc *RecordConfig) SetTargetA(s string) error {
-	return PopulateARaw(rc, []string{rc.Name, s}, nil, "")
+	return PopulateFromRawA(rc, []string{rc.Name, s}, nil, "")
 }

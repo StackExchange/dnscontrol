@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-type FromRawFn func(rc *RecordConfig, rawfields []string, metadata map[string]string, origin string) error
+type FromRawFn func(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error
 
 type RegisterOpts struct {
-	Enum    int
-	FromRaw FromRawFn
+	Enum            int
+	PopulateFromRaw FromRawFn
 }
 
 var rtypeDB map[string]RegisterOpts
