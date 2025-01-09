@@ -5,12 +5,17 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/mittwald/go-powerdns/apis/cryptokeys"
+	"github.com/mittwald/go-powerdns/pdnshttp"
 )
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
 func (dsp *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	zoneCryptokeys, getErr := dsp.client.Cryptokeys().ListCryptokeys(context.Background(), dsp.ServerName, dc.Name)
 	if getErr != nil {
+		if _, ok := getErr.(pdnshttp.ErrNotFound); ok {
+			// Zone doesn't exist, this is okay as no corrections are needed
+			return nil, nil
+		}
 		return nil, getErr
 	}
 
