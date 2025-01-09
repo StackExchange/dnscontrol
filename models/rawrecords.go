@@ -24,7 +24,7 @@ type RawRecordConfig struct {
 
 // MakeFromRaw converts the RawRecordConfig into a RecordConfig by calling the
 // conversion function provided when the rtype was registered.
-func MakeFromRaw(origin string, typeName string, args []string, meta map[string]string) (*RecordConfig, error) {
+func MakeFromRaw(typeName string, args []string, meta map[string]string, origin string) (*RecordConfig, error) {
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
