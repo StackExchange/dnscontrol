@@ -18,9 +18,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-// ErrDomainNotFound error indicates domain name is not managed by Exoscale.
-var ErrDomainNotFound = errors.New("domain not found")
-
 type exoscaleProvider struct {
 	client *egoscale.Client
 }
@@ -35,7 +32,8 @@ func NewExoscale(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 		return nil, err
 	}
 
-	// Endpoint is only for internal use now, not for production.
+	// Endpoint is only for internal use, not for production.
+	// client has a default endpoint to ch-gva-2 now in egoscale v3.
 	endpoint := os.Getenv("EXOSCALE_API_ENDPOINT")
 	if endpoint != "" {
 		client = client.WithEndpoint(egoscale.Endpoint(endpoint))
