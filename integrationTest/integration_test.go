@@ -538,8 +538,8 @@ func makeRec2(typ string) *models.RecordConfig {
 }
 
 func a(name string, a string) *models.RecordConfig {
-	rc := makeRec2("A")
-	if err := models.FromRaw(rc, "**current-domain**", "A", []string{name, a}, nil); err != nil {
+	rc, err := models.NewFromRawA([]string{name, a}, nil, "**current-domain**", 300)
+	if err != nil {
 		panic(err)
 	}
 	return rc
