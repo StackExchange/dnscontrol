@@ -40,8 +40,8 @@ type A struct {
 }
 
 // NewFromRawA creates a new RecordConfig of type A from rawfields, meta, and origin.
-func NewFromRawA(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
-	rc := &RecordConfig{}
+func NewFromRawA(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
+	rc := &RecordConfig{TTL: ttl}
 	if err := PopulateFromRawA(rc, rawfields, meta, origin); err != nil {
 		return nil, err
 	}
@@ -136,8 +136,8 @@ type MX struct {
 }
 
 // NewFromRawMX creates a new RecordConfig of type MX from rawfields, meta, and origin.
-func NewFromRawMX(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
-	rc := &RecordConfig{}
+func NewFromRawMX(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
+	rc := &RecordConfig{TTL: ttl}
 	if err := PopulateFromRawMX(rc, rawfields, meta, origin); err != nil {
 		return nil, err
 	}
@@ -246,8 +246,8 @@ type SRV struct {
 }
 
 // NewFromRawSRV creates a new RecordConfig of type SRV from rawfields, meta, and origin.
-func NewFromRawSRV(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
-	rc := &RecordConfig{}
+func NewFromRawSRV(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
+	rc := &RecordConfig{TTL: ttl}
 	if err := PopulateFromRawSRV(rc, rawfields, meta, origin); err != nil {
 		return nil, err
 	}

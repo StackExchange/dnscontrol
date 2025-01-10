@@ -35,8 +35,8 @@ type CFSINGLEREDIRECT struct {
 	SRDisplay        string `dns:"skip" json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
-func NewFromRawCFSINGLEREDIRECT(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
-	rc := &RecordConfig{}
+func NewFromRawCFSINGLEREDIRECT(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
+	rc := &RecordConfig{TTL: ttl}
 	if err := PopulateFromRawCFSINGLEREDIRECT(rc, rawfields, meta, origin); err != nil {
 		return nil, err
 	}
