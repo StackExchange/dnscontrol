@@ -113,8 +113,8 @@ func Test_generatePSModify(t *testing.T) {
 	recA2 := &models.RecordConfig{}
 	recMX1 := &models.RecordConfig{}
 	recMX2 := &models.RecordConfig{}
-	models.PopulateARaw(recA1, []string{"@", "1.2.3.4"}, nil, "example.com")
-	models.PopulateARaw(recA2, []string{"@", "10.20.30.40"}, nil, "example.com")
+	models.PopulateFromRawA(recA1, []string{"@", "1.2.3.4"}, nil, "example.com")
+	models.PopulateFromRawA(recA2, []string{"@", "10.20.30.40"}, nil, "example.com")
 	models.PopulateFromRawMX(recMX1, []string{"@", "5", "foo.com."}, nil, "example.com")
 	models.PopulateFromRawMX(recMX2, []string{"@", "50", "foo2.com."}, nil, "example.com")
 

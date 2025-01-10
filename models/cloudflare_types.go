@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	RegisterType("CF_SINGLE_REDIRECT", RegisterOpts{FromRaw: PopulateCFSINGLEREDIRECTRaw})
+	RegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 //// CFSINGLEREDIRECT
@@ -35,8 +35,16 @@ type CFSINGLEREDIRECT struct {
 	SRDisplay        string `dns:"skip" json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
-// PopulateCFSINGLEREDIRECTRaw updates rc to be an CFSINGLEREDIRECT record with contents from rawfields, meta and origin.
-func PopulateCFSINGLEREDIRECTRaw(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+func NewFromRawCFSINGLEREDIRECT(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
+	rc := &RecordConfig{}
+	if err := PopulateFromRawCFSINGLEREDIRECT(rc, rawfields, meta, origin); err != nil {
+		return nil, err
+	}
+	return rc, nil
+}
+
+// PopulateFromRawCFSINGLEREDIRECT updates rc to be an CFSINGLEREDIRECT record with contents from rawfields, meta and origin.
+func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking
@@ -89,6 +97,9 @@ func (rc *RecordConfig) PopulateCFSINGLEREDIRECTFields(srname string, code uint1
 	MakeSingleRedirectFromRawRec(rc, code, srname, srwhen, srthen)
 
 	// Update the RecordConfig:
+	if rc.Metadata == nil {
+		rc.Metadata = map[string]string{}
+	}
 	maps.Copy(rc.Metadata, meta) // Add the metadata
 	rc.Comparable = fmt.Sprintf("%q %d %q %q", srname, code, srwhen, srthen)
 	rc.Display = rc.Comparable

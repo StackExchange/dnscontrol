@@ -7,7 +7,7 @@ import (
 
 // SetTargetMX sets the MX fields.
 func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
-	return rc.PopulateMXFields(pref, target, nil, "")
+	return rc.PopulateFieldsMX(pref, target, nil, "")
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
