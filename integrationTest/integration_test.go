@@ -529,26 +529,18 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func makeRec2(typ string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type: typ,
-		TTL:  300,
-	}
-	return r
-}
-
 func a(name string, a string) *models.RecordConfig {
-	rc := makeRec2("A")
-	if err := models.FromRaw(rc, "**current-domain**", "A", []string{name, a}, nil); err != nil {
+	rc, err := models.MakeFromRaw("A", []string{name, a}, nil, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
 	return rc
 }
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
-	rc := makeRec2("MX")
 	spreference := strconv.Itoa(int(preference))
-	if err := models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil); err != nil {
+	rc, err := models.MakeFromRaw("MX", []string{name, spreference, mx}, nil, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
 
@@ -564,11 +556,11 @@ func mx(name string, preference uint16, mx string) *models.RecordConfig {
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	rc := makeRec2("SRV")
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	if err := models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil); err != nil {
+	rc, err := models.MakeFromRaw("SRV", []string{name, spriority, sweight, sport, target}, nil, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
 	return rc
