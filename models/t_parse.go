@@ -63,7 +63,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
-		return PopulateARaw(rc, []string{rc.Name, contents}, nil, origin)
+		return PopulateFromRawA(rc, []string{rc.Name, contents}, nil, origin)
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
@@ -87,7 +87,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "MX":
 		//fmt.Printf("DEBUG: contents=%q\n", contents)
 		//fmt.Printf("DEBUG: PopulateMXRaw(rc, fields=%v, nil, %q)\n", append([]string{rc.Name}, strings.Fields(contents)...), origin)
-		return PopulateMXRaw(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
+		return PopulateFromRawMX(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
 	case "SOA":
@@ -102,7 +102,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		}
 		return rc.SetTargetTXT(t)
 	case "SRV":
-		return PopulateSRVRaw(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
+		return PopulateFromRawSRV(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "SSHFP":
 		return rc.SetTargetSSHFPString(contents)
 	case "SVCB", "HTTPS":

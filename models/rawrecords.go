@@ -31,7 +31,7 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 		return fmt.Errorf("unknown rtype %q", typeName)
 	}
 
-	return rt.FromRaw(rc, args, meta, origin)
+	return rt.PopulateFromRaw(rc, args, meta, origin)
 }
 
 // CheckAndFixImport checks the records for any that were created with a
@@ -67,11 +67,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		if err != nil {
 			return err
 		}
-		return rc.PopulateAFields(ip, nil, origin)
+		return rc.PopulateFieldsA(ip, nil, origin)
 	case "MX":
-		return rc.PopulateMXFields(rc.MxPreference, rc.target, nil, origin)
+		return rc.PopulateFieldsMX(rc.MxPreference, rc.target, nil, origin)
 	case "SRV":
-		return rc.PopulateSRVFields(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
+		return rc.PopulateFieldsSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
 	}
 	panic("Should not happen")
 }
@@ -110,7 +110,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown rtype %q", rawRec.Type)
 			}
 
-			err := rt.FromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
 					rawRec.Type,
