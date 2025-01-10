@@ -26,9 +26,9 @@ PopulateAFields()
 */
 
 func init() {
-	RegisterType("A", RegisterOpts{FromRaw: PopulateARaw})
-	RegisterType("MX", RegisterOpts{FromRaw: PopulateMXRaw})
-	RegisterType("SRV", RegisterOpts{FromRaw: PopulateSRVRaw})
+	RegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
+	RegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
+	RegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
 	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
 
@@ -39,8 +39,17 @@ type A struct {
 	A fieldtypes.IPv4
 }
 
-// PopulateARaw updates rc to be an A record with contents from rawfields, meta and origin.
-func PopulateARaw(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+// NewFromRawA creates a new RecordConfig of type A from rawfields, meta, and origin.
+func NewFromRawA(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
+	rc := &RecordConfig{}
+	if err := PopulateFromRawA(rc, rawfields, meta, origin); err != nil {
+		return nil, err
+	}
+	return rc, nil
+}
+
+// PopulateFromRawA updates rc to be an A record with contents from rawfields, meta and origin.
+func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking
@@ -60,11 +69,11 @@ func PopulateARaw(rc *RecordConfig, rawfields []string, meta map[string]string, 
 		return err
 	}
 
-	return rc.PopulateAFields(a, meta, origin)
+	return rc.PopulateFieldsA(a, meta, origin)
 }
 
-// PopulateAFields updates rc to be an A record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateAFields(a fieldtypes.IPv4, meta map[string]string, origin string) error {
+// PopulateFieldsA updates rc to be an A record with contents from typed data, meta, and origin.
+func (rc *RecordConfig) PopulateFieldsA(a fieldtypes.IPv4, meta map[string]string, origin string) error {
 	// Create the struct if needed.
 	if rc.Fields == nil {
 		rc.Fields = &A{}
@@ -126,8 +135,17 @@ type MX struct {
 	Mx         string
 }
 
-// PopulateMXRaw updates rc to be an MX record with contents from rawfields, meta and origin.
-func PopulateMXRaw(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+// NewFromRawMX creates a new RecordConfig of type MX from rawfields, meta, and origin.
+func NewFromRawMX(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
+	rc := &RecordConfig{}
+	if err := PopulateFromRawMX(rc, rawfields, meta, origin); err != nil {
+		return nil, err
+	}
+	return rc, nil
+}
+
+// PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
+func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking
@@ -156,11 +174,11 @@ func PopulateMXRaw(rc *RecordConfig, rawfields []string, meta map[string]string,
 		return err
 	}
 
-	return rc.PopulateMXFields(preference, mx, meta, origin)
+	return rc.PopulateFieldsMX(preference, mx, meta, origin)
 }
 
-// PopulateMXFields updates rc to be an MX record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateMXFields(preference uint16, mx string, meta map[string]string, origin string) error {
+// PopulateFieldsMX updates rc to be an MX record with contents from typed data, meta, and origin.
+func (rc *RecordConfig) PopulateFieldsMX(preference uint16, mx string, meta map[string]string, origin string) error {
 	// Create the struct if needed.
 	if rc.Fields == nil {
 		rc.Fields = &MX{}
@@ -227,8 +245,17 @@ type SRV struct {
 	Target   string `json:"target"`
 }
 
-// PopulateSRVRaw updates rc to be an SRV record with contents from rawfields, meta and origin.
-func PopulateSRVRaw(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+// NewFromRawSRV creates a new RecordConfig of type SRV from rawfields, meta, and origin.
+func NewFromRawSRV(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
+	rc := &RecordConfig{}
+	if err := PopulateFromRawSRV(rc, rawfields, meta, origin); err != nil {
+		return nil, err
+	}
+	return rc, nil
+}
+
+// PopulateFromRawSRV updates rc to be an SRV record with contents from rawfields, meta and origin.
+func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking
@@ -260,11 +287,11 @@ func PopulateSRVRaw(rc *RecordConfig, rawfields []string, meta map[string]string
 		return err
 	}
 
-	return rc.PopulateSRVFields(priority, weight, port, target, meta, origin)
+	return rc.PopulateFieldsSRV(priority, weight, port, target, meta, origin)
 }
 
-// PopulateSRVFields updates rc to be an SRV record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateSRVFields(priority, weight, port uint16, target string, meta map[string]string, origin string) error {
+// PopulateFieldsSRV updates rc to be an SRV record with contents from typed data, meta, and origin.
+func (rc *RecordConfig) PopulateFieldsSRV(priority, weight, port uint16, target string, meta map[string]string, origin string) error {
 	// Create the struct if needed.
 	if rc.Fields == nil {
 		rc.Fields = &SRV{}
