@@ -6,7 +6,6 @@ import (
 )
 
 func Test_makeFileName(t *testing.T) {
-
 	uu := "uni"
 	dd := "domy"
 	tt := "tagy"

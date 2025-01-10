@@ -292,7 +292,7 @@ func (api *sakuracloudAPI) request(method, path string, data []byte) ([]byte, er
 	}
 
 	req.SetBasicAuth(api.accessToken, api.accessTokenSecret)
-	req.Header.Add("Content-Type", "applicaiton/json; charset=UTF-8")
+	req.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	resp, err := api.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -349,6 +349,7 @@ func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error)
 		}
 
 		for _, item := range respData.CommonServiceItems {
+			item := item
 			items = append(items, &item)
 		}
 

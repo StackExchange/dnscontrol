@@ -125,6 +125,7 @@ func (c *cache) ResolveErrors() (errs []error) {
 	}
 	return
 }
+
 func (c *cache) Save(filename string) error {
 	outRecs := make(map[string]*cacheEntry, len(c.records))
 	for k, entry := range c.records {
@@ -136,5 +137,5 @@ func (c *cache) Save(filename string) error {
 		}
 	}
 	dat, _ := json.MarshalIndent(outRecs, "", "  ")
-	return os.WriteFile(filename, dat, 0644)
+	return os.WriteFile(filename, dat, 0o644)
 }

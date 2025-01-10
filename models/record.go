@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
@@ -39,7 +40,7 @@ import (
 //	  CF_REDIRECT
 //	  CF_TEMP_REDIRECT
 //	  CF_WORKER_ROUTE
-//	  CLOUDFLAREAPI_SINGLE_REDIRECT
+//	  CF_SINGLE_REDIRECT
 //	  CLOUDNS_WR
 //	  FRAME
 //	  IMPORT_TRANSFORM
@@ -53,7 +54,7 @@ import (
 //	  URL301
 //	  WORKER_ROUTE
 //
-// NOTE: All NEW record types should be prefixed with the provider name (Correct: CLOUDFLAREAPI_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
+// NOTE: All NEW record types should be prefixed with the provider name (Correct: CF_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
 //
 // Notes about the fields:
 //
@@ -97,13 +98,17 @@ type RecordConfig struct {
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Original  interface{}       `json:"-"`                // Store pointer to provider-specific record object. Used in diffing.
+	Fields    interface{}       `json:"Fields,omitempty"` // Pointer to struct with fields.
+
+	Comparable string `json:"-"`
+	Display    string `json:"-"`
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
-	MxPreference     uint16            `json:"mxpreference,omitempty"`
-	SrvPriority      uint16            `json:"srvpriority,omitempty"`
-	SrvWeight        uint16            `json:"srvweight,omitempty"`
-	SrvPort          uint16            `json:"srvport,omitempty"`
+	MxPreference     uint16            `json:"-"`
+	SrvPriority      uint16            `json:"-"`
+	SrvWeight        uint16            `json:"-"`
+	SrvPort          uint16            `json:"-"`
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
 	DsKeyTag         uint16            `json:"dskeytag,omitempty"`
@@ -145,7 +150,7 @@ type RecordConfig struct {
 
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+	//CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
 }
 
 // CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
@@ -200,10 +205,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
-		MxPreference     uint16            `json:"mxpreference,omitempty"`
-		SrvPriority      uint16            `json:"srvpriority,omitempty"`
-		SrvWeight        uint16            `json:"srvweight,omitempty"`
-		SrvPort          uint16            `json:"srvport,omitempty"`
+		MxPreference     uint16            `json:"-"`
+		SrvPriority      uint16            `json:"-"`
+		SrvWeight        uint16            `json:"-"`
+		SrvPort          uint16            `json:"-"`
 		CaaTag           string            `json:"caatag,omitempty"`
 		CaaFlag          uint8             `json:"caaflag,omitempty"`
 		DsKeyTag         uint16            `json:"dskeytag,omitempty"`
@@ -253,9 +258,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	// Copy the exported fields.
-	copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err := copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		return err
+	}
 	// Set each unexported field.
-	rc.SetTarget(recj.Target)
+	if err := rc.SetTarget(recj.Target); err != nil {
+		return err
+	}
 
 	// Some sanity checks:
 	if recj.Type != rc.Type {
@@ -278,6 +287,20 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	err := reprint.FromTo(rc, newR) // Deep copy
 	// Set each unexported field.
 	newR.target = rc.target
+
+	// Copy the fields to new memory so there is no aliasing.
+	switch rc.Type {
+	case "A":
+		newR.Fields = &A{}
+		newR.Fields = rc.Fields
+	case "MX":
+		newR.Fields = &MX{}
+		newR.Fields = rc.Fields
+	case "SRV":
+		newR.Fields = &SRV{}
+		newR.Fields = rc.Fields
+	}
+	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
 	return newR, err
 }
 
@@ -288,7 +311,6 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 // short must not have a training dot: That would mean you have a FQDN, and
 // shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
-
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
@@ -313,6 +335,21 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
+// SetLabel3 sets the .Name/.NameFQDN fields given 3 pieces of info: a short name, subdomain, and origin.
+func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
+	label, labelFQDN, err := fieldtypes.ParseLabel3(short, subdomain, origin)
+	if err != nil {
+		return err
+	}
+	rc.Name = label
+	rc.NameFQDN = labelFQDN
+	if origin != "" {
+		// We have consumed the SubDomain, so clear it.
+		rc.SubDomain = ""
+	}
+	return nil
+}
+
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
@@ -333,6 +370,7 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
+	//fmt.Printf("DEBUG: SetLabelFromFQDN result short=%q fqdn=%q\n", rc.Name, rc.NameFQDN)
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -355,14 +393,18 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if IsTypeUpgraded(rc.Type) {
+		return rc.Comparable
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		// SoaSerial is not included because it isn't used in comparisons.
 	case "TXT":
-		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
+		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
 		r := txtutil.EncodeQuoted(rc.target)
-		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
+		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
 	case "UNKNOWN":
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
@@ -372,7 +414,6 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
-
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
@@ -486,7 +527,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 
 // GetDependencies returns the FQDNs on which this record dependents
 func (rc *RecordConfig) GetDependencies() []string {
-
 	switch rc.Type {
 	// #rtype_variations
 	case "NS", "SRV", "CNAME", "DNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":
@@ -615,7 +655,8 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-		case "A", "CAA", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
+			r.ImportFromLegacy("") // Convert legacy fields to raw fields.
+		case "A", "CAA", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
@@ -639,7 +680,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
+		case "A", "AKAMAICDN", "CAA", "DHCID", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "SSHFP", "SVCB", "TLSA", "TXT":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {

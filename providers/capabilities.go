@@ -100,11 +100,11 @@ const (
 var providerCapabilities = map[string]map[Capability]bool{}
 
 // ProviderHasCapability returns true if provider has capability.
-func ProviderHasCapability(pType string, cap Capability) bool {
+func ProviderHasCapability(pType string, capa Capability) bool {
 	if providerCapabilities[pType] == nil {
 		return false
 	}
-	return providerCapabilities[pType][cap]
+	return providerCapabilities[pType][capa]
 }
 
 // DocumentationNote is a way for providers to give more detail about what features they support.
@@ -143,7 +143,6 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 		default:
 			log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
 		}
-
 	}
 }
 

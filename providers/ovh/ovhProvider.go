@@ -142,7 +142,6 @@ func (c *ovhProvider) GetZoneRecords(domain string, meta map[string]string) (mod
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
-
 	corrections, actualChangeCount, err := c.getDiff2DomainCorrections(dc, actual)
 	if err != nil {
 		return nil, 0, err
@@ -233,7 +232,6 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 }
 
 func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
 	// get the actual in-use nameservers
 	actualNs, err := c.fetchRegistrarNS(dc.Name)
 	if err != nil {
@@ -263,7 +261,8 @@ func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 						return err
 					}
 					return nil
-				}},
+				},
+			},
 		}, nil
 	}
 

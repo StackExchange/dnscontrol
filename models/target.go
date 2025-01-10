@@ -16,11 +16,23 @@ Not the best design, but we're stuck with it until we re-do RecordConfig, possib
 // GetTargetField returns the target. There may be other fields, but they are
 // not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
+	switch rc.Type { // #rtype_variations
+	case "A":
+		return rc.AsA().A.String()
+	case "MX":
+		return rc.AsMX().Mx
+	case "SRV":
+		return rc.AsSRV().Target
+	}
 	return rc.target
 }
 
 // GetTargetIP returns the net.IP stored in .target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
+	if rc.Type == "A" {
+		x := rc.AsA().A
+		return net.IPv4(x[0], x[1], x[2], x[3])
+	}
 	if rc.Type != "A" && rc.Type != "AAAA" {
 		panic(fmt.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
 	}
@@ -45,6 +57,9 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // WARNING: How TXT records are handled is buggy but we can't change it because
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
+	if IsTypeUpgraded(rc.Type) {
+		return rc.Display
+	}
 
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
@@ -82,7 +97,7 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
 	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
-		rc.SetTarget(".")
+		rc.MustSetTarget(".")
 	}
 	rr := rc.ToRR()
 	header := rr.Header().String()
@@ -112,7 +127,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "AZURE_ALIAS":
-		content += fmt.Sprintf(" type=%s", rc.AzureAlias["type"])
+		content += " type=" + rc.AzureAlias["type"]
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
 	case "DS":
@@ -148,14 +163,44 @@ func (rc *RecordConfig) GetTargetDebug() string {
 }
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
-func (rc *RecordConfig) SetTarget(target string) error {
-	rc.target = target
+func (rc *RecordConfig) SetTarget(s string) error {
+	// Legacy
+	rc.target = s
+
+	switch rc.Type { // #rtype_variations
+	case "A":
+		return rc.SetTargetA(s)
+	case "MX":
+		if rc.Fields == nil {
+			return rc.SetTargetMX(rc.MxPreference, s)
+		}
+		f := rc.AsMX()
+		return rc.SetTargetMX(f.Preference, s)
+	case "SRV":
+		if rc.Fields == nil {
+			return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
+		}
+		f := rc.AsSRV()
+		return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
+	}
 	return nil
+}
+
+// MustSetTarget is like SetTarget, but panics if an error occurs.
+// It should only be used in _test.go files and in the init() function.
+func (rc *RecordConfig) MustSetTarget(s string) {
+	err := rc.SetTarget(s)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.SetTarget(ip.String())
-	return nil
+	return rc.SetTarget(ip.String())
+}
+
+func (rc *RecordConfig) SetTargetA(s string) error {
+	return PopulateARaw(rc, []string{rc.Name, s}, nil, "")
 }

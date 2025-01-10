@@ -374,7 +374,7 @@ func isListStructEqual[T any](a []T, b []T) (bool, error) {
 		return true, nil
 	}
 
-	for i := 0; i < len(a); i++ {
+	for i := range len(a) {
 		result, err := isStructEqual(a[i], b[i])
 		if err != nil {
 			return false, err

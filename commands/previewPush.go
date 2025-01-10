@@ -2,12 +2,11 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
-
-	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
@@ -19,6 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 )
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
@@ -67,7 +67,7 @@ func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report
 
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("exiting due to validation errors")
+		return errors.New("exiting due to validation errors")
 	}
 	anyErrors := false
 	totalCorrections := 0
@@ -112,8 +112,8 @@ func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report
 						aceZoneName, _ := idna.ToASCII(domain.Name)
 
 						if !slices.Contains(zones, aceZoneName) {
-							//out.Warnf("DEBUG: zones: %v\n", zones)
-							//out.Warnf("DEBUG: Name: %v\n", domain.Name)
+							// out.Warnf("DEBUG: zones: %v\n", zones)
+							// out.Warnf("DEBUG: Name: %v\n", domain.Name)
 
 							out.Warnf("Zone '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
 							continue // continue with next provider, as we can not determine corrections without an existing zone
@@ -141,7 +141,6 @@ func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report
 			nameservers.AddNSRecords(domain)
 
 			for _, provider := range providersWithExistingZone {
-
 				shouldrun := args.shouldRunProvider(provider.Name, domain)
 				out.StartDNSProvider(provider.Name, !shouldrun)
 				if !shouldrun {
@@ -199,13 +198,13 @@ func run(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
-		return fmt.Errorf("completed with errors")
+		return errors.New("completed with errors")
 	}
 	if totalCorrections != 0 && args.WarnChanges {
-		return fmt.Errorf("there are pending changes")
+		return errors.New("there are pending changes")
 	}
 	if report != nil && *report != "" {
-		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		f, err := os.OpenFile(*report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 		if err != nil {
 			return err
 		}
@@ -245,7 +244,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
 	}
 	if err != nil {
-		return
+		return notify, err
 	}
 
 	registrars := map[string]providers.Registrar{}
@@ -274,7 +273,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
-	return
+	return notify, err
 }
 
 // providerTypeFieldName is the name of the field in creds.json that specifies the provider type id.
@@ -364,7 +363,6 @@ func uniqueStrings(stringSlice []string) []string {
 }
 
 func refineProviderType(credEntryName string, t string, credFields map[string]string, source string) (replacementType string, warnMsg string, err error) {
-
 	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
 	if t == "" {
 		t = "-"
@@ -468,7 +466,6 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 		// use the value in creds.json (this should be the normal case)
 		return ct, "", nil
 	}
-
 }
 
 func printOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {

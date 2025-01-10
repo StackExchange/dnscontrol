@@ -8,64 +8,11 @@
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
-      "rawrecords": [
-        {
-          "args": [
-            "name1",
-            301,
-            "when1",
-            "then1"
-          ],
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
-        },
-        {
-          "args": [
-            "name2",
-            302,
-            "when2",
-            "then2"
-          ],
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
-        },
-        {
-          "args": [
-            "name3",
-            "301",
-            "when3",
-            "then3"
-          ],
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
-        },
-        {
-          "args": [
-            "namettl",
-            302,
-            "whenttl",
-            "thenttl"
-          ],
-          "ttl": 999,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
-        },
-        {
-          "args": [
-            "namemeta",
-            302,
-            "whenmeta",
-            "thenmeta"
-          ],
-          "metas": [
-            {
-              "metastr": "stringy"
-            },
-            {
-              "metanum": 22
-            }
-          ],
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
-        }
-      ],
       "records": [
         {
+          "Fields": {
+            "A": "1.2.3.4"
+          },
           "meta": {
             "meta": "value"
           },
@@ -73,6 +20,103 @@
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
+        },
+        {
+          "Fields": {
+            "code": 301,
+            "pr_display": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_when": "UNKNOWABLE",
+            "sr_display": "name1 code=(301) when=(when1) then=(then1)",
+            "sr_name": "name1",
+            "sr_then": "then1",
+            "sr_when": "when1"
+          },
+          "meta": {
+            "orig_custom_type": "CF_SINGLE_REDIRECT"
+          },
+          "name": "name1",
+          "target": "name1 code=(301) when=(when1) then=(then1)",
+          "ttl": 1,
+          "type": "CF_SINGLE_REDIRECT"
+        },
+        {
+          "Fields": {
+            "code": 302,
+            "pr_display": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_when": "UNKNOWABLE",
+            "sr_display": "name2 code=(302) when=(when2) then=(then2)",
+            "sr_name": "name2",
+            "sr_then": "then2",
+            "sr_when": "when2"
+          },
+          "meta": {
+            "orig_custom_type": "CF_SINGLE_REDIRECT"
+          },
+          "name": "name2",
+          "target": "name2 code=(302) when=(when2) then=(then2)",
+          "ttl": 1,
+          "type": "CF_SINGLE_REDIRECT"
+        },
+        {
+          "Fields": {
+            "code": 301,
+            "pr_display": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_when": "UNKNOWABLE",
+            "sr_display": "name3 code=(301) when=(when3) then=(then3)",
+            "sr_name": "name3",
+            "sr_then": "then3",
+            "sr_when": "when3"
+          },
+          "meta": {
+            "orig_custom_type": "CF_SINGLE_REDIRECT"
+          },
+          "name": "name3",
+          "target": "name3 code=(301) when=(when3) then=(then3)",
+          "ttl": 1,
+          "type": "CF_SINGLE_REDIRECT"
+        },
+        {
+          "Fields": {
+            "code": 302,
+            "pr_display": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_when": "UNKNOWABLE",
+            "sr_display": "namemeta code=(302) when=(whenmeta) then=(thenmeta)",
+            "sr_name": "namemeta",
+            "sr_then": "thenmeta",
+            "sr_when": "whenmeta"
+          },
+          "meta": {
+            "metanum": "22",
+            "metastr": "stringy",
+            "orig_custom_type": "CF_SINGLE_REDIRECT"
+          },
+          "name": "namemeta",
+          "target": "namemeta code=(302) when=(whenmeta) then=(thenmeta)",
+          "ttl": 1,
+          "type": "CF_SINGLE_REDIRECT"
+        },
+        {
+          "Fields": {
+            "code": 302,
+            "pr_display": "UNKNOWABLE",
+            "pr_then": "UNKNOWABLE",
+            "pr_when": "UNKNOWABLE",
+            "sr_display": "namettl code=(302) when=(whenttl) then=(thenttl)",
+            "sr_name": "namettl",
+            "sr_then": "thenttl",
+            "sr_when": "whenttl"
+          },
+          "meta": {
+            "orig_custom_type": "CF_SINGLE_REDIRECT"
+          },
+          "name": "namettl",
+          "target": "namettl code=(302) when=(whenttl) then=(thenttl)",
+          "ttl": 1,
+          "type": "CF_SINGLE_REDIRECT"
         }
       ],
       "registrar": "none"

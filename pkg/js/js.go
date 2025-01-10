@@ -25,6 +25,10 @@ import (
 var helpersJsStatic string
 var helpersJsFileName = "pkg/js/helpers.js"
 
+//go:embed helpers-types.js
+var helpersTypesJsStatic string
+var helpersTypesJsFileName = "pkg/js/helpers-types.js"
+
 // currentDirectory is the current directory as used by require().
 // This is used to emulate nodejs-style require() directory handling.
 // If require("a/b/c.js") is called, any require() statement in c.js
@@ -51,7 +55,6 @@ func ExecuteJavaScript(file string, devMode bool, variables map[string]string) (
 
 // ExecuteJavascriptString accepts a string containing javascript and runs it, returning the resulting dnsConfig.
 func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
-
 	vm := otto.New()
 	l := loop.New(vm)
 
@@ -69,16 +72,26 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 		}
 	}
 
-	vm.Set("require", require)
-	vm.Set("REV", reverse)
-	vm.Set("REVCOMPAT", reverseCompat)
-	vm.Set("glob", listFiles) // used for require_glob()
-	vm.Set("PANIC", jsPanic)
-	vm.Set("HASH", hashFunc)
+	// add functions to otto
+	functions := map[string]interface{}{
+		"require":   require,
+		"REV":       reverse,
+		"REVCOMPAT": reverseCompat,
+		"glob":      listFiles, // used for require_glob()
+		"PANIC":     jsPanic,
+		"HASH":      hashFunc,
+	}
+	for name, fn := range functions {
+		if err := vm.Set(name, fn); err != nil {
+			return nil, err
+		}
+	}
 
 	// add cli variables to otto
 	for key, value := range variables {
-		vm.Set(key, value)
+		if err := vm.Set(key, value); err != nil {
+			return nil, err
+		}
 	}
 
 	helperJs := GetHelpers(devMode)
@@ -110,6 +123,12 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	if err = json.Unmarshal([]byte(str), conf); err != nil {
 		return nil, err
 	}
+
+	err = models.TransformRawRecords(conf.Domains)
+	if err != nil {
+		return nil, err
+	}
+
 	return conf, nil
 }
 
@@ -117,15 +136,19 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 func GetHelpers(devMode bool) string {
 	if devMode {
 		// Load the file:
-		b, err := os.ReadFile(helpersJsFileName)
+		a, err := os.ReadFile(helpersJsFileName)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return string(b)
+		b, err := os.ReadFile(helpersTypesJsFileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return string(a) + "\n" + string(b)
 	}
 
 	// Return the embedded bytes:
-	return helpersJsStatic
+	return helpersJsStatic + "\n" + helpersTypesJsStatic
 }
 
 func require(call otto.FunctionCall) otto.Value {
@@ -150,15 +173,14 @@ func require(call otto.FunctionCall) otto.Value {
 	printer.Debugf("requiring: %s (%s)\n", file, relFile)
 	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
 	data, err := os.ReadFile(filepath.ToSlash(relFile))
-
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
 
-	var value = otto.TrueValue()
+	value := otto.TrueValue()
 
 	// If its a json file return the json value, else default to true
-	var ext = strings.ToLower(filepath.Ext(relFile))
+	ext := strings.ToLower(filepath.Ext(relFile))
 	if strings.HasSuffix(ext, "json") || strings.HasSuffix(ext, "json5") {
 		cmd := fmt.Sprintf(`JSON.parse(JSON.stringify(%s))`, string(data))
 		value, err = call.Otto.Run(cmd)
@@ -201,7 +223,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	}
 
 	// Second: Recursive?
-	var recursive = true
+	recursive := true
 	if call.Argument(1).IsDefined() && !call.Argument(1).IsNull() {
 		if call.Argument(1).IsBoolean() {
 			recursive, _ = call.Argument(1).ToBoolean() // If it should be recursive
@@ -211,7 +233,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	}
 
 	// Third: File extension filter.
-	var fileExtension = ".js"
+	fileExtension := ".js"
 	if call.Argument(2).IsDefined() && !call.Argument(2).IsNull() {
 		if call.Argument(2).IsString() {
 			fileExtension = call.Argument(2).String() // Which file extension to filter for.
@@ -247,7 +269,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 			// ONLY skip, when the file extension is NOT matching, or when filter is NOT disabled.
 			return nil
 		}
-		//dirPath := filepath.ToSlash(filepath.Dir(path)) + "/"
+		// dirPath := filepath.ToSlash(filepath.Dir(path)) + "/"
 		files = append(files, path)
 		return err
 	})

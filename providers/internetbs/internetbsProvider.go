@@ -1,6 +1,7 @@
 package internetbs
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -37,7 +38,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 
 	api.key, api.password = m["api-key"], m["password"]
 	if api.key == "" || api.password == "" {
-		return nil, fmt.Errorf("missing Internet.bs api-key and password")
+		return nil, errors.New("missing Internet.bs api-key and password")
 	}
 
 	return api, nil

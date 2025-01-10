@@ -6,7 +6,7 @@ import (
 )
 
 func TestReverse(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		in  string
 		out string
 	}{
@@ -106,7 +106,7 @@ func TestReverse(t *testing.T) {
 }
 
 func TestReverseErrors(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		in string
 	}{
 		{"0.0.0.0/0"},

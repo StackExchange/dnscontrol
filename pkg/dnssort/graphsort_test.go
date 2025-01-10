@@ -9,7 +9,6 @@ import (
 )
 
 func Test_graphsort(t *testing.T) {
-
 	t.Run("Direct dependency",
 		executeGraphSort(
 			[]testutils.StubRecord{

@@ -36,7 +36,7 @@ type DomainConfig struct {
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
-	//DNSSEC        bool              `json:"dnssec,omitempty"`
+	// DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:
@@ -47,6 +47,7 @@ type DomainConfig struct {
 
 	// Raw user-input from dnsconfig.js that will be processed into RecordConfigs later:
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
+	DefaultTTL uint32            `json:"defaultTTL,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
@@ -130,9 +131,13 @@ func (dc *DomainConfig) Punycode() error {
 			if err != nil {
 				return err
 			}
-			rec.SetTarget(t)
-		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
-			rec.SetTarget(rec.GetTargetField())
+			if err := rec.SetTarget(t); err != nil {
+				return err
+			}
+		case "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
+			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
+				return err
+			}
 		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "NAPTR", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:

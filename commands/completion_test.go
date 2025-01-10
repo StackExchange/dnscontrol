@@ -3,14 +3,13 @@ package commands
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"text/template"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 type shellTestDataItem struct {
@@ -99,7 +98,7 @@ func TestShellCompletionCommand(t *testing.T) {
 				t.Fatal("expected error, but didn't get one")
 			}
 
-			want := fmt.Sprintf("unknown shell: %s", invalidShellTestDataItem.shellName)
+			want := "unknown shell: " + invalidShellTestDataItem.shellName
 			got := strings.TrimSpace(appErrWriterBuffer.String())
 			if diff := cmp.Diff(got, want); diff != "" {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
@@ -153,7 +152,7 @@ func TestShellCompletionCommand(t *testing.T) {
 				t.Fatal("expected error, but didn't get one")
 			}
 
-			want := fmt.Sprintf("unknown shell: %s", invalidShellTestDataItem.shellPath)
+			want := "unknown shell: " + invalidShellTestDataItem.shellPath
 			got := strings.TrimSpace(appErrWriterBuffer.String())
 			if diff := cmp.Diff(got, want); diff != "" {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
@@ -230,7 +229,7 @@ func testHelperGetShellsAndCompletionScripts() ([]shellTestDataItem, error) {
 			shellsAndValues,
 			shellTestDataItem{
 				shellName:                shellName,
-				shellPath:                fmt.Sprintf("/bin/%s", shellName),
+				shellPath:                "/bin/" + shellName,
 				completionScriptTemplate: t,
 			},
 		)

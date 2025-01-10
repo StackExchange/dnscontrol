@@ -10,6 +10,9 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
           "name": "@",
           "target": "1.1.1.1",
           "ttl": 300,

@@ -63,7 +63,6 @@ var isRfc2317Format1 = regexp.MustCompile(`(\d{1,3})/(\d{1,3})\.(\d{1,3})\.(\d{1
 // ipMatchesClasslessDomain returns true if ip is appropriate for domain.
 // domain is a reverse DNS lookup zone (in-addr.arpa) as described in RFC2317.
 func ipMatchesClasslessDomain(ip net.IP, domain string) bool {
-
 	// The unofficial but preferred format in RFC2317:
 	m := isRfc2317Format1.FindStringSubmatch(domain)
 	if m != nil {

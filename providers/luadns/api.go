@@ -3,6 +3,7 @@ package luadns
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,29 +58,35 @@ type domainRecord struct {
 
 type recordResponse []domainRecord
 
-type requestParams map[string]string
-type jsonRequestParams map[string]any
+type (
+	requestParams     map[string]string
+	jsonRequestParams map[string]any
+)
 
 func (l *luadnsProvider) fetchAvailableNameservers() error {
 	l.nameserversNames = nil
-	var bodyString, err = l.get("/users/me", "GET", requestParams{})
+	bodyString, err := l.get("/users/me", "GET", requestParams{})
 	if err != nil {
-		return fmt.Errorf("failed fetching available nameservers list from LuaDNS: %s", err)
+		return fmt.Errorf("failed fetching available nameservers list from LuaDNS: %w", err)
 	}
 	var ui userInfoResponse
-	json.Unmarshal(bodyString, &ui)
+	if err := json.Unmarshal(bodyString, &ui); err != nil {
+		return fmt.Errorf("failed to unmarshal available nameservers list from LuaDNS: %w", err)
+	}
 	l.nameserversNames = ui.NameServers
 	return nil
 }
 
 func (l *luadnsProvider) fetchDomainList() error {
 	l.domainIndex = map[string]uint32{}
-	var bodyString, err = l.get("/zones", "GET", requestParams{})
+	bodyString, err := l.get("/zones", "GET", requestParams{})
 	if err != nil {
-		return fmt.Errorf("failed fetching domain list from LuaDNS: %s", err)
+		return fmt.Errorf("failed fetching domain list from LuaDNS: %w", err)
 	}
 	var dr zoneResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return fmt.Errorf("failed to unmarshal domain list from LuaDNS: %w", err)
+	}
 	for _, domain := range dr {
 		l.domainIndex[domain.Name] = domain.ID
 	}
@@ -104,39 +111,41 @@ func (l *luadnsProvider) createDomain(domain string) error {
 		"name": domain,
 	}
 	if _, err := l.get("/zones", "POST", params); err != nil {
-		return fmt.Errorf("failed create domain (LuaDNS): %s", err)
+		return fmt.Errorf("failed create domain (LuaDNS): %w", err)
 	}
 	return nil
 }
 
 func (l *luadnsProvider) createRecord(domainID uint32, rec jsonRequestParams) error {
 	if _, err := l.get(fmt.Sprintf("/zones/%d/records", domainID), "POST", rec); err != nil {
-		return fmt.Errorf("failed create record (LuaDNS): %s", err)
+		return fmt.Errorf("failed create record (LuaDNS): %w", err)
 	}
 	return nil
 }
 
 func (l *luadnsProvider) deleteRecord(domainID uint32, recordID uint32) error {
 	if _, err := l.get(fmt.Sprintf("/zones/%d/records/%d", domainID, recordID), "DELETE", requestParams{}); err != nil {
-		return fmt.Errorf("failed delete record (LuaDNS): %s", err)
+		return fmt.Errorf("failed delete record (LuaDNS): %w", err)
 	}
 	return nil
 }
 
 func (l *luadnsProvider) modifyRecord(domainID uint32, recordID uint32, rec jsonRequestParams) error {
 	if _, err := l.get(fmt.Sprintf("/zones/%d/records/%d", domainID, recordID), "PUT", rec); err != nil {
-		return fmt.Errorf("failed update (LuaDNS): %s", err)
+		return fmt.Errorf("failed update (LuaDNS): %w", err)
 	}
 	return nil
 }
 
 func (l *luadnsProvider) getRecords(domainID uint32) ([]domainRecord, error) {
-	var bodyString, err = l.get(fmt.Sprintf("/zones/%d/records", domainID), "GET", requestParams{})
+	bodyString, err := l.get(fmt.Sprintf("/zones/%d/records", domainID), "GET", requestParams{})
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching record list from LuaDNS: %s", err)
+		return nil, fmt.Errorf("failed fetching record list from LuaDNS: %w", err)
 	}
 	var dr recordResponse
-	json.Unmarshal(bodyString, &dr)
+	if err := json.Unmarshal(bodyString, &dr); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal record response from LuaDNS: %w", err)
+	}
 	var records []domainRecord
 	for _, rec := range dr {
 		if rec.Type == "SOA" {
@@ -149,7 +158,7 @@ func (l *luadnsProvider) getRecords(domainID uint32) ([]domainRecord, error) {
 
 func (l *luadnsProvider) get(endpoint string, method string, params any) ([]byte, error) {
 	client := &http.Client{}
-	var req, err = l.makeRequest(endpoint, method, params)
+	req, err := l.makeRequest(endpoint, method, params)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -163,7 +172,7 @@ func (l *luadnsProvider) get(endpoint string, method string, params any) ([]byte
 		return nil, err
 	}
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		bodyString, _ := io.ReadAll(resp.Body)
 		return bodyString, nil
 	}
@@ -203,29 +212,30 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 		req.Header.Set("Content-Type", "application/json")
 		return req, nil
 	default:
-		return nil, fmt.Errorf("invalid request type")
+		return nil, errors.New("invalid request type")
 	}
 }
 
-func nativeToRecord(domain string, r *domainRecord) *models.RecordConfig {
+func nativeToRecord(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
 		Original: r,
 	}
 	rc.SetLabelFromFQDN(r.Name, domain)
+	var err error
 	switch rtype := rc.Type; rtype {
 	case "TXT":
-		rc.SetTargetTXT(r.Content)
+		err = rc.SetTargetTXT(r.Content)
 	default:
-		rc.PopulateFromString(rtype, r.Content, domain)
+		err = rc.PopulateFromString(rtype, r.Content, domain)
 	}
-	return rc
+	return rc, err
 }
 
 func recordsToNative(rc *models.RecordConfig) jsonRequestParams {
 	r := jsonRequestParams{
-		"name": fmt.Sprintf("%s.", rc.GetLabelFQDN()),
+		"name": rc.GetLabelFQDN() + ".",
 		"type": rc.Type,
 		"ttl":  rc.TTL,
 	}

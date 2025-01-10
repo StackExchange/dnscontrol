@@ -1,6 +1,10 @@
 package models
 
-import "testing"
+import (
+	"testing"
+	//"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	//"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+)
 
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
@@ -11,6 +15,7 @@ func TestRR(t *testing.T) {
 		TTL:          0,
 		MxPreference: 0,
 	}
+	experiment.ImportFromLegacy("example.com")
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
 	found := experiment.ToRR().String()
 	if found != expected {
@@ -50,10 +55,16 @@ func TestRR(t *testing.T) {
 }
 
 func TestDowncase(t *testing.T) {
-	dc := DomainConfig{Records: Records{
-		&RecordConfig{Type: "MX", Name: "lower", target: "targetmx"},
-		&RecordConfig{Type: "MX", Name: "UPPER", target: "TARGETMX"},
-	}}
+	dc := DomainConfig{
+		//Name: "example.com",
+		Records: Records{
+			&RecordConfig{Type: "MX", Name: "lower", target: "targetmx"},
+			&RecordConfig{Type: "MX", Name: "UPPER", target: "TARGETMX"},
+		}}
+
+	_ = CheckAndFixImport(dc.Records, "example.com")
+	//log.Warnf("one of %q sent records not yet converted to new-style Fields storage. Adjusting.", dc.DNSProviderNames)
+
 	Downcase(dc.Records)
 	if !dc.Records.HasRecordTypeName("MX", "lower") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)

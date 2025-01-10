@@ -1,6 +1,7 @@
 package spflib
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -28,7 +29,7 @@ var qualifiers = map[byte]bool{
 // Parse parses a raw SPF record.
 func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
-		return nil, fmt.Errorf("not an SPF record")
+		return nil, errors.New("not an SPF record")
 	}
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
@@ -73,7 +74,7 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 				}
 				p.IncludeRecord, err = Parse(subRecord, dnsres)
 				if err != nil {
-					return nil, fmt.Errorf("in included SPF: %s", err)
+					return nil, fmt.Errorf("in included SPF: %w", err)
 				}
 			}
 		} else if strings.HasPrefix(part, "exists:") || strings.HasPrefix(part, "ptr:") {
@@ -81,7 +82,6 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		} else {
 			return nil, fmt.Errorf("unsupported SPF part %s", part)
 		}
-
 	}
 	return rec, nil
 }

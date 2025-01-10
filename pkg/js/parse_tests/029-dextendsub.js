@@ -3,7 +3,6 @@ var CF = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
 
 // Zone that gets extended by subdomain
 D("foo.net", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "10.1.1.1"),
     A("www", "10.2.2.2"),
 );
@@ -14,12 +13,10 @@ D_EXTEND("bar.foo.net",
 
 // Zone and subdomain zone, each get extended.
 D("foo.tld", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "20.5.5.5"),
     A("www", "20.6.6.6"),
 );
 D("bar.foo.tld", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "30.7.7.7"),
     A("www", "30.8.8.8"),
 );
@@ -32,12 +29,10 @@ D_EXTEND("foo.tld",
 
 // Zone and subdomain zone, each get extended by a subdomain.
 D("foo.help", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "40.12.12.12"),
     A("www", "40.12.12.12"),
 );
 D("bar.foo.help", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "50.13.13.13"),
     A("www", "50.14.14.14"),
 );
@@ -52,7 +47,6 @@ D_EXTEND("morty.foo.help",
 
 // Zone extended by a subdomain and sub-subdomain.
 D("foo.here", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "60.19.19.19"),
     A("www", "60.20.20.20"),
 );
@@ -73,7 +67,6 @@ D_EXTEND("a.long.path.of.sub.domains.foo.net",
 
 // ASCII zone
 D("example.com", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "10.0.0.1"),
     A("www", "10.0.0.2"),
 );
@@ -90,7 +83,6 @@ D_EXTEND("ü.example.com",
 
 // IDN zone
 D("düsseldorf.example.net", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "10.0.0.7"),
     A("www", "10.0.0.8"),
 );
@@ -112,7 +104,6 @@ D_EXTEND("ü.düsseldorf.example.net",
 
 // One-character IDN zone
 D("ü.example.net", REG, DnsProvider(CF),
-    DefaultTTL(300),
     A("@", "10.0.0.15"),
     A("www", "10.0.0.16"),
 );
@@ -133,7 +124,7 @@ D_EXTEND("ü.ü.example.net",
 );
 
 // Zone extended by a subdomain, with absolute and relative CNAME targets
-D("example.tld", REG, DnsProvider(CF), DefaultTTL(300));
+D("example.tld", REG, DnsProvider(CF));
 D_EXTEND("sub.example.tld",
     CNAME("a", "b"), // a.sub.example.tld -> b.sub.example.tld
     CNAME("b", "@"), // a.sub.example.tld -> sub.example.tld

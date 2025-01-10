@@ -2,6 +2,7 @@ package cloudns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
 	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
-		return nil, fmt.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
+		return nil, errors.New("missing ClouDNS auth-id or sub-auth-id and auth-password")
 	}
 
 	return c, nil
@@ -228,7 +229,6 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return corrections, actualChangeCount, nil
-
 }
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
@@ -267,7 +267,10 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 	}
 	existingRecords := make([]*models.RecordConfig, len(records))
 	for i := range records {
-		existingRecords[i] = toRc(domain, &records[i])
+		existingRecords[i], err = toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 	return existingRecords, nil
 }
@@ -283,8 +286,7 @@ func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
 }
 
 // parses the ClouDNS format into our standard RecordConfig
-func toRc(domain string, r *domainRecord) *models.RecordConfig {
-
+func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 	weight, _ := strconv.ParseUint(r.Weight, 10, 16)
@@ -301,16 +303,17 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	}
 	rc.SetLabel(r.Host, domain)
 
+	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXT(r.Target)
+		err = rc.SetTargetTXT(r.Target)
 	case "CNAME", "DNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
-		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 8)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = r.CaaTag
-		rc.SetTarget(r.CaaValue)
+		err = rc.SetTarget(r.CaaValue)
 	case "TLSA":
 		tlsaUsage, _ := strconv.ParseUint(r.TlsaUsage, 10, 8)
 		rc.TlsaUsage = uint8(tlsaUsage)
@@ -318,13 +321,13 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		rc.TlsaSelector = uint8(tlsaSelector)
 		tlsaMatchingType, _ := strconv.ParseUint(r.TlsaMatchingType, 10, 8)
 		rc.TlsaMatchingType = uint8(tlsaMatchingType)
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	case "SSHFP":
 		sshfpAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 8)
 		rc.SshfpAlgorithm = uint8(sshfpAlgorithm)
 		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 8)
 		rc.SshfpFingerprint = uint8(sshfpFingerprint)
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	case "DS":
 		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 16)
 		rc.DsKeyTag = uint16(dsKeyTag)
@@ -333,21 +336,21 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 8)
 		rc.DsDigestType = uint8(dsDigestType)
 		rc.DsDigest = r.Target
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	case "CLOUD_WR":
 		rc.Type = "WR"
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	case "LOC":
 		loc := fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s",
 			r.LocLatDeg, r.LocLatMin, r.LocLatSec, r.LocLatDir,
 			r.LocLongDeg, r.LocLongMin, r.LocLongSec, r.LocLongDir,
 			r.LocAltitude, r.LocSize, r.LocHPrecision, r.LocVPrecision)
-		rc.SetTargetLOCString(r.Target, loc)
+		err = rc.SetTargetLOCString(r.Target, loc)
 	default:
-		rc.SetTarget(r.Target)
+		err = rc.SetTarget(r.Target)
 	}
 
-	return rc
+	return rc, err
 }
 
 func formatLocParam(param string) string {

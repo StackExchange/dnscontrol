@@ -2,7 +2,7 @@ package domainnameshop
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
@@ -61,9 +61,9 @@ func init() {
 // newDomainNameShopProvider creates a Domainnameshop specific DNS provider.
 func newDomainNameShopProvider(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["token"] == "" {
-		return nil, fmt.Errorf("no Domainnameshop token provided")
+		return nil, errors.New("no Domainnameshop token provided")
 	} else if conf["secret"] == "" {
-		return nil, fmt.Errorf("no Domainnameshop secret provided")
+		return nil, errors.New("no Domainnameshop secret provided")
 	}
 
 	api := &domainNameShopProvider{

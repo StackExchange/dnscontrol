@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -22,7 +23,7 @@ func ipToUint(i net.IP) (uint32, error) {
 	return r, nil
 }
 
-// UintToIP convert a 32-bit into into a net.IP.
+// UintToIP convert a 32-bit into a net.IP.
 func UintToIP(u uint32) net.IP {
 	return net.IPv4(
 		byte((u>>24)&255),
@@ -51,7 +52,6 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 		parseList := func(s string) ([]net.IP, error) {
 			ips := []net.IP{}
 			for _, ip := range strings.Split(s, ",") {
-
 				if ip == "" {
 					continue
 				}
@@ -77,7 +77,7 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)", ri, con.Low, con.High, transforms)
 		}
 		if len(con.NewBases) > 0 && len(con.NewIPs) > 0 {
-			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
+			return nil, errors.New("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
 		}
 		result = append(result, con)
 	}
@@ -104,15 +104,15 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 		return nil, err
 	}
 	for _, conv := range transforms {
-		min, err := ipToUint(conv.Low)
+		min_, err := ipToUint(conv.Low)
 		if err != nil {
 			return nil, err
 		}
-		max, err := ipToUint(conv.High)
+		max_, err := ipToUint(conv.High)
 		if err != nil {
 			return nil, err
 		}
-		if (thisIP >= min) && (thisIP <= max) {
+		if (thisIP >= min_) && (thisIP <= max_) {
 			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
@@ -122,7 +122,7 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 				if err != nil {
 					return nil, err
 				}
-				list = append(list, UintToIP(newbase+(thisIP-min)))
+				list = append(list, UintToIP(newbase+(thisIP-min_)))
 			}
 			return list, nil
 		}

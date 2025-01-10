@@ -30,7 +30,9 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 
 	// Generate it back:
 	buf2 := &bytes.Buffer{}
-	writeZoneFileRR(buf2, parsed, "bosun.org")
+	if err := writeZoneFileRR(buf2, parsed, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 
 	// Compare:
 	if buf2.String() != expected {
@@ -61,6 +63,7 @@ func writeZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
 
 	return WriteZoneFileRC(w, rcs, origin, 0, nil)
 }
+
 func TestMostCommonTtl(t *testing.T) {
 	var records []dns.RR
 	var g, e uint32
@@ -117,7 +120,6 @@ func TestMostCommonTtl(t *testing.T) {
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
-
 }
 
 // func WriteZoneFile
@@ -127,7 +129,9 @@ func TestWriteZoneFileSimple(t *testing.T) {
 	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
 	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 300
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
@@ -148,7 +152,9 @@ func TestWriteZoneFileSimpleTtl(t *testing.T) {
 	r3, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.155")
 	r4, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 100
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
@@ -178,7 +184,9 @@ func TestWriteZoneFileMx(t *testing.T) {
 	r8, _ := dns.NewRR("ccc.bosun.org. IN MX 40 aaa.example.com.")
 	r9, _ := dns.NewRR("ccc.bosun.org. IN MX 1 ttt.example.com.")
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFMX {
 		t.Log(buf.String())
 		t.Log(testdataZFMX)
@@ -207,7 +215,9 @@ func TestWriteZoneFileSrv(t *testing.T) {
 	r4, _ := dns.NewRR(`bosun.org. 300 IN SRV 20 10 5050 foo.com.`)
 	r5, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org"); err != nil { // 5
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFSRV {
 		t.Log(buf.String())
 		t.Log(testdataZFSRV)
@@ -230,7 +240,9 @@ func TestWriteZoneFilePtr(t *testing.T) {
 	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFPTR {
 		t.Log(buf.String())
 		t.Log(testdataZFPTR)
@@ -254,7 +266,9 @@ func TestWriteZoneFileCaa(t *testing.T) {
 	r5, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
 	r6, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org")
+	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFCAA {
 		t.Log(buf.String())
 		t.Log(testdataZFCAA)
@@ -298,7 +312,9 @@ func TestWriteZoneFileTxt(t *testing.T) {
 
 		// Generate the zonefile:
 		buf := &bytes.Buffer{}
-		writeZoneFileRR(buf, []dns.RR{rr}, "bosun.org")
+		if err := writeZoneFileRR(buf, []dns.RR{rr}, "bosun.org"); err != nil {
+			t.Fatal(err)
+		}
 		gz := buf.String()
 		if gz != ez {
 			t.Log("got: " + gz)
@@ -309,7 +325,6 @@ func TestWriteZoneFileTxt(t *testing.T) {
 		// Reverse the process. Turn the zonefile into a list of records
 		parseAndRegen(t, buf, ez)
 	}
-
 }
 
 // Test 1 of each record type
@@ -344,7 +359,9 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`bosun.org.           300 IN HTTPS 1 . alpn="h3,h2"`))
 	d = append(d, mustNewRR(`bosun.org.           300 IN SVCB 1 . alpn="h3,h2"`))
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, d, "bosun.org")
+	if err := writeZoneFileRR(buf, d, "bosun.org"); err != nil {
+		t.Fatal(err)
+	}
 	if buf.String() != testdataZFEach {
 		t.Log(buf.String())
 		t.Log(testdataZFEach)
@@ -390,7 +407,9 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	recs = append(recs, rsynz)
 
 	buf := &bytes.Buffer{}
-	WriteZoneFileRC(buf, recs, "bosun.org", 0, []string{"c1", "c2", "c3\nc4"})
+	if err := WriteZoneFileRC(buf, recs, "bosun.org", 0, []string{"c1", "c2", "c3\nc4"}); err != nil {
+		t.Fatal(err)
+	}
 	expected := `$TTL 300
 ; c1
 ; c2
@@ -438,7 +457,9 @@ func TestWriteZoneFileOrder(t *testing.T) {
 	}
 
 	buf := &bytes.Buffer{}
-	writeZoneFileRR(buf, records, "stackoverflow.com")
+	if err := writeZoneFileRR(buf, records, "stackoverflow.com"); err != nil {
+		t.Fatal(err)
+	}
 	// Compare
 	if buf.String() != testdataOrder {
 		t.Log("Found:")
@@ -458,7 +479,9 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		}
 		// Generate
 		buf := &bytes.Buffer{}
-		writeZoneFileRR(buf, records, "stackoverflow.com")
+		if err := writeZoneFileRR(buf, records, "stackoverflow.com"); err != nil {
+			t.Fatal(err)
+		}
 		// Compare
 		if buf.String() != testdataOrder {
 			t.Log(buf.String())
@@ -532,7 +555,7 @@ func TestZoneLabelLess(t *testing.T) {
 		  zap
 	*/
 
-	var tests = []struct {
+	tests := []struct {
 		e1, e2   string
 		expected bool
 	}{
@@ -584,7 +607,7 @@ func TestZoneRrtypeLess(t *testing.T) {
 		In zonefiles we want to list SOAs, then NSs, then all others.
 	*/
 
-	var tests = []struct {
+	tests := []struct {
 		e1, e2   string
 		expected bool
 	}{

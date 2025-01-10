@@ -10,30 +10,45 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "1.2.3.4"
+          },
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.3.5"
+          },
           "name": "a",
           "target": "1.2.3.5",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.3.6"
+          },
           "name": "b",
           "target": "1.2.3.6",
           "ttl": 180,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.3.7"
+          },
           "name": "c",
           "target": "1.2.3.7",
           "ttl": 10800,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "1.2.3.8"
+          },
           "name": "d",
           "target": "1.2.3.8",
           "ttl": 259200,

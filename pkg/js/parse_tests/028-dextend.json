@@ -17,12 +17,18 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "10.1.1.1"
+          },
           "name": "@",
           "target": "10.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.2.2.2"
+          },
           "name": "www",
           "target": "10.2.2.2",
           "ttl": 300,
@@ -42,12 +48,18 @@
       "name": "bar.foo.com",
       "records": [
         {
+          "Fields": {
+            "A": "10.3.3.3"
+          },
           "name": "@",
           "target": "10.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.4.4.4"
+          },
           "name": "www",
           "target": "10.4.4.4",
           "ttl": 300,
@@ -67,24 +79,36 @@
       "name": "foo.edu",
       "records": [
         {
+          "Fields": {
+            "A": "10.5.5.5"
+          },
           "name": "@",
           "target": "10.5.5.5",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.7.7.7"
+          },
           "name": "more1",
           "target": "10.7.7.7",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.8.8.8"
+          },
           "name": "more2",
           "target": "10.8.8.8",
           "ttl": 300,
           "type": "A"
         },
         {
+          "Fields": {
+            "A": "10.6.6.6"
+          },
           "name": "www",
           "target": "10.6.6.6",
           "ttl": 300,

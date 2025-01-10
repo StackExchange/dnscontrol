@@ -1,0 +1,56 @@
+package cloudflarecustomtypes
+
+import (
+	"fmt"
+	"maps"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypectl"
+)
+
+// SINGLEREDIRECT is the string name for this rType.
+const SINGLEREDIRECT = "CF_SINGLE_REDIRECT"
+
+// PopulateFromRawCFSINGLEREDIRECT updates rc to be a CF_SINGLE_REDIRECT record with contents from origin, rawfields and meta.
+func PopulateFromRawCFSINGLEREDIRECT(rc *models.RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	var err error
+
+	// Error checking
+
+	if len(rawfields) <= 3 {
+		return fmt.Errorf("rtype %q wants %d field(s), found %d: %+v", "CF_SINGLE_REDIRECT", 1, len(rawfields)-1, rawfields[1:])
+	}
+
+	// Create the struct
+
+	var name string
+	if name, err = rtypectl.ParseStringTrimmed(rawfields[0]); err != nil {
+		return err
+	}
+	rc.SetLabel(rawfields[0], origin) // Label
+
+	var code uint16
+	if code, err = rtypectl.ParseRedirectCode(rawfields[1]); err != nil {
+		return err
+	}
+
+	var when string
+	if when, err = rtypectl.ParseStringTrimmed(rawfields[2]); err != nil {
+		return err
+	}
+
+	var then string
+	if then, err = rtypectl.ParseStringTrimmed(rawfields[3]); err != nil {
+		return err
+	}
+
+	// Update legacy fields.
+	MakeSingleRedirectFromRawRec(rc, code, name, when, then)
+
+	// Update the record:
+	maps.Copy(rc.Metadata, meta) // Add the metadata
+	//rc.Comparable = fmt.Sprintf("%s", n.A)
+	rc.Display = rc.AsCFSINGLEREDIRECT().SRDisplay
+
+	return nil
+}

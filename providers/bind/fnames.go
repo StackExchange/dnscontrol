@@ -11,7 +11,7 @@ import (
 
 // makeFileName uses format to generate a zone's filename.  See the
 func makeFileName(format, uniquename, domain, tag string) string {
-	//fmt.Printf("DEBUG: makeFileName(%q, %q, %q, %q)\n", format, uniquename, domain, tag)
+	// fmt.Printf("DEBUG: makeFileName(%q, %q, %q, %q)\n", format, uniquename, domain, tag)
 	if format == "" {
 		fmt.Fprintf(os.Stderr, "BUG: makeFileName called with null format\n")
 		return uniquename
@@ -56,7 +56,7 @@ func makeFileName(format, uniquename, domain, tag string) string {
 		}
 	}
 
-	//fmt.Printf("DEBUG: makeFileName returns= %q\n", b.String())
+	// fmt.Printf("DEBUG: makeFileName returns= %q\n", b.String())
 	return b.String()
 }
 
@@ -97,7 +97,6 @@ func extractZonesFromFilenames(format string, names []string) []string {
 // filenames. It is mathematically impossible to do this correctly for all
 // format strings, but typical format strings are supported.
 func makeExtractor(format string) (string, error) {
-
 	// The algorithm works as follows.
 
 	// We generate a regex that is A or A|B.
@@ -123,7 +122,6 @@ func makeExtractor(format string) (string, error) {
 
 	generateB := false
 	for pass := range []int{0, 1} {
-
 		for pos := 0; pos < len(tokens); pos++ {
 			tok := tokens[pos]
 
@@ -188,7 +186,6 @@ func makeExtractor(format string) (string, error) {
 				break
 			}
 		}
-
 	}
 
 	return b.String(), nil

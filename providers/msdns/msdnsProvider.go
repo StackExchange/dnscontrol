@@ -51,7 +51,6 @@ func init() {
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-
 	if runtime.GOOS != "windows" {
 		printer.Println("INFO: MSDNS deactivated. Required OS not detected.")
 		return providers.None{}, nil
@@ -78,7 +77,6 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (client *msdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-
 	// Get the existing DNS records in native format.
 	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)
 	if err != nil {

@@ -3,6 +3,7 @@ package rwth
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -23,7 +24,7 @@ func (api *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 	// ttl
 	ttl := ""
 	if rr.TTL != 172800 && rr.TTL != 0 {
-		ttl = fmt.Sprint(rr.TTL)
+		ttl = strconv.FormatUint(uint64(rr.TTL), 10)
 	}
 
 	// type

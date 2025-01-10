@@ -1,7 +1,7 @@
 package namedotcom
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -48,7 +48,7 @@ func MaxLengthNDC(rc *models.RecordConfig) error {
 	sum += 3 * (len(txtStrings) - 1)
 
 	if sum > 512 {
-		return fmt.Errorf("encoded txt too long")
+		return errors.New("encoded txt too long")
 	}
 	return nil
 }

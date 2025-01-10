@@ -30,7 +30,7 @@ func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview
 	// chat doesn't markdownify multiline messages. Split in two so the first line can have markdown
 	parts := strings.SplitN(payload, "\n", 2)
 	for _, p := range parts {
-		http.Post(string(b), "text/markdown", strings.NewReader(p))
+		_, _ = http.Post(string(b), "text/markdown", strings.NewReader(p))
 	}
 }
 

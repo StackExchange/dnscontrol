@@ -3,6 +3,7 @@ package commands
 import (
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -88,7 +89,7 @@ type PPreviewArgs struct {
 }
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
-//type ReportItem struct {
+// type ReportItem struct {
 //	Domain      string `json:"domain"`
 //	Corrections int    `json:"corrections"`
 //	Provider    string `json:"provider,omitempty"`
@@ -140,8 +141,8 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:   "reportmax",
 		Hidden: true,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, max int) error {
-			printer.MaxReport = max
+		Action: func(ctx *cli.Context, maxreport int) error {
+			printer.MaxReport = maxreport
 			return nil
 		},
 	})
@@ -220,7 +221,6 @@ var pobsoleteDiff2FlagUsed = false
 
 // run is the main routine common to preview/push
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report string) error {
-
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 	fullMode := args.Full
@@ -250,7 +250,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.PrintfIf(fullMode, "Normalizing and validating 'desired'..\n")
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("exiting due to validation errors")
+		return errors.New("exiting due to validation errors")
 	}
 
 	zcache := NewZoneCache()
@@ -312,7 +312,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 		}
-
 	}
 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
@@ -323,18 +322,18 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	err = writeReport(report, reportItems)
 	if err != nil {
-		return fmt.Errorf("could not write report")
+		return errors.New("could not write report")
 	}
 	if anyErrors {
-		return fmt.Errorf("completed with errors")
+		return errors.New("completed with errors")
 	}
 	if totalCorrections != 0 && args.WarnChanges {
-		return fmt.Errorf("there are pending changes")
+		return errors.New("there are pending changes")
 	}
 	return nil
 }
 
-//func countActions(corrections []*models.Correction) int {
+// func countActions(corrections []*models.Correction) int {
 //	r := 0
 //	for _, c := range corrections {
 //		if c.F != nil {
@@ -382,12 +381,12 @@ func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*m
 // concurrency.  Otherwise false is returned.
 func allConcur(dc *models.DomainConfig) bool {
 	if !providers.ProviderHasCapability(dc.RegistrarInstance.ProviderType, providers.CanConcur) {
-		//fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
+		// fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
 		return false
 	}
 	for _, p := range dc.DNSProviderInstances {
 		if !providers.ProviderHasCapability(p.ProviderType, providers.CanConcur) {
-			//fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
+			// fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
 			return false
 		}
 	}
@@ -421,7 +420,6 @@ func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
-
 		// Populate the zones at the provider (if desired/needed/able):
 		if !args.NoPopulate {
 			populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
@@ -441,7 +439,6 @@ func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
-
 	if filter == "all" { // all
 		return providers
 	}
@@ -477,7 +474,6 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 }
 
 func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
-
 	// Only count the actions, not the messages.
 	cnt := 0
 	for _, cor := range corrections {
@@ -502,7 +498,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 	cc := 0
 	cn := 0
 	for _, correction := range corrections {
-
 		// Print what we're about to do.
 		if correction.F == nil {
 			out.PrintReport(cn, correction)
@@ -514,7 +509,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 
 		var err error
 		if push {
-
 			// If interactive, ask "are you sure?" and skip if not.
 			if interactive && !out.PromptToRun() {
 				continue
@@ -542,7 +536,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 		return nil
 	}
 
-	f, err := os.OpenFile(report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -558,7 +552,6 @@ func writeReport(report string, reportItems []*ReportItem) error {
 }
 
 func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
-
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil // We can't generate a list. No corrections are possible.
@@ -595,7 +588,7 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 }
 
 func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) ([]*models.Correction, int) {
-	//fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
+	// fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
 		return msg(fmt.Sprintf("DetermineNS: zone %q; Error: %s", zone.Name, err)), 0
@@ -645,7 +638,7 @@ func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
 	}
 	if err != nil {
-		return
+		return notify, err
 	}
 
 	registrars := map[string]providers.Registrar{}
@@ -674,7 +667,7 @@ func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
-	return
+	return notify, err
 }
 
 // pproviderTypeFieldName is the name of the field in creds.json that specifies the provider type id.
@@ -765,7 +758,6 @@ func puniqueStrings(stringSlice []string) []string {
 }
 
 func prefineProviderType(credEntryName string, t string, credFields map[string]string, source string) (replacementType string, warnMsg string, err error) {
-
 	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
 	if t == "" {
 		t = "-"
@@ -869,5 +861,4 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 		// use the value in creds.json (this should be the normal case)
 		return ct, "", nil
 	}
-
 }

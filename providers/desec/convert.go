@@ -11,7 +11,6 @@ import (
 
 // nativeToRecord takes a DNS record from deSEC and returns a native RecordConfig struct.
 func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfig) {
-
 	// deSEC returns all the values for a given label/rtype pair in each
 	// resourceRecord.  In other words, if there are multiple A
 	// records for a label, all the IP addresses are listed in
@@ -40,7 +39,7 @@ func recordsToNative(rcs []*models.RecordConfig) []resourceRecord {
 	// deSEC requires one resourceRecord for each label:key tuple, therefore we
 	// might collapse many RecordConfig into one resourceRecord.
 
-	var keys = map[models.RecordKey]*resourceRecord{}
+	keys := map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
 	for _, r := range rcs {
 		label := r.GetLabel()
@@ -67,7 +66,6 @@ func recordsToNative(rcs []*models.RecordConfig) []resourceRecord {
 					zr.TTL = r.TTL
 				}
 			}
-
 		}
 	}
 

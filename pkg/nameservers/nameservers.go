@@ -49,7 +49,7 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 		if n > 0 && n < take {
 			take = n
 		}
-		for i := 0; i < take; i++ {
+		for i := range take {
 			ns = append(ns, nss[i])
 		}
 	}
@@ -78,7 +78,9 @@ func AddNSRecords(dc *models.DomainConfig) {
 		if !strings.HasSuffix(t, ".") {
 			t += "."
 		}
-		rc.SetTarget(t)
+		if err := rc.SetTarget(t); err != nil {
+			fmt.Printf("failed AddNSRecords rc.SetTarget(%q): %s\n", t, err)
+		}
 
 		dc.Records = append(dc.Records, rc)
 	}

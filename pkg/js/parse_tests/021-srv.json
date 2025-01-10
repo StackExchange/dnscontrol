@@ -10,44 +10,61 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "port": 1,
+            "priority": 0,
+            "target": "zeros.foo.com.",
+            "weight": 0
+          },
           "name": "_ntp._udp",
-          "srvport": 1,
           "target": "zeros.foo.com.",
           "ttl": 300,
           "type": "SRV"
         },
         {
+          "Fields": {
+            "port": 123,
+            "priority": 1,
+            "target": "one.foo.com.",
+            "weight": 100
+          },
           "name": "_ntp._udp",
-          "srvport": 123,
-          "srvpriority": 1,
-          "srvweight": 100,
           "target": "one.foo.com.",
           "ttl": 300,
           "type": "SRV"
         },
         {
+          "Fields": {
+            "port": 123,
+            "priority": 2,
+            "target": "two.foo.com.",
+            "weight": 100
+          },
           "name": "_ntp._udp",
-          "srvport": 123,
-          "srvpriority": 2,
-          "srvweight": 100,
           "target": "two.foo.com.",
           "ttl": 300,
           "type": "SRV"
         },
         {
+          "Fields": {
+            "port": 123,
+            "priority": 3,
+            "target": "localhost.foo.com.",
+            "weight": 100
+          },
           "name": "_ntp._udp",
-          "srvport": 123,
-          "srvpriority": 3,
-          "srvweight": 100,
           "target": "localhost.foo.com.",
           "ttl": 300,
           "type": "SRV"
         },
         {
+          "Fields": {
+            "port": 123,
+            "priority": 4,
+            "target": "three.example.com.",
+            "weight": 100
+          },
           "name": "_ntp._udp",
-          "srvport": 123,
-          "srvpriority": 4,
-          "srvweight": 100,
           "target": "three.example.com.",
           "ttl": 300,
           "type": "SRV"

@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"golang.org/x/exp/slices"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -128,7 +129,6 @@ func (b *bunnydnsProvider) createZone(domain string) (*zone, error) {
 	zone := &zone{}
 	body := map[string]string{"domain": domain}
 	err := b.request("POST", "/dnszone", nil, body, &zone, []int{http.StatusCreated})
-
 	if err != nil {
 		return nil, err
 	}

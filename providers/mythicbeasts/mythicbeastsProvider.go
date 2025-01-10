@@ -5,6 +5,7 @@ package mythicbeasts
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -59,10 +60,10 @@ func init() {
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["keyID"] == "" {
-		return nil, fmt.Errorf("missing Mythic Beasts auth keyID")
+		return nil, errors.New("missing Mythic Beasts auth keyID")
 	}
 	if conf["secret"] == "" {
-		return nil, fmt.Errorf("missing Mythic Beasts auth secret")
+		return nil, errors.New("missing Mythic Beasts auth secret")
 	}
 	return &mythicBeastsProvider{
 		keyID:  conf["keyID"],

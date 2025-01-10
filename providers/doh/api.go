@@ -20,7 +20,7 @@ func (c *dohProvider) getNameservers(domain string) ([]string, error) {
 	// Perform a NS lookup
 	nss, _, err := resolver.LookupNS(domain)
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching nameservers list (DNS-over-HTTPS): %s", err)
+		return nil, fmt.Errorf("failed fetching nameservers list (DNS-over-HTTPS): %w", err)
 	}
 
 	ns := []string{}

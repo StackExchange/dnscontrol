@@ -7,7 +7,6 @@ import (
 )
 
 func Test_domaintree(t *testing.T) {
-
 	t.Run("Single FQDN",
 		executeTreeTest(
 			[]string{

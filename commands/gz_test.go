@@ -32,7 +32,7 @@ func testFormat(t *testing.T, domain, format string) {
 	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domain, format)
 	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domain, format)
 
-	outfile, err := os.CreateTemp("", outputFiletmpl)
+	outfile, err := os.CreateTemp(t.TempDir(), outputFiletmpl)
 	if err != nil {
 		log.Fatal(fmt.Errorf("gz can't TempFile %q: %w", outputFiletmpl, err))
 	}
@@ -68,7 +68,7 @@ func testFormat(t *testing.T, domain, format string) {
 
 	if w, g := string(want), string(got); w != g {
 		// If the test fails, output a file showing "got"
-		err = os.WriteFile(expectedFilename+".ACTUAL", got, 0644)
+		err = os.WriteFile(expectedFilename+".ACTUAL", got, 0o644)
 		if err != nil {
 			log.Fatal(err)
 		}

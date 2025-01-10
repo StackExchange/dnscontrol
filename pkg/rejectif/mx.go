@@ -1,7 +1,7 @@
 package rejectif
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
@@ -12,7 +12,7 @@ import (
 // This is needed by providers that don't support RFC 7505.
 func MxNull(rc *models.RecordConfig) error {
 	if rc.GetTargetField() == "." {
-		return fmt.Errorf("mx has null target")
+		return errors.New("mx has null target")
 	}
 	return nil
 }

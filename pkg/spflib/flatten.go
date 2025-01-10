@@ -9,23 +9,24 @@ import (
 // use this to split TXT records into 255 sized chunks for RFC 4408
 // https://tools.ietf.org/html/rfc4408#section-3.1.3
 // Borrowed from https://stackoverflow.com/a/61469854/11477663
+// TODO(tlim): Consider replacing with https://pkg.go.dev/slices#Chunk
 func Chunks(s string, chunkSize int) []string {
 	if chunkSize >= len(s) {
 		return []string{s}
 	}
 	var chunks []string
 	chunk := make([]rune, chunkSize)
-	len := 0
+	lngth := 0
 	for _, r := range s {
-		chunk[len] = r
-		len++
-		if len == chunkSize {
+		chunk[lngth] = r
+		lngth++
+		if lngth == chunkSize {
 			chunks = append(chunks, string(chunk))
-			len = 0
+			lngth = 0
 		}
 	}
-	if len > 0 {
-		chunks = append(chunks, string(chunk[:len]))
+	if lngth > 0 {
+		chunks = append(chunks, string(chunk[:lngth]))
 	}
 	return chunks
 }
@@ -58,7 +59,6 @@ func (s *SPFRecord) TXTSplit(pattern string, overhead int, txtMaxSize int) map[s
 	m := map[string][]string{}
 	s.split("@", pattern, 1, m, overhead, txtMaxSize)
 	return m
-
 }
 
 func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string][]string, overhead int, txtMaxSize int) {

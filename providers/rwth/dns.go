@@ -1,8 +1,6 @@
 package rwth
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 )
@@ -65,7 +63,7 @@ func (api *rwthProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	// And deploy if any corrections were applied
 	if len(corrections) > 0 {
 		corrections = append(corrections, &models.Correction{
-			Msg: fmt.Sprintf("Deploy zone %s", domain),
+			Msg: "Deploy zone " + domain,
 			F:   func() error { return api.deployZone(domain) },
 		})
 	}

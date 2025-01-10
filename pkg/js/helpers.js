@@ -21,6 +21,8 @@ var conf = {
 
 var defaultArgs = [];
 
+var global_currentExtendSubDomain = ''; // The current D_EXTEND() zone (minus the parent zonename).
+
 function initialize() {
     conf = {
         registrars: [],
@@ -140,6 +142,7 @@ function processDargs(m, domain) {
 
 // D(name,registrar): Create a DNS Domain. Use the parameters as records and mods.
 function D(name, registrar) {
+    global_currentExtendSubDomain = '';
     var domain = newDomain(name, registrar);
     for (var i = 0; i < defaultArgs.length; i++) {
         processDargs(defaultArgs[i], domain);
@@ -165,6 +168,7 @@ function INCLUDE(name) {
     }
     return function (d) {
         d.records.push.apply(d.records, domain.obj.records);
+        d.rawrecords.push.apply(d.rawrecords, domain.obj.rawrecords);
     };
 }
 
@@ -177,10 +181,14 @@ function D_EXTEND(name) {
             ' was not declared yet and therefore cannot be updated. Use D() before.'
         );
     }
-    domain.obj.subdomain = name.substr(
+    global_currentExtendSubDomain = name.substr(
         0,
         name.length - domain.obj.name.length - 1
     );
+    domain.obj.subdomain = global_currentExtendSubDomain;
+    // global_currentExtendSubDomain is used by RawRecords. (new)
+    // domain.obj.subdomain is used by recordBuilder(). (legacy)
+
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -279,9 +287,6 @@ function DnsProvider(name, nsCount) {
         d.dnsProviders[name] = nsCount;
     };
 }
-
-// A(name,ip, recordModifiers...)
-var A = recordBuilder('A');
 
 // AAAA(name,ip, recordModifiers...)
 var AAAA = recordBuilder('AAAA');
@@ -510,24 +515,6 @@ var SOA = recordBuilder('SOA', {
         record.soaretry = args.retry;
         record.soaexpire = args.expire;
         record.soaminttl = args.minttl;
-    },
-});
-
-// SRV(name,priority,weight,port,target, recordModifiers...)
-var SRV = recordBuilder('SRV', {
-    args: [
-        ['name', _.isString],
-        ['priority', _.isNumber],
-        ['weight', _.isNumber],
-        ['port', _.isNumber],
-        ['target', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.srvpriority = args.priority;
-        record.srvweight = args.weight;
-        record.srvport = args.port;
-        record.target = args.target;
     },
 });
 
@@ -764,15 +751,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-              ? 42849672.95
-              : args.alt.toString()) + 'm';
+                ? 42849672.95
+                : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-              ? 0
-              : args.siz.toString()) +
+                ? 0
+                : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -812,8 +799,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-              ? 0
-              : record.localtitude;
+                ? 0
+                : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -915,20 +902,6 @@ function ConvertDDToDMS(D, longitude) {
         sc: (0 | (((D * 60) % 1) * 60000)) / 1000,
     };
 }
-
-// MX(name,priority,target, recordModifiers...)
-var MX = recordBuilder('MX', {
-    args: [
-        ['name', _.isString],
-        ['priority', _.isNumber],
-        ['target', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.mxpreference = args.priority;
-        record.target = args.target;
-    },
-});
 
 // NS(name,target, recordModifiers...)
 var NS = recordBuilder('NS');
@@ -1644,7 +1617,7 @@ function CAA_BUILDER(value) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }
 
-    var CAA_TTL = function () {};
+    var CAA_TTL = function () { };
     if (value.ttl) {
         CAA_TTL = TTL(value.ttl);
     }
@@ -1661,7 +1634,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issue_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1670,7 +1643,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuewild) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuewild_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1910,20 +1883,20 @@ function M365_BUILDER(name, value) {
             CNAME(
                 'selector1._domainkey',
                 'selector1-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
         r.push(
             CNAME(
                 'selector2._domainkey',
                 'selector2-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
     }
@@ -2065,6 +2038,7 @@ function rawrecordBuilder(type) {
         return function (d) {
             var record = {
                 type: type,
+                subdomain: global_currentExtendSubDomain,
             };
 
             // Process the args: Functions are executed, objects are assumed to
@@ -2082,9 +2056,13 @@ function rawrecordBuilder(type) {
                 if (_.isFunction(r)) {
                     r(record);
                 } else if (_.isObject(r)) {
+                    if (r.transform && _.isArray(r.transform)) {
+                        r.transform = format_tt(r.transform);
+                    }
                     processedMetas.push(r);
                 } else {
-                    processedArgs.push(r);
+                    processedArgs.push('' + r);
+                    // NB(tlim): According to https://stackoverflow.com/a/5765401/71978 this is the fastest way to convert ints to strings.
                 }
             }
             // Store the processed args.
@@ -2097,9 +2075,4 @@ function rawrecordBuilder(type) {
             return record;
         };
     };
-}
-
-// PLEASE KEEP THIS LIST ALPHABETICAL!
-
-// CLOUDFLAREAPI:
-var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
+};

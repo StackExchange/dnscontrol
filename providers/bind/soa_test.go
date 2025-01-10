@@ -9,13 +9,13 @@ import (
 )
 
 func mkRC(target string, rec *models.RecordConfig) *models.RecordConfig {
-	rec.SetTarget(target)
+	rec.MustSetTarget(target)
 	return rec
 }
 
 func Test_makeSoa(t *testing.T) {
 	origin := "example.com"
-	var tests = []struct {
+	tests := []struct {
 		def            *SoaDefaults
 		existing       *models.RecordConfig
 		desired        *models.RecordConfig
@@ -88,7 +88,6 @@ func Test_makeSoa(t *testing.T) {
 	}
 
 	for i, tst := range tests {
-
 		if tst.existing != nil {
 			tst.existing.SetLabel("@", origin)
 			tst.existing.Type = "SOA"

@@ -8,13 +8,12 @@ import (
 )
 
 func TestRecordToNative_1(t *testing.T) {
-
 	rc := &models.RecordConfig{
-		TTL: 3600,
+		Type: "A",
+		TTL:  3600,
 	}
 	rc.SetLabel("foo", "example.com")
-	rc.SetTarget("1.2.3.4")
-	rc.Type = "A"
+	rc.MustSetTarget("1.2.3.4")
 
 	ns := recordToNative(rc, 0)
 
@@ -25,7 +24,6 @@ func TestRecordToNative_1(t *testing.T) {
 }
 
 func TestNativeToRecord_1(t *testing.T) {
-
 	zrec := zRec{}
 	zrec.Type = "A"
 	zrec.TTL = 300

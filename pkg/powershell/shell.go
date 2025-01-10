@@ -59,8 +59,8 @@ func (s *shell) Execute(cmd string) (string, string, error) {
 	waiter := &sync.WaitGroup{}
 	waiter.Add(2)
 
-	go streamReader(s.stdout, outBoundary, &sout, waiter)
-	go streamReader(s.stderr, errBoundary, &serr, waiter)
+	go streamReader(s.stdout, outBoundary, &sout, waiter) //nolint:errcheck
+	go streamReader(s.stdout, outBoundary, &sout, waiter) //nolint:errcheck
 
 	waiter.Wait()
 
@@ -72,7 +72,7 @@ func (s *shell) Execute(cmd string) (string, string, error) {
 }
 
 func (s *shell) Exit() {
-	s.stdin.Write([]byte("exit" + newline))
+	_, _ = s.stdin.Write([]byte("exit" + newline))
 
 	// if it's possible to close stdin, do so (some backends, like the local one,
 	// do support it)
@@ -81,7 +81,7 @@ func (s *shell) Exit() {
 		closer.Close()
 	}
 
-	s.handle.Wait()
+	_ = s.handle.Wait()
 
 	s.handle = nil
 	s.stdin = nil

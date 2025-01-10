@@ -12,7 +12,7 @@ import (
 type realtimeregisterAPI struct {
 	apikey      string
 	endpoint    string
-	Zones       map[string]*Zone //cache
+	Zones       map[string]*Zone // cache
 	ServiceType string
 }
 
@@ -57,14 +57,13 @@ func (api *realtimeregisterAPI) request(method string, url string, body io.Reade
 	req.Header.Set("Authorization", "ApiKey "+api.apikey)
 
 	resp, err := client.Do(req)
-
 	if err != nil {
 		return nil, err
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("realtime Register API error on request to %s: %d, %s", url, resp.StatusCode,
 			string(bodyString))
 	}
@@ -88,7 +87,6 @@ func (api *realtimeregisterAPI) getZone(domain string) (*Zone, error) {
 }
 
 func (api *realtimeregisterAPI) getDomainZones(domain string) (*Zones, error) {
-
 	url := fmt.Sprintf(api.endpoint+"/dns/zones?name=%s&service=%s", domain, api.ServiceType)
 
 	return api.getZones(url)
@@ -117,7 +115,6 @@ func (api *realtimeregisterAPI) getZones(url string) (*Zones, error) {
 		url,
 		nil,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +193,6 @@ func (api *realtimeregisterAPI) updateNameservers(domainName string, nameservers
 		fmt.Sprintf(api.endpoint+"/domains/%s/update", domainName),
 		bytes.NewReader(bodyBytes),
 	)
-
 	if err != nil {
 		return err
 	}
@@ -205,12 +201,11 @@ func (api *realtimeregisterAPI) updateNameservers(domainName string, nameservers
 
 func (api *realtimeregisterAPI) createOrUpdateZone(body *Zone, url string) error {
 	bodyBytes, err := json.Marshal(body)
-
 	if err != nil {
 		return err
 	}
 
-	//Ugly hack for MX records with null target
+	// Ugly hack for MX records with null target
 	requestBody := strings.Replace(string(bodyBytes), "\"prio\":-1", "\"prio\":0", -1)
 
 	_, err = api.request("POST", url, strings.NewReader(requestBody))

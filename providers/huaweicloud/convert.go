@@ -1,6 +1,7 @@
 package huaweicloud
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -49,7 +50,7 @@ func nativeToRecords(n *model.ShowRecordSetByZoneResp, zoneName string) (models.
 			rc.Metadata[metaLine] = *n.Line
 		}
 		if n.Weight != nil {
-			rc.Metadata[metaWeight] = fmt.Sprintf("%d", *n.Weight)
+			rc.Metadata[metaWeight] = strconv.Itoa(int(*n.Weight))
 		}
 		if n.Description != nil {
 			rc.Metadata[metaKey] = *n.Description
@@ -63,7 +64,7 @@ func nativeToRecords(n *model.ShowRecordSetByZoneResp, zoneName string) (models.
 func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.ShowRecordSetByZoneResp, error) {
 	// rcs length is guaranteed to be > 0
 	if len(rcs) == 0 {
-		return nil, fmt.Errorf("empty record set")
+		return nil, errors.New("empty record set")
 	}
 	// line and weight should be the same for all records in the rrset
 	line := rcs[0].Metadata[metaLine]
@@ -87,7 +88,7 @@ func recordsToNative(rcs models.Records, expectedKey models.RecordKey) (*model.S
 		weightInt32 := int32(weightInt)
 		// weight should be 0-1000
 		if weightInt32 < 0 || weightInt32 > 1000 {
-			return nil, fmt.Errorf("weight must be between 0 and 1000")
+			return nil, errors.New("weight must be between 0 and 1000")
 		}
 		weight = &weightInt32
 	}

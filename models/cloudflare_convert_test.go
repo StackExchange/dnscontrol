@@ -1,4 +1,4 @@
-package cfsingleredirect
+package models
 
 import (
 	"regexp"
@@ -226,7 +226,6 @@ func Test_makeSingleDirectRule(t *testing.T) {
 			if gotExpr != tt.wantExpr {
 				t.Errorf("makeSingleDirectRule()  EXPR = %v\n                                                  want %v", gotExpr, tt.wantExpr)
 			}
-			//_ = gotType
 		})
 	}
 }
@@ -330,7 +329,6 @@ func Test_simpleGlobToRegex(t *testing.T) {
 
 			// Make sure the regex compiles and gets the same result when matching against strings in data.
 			for i, d := range data {
-
 				rm, err := regexp.MatchString(got, d)
 				if err != nil {
 					t.Errorf("simpleGlobToRegex() = %003d  can not compile: %v", i, err)
@@ -342,9 +340,7 @@ func Test_simpleGlobToRegex(t *testing.T) {
 				if gm != rm {
 					t.Errorf("simpleGlobToRegex() = %003d  glob: %v '%v'  regexp: %v '%v'", i, gm, tt.pattern, rm, got)
 				}
-
 			}
 		})
-
 	}
 }

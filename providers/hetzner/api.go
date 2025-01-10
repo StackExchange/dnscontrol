@@ -66,7 +66,7 @@ func (api *hetznerProvider) createZone(name string) error {
 }
 
 func (api *hetznerProvider) deleteRecord(record *record) error {
-	url := fmt.Sprintf("/records/%s", record.ID)
+	url := "/records/" + record.ID
 	return api.request(url, "DELETE", nil, nil, nil)
 }
 

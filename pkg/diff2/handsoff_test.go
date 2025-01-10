@@ -11,7 +11,7 @@ import (
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
-// parseZoneContents is copied verbatium from providers/bind/bindProvider.go
+// parseZoneContents is copied verbatim from providers/bind/bindProvider.go
 // because import cycles and... tests shouldn't depend on huge modules.
 func parseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
@@ -47,8 +47,9 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 
 	existing, err := parseZoneContents(existingZone, "f.com", "no_file_name")
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
+	fmt.Printf("DEBUG: existing = %+v\n", existing)
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
 	if err != nil {
@@ -56,25 +57,37 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	}
 	dc := dnsconfig.FindDomain("f.com")
 	desired := dc.Records
+	fmt.Printf("DEBUG: desired = %+v\n", desired)
 	absences := dc.EnsureAbsent
 	unmanagedConfigs := dc.Unmanaged
 	// BUG(tlim): For some reason ExecuteJavascriptString() isn't setting the NameFQDN on records.
 	//            This fixes up the records. It is a crass workaround. We should find the real
 	//            cause and fix it.
+	// for i, j := range existing {
+	// 	existing[i].SetLabel(j.Name, "f.com")
+	// 	fmt.Printf("DEBUG: existing short=%q fqdn=%q\n", j.Name, j.NameFQDN)
+	// }
 	for i, j := range desired {
-		desired[i].SetLabel(j.GetLabel(), "f.com")
+		//desired[i].SetLabel(j.GetLabel(), "f.com")
+		desired[i].SetLabel(j.Name, "f.com")
+		fmt.Printf("DEBUG: desired short=%q fqdn=%q\n", j.Name, j.NameFQDN)
 	}
 	for i, j := range absences {
-		absences[i].SetLabel(j.GetLabel(), "f.com")
+		//absences[i].SetLabel(j.GetLabel(), "f.com")
+		absences[i].SetLabel(j.Name, "f.com")
+		fmt.Printf("DEBUG: abs short=%q fqdn=%q\n", j.Name, j.NameFQDN)
 	}
 
-	ignored, purged := processIgnoreAndNoPurge(
+	ignored, purged, err := processIgnoreAndNoPurge(
 		"f.com",
 		existing, desired,
 		absences,
 		unmanagedConfigs,
 		noPurge,
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ignoredRecs := showRecs(ignored)
 	purgedRecs := showRecs(purged)

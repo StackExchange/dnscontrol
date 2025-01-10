@@ -19,7 +19,10 @@ func (n *namedotcomProvider) GetZoneRecords(domain string, meta map[string]strin
 
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = toRecord(r, domain)
+		actual[i], err = toRecord(r, domain)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return actual, nil
@@ -53,14 +56,14 @@ func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, c)
 	}
 	for _, chng := range mod {
-		old := chng.Existing.Original.(*namecom.Record)
-		new := chng.Desired
+		old_ := chng.Existing.Original.(*namecom.Record)
+		new_ := chng.Desired
 		c := &models.Correction{Msg: chng.String(), F: func() error {
-			err := n.deleteRecord(old.ID, dc.Name)
+			err := n.deleteRecord(old_.ID, dc.Name)
 			if err != nil {
 				return err
 			}
-			return n.createRecord(new, dc.Name)
+			return n.createRecord(new_, dc.Name)
 		}}
 		corrections = append(corrections, c)
 	}
@@ -79,7 +82,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
+func toRecord(r *namecom.Record, origin string) (*models.RecordConfig, error) {
 	heapr := r // NB(tlim): Unsure if this is actually needed.
 	rc := &models.RecordConfig{
 		Type:     r.Type,
@@ -91,23 +94,21 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
 	rc.SetLabelFromFQDN(fqdn, origin)
+	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXT(r.Answer)
+		err = rc.SetTargetTXT(r.Answer)
 	case "MX":
-		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
-		}
+		err = rc.SetTargetMX(uint16(r.Priority), r.Answer)
 	case "SRV":
-		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
-			panic(fmt.Errorf("unparsable SRV record received from ndc: %w", err))
-		}
+		err = rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+".")
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
-		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(fmt.Errorf("unparsable record received from ndc: %w", err))
-		}
+		err = rc.PopulateFromString(rtype, r.Answer, r.Fqdn)
 	}
-	return rc
+	if err != nil {
+		return nil, fmt.Errorf("unparsable record received from ndc: %w", err)
+	}
+	return rc, nil
 }
 
 func (n *namedotcomProvider) getRecords(domain string) ([]*namecom.Record, error) {

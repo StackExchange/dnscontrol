@@ -2,6 +2,7 @@ package inwx
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -89,11 +90,11 @@ func getOTP(TOTPValue string, TOTPKey string) (string, error) {
 	} else if TOTPKey != "" {
 		tan, err := totp.GenerateCode(TOTPKey, time.Now())
 		if err != nil {
-			return "", fmt.Errorf("INWX: Unable to generate TOTP from totp-key: %v", err)
+			return "", fmt.Errorf("INWX: Unable to generate TOTP from totp-key: %w", err)
 		}
 		return tan, nil
 	} else {
-		return "", fmt.Errorf("INWX: two factor authentication required but no TOTP configured")
+		return "", errors.New("INWX: two factor authentication required but no TOTP configured")
 	}
 }
 
@@ -101,7 +102,7 @@ func getOTP(TOTPValue string, TOTPKey string) (string, error) {
 func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 	resp, err := api.client.Account.Login()
 	if err != nil {
-		return fmt.Errorf("INWX: Unable to login")
+		return errors.New("INWX: Unable to login")
 	}
 
 	switch TFA := resp.TFA; TFA {
@@ -133,13 +134,13 @@ func newInwx(m map[string]string) (*inwxAPI, error) {
 	sandbox := m["sandbox"] == "1"
 
 	if username == "" {
-		return nil, fmt.Errorf("INWX: username must be provided")
+		return nil, errors.New("INWX: username must be provided")
 	}
 	if password == "" {
-		return nil, fmt.Errorf("INWX: password must be provided")
+		return nil, errors.New("INWX: password must be provided")
 	}
 	if TOTPValue != "" && TOTPKey != "" {
-		return nil, fmt.Errorf("INWX: totp and totp-key must not be specified at the same time")
+		return nil, errors.New("INWX: totp and totp-key must not be specified at the same time")
 	}
 
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
@@ -228,7 +229,7 @@ func checkRecords(records models.Records) error {
 	for _, r := range records {
 		if r.Type == "TXT" {
 			if strings.ContainsAny(r.GetTargetTXTJoined(), "`") {
-				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+				return errors.New("INWX TXT records do not support single-quotes in their target")
 			}
 		}
 	}
@@ -295,7 +296,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		return nil, err
 	}
 
-	var records = []*models.RecordConfig{}
+	records := []*models.RecordConfig{}
 
 	for _, record := range info.Records {
 		if record.Type == "SOA" {
@@ -309,7 +310,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		   Records with empty targets (i.e. records with target ".")
 		   are not allowed.
 		*/
-		var rtypeAddDot = map[string]bool{
+		rtypeAddDot := map[string]bool{
 			"CNAME": true,
 			"MX":    true,
 			"NS":    true,
