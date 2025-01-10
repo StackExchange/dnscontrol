@@ -530,7 +530,7 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 }
 
 func a(name string, a string) *models.RecordConfig {
-	rc, err := models.MakeFromRaw("A", []string{name, a}, nil, "**current-domain**")
+	rc, err := models.NewFromRaw("A", []string{name, a}, nil, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -539,7 +539,7 @@ func a(name string, a string) *models.RecordConfig {
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
 	spreference := strconv.Itoa(int(preference))
-	rc, err := models.MakeFromRaw("MX", []string{name, spreference, mx}, nil, "**current-domain**")
+	rc, err := models.NewFromRaw("MX", []string{name, spreference, mx}, nil, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -559,7 +559,7 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	rc, err := models.MakeFromRaw("SRV", []string{name, spriority, sweight, sport, target}, nil, "**current-domain**")
+	rc, err := models.NewFromRaw("SRV", []string{name, spriority, sweight, sport, target}, nil, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}

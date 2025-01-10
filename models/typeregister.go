@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// FromRawFn is a function that populates a RecordConfig for a given record type.
 type FromRawFn func(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error
 
 type RegisterOpts struct {
@@ -15,6 +16,7 @@ var rtypeDB map[string]RegisterOpts
 
 var validTypes = map[string]struct{}{}
 
+// RegisterType registers a new record type with the system.
 func RegisterType(typeName string, opts RegisterOpts) error {
 
 	//printer.Printf("rtypectl.Register(%q)\n", typeName)
@@ -40,6 +42,7 @@ func RegisterType(typeName string, opts RegisterOpts) error {
 	return nil
 }
 
+// GetTypeOps returns the RegisterOpts for a given record type.
 func GetTypeOps(t string) (*RegisterOpts, error) {
 	if opts, ok := rtypeDB[t]; ok {
 		return &opts, nil
@@ -47,16 +50,19 @@ func GetTypeOps(t string) (*RegisterOpts, error) {
 	return nil, fmt.Errorf("rtype %q not found", t)
 }
 
+// IsValid returns true if the string t is a valid type ("valid" means that it has been registered).
 func IsValid(t string) bool {
 	_, ok := validTypes[t]
 	return ok
 }
 
+// IsTypeLegacy returns true if the type has NOT been converted to the new way of doing types.
 func IsTypeLegacy(t string) bool {
 	_, ok := validTypes[t]
 	return !ok
 }
 
+// IsTypeUpgraded returns true if the type has been converted to the new way of doing types.
 func IsTypeUpgraded(t string) bool {
 	_, ok := validTypes[t]
 	return ok

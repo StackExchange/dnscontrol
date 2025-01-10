@@ -26,6 +26,7 @@ type A struct {
 	A fieldtypes.IPv4
 }
 
+// NewFromRawA creates a new RecordConfig of type A from rawfields, meta, and origin.
 func NewFromRawA(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
 	rc := &RecordConfig{
 		Metadata: map[string]string{},
@@ -123,6 +124,7 @@ type MX struct {
 	Mx         string
 }
 
+// NewFromRawMX creates a new RecordConfig of type MX from rawfields, meta, and origin.
 func NewFromRawMX(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
 	rc := &RecordConfig{}
 	if err := PopulateFromRawMX(rc, rawfields, meta, origin); err != nil {
@@ -227,6 +229,7 @@ type SRV struct {
 	Target   string `json:"target"`
 }
 
+// NewFromRawSRV creates a new RecordConfig of type SRV from rawfields, meta, and origin.
 func NewFromRawSRV(rawfields []string, meta map[string]string, origin string) (*RecordConfig, error) {
 	rc := &RecordConfig{}
 	if err := PopulateFromRawSRV(rc, rawfields, meta, origin); err != nil {
