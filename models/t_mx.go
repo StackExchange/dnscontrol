@@ -12,7 +12,7 @@ func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
 func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
-	return PopulateMXRaw(rc, []string{rc.Name, pref, target}, nil, "")
+	return PopulateFromRawMX(rc, []string{rc.Name, pref, target}, nil, "")
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.

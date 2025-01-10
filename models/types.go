@@ -27,7 +27,7 @@ PopulateAFields()
 
 func init() {
 	RegisterType("A", RegisterOpts{FromRaw: PopulateARaw})
-	RegisterType("MX", RegisterOpts{FromRaw: PopulateMXRaw})
+	RegisterType("MX", RegisterOpts{FromRaw: PopulateFromRawMX})
 	RegisterType("SRV", RegisterOpts{FromRaw: PopulateSRVRaw})
 	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
@@ -126,8 +126,8 @@ type MX struct {
 	Mx         string
 }
 
-// PopulateMXRaw updates rc to be an MX record with contents from rawfields, meta and origin.
-func PopulateMXRaw(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+// PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
+func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	var err error
 
 	// Error checking
