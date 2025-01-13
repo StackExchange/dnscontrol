@@ -770,7 +770,7 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 	// - or ""  GANDI        lookup worked. Nothing to say.
 	// - or ""  - or ""      ERROR "creds.json has invalid or missing data"
 	// GANDI    ""           WARNING "Working but.... Please fix as follows..."
-	// GANDI    INFO "working but unneeded: clean up as follows..."
+	// GANDI                 INFO "working but unneeded: clean up as follows..."
 	// GANDI    NAMEDOT      ERROR "error mismatched: please fix as follows..."
 
 	// ERROR: Invalid.
