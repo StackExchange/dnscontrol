@@ -308,7 +308,9 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "TXT":
 		err = rc.SetTargetTXT(r.Target)
 	case "CNAME", "DNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
-		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		if err := rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain)); err != nil {
+			return nil, err
+		}
 	case "CAA":
 		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 8)
 		rc.CaaFlag = uint8(caaFlag)

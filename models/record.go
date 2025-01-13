@@ -354,7 +354,6 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
-
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
