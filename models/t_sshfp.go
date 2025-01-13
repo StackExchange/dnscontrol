@@ -10,7 +10,9 @@ import (
 func (rc *RecordConfig) SetTargetSSHFP(algorithm uint8, fingerprint uint8, target string) error {
 	rc.SshfpAlgorithm = algorithm
 	rc.SshfpFingerprint = fingerprint
-	rc.SetTarget(target)
+	if err := rc.SetTarget(target); err != nil {
+		return err
+	}
 	if rc.Type == "" {
 		rc.Type = "SSHFP"
 	}

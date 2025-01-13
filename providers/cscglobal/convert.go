@@ -19,7 +19,9 @@ func nativeToRecordA(nr nativeRecordA, origin string, defaultTTL uint32) *models
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetIP(net.ParseIP(nr.Value).To4())
+	if err := rc.SetTargetIP(net.ParseIP(nr.Value).To4()); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -34,7 +36,9 @@ func nativeToRecordCNAME(nr nativeRecordCNAME, origin string, defaultTTL uint32)
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTarget(nr.Value)
+	if err := rc.SetTarget(nr.Value); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -49,7 +53,9 @@ func nativeToRecordAAAA(nr nativeRecordAAAA, origin string, defaultTTL uint32) *
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetIP(net.ParseIP(nr.Value).To16())
+	if err := rc.SetTargetIP(net.ParseIP(nr.Value).To16()); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -64,7 +70,9 @@ func nativeToRecordTXT(nr nativeRecordTXT, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetTXT(nr.Value)
+	if err := rc.SetTargetTXT(nr.Value); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -79,7 +87,9 @@ func nativeToRecordMX(nr nativeRecordMX, origin string, defaultTTL uint32) *mode
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetMX(nr.Priority, nr.Value)
+	if err := rc.SetTargetMX(nr.Priority, nr.Value); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -94,7 +104,7 @@ func nativeToRecordNS(nr nativeRecordNS, origin string, defaultTTL uint32) *mode
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTarget(nr.Value)
+	rc.MustSetTarget(nr.Value)
 	return rc
 }
 
@@ -109,7 +119,9 @@ func nativeToRecordSRV(nr nativeRecordSRV, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetSRV(nr.Priority, nr.Weight, nr.Port, nr.Value)
+	if err := rc.SetTargetSRV(nr.Priority, nr.Weight, nr.Port, nr.Value); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }
 
@@ -124,6 +136,8 @@ func nativeToRecordCAA(nr nativeRecordCAA, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetCAA(nr.Flag, nr.Tag, nr.Value)
+	if err := rc.SetTargetCAA(nr.Flag, nr.Tag, nr.Value); err != nil {
+		panic(err) // Should never happen.
+	}
 	return rc
 }

@@ -253,9 +253,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	// Copy the exported fields.
-	copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err := copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		return err
+	}
 	// Set each unexported field.
-	rc.SetTarget(recj.Target)
+	if err := rc.SetTarget(recj.Target); err != nil {
+		return err
+	}
 
 	// Some sanity checks:
 	if recj.Type != rc.Type {
@@ -288,7 +292,6 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 // short must not have a training dot: That would mean you have a FQDN, and
 // shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
-
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
@@ -317,7 +320,6 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
-
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
@@ -360,9 +362,9 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		// SoaSerial is not included because it isn't used in comparisons.
 	case "TXT":
-		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
+		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
 		r := txtutil.EncodeQuoted(rc.target)
-		//fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
+		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
 	case "UNKNOWN":
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
@@ -372,7 +374,6 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
-
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
@@ -486,7 +487,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 
 // GetDependencies returns the FQDNs on which this record dependents
 func (rc *RecordConfig) GetDependencies() []string {
-
 	switch rc.Type {
 	// #rtype_variations
 	case "NS", "SRV", "CNAME", "DNAME", "MX", "ALIAS", "AZURE_ALIAS", "R53_ALIAS":

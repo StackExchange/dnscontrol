@@ -9,14 +9,16 @@ import (
 	"testing"
 )
 
-const providersImportDir = "../../providers"
-const providersPackageName = "providers"
+const (
+	providersImportDir   = "../../providers"
+	providersPackageName = "providers"
+)
 
 func TestCapabilitiesAreFiltered(t *testing.T) {
 	// Any capabilities which we wish to whitelist because it's not directly
 	// something we can test against.
 	skipCheckCapabilities := make(map[string]struct{})
-	//skipCheckCapabilities["CanUseBlahBlahBlah"] = struct{}{}
+	// skipCheckCapabilities["CanUseBlahBlahBlah"] = struct{}{}
 
 	fset := token.NewFileSet()
 	pkgs, err := parser.ParseDir(fset, providersImportDir, nil, 0)
@@ -70,5 +72,4 @@ func TestCapabilitiesAreFiltered(t *testing.T) {
 			t.Errorf("MISSING: providers.%s (%d) is not checked by checkProviderCapabilities", capName, capInt)
 		}
 	}
-
 }

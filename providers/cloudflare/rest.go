@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/net/idna"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/cloudflare/cloudflare-go"
+	"golang.org/x/net/idna"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -20,10 +19,10 @@ func (c *cloudflareProvider) cacheDomainList() error {
 		return nil
 	}
 
-	//fmt.Printf("DEBUG: CLOUDFLARE POPULATING CACHE\n")
+	// fmt.Printf("DEBUG: CLOUDFLARE POPULATING CACHE\n")
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
-		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %s", c.cfClient.APIEmail, err)
+		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %w", c.cfClient.APIEmail, err)
 	}
 
 	c.domainIndex = map[string]string{}
@@ -150,7 +149,6 @@ func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
 }
 
 func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {
-
 	content := rec.GetTargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
 		content = rec.Metadata[metaOriginalIP]
@@ -222,7 +220,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 
 func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, rec *models.RecordConfig) error {
 	if domainID == "" || recID == "" {
-		return fmt.Errorf("cannot modify record if domain or record id are empty")
+		return errors.New("cannot modify record if domain or record id are empty")
 	}
 
 	r := cloudflare.UpdateDNSRecordParams{
@@ -285,13 +283,12 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		if errors.As(err, &e) {
 			return []*models.RecordConfig{}, nil
 		}
-		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %s (%T)", err, err)
+		return nil, fmt.Errorf("failed fetching redirect rule list cloudflare: %w (%T)", err, err)
 	}
 
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
-
-		var thisPr = pr
+		thisPr := pr
 		r := &models.RecordConfig{
 			Original: thisPr,
 		}
@@ -302,7 +299,9 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen)
+		if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
+			return nil, err
+		}
 		r.SetLabel("@", domain)
 
 		// Store the IDs
@@ -317,7 +316,6 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 }
 
 func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
@@ -350,7 +348,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
 	var e *cloudflare.NotFoundError
 	if err != nil && !errors.As(err, &e) {
-		return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
+		return fmt.Errorf("failed fetching redirect rule list cloudflare: %w", err)
 	}
 	newSingleRedirect.Rules = newSingleRedirectRules
 	newSingleRedirect.Rules = append(newSingleRedirect.Rules, rules.Rules...)
@@ -361,7 +359,6 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-
 	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
 	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
 	// updatedRulesetRules := []cloudflare.RulesetRule{}
@@ -387,11 +384,12 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 	// if err != nil {
 	// 	return err
 	// }
-	//printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
+	// printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
 
 	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cloudflare.DeleteRulesetRuleParams{
 		RulesetID:     cfr.SRRRulesetID,
-		RulesetRuleID: cfr.SRRRulesetRuleID},
+		RulesetRuleID: cfr.SRRRulesetRuleID,
+	},
 	)
 	// NB(tlim): Yuck. This returns an error even when it is successful. Dig into the JSON for the real status.
 	if strings.Contains(err.Error(), `"success": true,`) {
@@ -411,7 +409,7 @@ func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newre
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %w", err)
 	}
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules {
@@ -423,7 +421,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			continue
 		}
 		value := pr.Actions[0].Value.(map[string]interface{})
-		var thisPr = pr
+		thisPr := pr
 		r := &models.RecordConfig{
 			Original: thisPr,
 		}
@@ -434,7 +432,9 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		then := value["url"].(string)
 		currentPrPrio := pr.Priority
 
-		cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then)
+		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
+			return nil, err
+		}
 		r.SetLabel("@", domain)
 
 		recs = append(recs, r)
@@ -448,7 +448,7 @@ func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
 
 func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
 	// maybe someday?
-	//c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
+	// c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
 	if err := c.deletePageRule(recordID, domainID); err != nil {
 		return err
 	}
@@ -480,21 +480,25 @@ func (c *cloudflareProvider) createPageRule(domainID string, cfr models.Cloudfla
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
 	res, err := c.cfClient.ListWorkerRoutes(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListWorkerRoutesParams{})
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %w", err)
 	}
 
 	recs := []*models.RecordConfig{}
 	for _, pr := range res.Routes {
-		var thisPr = pr
+		thisPr := pr
 		r := &models.RecordConfig{
 			Type:     "WORKER_ROUTE",
 			Original: thisPr,
 			TTL:      1,
 		}
 		r.SetLabel("@", domain)
-		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
+		err := r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
 			pr.Pattern,
 			pr.ScriptName))
+		if err != nil {
+			return nil, err
+		}
+
 		recs = append(recs, r)
 	}
 	return recs, nil

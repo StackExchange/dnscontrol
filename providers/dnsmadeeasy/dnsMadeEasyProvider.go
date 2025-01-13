@@ -2,7 +2,7 @@ package dnsmadeeasy
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"os"
 	"strings"
 
@@ -45,11 +45,11 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_key"] == "" {
-		return nil, fmt.Errorf("missing DNSMADEEASY api_key")
+		return nil, errors.New("missing DNSMADEEASY api_key")
 	}
 
 	if settings["secret_key"] == "" {
-		return nil, fmt.Errorf("missing DNSMADEEASY secret_key")
+		return nil, errors.New("missing DNSMADEEASY secret_key")
 	}
 
 	sandbox := false

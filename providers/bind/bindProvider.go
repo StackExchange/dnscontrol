@@ -260,7 +260,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 
 	comments := make([]string, 0, 5)
 	comments = append(comments,
-		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
+		"generated with dnscontrol "+time.Now().Format(time.RFC3339),
 	)
 	if dc.AutoDNSSEC == "on" {
 		// This does nothing but reminds the user to add the correct
@@ -300,7 +300,6 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 				// be commented out on write, but we don't reverse that when
 				// reading, so there will be a diff on every invocation.
 				err = prettyzone.WriteZoneFileRC(zf, result.DesiredPlus, dc.Name, 0, comments)
-
 				if err != nil {
 					return fmt.Errorf("failed WriteZoneFile: %w", err)
 				}
@@ -316,7 +315,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 }
 
 // preprocessFilename pre-processes a filename we're about to os.Create()
-// * On Windows systems, it translates the seperator.
+// * On Windows systems, it translates the separator.
 // * It attempts to mkdir the directories leading up to the filename.
 // * If running on Linux as root, it does not attempt to create directories.
 func preprocessFilename(name string) (string, error) {
@@ -326,7 +325,7 @@ func preprocessFilename(name string) (string, error) {
 		// Create the parent directories
 		dir := filepath.Dir(name)
 		universalDir := filepath.FromSlash(dir)
-		if err := os.MkdirAll(universalDir, 0750); err != nil {
+		if err := os.MkdirAll(universalDir, 0o750); err != nil {
 			return "", err
 		}
 	}

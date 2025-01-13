@@ -26,7 +26,7 @@ func (b shoutrrrNotifier) Notify(domain, provider, msg string, err error, previe
 	} else {
 		payload = fmt.Sprintf("DNSControl successfully ran correction for %s[%s]:\n%s", domain, provider, msg)
 	}
-	shoutrrr.Send(string(b), payload)
+	_ = shoutrrr.Send(string(b), payload)
 }
 
 func (b shoutrrrNotifier) Done() {}

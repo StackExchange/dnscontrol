@@ -2,6 +2,7 @@ package cnr
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -46,7 +47,6 @@ func (n *CNRClient) GetZoneRecords(domain string, meta map[string]string) (model
 	}
 
 	return actual, nil
-
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -215,7 +215,7 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 	totalRecords += limitation
 
 	// finally request all resource records available for the zone
-	cmd["LIMIT"] = fmt.Sprintf("%d", totalRecords)
+	cmd["LIMIT"] = strconv.Itoa(totalRecords)
 	cmd["WIDE"] = "1"
 	r = n.client.Request(cmd)
 
@@ -227,7 +227,7 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 
 	// loop over the records array
 	rrs := r.GetRecords()
-	for i := 0; i < len(rrs); i++ {
+	for i := range len(rrs) {
 		data := rrs[i].GetData()
 		// fmt.Printf("Data: %+v\n", data)
 		if _, exists := data["NAME"]; !exists {
@@ -253,14 +253,14 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		pattern := `^CNAME|MX|NS|SRV|PTR$`
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			return nil, fmt.Errorf("error compiling regex in getRecords: %s", err)
+			return nil, fmt.Errorf("error compiling regex in getRecords: %w", err)
 		}
 		if re.MatchString(data["TYPE"]) && !strings.HasSuffix(data["CONTENT"], ".") {
-			data["CONTENT"] = fmt.Sprintf("%s.", data["CONTENT"])
+			data["CONTENT"] = data["CONTENT"] + "."
 		}
 
 		// Only append domain if it's not already a fully qualified domain name
-		fqdn := fmt.Sprintf("%s.", domain)
+		fqdn := domain + "."
 		if data["NAME"] != "@" && !strings.HasSuffix(data["NAME"], domain+".") {
 			fqdn = fmt.Sprintf("%s.%s.", data["NAME"], domain)
 		}
@@ -294,17 +294,17 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":
 		answer = rc.GetTargetField()
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "SSHFP":
 		answer = fmt.Sprintf(`%v %v %s`, rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "NAPTR":
 		answer = fmt.Sprintf(`%v %v "%v" "%v" "%v" %v`, rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.GetTargetField())
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "TLSA":
 		answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
@@ -314,7 +314,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
 	case "SRV":
 		if rc.GetTargetField() == "." {
-			return "", fmt.Errorf("SRV records with empty targets are not supported")
+			return "", errors.New("SRV records with empty targets are not supported")
 		}
 		// _service._proto.name. TTL Type Priority Weight Port Target.
 		// e.g. _sip._tcp.phone.example.org. 86400 IN SRV 5 6 7 sip.example.org.
@@ -325,7 +325,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		// that have not been updated for a new RR type.
 	}
 
-	str := host + " " + fmt.Sprint(rc.TTL) + " "
+	str := host + " " + strconv.FormatUint(uint64(rc.TTL), 10) + " "
 
 	if rc.Type != "NS" { // TODO
 		str += "IN "
@@ -333,7 +333,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 	str += rc.Type + " "
 	// Handle MX records which have priority
 	if rc.Type == "MX" {
-		str += fmt.Sprint(uint32(rc.MxPreference)) + " "
+		str += strconv.FormatUint(uint64(uint32(rc.MxPreference)), 10) + " "
 	}
 	str += answer
 	return str, nil
@@ -344,12 +344,12 @@ func (n *CNRClient) deleteRecordString(record *CNRRecord) string {
 	// Initialize values slice
 	values := []string{
 		record.Host,
-		fmt.Sprintf("%v", record.TTL),
+		strconv.FormatUint(uint64(record.TTL), 10),
 		"IN",
 		record.Type,
 	}
 	if record.Type == "SRV" {
-		values = append(values, fmt.Sprintf("%d", record.Priority))
+		values = append(values, strconv.FormatUint(uint64(record.Priority), 10))
 	}
 	values = append(values, record.Answer)
 

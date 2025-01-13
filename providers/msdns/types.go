@@ -20,11 +20,11 @@ type DNSAccessor interface {
 // nativeRecord the JSON received from PowerShell when listing all DNS
 // records in a zone.
 type nativeRecord struct {
-	//CimClass              interface{} `json:"CimClass"`
-	//CimInstanceProperties interface{} `json:"CimInstanceProperties"`
-	//CimSystemProperties   interface{} `json:"CimSystemProperties"`
-	//DistinguishedName     string      `json:"DistinguishedName"`
-	//RecordClass           string      `json:"RecordClass"`
+	// CimClass              interface{} `json:"CimClass"`
+	// CimInstanceProperties interface{} `json:"CimInstanceProperties"`
+	// CimSystemProperties   interface{} `json:"CimSystemProperties"`
+	// DistinguishedName     string      `json:"DistinguishedName"`
+	// RecordClass           string      `json:"RecordClass"`
 	RecordType string `json:"RecordType"`
 	HostName   string `json:"HostName"`
 	RecordData struct {

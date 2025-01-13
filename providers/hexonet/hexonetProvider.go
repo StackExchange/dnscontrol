@@ -3,7 +3,7 @@ package hexonet
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	hxcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/apiclient"
@@ -51,13 +51,13 @@ func newProvider(conf map[string]string) (*HXClient, error) {
 		api.client.SetRemoteIPAddress(conf["ipaddress"])
 	}
 	if api.APIEntity != "OTE" && api.APIEntity != "LIVE" {
-		return nil, fmt.Errorf("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
+		return nil, errors.New("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
 	}
 	if api.APIEntity == "OTE" {
 		api.client.UseOTESystem()
 	}
 	if api.APILogin == "" || api.APIPassword == "" {
-		return nil, fmt.Errorf("missing login credentials apilogin or apipassword")
+		return nil, errors.New("missing login credentials apilogin or apipassword")
 	}
 	api.client.SetCredentials(api.APILogin, api.APIPassword)
 	return api, nil

@@ -11,9 +11,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/urfave/cli/v2"
-
 	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
 )
 
 // categories of commands
@@ -165,7 +164,7 @@ func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 // convenient access patterns. Does everything we need to prepare for the validation phase, but
 // cannot do anything that requires the credentials file yet.
 func preloadProviders(cfg *models.DNSConfig) (*models.DNSConfig, error) {
-	//build name to type maps
+	// build name to type maps
 	cfg.RegistrarsByName = map[string]*models.RegistrarConfig{}
 	cfg.DNSProvidersByName = map[string]*models.DNSProviderConfig{}
 	for _, reg := range cfg.Registrars {

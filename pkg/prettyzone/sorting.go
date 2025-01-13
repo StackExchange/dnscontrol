@@ -29,7 +29,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 
 	//fmt.Printf("DEBUG: LabelLess(%q, %q) = %v %q %q\n", compA, compB, LabelLess(compA, compB), a.Name, b.Name)
 	compA, compB := a.NameFQDN, b.NameFQDN
-	// If we are at the apex, pass "@" to the Less function.
+	// Unify FQDNs to "@". LabelLess needs FQDNs to be "@" to work properly.
 	if a.Name == "@" {
 		compA = "@"
 	}
@@ -68,7 +68,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 		}
 		return a.MxPreference < b.MxPreference
 	case "SRV":
-		//ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
+		// ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
 		pa, pb := a.SrvPort, b.SrvPort
 		if pa != pb {
 			return pa < pb
@@ -88,13 +88,13 @@ func (z *ZoneGenData) Less(i, j int) bool {
 		}
 		return a.SvcPriority < b.SvcPriority
 	case "PTR":
-		//ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
+		// ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
 		pa, pb := a.GetTargetField(), b.GetTargetField()
 		if pa != pb {
 			return pa < pb
 		}
 	case "CAA":
-		//ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
+		// ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
 		// sort by tag
 		pa, pb := a.CaaTag, b.CaaTag
 		if pa != pb {
@@ -123,7 +123,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	default:
 		// pass through. String comparison is sufficient.
 	}
-	//fmt.Printf("DEBUG: Less %q < %q == %v\n", a.String(), b.String(), a.String() < b.String())
+	// fmt.Printf("DEBUG: Less %q < %q == %v\n", a.String(), b.String(), a.String() < b.String())
 	return a.String() < b.String()
 }
 
@@ -138,7 +138,7 @@ func LabelLess(a, b string) bool {
 	}
 
 	// Sort @ at the top, then *, then everything else lexigraphically.
-	// i.e. @ always is less. * is is less than everything but @.
+	// i.e. @ always is less. * is less than everything but @.
 	if a == "@" {
 		return true
 	}
@@ -171,11 +171,10 @@ func LabelLess(a, b string) bool {
 	for i, j := ia, ib; minIdx >= 0; i, j, minIdx = i-1, j-1, minIdx-1 {
 		// Compare as[i] < bs[j]
 		// Sort @ at the top, then *, then everything else.
-		// i.e. @ always is less. * is is less than everything but @.
+		// i.e. @ always is less. * is less than everything but @.
 		// If both are numeric, compare as integers, otherwise as strings.
 
 		if as[i] != bs[j] {
-
 			// If the first element is *, it is always less.
 			if i == 0 && as[i] == "*" {
 				return true
@@ -207,7 +206,8 @@ func zoneRrtypeLess(a, b string) bool {
 
 	// List SOAs, NSs, etc. then all others alphabetically.
 
-	for _, t := range []string{"SOA", "NS", "CNAME",
+	for _, t := range []string{
+		"SOA", "NS", "CNAME",
 		"A", "AAAA", "MX", "SRV", "TXT",
 	} {
 		if a == t {

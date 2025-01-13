@@ -57,13 +57,13 @@ type dnsRecordCreate struct {
 }
 
 func (n *netlifyProvider) getDNSZones() ([]*dnsZone, error) {
-	reqURL := fmt.Sprintf("%s/dns_zones", baseURL)
+	reqURL := baseURL + "/dns_zones"
 
-	req, err := http.NewRequest("GET", reqURL, nil)
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiToken))
+	req.Header.Add("Authorization", "Bearer "+n.apiToken)
 
 	if n.accountSlug != "" {
 		q := req.URL.Query()
@@ -90,11 +90,11 @@ func (n *netlifyProvider) getDNSZones() ([]*dnsZone, error) {
 func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
 
-	req, err := http.NewRequest("GET", reqURL, nil)
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiToken))
+	req.Header.Add("Authorization", "Bearer "+n.apiToken)
 
 	if n.accountSlug != "" {
 		q := req.URL.Query()
@@ -121,11 +121,11 @@ func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*dnsRecord, error) {
 func (n *netlifyProvider) deleteDNSRecord(zoneID string, recordID string) error {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records/%s", baseURL, zoneID, recordID)
 
-	req, err := http.NewRequest("DELETE", reqURL, nil)
+	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiToken))
+	req.Header.Add("Authorization", "Bearer "+n.apiToken)
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
@@ -145,11 +145,11 @@ func (n *netlifyProvider) createDNSRecord(zoneID string, rec *dnsRecordCreate) (
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", reqURL, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiToken))
+	req.Header.Add("Authorization", "Bearer "+n.apiToken)
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)

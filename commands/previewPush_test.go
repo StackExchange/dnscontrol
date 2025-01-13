@@ -6,7 +6,6 @@ import (
 )
 
 func Test_refineProviderType(t *testing.T) {
-
 	var mapEmpty map[string]string
 	mapTypeMissing := map[string]string{"otherfield": "othervalue"}
 	mapTypeFoo := map[string]string{"TYPE": "FOO"}

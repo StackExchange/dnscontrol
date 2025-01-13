@@ -7,7 +7,6 @@ import (
 
 // ResourceRecord represents DNS records in API calls.
 type ResourceRecord struct {
-
 	// The name of the record.
 	// Required: true
 	Name string `json:"name"`
@@ -32,7 +31,6 @@ type ResourceRecord struct {
 
 // MainAddressRecord represents an address record in API calls.
 type MainAddressRecord struct {
-
 	// TTL of the record (Optionally if not set then Default SOA TTL is used)
 	TTL int64 `json:"ttl,omitempty"`
 
@@ -65,7 +63,6 @@ type Zone struct {
 
 // JSONResponseDataZone represents the response to the DataZone call.
 type JSONResponseDataZone struct {
-
 	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.
 	Data []*Zone `json:"data"`
 }

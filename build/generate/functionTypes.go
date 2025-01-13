@@ -64,7 +64,7 @@ func readDocFile(fPath string) (map[string]interface{}, string, error) {
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
 	if len(delimiterIndices) < 1 {
-		return nil, "", fmt.Errorf("failed to parse file. Remove it and try again")
+		return nil, "", errors.New("failed to parse file. Remove it and try again")
 	}
 	startIndex := delimiterIndices[0][0]
 	endIndex := delimiterIndices[1][0]
@@ -126,7 +126,6 @@ func generateFunctionTypes() (string, error) {
 			if err != nil {
 				println("Error parsing front matter in", fPath, "error: ", err.Error())
 				continue
-
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue

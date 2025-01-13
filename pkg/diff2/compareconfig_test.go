@@ -51,7 +51,6 @@ func TestNewCompareConfig(t *testing.T) {
 		args args
 		want string
 	}{
-
 		{
 			name: "one",
 			args: args{
@@ -227,7 +226,6 @@ compFn: <nil>
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			models.CanonicalizeTargets(tt.args.desired, "f.com")
 			models.CanonicalizeTargets(tt.args.existing, "f.com")
 
@@ -264,7 +262,6 @@ func Test_mkCompareBlobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			got, got1 := mkCompareBlobs(tt.args.rc, tt.args.f)
 			if got != tt.want {
 				t.Errorf("mkCompareBlobs() got = %q, want %q", got, tt.want)

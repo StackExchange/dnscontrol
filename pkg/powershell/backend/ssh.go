@@ -20,25 +20,25 @@ type SSH struct {
 	Session sshSession
 }
 
-// func (b *SSH) StartProcess(cmd string, args ...string) (Waiter, io.Writer, io.Reader, io.Reader, error) {
+// func (b *SSH) StartProcess(cmd string, args ...string) (Waiter, io.Writer, io.Reader, error)
 // 	stdin, err := b.Session.StdinPipe()
 // 	if err != nil {
-// 		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the SSH session's stdin stream")
+// 		return nil, errors.Annotate(err, "Could not get hold of the SSH session's stdin stream")
 // 	}
 
 // 	stdout, err := b.Session.StdoutPipe()
 // 	if err != nil {
-// 		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the SSH session's stdout stream")
+// 		return nil, errors.Annotate(err, "Could not get hold of the SSH session's stdout stream")
 // 	}
 
 // 	stderr, err := b.Session.StderrPipe()
 // 	if err != nil {
-// 		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the SSH session's stderr stream")
+// 		return nil, errors.Annotate(err, "Could not get hold of the SSH session's stderr stream")
 // 	}
 
 // 	err = b.Session.Start(b.createCmd(cmd, args))
 // 	if err != nil {
-// 		return nil, nil, nil, nil, errors.Annotate(err, "Could not spawn process via SSH")
+// 		return nil, errors.Annotate(err, "Could not spawn process via SSH")
 // 	}
 
 // 	return b.Session, stdin, stdout, stderr, nil

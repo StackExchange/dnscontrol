@@ -75,10 +75,6 @@ func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) (
 	var resultRRSetMetaSourceRecord *models.RecordConfig = nil
 
 	for _, r := range rcs {
-		label := r.GetLabel()
-		if label == "@" {
-			label = ""
-		}
 		key := r.Key()
 
 		if key != expectedKey {

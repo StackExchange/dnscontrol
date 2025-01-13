@@ -3,6 +3,7 @@ package gcloud
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -125,7 +126,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		}
 		if len(g.Visibility) != 0 {
 			if ok := visibilityCheck.MatchString(g.Visibility); !ok {
-				return nil, fmt.Errorf("GCLOUD :visibility set but not one of \"public\" or \"private\"")
+				return nil, errors.New("GCLOUD :visibility set but not one of \"public\" or \"private\"")
 			}
 			printer.Printf("GCLOUD :visibility %s configured\n", g.Visibility)
 		}
@@ -242,7 +243,6 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
@@ -258,7 +258,6 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	var newAdds, newDels *gdns.ResourceRecordSet
 
 	for _, change := range changes {
-
 		// Determine the work to be done.
 		n := change.Key.NameFQDN + "."
 		ty := change.Key.Type
@@ -303,7 +302,6 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		if len(newMsgs) != 0 {
 			accumlatedMsgs = append(accumlatedMsgs, newMsgs...)
 		}
-
 	}
 
 	// Process the remaining work.
@@ -380,7 +378,6 @@ func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumula
 
 // process calls the Google DNS API to process a Change and re-tries if needed.
 func (g *gcloudProvider) process(origin string, batch *gdns.Change) error {
-
 	zoneName, err := g.getZone(origin)
 	if err != nil || zoneName == nil {
 		return fmt.Errorf("zoneNameMap: no zone named %q", origin)
@@ -492,13 +489,17 @@ func (g *gcloudProvider) EnsureZoneExists(domain string) error {
 	return err
 }
 
-const initialBackoff = time.Second * 10 // First delay duration
-const maxBackoff = time.Minute * 3      // Maximum backoff delay
+const (
+	initialBackoff = time.Second * 10 // First delay duration
+	maxBackoff     = time.Minute * 3  // Maximum backoff delay
+)
 
 // backoff is the amount of time to sleep if a 429 or 504 is received.
 // It is doubled after each use.
-var backoff = initialBackoff
-var backoff404 = false // Set if the last call requested a retry of a 404
+var (
+	backoff    = initialBackoff
+	backoff404 = false // Set if the last call requested a retry of a 404
+)
 
 func retryNeeded(resp *googleapi.ServerResponse, err error) bool {
 	if err != nil {

@@ -3,7 +3,6 @@ package notifications
 import "testing"
 
 func Test_stripAnsiColorsValid(t *testing.T) {
-
 	coloredStr := "\x1b[0133myellow\x1b[0m" // 33 == yellow
 	nonColoredStr := "yellow"
 
@@ -14,7 +13,6 @@ func Test_stripAnsiColorsValid(t *testing.T) {
 }
 
 func Test_stripAnsiColorsInvalid(t *testing.T) {
-
 	coloredStr := "\x1b[01AAmyellow\x1b[0m" // AA not a real color
 	nonColoredStr := "yellow"
 

@@ -2,6 +2,7 @@ package hexonet
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -48,12 +49,11 @@ func (n *HXClient) GetZoneRecords(domain string, meta map[string]string) (models
 
 	for _, rec := range actual {
 		if rec.Type == "ALIAS" {
-			return nil, fmt.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
+			return nil, errors.New("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
 		}
 	}
 
 	return actual, nil
-
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -92,10 +92,10 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 	for _, chng := range mod {
 		changes = true
 		fmt.Fprintln(buf, chng)
-		old := chng.Existing.Original.(*HXRecord)
-		new := chng.Desired
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old)
-		newRecordString, err := n.createRecordString(new, dc.Name)
+		old_ := chng.Existing.Original.(*HXRecord)
+		new_ := chng.Desired
+		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old_)
+		newRecordString, err := n.createRecordString(new_, dc.Name)
 		if err != nil {
 			return corrections, 0, err
 		}
@@ -245,7 +245,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 		record.Answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
 	case "SRV":
 		if rc.GetTargetField() == "." {
-			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
+			return "", errors.New("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
 		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, record.Answer)
 		record.Priority = uint32(rc.SrvPriority)
@@ -255,9 +255,9 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 		// that have not been updated for a new RR type.
 	}
 
-	str := record.Host + " " + fmt.Sprint(record.TTL) + " IN " + record.Type + " "
+	str := record.Host + " " + strconv.FormatUint(uint64(record.TTL), 10) + " IN " + record.Type + " "
 	if record.Type == "MX" || record.Type == "SRV" {
-		str += fmt.Sprint(record.Priority) + " "
+		str += strconv.FormatUint(uint64(record.Priority), 10) + " "
 	}
 	str += record.Answer
 	return str, nil

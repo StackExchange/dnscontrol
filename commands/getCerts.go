@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -129,10 +130,10 @@ func GetCerts(args GetCertsArgs) error {
 	fmt.Println(args.JSFile)
 	// check agree flag
 	if !args.AgreeTOS {
-		return fmt.Errorf("you must agree to the Let's Encrypt Terms of Service by using -agreeTOS")
+		return errors.New("you must agree to the Let's Encrypt Terms of Service by using -agreeTOS")
 	}
 	if args.Email == "" {
-		return fmt.Errorf("must provide email to use for Let's Encrypt registration")
+		return errors.New("must provide email to use for Let's Encrypt registration")
 	}
 
 	// load dns config
@@ -142,7 +143,7 @@ func GetCerts(args GetCertsArgs) error {
 	}
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("exiting due to validation errors")
+		return errors.New("exiting due to validation errors")
 	}
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
@@ -170,7 +171,7 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	if len(certList) == 0 {
-		return fmt.Errorf("must provide at least one certificate to issue in cert configuration")
+		return errors.New("must provide at least one certificate to issue in cert configuration")
 	}
 	if err = validateCertificateList(certList, cfg); err != nil {
 		return err
@@ -207,7 +208,7 @@ func GetCerts(args GetCertsArgs) error {
 			if manyerr == nil {
 				manyerr = err
 			} else {
-				manyerr = fmt.Errorf("%w; %v", manyerr, err)
+				manyerr = fmt.Errorf("%w; %w", manyerr, err)
 			}
 		}
 	}

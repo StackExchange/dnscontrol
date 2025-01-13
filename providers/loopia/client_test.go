@@ -316,7 +316,7 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "text/xml" {
-			http.Error(w, fmt.Sprintf("invalid content type: %s", r.Header.Get("Content-Type")), http.StatusBadRequest)
+			http.Error(w, "invalid content type: "+r.Header.Get("Content-Type"), http.StatusBadRequest)
 			return
 		}
 

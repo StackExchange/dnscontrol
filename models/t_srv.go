@@ -11,7 +11,9 @@ func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target strin
 	rc.SrvPriority = priority
 	rc.SrvWeight = weight
 	rc.SrvPort = port
-	rc.SetTarget(target)
+	if err := rc.SetTarget(target); err != nil {
+		return err
+	}
 	if rc.Type == "" {
 		rc.Type = "SRV"
 	}

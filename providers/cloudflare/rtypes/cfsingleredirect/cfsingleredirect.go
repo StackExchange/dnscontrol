@@ -16,7 +16,6 @@ func init() {
 
 // FromRaw convert RecordConfig using data from a RawRecordConfig's parameters.
 func FromRaw(rc *models.RecordConfig, items []any) error {
-
 	// Validate types.
 	if err := rtypecontrol.PaveArgs(items, "siss"); err != nil {
 		return err
@@ -34,7 +33,5 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	when = items[2].(string)
 	then = items[3].(string)
 
-	makeSingleRedirectFromRawRec(rc, code, name, when, then)
-
-	return nil
+	return makeSingleRedirectFromRawRec(rc, code, name, when, then)
 }

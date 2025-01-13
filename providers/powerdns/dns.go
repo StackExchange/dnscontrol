@@ -46,7 +46,6 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]strin
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-
 	corrections, actualChangeCount, err := dsp.getDiff2DomainCorrections(dc, existing)
 	if err != nil {
 		return nil, 0, err

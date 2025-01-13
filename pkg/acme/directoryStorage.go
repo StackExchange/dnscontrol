@@ -4,7 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -18,6 +18,7 @@ type directoryStorage string
 func (d directoryStorage) certFile(name, ext string) string {
 	return filepath.Join(d.certDir(name), name+"."+ext)
 }
+
 func (d directoryStorage) certDir(name string) string {
 	return filepath.Join(string(d), "certificates", name)
 }
@@ -29,12 +30,15 @@ func (d directoryStorage) accountDirectory(acmeHost string) string {
 func (d directoryStorage) accountFile(acmeHost string) string {
 	return filepath.Join(d.accountDirectory(acmeHost), "account.json")
 }
+
 func (d directoryStorage) accountKeyFile(acmeHost string) string {
 	return filepath.Join(d.accountDirectory(acmeHost), "account.key")
 }
 
-const perms os.FileMode = 0600
-const dirPerms os.FileMode = 0700
+const (
+	perms    os.FileMode = 0o600
+	dirPerms os.FileMode = 0o700
+)
 
 func (d directoryStorage) GetCertificate(name string) (*certificate.Resource, error) {
 	f, err := os.Open(d.certFile(name, "json"))
@@ -106,7 +110,7 @@ func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
 	}
 	keyBlock, _ := pem.Decode(keyBytes)
 	if keyBlock == nil {
-		return nil, fmt.Errorf("error decoding account private key")
+		return nil, errors.New("error decoding account private key")
 	}
 	acct.key, err = x509.ParseECPrivateKey(keyBlock.Bytes)
 	if err != nil {

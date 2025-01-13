@@ -10,8 +10,7 @@ import (
 )
 
 // Void an empty structure.
-type Void struct {
-}
+type Void struct{}
 
 // fetchDomainList gets list of zones for account
 func (c *ovhProvider) fetchZones() error {
@@ -23,7 +22,6 @@ func (c *ovhProvider) fetchZones() error {
 	var response []string
 
 	err := c.client.CallAPI("GET", "/domain/zone", nil, &response, true)
-
 	if err != nil {
 		return err
 	}
@@ -301,7 +299,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 	// by default zones are in "hosted" mode meaning they default
 	// to OVH default NS. In this mode, the NS can't be updated.
 	domain := Domain{NameServerType: "external"}
-	err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/%s", fqdn), &domain, &Void{}, true)
+	err := c.client.CallAPI("PUT", "/domain/"+fqdn, &domain, &Void{}, true)
 	if err != nil {
 		return err
 	}

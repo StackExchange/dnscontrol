@@ -3,6 +3,7 @@ package digitalocean
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,7 +42,7 @@ const perPageSize = 100
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("no DigitalOcean token provided")
+		return nil, errors.New("no DigitalOcean token provided")
 	}
 
 	ctx := context.Background()
@@ -63,7 +64,7 @@ retry:
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("token for digitalocean is not valid")
+		return nil, errors.New("token for digitalocean is not valid")
 	}
 
 	return api, nil
@@ -101,7 +102,7 @@ retry:
 		if pauseAndRetry(resp) {
 			goto retry
 		}
-		//return err
+		// return err
 	}
 	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
@@ -161,7 +162,10 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]s
 
 	var existingRecords []*models.RecordConfig
 	for i := range records {
-		r := toRc(domain, &records[i])
+		r, err := toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 		if r.Type == "SOA" {
 			continue
 		}
@@ -272,7 +276,7 @@ retry:
 	return records, nil
 }
 
-func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
+func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
 	name := dnsutil.AddOrigin(r.Name, domain)
 
@@ -303,11 +307,15 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetLabelFromFQDN(name, domain)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXT(target)
+		if err := t.SetTargetTXT(target); err != nil {
+			return nil, err
+		}
 	default:
-		t.SetTarget(target)
+		if err := t.SetTarget(target); err != nil {
+			return nil, err
+		}
 	}
-	return t
+	return t, nil
 }
 
 func toReq(rc *models.RecordConfig) *godo.DomainRecordEditRequest {

@@ -66,14 +66,14 @@ func Test_generatePSZoneDump(t *testing.T) {
 	}
 }
 
-//func Test_generatePSDelete(t *testing.T) {
+// func Test_generatePSDelete(t *testing.T) {
 //	type args struct {
 //		domain string
 //		rec    *models.RecordConfig
 //	}
 //	tests := []struct {
 //		name string
-//		args args
+//		args
 //		want string
 //	}{
 //		// TODO: Add test cases.
@@ -94,7 +94,7 @@ func Test_generatePSZoneDump(t *testing.T) {
 // 	}
 // 	tests := []struct {
 // 		name string
-// 		args args
+// 		args
 // 		want string
 // 	}{
 // 		// TODO: Add test cases.
@@ -109,30 +109,29 @@ func Test_generatePSZoneDump(t *testing.T) {
 // }
 
 func Test_generatePSModify(t *testing.T) {
-
 	recA1 := &models.RecordConfig{
 		Type: "A",
 		Name: "@",
 	}
-	recA1.SetTarget("1.2.3.4")
+	recA1.MustSetTarget("1.2.3.4")
 	recA2 := &models.RecordConfig{
 		Type: "A",
 		Name: "@",
 	}
-	recA2.SetTarget("10.20.30.40")
+	recA2.MustSetTarget("10.20.30.40")
 
 	recMX1 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
 		MxPreference: 5,
 	}
-	recMX1.SetTarget("foo.com.")
+	recMX1.MustSetTarget("foo.com.")
 	recMX2 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
 		MxPreference: 50,
 	}
-	recMX2.SetTarget("foo2.com.")
+	recMX2.MustSetTarget("foo2.com.")
 
 	type args struct {
 		domain    string
@@ -145,16 +144,20 @@ func Test_generatePSModify(t *testing.T) {
 		args args
 		want string
 	}{
-		{name: "A", args: args{domain: "example.com", dnsserver: "", old: recA1, rec: recA2},
+		{
+			name: "A", args: args{domain: "example.com", dnsserver: "", old: recA1, rec: recA2},
 			want: `echo DELETE "A" "@" "1.2.3.4" ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "10.20.30.40" ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
 		},
-		{name: "MX1", args: args{domain: "example.com", dnsserver: "", old: recMX1, rec: recMX2},
+		{
+			name: "MX1", args: args{domain: "example.com", dnsserver: "", old: recMX1, rec: recMX2},
 			want: `echo DELETE "MX" "@" "5 foo.com." ; Remove-DnsServerResourceRecord -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "50 foo2.com." ; Add-DnsServerResourceRecord -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
 		},
-		{name: "A-remote", args: args{domain: "example.com", dnsserver: "myremote", old: recA1, rec: recA2},
+		{
+			name: "A-remote", args: args{domain: "example.com", dnsserver: "myremote", old: recA1, rec: recA2},
 			want: `echo DELETE "A" "@" "1.2.3.4" ; Remove-DnsServerResourceRecord -ComputerName "myremote" -Force -ZoneName "example.com" -Name "@" -RRType "A" -RecordData "1.2.3.4" ; echo CREATE "A" "@" "10.20.30.40" ; Add-DnsServerResourceRecord -ComputerName "myremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -A -IPv4Address "10.20.30.40"`,
 		},
-		{name: "MX1-remote", args: args{domain: "example.com", dnsserver: "yourremote", old: recMX1, rec: recMX2},
+		{
+			name: "MX1-remote", args: args{domain: "example.com", dnsserver: "yourremote", old: recMX1, rec: recMX2},
 			want: `echo DELETE "MX" "@" "5 foo.com." ; Remove-DnsServerResourceRecord -ComputerName "yourremote" -Force -ZoneName "example.com" -Name "@" -RRType "MX" -RecordData 5,"foo.com." ; echo CREATE "MX" "@" "50 foo2.com." ; Add-DnsServerResourceRecord -ComputerName "yourremote" -ZoneName "example.com" -Name "@" -TimeToLive $(New-TimeSpan -Seconds 0) -MX -MailExchange "foo2.com." -Preference 50`,
 		},
 	}

@@ -9,7 +9,9 @@ import (
 // SetTargetMX sets the MX fields.
 func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
 	rc.MxPreference = pref
-	rc.SetTarget(target)
+	if err := rc.SetTarget(target); err != nil {
+		return err
+	}
 	if rc.Type == "" {
 		rc.Type = "MX"
 	}

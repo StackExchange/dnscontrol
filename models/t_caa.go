@@ -9,7 +9,9 @@ import (
 func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) error {
 	rc.CaaTag = tag
 	rc.CaaFlag = flag
-	rc.SetTarget(target)
+	if err := rc.SetTarget(target); err != nil {
+		return err
+	}
 	if rc.Type == "" {
 		rc.Type = "CAA"
 	}

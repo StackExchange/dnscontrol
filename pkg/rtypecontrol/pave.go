@@ -10,7 +10,6 @@ import (
 // 'i': uinet16 (will convert strings, truncate floats, etc)
 // 's': Valid only if string.
 func PaveArgs(args []any, argTypes string) error {
-
 	if len(args) != len(argTypes) {
 		return fmt.Errorf("wrong number of arguments. Expected %v, got %v", len(argTypes), len(args))
 	}
@@ -18,7 +17,6 @@ func PaveArgs(args []any, argTypes string) error {
 	for i, at := range argTypes {
 		arg := args[i]
 		switch at {
-
 		case 'i': // uint16
 			if s, ok := arg.(string); ok { // Is this a string-encoded int?
 				ni, err := strconv.Atoi(s)
@@ -42,7 +40,6 @@ func PaveArgs(args []any, argTypes string) error {
 			} else {
 				args[i] = fmt.Sprintf("%v", arg)
 			}
-
 		}
 	}
 

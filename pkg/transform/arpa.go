@@ -12,7 +12,6 @@ import (
 // For cases not covered by RFC2317, implement RFC4183
 // The host bits must all be zeros.
 func ReverseDomainName(cidr string) (string, error) {
-
 	if rfc4183.IsRFC4183Mode() {
 		return rfc4183.ReverseDomainName(cidr)
 	}

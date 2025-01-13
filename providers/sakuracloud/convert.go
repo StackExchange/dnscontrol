@@ -6,7 +6,7 @@ import (
 
 const defaultTTL = uint32(3600)
 
-func toRc(domain string, r domainRecord) *models.RecordConfig {
+func toRc(domain string, r domainRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
@@ -18,15 +18,15 @@ func toRc(domain string, r domainRecord) *models.RecordConfig {
 
 	rc.SetLabel(r.Name, domain)
 
+	var err error
 	switch r.Type {
 	case "TXT":
 		// TXT records are stored verbatim; no quoting/escaping to parse.
-		rc.SetTargetTXT(r.RData)
+		err = rc.SetTargetTXT(r.RData)
 	default:
-		rc.PopulateFromString(r.Type, r.RData, domain)
+		err = rc.PopulateFromString(r.Type, r.RData, domain)
 	}
-
-	return rc
+	return rc, err
 }
 
 func toNative(rc *models.RecordConfig) domainRecord {

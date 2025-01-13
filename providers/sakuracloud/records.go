@@ -46,7 +46,10 @@ func (s *sakuracloudProvider) GetZoneRecords(domain string, meta map[string]stri
 	}
 
 	for _, dr := range item.Settings.DNS.ResourceRecordSets {
-		rc := toRc(domain, dr)
+		rc, err := toRc(domain, dr)
+		if err != nil {
+			return nil, err
+		}
 		existingRecords = append(existingRecords, rc)
 	}
 	return existingRecords, nil

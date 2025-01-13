@@ -46,7 +46,7 @@ func (s *teamsNotifier) Notify(domain, provider, msg string, err error, preview 
 	}
 
 	json, _ := json.Marshal(payload)
-	http.Post(s.URL, "text/json", bytes.NewReader(json))
+	_, _ = http.Post(s.URL, "text/json", bytes.NewReader(json))
 }
 
 func (s *teamsNotifier) Done() {}
