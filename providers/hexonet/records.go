@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -206,7 +207,13 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 				record.Fqdn = spl[0] + "." + record.Fqdn
 			}
 			if record.Type == "MX" || record.Type == "SRV" {
-				prio, _ := strconv.ParseUint(spl[4], 10, 32)
+				prio, err := strconv.ParseUint(spl[4], 10, 32)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse priority: %w", err)
+				}
+				if prio > math.MaxUint16 {
+					return nil, fmt.Errorf("priority value exceeds uint16 maximum: %s", spl[4])
+				}
 				record.Priority = uint32(prio)
 				record.Answer = strings.Join(spl[5:], " ")
 			} else {
