@@ -124,7 +124,6 @@
     "TYPE": "EXOSCALE",
     "apikey": "$EXOSCALE_API_KEY",
     "apizone": "ch-gva-2",
-    "dns-endpoint": "https://api.exoscale.com/v2",
     "domain": "$EXOSCALE_DOMAIN",
     "secretkey": "$EXOSCALE_SECRET_KEY"
   },

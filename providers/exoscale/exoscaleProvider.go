@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
-	egoscale "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -16,41 +18,39 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-const (
-	defaultAPIZone = "ch-gva-2"
-)
-
-// ErrDomainNotFound error indicates domain name is not managed by Exoscale.
-var ErrDomainNotFound = errors.New("domain not found")
-
 type exoscaleProvider struct {
-	client  *egoscale.Client
-	apiZone string
+	client *egoscale.Client
 }
 
 // NewExoscale creates a new Exoscale DNS provider.
 func NewExoscale(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	endpoint, apiKey, secretKey := m["dns-endpoint"], m["apikey"], m["secretkey"]
+	apiKey, secretKey := m["apikey"], m["secretkey"]
 
-	client, err := egoscale.NewClient(
-		apiKey,
-		secretKey,
-		egoscale.ClientOptWithAPIEndpoint(endpoint),
-	)
+	creds := credentials.NewStaticCredentials(apiKey, secretKey)
+	client, err := egoscale.NewClient(creds)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := exoscaleProvider{
-		client:  client,
-		apiZone: defaultAPIZone,
+	// Endpoint is only for internal use, not for production.
+	// client has a default endpoint to ch-gva-2 now in egoscale v3.
+	endpoint := os.Getenv("EXOSCALE_API_ENDPOINT")
+	if endpoint != "" {
+		client = client.WithEndpoint(egoscale.Endpoint(endpoint))
 	}
 
+	ctx := context.Background()
 	if z, ok := m["apizone"]; ok {
-		provider.apiZone = z
+		endpoint, err := client.GetZoneAPIEndpoint(ctx, egoscale.ZoneName(z))
+		if err != nil {
+			return nil, fmt.Errorf("switch client zone: %w", err)
+		}
+		client = client.WithEndpoint(endpoint)
 	}
 
-	return &provider, nil
+	return &exoscaleProvider{
+		client: client,
+	}, nil
 }
 
 var features = providers.DocumentationNotes{
@@ -83,6 +83,11 @@ func init() {
 // EnsureZoneExists creates a zone if it does not exist
 func (c *exoscaleProvider) EnsureZoneExists(domain string) error {
 	_, err := c.findDomainByName(domain)
+	if errors.Is(err, egoscale.ErrNotFound) {
+		_, err = c.client.CreateDNSDomain(context.Background(), egoscale.CreateDNSDomainRequest{
+			UnicodeName: domain,
+		})
+	}
 
 	return err
 }
@@ -100,81 +105,63 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 	if err != nil {
 		return nil, err
 	}
-	domainID := *domain.ID
+	domainID := domain.ID
 
 	ctx := context.Background()
-	records, err := c.client.ListDNSDomainRecords(ctx, c.apiZone, domainID)
+	records, err := c.client.ListDNSDomainRecords(ctx, domainID)
 	if err != nil {
 		return nil, err
 	}
 
-	existingRecords := make([]*models.RecordConfig, 0, len(records))
-	for _, r := range records {
-		if r.ID == nil {
-			continue
-		}
-
-		recordID := *r.ID
-
-		record, err := c.client.GetDNSDomainRecord(ctx, c.apiZone, domainID, recordID)
+	existingRecords := make([]*models.RecordConfig, 0, len(records.DNSDomainRecords))
+	for _, r := range records.DNSDomainRecords {
+		record, err := c.client.GetDNSDomainRecord(ctx, domainID, r.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		// nil pointers are not expected, but just to be on the safe side...
-		var rtype, rcontent, rname string
-		if record.Type == nil {
-			continue
-		}
-		rtype = *record.Type
-		if record.Content != nil {
-			rcontent = *record.Content
-		}
-		if record.Name != nil {
-			rname = *record.Name
-		}
+		var rcontent string
 
-		if rtype == "SOA" || rtype == "NS" {
+		if record.Type == "SOA" || record.Type == "NS" {
 			continue
 		}
-		if rname == "" {
-			t := "@"
-			record.Name = &t
+		if record.Name == "" {
+			record.Name = "@"
 		}
-		if rtype == "CNAME" || rtype == "MX" || rtype == "ALIAS" || rtype == "SRV" {
+		if record.Type == "CNAME" || record.Type == "MX" || record.Type == "ALIAS" || record.Type == "SRV" {
 			t := rcontent + "."
 			// for SRV records we need to aditionally prefix target with priority, which API handles as separate field.
-			if rtype == "SRV" && record.Priority != nil {
-				t = fmt.Sprintf("%d %s", *record.Priority, t)
+			if record.Type == "SRV" && record.Priority != 0 {
+				t = fmt.Sprintf("%d %s", record.Priority, t)
 			}
 			rcontent = t
 		}
 		// exoscale adds these odd txt records that mirror the alias records.
 		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
-		if rtype == "TXT" && strings.HasPrefix(rcontent, "ALIAS for ") {
+		if record.Type == "TXT" && strings.HasPrefix(rcontent, "ALIAS for ") {
 			continue
 		}
 
 		rc := &models.RecordConfig{
 			Original: record,
 		}
-		if record.TTL != nil {
-			rc.TTL = uint32(*record.TTL)
+		if record.Ttl != 0 {
+			rc.TTL = uint32(record.Ttl)
 		}
-		rc.SetLabel(rname, domainName)
+		rc.SetLabel(record.Name, domainName)
 
-		switch rtype {
+		switch record.Type {
 		case "ALIAS", "URL":
-			rc.Type = rtype
+			rc.Type = string(record.Type)
 			rc.SetTarget(rcontent)
 		case "MX":
 			var prio uint16
-			if record.Priority != nil {
-				prio = uint16(*record.Priority)
+			if record.Priority != 0 {
+				prio = uint16(record.Priority)
 			}
 			err = rc.SetTargetMX(prio, rcontent)
 		default:
-			err = rc.PopulateFromString(rtype, rcontent, domainName)
+			err = rc.PopulateFromString(string(record.Type), rcontent, domainName)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
@@ -188,13 +175,11 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	removeOtherNS(dc)
 	domain, err := c.findDomainByName(dc.Name)
 	if err != nil {
 		return nil, 0, err
 	}
-	domainID := *domain.ID
 
 	toReport, create, toDelete, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
 	if err != nil {
@@ -207,7 +192,7 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		record := del.Existing.Original.(*egoscale.DNSDomainRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
-			F:   c.deleteRecordFunc(*record.ID, domainID),
+			F:   c.deleteRecordFunc(record.ID, domain.ID),
 		})
 	}
 
@@ -215,7 +200,7 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		rc := cre.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: cre.String(),
-			F:   c.createRecordFunc(rc, domainID),
+			F:   c.createRecordFunc(rc, domain.ID),
 		})
 	}
 
@@ -224,7 +209,7 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		new := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, domainID),
+			F:   c.updateRecordFunc(old, new, domain.ID),
 		})
 	}
 
@@ -232,18 +217,17 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 }
 
 // Returns a function that can be invoked to create a record in a zone.
-func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID string) func() error {
+func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID egoscale.UUID) func() error {
 	return func() error {
 		target := rc.GetTargetCombined()
 		name := rc.GetLabel()
-		var prio *int64
+		var prio int64
 
 		if rc.Type == "MX" {
 			target = rc.GetTargetField()
 
 			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
-				prio = &p
+				prio = int64(rc.MxPreference)
 			}
 		}
 
@@ -255,45 +239,52 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 			if err != nil {
 				return err
 			}
-			prio = &p
+			prio = p
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
 			name = "*"
 		}
 
-		record := egoscale.DNSDomainRecord{
-			Name:     &name,
-			Type:     &rc.Type,
-			Content:  &target,
+		record := egoscale.CreateDNSDomainRecordRequest{
+			Name:     name,
+			Type:     egoscale.CreateDNSDomainRecordRequestType(rc.Type),
+			Content:  target,
 			Priority: prio,
 		}
 
 		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
-			record.TTL = &ttl
+			record.Ttl = int64(rc.TTL)
 		}
 
-		_, err := c.client.CreateDNSDomainRecord(context.Background(), c.apiZone, domainID, &record)
+		ctx := context.Background()
+		op, err := c.client.CreateDNSDomainRecord(ctx, domainID, record)
+		if err != nil {
+			return err
+
+		}
+		_, err = c.client.Wait(ctx, op, egoscale.OperationStateSuccess)
 
 		return err
 	}
 }
 
 // Returns a function that can be invoked to delete a record in a zone.
-func (c *exoscaleProvider) deleteRecordFunc(recordID, domainID string) func() error {
+func (c *exoscaleProvider) deleteRecordFunc(recordID, domainID egoscale.UUID) func() error {
 	return func() error {
-		return c.client.DeleteDNSDomainRecord(
-			context.Background(),
-			c.apiZone,
-			domainID,
-			&egoscale.DNSDomainRecord{ID: &recordID},
-		)
+		ctx := context.Background()
+		op, err := c.client.DeleteDNSDomainRecord(ctx, domainID, recordID)
+		if err != nil {
+			return err
+		}
+
+		_, err = c.client.Wait(ctx, op, egoscale.OperationStateSuccess)
+		return err
 	}
 }
 
 // Returns a function that can be invoked to update a record in a zone.
-func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc *models.RecordConfig, domainID string) func() error {
+func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc *models.RecordConfig, domainID egoscale.UUID) func() error {
 	return func() error {
 		target := rc.GetTargetCombined()
 		name := rc.GetLabel()
@@ -302,8 +293,7 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 			target = rc.GetTargetField()
 
 			if rc.MxPreference != 0 {
-				p := int64(rc.MxPreference)
-				record.Priority = &p
+				record.Priority = int64(rc.MxPreference)
 			}
 		}
 
@@ -315,43 +305,42 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 			if err != nil {
 				return err
 			}
-			record.Priority = &p
+			record.Priority = p
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
 			name = "*"
 		}
 
-		record.Name = &name
-		record.Type = &rc.Type
-		record.Content = &target
+		record.Name = name
+		record.Type = egoscale.DNSDomainRecordType(rc.Type)
+		record.Content = target
 		if rc.TTL != 0 {
-			ttl := int64(rc.TTL)
-			record.TTL = &ttl
+			record.Ttl = int64(rc.TTL)
 		}
 
-		return c.client.UpdateDNSDomainRecord(
-			context.Background(),
-			c.apiZone,
-			domainID,
-			record,
-		)
+		ctx := context.Background()
+		op, err := c.client.UpdateDNSDomainRecord(ctx, domainID, record.ID, egoscale.UpdateDNSDomainRecordRequest{
+			Name:     record.Name,
+			Content:  record.Content,
+			Priority: record.Priority,
+			Ttl:      record.Ttl,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = c.client.Wait(ctx, op, egoscale.OperationStateSuccess)
+		return err
 	}
 }
 
-func (c *exoscaleProvider) findDomainByName(name string) (*egoscale.DNSDomain, error) {
-	domains, err := c.client.ListDNSDomains(context.Background(), c.apiZone)
+func (c *exoscaleProvider) findDomainByName(name string) (egoscale.DNSDomain, error) {
+	domains, err := c.client.ListDNSDomains(context.Background())
 	if err != nil {
-		return nil, err
+		return egoscale.DNSDomain{}, err
 	}
 
-	for _, domain := range domains {
-		if domain.UnicodeName != nil && domain.ID != nil && *domain.UnicodeName == name {
-			return &domain, nil
-		}
-	}
-
-	return nil, ErrDomainNotFound
+	return domains.FindDNSDomain(name)
 }
 
 func defaultNSSUffix(defNS string) bool {
