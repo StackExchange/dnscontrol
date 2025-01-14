@@ -49,7 +49,6 @@ func init() {
 	RegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	RegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	RegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
-	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
 
 func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string]string) error {
@@ -63,8 +62,6 @@ func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string
 
 func (rc *RecordConfig) Seal() error {
 	if rc.Type == "" {
-		//fmt.Printf("DEBUG: rc.Type is %T\n", rc.Fields)
-		//panic("assertion failed: Seal called when .Type is not set. We can infer type type but is it worth it?")
 		switch rc.Fields.(type) {
 		case A:
 			rc.Type = "A"
@@ -72,6 +69,8 @@ func (rc *RecordConfig) Seal() error {
 			rc.Type = "MX"
 		case SRV:
 			rc.Type = "SRV"
+		case CFSINGLEREDIRECT:
+			rc.Type = "CF_SINGLE_REDIRECT"
 		}
 	}
 
