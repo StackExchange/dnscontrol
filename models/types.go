@@ -9,37 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
-/*
-
-GetAFields()
-GetAStrings()
-GetA()
-
-PopulateARaw()
-PopulateAStrings() (not needed at this time)
-PopulateAFields()
-
-*/
-
-/*
-
-- Create from RawRecord
-                models.CreateRecordFromRaw(rc, rawstrings, meta, origin) (error)
-- Fully create an RC for Test purposes:
-                models.MustCreateRecord[models.A](T, Meta, TTL, Origin) (*models.RecordConfig)
-- Populate type=X from typed-fields
-                models.RecordUpdate[T](T, meta, origin) (error)
-- Populate type=X from strings
-                rc.RecordUpdateFromStrings([]string, meta, origin) (error)
-
- -ParseA([]string) (A, error)
- -ParseMX([]string) (MX, error)
- -ParseSRV[]string) (SRV, error)
-
- - Get the fields:
- 				models.GetFields[T]() (*T)
-*/
-
 // RecordType is a constraint for DNS records.
 type RecordType interface {
 	A | MX | SRV | CFSINGLEREDIRECT
@@ -162,14 +131,14 @@ func (rc *RecordConfig) AsA() *A {
 	return rc.Fields.(*A)
 }
 
-// GetAFields returns rc.Fields as individual typed values.
-func (rc *RecordConfig) GetAFields() fieldtypes.IPv4 {
+// GetFieldsA returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsA() fieldtypes.IPv4 {
 	n := rc.AsA()
 	return n.A
 }
 
-// GetAStrings returns rc.Fields as individual strings.
-func (rc *RecordConfig) GetAStrings() string {
+// GetFieldsAsStringsA returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsA() string {
 	n := rc.AsA()
 	return n.A.String()
 }
@@ -216,7 +185,6 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 		return err
 	}
 
-	//return rc.PopulateFieldsMX(preference, mx, meta, origin)
 	return RecordUpdateFields(rc, rdata, meta)
 }
 
@@ -225,14 +193,14 @@ func (rc *RecordConfig) AsMX() *MX {
 	return rc.Fields.(*MX)
 }
 
-// GetMXFields returns rc.Fields as individual typed values.
-func (rc *RecordConfig) GetMXFields() (uint16, string) {
+// GetFieldsMX returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsMX() (uint16, string) {
 	n := rc.AsMX()
 	return n.Preference, n.Mx
 }
 
-// GetMXStrings returns rc.Fields as individual strings.
-func (rc *RecordConfig) GetMXStrings() [2]string {
+// GetFieldsAsStringsMX returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsMX() [2]string {
 	n := rc.AsMX()
 	return [2]string{strconv.Itoa(int(n.Preference)), n.Mx}
 }
@@ -296,14 +264,14 @@ func (rc *RecordConfig) AsSRV() *SRV {
 	return rc.Fields.(*SRV)
 }
 
-// GetSRVFields returns rc.Fields as individual typed values.
-func (rc *RecordConfig) GetSRVFields() (uint16, uint16, uint16, string) {
+// GetFieldsSRV returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsSRV() (uint16, uint16, uint16, string) {
 	n := rc.AsSRV()
 	return n.Priority, n.Weight, n.Port, n.Target
 }
 
-// GetSRVStrings returns rc.Fields as individual strings.
-func (rc *RecordConfig) GetSRVStrings() [4]string {
+// GetFieldsAsStringsSRV returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsSRV() [4]string {
 	n := rc.AsSRV()
 	return [4]string{strconv.Itoa(int(n.Priority)), strconv.Itoa(int(n.Weight)), strconv.Itoa(int(n.Port)), n.Target}
 }
