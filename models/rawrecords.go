@@ -28,7 +28,7 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
-		return fmt.Errorf("unknown rtype %q", typeName)
+		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
 	}
 
 	return rt.PopulateFromRaw(rc, args, meta, origin)
@@ -116,7 +116,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 
 			rt, ok := rtypeDB[rawRec.Type]
 			if !ok {
-				return fmt.Errorf("unknown rtype %q", rawRec.Type)
+				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
 			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)

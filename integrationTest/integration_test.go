@@ -574,6 +574,15 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 	return rc
 }
 
+func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
+	rc := makeRec2("CF_SINGLE_REDIRECT")
+	scode := strconv.Itoa(int(code))
+	if err := models.FromRaw(rc, "label", "CF_SINGLE_REDIRECT", []string{name, scode, when, then}, nil); err != nil {
+		panic(err)
+	}
+	return rc
+}
+
 func aaaa(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "AAAA")
 }
@@ -612,12 +621,6 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 
 func cfSingleRedirectEnabled() bool {
 	return ((*enableCFRedirectMode) != "")
-}
-
-func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, "CF_SINGLE_REDIRECT")
-	panicOnErr(models.MakeSingleRedirectFromRawRec(r, code, name, when, then))
-	return r
 }
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {

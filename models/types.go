@@ -8,11 +8,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
-// CNAME is the fields needed to store a DNS record of type CNAME
-type CNAME struct {
-	Target string
-}
-
 /*
 
 GetAFields()
@@ -46,7 +41,7 @@ PopulateAFields()
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | MX | SRV
+	A | MX | SRV | CFSINGLEREDIRECT
 }
 
 func init() {
@@ -99,8 +94,12 @@ func (rc *RecordConfig) Seal() error {
 		rc.SrvPort = f.Port
 		rc.target = f.Target
 		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
+	case "CF_SINGLE_REDIRECT":
+		// Legacy fields have been eliminated.
+		f := rc.Fields.(*CFSINGLEREDIRECT)
+		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
 	default:
-		return fmt.Errorf("unknown rtype %q", rc.Type)
+		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
 	}
 	rc.Display = rc.Comparable
 
@@ -154,44 +153,6 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 
 	return RecordUpdateFields(rc, rdata, meta)
 }
-
-// // PopulateFieldsA updates rc to be an A record with contents from typed data, meta, and origin.
-// func (rc *RecordConfig) PopulateFieldsA(a fieldtypes.IPv4, meta map[string]string) error {
-// 	// Create the struct if needed.
-// 	if rc.Fields == nil {
-// 		rc.Fields = &A{}
-// 	}
-
-// 	// Update the RecordConfig:
-// 	maps.Copy(rc.Metadata, meta) // Add the metadata
-
-// 	// Process each field:
-
-// 	f := rc.Fields.(*A)
-// 	f.A = a
-
-// 	return rc.SealA()
-// }
-
-// func (rc *RecordConfig) SealA() error {
-// 	if rc.Type == "" {
-// 		rc.Type = "A"
-// 	}
-// 	if rc.Type != "A" {
-// 		panic("assertion failed: SealA called when .Type is not A")
-// 	}
-
-// 	f := rc.Fields.(*A)
-
-// 	// Pre-compute useful things
-// 	rc.Comparable = f.A.String()
-// 	rc.Display = rc.Comparable
-
-// 	// Copy the fields to the legacy fields:
-// 	rc.target = f.A.String()
-
-// 	return nil
-// }
 
 // AsA returns rc.Fields as an A struct.
 func (rc *RecordConfig) AsA() *A {
@@ -264,47 +225,6 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	//return rc.PopulateFieldsMX(preference, mx, meta, origin)
 	return RecordUpdateFields(rc, rdata, meta)
 }
-
-// // PopulateFieldsMX updates rc to be an MX record with contents from typed data, meta, and origin.
-// func (rc *RecordConfig) PopulateFieldsMX(preference uint16, mx string, meta map[string]string, origin string) error {
-// 	// Create the struct if needed.
-// 	if rc.Fields == nil {
-// 		rc.Fields = &MX{}
-// 	}
-
-// 	// Update the RecordConfig:
-// 	maps.Copy(rc.Metadata, meta) // Add the metadata
-
-// 	// Process each field:
-
-// 	n := rc.Fields.(*MX)
-// 	n.Preference = preference
-// 	n.Mx = mx
-
-// 	return rc.SealMX()
-// }
-
-// // SealMX updates rc to be an MX record with contents from typed data, meta, and origin.
-// func (rc *RecordConfig) SealMX() error {
-// 	if rc.Type == "" {
-// 		rc.Type = "MX"
-// 	}
-// 	if rc.Type != "MX" {
-// 		panic("assertion failed: SealMX called when .Type is not MX")
-// 	}
-
-// 	f := rc.Fields.(*MX)
-
-// 	// Pre-compute useful things
-// 	rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
-// 	rc.Display = rc.Comparable
-
-// 	// Copy the fields to the legacy fields:
-// 	rc.MxPreference = f.Preference
-// 	rc.target = f.Mx
-
-// 	return nil
-// }
 
 // AsMX returns rc.Fields as an MX struct.
 func (rc *RecordConfig) AsMX() *MX {
@@ -385,50 +305,6 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	return RecordUpdateFields(rc, rdata, meta)
 
 }
-
-// // PopulateFieldsSRV updates rc to be an SRV record with contents from typed data, meta, and origin.
-// func (rc *RecordConfig) PopulateFieldsSRV(priority, weight, port uint16, target string, meta map[string]string) error {
-// 	// Create the struct if needed.
-// 	if rc.Fields == nil {
-// 		rc.Fields = &SRV{}
-// 	}
-
-// 	// Update the RecordConfig:
-// 	maps.Copy(rc.Metadata, meta) // Add the metadata
-
-// 	// Process each field:
-
-// 	n := rc.Fields.(*SRV)
-// 	n.Priority = priority
-// 	n.Weight = weight
-// 	n.Port = port
-// 	n.Target = target
-
-// 	return rc.SealSRV()
-// }
-
-// func (rc *RecordConfig) SealSRV() error {
-// 	if rc.Type == "" {
-// 		rc.Type = "SRV"
-// 	}
-// 	if rc.Type != "SRV" {
-// 		panic("assertion failed: SetTargetSRV called when .Type is not SRV")
-// 	}
-
-// 	f := rc.Fields.(*SRV)
-
-// 	// Pre-compute useful things
-// 	rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
-// 	rc.Display = rc.Comparable
-
-// 	// Copy the fields to the legacy fields:
-// 	rc.SrvPriority = f.Priority
-// 	rc.SrvWeight = f.Weight
-// 	rc.SrvPort = f.Port
-// 	rc.target = f.Target
-
-// 	return nil
-// }
 
 // AsSRV returns rc.Fields as an SRV struct.
 func (rc *RecordConfig) AsSRV() *SRV {
