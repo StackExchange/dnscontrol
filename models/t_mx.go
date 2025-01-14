@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -13,14 +12,15 @@ func (rc *RecordConfig) SetTargetMX(preference uint16, mx string) error {
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
 func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
-	return PopulateFromRawMX(rc, []string{rc.Name, pref, target}, nil, "")
+	rdata, err := ParseMX([]string{rc.Name, pref, target}, "")
+	if err != nil {
+		return err
+	}
+	return RecordUpdateFields(rc, rdata, nil)
 }
 
 // SetTargetMXString is like SetTargetMX but accepts one big string.
 func (rc *RecordConfig) SetTargetMXString(s string) error {
 	part := strings.Fields(s)
-	if len(part) != 2 {
-		return fmt.Errorf("MX value does not contain 2 fields: (%#v)", s)
-	}
 	return rc.SetTargetMXStrings(part[0], part[1])
 }
