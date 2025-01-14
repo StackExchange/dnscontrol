@@ -87,10 +87,8 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta 
 	}
 
 	// First rawfield is the label.
-	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
-			return err
-		}
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
 	}
 
 	// Parse the remaining fields.

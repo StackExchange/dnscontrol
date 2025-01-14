@@ -121,11 +121,9 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 	rc.Type = "A"
 
 	// First rawfield is the label.
-	//if origin != "" { //  If we don't know the origin, don't muck with the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
 		return err
 	}
-	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseA(rawfields[1:], origin)
@@ -186,11 +184,9 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	var err error
 
 	// First rawfield is the label.
-	//if origin != "" { //  If we don't know the origin, don't muck with the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
 		return err
 	}
-	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseMX(rawfields[1:], origin)
@@ -259,11 +255,9 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	var err error
 
 	// First rawfield is the label.
-	//if origin != "" { //  If we don't know the origin, don't muck with the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
 		return err
 	}
-	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseSRV(rawfields[1:], origin)
