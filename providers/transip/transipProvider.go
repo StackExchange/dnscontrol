@@ -114,169 +114,37 @@ func (n *transipProvider) ListZones() ([]string, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, int, error) {
-	removeOtherNS(dc)
+	removeDomainNameserversFromDomainRecords(dc)
 
-	corrections, actualChangeCount, err := n.getCorrectionsUsingDiff2(dc, curRecords)
-	return corrections, actualChangeCount, err
-}
-
-func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-	var corrections []*models.Correction
-
-	instructions, actualChangeCount, err := diff2.ByRecordSet(records, dc, nil)
+	result, err := diff2.ByZone(curRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	for _, change := range instructions {
-		switch change.Type {
-		case diff2.DELETE:
-			oldEntries, err := recordsToNative(change.Old, true)
-			if err != nil {
-				return corrections, 0, err
-			}
-			correction := change.CreateCorrection(
-				wrapChangeFunction(
-					oldEntries,
-					func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) },
-				),
-			)
-			corrections = append(corrections, correction)
+	if !result.HasChanges {
+		return []*models.Correction{}, result.ActualChangeCount, nil
+	}
 
-		case diff2.CREATE:
-			newEntries, err := recordsToNative(change.New, false)
-			if err != nil {
-				return corrections, 0, err
-			}
-			correction := change.CreateCorrection(
-				wrapChangeFunction(
-					newEntries,
-					func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) },
-				),
-			)
-			corrections = append(corrections, correction)
+	msg := fmt.Sprintf("Zone update for %s\n%s", dc.Name, strings.Join(result.Msgs, "\n"))
 
-		case diff2.CHANGE:
-			if canDirectApplyDNSEntries(change) {
-				newEntries, err := recordsToNative(change.New, false)
+	corrections := []*models.Correction{
+		{
+			Msg: msg,
+			F: func() error {
+				nativeDNSEntries, err := recordsToNative(result.DesiredPlus)
 				if err != nil {
-					return corrections, 0, err
+					return err
 				}
-				correction := change.CreateCorrection(
-					wrapChangeFunction(
-						newEntries,
-						func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) },
-					),
-				)
-				corrections = append(corrections, correction)
-			} else {
-				corrections = append(
-					corrections,
-					n.recreateRecordSet(dc, change)...,
-				)
-			}
-		case diff2.REPORT:
-			corrections = append(corrections, change.CreateMessage())
-		}
+
+				return n.domains.ReplaceDNSEntries(dc.Name, nativeDNSEntries)
+			},
+		},
 	}
 
-	return corrections, actualChangeCount, nil
+	return corrections, result.ActualChangeCount, err
 }
 
-func (n *transipProvider) recreateRecordSet(dc *models.DomainConfig, change diff2.Change) []*models.Correction {
-	var corrections []*models.Correction
-
-	for _, rec := range change.Old {
-		if existsInRecords(rec, change.New) {
-			continue
-		}
-
-		nativeRec, _ := recordToNative(rec, true)
-		createCorrection := change.CreateCorrectionWithMessage("[1/2] delete", func() error { return n.domains.RemoveDNSEntry(dc.Name, nativeRec) })
-		corrections = append(corrections, createCorrection)
-	}
-
-	for _, rec := range change.New {
-		if existsInRecords(rec, change.Old) {
-			continue
-		}
-
-		nativeRec, _ := recordToNative(rec, false)
-		createCorrection := change.CreateCorrectionWithMessage("[2/2] create", func() error { return n.domains.AddDNSEntry(dc.Name, nativeRec) })
-		corrections = append(corrections, createCorrection)
-	}
-
-	return corrections
-}
-
-func existsInRecords(rec *models.RecordConfig, set models.Records) bool {
-	for _, existing := range set {
-		if rec.ToComparableNoTTL() == existing.ToComparableNoTTL() && rec.TTL == existing.TTL {
-			return true
-		}
-	}
-
-	return false
-}
-
-func recordsToNative(records models.Records, useOriginal bool) ([]domain.DNSEntry, error) {
-	entries := make([]domain.DNSEntry, len(records))
-
-	for iX, record := range records {
-		entry, err := recordToNative(record, useOriginal)
-		if err != nil {
-			return nil, err
-		}
-
-		entries[iX] = entry
-	}
-
-	return entries, nil
-}
-
-func wrapChangeFunction(entries []domain.DNSEntry, executer func(rec domain.DNSEntry) error) func() error {
-	return func() error {
-		for _, entry := range entries {
-			if err := executer(entry); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
-// canDirectApplyDNSEntries determines if a change can be done in a single API call or
-// if we must remove the old records and re-create them.  TransIP is unable to do certain
-// changes in a single call. As we learn those situations, add them here.
-func canDirectApplyDNSEntries(change diff2.Change) bool {
-	desired, existing := change.New, change.Old
-
-	if change.Type != diff2.CHANGE {
-		return true
-	}
-
-	if len(desired) != len(existing) {
-		return false
-	}
-
-	if len(desired) > 1 {
-		return false
-	}
-
-	for i := range len(desired) {
-		if !canUpdateDNSEntry(desired[i], existing[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConfig) bool {
-	return desired.Name == existing.Name && desired.TTL == existing.TTL && desired.Type == existing.Type
-}
-
+// GetZoneRecords returns all records within given zone
 func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if err != nil {
@@ -295,6 +163,7 @@ func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]stri
 	return existingRecords, nil
 }
 
+// GetNameservers returns the nameservers of the given zone
 func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	var nss []string
 
@@ -309,12 +178,22 @@ func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserve
 	return models.ToNameservers(nss)
 }
 
-// recordToNative convrts RecordConfig TO Native.
-func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEntry, error) {
-	if useOriginal && config.Original != nil {
-		return config.Original.(domain.DNSEntry), nil
+func recordsToNative(records models.Records) ([]domain.DNSEntry, error) {
+	entries := make([]domain.DNSEntry, len(records))
+
+	for iX, record := range records {
+		entry, err := recordToNative(record)
+		if err != nil {
+			return nil, err
+		}
+
+		entries[iX] = entry
 	}
 
+	return entries, nil
+}
+
+func recordToNative(config *models.RecordConfig) (domain.DNSEntry, error) {
 	return domain.DNSEntry{
 		Name:    config.Name,
 		Expire:  int(config.TTL),
@@ -323,8 +202,8 @@ func recordToNative(config *models.RecordConfig, useOriginal bool) (domain.DNSEn
 	}, nil
 }
 
-// nativeToRecord converts native to RecordConfig.
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
+
 	rc := &models.RecordConfig{
 		TTL:      uint32(entry.Expire),
 		Type:     entry.Type,
@@ -338,14 +217,23 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 	return rc, nil
 }
 
-func removeOtherNS(dc *models.DomainConfig) {
+// removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers
+func removeDomainNameserversFromDomainRecords(dc *models.DomainConfig) {
+	nameserverLookup := map[string]interface{}{}
+	for _, nameserver := range dc.Nameservers {
+		nameserverLookup[nameserver.Name] = nil
+	}
+
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && (strings.HasPrefix(rec.GetTargetField(), "ns0.transip") ||
-			strings.HasPrefix(rec.GetTargetField(), "ns1.transip") ||
-			strings.HasPrefix(rec.GetTargetField(), "ns2.transip")) {
+
+		dotLessNameFQDN := strings.TrimRight(rec.GetTargetField(), ".")
+		_, recordInDCNameservers := nameserverLookup[dotLessNameFQDN]
+
+		if rec.Type == "NS" && recordInDCNameservers {
 			continue
 		}
+
 		newList = append(newList, rec)
 	}
 	dc.Records = newList
