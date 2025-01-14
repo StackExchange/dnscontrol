@@ -96,12 +96,7 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta 
 	if err != nil {
 		return err
 	}
-	//return MakeSingleRedirectFromRawRec(rc, rdata.Code, rdata.SRName, rdata.SRWhen, rdata.SRThen)
-	err = RecordUpdateFields(rc, rdata, meta)
-	if err != nil {
-		return err
-	}
-	return rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
+	return RecordUpdateFields(rc, rdata, meta)
 }
 
 // AsCFSINGLEREDIRECT returns rc.Fields as an CFSINGLEREDIRECT struct.

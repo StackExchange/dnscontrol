@@ -47,7 +47,6 @@ func (rc *RecordConfig) Seal() error {
 	case "A":
 		f := rc.Fields.(*A)
 		rc.target = f.A.String()
-
 		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
 	case "MX":
 		f := rc.Fields.(*MX)
@@ -62,8 +61,9 @@ func (rc *RecordConfig) Seal() error {
 		rc.target = f.Target
 		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
 	case "CF_SINGLE_REDIRECT":
-		// Legacy fields have been eliminated.
+		// No legacy fields.
 		f := rc.Fields.(*CFSINGLEREDIRECT)
+		rc.target = f.SRDisplay
 		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
 	default:
 		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
