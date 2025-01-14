@@ -538,29 +538,20 @@ func makeRec2(typ string) *models.RecordConfig {
 }
 
 func a(name string, a string) *models.RecordConfig {
-	rc, err := models.NewFromRawA([]string{name, a}, nil, "**current-domain**", 300)
+	rdata, err := models.ParseA([]string{a}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
-	rc := makeRec2("MX")
 	spreference := strconv.Itoa(int(preference))
-	if err := models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil); err != nil {
+	rdata, err := models.ParseMX([]string{spreference, mx}, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
-
-	//fmt.Printf("DEBUG: MX Fields %v\n", rc.Fields)
-
-	if rc.Name != strings.ToLower(rc.Name) {
-		panic("MX short must be lowercase")
-	}
-	if rc.NameFQDN != strings.ToLower(rc.NameFQDN) {
-		panic("MX must be lowercase 2")
-	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {

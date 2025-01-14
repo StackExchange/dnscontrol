@@ -99,12 +99,6 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 		return "FAIL", fmt.Errorf("short must not be empty")
 	}
 	short = strings.ToLower(short)
-	// if strings.ToLower(short) != short {
-	// 	return "", fmt.Errorf("short (%s) must be lowercase", short)
-	// }
-	// if short == "." {
-	// 	return "", fmt.Errorf("label (%s) must not be just a dot", short)
-	// }
 
 	if lastCharIs(short, '.') {
 		return short, nil

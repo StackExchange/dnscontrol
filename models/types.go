@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
@@ -106,6 +107,18 @@ func (rc *RecordConfig) Seal() error {
 	return nil
 }
 
+func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]string, ttl uint32, origin string) *RecordConfig {
+	rc := &RecordConfig{
+		Type: strings.Split(fmt.Sprintf("%T", rdata), ".")[1],
+		TTL:  ttl,
+	}
+	rc.SetLabel3(label, "", origin) // Label
+	if err := RecordUpdateFields(rc, rdata, meta); err != nil {
+		panic(err)
+	}
+	return rc
+}
+
 //// A
 
 // A is the fields needed to store a DNS record of type A
@@ -120,15 +133,6 @@ func ParseA(rawfields []string, origin string) (A, error) {
 		return A{}, err
 	}
 	return A{A: a}, nil
-}
-
-// NewFromRawA creates a new RecordConfig of type A from rawfields, meta, and origin.
-func NewFromRawA(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
-	rc := &RecordConfig{TTL: ttl}
-	if err := PopulateFromRawA(rc, rawfields, meta, origin); err != nil {
-		return nil, err
-	}
-	return rc, nil
 }
 
 // PopulateFromRawA updates rc to be an A record with contents from rawfields, meta and origin.
@@ -190,15 +194,6 @@ func ParseMX(rawfields []string, origin string) (MX, error) {
 		return MX{}, err
 	}
 	return MX{Preference: preference, Mx: mx}, nil
-}
-
-// NewFromRawMX creates a new RecordConfig of type MX from rawfields, meta, and origin.
-func NewFromRawMX(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
-	rc := &RecordConfig{TTL: ttl}
-	if err := PopulateFromRawMX(rc, rawfields, meta, origin); err != nil {
-		return nil, err
-	}
-	return rc, nil
 }
 
 // PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
@@ -270,15 +265,6 @@ func ParseSRV(rawfields []string, origin string) (SRV, error) {
 		return SRV{}, err
 	}
 	return SRV{Priority: priority, Weight: weight, Port: port, Target: target}, nil
-}
-
-// NewFromRawSRV creates a new RecordConfig of type SRV from rawfields, meta, and origin.
-func NewFromRawSRV(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
-	rc := &RecordConfig{TTL: ttl}
-	if err := PopulateFromRawSRV(rc, rawfields, meta, origin); err != nil {
-		return nil, err
-	}
-	return rc, nil
 }
 
 // PopulateFromRawSRV updates rc to be an SRV record with contents from rawfields, meta and origin.
