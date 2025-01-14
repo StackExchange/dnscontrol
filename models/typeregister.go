@@ -15,8 +15,8 @@ var rtypeDB map[string]RegisterOpts
 
 var validTypes = map[string]struct{}{}
 
-// RegisterType registers a new record type with the system.
-func RegisterType(typeName string, opts RegisterOpts) {
+// MustRegisterType registers a new record type with the system. Use it in init() functions.
+func MustRegisterType(typeName string, opts RegisterOpts) {
 
 	if rtypeDB == nil {
 		rtypeDB = map[string]RegisterOpts{}

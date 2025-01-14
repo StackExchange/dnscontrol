@@ -20,8 +20,6 @@ func TestImportTransform(t *testing.T) {
 	src := &models.DomainConfig{
 		Name: "stackexchange.com",
 		Records: []*models.RecordConfig{
-			//makeRC("*", "stackexchange.com", "0.0.2.2", models.RecordConfig{Type: "A"}),
-			//makeRC("www", "stackexchange.com", "0.0.1.1", models.RecordConfig{Type: "A"}),
 			models.MustCreateRecord("*", models.A{A: fieldtypes.MustParseIPv4("0.0.2.2")}, nil, 0, "stackexchange.com"),
 			models.MustCreateRecord("www", models.A{A: fieldtypes.MustParseIPv4("0.0.1.1")}, nil, 0, "stackexchange.com"),
 		},

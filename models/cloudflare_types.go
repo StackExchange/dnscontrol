@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	RegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 //// CFSINGLEREDIRECT

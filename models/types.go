@@ -15,9 +15,9 @@ type RecordType interface {
 }
 
 func init() {
-	RegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
-	RegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
-	RegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
+	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
+	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
+	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
 }
 
 func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string]string) error {
