@@ -11,10 +11,10 @@ import (
 	"github.com/go-acme/lego/v4/certificate"
 )
 
-// directoryStorage implements storage in a local file directory
+// directoryStorage implements storage in a local file directory.
 type directoryStorage string
 
-// filename for certificate / key / json file
+// filename for certificate / key / json file.
 func (d directoryStorage) certFile(name, ext string) string {
 	return filepath.Join(d.certDir(name), name+"."+ext)
 }

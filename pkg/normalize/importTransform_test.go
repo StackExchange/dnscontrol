@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
 func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
 	rc.SetLabel(label, domain)
 	rc.MustSetTarget(target)
-	rc.ImportFromLegacy(domain)
+	rc.MustImportFromLegacy(domain)
 	return &rc
 }
 
@@ -19,14 +20,16 @@ func TestImportTransform(t *testing.T) {
 	src := &models.DomainConfig{
 		Name: "stackexchange.com",
 		Records: []*models.RecordConfig{
-			makeRC("*", "stackexchange.com", "0.0.2.2", models.RecordConfig{Type: "A"}),
-			makeRC("www", "stackexchange.com", "0.0.1.1", models.RecordConfig{Type: "A"}),
+			//makeRC("*", "stackexchange.com", "0.0.2.2", models.RecordConfig{Type: "A"}),
+			//makeRC("www", "stackexchange.com", "0.0.1.1", models.RecordConfig{Type: "A"}),
+			models.MustCreateRecord("*", models.A{A: fieldtypes.MustParseIPv4("0.0.2.2")}, nil, 0, "stackexchange.com"),
+			models.MustCreateRecord("www", models.A{A: fieldtypes.MustParseIPv4("0.0.1.1")}, nil, 0, "stackexchange.com"),
 		},
 	}
 	dst := &models.DomainConfig{
 		Name: "internal",
 		Records: []*models.RecordConfig{
-			makeRC("*.stackexchange.com", "*.stackexchange.com.internal", "0.0.3.3", models.RecordConfig{Type: "A", Metadata: map[string]string{"transform_table": transformSingle}}),
+			models.MustCreateRecord("*.stackexchange.com", models.A{A: fieldtypes.MustParseIPv4("0.0.3.3")}, map[string]string{"transform_table": transformSingle}, 0, "stackexchange.com"),
 			makeRC("@", "internal", "stackexchange.com", models.RecordConfig{Type: "IMPORT_TRANSFORM", Metadata: map[string]string{"transform_table": transformDouble}}),
 		},
 	}

@@ -16,16 +16,14 @@ var rtypeDB map[string]RegisterOpts
 var validTypes = map[string]struct{}{}
 
 // RegisterType registers a new record type with the system.
-func RegisterType(typeName string, opts RegisterOpts) error {
-
-	//printer.Printf("rtypectl.Register(%q)\n", typeName)
+func RegisterType(typeName string, opts RegisterOpts) {
 
 	if rtypeDB == nil {
 		rtypeDB = map[string]RegisterOpts{}
 	}
 
 	if _, ok := rtypeDB[typeName]; ok {
-		return fmt.Errorf("rtype %q already registered", typeName)
+		panic(fmt.Errorf("rtype %q already registered", typeName))
 	}
 	rtypeDB[typeName] = opts
 
@@ -36,9 +34,6 @@ func RegisterType(typeName string, opts RegisterOpts) error {
 		panic("rtype %q already registered. Can't register it a second time!")
 	}
 	validTypes[typeName] = struct{}{}
-	//providers.RegisterCustomRecordType(typeName, "CLOUDFLAREAPI", "")
-
-	return nil
 }
 
 // GetTypeOps returns the RegisterOpts for a given record type.

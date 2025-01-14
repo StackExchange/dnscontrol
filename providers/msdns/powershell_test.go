@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
 func Test_generatePSZoneAll(t *testing.T) {
@@ -109,14 +110,10 @@ func Test_generatePSZoneDump(t *testing.T) {
 // }
 
 func Test_generatePSModify(t *testing.T) {
-	recA1 := &models.RecordConfig{}
-	recA2 := &models.RecordConfig{}
-	recMX1 := &models.RecordConfig{}
-	recMX2 := &models.RecordConfig{}
-	models.PopulateFromRawA(recA1, []string{"@", "1.2.3.4"}, nil, "example.com")
-	models.PopulateFromRawA(recA2, []string{"@", "10.20.30.40"}, nil, "example.com")
-	models.PopulateFromRawMX(recMX1, []string{"@", "5", "foo.com."}, nil, "example.com")
-	models.PopulateFromRawMX(recMX2, []string{"@", "50", "foo2.com."}, nil, "example.com")
+	recA1 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("1.2.3.4")}, nil, 0, "example.com")
+	recA2 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("10.20.30.40")}, nil, 0, "example.com")
+	recMX1 := models.MustCreateRecord("@", models.MX{Preference: 5, Mx: "foo.com."}, nil, 0, "example.com")
+	recMX2 := models.MustCreateRecord("@", models.MX{Preference: 50, Mx: "foo2.com."}, nil, 0, "example.com")
 
 	type args struct {
 		domain    string

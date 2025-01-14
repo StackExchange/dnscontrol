@@ -46,7 +46,9 @@ func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
 			log.Warnf("LEGACY PROVIDER needs fixing! Created invalid record: %s %s %v\n", rec.Type, rec.Name, rec)
-			rec.ImportFromLegacy(origin)
+			if err := rec.ImportFromLegacy(origin); err != nil {
+				log.Warnf("Error fixing record: %s %s %v: %v\n", rec.Type, rec.Name, rec, err)
+			}
 		}
 	}
 	return found
@@ -80,6 +82,13 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		)
 	}
 	panic("Should not happen")
+}
+
+// MustImportFromLegacy is like ImportFromLegacy but panics on error. Use only in tests and init() functions.
+func (rc *RecordConfig) MustImportFromLegacy(origin string) {
+	if err := rc.ImportFromLegacy(origin); err != nil {
+		panic(err)
+	}
 }
 
 // TransformRawRecords converts the RawRecordConfigs from dnsconfig.js into RecordConfig.

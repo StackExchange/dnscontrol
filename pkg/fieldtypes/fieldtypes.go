@@ -148,6 +148,15 @@ func ParseIPv4(raw string) (IPv4, error) {
 	return ip, nil
 }
 
+// MustParseIPv4 is like ParseIPv4 but panics on error. For use in tests and init() functions only.
+func MustParseIPv4(raw string) IPv4 {
+	ip, err := ParseIPv4(raw)
+	if err != nil {
+		panic(err)
+	}
+	return ip
+}
+
 func (a *IPv4) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", a[0], a[1], a[2], a[3])
 }

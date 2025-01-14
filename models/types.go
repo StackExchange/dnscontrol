@@ -24,6 +24,9 @@ func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string
 	rc.Fields = &rdata
 
 	// Update the RecordConfig:
+	if rc.Metadata == nil {
+		rc.Metadata = map[string]string{}
+	}
 	maps.Copy(rc.Metadata, meta) // Add the metadata
 
 	return rc.Seal()
@@ -78,7 +81,9 @@ func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]strin
 		Type: GetTypeName(rdata),
 		TTL:  ttl,
 	}
-	rc.SetLabel3(label, "", origin) // Label
+	if err := rc.SetLabel3(label, "", origin); err != nil {
+		panic(err)
+	}
 	if err := RecordUpdateFields(rc, rdata, meta); err != nil {
 		panic(err)
 	}
@@ -116,7 +121,9 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 
 	// First rawfield is the label.
 	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+			return err
+		}
 	}
 
 	// Parse the remaining fields.
@@ -178,7 +185,9 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 
 	// First rawfield is the label.
 	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+			return err
+		}
 	}
 
 	// Parse the remaining fields.
@@ -248,7 +257,9 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 
 	// First rawfield is the label.
 	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
+		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+			return err
+		}
 	}
 
 	// Parse the remaining fields.

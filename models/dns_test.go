@@ -2,8 +2,6 @@ package models
 
 import (
 	"testing"
-	//"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	//"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 )
 
 func TestRR(t *testing.T) {
@@ -15,7 +13,7 @@ func TestRR(t *testing.T) {
 		TTL:          0,
 		MxPreference: 0,
 	}
-	experiment.ImportFromLegacy("example.com")
+	experiment.MustImportFromLegacy("example.com")
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
 	found := experiment.ToRR().String()
 	if found != expected {
