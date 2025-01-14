@@ -67,7 +67,7 @@ Currently supported Domain Registrars:
 
 - AWS Route 53
 - CSC Global
-- CentralNic Reseller (formerly RRPProxy)
+- CentralNic Reseller (CNR) - formerly RRPProxy
 - DNSOVERHTTPS
 - Dynadot
 - easyname

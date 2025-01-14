@@ -36,7 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
 	// --- Supported record types ---
 	// providers.CanUseAKAMAICDN: 	      providers.Cannot(), // can only be supported by Akamai EdgeDns provider
-	providers.CanUseAlias: providers.Cannot("Not supported. You may use CNAME records instead. An Alternative solution is planned."),
+	providers.CanUseAlias: providers.Can(),
 	// providers.CanUseAzureAlias:		  providers.Cannot(), // can only be supported by Azure provider
 	providers.CanUseCAA:           providers.Can(),
 	providers.CanUseDHCID:         providers.Cannot("Ask for this feature."),
