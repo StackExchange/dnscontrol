@@ -61,7 +61,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
 
-	origin = strings.TrimRight(origin, ".")
+	origin = strings.TrimRight(origin, ".") // Needed for backwards compatibility. Code should be more strict in the future.
 
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
