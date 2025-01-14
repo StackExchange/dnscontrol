@@ -292,13 +292,14 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	switch rc.Type {
 	case "A":
 		newR.Fields = &A{}
-		newR.Fields = rc.Fields
+		//newR.Fields = rc.Fields.(*A)
+		newR.Fields.(*A).A = rc.Fields.(*A).A
 	case "MX":
 		newR.Fields = &MX{}
-		newR.Fields = rc.Fields
+		newR.Fields = rc.Fields.(*MX)
 	case "SRV":
 		newR.Fields = &SRV{}
-		newR.Fields = rc.Fields
+		newR.Fields = rc.Fields.(*SRV)
 	}
 	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
 	return newR, err

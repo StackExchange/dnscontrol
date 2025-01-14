@@ -67,11 +67,20 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		if err != nil {
 			return err
 		}
-		return rc.PopulateFieldsA(ip, nil, origin)
+		//return RecordUpdateFields(rc, A{A: ip}, nil)
+		return rc.PopulateFieldsA(ip, nil)
 	case "MX":
-		return rc.PopulateFieldsMX(rc.MxPreference, rc.target, nil, origin)
+		//return rc.PopulateFieldsMX(rc.MxPreference, rc.target, nil, origin)
+		return RecordUpdateFields(rc,
+			MX{Preference: rc.MxPreference, Mx: rc.target},
+			nil,
+		)
 	case "SRV":
-		return rc.PopulateFieldsSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
+		//return rc.PopulateFieldsSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
+		return RecordUpdateFields(rc,
+			SRV{Priority: rc.SrvPriority, Weight: rc.SrvWeight, Port: rc.SrvPort, Target: rc.target},
+			nil,
+		)
 	}
 	panic("Should not happen")
 }

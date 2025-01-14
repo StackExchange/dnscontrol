@@ -8,7 +8,7 @@ import (
 
 // SetTargetSRV sets the SRV fields.
 func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target string) error {
-	return rc.PopulateFieldsSRV(priority, weight, port, target, nil, "")
+	return rc.PopulateFieldsSRV(priority, weight, port, target, nil)
 }
 
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.

@@ -25,6 +25,27 @@ PopulateAFields()
 
 */
 
+/*
+
+- Create from RawRecord
+                models.CreateRecordFromRaw(rc, rawstrings, meta, origin) (error)
+- Fully create an RC for Test purposes:
+                models.MustCreateRecord[models.A](T, Meta, TTL, Origin) (*models.RecordConfig)
+- Populate type=X from typed-fields
+                models.RecordUpdate[T](T, meta, origin) (error)
+- Populate type=X from strings
+                rc.RecordUpdateFromStrings([]string, meta, origin) (error)
+
+ -ParseA([]string) (A, error)
+ -ParseMX([]string) (MX, error)
+ -ParseSRV[]string) (SRV, error)
+*/
+
+// RecordType is a constraint for DNS records.
+type RecordType interface {
+	A | MX | SRV
+}
+
 func init() {
 	RegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	RegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
@@ -32,11 +53,75 @@ func init() {
 	//fmt.Printf("DEBUG: REGISTERED A\n")
 }
 
+func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string]string) error {
+	rc.Fields = &rdata
+
+	// Update the RecordConfig:
+	maps.Copy(rc.Metadata, meta) // Add the metadata
+
+	return rc.Seal()
+}
+
+func (rc *RecordConfig) Seal() error {
+	if rc.Type == "" {
+		//fmt.Printf("DEBUG: rc.Type is %T\n", rc.Fields)
+		//panic("assertion failed: Seal called when .Type is not set. We can infer type type but is it worth it?")
+		switch rc.Fields.(type) {
+		case A:
+			rc.Type = "A"
+		case MX:
+			rc.Type = "MX"
+		case SRV:
+			rc.Type = "SRV"
+		}
+	}
+
+	// Copy the fields to the legacy fields:
+	// Pre-compute useful things
+	switch rc.Type {
+	case "A":
+		f := rc.Fields.(*A)
+		rc.target = f.A.String()
+
+		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	case "MX":
+		f := rc.Fields.(*MX)
+		rc.MxPreference = f.Preference
+		rc.target = f.Mx
+		rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
+	case "SRV":
+		f := rc.Fields.(*SRV)
+		rc.SrvPriority = f.Priority
+		rc.SrvWeight = f.Weight
+		rc.SrvPort = f.Port
+		rc.target = f.Target
+		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
+	default:
+		return fmt.Errorf("unknown rtype %q", rc.Type)
+	}
+	rc.Display = rc.Comparable
+
+	return nil
+}
+
 //// A
 
 // A is the fields needed to store a DNS record of type A
 type A struct {
 	A fieldtypes.IPv4
+}
+
+// func (a A) MarshalText() ([]byte, error) {
+// 	return []byte(fmt.Sprintf("%d.%d.%d.%d", a.A[0], a.A[1], a.A[2], a.A[3])), nil
+// }
+
+func ParseA(rawfields []string, origin string) (A, error) {
+	var a fieldtypes.IPv4
+	var err error
+	if a, err = fieldtypes.ParseIPv4(rawfields[0]); err != nil {
+		return A{}, err
+	}
+	return A{A: a}, nil
 }
 
 // NewFromRawA creates a new RecordConfig of type A from rawfields, meta, and origin.
@@ -50,30 +135,29 @@ func NewFromRawA(rawfields []string, meta map[string]string, origin string, ttl 
 
 // PopulateFromRawA updates rc to be an A record with contents from rawfields, meta and origin.
 func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
-	var err error
+	rc.Type = "A"
 
 	// Error checking
-
 	if len(rawfields) <= 1 {
 		return fmt.Errorf("rtype A wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
 	}
 
-	// Convert each rawfield.
-
+	// First rawfield is the label.
 	if origin != "" { //  If we don't know the origin, don't muck with the label.
 		rc.SetLabel3(rawfields[0], rc.SubDomain, origin) // Label
 	}
 
-	var a fieldtypes.IPv4
-	if a, err = fieldtypes.ParseIPv4(rawfields[1]); err != nil { // A
-		return err
+	// Parse the remaining fields.
+	rdata, err := ParseA(rawfields[1:], origin)
+	if err != nil {
+		return nil
 	}
 
-	return rc.PopulateFieldsA(a, meta, origin)
+	return RecordUpdateFields(rc, rdata, meta)
 }
 
 // PopulateFieldsA updates rc to be an A record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateFieldsA(a fieldtypes.IPv4, meta map[string]string, origin string) error {
+func (rc *RecordConfig) PopulateFieldsA(a fieldtypes.IPv4, meta map[string]string) error {
 	// Create the struct if needed.
 	if rc.Fields == nil {
 		rc.Fields = &A{}
@@ -135,6 +219,19 @@ type MX struct {
 	Mx         string
 }
 
+func ParseMX(rawfields []string, origin string) (MX, error) {
+	var preference uint16
+	var mx string
+	var err error
+	if preference, err = fieldtypes.ParseUint16(rawfields[0]); err != nil {
+		return MX{}, err
+	}
+	if mx, err = fieldtypes.ParseHostnameDot(rawfields[1], "", origin); err != nil {
+		return MX{}, err
+	}
+	return MX{Preference: preference, Mx: mx}, nil
+}
+
 // NewFromRawMX creates a new RecordConfig of type MX from rawfields, meta, and origin.
 func NewFromRawMX(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
 	rc := &RecordConfig{TTL: ttl}
@@ -146,6 +243,7 @@ func NewFromRawMX(rawfields []string, meta map[string]string, origin string, ttl
 
 // PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
 func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "MX"
 	var err error
 
 	// Error checking
@@ -175,6 +273,7 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	}
 
 	return rc.PopulateFieldsMX(preference, mx, meta, origin)
+	// TODO FIXME
 }
 
 // PopulateFieldsMX updates rc to be an MX record with contents from typed data, meta, and origin.
@@ -245,6 +344,25 @@ type SRV struct {
 	Target   string `json:"target"`
 }
 
+func ParseSRV(rawfields []string, origin string) (SRV, error) {
+	var priority, weight, port uint16
+	var target string
+	var err error
+	if priority, err = fieldtypes.ParseUint16(rawfields[0]); err != nil {
+		return SRV{}, err
+	}
+	if weight, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
+		return SRV{}, err
+	}
+	if port, err = fieldtypes.ParseUint16(rawfields[2]); err != nil {
+		return SRV{}, err
+	}
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], "", origin); err != nil {
+		return SRV{}, err
+	}
+	return SRV{Priority: priority, Weight: weight, Port: port, Target: target}, nil
+}
+
 // NewFromRawSRV creates a new RecordConfig of type SRV from rawfields, meta, and origin.
 func NewFromRawSRV(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
 	rc := &RecordConfig{TTL: ttl}
@@ -256,6 +374,7 @@ func NewFromRawSRV(rawfields []string, meta map[string]string, origin string, tt
 
 // PopulateFromRawSRV updates rc to be an SRV record with contents from rawfields, meta and origin.
 func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "SRV"
 	var err error
 
 	// Error checking
@@ -287,11 +406,11 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 		return err
 	}
 
-	return rc.PopulateFieldsSRV(priority, weight, port, target, meta, origin)
+	return rc.PopulateFieldsSRV(priority, weight, port, target, meta)
 }
 
 // PopulateFieldsSRV updates rc to be an SRV record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateFieldsSRV(priority, weight, port uint16, target string, meta map[string]string, origin string) error {
+func (rc *RecordConfig) PopulateFieldsSRV(priority, weight, port uint16, target string, meta map[string]string) error {
 	// Create the struct if needed.
 	if rc.Fields == nil {
 		rc.Fields = &SRV{}
