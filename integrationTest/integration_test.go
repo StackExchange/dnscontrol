@@ -529,14 +529,6 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func makeRec2(typ string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type: typ,
-		TTL:  300,
-	}
-	return r
-}
-
 func a(name string, a string) *models.RecordConfig {
 	rdata, err := models.ParseA([]string{a}, "**current-domain**")
 	if err != nil {
@@ -555,23 +547,23 @@ func mx(name string, preference uint16, mx string) *models.RecordConfig {
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	rc := makeRec2("SRV")
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	if err := models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil); err != nil {
+	rdata, err := models.ParseSRV([]string{name, spriority, sweight, sport, target}, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	rc := makeRec2("CF_SINGLE_REDIRECT")
 	scode := strconv.Itoa(int(code))
-	if err := models.FromRaw(rc, "label", "CF_SINGLE_REDIRECT", []string{name, scode, when, then}, nil); err != nil {
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func aaaa(name, target string) *models.RecordConfig {
