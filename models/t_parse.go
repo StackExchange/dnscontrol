@@ -61,6 +61,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
 
+	origin = strings.TrimRight(origin, ".")
+
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
 		return PopulateFromRawA(rc, []string{rc.Name, contents}, nil, origin)
