@@ -550,7 +550,7 @@ func srv(name string, priority, weight, port uint16, target string) *models.Reco
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	rdata, err := models.ParseSRV([]string{name, spriority, sweight, sport, target}, "**current-domain**")
+	rdata, err := models.ParseSRV([]string{spriority, sweight, sport, target}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}

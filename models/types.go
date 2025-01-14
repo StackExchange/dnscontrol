@@ -29,19 +29,17 @@ func RecordUpdateFields[T RecordType](rc *RecordConfig, rdata T, meta map[string
 	return rc.Seal()
 }
 
-func (rc *RecordConfig) Seal() error {
-	if rc.Type == "" {
-		switch rc.Fields.(type) {
-		case A:
-			rc.Type = "A"
-		case MX:
-			rc.Type = "MX"
-		case SRV:
-			rc.Type = "SRV"
-		case CFSINGLEREDIRECT:
-			rc.Type = "CF_SINGLE_REDIRECT"
-		}
+func GetTypeName(v any) string {
+	typeName := fmt.Sprintf("%T", v)
+	typeName = strings.TrimPrefix(typeName, "*")
+	typeName = strings.TrimPrefix(typeName, "models.")
+	if typeName == "CFSINGLEREDIRECT" {
+		return "CF_SINGLE_REDIRECT"
 	}
+	return typeName
+}
+func (rc *RecordConfig) Seal() error {
+	rc.Type = GetTypeName(rc.Fields)
 
 	// Copy the fields to the legacy fields:
 	// Pre-compute useful things
@@ -77,7 +75,7 @@ func (rc *RecordConfig) Seal() error {
 
 func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]string, ttl uint32, origin string) *RecordConfig {
 	rc := &RecordConfig{
-		Type: strings.Split(fmt.Sprintf("%T", rdata), ".")[1],
+		Type: GetTypeName(rdata),
 		TTL:  ttl,
 	}
 	rc.SetLabel3(label, "", origin) // Label
@@ -85,6 +83,10 @@ func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]strin
 		panic(err)
 	}
 	return rc
+}
+
+func errorCheckFieldCount(rawfields []string, expected int) bool {
+	return len(rawfields) != (expected + 1)
 }
 
 //// A
@@ -108,7 +110,7 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 	rc.Type = "A"
 
 	// Error checking
-	if len(rawfields) <= 1 {
+	if errorCheckFieldCount(rawfields, 1) {
 		return fmt.Errorf("rtype A wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
 	}
 
@@ -170,7 +172,7 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	var err error
 
 	// Error checking
-	if len(rawfields) <= 2 {
+	if errorCheckFieldCount(rawfields, 2) {
 		return fmt.Errorf("rtype MX wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
 	}
 
@@ -240,7 +242,7 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	var err error
 
 	// Error checking
-	if len(rawfields) <= 4 {
+	if errorCheckFieldCount(rawfields, 4) {
 		return fmt.Errorf("rtype SRV wants %d field(s), found %d: %+v", 4, len(rawfields)-1, rawfields[1:])
 	}
 
