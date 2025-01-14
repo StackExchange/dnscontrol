@@ -91,7 +91,7 @@ func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]strin
 }
 
 func errorCheckFieldCount(rawfields []string, expected int) bool {
-	return len(rawfields) != (expected + 1)
+	return len(rawfields) != expected
 }
 
 //// A
@@ -102,6 +102,12 @@ type A struct {
 }
 
 func ParseA(rawfields []string, origin string) (A, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 1) {
+		return A{}, fmt.Errorf("rtype A wants %d field(s), found %d: %+v", 1, len(rawfields), rawfields)
+	}
+
 	var a fieldtypes.IPv4
 	var err error
 	if a, err = fieldtypes.ParseIPv4(rawfields[0]); err != nil {
@@ -114,17 +120,12 @@ func ParseA(rawfields []string, origin string) (A, error) {
 func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "A"
 
-	// Error checking
-	if errorCheckFieldCount(rawfields, 1) {
-		return fmt.Errorf("rtype A wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
-	}
-
 	// First rawfield is the label.
-	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
-			return err
-		}
+	//if origin != "" { //  If we don't know the origin, don't muck with the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
 	}
+	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseA(rawfields[1:], origin)
@@ -161,6 +162,12 @@ type MX struct {
 }
 
 func ParseMX(rawfields []string, origin string) (MX, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 2) {
+		return MX{}, fmt.Errorf("rtype MX wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
+	}
+
 	var preference uint16
 	var mx string
 	var err error
@@ -178,17 +185,12 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	rc.Type = "MX"
 	var err error
 
-	// Error checking
-	if errorCheckFieldCount(rawfields, 2) {
-		return fmt.Errorf("rtype MX wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
-	}
-
 	// First rawfield is the label.
-	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
-			return err
-		}
+	//if origin != "" { //  If we don't know the origin, don't muck with the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
 	}
+	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseMX(rawfields[1:], origin)
@@ -227,6 +229,12 @@ type SRV struct {
 }
 
 func ParseSRV(rawfields []string, origin string) (SRV, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 4) {
+		return SRV{}, fmt.Errorf("rtype SRV wants %d field(s), found %d: %+v", 4, len(rawfields)-1, rawfields[1:])
+	}
+
 	var priority, weight, port uint16
 	var target string
 	var err error
@@ -250,17 +258,12 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	rc.Type = "SRV"
 	var err error
 
-	// Error checking
-	if errorCheckFieldCount(rawfields, 4) {
-		return fmt.Errorf("rtype SRV wants %d field(s), found %d: %+v", 4, len(rawfields)-1, rawfields[1:])
-	}
-
 	// First rawfield is the label.
-	if origin != "" { //  If we don't know the origin, don't muck with the label.
-		if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
-			return err
-		}
+	//if origin != "" { //  If we don't know the origin, don't muck with the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
 	}
+	//}
 
 	// Parse the remaining fields.
 	rdata, err := ParseSRV(rawfields[1:], origin)
