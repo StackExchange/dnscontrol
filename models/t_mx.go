@@ -6,8 +6,10 @@ import (
 )
 
 // SetTargetMX sets the MX fields.
-func (rc *RecordConfig) SetTargetMX(pref uint16, target string) error {
-	return rc.PopulateFieldsMX(pref, target, nil, "")
+func (rc *RecordConfig) SetTargetMX(preference uint16, mx string) error {
+	//return rc.PopulateFieldsMX(pref, target, nil, "")
+	rc.Type = "MX"
+	return RecordUpdateFields(rc, MX{Preference: preference, Mx: mx}, nil)
 }
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.

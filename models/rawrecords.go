@@ -67,8 +67,8 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		if err != nil {
 			return err
 		}
-		//return RecordUpdateFields(rc, A{A: ip}, nil)
-		return rc.PopulateFieldsA(ip, nil)
+		//return rc.PopulateFieldsA(ip, nil)
+		return RecordUpdateFields(rc, A{A: ip}, nil)
 	case "MX":
 		//return rc.PopulateFieldsMX(rc.MxPreference, rc.target, nil, origin)
 		return RecordUpdateFields(rc,
