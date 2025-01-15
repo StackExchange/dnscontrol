@@ -136,7 +136,9 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 					return err
 				}
 
-				return n.domains.ReplaceDNSEntries(dc.Name, nativeDNSEntries)
+				err = n.domains.ReplaceDNSEntries(dc.Name, nativeDNSEntries)
+				fmt.Printf("DEBUG: err = %T %+v %s\n", err, err, err)
+				return err
 			},
 		},
 	}
