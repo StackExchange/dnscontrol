@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
 )
 
 const (
@@ -19,8 +20,7 @@ const (
 
 type hetznerProvider struct {
 	apiKey             string
-	mu                 sync.Mutex
-	cachedZones        map[string]zone
+	zoneCache          zoneCache.ZoneCache[zone]
 	requestRateLimiter requestRateLimiter
 }
 
@@ -62,7 +62,13 @@ func (api *hetznerProvider) createZone(name string) error {
 	request := createZoneRequest{
 		Name: name,
 	}
-	return api.request("/zones", "POST", request, nil, nil)
+	response := createZoneResponse{}
+	err := api.request("/zones", "POST", request, &response, nil)
+	if err != nil {
+		return err
+	}
+	api.zoneCache.SetZone(name, response.Zone)
+	return nil
 }
 
 func (api *hetznerProvider) deleteRecord(record *record) error {
@@ -71,7 +77,7 @@ func (api *hetznerProvider) deleteRecord(record *record) error {
 }
 
 func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
-	z, err := api.getZone(domain)
+	z, err := api.zoneCache.GetZone(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -105,18 +111,7 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 	return records, nil
 }
 
-func (api *hetznerProvider) resetZoneCache() {
-	api.mu.Lock()
-	defer api.mu.Unlock()
-	api.cachedZones = nil
-}
-
-func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
-	api.mu.Lock()
-	defer api.mu.Unlock()
-	if api.cachedZones != nil {
-		return api.cachedZones, nil
-	}
+func (api *hetznerProvider) fetchAllZones() (map[string]zone, error) {
 	var zones map[string]zone
 	page := 1
 	statusOK := func(code int) bool {
@@ -148,20 +143,7 @@ func (api *hetznerProvider) getAllZones() (map[string]zone, error) {
 		}
 		page++
 	}
-	api.cachedZones = zones
 	return zones, nil
-}
-
-func (api *hetznerProvider) getZone(name string) (*zone, error) {
-	zones, err := api.getAllZones()
-	if err != nil {
-		return nil, err
-	}
-	z, ok := zones[name]
-	if !ok {
-		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
-	}
-	return &z, nil
 }
 
 func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}, statusOK func(code int) bool) error {
