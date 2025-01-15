@@ -292,13 +292,14 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	switch rc.Type {
 	case "A":
 		newR.Fields = &A{}
-		newR.Fields = rc.Fields
+		//newR.Fields = rc.Fields.(*A)
+		newR.Fields.(*A).A = rc.Fields.(*A).A
 	case "MX":
 		newR.Fields = &MX{}
-		newR.Fields = rc.Fields
+		newR.Fields = rc.Fields.(*MX)
 	case "SRV":
 		newR.Fields = &SRV{}
-		newR.Fields = rc.Fields
+		newR.Fields = rc.Fields.(*SRV)
 	}
 	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
 	return newR, err
@@ -654,7 +655,10 @@ func Downcase(recs []*RecordConfig) {
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
-			r.ImportFromLegacy("") // Convert legacy fields to raw fields.
+			if err := r.ImportFromLegacy(""); err != nil {
+				// Convert legacy fields to raw fields.
+				panic(err) // Should not happen.
+			}
 		case "A", "CAA", "CF_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "DHCID", "IMPORT_TRANSFORM", "LOC", "SSHFP", "TXT":
 			// Do nothing. (IP address or case sensitive target)
 		case "SOA":

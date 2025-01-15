@@ -11,19 +11,19 @@
       "records": [
         {
           "Fields": {
-            "A": "4.4.4.101"
+            "A": "1.1.1.1"
           },
           "name": "bar",
-          "target": "4.4.4.101",
+          "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
           "Fields": {
-            "A": "6.6.6.3"
+            "A": "5.5.5.5"
           },
           "name": "foo",
-          "target": "6.6.6.3",
+          "target": "5.5.5.5",
           "ttl": 300,
           "type": "A"
         }
@@ -69,19 +69,19 @@
       "records": [
         {
           "Fields": {
-            "A": "4.4.4.101"
+            "A": "1.1.1.1"
           },
           "name": "bar.foo1",
-          "target": "4.4.4.101",
+          "target": "1.1.1.1",
           "ttl": 99,
           "type": "A"
         },
         {
           "Fields": {
-            "A": "6.6.6.3"
+            "A": "7.7.7.7"
           },
           "name": "foo.foo1",
-          "target": "6.6.6.3",
+          "target": "7.7.7.7",
           "ttl": 99,
           "type": "A"
         }

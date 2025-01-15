@@ -28,7 +28,7 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 
 	rt, ok := rtypeDB[typeName]
 	if !ok {
-		return fmt.Errorf("unknown rtype %q", typeName)
+		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
 	}
 
 	return rt.PopulateFromRaw(rc, args, meta, origin)
@@ -46,7 +46,9 @@ func CheckAndFixImport(recs []*RecordConfig, origin string) bool {
 		if IsTypeUpgraded(rec.Type) && rec.Fields == nil {
 			found = true
 			log.Warnf("LEGACY PROVIDER needs fixing! Created invalid record: %s %s %v\n", rec.Type, rec.Name, rec)
-			rec.ImportFromLegacy(origin)
+			if err := rec.ImportFromLegacy(origin); err != nil {
+				log.Warnf("Error fixing record: %s %s %v: %v\n", rec.Type, rec.Name, rec, err)
+			}
 		}
 	}
 	return found
@@ -67,13 +69,26 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 		if err != nil {
 			return err
 		}
-		return rc.PopulateFieldsA(ip, nil, origin)
+		return RecordUpdateFields(rc, A{A: ip}, nil)
 	case "MX":
-		return rc.PopulateFieldsMX(rc.MxPreference, rc.target, nil, origin)
+		return RecordUpdateFields(rc,
+			MX{Preference: rc.MxPreference, Mx: rc.target},
+			nil,
+		)
 	case "SRV":
-		return rc.PopulateFieldsSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target, nil, origin)
+		return RecordUpdateFields(rc,
+			SRV{Priority: rc.SrvPriority, Weight: rc.SrvWeight, Port: rc.SrvPort, Target: rc.target},
+			nil,
+		)
 	}
 	panic("Should not happen")
+}
+
+// MustImportFromLegacy is like ImportFromLegacy but panics on error. Use only in tests and init() functions.
+func (rc *RecordConfig) MustImportFromLegacy(origin string) {
+	if err := rc.ImportFromLegacy(origin); err != nil {
+		panic(err)
+	}
 }
 
 // TransformRawRecords converts the RawRecordConfigs from dnsconfig.js into RecordConfig.
@@ -107,7 +122,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 
 			rt, ok := rtypeDB[rawRec.Type]
 			if !ok {
-				return fmt.Errorf("unknown rtype %q", rawRec.Type)
+				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
 			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)

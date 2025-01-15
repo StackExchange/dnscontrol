@@ -350,7 +350,7 @@ func TestCNAMEMutex(t *testing.T) {
 			recB := &models.RecordConfig{Type: tst.rType}
 			recB.SetLabel(tst.name, "example.com")
 			recB.MustSetTarget(tst.target)
-			recB.ImportFromLegacy("example.com")
+			recB.MustImportFromLegacy("example.com")
 			dc := &models.DomainConfig{
 				Name:    "example.com",
 				Records: []*models.RecordConfig{recA, recB},

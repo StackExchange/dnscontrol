@@ -861,7 +861,7 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("DEBUG: transformed ip=%v to ips=%v\n", ip, newIPs)
+		//fmt.Printf("DEBUG: transformed ip=%v to ips=%v\n", ip, newIPs)
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
 				// replace target of first record if different
@@ -875,7 +875,7 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 					return err
 				}
 				cpy.Fields = &models.A{} // Allocate new memory to prevent aliasing.
-				if err := cpy.SetTarget(newIP.String()); err != nil {
+				if err := cpy.SetTargetA(newIP.String()); err != nil {
 					return err
 				}
 				domain.Records = append(domain.Records, cpy)

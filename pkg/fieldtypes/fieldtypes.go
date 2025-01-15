@@ -99,12 +99,6 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 		return "FAIL", fmt.Errorf("short must not be empty")
 	}
 	short = strings.ToLower(short)
-	// if strings.ToLower(short) != short {
-	// 	return "", fmt.Errorf("short (%s) must be lowercase", short)
-	// }
-	// if short == "." {
-	// 	return "", fmt.Errorf("label (%s) must not be just a dot", short)
-	// }
 
 	if lastCharIs(short, '.') {
 		return short, nil
@@ -152,6 +146,15 @@ func ParseIPv4(raw string) (IPv4, error) {
 		return ip, fmt.Errorf("not an IPv4 address: %q", raw)
 	}
 	return ip, nil
+}
+
+// MustParseIPv4 is like ParseIPv4 but panics on error. For use in tests and init() functions only.
+func MustParseIPv4(raw string) IPv4 {
+	ip, err := ParseIPv4(raw)
+	if err != nil {
+		panic(err)
+	}
+	return ip
 }
 
 func (a *IPv4) String() string {

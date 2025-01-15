@@ -5,63 +5,8 @@ import (
 	"fmt"
 )
 
-// MakeSingleRedirectFromRawRec updates a RecordConfig to be a
-// SINGLEREDIRECT using the data from a RawRecord.
-func MakeSingleRedirectFromRawRec(rc *RecordConfig, code uint16, name, when, then string) error {
-	//// MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
-	//func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) error {
-	//	if rc == nil {
-	//		return errors.New("RecordConfig cannot be nil")
-	//	}
-	//	if when == "" || then == "" {
-	//		return errors.New("when and then parameters cannot be empty")
-	//	}
-	//
-	//	display := mkPageRuleBlob(priority, code, when, then)
-	//
-	//	rc.Type = "PAGE_RULE"
-	//	rc.TTL = 1
-	//	rc.CloudflareRedirect = &models.CloudflareSingleRedirectConfig{
-	//		Code: code,
-	//		//
-	//		PRWhen:     when,
-	//		PRThen:     then,
-	//		PRPriority: priority,
-	//		PRDisplay:  display,
-	//	}
-	//	return rc.SetTarget(display)
-	//}
-	//
-	//// mkPageRuleBlob creates the 1,301,when,then string used in displays.
-	//func mkPageRuleBlob(priority int, code uint16, when, then string) string {
-	//	return fmt.Sprintf("%d,%03d,%s,%s", priority, code, when, then)
-	//}
-	//
-	//// makeSingleRedirectFromRawRec updates a RecordConfig to be a
-	//// SINGLEREDIRECT using the data from a RawRecord.
-	//func makeSingleRedirectFromRawRec(rc *models.RecordConfig, code uint16, name, when, then string) error {
-	target := targetFromRaw(name, code, when, then)
-
-	rc.Type = "CF_SINGLE_REDIRECT"
-	rc.TTL = 1
-	rc.Fields = &CFSINGLEREDIRECT{
-		Code: code,
-		//
-		PRWhen:     "UNKNOWABLE",
-		PRThen:     "UNKNOWABLE",
-		PRPriority: 0,
-		PRDisplay:  "UNKNOWABLE",
-		//
-		SRName:    name,
-		SRWhen:    when,
-		SRThen:    then,
-		SRDisplay: target,
-	}
-	return rc.SetTarget(rc.AsCFSINGLEREDIRECT().SRDisplay)
-}
-
-// targetFromRaw create the display text used for a normal Redirect.
-func targetFromRaw(name string, code uint16, when, then string) string {
+// cfSingleRedirecttargetFromRaw create the display text used for a normal Redirect.
+func cfSingleRedirecttargetFromRaw(name string, code uint16, when, then string) string {
 	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
 		name,
 		code,

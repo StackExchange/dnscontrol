@@ -2,14 +2,13 @@ package models
 
 import (
 	"fmt"
-	"maps"
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 )
 
 func init() {
-	RegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 //// CFSINGLEREDIRECT
@@ -35,6 +34,40 @@ type CFSINGLEREDIRECT struct {
 	SRDisplay        string `dns:"skip" json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
+func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {
+	var srname, srwhen, srthen string
+	var code uint16
+	var err error
+
+	if srname, err = fieldtypes.ParseStringTrimmed(rawfields[0]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if code, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if srwhen, err = fieldtypes.ParseStringTrimmed(rawfields[2]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if srthen, err = fieldtypes.ParseStringTrimmed(rawfields[3]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+
+	return CFSINGLEREDIRECT{
+		PRWhen:     "UNKNOWABLE",
+		PRThen:     "UNKNOWABLE",
+		PRPriority: 0,
+		PRDisplay:  "UNKNOWABLE",
+
+		SRName:           srname,
+		Code:             code,
+		SRWhen:           srwhen,
+		SRThen:           srthen,
+		SRRRulesetID:     "",
+		SRRRulesetRuleID: "",
+		SRDisplay:        cfSingleRedirecttargetFromRaw(srname, code, srwhen, srthen),
+	}, nil
+}
+
 func NewFromRawCFSINGLEREDIRECT(rawfields []string, meta map[string]string, origin string, ttl uint32) (*RecordConfig, error) {
 	rc := &RecordConfig{TTL: ttl}
 	if err := PopulateFromRawCFSINGLEREDIRECT(rc, rawfields, meta, origin); err != nil {
@@ -45,66 +78,25 @@ func NewFromRawCFSINGLEREDIRECT(rawfields []string, meta map[string]string, orig
 
 // PopulateFromRawCFSINGLEREDIRECT updates rc to be an CFSINGLEREDIRECT record with contents from rawfields, meta and origin.
 func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
-	var err error
+	rc.Type = "CF_SINGLE_REDIRECT"
+	rc.TTL = 1
 
 	// Error checking
-
 	if len(rawfields) <= 3 {
 		return fmt.Errorf("rtype CFSINGLEREDIRECT wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
 	}
 
-	// Convert each rawfield.
-
-	rc.SetLabel(rawfields[0], origin) // Label
-
-	var srname string
-	if srname, err = fieldtypes.ParseStringTrimmed(rawfields[0]); err != nil {
-		return err
-	}
-	var code uint16
-	if code, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
-		return err
-	}
-	var srwhen string
-	if srwhen, err = fieldtypes.ParseStringTrimmed(rawfields[2]); err != nil {
-		return err
-	}
-	var srthen string
-	if srthen, err = fieldtypes.ParseStringTrimmed(rawfields[3]); err != nil {
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
 		return err
 	}
 
-	return rc.PopulateCFSINGLEREDIRECTFields(srname, code, srwhen, srthen, meta, origin)
-}
-
-// PopulateCFSINGLEREDIRECTFields updates rc to be an CFSINGLEREDIRECT record with contents from typed data, meta, and origin.
-func (rc *RecordConfig) PopulateCFSINGLEREDIRECTFields(srname string, code uint16,
-	srwhen, srthen string, meta map[string]string, origin string) error {
-	// Create the struct if needed.
-	if rc.Fields == nil {
-		rc.Fields = &CFSINGLEREDIRECT{}
+	// Parse the remaining fields.
+	rdata, err := ParseCFSINGLEREDIRECT(rawfields, origin)
+	if err != nil {
+		return err
 	}
-
-	// Process each field:
-
-	n := rc.Fields.(*CFSINGLEREDIRECT)
-	n.SRName = string(srname)
-	n.Code = uint16(code)
-	n.SRWhen = string(srwhen)
-	n.SRThen = string(srthen)
-
-	// Update legacy fields.
-	MakeSingleRedirectFromRawRec(rc, code, srname, srwhen, srthen)
-
-	// Update the RecordConfig:
-	if rc.Metadata == nil {
-		rc.Metadata = map[string]string{}
-	}
-	maps.Copy(rc.Metadata, meta) // Add the metadata
-	rc.Comparable = fmt.Sprintf("%q %d %q %q", srname, code, srwhen, srthen)
-	rc.Display = rc.Comparable
-
-	return nil
+	return RecordUpdateFields(rc, rdata, meta)
 }
 
 // AsCFSINGLEREDIRECT returns rc.Fields as an CFSINGLEREDIRECT struct.

@@ -61,9 +61,26 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
 
+	if IsTypeUpgraded(rtype) {
+		var err error
+		switch rtype {
+		case "A":
+			if rdata, err := ParseA([]string{contents}, origin); err == nil {
+				return RecordUpdateFields(rc, rdata, nil)
+			}
+		case "MX":
+			if rdata, err := ParseMX(strings.Fields(contents), origin); err == nil {
+				return RecordUpdateFields(rc, rdata, nil)
+			}
+		case "SRV":
+			if rdata, err := ParseSRV(strings.Fields(contents), origin); err == nil {
+				return RecordUpdateFields(rc, rdata, nil)
+			}
+		}
+		return err
+	}
+
 	switch rc.Type = rtype; rtype { // #rtype_variations
-	case "A":
-		return PopulateFromRawA(rc, []string{rc.Name, contents}, nil, origin)
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
@@ -84,10 +101,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTarget(contents)
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
-	case "MX":
-		//fmt.Printf("DEBUG: contents=%q\n", contents)
-		//fmt.Printf("DEBUG: PopulateMXRaw(rc, fields=%v, nil, %q)\n", append([]string{rc.Name}, strings.Fields(contents)...), origin)
-		return PopulateFromRawMX(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
 	case "SOA":
@@ -101,8 +114,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 			return fmt.Errorf("invalid TXT record: %s", contents)
 		}
 		return rc.SetTargetTXT(t)
-	case "SRV":
-		return PopulateFromRawSRV(rc, append([]string{rc.Name}, strings.Fields(contents)...), nil, origin)
 	case "SSHFP":
 		return rc.SetTargetSSHFPString(contents)
 	case "SVCB", "HTTPS":
@@ -110,7 +121,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "TLSA":
 		return rc.SetTargetTLSAString(contents)
 	default:
-		// return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)", rtype, contents, origin)
+		// return fmt.Errorf("unknown (def) rtype (%s) when parsing (%s) domain=(%s)", rtype, contents, origin)
 		return MakeUnknown(rc, rtype, contents, origin)
 	}
 }

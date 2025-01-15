@@ -529,49 +529,41 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func makeRec2(typ string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type: typ,
-		TTL:  300,
-	}
-	return r
-}
-
 func a(name string, a string) *models.RecordConfig {
-	rc, err := models.NewFromRawA([]string{name, a}, nil, "**current-domain**", 300)
+	rdata, err := models.ParseA([]string{a}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
-	rc := makeRec2("MX")
 	spreference := strconv.Itoa(int(preference))
-	if err := models.FromRaw(rc, "**current-domain**", "MX", []string{name, spreference, mx}, nil); err != nil {
+	rdata, err := models.ParseMX([]string{spreference, mx}, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
-
-	//fmt.Printf("DEBUG: MX Fields %v\n", rc.Fields)
-
-	if rc.Name != strings.ToLower(rc.Name) {
-		panic("MX short must be lowercase")
-	}
-	if rc.NameFQDN != strings.ToLower(rc.NameFQDN) {
-		panic("MX must be lowercase 2")
-	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	rc := makeRec2("SRV")
 	spriority := strconv.Itoa(int(priority))
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
-	if err := models.FromRaw(rc, "**current-domain**", "SRV", []string{name, spriority, sweight, sport, target}, nil); err != nil {
+	rdata, err := models.ParseSRV([]string{spriority, sweight, sport, target}, "**current-domain**")
+	if err != nil {
 		panic(err)
 	}
-	return rc
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
+	scode := strconv.Itoa(int(code))
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func aaaa(name, target string) *models.RecordConfig {
@@ -612,12 +604,6 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 
 func cfSingleRedirectEnabled() bool {
 	return ((*enableCFRedirectMode) != "")
-}
-
-func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, "CF_SINGLE_REDIRECT")
-	panicOnErr(models.MakeSingleRedirectFromRawRec(r, code, name, when, then))
-	return r
 }
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
