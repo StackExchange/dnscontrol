@@ -499,6 +499,7 @@ const (
 var (
 	backoff    = initialBackoff
 	backoff404 = false // Set if the last call requested a retry of a 404
+	backoff502 = false // Set if the last call requested a retry of a 502
 )
 
 func retryNeeded(resp *googleapi.ServerResponse, err error) bool {
@@ -530,7 +531,23 @@ func retryNeeded(resp *googleapi.ServerResponse, err error) bool {
 	}
 	backoff404 = false
 
-	if serr.Code != 429 && serr.Code != 502 && serr.Code != 503 {
+	if serr.Code == 502 {
+		// serr.Code == 502 happens occasionally when "The server
+		// encountered a temporary error and could not complete your
+		// request. Please try again in 30 seconds.  That’s all we know."
+		// We pause and retry exactly once.
+		if backoff502 {
+			backoff502 = false
+			return false // Give up. We've done this already.
+		}
+		log.Printf("Special 502 pause-and-retry for GCLOUD: Pausing %s\n", backoff)
+		time.Sleep(31 * time.Second)
+		backoff502 = true
+		return true // Request a retry.
+	}
+	backoff502 = false
+
+	if serr.Code != 429 && serr.Code != 503 {
 		return false // Not an error that permits retrying.
 	}
 
