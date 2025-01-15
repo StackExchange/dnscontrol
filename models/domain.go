@@ -50,10 +50,11 @@ type DomainConfig struct {
 	DefaultTTL uint32            `json:"defaultTTL,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
-	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
-	pendingCorrections       map[string]([]*Correction) // Work to be done for each provider
-	pendingCorrectionsOrder  []string                   // Call the providers in this order
-	pendingActualChangeCount map[string](int)           // Number of changes to report (cumulative)
+	pendingCorrectionsMutex    sync.Mutex               // Protect pendingCorrections*
+	pendingCorrections         map[string][]*Correction // Work to be done for each provider
+	pendingCorrectionsOrder    []string                 // Call the providers in this order
+	pendingActualChangeCount   map[string]int           // Number of changes to report (cumulative)
+	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -201,4 +202,22 @@ func (dc *DomainConfig) GetChangeCount(providerName string) int {
 	defer dc.pendingCorrectionsMutex.Unlock()
 
 	return dc.pendingActualChangeCount[providerName]
+}
+
+// StorePopulateCorrections accumulates corrections in a thread-safe way.
+func (dc *DomainConfig) StorePopulateCorrections(providerName string, corrections []*Correction) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingPopulateCorrections == nil {
+		dc.pendingPopulateCorrections = make(map[string][]*Correction, 1)
+	}
+	dc.pendingPopulateCorrections[providerName] = append(dc.pendingPopulateCorrections[providerName], corrections...)
+}
+
+// GetPopulateCorrections returns zone corrections in a thread-safe way.
+func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correction {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+	return dc.pendingPopulateCorrections[providerName]
 }

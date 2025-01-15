@@ -697,7 +697,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	recs := []*models.RecordConfig{}
 	for i := range n {
 		recs = append(recs, a(fmt.Sprintf(namePattern, i), target))
-		//recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
 	}
 	return recs
 }

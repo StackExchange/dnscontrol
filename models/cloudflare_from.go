@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// cfSingleRedirecttargetFromRaw create the display text used for a normal Redirect.
 func cfSingleRedirecttargetFromRaw(name string, code uint16, when, then string) string {
 	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
 		name,

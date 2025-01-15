@@ -24,7 +24,7 @@ type CNRRecord struct {
 	Host string
 	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".". FQDN is ignored in CreateRecord, specify via the Host field instead.
 	Fqdn string
-	// Type is one of the following: A, AAAA, ANAME, CNAME, MX, NS, SRV, or TXT.
+	// Type is one of the following: A, AAAA, ANAME, ALIAS, CNAME, MX, NS, SRV, or TXT.
 	Type string
 	// Answer is either the IP address for A or AAAA records; the target for ANAME, CNAME, MX, or NS records; the text for TXT records.
 	// For SRV records, answer has the following format: "{weight} {port} {target}" e.g. "1 5061 sip.example.org".
@@ -150,7 +150,7 @@ func toRecord(r *CNRRecord, origin string) *models.RecordConfig {
 				panic(fmt.Errorf("unparsable SRV record received from centralnic reseller API: %w", err))
 			}
 		}
-	default: // "A", "AAAA", "ANAME", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
+	default: // "A", "AAAA", "ANAME", "ALIAS", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
 		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, r.Fqdn, txtutil.ParseQuoted); err != nil {
 			panic(fmt.Errorf("unparsable record received from centralnic reseller API: %w", err))
 		}
@@ -250,7 +250,7 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		priority, _ := strconv.ParseUint(data["PRIO"], 10, 32)
 
 		// Add dot to Answer if supported by the record type
-		pattern := `^CNAME|MX|NS|SRV|PTR$`
+		pattern := `^ALIAS|CNAME|MX|NS|SRV|PTR$`
 		re, err := regexp.Compile(pattern)
 		if err != nil {
 			return nil, fmt.Errorf("error compiling regex in getRecords: %w", err)
@@ -291,7 +291,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 	answer := ""
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":
+	case "A", "AAAA", "ANAME", "ALIAS", "CNAME", "MX", "NS", "PTR":
 		answer = rc.GetTargetField()
 		if domain == host {
 			host = host + "."

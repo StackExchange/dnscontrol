@@ -20,12 +20,16 @@ func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	curRecords := models.Records{}
 	zone, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, canonical(domain))
 	if err != nil {
+		if _, ok := err.(pdnshttp.ErrNotFound); ok {
+			// Zone is not found, but everything else is okay so return no records
+			return curRecords, nil
+		}
 		return nil, err
 	}
 
-	curRecords := models.Records{}
 	// loop over grouped records by type, called RRSet
 	for _, rrset := range zone.ResourceRecordSets {
 		if rrset.Type == "SOA" {
