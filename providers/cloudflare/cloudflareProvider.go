@@ -9,17 +9,18 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
+
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/fatih/color"
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/fatih/color"
-	"golang.org/x/net/idna"
 )
 
 /*
@@ -93,39 +94,21 @@ type cloudflareProvider struct {
 	tcLogFh       *os.File // Transcode Log file handle
 	tcZone        string   // Transcode Current zone
 
-	sync.Mutex                      // Protects all access to the following fields:
-	domainIndex map[string]string   // Cache of zone name to zone ID.
-	nameservers map[string][]string // Cache of zone name to list of nameservers.
+	zoneCache zoneCache.ZoneCache[cloudflare.Zone]
 }
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	z, err := c.zoneCache.GetZone(domain)
+	if err != nil {
 		return nil, err
 	}
-
-	ns, ok := c.nameservers[domain]
-	if !ok {
-		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
-	}
-	return models.ToNameservers(ns)
+	return models.ToNameservers(z.NameServers)
 }
 
 // ListZones returns a list of the DNS zones.
 func (c *cloudflareProvider) ListZones() ([]string, error) {
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
-		return nil, err
-	}
-
-	zones := make([]string, 0, len(c.domainIndex))
-	for d := range c.domainIndex {
-		zones = append(zones, d)
-	}
-	return zones, nil
+	return c.zoneCache.GetZoneNames()
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -186,17 +169,11 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 func (c *cloudflareProvider) getDomainID(name string) (string, error) {
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	z, err := c.zoneCache.GetZone(name)
+	if err != nil {
 		return "", err
 	}
-
-	id, ok := c.domainIndex[name]
-	if !ok {
-		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
-	}
-	return id, nil
+	return z.ID, nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -652,6 +629,7 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
+	api.zoneCache = zoneCache.New(api.fetchAllZones)
 	// check api keys from creds json file
 	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
 		return nil, errors.New("if cloudflare apitoken is not set, apikey and apiuser must be provided")
@@ -907,20 +885,15 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	if ok, err := c.zoneCache.HasZone(domain); err != nil || ok {
 		return err
 	}
-
-	if _, ok := c.domainIndex[domain]; ok {
-		return nil
-	}
-	var id string
 	id, err := c.createZone(domain)
+	if err != nil {
+		return err
+	}
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
-	clear(c.domainIndex) // clear the cache so that the next caller has to refresh it, thus loading the new ID.
-	return err
+	return nil
 }
 
 // PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE integration tests.
