@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"gopkg.in/ns1/ns1-go.v2/rest"
+	"github.com/transip/gotransip/v6/rest"
 )
 
 const (
