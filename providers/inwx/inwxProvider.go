@@ -54,7 +54,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
-	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
+	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -183,7 +183,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	   The API will not accept any target with a final dot but will
 	   instead always add this final dot internally.
 	   Records with empty targets (i.e. records with target ".")
-	   are not allowed.
+	   are allowed.
 	*/
 	case "CNAME", "NS":
 		req.Content = content[:len(content)-1]
@@ -196,7 +196,11 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 		}
 	case "SRV":
 		req.Priority = int(rec.SrvPriority)
-		req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content[:len(content)-1])
+		if content == "." {
+			req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content)
+		} else {
+			req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content[:len(content)-1])
+		}
 	default:
 		req.Content = rec.GetTargetCombined()
 	}
@@ -308,7 +312,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		   The API will not accept any target with a final dot but will
 		   instead always add this final dot internally.
 		   Records with empty targets (i.e. records with target ".")
-		   are not allowed.
+		   are allowed.
 		*/
 		rtypeAddDot := map[string]bool{
 			"CNAME": true,
@@ -320,6 +324,8 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		if rtypeAddDot[record.Type] {
 			if record.Type == "MX" && record.Content == "." {
 				// null records don't need to be modified
+			} else if record.Type == "SRV" && strings.HasSuffix(record.Content, ".") {
+				// null targets don't need to be modified
 			} else {
 				record.Content = record.Content + "."
 			}
