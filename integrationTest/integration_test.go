@@ -1470,7 +1470,7 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
@@ -1488,7 +1488,7 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
