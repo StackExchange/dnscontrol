@@ -404,16 +404,15 @@ When `-cfworkers=false` is set, tests related to Workers are skipped.  The Accou
 
 Cloudflare plays tricks with TTLs.  Cloudflare uses "1" to mean "auto-ttl";
 which as far as we can tell means 300 seconds (5 minutes) with the option that
-CloudFlare may dynamically adjust the actual TTL. In the Cloudflare API,
-setting the TTL to 300 results in the TTL being set to 1.
+CloudFlare may dynamically adjust the actual TTL.
 
 If the TTL isn't set to 1, Cloudflare has a minimum of 1 minutes.
 
 A TTL of 0 tells DNSControl to use the default TTL for that provider, which is 1.
 
 In summary:
-* TTL of 0, 1 and 300 are all the same ("auto TTL").
+* TTL of 0 and 1 are the same ("auto TTL").
 * TTL of 2-60 are all the same as 60.
-* TTL of 61-299, and 301 to infinity are not magic.
+* TTL of 61 to infinity is not magic.
 
 Some of this is documented on the Cloudflare website's [Time to Live (TTL)](https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/) page.
