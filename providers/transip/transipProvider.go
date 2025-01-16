@@ -99,10 +99,15 @@ func init() {
 func (n *transipProvider) ListZones() ([]string, error) {
 	var domains []string
 
+retry:
 	domainsMap, err := n.domains.GetAll()
+	if retryNeeded(err) {
+		goto retry
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	for _, domainname := range domainsMap {
 		domains = append(domains, domainname.Name)
 	}
@@ -136,7 +141,13 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 					return err
 				}
 
-				return n.domains.ReplaceDNSEntries(dc.Name, nativeDNSEntries)
+			retry:
+				err = n.domains.ReplaceDNSEntries(dc.Name, nativeDNSEntries)
+				if retryNeeded(err) {
+					goto retry
+				}
+				return err
+
 			},
 		},
 	}
@@ -146,7 +157,11 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 
 // GetZoneRecords returns all records within given zone
 func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
+retry:
 	entries, err := n.domains.GetDNSEntries(domainName)
+	if retryNeeded(err) {
+		goto retry
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -167,10 +182,15 @@ func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]stri
 func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	var nss []string
 
+retry:
 	entries, err := n.domains.GetNameservers(domainName)
+	if retryNeeded(err) {
+		goto retry
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	for _, entry := range entries {
 		nss = append(nss, entry.Hostname)
 	}
