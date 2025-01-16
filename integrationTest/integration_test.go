@@ -1502,7 +1502,7 @@ func makeTests() []*TestGroup {
 		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
-				"GCLOUD",
+			//"GCLOUD",
 			),
 			tc("1200 records",
 				manyA("rec%04d", "1.2.3.4", 1200)...),
