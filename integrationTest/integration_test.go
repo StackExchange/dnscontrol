@@ -99,15 +99,19 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 	if *profileFlag == "" {
 		*profileFlag = profileName
 	}
+	// Fill in -provider if blank.
+	if *providerFlag == "" {
+		*providerFlag = profileType
+	}
 
-	// Fix legacy use of -provider.
+	// Sanity check. If the user-specifed -provider flag doesn't match what was in the file, warn them.
 	if *providerFlag != profileType {
 		fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
 		*providerFlag = profileType
 	}
 
 	// fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
-	fmt.Printf("Testing Profile=%q TYPE=%q\n", profileName, profileType)
+	fmt.Printf("Testing Profile=%q (TYPE=%q)\n", profileName, profileType)
 
 	var metadata json.RawMessage
 
