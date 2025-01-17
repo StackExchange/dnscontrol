@@ -19,7 +19,11 @@ Example:
     "apilogin": "your-cnr-account-id",
     "apipassword": "your-cnr-account-password",
     "apientity": "LIVE", // for the LIVE system; use "OTE" for the OT&E system
-    "debugmode": "0", // set it to "1" to get debug output of the communication with our Backend System API
+    // --- debugmode ---
+    // "0" -> turned off (default)
+    // "1" -> turned on, basic logging of the changes reflected as API command parameters for the CNR API
+    // "2" -> turned on, most verbose level - showing the detailed CNR API communication
+    "debugmode": "0"
   }
 }
 ```
@@ -46,22 +50,26 @@ Here a working example for our OT&E System:
 {% endhint %}
 
 With the above CentralNic Reseller entry in `creds.json`, you can run the
-integration tests as follows:
+integration tests or by specifying the data per environment vars as follows:
 
-```shell
-dnscontrol get-zones --format=nameonly cnr CNR all
-```
 ```shell
 # Review the output.  Pick one domain and set CNR_DOMAIN.
 export CNR_DOMAIN=yodream.com            # Pick a domain name.
 export CNR_ENTITY=OTE
 export CNR_UID=test.user
 export CNR_PW=test.passw0rd
+export CNR_DEBUGMODE=2
 cd integrationTest              # NOTE: Not needed if already in that subdirectory
 go test -v -verbose -profile CNR
 ```
 
 ## Usage
+
+Fetch a list of all DNSZones:
+
+```shell
+dnscontrol get-zones --format=nameonly cnr CNR all
+```
 
 Here's an example DNS Configuration `dnsconfig.js` using our provider module.
 Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
