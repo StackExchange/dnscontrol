@@ -1457,9 +1457,9 @@ func makeTests() []*TestGroup {
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",     // Test beaks limits.
 			),
-			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
-			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
-			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
+			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
+			tc("101 records", manyA("pager101-rec%04d", "1.2.3.4", 101)...),
 		),
 
 		testgroup("pager601",
@@ -1474,8 +1474,8 @@ func makeTests() []*TestGroup {
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
-			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
+			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
+			tc("Update 601 records", manyA("pager601-rec%04d", "1.2.3.5", 600)...),
 		),
 
 		testgroup("pager1201",
@@ -1493,8 +1493,8 @@ func makeTests() []*TestGroup {
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),
-			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
-			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+			tc("1200 records", manyA("pager1201-rec%04d", "1.2.3.4", 1200)...),
+			tc("Update 1200 records", manyA("pager1201-rec%04d", "1.2.3.5", 1200)...),
 		),
 
 		// Test the boundaries of Google' batch system.
@@ -1502,16 +1502,17 @@ func makeTests() []*TestGroup {
 		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
-			//"GCLOUD",
+				//"GCLOUD",
+				"HOSTINGDE", // Pages.
 			),
 			tc("1200 records",
-				manyA("rec%04d", "1.2.3.4", 1200)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records and Create others", append(
-				manyA("arec%04d", "1.2.3.4", 1200),
-				manyA("rec%04d", "1.2.3.5", 1200)...)...),
+				manyA("batch-arec%04d", "1.2.3.4", 1200),
+				manyA("batch-rec%04d", "1.2.3.5", 1200)...)...),
 			tc("Update 1200 records and Create and Delete others", append(
-				manyA("rec%04d", "1.2.3.4", 1200),
-				manyA("zrec%04d", "1.2.3.4", 1200)...)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200),
+				manyA("batch-zrec%04d", "1.2.3.4", 1200)...)...),
 		),
 
 		//// CanUse* types:
