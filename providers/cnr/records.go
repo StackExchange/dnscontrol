@@ -376,5 +376,6 @@ func isNoPopulate() bool {
 
 // Function to check if debug mode is enabled
 func (n *CNRClient) isDebugOn() bool {
-	return n.conf["debugmode"] == "1" || n.conf["debugmode"] == "2"
+	debugMode, exists := n.conf["debugmode"]
+	return exists && (debugMode == "1" || debugMode == "2")
 }
