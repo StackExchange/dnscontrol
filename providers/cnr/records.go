@@ -186,7 +186,8 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		"DNSZONE": domain,
 		"ORDERBY": "type",
 		"FIRST":   "0",
-		"LIMIT":   "1",
+		"LIMIT":   "10000",
+		"WIDE":    "1",
 	}
 	r := n.client.Request(cmd)
 
@@ -210,19 +211,6 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 	totalRecords := r.GetRecordsTotalCount()
 	if totalRecords <= 0 {
 		return nil, nil
-	}
-	limitation := 100
-	totalRecords += limitation
-
-	// finally request all resource records available for the zone
-	cmd["LIMIT"] = strconv.Itoa(totalRecords)
-	cmd["WIDE"] = "1"
-	r = n.client.Request(cmd)
-
-	// Check if the request was successful
-	if !r.IsSuccess() {
-		// Return general error for any other issues
-		return nil, n.GetCNRApiError("Failed loading resource records for zone", domain, r)
 	}
 
 	// loop over the records array
