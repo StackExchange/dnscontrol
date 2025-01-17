@@ -1376,7 +1376,6 @@ var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
-var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 
