@@ -3,7 +3,7 @@ package cnr
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
-func (n *CNRClient) EnsureZoneExists(domain string) error {
+func (n *Client) EnsureZoneExists(domain string) error {
 	command := map[string]interface{}{
 		"COMMAND": "AddDNSZone",
 		"DNSZONE": domain,
@@ -17,11 +17,11 @@ func (n *CNRClient) EnsureZoneExists(domain string) error {
 	if r.GetCode() == 549 || r.IsSuccess() {
 		return nil
 	}
-	return n.GetCNRApiError("Failed to create not existing zone ", domain, r)
+	return n.GetAPIError("Failed to create not existing zone ", domain, r)
 }
 
 // ListZones lists all the
-func (n *CNRClient) ListZones() ([]string, error) {
+func (n *Client) ListZones() ([]string, error) {
 	var zones []string
 
 	// Basic
@@ -31,7 +31,7 @@ func (n *CNRClient) ListZones() ([]string, error) {
 	})
 	for _, r := range rs {
 		if r.IsError() {
-			return nil, n.GetCNRApiError("Error while QueryDNSZoneList", "Basic", &r)
+			return nil, n.GetAPIError("Error while QueryDNSZoneList", "Basic", &r)
 		}
 		zoneColumn := r.GetColumn("DNSZONE")
 		if zoneColumn != nil {
