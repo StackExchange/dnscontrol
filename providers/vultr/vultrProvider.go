@@ -119,7 +119,7 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 
 	for _, rec := range dc.Records {
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToUnicode(rec.GetTargetField())
 			if err != nil {
@@ -230,7 +230,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype {
-	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR":
 		var err error
 		data, err = idna.ToUnicode(data)
 		if err != nil {
