@@ -32,6 +32,7 @@ func (c *ZoneCache[Zone]) ensureCached() error {
 	for name, z := range zones {
 		c.cache[name] = z
 	}
+	c.cached = true
 	return nil
 }
 
