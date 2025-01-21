@@ -15,8 +15,8 @@ var (
 	version = "dev"
 )
 
-// CNRClient describes a connection to the CNR API.
-type CNRClient struct {
+// Client describes a connection to the CNR API.
+type Client struct {
 	conf        map[string]string
 	APILogin    string
 	APIPassword string
@@ -56,8 +56,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:  providers.Can(),
 }
 
-func newProvider(conf map[string]string) (*CNRClient, error) {
-	api := &CNRClient{
+func newProvider(conf map[string]string) (*Client, error) {
+	api := &Client{
 		conf:   conf,
 		client: cnrcl.NewAPIClient(),
 	}

@@ -17,6 +17,10 @@ type createZoneRequest struct {
 	Name string `json:"name"`
 }
 
+type createZoneResponse struct {
+	Zone zone `json:"zone"`
+}
+
 type getAllRecordsResponse struct {
 	Records []record `json:"records"`
 	Meta    struct {
@@ -53,7 +57,7 @@ type zone struct {
 	TTL         uint32   `json:"ttl"`
 }
 
-func fromRecordConfig(in *models.RecordConfig, zone *zone) record {
+func fromRecordConfig(in *models.RecordConfig, zone zone) record {
 	r := record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
