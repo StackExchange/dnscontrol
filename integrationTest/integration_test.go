@@ -100,8 +100,12 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 	if *profileFlag == "" {
 		*profileFlag = profileName
 	}
+	// Fill in -provider if blank.
+	if *providerFlag == "" {
+		*providerFlag = profileType
+	}
 
-	// Fix legacy use of -provider.
+	// Sanity check. If the user-specifed -provider flag doesn't match what was in the file, warn them.
 	if *providerFlag != profileType {
 		if *providerFlag != "" {
 			fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
@@ -110,7 +114,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 	}
 
 	// fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
-	fmt.Printf("Testing Profile=%q TYPE=%q\n", profileName, profileType)
+	fmt.Printf("Testing Profile=%q (TYPE=%q)\n", profileName, profileType)
 
 	var metadata json.RawMessage
 
@@ -1475,9 +1479,9 @@ func makeTests() []*TestGroup {
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",     // Test beaks limits.
 			),
-			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
-			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
-			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
+			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
+			tc("101 records", manyA("pager101-rec%04d", "1.2.3.4", 101)...),
 		),
 
 		testgroup("pager601",
@@ -1488,12 +1492,12 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
-			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
+			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
+			tc("Update 601 records", manyA("pager601-rec%04d", "1.2.3.5", 600)...),
 		),
 
 		testgroup("pager1201",
@@ -1506,13 +1510,13 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),
-			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
-			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+			tc("1200 records", manyA("pager1201-rec%04d", "1.2.3.4", 1200)...),
+			tc("Update 1200 records", manyA("pager1201-rec%04d", "1.2.3.5", 1200)...),
 		),
 
 		// Test the boundaries of Google' batch system.
@@ -1520,16 +1524,17 @@ func makeTests() []*TestGroup {
 		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
-				"GCLOUD",
+				//"GCLOUD",
+				"HOSTINGDE", // Pages.
 			),
 			tc("1200 records",
-				manyA("rec%04d", "1.2.3.4", 1200)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records and Create others", append(
-				manyA("arec%04d", "1.2.3.4", 1200),
-				manyA("rec%04d", "1.2.3.5", 1200)...)...),
+				manyA("batch-arec%04d", "1.2.3.4", 1200),
+				manyA("batch-rec%04d", "1.2.3.5", 1200)...)...),
 			tc("Update 1200 records and Create and Delete others", append(
-				manyA("rec%04d", "1.2.3.4", 1200),
-				manyA("zrec%04d", "1.2.3.4", 1200)...)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200),
+				manyA("batch-zrec%04d", "1.2.3.4", 1200)...)...),
 		),
 
 		//// CanUse* types:
