@@ -26,24 +26,52 @@ type azurednsProvider struct {
 	subscriptionID *string
 }
 
+// Modified `newAzureDNSDsp` to maintain backward compatibility with the new OIDC support.
 func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	return newAzureDNS(conf, metadata)
 }
 
+// Updated function to support OIDC along with the existing client ID and secret.
 func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
-	credential, authErr := aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
-	if authErr != nil {
-		return nil, authErr
+	useOIDC := m["UseOIDC"] == "true"
+
+	var credential azcore.TokenCredential
+	var authErr error
+
+	if useOIDC {
+		// OIDC Authentication with `InteractiveBrowserCredential`
+		oidcCredentialOpts := aauth.InteractiveBrowserCredentialOptions{
+			TenantID: tenantID,
+		}
+		credential, authErr = aauth.NewInteractiveBrowserCredential(&oidcCredentialOpts)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create OIDC credential: %w", authErr)
+		}
+	} else if clientID != "" && clientSecret != "" {
+		// Client ID and Secret-based Authentication
+		credential, authErr = aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create Client Secret credential: %w", authErr)
+		}
+	} else {
+		// Default Azure Credential (fallback mechanism)
+		credential, authErr = aauth.NewDefaultAzureCredential(nil)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create Default Azure credential: %w", authErr)
+		}
 	}
-	zonesClient, zoneErr := adns.NewZonesClient(subID, credential, nil)
-	if zoneErr != nil {
-		return nil, zoneErr
+
+	// Create DNS clients using the selected credential
+	zonesClient, err := adns.NewZonesClient(subID, credential, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create zones client: %w", err)
 	}
-	recordsClient, recordErr := adns.NewRecordSetsClient(subID, credential, nil)
-	if recordErr != nil {
-		return nil, recordErr
+
+	recordsClient, err := adns.NewRecordSetsClient(subID, credential, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create records client: %w", err)
 	}
 
 	api := &azurednsProvider{
@@ -52,10 +80,12 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 		resourceGroup:  to.StringPtr(rg),
 		subscriptionID: to.StringPtr(subID),
 	}
-	err := api.getZones()
-	if err != nil {
+
+	// Initialize zones
+	if err := api.getZones(); err != nil {
 		return nil, err
 	}
+
 	return api, nil
 }
 
