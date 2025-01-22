@@ -60,7 +60,7 @@ func (s *shell) Execute(cmd string) (string, string, error) {
 	waiter.Add(2)
 
 	go streamReader(s.stdout, outBoundary, &sout, waiter) //nolint:errcheck
-	go streamReader(s.stdout, outBoundary, &sout, waiter) //nolint:errcheck
+	go streamReader(s.stderr, errBoundary, &serr, waiter) //nolint:errcheck
 
 	waiter.Wait()
 
