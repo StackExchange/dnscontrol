@@ -187,6 +187,8 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
     - uses: actions/checkout@v4
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
