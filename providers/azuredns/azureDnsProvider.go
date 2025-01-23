@@ -31,7 +31,7 @@ func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers
 	return newAzureDNS(conf, metadata)
 }
 
-// Updated function to support OIDC along with the existing client ID and secret.
+// Updated function to prioritize DefaultAzureCredential and fallback to OIDC or client-secret-based methods.
 func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
@@ -40,6 +40,7 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 	var credential azcore.TokenCredential
 	var authErr error
 
+	// Authentication Logic
 	if useOIDC {
 		// OIDC Authentication with `InteractiveBrowserCredential`
 		oidcCredentialOpts := aauth.InteractiveBrowserCredentialOptions{
@@ -56,7 +57,7 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 			return nil, fmt.Errorf("failed to create Client Secret credential: %w", authErr)
 		}
 	} else {
-		// Default Azure Credential (fallback mechanism)
+		// Default Azure Credential as the default mechanism
 		credential, authErr = aauth.NewDefaultAzureCredential(nil)
 		if authErr != nil {
 			return nil, fmt.Errorf("failed to create Default Azure credential: %w", authErr)
