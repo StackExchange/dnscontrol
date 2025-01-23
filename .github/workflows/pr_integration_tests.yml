@@ -25,11 +25,12 @@ env:
   BIND_DOMAIN: example.com
 
 jobs:
+
   workflow-telemetry-action:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v2
 
 # integration-test-providers: Determine which providers have a _DOMAIN variable set.
 # That variable enables testing for the provider.  The results are
