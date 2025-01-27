@@ -51,7 +51,6 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -253,10 +252,6 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
-	if key.Type == "NS1_URLFWD" {
-		key.Type = "URLFWD"
-	}
-
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
@@ -340,10 +335,6 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest,
 			}})
-		} else if r.Type == "NS1_URLFWD" {
-			printer.Warnf("NS1_URLFWD is deprecated and may stop working anytime now. Please avoid such records going forward.\n")
-			rec.Type = "URLFWD"
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		} else if r.Type == "SVCB" || r.Type == "HTTPS" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.SvcPriority)),
@@ -380,11 +371,6 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			continue
 		case "ALIAS":
 			rec.Type = rtype
-			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
-			}
-		case "URLFWD":
-			rec.Type = "NS1_URLFWD"
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}

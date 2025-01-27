@@ -317,8 +317,6 @@ Add the new file `FOO.md` to the documentation table of contents [`documentation
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
 +       * ASDF
 +           * [ASDF_NINJA](language-reference/domain-modifiers/ASDF_NINJA.md)
-        * NS1
-            * [NS1_URLFWD](language-reference/domain-modifiers/NS1_URLFWD.md)
 ...
 * Record Modifiers
 ...
