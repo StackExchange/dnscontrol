@@ -310,7 +310,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 					totalCorrections += len(corrections)
 					out.EndProvider2(provider.Name, len(corrections))
 					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
-					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, args.PopulateOnPreview, interactive, notifier, report))
+					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push || args.PopulateOnPreview, interactive, notifier, report))
 				}
 			}
 		}

@@ -2295,32 +2295,6 @@ declare const NO_PURGE: DomainModifier;
 declare function NS(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `NS1_URLFWD` is an NS1-specific feature that maps to NS1's URLFWD record, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   NS1_URLFWD("urlfwd", "/ http://example.com 302 2 0")
- * );
- * ```
- *
- * The fields are:
- * * name: the record name
- * * target: a complex field containing the following, space separated:
- *     * from - the path to match
- *     * to - the url to redirect to
- *     * redirectType - (0 - masking, 301, 302)
- *     * pathForwardingMode - (0 - All, 1 - Capture, 2 - None)
- *     * queryForwardingMode - (0 - disabled, 1 - enabled)
- *
- * WARNING: According to NS1, this type of record is deprecated and in the process
- * of being replaced by the premium-only `REDIRECT` record type. While still able to be
- * configured through the API, as suggested by NS1, please try not to use it, going forward.
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/ns1/ns1_urlfwd
- */
-declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
  * NewDnsProvider activates a DNS Service Provider (DSP) specified in `creds.json`.
  * A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
  * answers on port 53 to queries related to the zone).
