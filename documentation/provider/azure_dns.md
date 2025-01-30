@@ -112,6 +112,7 @@ To enable OIDC for interactive login:
 ```
 {% endcode %}
 
++You can also use environment variables:
 ```shell
 export AZURE_SUBSCRIPTION_ID=XXXXXXXXX
 export AZURE_RESOURCE_GROUP=YYYYYYYYY
