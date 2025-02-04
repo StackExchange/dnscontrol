@@ -64,7 +64,7 @@ func Run(v string) int {
 			Usage:  "Obsolete flag. Will be removed in v5 or later",
 			Hidden: true,
 			Action: func(ctx *cli.Context, v bool) error {
-				obsoleteDiff2FlagUsed = true
+				pobsoleteDiff2FlagUsed = true
 				return nil
 			},
 		},
