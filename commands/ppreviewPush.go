@@ -99,6 +99,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Action: func(c *cli.Context, s string) error {
 			if !slices.Contains([]string{"concurrent", "none", "all"}, s) {
 				fmt.Printf("%q is not a valid option for --cmode.  Values are: concurrent, none, all\n", s)
+				os.Exit(1)
 			}
 			return nil
 		},
