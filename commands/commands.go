@@ -304,32 +304,32 @@ func (args *FilterArgs) flags() []cli.Flag {
 	}
 }
 
-func (args *FilterArgs) shouldRunProvider(name string, dc *models.DomainConfig) bool {
-	if args.Providers == "all" {
-		return true
-	}
-	if args.Providers == "" {
-		for _, pri := range dc.DNSProviderInstances {
-			if pri.Name == name {
-				return pri.IsDefault
-			}
-		}
-		return true
-	}
-	for _, prov := range strings.Split(args.Providers, ",") {
-		if prov == name {
-			return true
-		}
-	}
-	return false
-}
+// func (args *FilterArgs) shouldRunProvider(name string, dc *models.DomainConfig) bool {
+// 	if args.Providers == "all" {
+// 		return true
+// 	}
+// 	if args.Providers == "" {
+// 		for _, pri := range dc.DNSProviderInstances {
+// 			if pri.Name == name {
+// 				return pri.IsDefault
+// 			}
+// 		}
+// 		return true
+// 	}
+// 	for _, prov := range strings.Split(args.Providers, ",") {
+// 		if prov == name {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
 
-func (args *FilterArgs) shouldRunDomain(d string) bool {
-	if args.Domains == "" {
-		return true
-	}
-	return domainInList(d, strings.Split(args.Domains, ","))
-}
+// func (args *FilterArgs) shouldRunDomain(d string) bool {
+// 	if args.Domains == "" {
+// 		return true
+// 	}
+// 	return domainInList(d, strings.Split(args.Domains, ","))
+// }
 
 func domainInList(domain string, list []string) bool {
 	for _, item := range list {

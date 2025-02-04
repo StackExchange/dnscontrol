@@ -29,50 +29,30 @@ type zoneCache struct {
 	sync.Mutex
 }
 
-const legacywarn = `WARNING: --cmode=legacy will go away in v4.16 or later.` +
-	` Please test --cmode=concurrent and report any bugs ASAP.` +
-	` See https://docs.dnscontrol.org/commands/preview-push#cmode` +
-	"\n"
-
-const ppreviewwarn = `WARNING: ppreview is going away in v4.16 or later.` +
-	` Use "preview" instead.` +
-	"\n"
-
-const ppushwarn = `WARNING: ppush is going away in v4.16 or later.` +
-	` Use "push" instead.` +
-	"\n"
-
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPreviewArgs
 	return &cli.Command{
 		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
 		Action: func(ctx *cli.Context) error {
-			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, legacywarn)
-				return exit(Preview(args))
-			}
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
 	}
 }())
 
-var _ = cmd(catMain, func() *cli.Command {
-	var args PPreviewArgs
-	return &cli.Command{
-		Name:  "ppreview",
-		Usage: "Deprecated. Same as: preview --cmode=concurrent",
-		Action: func(ctx *cli.Context) error {
-			fmt.Fprint(os.Stderr, ppreviewwarn)
-			if args.ConcurMode == "legacy" {
-				return exit(Preview(args))
-			}
-			return exit(PPreview(args))
-		},
-		Flags: args.flags(),
-	}
-}())
+// var _ = cmd(catMain, func() *cli.Command {
+// 	var args PPreviewArgs
+// 	return &cli.Command{
+// 		Name:  "ppreview",
+// 		Usage: "Deprecated. Same as: preview --cmode=concurrent",
+// 		Action: func(ctx *cli.Context) error {
+// 			fmt.Fprint(os.Stderr, ppreviewwarn)
+// 			return exit(PPreview(args))
+// 		},
+// 		Flags: args.flags(),
+// 	}
+// }())
 
 // PPreviewArgs contains all data/flags needed to run preview, independently of CLI
 type PPreviewArgs struct {
@@ -115,10 +95,10 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
 		Value:       "concurrent",
-		Usage:       `Which providers to run concurrently: legacy, concurrent, none, all`,
+		Usage:       `Which providers to run concurrently: concurrent, none, all`,
 		Action: func(c *cli.Context, s string) error {
-			if !slices.Contains([]string{"legacy", "concurrent", "none", "all"}, s) {
-				fmt.Printf("%q is not a valid option for --cmode.  Values are: legacy, concurrent, none, all\n", s)
+			if !slices.Contains([]string{"concurrent", "none", "all"}, s) {
+				fmt.Printf("%q is not a valid option for --cmode.  Values are: concurrent, none, all\n", s)
 			}
 			return nil
 		},
@@ -172,31 +152,24 @@ var _ = cmd(catMain, func() *cli.Command {
 		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
-			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, legacywarn)
-				return exit(Push(args))
-			}
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
 	}
 }())
 
-var _ = cmd(catMain, func() *cli.Command {
-	var args PPushArgs
-	return &cli.Command{
-		Name:  "ppush",
-		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
-			fmt.Fprint(os.Stderr, ppushwarn)
-			if args.ConcurMode == "legacy" {
-				return exit(Push(args))
-			}
-			return exit(PPush(args))
-		},
-		Flags: args.flags(),
-	}
-}())
+// var _ = cmd(catMain, func() *cli.Command {
+// 	var args PPushArgs
+// 	return &cli.Command{
+// 		Name:  "ppush",
+// 		Usage: "identify changes to be made, and perform them",
+// 		Action: func(ctx *cli.Context) error {
+// 			fmt.Fprint(os.Stderr, ppushwarn)
+// 			return exit(PPush(args))
+// 		},
+// 		Flags: args.flags(),
+// 	}
+// }())
 
 // PPushArgs contains all data/flags needed to run push, independently of CLI
 type PPushArgs struct {
@@ -468,7 +441,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, _ PPreviewArgs, zc *zoneCache) {
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
 		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
