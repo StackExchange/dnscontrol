@@ -253,13 +253,13 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
 			go func(zone *models.DomainConfig) {
 				defer wg.Done()
-				oneZonePopulate(zone, args, zcache)
+				oneZonePopulate(zone, zcache)
 			}(zone)
 		}
 		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
 		for _, zone := range zonesSerial {
 			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
-			oneZonePopulate(zone, args, zcache)
+			oneZonePopulate(zone, zcache)
 		}
 		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
 		wg.Wait()
@@ -441,7 +441,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, _ PPreviewArgs, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, zc *zoneCache) {
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
 		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
