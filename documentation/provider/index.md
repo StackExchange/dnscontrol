@@ -177,6 +177,7 @@ code to support this provider, we'd be glad to help in any way.
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
 * [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
+* [Vercel](https://github.com/StackExchange/dnscontrol/issues/3379) (#3379)
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
