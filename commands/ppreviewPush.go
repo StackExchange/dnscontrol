@@ -41,19 +41,6 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
-// var _ = cmd(catMain, func() *cli.Command {
-// 	var args PPreviewArgs
-// 	return &cli.Command{
-// 		Name:  "ppreview",
-// 		Usage: "Deprecated. Same as: preview --cmode=concurrent",
-// 		Action: func(ctx *cli.Context) error {
-// 			fmt.Fprint(os.Stderr, ppreviewwarn)
-// 			return exit(PPreview(args))
-// 		},
-// 		Flags: args.flags(),
-// 	}
-// }())
-
 // PPreviewArgs contains all data/flags needed to run preview, independently of CLI
 type PPreviewArgs struct {
 	GetDNSConfigArgs
@@ -158,19 +145,6 @@ var _ = cmd(catMain, func() *cli.Command {
 		Flags: args.flags(),
 	}
 }())
-
-// var _ = cmd(catMain, func() *cli.Command {
-// 	var args PPushArgs
-// 	return &cli.Command{
-// 		Name:  "ppush",
-// 		Usage: "identify changes to be made, and perform them",
-// 		Action: func(ctx *cli.Context) error {
-// 			fmt.Fprint(os.Stderr, ppushwarn)
-// 			return exit(PPush(args))
-// 		},
-// 		Flags: args.flags(),
-// 	}
-// }())
 
 // PPushArgs contains all data/flags needed to run push, independently of CLI
 type PPushArgs struct {
