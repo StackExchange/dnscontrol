@@ -115,7 +115,7 @@ The default value of `--cmode` will change over time:
 
 * v4.14: `--cmode legacy`
 * v4.15: `--cmode concurrent`
-* v4.16 or later (target 1-Jan-2025): The `--cmode legacy` option was removed, along with the old serial code.
+* v4.16: The `--cmode legacy` option was removed, along with the old serial code.
 
 ## ppreview/ppush
 
