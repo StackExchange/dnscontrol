@@ -63,7 +63,8 @@ changelog:
 archives:
   - format_overrides:
     - goos: windows
-      format: zip
+      formats:
+        - "zip"
 universal_binaries:
   -
     replace: true
