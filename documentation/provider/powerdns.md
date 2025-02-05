@@ -62,3 +62,14 @@ D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
 
 ## Activation
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
+
+## Caveats
+
+### SOA Records
+The SOA record is supported for use, but behavior is slightly different than expected.
+If the SOA record is used, [PowerDNS will not increase the serial](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-serial-updates) if the SOA record content changes.
+This itself comes with exceptions as well, if the `SOA-EDIT-API` is changed to a different value the logic will update the serial to a new value.
+See [this issue for detailed testing](https://github.com/StackExchange/dnscontrol/pull/3404#issuecomment-2628989200) of behavior.
+
+The recommended procedure when changing the SOA record contents is to update the SOA record alone.
+Updates to other records will be done if changes are present, but the serial **will not change**. The serial will update once a new push is done that does not include an SOA record change.

@@ -59,7 +59,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`OVH`](ovh.md) | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❌ | ✅ |
 | [`PACKETFRAME`](packetframe.md) | ❌ | ✅ | ❌ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`PORKBUN`](porkbun.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
-| [`POWERDNS`](powerdns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`POWERDNS`](powerdns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`REALTIMEREGISTER`](realtimeregister.md) | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ✅ | ❌ | ❌ | ❔ | ❔ | ❌ | ✅ | ✅ |
 | [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❔ | ✅ | ❌ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`RWTH`](rwth.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ✅ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
