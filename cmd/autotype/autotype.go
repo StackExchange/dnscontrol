@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"golang.org/x/tools/go/packages"
+	"gopkg.in/yaml.v3"
 )
 
 var packageHdr = `
@@ -80,11 +81,30 @@ func loadModule(name string) (*types.Package, error) {
 	return pkgs[0].Types, nil
 }
 
+// readTypesConfig takes a YAML filename which is in format map[string]map[string]string.
+// The first key is the type name, the second key is the field name and the value is the type.
+func readTypesConfig(filename string) map[string]map[string]string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("failed to read file: %v", err)
+	}
+
+	typeconfig := make(map[string]map[string]string)
+	err = yaml.Unmarshal(data, &typeconfig)
+	if err != nil {
+		log.Fatalf("failed to unmarshal YAML: %v", err)
+	}
+
+	return typeconfig
+}
+
 func main() {
 	// Import and type-check the package
 	pkg, err := loadModule("github.com/miekg/dns")
 	fatalIfErr(err)
 	scope := pkg.Scope()
+
+	typeconfig := readTypesConfig("typeconfig.yaml")
 
 	// Collect constants like TypeX
 	var numberedTypes []string
@@ -145,6 +165,11 @@ func main() {
 	// Generate len()
 	//fmt.Fprint(b, "// len() functions\n")
 	for _, name := range namedTypes {
+
+		if _, ok := typeconfig[name]; !ok {
+			continue
+		}
+
 		// if _, ok := skipLen[name]; ok {
 		// 	continue
 		// }
@@ -155,6 +180,8 @@ func main() {
 		}
 		// fmt.Fprintf(b, "func (rr *%s) len(off int, compression map[string]struct{}) int {\n", name)
 		// fmt.Fprintf(b, "l := rr.Hdr.len(off, compression)\n")
+		fmt.Fprintf(b, "\n")
+		fmt.Fprintf(b, "// %s is the fields needed to store a DNS record of type %s\n", name, name)
 		fmt.Fprintf(b, "type %s struct {\n", name)
 		for i := 1; i < st.NumFields(); i++ {
 			if _, ok := st.Field(i).Type().(*types.Slice); ok {
@@ -163,10 +190,19 @@ func main() {
 					st.Tag(i),
 				)
 			} else {
-				fmt.Fprintf(b, "     type=%s tag=%s\n",
-					st.Field(i).Type().String(),
-					st.Tag(i),
-				)
+				// fmt.Fprintf(b, "     fieldname=%s type=%s tag=%s\n",
+				// 	st.Field(i).Name(),
+				// 	st.Field(i).Type().String(),
+				// 	st.Tag(i),
+				// )
+				fieldname := st.Field(i).Name()
+				fieldtype := st.Field(i).Type().String()
+				if fieldtype == "net.IP" {
+					fieldtype = "fieldtypes.IPv4"
+				}
+				//fieldtags := st.Tag(i)
+				//fmt.Fprintf(b, "     //fieldname=%s type=%s tag=%s\n", fieldname, fieldtype, fieldtags)
+				fmt.Fprintf(b, "     %s %s\n", fieldname, fieldtype)
 			}
 
 			//fmt.Fprintf(b, "     field: name=%s  field=%s  tag=%s\n", name, st.Field(i).Name(), st.Tag(i))
