@@ -64,7 +64,7 @@ func Run(v string) int {
 			Usage:  "Obsolete flag. Will be removed in v5 or later",
 			Hidden: true,
 			Action: func(ctx *cli.Context, v bool) error {
-				obsoleteDiff2FlagUsed = true
+				pobsoleteDiff2FlagUsed = true
 				return nil
 			},
 		},
@@ -302,33 +302,6 @@ func (args *FilterArgs) flags() []cli.Flag {
 			Value:       "",
 		},
 	}
-}
-
-func (args *FilterArgs) shouldRunProvider(name string, dc *models.DomainConfig) bool {
-	if args.Providers == "all" {
-		return true
-	}
-	if args.Providers == "" {
-		for _, pri := range dc.DNSProviderInstances {
-			if pri.Name == name {
-				return pri.IsDefault
-			}
-		}
-		return true
-	}
-	for _, prov := range strings.Split(args.Providers, ",") {
-		if prov == name {
-			return true
-		}
-	}
-	return false
-}
-
-func (args *FilterArgs) shouldRunDomain(d string) bool {
-	if args.Domains == "" {
-		return true
-	}
-	return domainInList(d, strings.Split(args.Domains, ","))
 }
 
 func domainInList(domain string, list []string) bool {

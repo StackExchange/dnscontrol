@@ -1,7 +1,56 @@
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `AZURE_DNS`
-along with the API credentials.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AZURE_DNS`, along with the necessary credentials. The provider supports three authentication methods:
+
+1. **DefaultAzureCredential (Recommended)**: Simplifies authentication by leveraging Azure's credential chain (e.g., environment variables, managed identities, Azure CLI, etc.).
+2. **Client ID and Secret**: Provides backward compatibility for users who prefer this method.
+3. **OIDC (InteractiveBrowserCredential)**: Allows interactive login via the browser for specific scenarios.
+
+### Example Configurations
+
+#### **DefaultAzureCredential (Recommended)**
+
+This method does not require explicit credentials in `creds.json` and leverages Azure's default authentication chain:
+- Managed Identity (if running in Azure)
+- Environment variables
+- Azure CLI credentials
+
+No additional setup is required in `creds.json`:
+
+{% code title="creds.json" %}
+```json
+{
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "AZURE_RESOURCE_GROUP"
+  }
+}
+```
+{% endcode %}
+
+You can also use environment variables:
+
+```shell
+export AZURE_SUBSCRIPTION_ID=XXXXXXXXX
+export AZURE_RESOURCE_GROUP=YYYYYYYYY
+```
+
+{% code title="creds.json" %}
+```json
+{
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP"
+  }
+}
+```
+{% endcode %}
+
+#### **Client ID and Secret (Backward Compatibility)**
+
+To use the client ID and secret-based authentication:
 
 Example:
 
@@ -45,7 +94,46 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 ```
 {% endcode %}
 
-NOTE: The ResourceGroup is case sensitive.
+#### **OIDC (Interactive Browser Authentication)**
+
+To enable OIDC for interactive login:
+
+{% code title="creds.json" %}
+```json
+{
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "AZURE_RESOURCE_GROUP",
+    "TenantID": "AZURE_TENANT_ID",
+    "UseOIDC": "true"
+  }
+}
+```
+{% endcode %}
+
++You can also use environment variables:
+```shell
+export AZURE_SUBSCRIPTION_ID=XXXXXXXXX
+export AZURE_RESOURCE_GROUP=YYYYYYYYY
+export AZURE_TENANT_ID=ZZZZZZZZ
+export UseOIDC=true
+```
+
+{% code title="creds.json" %}
+```json
+{
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
+    "TenantID": "$AZURE_TENANT_ID",
+    "UseOIDC": "$UseOIDC"
+  }
+}
+```
+{% endcode %}
+
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Azure DNS.

@@ -274,28 +274,6 @@ func TestNSAtRoot(t *testing.T) {
 	}
 }
 
-func TestNS1URLFWDValid(t *testing.T) {
-	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
-	rec.SetLabel("test1", "foo.com")
-	rec.MustSetTarget("/ http://example.com 302 2 0")
-
-	errs := checkTargets(rec, "foo.com")
-	if len(errs) > 0 {
-		t.Error("Expect no error with valid NS1_URLFWD target")
-	}
-}
-
-func TestNS1URLFWDInvalid(t *testing.T) {
-	rec := &models.RecordConfig{Type: "NS1_URLFWD"}
-	rec.SetLabel("test2", "foo.com")
-	rec.MustSetTarget("/ http://example.com 302 2")
-
-	errs := checkTargets(rec, "foo.com")
-	if len(errs) == 0 {
-		t.Error("Expect error with invalid NS1_URLFWD target")
-	}
-}
-
 func TestTransforms(t *testing.T) {
 	tests := []struct {
 		givenIP         string

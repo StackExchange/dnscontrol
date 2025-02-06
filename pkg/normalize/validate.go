@@ -213,10 +213,6 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(errors.New("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
-	case "NS1_URLFWD":
-		if len(strings.Fields(target)) != 5 {
-			check(errors.New("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
-		}
 	case "PTR":
 		check(checkTarget(target))
 	case "SOA":
