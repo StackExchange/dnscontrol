@@ -59,6 +59,13 @@ func getTypeStruct(t types.Type, scope *types.Scope) (*types.Struct, bool) {
 	if st.NumFields() == 0 {
 		return nil, false
 	}
+	// fmt.Printf("DEBUG: st=%v\n", st)
+	// fmt.Printf("DEBUG: st.NumFields()=%v\n", st.NumFields())
+	// fmt.Printf("DEBUG: st.Field(0)=%v\n", st.Field(0))
+	// fmt.Printf("DEBUG: st.Field(0).Type()=%v\n", st.Field(0).Type())
+	if st.Field(0).Type().String() == "github.com/miekg/dns.RR_Header" {
+		return st, false
+	}
 	if st.Field(0).Type() == scope.Lookup("RR_Header").Type() {
 		return st, false
 	}
@@ -109,6 +116,7 @@ func ReadTypesFromModule(modName string, filter map[string]struct{}) (Catalog, e
 	//pkg, err := loadModule("github.com/miekg/dns")
 	fatalIfErr(err)
 	scope := pkg.Scope()
+	// fmt.Printf("DEBUG: scope = %+v\n", scope)
 
 	// // Collect constants like TypeX
 	// var numberedTypes []string
@@ -147,9 +155,9 @@ func ReadTypesFromModule(modName string, filter map[string]struct{}) (Catalog, e
 		}
 
 		// Check if corresponding TypeX exists
-		if scope.Lookup("Type"+o.Name()) == nil && o.Name() != "RFC3597" {
-			log.Fatalf("Constant Type%s does not exist.", o.Name())
-		}
+		// if scope.Lookup("Type"+o.Name()) == nil && o.Name() != "RFC3597" {
+		// 	log.Fatalf("Constant Type%s does not exist.", o.Name())
+		// }
 
 		namedTypes = append(namedTypes, o.Name())
 	}
@@ -282,16 +290,11 @@ func main() {
 
 	catalog := Catalog{}
 
-	// 		hints := ReadHints()
 	hints := GetHints()
 	fmt.Printf("DEBUG: hints = %+v\n", hints)
+	filter := hints.Keys()
 
-	// - Read miekg/dns and store data in the catalog.
-	// 		catalog = ReadCatalog()
-	// 		catalog.PopulateFromModule("github.com/miekg/dns")
-	// - Read cloudflareapi/customtypes and store in the catalog.
-	// 		catalog.PopulateFromModule("github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes")
-	fromDns, err := ReadTypesFromModule("github.com/miekg/dns", hints.Keys())
+	fromDns, err := ReadTypesFromModule("github.com/miekg/dns", filter)
 	if err != nil {
 		log.Fatalf("failed to merge MIEKG: %v", err)
 	}
@@ -302,6 +305,18 @@ func main() {
 		log.Fatalf("failed to merge MIEKG: %v", err)
 	}
 	fmt.Printf("DEBUG: cat + miekg = %+v\n", catalog)
+
+	fromCF, err := ReadTypesFromModule("github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes", filter)
+	if err != nil {
+		log.Fatalf("failed to merge CF: %v", err)
+	}
+	fmt.Printf("DEBUG: CF = %+v\n", fromCF)
+
+	err = catalog.MergeCat(fromCF)
+	if err != nil {
+		log.Fatalf("failed to merge CF: %v", err)
+	}
+	fmt.Printf("DEBUG: cat + miekg + CF = %+v\n", catalog)
 
 	// - Merge in the hints.
 	//      Reads the hints file.

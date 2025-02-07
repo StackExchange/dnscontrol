@@ -1,5 +1,7 @@
 package cloudflarecustomtypes
 
+import "github.com/miekg/dns"
+
 // DO NOT USE THESE STRUCTS!
 
 // Instead use: models.CFSINGLEREDIRECT
@@ -9,6 +11,8 @@ package cloudflarecustomtypes
 // from outside the models directory.
 
 type CFSINGLEREDIRECT struct {
+	Hdr dns.RR_Header
+
 	//
 	Code uint16 `json:"code,omitempty"` // 301 or 302
 	//
