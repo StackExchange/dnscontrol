@@ -96,10 +96,10 @@ func errorCheckFieldCount(rawfields []string, expected int) bool {
 
 //// A
 
-// // A is the fields needed to store a DNS record of type A
-// type A struct {
-// 	A fieldtypes.IPv4
-// }
+// A is the fields needed to store a DNS record of type A
+type A struct {
+	A fieldtypes.IPv4
+}
 
 func ParseA(rawfields []string, origin string) (A, error) {
 
@@ -153,11 +153,11 @@ func (rc *RecordConfig) GetFieldsAsStringsA() string {
 
 //// MX
 
-// // MX is the fields needed to store a DNS record of type MX
-// type MX struct {
-// 	Preference uint16
-// 	Mx         string
-// }
+// MX is the fields needed to store a DNS record of type MX
+type MX struct {
+	Preference uint16
+	Mx         string
+}
 
 func ParseMX(rawfields []string, origin string) (MX, error) {
 
@@ -216,13 +216,13 @@ func (rc *RecordConfig) GetFieldsAsStringsMX() [2]string {
 
 //// SRV
 
-// // SRV is the fields needed to store a DNS record of type SRV
-// type SRV struct {
-// 	Priority uint16 `json:"priority"`
-// 	Weight   uint16 `json:"weight"`
-// 	Port     uint16 `json:"port"`
-// 	Target   string `json:"target"`
-// }
+// SRV is the fields needed to store a DNS record of type SRV
+type SRV struct {
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
+	Target   string `json:"target"`
+}
 
 func ParseSRV(rawfields []string, origin string) (SRV, error) {
 

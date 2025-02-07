@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"go/types"
 	"log"
 	"os"
-	"strings"
 	"text/template"
 
 	"golang.org/x/tools/go/packages"
@@ -98,35 +96,41 @@ func readTypesConfig(filename string) map[string]map[string]string {
 	return typeconfig
 }
 
-func main() {
+func tagsToMap(_ string) map[string]struct{} {
+	return nil
+}
+
+func ReadTypesFromModule(modName string, filter map[string]struct{}) (Catalog, error) {
+
+	fmt.Printf("DEBUG: Reading module %s; filter=%v\n", modName, filter)
+
 	// Import and type-check the package
-	pkg, err := loadModule("github.com/miekg/dns")
+	pkg, err := loadModule(modName)
+	//pkg, err := loadModule("github.com/miekg/dns")
 	fatalIfErr(err)
 	scope := pkg.Scope()
 
-	typeconfig := readTypesConfig("typeconfig.yaml")
-
-	// Collect constants like TypeX
-	var numberedTypes []string
-	for _, name := range scope.Names() {
-		o := scope.Lookup(name)
-		if o == nil || !o.Exported() {
-			continue
-		}
-		b, ok := o.Type().(*types.Basic)
-		if !ok || b.Kind() != types.Uint16 {
-			continue
-		}
-		if !strings.HasPrefix(o.Name(), "Type") {
-			continue
-		}
-		name := strings.TrimPrefix(o.Name(), "Type")
-		if name == "PrivateRR" {
-			continue
-		}
-		numberedTypes = append(numberedTypes, name)
-	}
-	_ = numberedTypes
+	// // Collect constants like TypeX
+	// var numberedTypes []string
+	// for _, name := range scope.Names() {
+	// 	o := scope.Lookup(name)
+	// 	if o == nil || !o.Exported() {
+	// 		continue
+	// 	}
+	// 	b, ok := o.Type().(*types.Basic)
+	// 	if !ok || b.Kind() != types.Uint16 {
+	// 		continue
+	// 	}
+	// 	if !strings.HasPrefix(o.Name(), "Type") {
+	// 		continue
+	// 	}
+	// 	name := strings.TrimPrefix(o.Name(), "Type")
+	// 	if name == "PrivateRR" {
+	// 		continue
+	// 	}
+	// 	numberedTypes = append(numberedTypes, name)
+	// }
+	// _ = numberedTypes
 
 	// Collect actual types (*X)
 	var namedTypes []string
@@ -150,7 +154,9 @@ func main() {
 		namedTypes = append(namedTypes, o.Name())
 	}
 
-	b := &bytes.Buffer{}
+	cat := Catalog{}
+
+	//b := &bytes.Buffer{}
 	// b.WriteString(packageHdr)
 
 	// // Generate TypeToRR
@@ -164,31 +170,48 @@ func main() {
 
 	// Generate len()
 	//fmt.Fprint(b, "// len() functions\n")
-	for _, name := range namedTypes {
+	for _, typeName := range namedTypes {
 
-		if _, ok := typeconfig[name]; !ok {
-			continue
+		if len(filter) != 0 {
+			if _, ok := filter[typeName]; !ok {
+				//fmt.Printf("DEBUG: Skipping %s\n", typeName)
+				continue
+			}
 		}
+		fmt.Printf("DEBUG: DOING %s\n", typeName)
 
 		// if _, ok := skipLen[name]; ok {
 		// 	continue
 		// }
-		o := scope.Lookup(name)
+		o := scope.Lookup(typeName)
 		st, isEmbedded := getTypeStruct(o.Type(), scope)
 		if isEmbedded {
 			continue
 		}
 		// fmt.Fprintf(b, "func (rr *%s) len(off int, compression map[string]struct{}) int {\n", name)
 		// fmt.Fprintf(b, "l := rr.Hdr.len(off, compression)\n")
-		fmt.Fprintf(b, "\n")
-		fmt.Fprintf(b, "// %s is the fields needed to store a DNS record of type %s\n", name, name)
-		fmt.Fprintf(b, "type %s struct {\n", name)
+		// fmt.Fprintf(b, "\n")
+		// fmt.Fprintf(b, "// %s is the fields needed to store a DNS record of type %s\n", name, name)
+		// fmt.Fprintf(b, "type %s struct {\n", name)
+
+		var fields []Field
+
 		for i := 1; i < st.NumFields(); i++ {
 			if _, ok := st.Field(i).Type().(*types.Slice); ok {
-				fmt.Fprintf(b, "     slicetype=%s tag=%s\n",
-					st.Field(i).Type().String(),
-					st.Tag(i),
-				)
+				// fmt.Fprintf(b, "     slicetype=%s tag=%s\n",
+				// 	st.Field(i).Type().String(),
+				// 	st.Tag(i),
+				// )
+				fieldname := st.Field(i).Name()
+				slicetype := st.Field(i).Type().String()
+				fieldtags := tagsToMap(st.Tag(i))
+
+				fields = append(fields, Field{
+					Name: fieldname,
+					Type: slicetype,
+					Tags: fieldtags,
+				})
+
 			} else {
 				// fmt.Fprintf(b, "     fieldname=%s type=%s tag=%s\n",
 				// 	st.Field(i).Name(),
@@ -200,14 +223,29 @@ func main() {
 				if fieldtype == "net.IP" {
 					fieldtype = "fieldtypes.IPv4"
 				}
-				//fieldtags := st.Tag(i)
-				//fmt.Fprintf(b, "     //fieldname=%s type=%s tag=%s\n", fieldname, fieldtype, fieldtags)
-				fmt.Fprintf(b, "     %s %s\n", fieldname, fieldtype)
+				fieldtags := tagsToMap(st.Tag(i))
+
+				fields = append(fields, Field{
+					Name: fieldname,
+					Type: fieldtype,
+					Tags: fieldtags,
+				})
+
 			}
+
+			cat[typeName] = RTypeConfig{
+				Fields: fields,
+			}
+
+			//rtypeConfig.Fieldtypes[fieldname] = fieldtype
+
+			//fieldtags := st.Tag(i)
+			//fmt.Fprintf(b, "     //fieldname=%s type=%s tag=%s\n", fieldname, fieldtype, fieldtags)
+			// fmt.Fprintf(b, "     %s %s\n", fieldname, fieldtype)
 
 			//fmt.Fprintf(b, "     field: name=%s  field=%s  tag=%s\n", name, st.Field(i).Name(), st.Tag(i))
 		}
-		fmt.Fprint(b, "}\n")
+		// fmt.Fprint(b, "}\n")
 
 	}
 
@@ -217,13 +255,14 @@ func main() {
 	// 	b.WriteTo(os.Stderr)
 	// 	log.Fatal(err)
 	// }
-	res := b.Bytes()
+	//	res := b.Bytes()
 
 	// write result
-	f, err := os.Create("output.txt")
-	fatalIfErr(err)
-	defer f.Close()
-	fatalIfErr2(f.Write(res))
+	//f, err := os.Create("types.go")
+	//fatalIfErr(err)
+	//defer f.Close()
+	//fatalIfErr2(f.Write(res))
+	return cat, nil
 }
 
 func fatalIfErr(err error) {
@@ -236,4 +275,48 @@ func fatalIfErr2(_ any, err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func main() {
+	var err error
+
+	catalog := Catalog{}
+
+	// 		hints := ReadHints()
+	hints := GetHints()
+	fmt.Printf("DEBUG: hints = %+v\n", hints)
+
+	// - Read miekg/dns and store data in the catalog.
+	// 		catalog = ReadCatalog()
+	// 		catalog.PopulateFromModule("github.com/miekg/dns")
+	// - Read cloudflareapi/customtypes and store in the catalog.
+	// 		catalog.PopulateFromModule("github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes")
+	fromDns, err := ReadTypesFromModule("github.com/miekg/dns", hints.Keys())
+	if err != nil {
+		log.Fatalf("failed to merge MIEKG: %v", err)
+	}
+	fmt.Printf("DEBUG: miekg = %+v\n", fromDns)
+
+	err = catalog.MergeCat(fromDns)
+	if err != nil {
+		log.Fatalf("failed to merge MIEKG: %v", err)
+	}
+	fmt.Printf("DEBUG: cat + miekg = %+v\n", catalog)
+
+	// - Merge in the hints.
+	//      Reads the hints file.
+	// 		catalog.OverlayHints(hints)
+
+	catalog.MergeHints(hints)
+	fmt.Printf("DEBUG: cat+hints = %+v\n", catalog)
+
+	// - Generate RecordType interface.
+	// - Generate   MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
+	// - Generate "type A"
+	// - Generate ParseA
+	// - Generate PopulateFromRawA
+	// - Generate AsA
+	// - Generate GetFields()
+	// - Generate GetFieldsAsStringsA()
+
 }
