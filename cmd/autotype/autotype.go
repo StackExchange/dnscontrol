@@ -107,7 +107,7 @@ func tagsToMap(_ string) map[string]struct{} {
 	return nil
 }
 
-func ReadTypesFromModule(modName string, filter map[string]struct{}) (Catalog, error) {
+func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Catalog, error) {
 
 	fmt.Printf("DEBUG: Reading module %s; filter=%v\n", modName, filter)
 
@@ -279,9 +279,9 @@ func fatalIfErr(err error) {
 	}
 }
 
-func fatalIfErr2(_ any, err error) {
+func fatalIfErr2(err error, msg string) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%s: %s", msg, err)
 	}
 }
 
@@ -291,38 +291,22 @@ func main() {
 	catalog := Catalog{}
 
 	hints := GetHints()
-	fmt.Printf("DEBUG: hints = %+v\n", hints)
+	fatalIfErr2(err, "failed to get hints")
 	filter := hints.Keys()
 
-	fromDns, err := ReadTypesFromModule("github.com/miekg/dns", filter)
-	if err != nil {
-		log.Fatalf("failed to merge MIEKG: %v", err)
-	}
-	fmt.Printf("DEBUG: miekg = %+v\n", fromDns)
+	fromDns, err := ExtractTypeDataFromModule("github.com/miekg/dns", filter)
+	fatalIfErr2(err, "failed to get MIEKG")
 
 	err = catalog.MergeCat(fromDns)
-	if err != nil {
-		log.Fatalf("failed to merge MIEKG: %v", err)
-	}
-	fmt.Printf("DEBUG: cat + miekg = %+v\n", catalog)
+	fatalIfErr2(err, "failed to merge MIEKG")
 
-	fromCF, err := ReadTypesFromModule("github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes", filter)
-	if err != nil {
-		log.Fatalf("failed to merge CF: %v", err)
-	}
-	fmt.Printf("DEBUG: CF = %+v\n", fromCF)
+	fromCF, err := ExtractTypeDataFromModule("github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes", filter)
+	fatalIfErr2(err, "failed to merge CF")
 
 	err = catalog.MergeCat(fromCF)
-	if err != nil {
-		log.Fatalf("failed to merge CF: %v", err)
-	}
-	fmt.Printf("DEBUG: cat + miekg + CF = %+v\n", catalog)
+	fatalIfErr2(err, "failed to merge CF")
 
-	// - Merge in the hints.
-	//      Reads the hints file.
-	// 		catalog.OverlayHints(hints)
-
-	catalog.MergeHints(hints)
+	catalog.MergeHints(hints) // Overwrite catalog items with data from hints.
 	fmt.Printf("DEBUG: cat+hints = %+v\n", catalog)
 
 	// - Generate RecordType interface.
