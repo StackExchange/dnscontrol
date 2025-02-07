@@ -3,22 +3,16 @@ package models
 import "github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 
 func init() {
-	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("CFSINGLEREDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
 
 }
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	SRV | A | MX | CFSINGLEREDIRECT
-}
-
-// MX is the fields needed to store a DNS record of type MX.
-type MX struct {
-	Preference uint16
-	Mx         string `dns:"cdomain-name"`
+	A | MX | CFSINGLEREDIRECT | SRV
 }
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
@@ -47,4 +41,10 @@ type SRV struct {
 // A is the fields needed to store a DNS record of type A.
 type A struct {
 	A fieldtypes.IPv4 `dns:"a"`
+}
+
+// MX is the fields needed to store a DNS record of type MX.
+type MX struct {
+	Preference uint16
+	Mx         string `dns:"cdomain-name"`
 }

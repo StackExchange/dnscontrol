@@ -48,7 +48,8 @@ func (cat *TypeCatalog) TypeNamesAndFields() []struct {
 		Fields []Field
 		Tags   string
 	}
-	for k, v := range *cat {
+	for _, k := range (*cat).TypeNamesAsSlice() {
+		v := (*cat)[k]
 		keys = append(keys, struct {
 			Name   string
 			Fields []Field

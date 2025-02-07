@@ -53,16 +53,14 @@ func makeRegisterType(vals Values) []byte {
 // TypeTYPE
 
 var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Funcs(funcs).Parse(`
-{{ range .TypeNamesAndFields -}}
+{{ range .TypeNamesAndFields }}
 // {{ .Name }} is the fields needed to store a DNS record of type {{ .Name }}.
 type {{ .Name }} struct {
 {{- range .Fields }}
     {{ .Name }} {{ .Type }} {{ if .Tags }} ` + "`{{ .Tags }}`" + ` {{- end }}
 {{- end }}
 }
-
 {{ end }}
-
 `))
 
 func makeTypeTYPE(vals Values) []byte {

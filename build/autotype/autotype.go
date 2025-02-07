@@ -167,11 +167,11 @@ func main() {
 		"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/customtypes",
 	} {
 
-		fromDns, err := ExtractTypeDataFromModule(moduleName, filter)
+		td, err := ExtractTypeDataFromModule(moduleName, filter)
 		if err != nil {
 			log.Fatalf("failed to extract from %s: %s", moduleName, err)
 		}
-		err = catalog.MergeCat(fromDns)
+		err = catalog.MergeCat(td)
 		if err != nil {
 			log.Fatalf("failed to merge from %s: %s", moduleName, err)
 		}
@@ -190,17 +190,17 @@ func main() {
 
 	// Generate init() and MustRegisterTypes() statements.
 	txtRegisterType := makeRegisterType(values)
-	fmt.Printf("DEBUG: mrt = \n%s\n", txtRegisterType)
+	//fmt.Printf("DEBUG: mrt = \n%s\n", txtRegisterType)
 	unformatted = append(unformatted, txtRegisterType...)
 
 	// Generate RecordType interface.
 	txtRecordType := makeRecordType(values)
-	fmt.Printf("DEBUG: mtr = \n%s\n", txtRecordType)
+	//fmt.Printf("DEBUG: mtr = \n%s\n", txtRecordType)
 	unformatted = append(unformatted, txtRecordType...)
 
 	// Generate "typeTYPE" types.
 	txtTypeTYPE := makeTypeTYPE(values)
-	fmt.Printf("DEBUG: mtt = \n%s\n", txtTypeTYPE)
+	//fmt.Printf("DEBUG: mtt = \n%s\n", txtTypeTYPE)
 	unformatted = append(unformatted, txtTypeTYPE...)
 
 	// - Generate ParseA
@@ -216,7 +216,7 @@ func main() {
 	}
 
 	// Write to file
-	f, err := os.Create("../../models/generated_types.go")
+	f, err := os.Create("generated_types.go")
 	fatalIfErr(err)
 	defer f.Close()
 	_, err = f.Write(formatted)
