@@ -103,7 +103,6 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 		}
 
 		var fields []Field
-
 		for i := 1; i < st.NumFields(); i++ {
 			if _, ok := st.Field(i).Type().(*types.Slice); ok {
 				fieldname := st.Field(i).Name()
@@ -131,11 +130,14 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				})
 
 			}
+		}
+		if len(fields) != st.NumFields()-1 {
+			fmt.Printf("WARNING: field count mismatch len(fields)=%d st.NumFields()=%d\n", len(fields), st.NumFields())
+		}
 
-			cat[typeName] = RTypeConfig{
-				Name:   typeName,
-				Fields: fields,
-			}
+		cat[typeName] = RTypeConfig{
+			Name:   typeName,
+			Fields: fields,
 		}
 	}
 
@@ -156,7 +158,10 @@ func fatalIfErr2(err error, msg string) {
 
 func writeTo(filename string, contents []byte) {
 	formatted, err := format.Source(contents)
-	fatalIfErr(err)
+	if err != nil {
+		log.Printf("failed to format: %s", err)
+		formatted = contents
+	}
 	f, err := os.Create(filename)
 	fatalIfErr(err)
 	defer f.Close()
@@ -169,7 +174,7 @@ func main() {
 
 	catalog := TypeCatalog{}
 
-	hints := GetHints()
+	typeNames, hints := GetHints()
 	fatalIfErr2(err, "failed to get hints")
 	filter := hints.TypeNamesAsSet()
 
@@ -189,41 +194,40 @@ func main() {
 	}
 
 	catalog.MergeHints(hints) // Overwrite catalog items with data from hints.
-	fmt.Printf("DEBUG: cat+hints = %+v\n", catalog)
+	//fmt.Printf("DEBUG: cat+hints = %+v\n", catalog)
 
+	catalog.FixFields() // must be called before FixTypes
+	catalog.FixTypes()
 	values := Values{
 		Types:              catalog,
-		TypeNames:          catalog.TypeNamesAsSlice(),
+		TypeNames:          typeNames,
 		TypeNamesAndFields: catalog.TypeNamesAndFields(),
 	}
 
-	var modelsContents []byte
+	var m []byte
 
-	/*
+	// Generate init() with the MustRegisterTypes() statements.
+	m = append(m, makeInit(values)...)
 
-		Register
-		RegType
-		for x in type:
-		   TypeTYPE
-		   ParseTYPE
-	*/
+	// Generate the RecordType interface constraint.
+	m = append(m, makeInterfaceConstraint(values)...)
 
-	// Generate init() and MustRegisterTypes() statements.
-	modelsContents = append(modelsContents, makeInit(values)...)
-	// Generate RecordType interface constraint.
-	modelsContents = append(modelsContents, makeInterfaceConstraint(values)...)
-
-	fmt.Printf("DEBUG: TypeNames = %v\n", values.TypeNames)
+	//fmt.Printf("DEBUG: Types: %s\n", values.TypeNames)
 	for _, typeName := range values.TypeNames {
-		// Generate TypeTYPE type.
-		modelsContents = append(modelsContents, makeTypeTYPE(values.Types[typeName])...)
-		// Generate ParseA
-		//modelsContents = append(modelsContents, makeParseTYPE(values.Types[typeName])...)
+		fmt.Printf("DEBUG: Generating for %s\n", typeName)
+		// Generate Type$TYPE type.
+		m = append(m, makeTypeTYPE(values.Types[typeName])...)
+		// Generate Parse$TYPE
+		m = append(m, makeParseTYPE(values.Types[typeName])...)
 		// Generate PopulateFromRawA
+		m = append(m, makePopulateFromRawTYPE(values.Types[typeName])...)
 		// Generate AsA
+		m = append(m, makeAsTYPE(values.Types[typeName])...)
 		// Generate GetFields()
+		m = append(m, makeGetFieldsTYPE(values.Types[typeName])...)
 		// Generate GetFieldsAsStringsA()
+		m = append(m, makeGetFieldsAsStringsTYPE(values.Types[typeName])...)
 	}
 
-	writeTo("generated_types.go", modelsContents)
+	writeTo("generated_types.go", m)
 }

@@ -7,7 +7,8 @@ import (
 )
 
 var funcs = template.FuncMap{
-	"join": strings.Join,
+	"join":     strings.Join,
+	"parsefor": parserFor,
 }
 
 func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
@@ -33,7 +34,7 @@ func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 var RecordTypeTmpl = template.Must(template.New("RecordType").Funcs(funcs).Parse(`
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-   {{ join .TypeNames " | " }}
+   {{ join .TypeNames " | " }} | CFSINGLEREDIRECT
 }
 `))
 
@@ -46,12 +47,17 @@ func makeInterfaceConstraint(vals Values) []byte {
 var RegisterTypeTmpl = template.Must(template.New("RegisterType").Parse(`
 package models
 
-import "github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+)
 
 func init() {
   {{ range .TypeNames -}}
   MustRegisterType("{{ . }}", RegisterOpts{PopulateFromRaw: PopulateFromRaw{{ . }} })
-  {{ end }}
+  {{ end -}}
 }
 `))
 
@@ -62,6 +68,8 @@ func makeInit(vals Values) []byte {
 // TypeTYPE
 
 var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Parse(`
+//// {{ .Name }}
+
 // {{ .Name }} is the fields needed to store a DNS record of type {{ .Name }}.
 type {{ .Name }} struct {
 {{- range .Fields }}
@@ -73,4 +81,105 @@ type {{ .Name }} struct {
 
 func makeTypeTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(TypeTYPETmpl, rtconfig)
+}
+
+// ParseTYPE
+
+var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
+func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
+
+        // Error checking
+        if errorCheckFieldCount(rawfields, {{ .NumFields }}) {
+                return {{ .Name }}{}, fmt.Errorf("rtype {{ .Name }} wants %d field(s), found %d: %+v", {{ .NumFields }}, len(rawfields)-1, rawfields[1:])
+        }
+
+{{- range .Fields }}
+    var {{ .NameLower }} {{ .Type }}
+{{- end }}
+        var err error
+{{- range .Fields }}
+        if {{ .NameLower }}, err = {{ .Parser }}; err != nil {
+                return {{ $.Name }}{}, err
+        }
+{{- end }}
+
+    return {{ .Name }}{ {{- .ConstructAll -}} }, nil
+}
+
+`))
+
+func makeParseTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(ParseTYPETmpl, rtconfig)
+}
+
+// PopulateFromRawTYPE
+
+var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
+// PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
+func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+  rc.Type = "{{ .Name }}"
+  var err error
+
+  // First rawfield is the label.
+  if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+    return err
+  }
+
+  // Parse the remaining fields.
+  rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
+  if err != nil {
+    return err
+  }
+
+  return RecordUpdateFields(rc, rdata, meta)
+}
+
+`))
+
+func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(PopulateFromRawTYPETmpl, rtconfig)
+}
+
+// AsTYPE
+
+var AsTYPETmpl = template.Must(template.New("AsTYPE").Parse(`
+// As{{ .Name }} returns rc.Fields as an {{ .Name }} struct.
+func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
+  return rc.Fields.(*{{ .Name }})
+}
+
+`))
+
+func makeAsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(AsTYPETmpl, rtconfig)
+}
+
+// GetFieldsTYPE
+
+var GetFieldsTYPETmpl = template.Must(template.New("GetFieldsTYPE").Parse(`
+// GetFields{{ .Name }} returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFields{{ .Name }}() ({{ .FieldTypesCommaSep }}) {
+  n := rc.As{{ .Name }}()
+  return {{ .ReturnIndividualFieldsList }}
+}
+
+`))
+
+func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(GetFieldsTYPETmpl, rtconfig)
+}
+
+// GetFieldsAsStringsTYPE
+
+var GetFieldsAsStringsTYPETmpl = template.Must(template.New("GetFieldsAsStringsTYPE").Parse(`
+// GetFieldsAsStrings{{ .Name }} returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumFields }}]string {
+  n := rc.As{{ .Name }}()
+  return {{ .ReturnAsStringsList }}
+}
+
+`))
+
+func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(GetFieldsAsStringsTYPETmpl, rtconfig)
 }

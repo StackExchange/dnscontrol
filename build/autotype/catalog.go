@@ -2,21 +2,43 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type TypeCatalog map[string]RTypeConfig
 
 type RTypeConfig struct {
-	Name   string
-	Token  string
-	Fields []Field
-	Tags   string
+	Name   string  // Name of the type ("A, "MX", etc)
+	Token  string  // String to use in type RecordConfig.Type
+	Tags   string  // Tags for the struct.
+	Fields []Field // A description of each field.
+
+	// Generated fields:
+
+	// Number of fields in the struct.
+	NumFields int
+
+	// A string of the form "field1: type1, field2: type2, etc"
+	ConstructAll string
+
+	// A comma-separated list of the field types.
+	FieldTypesCommaSep string
+
+	// A comma-separated list of the field names, accessed as n.Field.
+	ReturnIndividualFieldsList string
+
+	// used to return the fields, each converted to a string.
+	ReturnAsStringsList string
 }
 
 type Field struct {
-	Name string
-	Type string
-	Tags string
+	Name string // Name of the field ("Port", "Target", etc)
+	Type string // Go type of the field ("uint16", "string", etc)
+	Tags string // Go "tags" for the field.
+
+	// Generated fields:
+	NameLower string // name of the field in lowercase
+	Parser    string // Go code to parse the field.
 }
 
 func (cat *TypeCatalog) TypeNamesAsSet() map[string]struct{} {
@@ -62,6 +84,98 @@ func (cat *TypeCatalog) TypeNamesAndFields() []struct {
 		})
 	}
 	return keys
+}
+
+// Fix Types:
+
+func mkConstructAll(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		ac = append(ac, fmt.Sprintf("%s: %s", field.Name, field.NameLower))
+	}
+	return strings.Join(ac, ", ")
+}
+
+func mkFieldTypesCommaSep(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		ac = append(ac, field.Type)
+	}
+	return strings.Join(ac, ", ")
+}
+
+func mkReturnIndividualFieldsList(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if strings.Contains(field.Tags, `dns:"a"`) {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		} else if field.Type == "fieldtypes.IPv4" {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
+func mkReturnAsStringsList(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if strings.Contains(field.Tags, `dns:"a"`) {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else if field.Type == "fieldtypes.IPv4" {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else if field.Type == "uint16" {
+			ac = append(ac, fmt.Sprintf("strconv.Itoa(int(n.%s))", field.Name))
+		} else {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		}
+	}
+	return fmt.Sprintf("[%d]string{", len(fields)) + strings.Join(ac, ", ") + "}"
+}
+
+// FixTypes generates the NumFields and FieldsAndTypes fields of each RTypeConfig.
+func (cat *TypeCatalog) FixTypes() {
+	for catName, rtype := range *cat {
+		t := (*cat)[catName]
+		t.NumFields = len(rtype.Fields)
+		t.ConstructAll = mkConstructAll(rtype.Fields)
+		t.FieldTypesCommaSep = mkFieldTypesCommaSep(rtype.Fields)
+		t.ReturnIndividualFieldsList = mkReturnIndividualFieldsList(rtype.Fields)
+		t.ReturnAsStringsList = mkReturnAsStringsList(rtype.Fields)
+		(*cat)[catName] = t
+	}
+}
+
+// Fix Fields:
+
+func capFirst(s string) string {
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+func parserFor(i int, f Field) string {
+	switch ty := f.Type; ty {
+	case "string":
+		if strings.Contains(f.Tags, `dns:"cdomain-name"`) || strings.Contains(f.Tags, `dns:"domain-name"`) {
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+		}
+		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "fieldtypes.IPv4":
+		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
+	}
+
+	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
+}
+
+// FixFields generates the NameLower and Parser fields of each Field.
+func (cat *TypeCatalog) FixFields() {
+	// Generate per-field data
+	for _, rtype := range *cat {
+		for i, field := range rtype.Fields {
+			(*cat)[rtype.Name].Fields[i].NameLower = strings.ToLower(field.Name)
+			(*cat)[rtype.Name].Fields[i].Parser = parserFor(i, field)
+		}
+	}
 }
 
 // MergeHints applies hints to the catalog.

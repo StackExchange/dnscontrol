@@ -11,28 +11,28 @@ func init() {
 	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
-//// CFSINGLEREDIRECT
+// CFSINGLEREDIRECT
 
-// // CFSINGLEREDIRECT contains info about a Cloudflare Single Redirect.
-// //
-// //	When these are used, .target is set to a human-readable version (only to be used for display purposes).
-// type CFSINGLEREDIRECT struct {
-// 	//
-// 	// PR == PageRule
-// 	PRWhen     string `dns:"skip" json:"pr_when,omitempty"`
-// 	PRThen     string `dns:"skip" json:"pr_then,omitempty"`
-// 	PRPriority int    `dns:"skip" json:"pr_priority,omitempty"` // Really an identifier for the rule.
-// 	PRDisplay  string `dns:"skip" json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
-// 	//
-// 	// SR == SingleRedirect
-// 	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-// 	Code             uint16 `json:"code,omitempty"`    // 301 or 302
-// 	SRWhen           string `json:"sr_when,omitempty"`
-// 	SRThen           string `json:"sr_then,omitempty"`
-// 	SRRRulesetID     string `dns:"skip" json:"sr_rulesetid,omitempty"`
-// 	SRRRulesetRuleID string `dns:"skip" json:"sr_rulesetruleid,omitempty"`
-// 	SRDisplay        string `dns:"skip" json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
-// }
+// CFSINGLEREDIRECT contains info about a Cloudflare Single Redirect.
+//
+//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
+type CFSINGLEREDIRECT struct {
+	//
+	// PR == PageRule
+	PRWhen     string `dns:"skip" json:"pr_when,omitempty"`
+	PRThen     string `dns:"skip" json:"pr_then,omitempty"`
+	PRPriority int    `dns:"skip" json:"pr_priority,omitempty"` // Really an identifier for the rule.
+	PRDisplay  string `dns:"skip" json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
+	//
+	// SR == SingleRedirect
+	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
+	Code             uint16 `json:"code,omitempty"`    // 301 or 302
+	SRWhen           string `json:"sr_when,omitempty"`
+	SRThen           string `json:"sr_then,omitempty"`
+	SRRRulesetID     string `dns:"skip" json:"sr_rulesetid,omitempty"`
+	SRRRulesetRuleID string `dns:"skip" json:"sr_rulesetruleid,omitempty"`
+	SRDisplay        string `dns:"skip" json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
+}
 
 func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {
 	var srname, srwhen, srthen string
