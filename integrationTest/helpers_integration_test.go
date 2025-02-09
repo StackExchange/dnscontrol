@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,7 +16,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -189,7 +189,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Fatal(err)
 		}
 		if actualChangeCount != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", actualChangeCount)
+			t.Logf("Expected 0 corrections on SECOND run, but found %d.", actualChangeCount)
 			for i, c := range corrections {
 				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
@@ -293,8 +293,41 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func a(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "A")
+func a(name string, a string) *models.RecordConfig {
+	rdata, err := models.ParseA([]string{a}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+func mx(name string, preference uint16, mx string) *models.RecordConfig {
+	spreference := strconv.Itoa(int(preference))
+	rdata, err := models.ParseMX([]string{spreference, mx}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
+	spriority := strconv.Itoa(int(priority))
+	sweight := strconv.Itoa(int(weight))
+	sport := strconv.Itoa(int(port))
+	rdata, err := models.ParseSRV([]string{spriority, sweight, sport, target}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
+	scode := strconv.Itoa(int(code))
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func aaaa(name, target string) *models.RecordConfig {
@@ -335,12 +368,6 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 
 func cfSingleRedirectEnabled() bool {
 	return ((*enableCFRedirectMode) != "")
-}
-
-func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	panicOnErr(cfsingleredirect.FromRaw(r, []any{name, code, when, then})) // Should not happen
-	return r
 }
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
@@ -433,15 +460,9 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	recs := []*models.RecordConfig{}
 	for i := range n {
-		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+		recs = append(recs, a(fmt.Sprintf(namePattern, i), target))
 	}
 	return recs
-}
-
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
-	return r
 }
 
 func ns(name, target string) *models.RecordConfig {
@@ -470,12 +491,6 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
 	r := makeRec(name, "", "SOA")
 	panicOnErr(r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl))
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SRV")
-	panicOnErr(r.SetTargetSRV(priority, weight, port, target))
 	return r
 }
 
