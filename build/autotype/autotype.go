@@ -133,6 +133,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 			}
 
 			cat[typeName] = RTypeConfig{
+				Name:   typeName,
 				Fields: fields,
 			}
 		}
@@ -151,6 +152,16 @@ func fatalIfErr2(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
+}
+
+func writeTo(filename string, contents []byte) {
+	formatted, err := format.Source(contents)
+	fatalIfErr(err)
+	f, err := os.Create(filename)
+	fatalIfErr(err)
+	defer f.Close()
+	_, err = f.Write(formatted)
+	fatalIfErr(err)
 }
 
 func main() {
@@ -186,40 +197,33 @@ func main() {
 		TypeNamesAndFields: catalog.TypeNamesAndFields(),
 	}
 
-	var unformatted []byte
+	var modelsContents []byte
+
+	/*
+
+		Register
+		RegType
+		for x in type:
+		   TypeTYPE
+		   ParseTYPE
+	*/
 
 	// Generate init() and MustRegisterTypes() statements.
-	txtRegisterType := makeRegisterType(values)
-	//fmt.Printf("DEBUG: mrt = \n%s\n", txtRegisterType)
-	unformatted = append(unformatted, txtRegisterType...)
+	modelsContents = append(modelsContents, makeInit(values)...)
+	// Generate RecordType interface constraint.
+	modelsContents = append(modelsContents, makeInterfaceConstraint(values)...)
 
-	// Generate RecordType interface.
-	txtRecordType := makeRecordType(values)
-	//fmt.Printf("DEBUG: mtr = \n%s\n", txtRecordType)
-	unformatted = append(unformatted, txtRecordType...)
-
-	// Generate "typeTYPE" types.
-	txtTypeTYPE := makeTypeTYPE(values)
-	//fmt.Printf("DEBUG: mtt = \n%s\n", txtTypeTYPE)
-	unformatted = append(unformatted, txtTypeTYPE...)
-
-	// - Generate ParseA
-	// - Generate PopulateFromRawA
-	// - Generate AsA
-	// - Generate GetFields()
-	// - Generate GetFieldsAsStringsA()
-
-	// Run gofmt
-	formatted, err := format.Source(unformatted)
-	if err != nil {
-		log.Fatal(err)
+	fmt.Printf("DEBUG: TypeNames = %v\n", values.TypeNames)
+	for _, typeName := range values.TypeNames {
+		// Generate TypeTYPE type.
+		modelsContents = append(modelsContents, makeTypeTYPE(values.Types[typeName])...)
+		// Generate ParseA
+		//modelsContents = append(modelsContents, makeParseTYPE(values.Types[typeName])...)
+		// Generate PopulateFromRawA
+		// Generate AsA
+		// Generate GetFields()
+		// Generate GetFieldsAsStringsA()
 	}
 
-	// Write to file
-	f, err := os.Create("generated_types.go")
-	fatalIfErr(err)
-	defer f.Close()
-	_, err = f.Write(formatted)
-	fatalIfErr(err)
-
+	writeTo("generated_types.go", modelsContents)
 }

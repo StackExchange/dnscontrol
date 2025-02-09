@@ -5,14 +5,33 @@ import "github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
 func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
-	MustRegisterType("CFSINGLEREDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
+	MustRegisterType("CFSINGLEREDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 
 }
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | MX | CFSINGLEREDIRECT | SRV
+	A | MX | SRV | CFSINGLEREDIRECT
+}
+
+// A is the fields needed to store a DNS record of type A.
+type A struct {
+	A fieldtypes.IPv4 `dns:"a"`
+}
+
+// MX is the fields needed to store a DNS record of type MX.
+type MX struct {
+	Preference uint16
+	Mx         string `dns:"cdomain-name"`
+}
+
+// SRV is the fields needed to store a DNS record of type SRV.
+type SRV struct {
+	Priority uint16
+	Weight   uint16
+	Port     uint16
+	Target   string `dns:"domain-name"`
 }
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
@@ -28,23 +47,4 @@ type CFSINGLEREDIRECT struct {
 	PRThen           string `dns:"skip" json:"pr_then,omitempty"`
 	PRPriority       int    `dns:"skip" json:"pr_priority,omitempty"`
 	PRDisplay        string `dns:"skip" json:"pr_display,omitempty"`
-}
-
-// SRV is the fields needed to store a DNS record of type SRV.
-type SRV struct {
-	Priority uint16
-	Weight   uint16
-	Port     uint16
-	Target   string `dns:"domain-name"`
-}
-
-// A is the fields needed to store a DNS record of type A.
-type A struct {
-	A fieldtypes.IPv4 `dns:"a"`
-}
-
-// MX is the fields needed to store a DNS record of type MX.
-type MX struct {
-	Preference uint16
-	Mx         string `dns:"cdomain-name"`
 }

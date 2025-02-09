@@ -1,3 +1,3 @@
 package models
 
-//go:generate autotype
+//go:generate go run ../build/autotype

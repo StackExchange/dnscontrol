@@ -7,6 +7,7 @@ import (
 type TypeCatalog map[string]RTypeConfig
 
 type RTypeConfig struct {
+	Name   string
 	Token  string
 	Fields []Field
 	Tags   string

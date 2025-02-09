@@ -10,7 +10,16 @@ var funcs = template.FuncMap{
 	"join": strings.Join,
 }
 
-func simpleTemplate(theTemplate *template.Template, vals Values) []byte {
+func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
+	b := &bytes.Buffer{}
+	err := theTemplate.Execute(b, vals)
+	if err != nil {
+		panic(err)
+	}
+	return b.Bytes()
+}
+
+func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 	b := &bytes.Buffer{}
 	err := theTemplate.Execute(b, vals)
 	if err != nil {
@@ -28,13 +37,13 @@ type RecordType interface {
 }
 `))
 
-func makeRecordType(vals Values) []byte {
-	return simpleTemplate(RecordTypeTmpl, vals)
+func makeInterfaceConstraint(vals Values) []byte {
+	return valuesTemplate(RecordTypeTmpl, vals)
 }
 
 // RegisterType
 
-var RegisterTypeTmpl = template.Must(template.New("RegisterType").Funcs(funcs).Parse(`
+var RegisterTypeTmpl = template.Must(template.New("RegisterType").Parse(`
 package models
 
 import "github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
@@ -46,23 +55,22 @@ func init() {
 }
 `))
 
-func makeRegisterType(vals Values) []byte {
-	return simpleTemplate(RegisterTypeTmpl, vals)
+func makeInit(vals Values) []byte {
+	return valuesTemplate(RegisterTypeTmpl, vals)
 }
 
 // TypeTYPE
 
-var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Funcs(funcs).Parse(`
-{{ range .TypeNamesAndFields }}
+var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Parse(`
 // {{ .Name }} is the fields needed to store a DNS record of type {{ .Name }}.
 type {{ .Name }} struct {
 {{- range .Fields }}
     {{ .Name }} {{ .Type }} {{ if .Tags }} ` + "`{{ .Tags }}`" + ` {{- end }}
 {{- end }}
 }
-{{ end }}
+
 `))
 
-func makeTypeTYPE(vals Values) []byte {
-	return simpleTemplate(TypeTYPETmpl, vals)
+func makeTypeTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(TypeTYPETmpl, rtconfig)
 }
