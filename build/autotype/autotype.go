@@ -156,7 +156,7 @@ func fatalIfErr2(err error, msg string) {
 	}
 }
 
-func writeTo(filename string, contents []byte) {
+func writeTo(contents []byte, filename string) {
 	formatted, err := format.Source(contents)
 	if err != nil {
 		log.Printf("failed to format: %s", err)
@@ -204,30 +204,43 @@ func main() {
 		TypeNamesAndFields: catalog.TypeNamesAndFields(),
 	}
 
-	var m []byte
-
+	// models/generated_types.go
+	var mgt []byte
 	// Generate init() with the MustRegisterTypes() statements.
-	m = append(m, makeInit(values)...)
+	mgt = append(mgt, makeInit(values)...)
+
+	// integrationTest/generated_helpers.go
+	var ith = makeIntTestHeader()
 
 	// Generate the RecordType interface constraint.
-	m = append(m, makeInterfaceConstraint(values)...)
+	mgt = append(mgt, makeInterfaceConstraint(values)...)
 
 	//fmt.Printf("DEBUG: Types: %s\n", values.TypeNames)
 	for _, typeName := range values.TypeNames {
 		fmt.Printf("DEBUG: Generating for %s\n", typeName)
+
+		// models/generated_types.go
+
 		// Generate Type$TYPE type.
-		m = append(m, makeTypeTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makeTypeTYPE(values.Types[typeName])...)
 		// Generate Parse$TYPE
-		m = append(m, makeParseTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makeParseTYPE(values.Types[typeName])...)
 		// Generate PopulateFromRawA
-		m = append(m, makePopulateFromRawTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makePopulateFromRawTYPE(values.Types[typeName])...)
 		// Generate AsA
-		m = append(m, makeAsTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makeAsTYPE(values.Types[typeName])...)
 		// Generate GetFields()
-		m = append(m, makeGetFieldsTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makeGetFieldsTYPE(values.Types[typeName])...)
 		// Generate GetFieldsAsStringsA()
-		m = append(m, makeGetFieldsAsStringsTYPE(values.Types[typeName])...)
+		mgt = append(mgt, makeGetFieldsAsStringsTYPE(values.Types[typeName])...)
+
+		// integrationTest/generated_helpers.go
+
+		// Generate type() constructor
+		ith = append(ith, makeIntTestConstructor(values.Types[typeName])...)
+
 	}
 
-	writeTo("generated_types.go", m)
+	writeTo(mgt, "generated_types.go")
+	writeTo(ith, "../integrationTest/generated_helpers.go")
 }

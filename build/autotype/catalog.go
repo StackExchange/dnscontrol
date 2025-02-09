@@ -15,6 +15,9 @@ type RTypeConfig struct {
 
 	// Generated fields:
 
+	// .Name all lowercase
+	NameLower string
+
 	// Number of fields in the struct.
 	NumFields int
 
@@ -29,6 +32,12 @@ type RTypeConfig struct {
 
 	// used to return the fields, each converted to a string.
 	ReturnAsStringsList string
+
+	// Fields as used in a function signature.
+	FieldsAsSignature string
+
+	// the field names, prefixed by "s" if they are not a string.
+	FieldsAsSVars string
 }
 
 type Field struct {
@@ -37,8 +46,9 @@ type Field struct {
 	Tags string // Go "tags" for the field.
 
 	// Generated fields:
-	NameLower string // name of the field in lowercase
-	Parser    string // Go code to parse the field.
+	NameLower       string // name of the field in lowercase
+	Parser          string // Go code to parse the field.
+	ConvertToString string // Go code to convert this field to string (or "" if it is a string)
 }
 
 func (cat *TypeCatalog) TypeNamesAsSet() map[string]struct{} {
@@ -96,6 +106,19 @@ func mkConstructAll(fields []Field) string {
 	return strings.Join(ac, ", ")
 }
 
+func mkFieldsAsSignature(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if field.Type == "fieldtypes.IPv4" {
+			// accept input as string.
+			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
+		} else {
+			ac = append(ac, fmt.Sprintf("%s %s", field.NameLower, field.Type))
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
 func mkFieldTypesCommaSep(fields []Field) string {
 	var ac []string
 	for _, field := range fields {
@@ -134,15 +157,35 @@ func mkReturnAsStringsList(fields []Field) string {
 	return fmt.Sprintf("[%d]string{", len(fields)) + strings.Join(ac, ", ") + "}"
 }
 
+func mkFieldsAsSVars(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if field.Tags == `dns:"a"` {
+			ac = append(ac, field.NameLower)
+		} else if field.Type == "string" {
+			ac = append(ac, field.NameLower)
+		} else {
+			ac = append(ac, "s"+field.NameLower)
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
 // FixTypes generates the NumFields and FieldsAndTypes fields of each RTypeConfig.
 func (cat *TypeCatalog) FixTypes() {
-	for catName, rtype := range *cat {
+	for catName := range *cat {
 		t := (*cat)[catName]
-		t.NumFields = len(rtype.Fields)
-		t.ConstructAll = mkConstructAll(rtype.Fields)
-		t.FieldTypesCommaSep = mkFieldTypesCommaSep(rtype.Fields)
-		t.ReturnIndividualFieldsList = mkReturnIndividualFieldsList(rtype.Fields)
-		t.ReturnAsStringsList = mkReturnAsStringsList(rtype.Fields)
+		{
+			t.NameLower = strings.ToLower(t.Name)
+			t.NumFields = len(t.Fields)
+			t.ConstructAll = mkConstructAll(t.Fields)
+			t.FieldTypesCommaSep = mkFieldTypesCommaSep(t.Fields)
+			t.ReturnIndividualFieldsList = mkReturnIndividualFieldsList(t.Fields)
+			t.ReturnAsStringsList = mkReturnAsStringsList(t.Fields)
+
+			t.FieldsAsSignature = mkFieldsAsSignature(t.Fields)
+			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
+		}
 		(*cat)[catName] = t
 	}
 }
@@ -166,14 +209,37 @@ func parserFor(i int, f Field) string {
 
 	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
 }
+func mkConvertToString(f Field) string {
+	if f.Tags == `dns:"a"` {
+		//return fmt.Sprintf("s%s, _ := fieldtypes.ParseIPv4(%s)", f.NameLower, f.NameLower)
+		return ""
+	}
+
+	switch f.Type {
+
+	case "string":
+		return ""
+
+	case "uint16":
+		return fmt.Sprintf("s%s := strconv.Itoa(int(%s))", f.NameLower, f.NameLower)
+	}
+
+	return fmt.Sprintf("s%s := UNKNOWN(int(%s))", f.NameLower, f.NameLower)
+
+}
 
 // FixFields generates the NameLower and Parser fields of each Field.
 func (cat *TypeCatalog) FixFields() {
 	// Generate per-field data
 	for _, rtype := range *cat {
-		for i, field := range rtype.Fields {
-			(*cat)[rtype.Name].Fields[i].NameLower = strings.ToLower(field.Name)
-			(*cat)[rtype.Name].Fields[i].Parser = parserFor(i, field)
+		for i := range rtype.Fields {
+			f := (*cat)[rtype.Name].Fields[i]
+			{
+				f.NameLower = strings.ToLower(f.Name)
+				f.Parser = parserFor(i, f)
+				f.ConvertToString = mkConvertToString(f)
+			}
+			(*cat)[rtype.Name].Fields[i] = f
 		}
 	}
 }

@@ -183,3 +183,39 @@ func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumFields }}]string
 func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(GetFieldsAsStringsTYPETmpl, rtconfig)
 }
+
+// makeIntTestHeader
+func makeIntTestHeader() []byte {
+	return []byte(`package main
+
+import (
+  "strconv" 
+  
+  "github.com/StackExchange/dnscontrol/v4/models"
+)   
+
+`)
+}
+
+// GetFieldsAsStringsTYPE
+
+var IntTestConstructorTmpl = template.Must(template.New("IntTestConstructor").Parse(`
+func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfig {
+{{- range .Fields }}
+{{- if .ConvertToString }}
+  {{ .ConvertToString }}
+{{- end }}
+{{- end }}
+
+  rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "**current-domain**")
+  if err != nil {
+    panic(err)
+  }
+  return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+`))
+
+func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(IntTestConstructorTmpl, rtconfig)
+}
