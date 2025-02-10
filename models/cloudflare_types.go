@@ -11,7 +11,7 @@ func init() {
 	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
-//// CFSINGLEREDIRECT
+// CFSINGLEREDIRECT
 
 // CFSINGLEREDIRECT contains info about a Cloudflare Single Redirect.
 //
