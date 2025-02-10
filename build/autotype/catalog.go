@@ -290,6 +290,9 @@ func (cat *TypeCatalog) Merge(overlay TypeCatalog, dupesOk bool) error {
 					if hint.Type != "" {
 						(*cat)[typeName].Fields[i].Type = hint.Type
 					}
+					if hint.Tags != "" {
+						(*cat)[typeName].Fields[i].Tags = hint.Tags
+					}
 				}
 			}
 

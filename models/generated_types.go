@@ -143,10 +143,10 @@ func (rc *RecordConfig) GetFieldsAsStringsMX() [2]string {
 
 // SRV is the fields needed to store a DNS record of type SRV.
 type SRV struct {
-	Priority uint16
-	Weight   uint16
-	Port     uint16
-	Target   string `dns:"domain-name"`
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
+	Target   string `json:"target" dns:"domain-name"`
 }
 
 func ParseSRV(rawfields []string, origin string) (SRV, error) {

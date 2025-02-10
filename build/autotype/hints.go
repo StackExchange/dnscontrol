@@ -28,7 +28,7 @@ func GetHints() ([]string, TypeCatalog) {
 			{Name: "Priority", Tags: `json:"priority"`},
 			{Name: "Weight", Tags: `json:"weight"`},
 			{Name: "Port", Tags: `json:"port"`},
-			{Name: "Target", Tags: `json:"target"`},
+			{Name: "Target", Tags: `json:"target" dns:"domain-name"`},
 		})
 
 	// addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT",
