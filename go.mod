@@ -63,6 +63,7 @@ require (
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.7
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/fatih/color v1.18.0
+	github.com/fatih/structtag v1.2.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/go-acme/lego/v4 v4.21.0
 	github.com/google/go-cmp v0.6.0

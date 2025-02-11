@@ -10,14 +10,17 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+type TypeInfo struct {
+	Name   string
+	Config *RTypeConfig
+	Fields []Field
+	Tags   string
+}
+
 type Values struct {
 	Types              TypeCatalog
 	TypeNames          []string
-	TypeNamesAndFields []struct {
-		Name   string
-		Fields []Field
-		Tags   string
-	}
+	TypeNamesAndFields []TypeInfo
 }
 
 // getTypeStruct will take a type and the package scope, and return the
@@ -112,7 +115,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: slicetype,
-					Tags: mkTagString(fieldtags),
+					Tags: SloppyParseTags(fieldtags),
 				})
 
 			} else {
@@ -126,7 +129,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: fieldtype,
-					Tags: fieldtags,
+					Tags: SloppyParseTags(fieldtags),
 				})
 
 			}
@@ -169,6 +172,15 @@ func writeTo(contents []byte, filename string) {
 	fatalIfErr(err)
 }
 
+func writeToJS(contents []byte, filename string) {
+	formatted := contents
+	f, err := os.Create(filename)
+	fatalIfErr(err)
+	defer f.Close()
+	_, err = f.Write(formatted)
+	fatalIfErr(err)
+}
+
 func main() {
 	var err error
 
@@ -201,7 +213,7 @@ func main() {
 	values := Values{
 		Types:              catalog,
 		TypeNames:          typeNames,
-		TypeNamesAndFields: catalog.TypeNamesAndFields(),
+		TypeNamesAndFields: catalog.TypeNamesAndFields(typeNames),
 	}
 
 	// models/generated_types.go
@@ -214,6 +226,8 @@ func main() {
 
 	// Generate the RecordType interface constraint.
 	mgt = append(mgt, makeInterfaceConstraint(values)...)
+
+	var hrt = makehelpersRawRecordBuilder(values)
 
 	//fmt.Printf("DEBUG: Types: %s\n", values.TypeNames)
 	for _, typeName := range values.TypeNames {
@@ -243,4 +257,5 @@ func main() {
 
 	writeTo(mgt, "generated_types.go")
 	writeTo(ith, "../integrationTest/generated_helpers.go")
+	writeToJS(hrt, "../pkg/js/helpers-types.js")
 }

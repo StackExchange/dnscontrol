@@ -18,6 +18,20 @@ func GetHints() ([]string, TypeCatalog) {
 		}
 		cat[name] = n
 	}
+	setNoLabel := func(name string) {
+		n := cat[name]
+		{
+			n.NoLabel = true
+		}
+		cat[name] = n
+	}
+	setTTL1 := func(name string) {
+		n := cat[name]
+		{
+			n.TTL1 = true
+		}
+		cat[name] = n
+	}
 
 	addType("A", "", nil)
 
@@ -25,27 +39,16 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("SRV", "",
 		[]Field{
-			{Name: "Priority", Tags: `json:"priority"`},
-			{Name: "Weight", Tags: `json:"weight"`},
-			{Name: "Port", Tags: `json:"port"`},
-			{Name: "Target", Tags: `json:"target" dns:"domain-name"`},
-		})
+			{Name: "Priority", Tags: SloppyParseTags(`json:"priority"`)},
+			{Name: "Weight", Tags: SloppyParseTags(`json:"weight"`)},
+			{Name: "Port", Tags: SloppyParseTags(`json:"port"`)},
+			{Name: "Target", Tags: SloppyParseTags(`json:"target" dns:"domain-name"`)},
+		},
+	)
 
-	// addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT",
-	// 	[]Field{
-	// 		{Name: "Code", Tags: `json:"code,omitempty"`},
-	// 		{Name: "SRName", Tags: `json:"sr_name,omitempty"`},
-	// 		{Name: "SRWhen", Tags: `json:"sr_when,omitempty"`},
-	// 		{Name: "SRThen", Tags: `json:"sr_then,omitempty"`},
-	// 		{Name: "SRRRulesetID", Tags: `json:"sr_rulesetid,omitempty"`},
-	// 		{Name: "SRRRulesetRuleID", Tags: `json:"sr_rulesetruleid,omitempty"`},
-	// 		{Name: "SRDisplay", Tags: `json:"sr_display,omitempty"`},
-	// 		{Name: "PRWhen", Tags: `dns:"skip" json:"pr_when,omitempty"`},
-	// 		{Name: "PRThen", Tags: `dns:"skip" json:"pr_then,omitempty"`},
-	// 		{Name: "PRPriority", Tags: `dns:"skip" json:"pr_priority,omitempty"`},
-	// 		{Name: "PRDisplay", Tags: `dns:"skip" json:"pr_display,omitempty"`},
-	// 	},
-	// )
+	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT", nil)
+	setNoLabel("CFSINGLEREDIRECT")
+	setTTL1("CFSINGLEREDIRECT")
 
 	return l, cat
 }
