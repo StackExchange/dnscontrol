@@ -228,3 +228,15 @@ func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfi
 func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(IntTestConstructorTmpl, rtconfig)
 }
+
+// helpersRawRecordBuilder
+
+var helpersRawRecordBuilderTmpl = template.Must(template.New("helpersRawRecordBuilder").Parse(`
+{{- range .TypeNamesAndFields -}}
+var {{ .Config.Token }} = rawrecordBuilder('{{ .Config.Token }}');
+{{ end -}}
+`))
+
+func makehelpersRawRecordBuilder(vals Values) []byte {
+	return valuesTemplate(helpersRawRecordBuilderTmpl, vals)
+}

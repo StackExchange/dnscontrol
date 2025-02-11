@@ -85,26 +85,11 @@ func (cat *TypeCatalog) TypeNamesAsSlice() []string {
 	return keys
 }
 
-func (cat *TypeCatalog) TypeNamesAndFields() []struct {
-	Name   string
-	Config *RTypeConfig
-	Fields []Field
-	Tags   string
-} {
-	var keys []struct {
-		Name   string
-		Config *RTypeConfig
-		Fields []Field
-		Tags   string
-	}
-	for _, k := range (*cat).TypeNamesAsSlice() {
+func (cat *TypeCatalog) TypeNamesAndFields(order []string) []TypeInfo {
+	var keys []TypeInfo
+	for _, k := range order {
 		v := (*cat)[k]
-		keys = append(keys, struct {
-			Name   string
-			Config *RTypeConfig
-			Fields []Field
-			Tags   string
-		}{
+		keys = append(keys, TypeInfo{
 			Name:   k,
 			Config: &v,
 			Fields: v.Fields,
