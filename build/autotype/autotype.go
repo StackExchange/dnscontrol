@@ -112,7 +112,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: slicetype,
-					Tags: mkTagString(fieldtags),
+					Tags: SloppyParseTags(fieldtags),
 				})
 
 			} else {
@@ -126,7 +126,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: fieldtype,
-					Tags: fieldtags,
+					Tags: SloppyParseTags(fieldtags),
 				})
 
 			}

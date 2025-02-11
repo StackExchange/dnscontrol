@@ -7,8 +7,7 @@ import (
 )
 
 var funcs = template.FuncMap{
-	"join":     strings.Join,
-	"parsefor": parserFor,
+	"join": strings.Join,
 }
 
 func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
@@ -34,7 +33,7 @@ func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 var RecordTypeTmpl = template.Must(template.New("RecordType").Funcs(funcs).Parse(`
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-   {{ join .TypeNames " | " }} | CFSINGLEREDIRECT
+   {{ join .TypeNames " | " }}
 }
 `))
 
@@ -73,7 +72,7 @@ var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Parse(`
 // {{ .Name }} is the fields needed to store a DNS record of type {{ .Name }}.
 type {{ .Name }} struct {
 {{- range .Fields }}
-    {{ .Name }} {{ .Type }} {{ if .Tags }} ` + "`{{ .Tags }}`" + ` {{- end }}
+    {{ .Name }} {{ .Type }} {{ if .TagsString }} ` + "`{{ .Tags }}`" + ` {{- end }}
 {{- end }}
 }
 
@@ -89,18 +88,22 @@ var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
 func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
 
         // Error checking
-        if errorCheckFieldCount(rawfields, {{ .NumFields }}) {
-                return {{ .Name }}{}, fmt.Errorf("rtype {{ .Name }} wants %d field(s), found %d: %+v", {{ .NumFields }}, len(rawfields)-1, rawfields[1:])
+        if errorCheckFieldCount(rawfields, {{ .NumRawFields }}) {
+                return {{ .Name }}{}, fmt.Errorf("rtype {{ .Name }} wants %d field(s), found %d: %+v", {{ .NumRawFields }}, len(rawfields)-1, rawfields[1:])
         }
 
 {{- range .Fields }}
+   {{- if not .NoRaw }}
     var {{ .NameLower }} {{ .Type }}
+   {{- end }}
 {{- end }}
         var err error
 {{- range .Fields }}
+   {{- if not .NoRaw }}
         if {{ .NameLower }}, err = {{ .Parser }}; err != nil {
                 return {{ $.Name }}{}, err
         }
+   {{- end }}
 {{- end }}
 
     return {{ .Name }}{ {{- .ConstructAll -}} }, nil
@@ -117,8 +120,10 @@ func makeParseTYPE(rtconfig RTypeConfig) []byte {
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
 func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
-  rc.Type = "{{ .Name }}"
-  var err error
+  rc.Type = "{{ .Token }}"
+  {{- if .TTL1 }}
+  rc.TTL = 1
+  {{- end }}
 
   // First rawfield is the label.
   if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
@@ -126,7 +131,11 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
   }
 
   // Parse the remaining fields.
+  {{- if .NoLabel }}
+  rdata, err := Parse{{ .Name }}(rawfields, origin)
+  {{- else }}
   rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
+  {{- end }}
   if err != nil {
     return err
   }
@@ -173,7 +182,7 @@ func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
 
 var GetFieldsAsStringsTYPETmpl = template.Must(template.New("GetFieldsAsStringsTYPE").Parse(`
 // GetFieldsAsStrings{{ .Name }} returns rc.Fields as individual strings.
-func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumFields }}]string {
+func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumRawFields }}]string {
   n := rc.As{{ .Name }}()
   return {{ .ReturnAsStringsList }}
 }

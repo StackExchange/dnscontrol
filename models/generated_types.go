@@ -11,6 +11,7 @@ func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
+	MustRegisterType("CFSINGLEREDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 // RecordType is a constraint for DNS records.
@@ -43,7 +44,6 @@ func ParseA(rawfields []string, origin string) (A, error) {
 // PopulateFromRawA updates rc to be an A record with contents from rawfields, meta and origin.
 func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "A"
-	var err error
 
 	// First rawfield is the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
@@ -106,7 +106,6 @@ func ParseMX(rawfields []string, origin string) (MX, error) {
 // PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
 func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "MX"
-	var err error
 
 	// First rawfield is the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
@@ -179,7 +178,6 @@ func ParseSRV(rawfields []string, origin string) (SRV, error) {
 // PopulateFromRawSRV updates rc to be an SRV record with contents from rawfields, meta and origin.
 func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "SRV"
-	var err error
 
 	// First rawfield is the label.
 	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
@@ -210,4 +208,84 @@ func (rc *RecordConfig) GetFieldsSRV() (uint16, uint16, uint16, string) {
 func (rc *RecordConfig) GetFieldsAsStringsSRV() [4]string {
 	n := rc.AsSRV()
 	return [4]string{strconv.Itoa(int(n.Priority)), strconv.Itoa(int(n.Weight)), strconv.Itoa(int(n.Port)), n.Target}
+}
+
+//// CFSINGLEREDIRECT
+
+// CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
+type CFSINGLEREDIRECT struct {
+	SRName           string `json:"sr_name,omitempty"`
+	Code             uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"`
+	SRWhen           string `json:"sr_when,omitempty"`
+	SRThen           string `json:"sr_then,omitempty"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
+	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn"`
+	PRWhen           string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
+	PRThen           string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
+	PRPriority       int    `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn"`
+	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn"`
+}
+
+func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 4) {
+		return CFSINGLEREDIRECT{}, fmt.Errorf("rtype CFSINGLEREDIRECT wants %d field(s), found %d: %+v", 4, len(rawfields)-1, rawfields[1:])
+	}
+	var srname string
+	var code uint16
+	var srwhen string
+	var srthen string
+	var err error
+	if srname, err = fieldtypes.ParseStringTrimmed(rawfields[0]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if code, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if srwhen, err = fieldtypes.ParseStringTrimmed(rawfields[2]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+	if srthen, err = fieldtypes.ParseStringTrimmed(rawfields[3]); err != nil {
+		return CFSINGLEREDIRECT{}, err
+	}
+
+	return CFSINGLEREDIRECT{SRName: srname, Code: code, SRWhen: srwhen, SRThen: srthen, SRDisplay: cfSingleRedirecttargetFromRaw(srname, code, srwhen, srthen), PRWhen: "UNKNOWABLE", PRThen: "UNKNOWABLE", PRDisplay: "UNKNOWABLE"}, nil
+}
+
+// PopulateFromRawCFSINGLEREDIRECT updates rc to be an CFSINGLEREDIRECT record with contents from rawfields, meta and origin.
+func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "CF_SINGLE_REDIRECT"
+	rc.TTL = 1
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
+	}
+
+	// Parse the remaining fields.
+	rdata, err := ParseCFSINGLEREDIRECT(rawfields, origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsCFSINGLEREDIRECT returns rc.Fields as an CFSINGLEREDIRECT struct.
+func (rc *RecordConfig) AsCFSINGLEREDIRECT() *CFSINGLEREDIRECT {
+	return rc.Fields.(*CFSINGLEREDIRECT)
+}
+
+// GetFieldsCFSINGLEREDIRECT returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsCFSINGLEREDIRECT() (string, uint16, string, string) {
+	n := rc.AsCFSINGLEREDIRECT()
+	return n.SRName, n.Code, n.SRWhen, n.SRThen
+}
+
+// GetFieldsAsStringsCFSINGLEREDIRECT returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsCFSINGLEREDIRECT() [4]string {
+	n := rc.AsCFSINGLEREDIRECT()
+	return [4]string{n.SRName, strconv.Itoa(int(n.Code)), n.SRWhen, n.SRThen}
 }
