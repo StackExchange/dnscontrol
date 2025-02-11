@@ -54,8 +54,8 @@ import (
 )
 
 func init() {
-  {{ range .TypeNames -}}
-  MustRegisterType("{{ . }}", RegisterOpts{PopulateFromRaw: PopulateFromRaw{{ . }} })
+  {{ range .TypeNamesAndFields -}}
+  MustRegisterType("{{ .Config.Token }}", RegisterOpts{PopulateFromRaw: PopulateFromRaw{{ .Config.Name }} })
   {{ end -}}
 }
 `))
@@ -198,10 +198,10 @@ func makeIntTestHeader() []byte {
 	return []byte(`package main
 
 import (
-  "strconv" 
-  
+  "strconv"
+
   "github.com/StackExchange/dnscontrol/v4/models"
-)   
+)
 
 `)
 }

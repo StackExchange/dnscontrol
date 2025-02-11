@@ -13,7 +13,6 @@ import "github.com/miekg/dns"
 type CFSINGLEREDIRECT struct {
 	Hdr dns.RR_Header
 
-	//
 	// SR == SingleRedirect
 	SRName string `json:"sr_name,omitempty"` // How is this displayed to the user
 	//

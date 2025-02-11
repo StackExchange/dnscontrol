@@ -11,7 +11,7 @@ func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
-	MustRegisterType("CFSINGLEREDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 // RecordType is a constraint for DNS records.

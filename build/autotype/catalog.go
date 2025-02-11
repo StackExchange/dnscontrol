@@ -87,11 +87,13 @@ func (cat *TypeCatalog) TypeNamesAsSlice() []string {
 
 func (cat *TypeCatalog) TypeNamesAndFields() []struct {
 	Name   string
+	Config *RTypeConfig
 	Fields []Field
 	Tags   string
 } {
 	var keys []struct {
 		Name   string
+		Config *RTypeConfig
 		Fields []Field
 		Tags   string
 	}
@@ -99,10 +101,12 @@ func (cat *TypeCatalog) TypeNamesAndFields() []struct {
 		v := (*cat)[k]
 		keys = append(keys, struct {
 			Name   string
+			Config *RTypeConfig
 			Fields []Field
 			Tags   string
 		}{
 			Name:   k,
+			Config: &v,
 			Fields: v.Fields,
 			Tags:   v.Tags,
 		})
@@ -264,7 +268,6 @@ func parserFor(i int, f Field) string {
 }
 func mkConvertToString(f Field) string {
 	if HasTagOption(f.Tags, "dns", "a") {
-		//return fmt.Sprintf("s%s, _ := fieldtypes.ParseIPv4(%s)", f.NameLower, f.NameLower)
 		return ""
 	}
 

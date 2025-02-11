@@ -15,6 +15,7 @@ type Values struct {
 	TypeNames          []string
 	TypeNamesAndFields []struct {
 		Name   string
+		Config *RTypeConfig
 		Fields []Field
 		Tags   string
 	}
