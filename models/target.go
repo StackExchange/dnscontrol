@@ -101,14 +101,12 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
 		rc.MustSetTarget(".")
 	}
-	//fmt.Printf("DEBUG: zoneFileQuoted: %v\n", rc)
 	rr := rc.ToRR()
 	header := rr.Header().String()
 	full := rr.String()
 	if !strings.HasPrefix(full, header) {
 		panic("assertion failed. dns.Hdr.String() behavior has changed in an incompatible way")
 	}
-	fmt.Printf("DEBUG: zoneFileQuoted: return %v\n", full[len(header):])
 	return full[len(header):]
 }
 

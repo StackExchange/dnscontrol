@@ -219,7 +219,6 @@ type CNAME struct {
 }
 
 func ParseCNAME(rawfields []string, origin string) (CNAME, error) {
-	fmt.Printf("DEBUG: ParseCNAME(%q, %q)\n", rawfields, origin)
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 1) {
@@ -230,7 +229,6 @@ func ParseCNAME(rawfields []string, origin string) (CNAME, error) {
 	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], "", origin); err != nil {
 		return CNAME{}, err
 	}
-	fmt.Printf("DEBUG: CNAME target: %s %s\n", rawfields[0], target)
 
 	return CNAME{Target: target}, nil
 }

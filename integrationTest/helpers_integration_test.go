@@ -109,6 +109,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
+			fmt.Printf("DEBUG: rc.GetTargetField() = %q\n", rc.GetTargetField())
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
 			}

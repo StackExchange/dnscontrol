@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -44,7 +43,6 @@ func cname(name string, target string) *models.RecordConfig {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("DEBUG: parsed cname: %+v\n", rdata)
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 

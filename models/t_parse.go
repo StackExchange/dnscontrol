@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// originDotWarning is set to true after the warning is printed. We don't want to print it multiple times.
+var originDotWarning = false
+
 // PopulateFromStringFunc populates a RecordConfig by parsing a common RFC1035-like format.
 //
 //	rtype: the resource record type (rtype)
@@ -57,8 +60,19 @@ import (
 //	}
 //	return rc, nil
 func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, txtFn func(s string) (string, error)) error {
+	//fmt.Printf("DEBUG: PopulateFromStringFunc(%q, %q, %q)\n", rtype, contents, origin)
 	if rc.Type != "" && rc.Type != rtype {
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
+	}
+
+	if strings.HasSuffix(origin, ".") {
+		origin = origin[:len(origin)-1]
+		if !originDotWarning {
+			fmt.Printf("WARNING: origin %q ends with a dot. This indicates a bug in the provider. Please file a bug report\n", origin)
+		}
+		originDotWarning = true
+		// "origin" shouldn't end in a "." but older code would allow it.
+		// Hopefully this warning will help us find broken providers.
 	}
 
 	if IsTypeUpgraded(rtype) {
@@ -73,8 +87,12 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		case "CNAME":
+			fmt.Printf("DEBUG: THIS IS CNAME\n")
 			if rdata, err := ParseCNAME(strings.Fields(contents), origin); err == nil {
+				fmt.Printf("DEBUG: CNAME PARSED = %+v\n", rdata)
 				return RecordUpdateFields(rc, rdata, nil)
+			} else {
+				fmt.Printf("DEBUG: CNAME ERROR: %v\n", err)
 			}
 		case "SRV":
 			if rdata, err := ParseSRV(strings.Fields(contents), origin); err == nil {
