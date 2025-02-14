@@ -176,11 +176,11 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
-		}
-	}
+	// for _, rec := range dc.Records {
+	// 	if rec.Type == "ALIAS" {
+	// 		rec.Type = "CNAME"
+	// 	}
+	// }
 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, 0, err
@@ -815,6 +815,10 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+	if cr.Type == "ALIAS" {
+		cr.Type = "CNAME"
+	}
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "ALIAS" || cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
