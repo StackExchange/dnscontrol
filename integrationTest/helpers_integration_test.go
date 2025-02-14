@@ -109,23 +109,21 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
+
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
-			}
-			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1))
 			}
 			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
 				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
 			}
-			// if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
+
 			if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
 			}
 			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
 			}
-			//}
+
 			dom.Records = append(dom.Records, &rc)
 		}
 		dom.Unmanaged = tst.Unmanaged
@@ -285,7 +283,7 @@ func (tc *TestCase) UnsafeIgnore() *TestCase {
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
-	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
+	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**.")
 }
 
 func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
@@ -425,7 +423,7 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 		Type: typ,
 		TTL:  300,
 	}
-	SetLabel(r, name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**.")
 	r.MustSetTarget(target)
 	return r
 }
