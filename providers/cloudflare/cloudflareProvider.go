@@ -178,6 +178,11 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
+	}
 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, 0, err
@@ -438,6 +443,13 @@ func checkProxyVal(v string) (string, error) {
 }
 
 func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
+	}
+
 	// Determine the default proxy setting.
 	var defProxy string
 	var err error
@@ -810,11 +822,6 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
-	}
-
-	// ALIAS is just a CNAME for Cloudflare
-	if cr.Type == "ALIAS" {
-		cr.Type = "CNAME"
 	}
 
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
