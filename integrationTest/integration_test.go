@@ -148,7 +148,7 @@ func makeTests() []*TestGroup {
 		testgroup("CNAME-short",
 			tc("Create a CNAME",
 				a("foo", "1.2.3.4"),
-				cname("testcname", "foo"),
+				cname("testcname", "fooz"),
 			),
 		),
 

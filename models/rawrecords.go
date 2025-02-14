@@ -75,6 +75,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 			MX{Preference: rc.MxPreference, Mx: rc.target},
 			nil,
 		)
+	case "CNAME":
+		return RecordUpdateFields(rc,
+			CNAME{Target: rc.target},
+			nil,
+		)
 	case "SRV":
 		return RecordUpdateFields(rc,
 			SRV{Priority: rc.SrvPriority, Weight: rc.SrvWeight, Port: rc.SrvPort, Target: rc.target},

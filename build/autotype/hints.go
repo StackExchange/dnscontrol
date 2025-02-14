@@ -46,6 +46,8 @@ func GetHints() ([]string, TypeCatalog) {
 		},
 	)
 
+	addType("CNAME", "", nil)
+
 	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT", nil)
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")

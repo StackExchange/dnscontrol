@@ -360,10 +360,6 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	return r
 }
 
-func cname(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "CNAME")
-}
-
 func dhcid(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "DHCID")
 }

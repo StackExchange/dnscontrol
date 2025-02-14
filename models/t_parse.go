@@ -72,6 +72,10 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 			if rdata, err := ParseMX(strings.Fields(contents), origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)
 			}
+		case "CNAME":
+			if rdata, err := ParseCNAME(strings.Fields(contents), origin); err == nil {
+				return RecordUpdateFields(rc, rdata, nil)
+			}
 		case "SRV":
 			if rdata, err := ParseSRV(strings.Fields(contents), origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)

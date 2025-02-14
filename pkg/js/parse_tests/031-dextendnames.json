@@ -44,6 +44,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "c.domain.tld."
+          },
           "name": "b",
           "target": "c.domain.tld.",
           "ttl": 300,
@@ -59,6 +62,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "f.domain.tld."
+          },
           "name": "e",
           "target": "f.domain.tld.",
           "ttl": 300,
@@ -83,9 +89,11 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "l.domain.tld."
+          },
           "name": "k.ssub",
-          "subdomain": "ssub",
-          "target": "l.ssub.domain.tld.",
+          "target": "l.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
@@ -108,9 +116,11 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "i.domain.tld."
+          },
           "name": "h.ub",
-          "subdomain": "ub",
-          "target": "i.ub.domain.tld.",
+          "target": "i.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         }
@@ -155,6 +165,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "cc.sub.domain.tld."
+          },
           "name": "bb",
           "target": "cc.sub.domain.tld.",
           "ttl": 300,
@@ -170,6 +183,9 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "ff.sub.domain.tld."
+          },
           "name": "ee",
           "target": "ff.sub.domain.tld.",
           "ttl": 300,

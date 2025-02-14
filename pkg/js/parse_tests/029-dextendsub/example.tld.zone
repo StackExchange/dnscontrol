@@ -1,5 +1,5 @@
 $TTL 300
-a.sub            IN CNAME b.sub.example.tld.
-b.sub            IN CNAME sub.example.tld.
+a.sub            IN CNAME b.example.tld.
+b.sub            IN CNAME example.tld.
 c.sub            IN CNAME sub.example.tld.
 e.sub            IN CNAME otherdomain.tld.

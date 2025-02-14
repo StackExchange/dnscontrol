@@ -19,24 +19,36 @@
           "type": "A"
         },
         {
+          "Fields": {
+            "Target": "foo.com."
+          },
           "name": "a",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "foo.com."
+          },
           "name": "b",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "foo.com."
+          },
           "name": "c",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "foo.com."
+          },
           "name": "d",
           "target": "foo.com.",
           "ttl": 300,

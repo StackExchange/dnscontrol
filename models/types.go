@@ -42,6 +42,10 @@ func (rc *RecordConfig) Seal() error {
 		rc.MxPreference = f.Preference
 		rc.target = f.Mx
 		rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
+	case "CNAME":
+		f := rc.Fields.(*CNAME)
+		rc.target = f.Target
+		rc.Comparable = f.Target
 	case "SRV":
 		f := rc.Fields.(*SRV)
 		rc.SrvPriority = f.Priority
