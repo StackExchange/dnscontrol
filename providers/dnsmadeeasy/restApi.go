@@ -51,7 +51,7 @@ func (restApi *dnsMadeEasyRestAPI) singleDomainGet(domainID int) (*singleDomainR
 	}
 
 	res := &singleDomainResponse{}
-	_, err := restApi.sendRequest(req, &res)
+	_, err := restApi.sendRequest(req, res)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (restApi *dnsMadeEasyRestAPI) multiDomainGet() (*multiDomainResponse, error
 	}
 
 	res := &multiDomainResponse{}
-	_, err := restApi.sendRequest(req, &res)
+	_, err := restApi.sendRequest(req, res)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (restApi *dnsMadeEasyRestAPI) recordGet(domainID int) (*recordResponse, err
 	}
 
 	res := &recordResponse{}
-	_, err := restApi.sendRequest(req, &res)
+	_, err := restApi.sendRequest(req, res)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (restApi *dnsMadeEasyRestAPI) singleDomainCreate(data singleDomainRequestDa
 	}
 
 	res := &singleDomainResponse{}
-	_, err = restApi.sendRequest(req, &res)
+	_, err = restApi.sendRequest(req, res)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (restApi *dnsMadeEasyRestAPI) multiRecordCreate(domainID int, data []record
 	}
 
 	res := &[]recordResponseDataEntry{}
-	_, err = restApi.sendRequest(req, &res)
+	_, err = restApi.sendRequest(req, res)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ retry:
 	backoff = initialBackoff
 
 	if response != nil {
-		err = json.NewDecoder(res.Body).Decode(&response)
+		err = json.NewDecoder(res.Body).Decode(response)
 		if err != nil {
 			return res.StatusCode, err
 		}

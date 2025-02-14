@@ -105,7 +105,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 
 func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domainName := dc.Name
-	domain, err := api.findDomain(domainName)
+	domainId, err := api.findDomainId(domainName)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -139,7 +139,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(deleteDescription, "\n\t"),
 			F: func() error {
-				return api.deleteRecords(domain.ID, deleteRecordIds)
+				return api.deleteRecords(domainId, deleteRecordIds)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -157,7 +157,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(createDescription, "\n\t"),
 			F: func() error {
-				return api.createRecords(domain.ID, createRecords)
+				return api.createRecords(domainId, createRecords)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -180,7 +180,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(modifyDescription, "\n\t"),
 			F: func() error {
-				return api.updateRecords(domain.ID, modifyRecords)
+				return api.updateRecords(domainId, modifyRecords)
 			},
 		}
 		corrections = append(corrections, corr)
