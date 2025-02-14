@@ -111,11 +111,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			rc := models.RecordConfig(*r)
 			fmt.Printf("DEBUG: rc.GetTargetField() = %q\n", rc.GetTargetField())
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+				//_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1))
 			}
-			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
-			}
+			//			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
+			//				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
+			//			}
 			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
 				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
 			}
