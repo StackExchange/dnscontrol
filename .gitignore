@@ -28,6 +28,7 @@ stack.sh
 types-dnscontrol.d.ts
 
 dist/
+node_modules/
 
 // Test artifact:
 *.ACTUAL
