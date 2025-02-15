@@ -221,7 +221,7 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
 declare function AAAA(name: string, address: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
+ * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
  * The AKAMAICDN target must be preconfigured in the Akamai network.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/akamai-edge-dns/akamaicdn
@@ -475,7 +475,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * WARNING: Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
- * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
  * generate a HTTP 301 permanent redirect.
@@ -541,7 +541,7 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * WARNING: Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
- * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
@@ -2484,7 +2484,7 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this by using the
- * [`D_EXTEND()`](../global/D_EXTEND.md)
+ * [`D_EXTEND()`](../top-level-functions/D_EXTEND.md)
  * function to insert `A` and `PTR` records into previously-defined domains.
  *
  * ```javascript
@@ -2678,7 +2678,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this.  See
- * [`PTR()`](../domain/PTR.md)   for an example.
+ * [`PTR()`](../domain-modifiers/PTR.md)   for an example.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/rev
  */
