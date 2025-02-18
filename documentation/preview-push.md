@@ -49,10 +49,13 @@ OPTIONS:
 
 * `--domains value`
   * Specifies a comma-separated list of domains to include.
-    Typically all domains are included in `preview`/`push`. Wildcards are not
-    permitted except `*` at the start of the entry. For example, `--domains
+    Typically all domains are included in `preview`/`push`. Wildcards are 
+    permitted `*` at the start of the entry. For example, `--domains
     example.com,*.in-addr.arpa` would include `example.com` plus all reverse lookup
-    domains.
+    domains. A wildcard suffix is permitted if the domain contains a tag, and
+    indicates all configured tags of that domain should be selected. A wildcard
+    tagged domain `--domains=example.com!*` would include `example.com!foo` and
+    `example.com!bar` but not `example.com`.
 
 * `--v foo=bar`
   * Sets the variable `foo` to the value `bar` prior to

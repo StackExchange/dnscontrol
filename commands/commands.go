@@ -304,8 +304,23 @@ func (args *FilterArgs) flags() []cli.Flag {
 	}
 }
 
+// domainInList takes a domain and a list of domains and returns true if the
+// domain is in the list, accounting for wildcards and tags.
 func domainInList(domain string, list []string) bool {
 	for _, item := range list {
+		filterDom, filterTag, filterTagged := strings.Cut(item, "!")
+		if filterTagged {
+			if strings.HasSuffix(item, "*") {
+				splitDomain, _, domainTagged := strings.Cut(domain, "!")
+				if domainTagged && splitDomain == filterDom {
+					return true
+				}
+			} else if filterTag == "" {
+				if domain == filterDom {
+					return true
+				}
+			}
+		}
 		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
 			return true
 		}
