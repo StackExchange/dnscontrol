@@ -113,7 +113,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			// ALIAS is called ANAME on DNS Made Easy
-			rec.Type = "ANAME"
+			rec.ChangeType("ANAME", dc.Name)
 		} else if rec.Type == "NS" {
 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
 			rec.TTL = fixedNameServerRecordTTL
