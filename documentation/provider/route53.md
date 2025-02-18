@@ -105,7 +105,7 @@ D("testzone.net!public", REG_NONE,
 {% endcode %}
 
 ## Activation
-DNSControl depends on a standard [AWS access key](https://aws.amazon.com/developers/access-keys/) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.
+DNSControl depends on a standard [AWS access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.
 
 You can apply the `AmazonRoute53FullAccess` policy however this includes access to many other areas of AWS. The minimum permissions required are as follows:
 
