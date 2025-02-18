@@ -819,6 +819,11 @@ func stringDefault(value interface{}, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 
+	// ALIAS in Cloudflare works like CNAME.
+	if cr.Type == "ALIAS" {
+		cr.Type = "CNAME"
+	}
+
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
