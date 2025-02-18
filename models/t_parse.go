@@ -87,12 +87,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		case "CNAME":
-			fmt.Printf("DEBUG: THIS IS CNAME\n")
 			if rdata, err := ParseCNAME(strings.Fields(contents), origin); err == nil {
-				fmt.Printf("DEBUG: CNAME PARSED = %+v\n", rdata)
 				return RecordUpdateFields(rc, rdata, nil)
-			} else {
-				fmt.Printf("DEBUG: CNAME ERROR: %v\n", err)
 			}
 		case "SRV":
 			if rdata, err := ParseSRV(strings.Fields(contents), origin); err == nil {

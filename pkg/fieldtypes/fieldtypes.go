@@ -84,7 +84,6 @@ func lastCharIs(s string, c rune) bool {
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 // FYI: This calls ToLower on short. After this, we can always assume .target (or whatever) is lowercase.
 func ParseHostnameDot(short, subdomain, origin string) (string, error) {
-	fmt.Printf("DEBUG: ParseHostnameDot(%q, %q, %q)\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -106,18 +105,8 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 	short = strings.ToLower(short)
 
 	if lastCharIs(short, '.') {
-		fmt.Printf("DEBUG: ParseHostnameDot returning short dot\n")
 		return short, nil
 	}
-
-	// if strings.Contains(origin, "**current-") {
-	// 	if lastCharIs(short, '.') {
-	// 		fmt.Printf("DEBUG: ParseHostnameDot returning short\n")
-	// 		return short, nil
-	// 	}
-	// 	fmt.Printf("DEBUG: ParseHostnameDot returning short dot origin with current-domain\n")
-	// 	return short + "." + origin, nil
-	// }
 
 	if subdomain != "" {
 		// If D_EXTEND() is in use...

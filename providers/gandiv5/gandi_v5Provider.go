@@ -182,6 +182,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			// GANDI only permits aliases on a naked domain.
 			// Therefore, we change this to a CNAME.
 			rec.Type = "CNAME"
+			rec.ImportFromLegacy(dc.Name)
 		}
 		if rec.TTL < 300 {
 			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
