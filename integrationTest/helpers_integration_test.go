@@ -293,7 +293,7 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 
 func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
 	scode := strconv.Itoa(int(code))
-	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "", "**current-domain**")
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}

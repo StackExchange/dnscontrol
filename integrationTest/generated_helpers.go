@@ -8,7 +8,7 @@ import (
 
 func a(name string, a string) *models.RecordConfig {
 
-	rdata, err := models.ParseA([]string{a}, "", "**current-domain**")
+	rdata, err := models.ParseA([]string{a}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +18,7 @@ func a(name string, a string) *models.RecordConfig {
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
 	spreference := strconv.Itoa(int(preference))
 
-	rdata, err := models.ParseMX([]string{spreference, mx}, "", "**current-domain**")
+	rdata, err := models.ParseMX([]string{spreference, mx}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +30,7 @@ func srv(name string, priority uint16, weight uint16, port uint16, target string
 	sweight := strconv.Itoa(int(weight))
 	sport := strconv.Itoa(int(port))
 
-	rdata, err := models.ParseSRV([]string{spriority, sweight, sport, target}, "", "**current-domain**")
+	rdata, err := models.ParseSRV([]string{spriority, sweight, sport, target}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +39,7 @@ func srv(name string, priority uint16, weight uint16, port uint16, target string
 
 func cname(name string, target string) *models.RecordConfig {
 
-	rdata, err := models.ParseCNAME([]string{target}, "", "**current-domain**")
+	rdata, err := models.ParseCNAME([]string{target}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func cfsingleredirect(name string, srname string, code uint16, srwhen string, sr
 	scode := strconv.Itoa(int(code))
 	sprpriority := strconv.Itoa(prpriority)
 
-	rdata, err := models.ParseCFSINGLEREDIRECT([]string{srname, scode, srwhen, srthen, srrrulesetid, srrrulesetruleid, srdisplay, prwhen, prthen, sprpriority, prdisplay}, "", "**current-domain**")
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{srname, scode, srwhen, srthen, srrrulesetid, srrrulesetruleid, srdisplay, prwhen, prthen, sprpriority, prdisplay}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}

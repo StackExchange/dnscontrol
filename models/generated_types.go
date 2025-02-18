@@ -27,7 +27,7 @@ type A struct {
 	A fieldtypes.IPv4 `dns:"a"`
 }
 
-func ParseA(rawfields []string, subdomain string, origin string) (A, error) {
+func ParseA(rawfields []string, origin string) (A, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 1) {
@@ -43,7 +43,7 @@ func ParseA(rawfields []string, subdomain string, origin string) (A, error) {
 }
 
 // PopulateFromRawA updates rc to be an A record with contents from rawfields, meta and origin.
-func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
+func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "A"
 
 	// First rawfield is the label.
@@ -52,7 +52,7 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseA(rawfields[1:], subdomain, origin)
+	rdata, err := ParseA(rawfields[1:], origin)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ type MX struct {
 	Mx         string `dns:"cdomain-name"`
 }
 
-func ParseMX(rawfields []string, subdomain string, origin string) (MX, error) {
+func ParseMX(rawfields []string, origin string) (MX, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 2) {
@@ -97,7 +97,7 @@ func ParseMX(rawfields []string, subdomain string, origin string) (MX, error) {
 	if preference, err = fieldtypes.ParseUint16(rawfields[0]); err != nil {
 		return MX{}, err
 	}
-	if mx, err = fieldtypes.ParseHostnameDot(rawfields[1], subdomain, origin); err != nil {
+	if mx, err = fieldtypes.ParseHostnameDot(rawfields[1], "", origin); err != nil {
 		return MX{}, err
 	}
 
@@ -105,7 +105,7 @@ func ParseMX(rawfields []string, subdomain string, origin string) (MX, error) {
 }
 
 // PopulateFromRawMX updates rc to be an MX record with contents from rawfields, meta and origin.
-func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
+func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "MX"
 
 	// First rawfield is the label.
@@ -114,7 +114,7 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseMX(rawfields[1:], subdomain, origin)
+	rdata, err := ParseMX(rawfields[1:], origin)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ type SRV struct {
 	Target   string `json:"target" dns:"domain-name"`
 }
 
-func ParseSRV(rawfields []string, subdomain string, origin string) (SRV, error) {
+func ParseSRV(rawfields []string, origin string) (SRV, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 4) {
@@ -169,7 +169,7 @@ func ParseSRV(rawfields []string, subdomain string, origin string) (SRV, error) 
 	if port, err = fieldtypes.ParseUint16(rawfields[2]); err != nil {
 		return SRV{}, err
 	}
-	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], subdomain, origin); err != nil {
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], "", origin); err != nil {
 		return SRV{}, err
 	}
 
@@ -177,7 +177,7 @@ func ParseSRV(rawfields []string, subdomain string, origin string) (SRV, error) 
 }
 
 // PopulateFromRawSRV updates rc to be an SRV record with contents from rawfields, meta and origin.
-func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
+func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "SRV"
 
 	// First rawfield is the label.
@@ -186,7 +186,7 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseSRV(rawfields[1:], subdomain, origin)
+	rdata, err := ParseSRV(rawfields[1:], origin)
 	if err != nil {
 		return err
 	}
@@ -218,7 +218,7 @@ type CNAME struct {
 	Target string `dns:"cdomain-name"`
 }
 
-func ParseCNAME(rawfields []string, subdomain string, origin string) (CNAME, error) {
+func ParseCNAME(rawfields []string, origin string) (CNAME, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 1) {
@@ -226,7 +226,7 @@ func ParseCNAME(rawfields []string, subdomain string, origin string) (CNAME, err
 	}
 	var target string
 	var err error
-	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], subdomain, origin); err != nil {
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], "", origin); err != nil {
 		return CNAME{}, err
 	}
 
@@ -234,7 +234,7 @@ func ParseCNAME(rawfields []string, subdomain string, origin string) (CNAME, err
 }
 
 // PopulateFromRawCNAME updates rc to be an CNAME record with contents from rawfields, meta and origin.
-func PopulateFromRawCNAME(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
+func PopulateFromRawCNAME(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "CNAME"
 
 	// First rawfield is the label.
@@ -243,7 +243,7 @@ func PopulateFromRawCNAME(rc *RecordConfig, rawfields []string, meta map[string]
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCNAME(rawfields[1:], subdomain, origin)
+	rdata, err := ParseCNAME(rawfields[1:], origin)
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ type CFSINGLEREDIRECT struct {
 	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn"`
 }
 
-func ParseCFSINGLEREDIRECT(rawfields []string, subdomain string, origin string) (CFSINGLEREDIRECT, error) {
+func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, 4) {
@@ -313,7 +313,7 @@ func ParseCFSINGLEREDIRECT(rawfields []string, subdomain string, origin string) 
 }
 
 // PopulateFromRawCFSINGLEREDIRECT updates rc to be an CFSINGLEREDIRECT record with contents from rawfields, meta and origin.
-func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
+func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
 	rc.Type = "CF_SINGLE_REDIRECT"
 	rc.TTL = 1
 
@@ -323,7 +323,7 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta 
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCFSINGLEREDIRECT(rawfields, subdomain, origin)
+	rdata, err := ParseCFSINGLEREDIRECT(rawfields, origin)
 	if err != nil {
 		return err
 	}

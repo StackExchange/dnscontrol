@@ -12,7 +12,7 @@ func (rc *RecordConfig) SetTargetMX(preference uint16, mx string) error {
 
 // SetTargetMXStrings is like SetTargetMX but accepts strings.
 func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
-	rdata, err := ParseMX([]string{rc.Name, pref, target}, "", "")
+	rdata, err := ParseMX([]string{rc.Name, pref, target}, "")
 	if err != nil {
 		return err
 	}
