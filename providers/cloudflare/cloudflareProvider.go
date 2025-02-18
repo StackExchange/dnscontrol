@@ -439,12 +439,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
-			rec.ImportFromLegacy(dc.Name)
-			// err := rec.Seal()
-			// if err != nil {
-			// 	panic(err)
-			// }
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 
