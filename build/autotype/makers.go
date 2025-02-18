@@ -85,7 +85,7 @@ func makeTypeTYPE(rtconfig RTypeConfig) []byte {
 // ParseTYPE
 
 var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
-func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
+func Parse{{ .Name }}(rawfields []string, subdomain string, origin string) ({{ .Name }}, error) {
 
         // Error checking
         if errorCheckFieldCount(rawfields, {{ .NumRawFields }}) {
@@ -119,7 +119,7 @@ func makeParseTYPE(rtconfig RTypeConfig) []byte {
 
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
-func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain string, origin string) error {
   rc.Type = "{{ .Token }}"
   {{- if .TTL1 }}
   rc.TTL = 1
@@ -132,9 +132,9 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
   // Parse the remaining fields.
   {{- if .NoLabel }}
-  rdata, err := Parse{{ .Name }}(rawfields, origin)
+  rdata, err := Parse{{ .Name }}(rawfields, subdomain, origin)
   {{- else }}
-  rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
+  rdata, err := Parse{{ .Name }}(rawfields[1:], subdomain, origin)
   {{- end }}
   if err != nil {
     return err
@@ -216,11 +216,11 @@ func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfi
 {{- end }}
 {{- end }}
 
-  rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "**current-domain**")
+  rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "", "**current-domain**")
   if err != nil {
     panic(err)
   }
-  return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+  return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
 }
 
 `))

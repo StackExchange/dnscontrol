@@ -169,7 +169,7 @@ func ParseSRV(rawfields []string, subdomain string, origin string) (SRV, error) 
 	if port, err = fieldtypes.ParseUint16(rawfields[2]); err != nil {
 		return SRV{}, err
 	}
-	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], "", origin); err != nil {
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], subdomain, origin); err != nil {
 		return SRV{}, err
 	}
 

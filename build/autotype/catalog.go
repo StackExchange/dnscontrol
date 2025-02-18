@@ -242,7 +242,7 @@ func parserFor(i int, f Field) string {
 	case "string":
 		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], subdomain, origin)`, i)
 		}
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
 	case "fieldtypes.IPv4":
