@@ -176,6 +176,11 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.ChangeType("CNAME", dc.Name)
+		}
+	}
 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, 0, err

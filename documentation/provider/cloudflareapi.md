@@ -54,7 +54,7 @@ This method is enabled by setting the `apitoken` value in `creds.json`:
 {% endcode %}
 
 * `accountid` is found in the Cloudflare portal ("Account ID") on any "Website" page.  Click on any site and you'll see the "Account ID" on the lower right side of the page.
-* `apitoken` is something you must create. See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.  (Spoiler alert: [link](https://dash.cloudflare.com/profile/api-tokens). The token must be granted rights (authorization to do certain tasks) at a very granular level.
+* `apitoken` is something you must create. See [Cloudflare's documentation](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for instructions on how to generate and configure permissions on API tokens.  (Spoiler alert: [link](https://dash.cloudflare.com/profile/api-tokens). The token must be granted rights (authorization to do certain tasks) at a very granular level.
 
 DNSControl requires the token to have the following permissions:
 
