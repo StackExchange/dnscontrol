@@ -3,6 +3,7 @@ package ovh
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
@@ -184,9 +185,9 @@ func adaptNativeRecord(r *Record) error {
 		// make sure target is fully unquoted to prevent "Invalid subfield found in DMARC" error
 		r.Target = models.StripQuotes(r.Target)
 	}
-	// DMARC record can be created only for `_dmarc` subdomain
-	if r.FieldType == "DMARC" && r.SubDomain != "_dmarc" {
-		return fmt.Errorf("native OVH DMARC record requires subdomain to always be _dmarc, %s given", r.SubDomain)
+	// DMARC record can be created only for subdomains starting with`_dmarc`
+	if r.FieldType == "DMARC" && !strings.HasPrefix(r.SubDomain, "_dmarc") {
+		return fmt.Errorf("native OVH DMARC record requires subdomain to always start with _dmarc, %s given", r.SubDomain)
 	}
 	return nil
 }
