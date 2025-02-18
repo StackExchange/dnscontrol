@@ -220,7 +220,7 @@ func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfi
   if err != nil {
     panic(err)
   }
-  return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+  return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 `))
