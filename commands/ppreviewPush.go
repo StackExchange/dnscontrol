@@ -346,6 +346,14 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 //	return r
 //}
 
+// whichZonesToProcess takes a list of DomainConfigs and a filter string and
+// returns a list of DomainConfigs that match the filter. The filter string
+// is a comma-separated list of domain names. If the filter string is empty or
+// "all", all domains are returned.
+//
+// If the filter string contains "!", then the intent is to select a tagged
+// domain and the models.DomainConfig unique names are checked against the
+// filter string
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
 	if filter == "" || filter == "all" {
 		return domains
@@ -354,7 +362,17 @@ func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*model
 	permitList := strings.Split(filter, ",")
 	var picked []*models.DomainConfig
 	for _, domain := range domains {
-		if domainInList(domain.Name, permitList) {
+		// This first take doesn't comply with the docs - if no tagged domain is included
+		// all the matching prefix domains are included in the picked list ....
+
+		// if strings.Contains(filter, "!") && domainInList(domain.GetUniqueName(), permitList) {
+		// 	picked = append(picked, domain)
+		// } else if domainInList(domain.Name, permitList) {
+		// 	picked = append(picked, domain)
+		// }
+		// this works as expected for tagged domains and does not include untagged domains
+		// if the filter string contains "!"
+		if domainInList(domain.GetUniqueName(), permitList) {
 			picked = append(picked, domain)
 		}
 	}
