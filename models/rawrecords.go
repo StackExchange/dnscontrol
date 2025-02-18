@@ -155,6 +155,11 @@ func TransformRawRecords(domains []*DomainConfig) error {
 	return nil
 }
 
+// effectiveOrigin returns the effective origin given a "subdomain" and an
+// "origin".  The concept of a subdomain is only relevant in dnsconfig.js and
+// RawRecordConfig.  In the RecordConfig, the "Name" field is the full name
+// (minor the dc.Name) and any .Target or other fields are FQDNs or relative to
+// the effective origin.
 func effectiveOrigin(sub, origin string) string {
 	if sub == "" {
 		return origin
