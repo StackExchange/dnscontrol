@@ -12,7 +12,7 @@ func a(name string, a string) *models.RecordConfig {
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
@@ -22,7 +22,7 @@ func mx(name string, preference uint16, mx string) *models.RecordConfig {
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func srv(name string, priority uint16, weight uint16, port uint16, target string) *models.RecordConfig {
@@ -34,7 +34,7 @@ func srv(name string, priority uint16, weight uint16, port uint16, target string
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func cname(name string, target string) *models.RecordConfig {
@@ -43,7 +43,7 @@ func cname(name string, target string) *models.RecordConfig {
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func cfsingleredirect(name string, srname string, code uint16, srwhen string, srthen string, srrrulesetid string, srrrulesetruleid string, srdisplay string, prwhen string, prthen string, prpriority int, prdisplay string) *models.RecordConfig {
@@ -54,5 +54,5 @@ func cfsingleredirect(name string, srname string, code uint16, srwhen string, sr
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }

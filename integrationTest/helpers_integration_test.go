@@ -297,7 +297,7 @@ func cfSingleRedirect(name string, code uint16, when, then string) *models.Recor
 	if err != nil {
 		panic(err)
 	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "", "**current-domain**")
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func aaaa(name, target string) *models.RecordConfig {

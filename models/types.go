@@ -66,12 +66,12 @@ func (rc *RecordConfig) Seal() error {
 	return nil
 }
 
-func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]string, ttl uint32, subdomain string, origin string) *RecordConfig {
+func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]string, ttl uint32, origin string) *RecordConfig {
 	rc := &RecordConfig{
 		Type: GetTypeName(rdata),
 		TTL:  ttl,
 	}
-	if err := rc.SetLabel3(label, subdomain, origin); err != nil {
+	if err := rc.SetLabel3(label, "", origin); err != nil {
 		panic(err)
 	}
 	if err := RecordUpdateFields(rc, rdata, meta); err != nil {
