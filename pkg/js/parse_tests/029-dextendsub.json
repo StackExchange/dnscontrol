@@ -567,19 +567,19 @@
       "records": [
         {
           "Fields": {
-            "Target": "b.example.tld."
+            "Target": "b.sub.example.tld."
           },
           "name": "a.sub",
-          "target": "b.example.tld.",
+          "target": "b.sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
           "Fields": {
-            "Target": "example.tld."
+            "Target": "sub.example.tld."
           },
           "name": "b.sub",
-          "target": "example.tld.",
+          "target": "sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },

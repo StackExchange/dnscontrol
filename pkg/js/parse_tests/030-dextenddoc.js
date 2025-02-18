@@ -19,7 +19,7 @@ D_EXTEND("sub.domain.tld",
 );
 D_EXTEND("sub.sub.domain.tld",
     A("ddd", "127.0.0.6"), // ddd.sub.sub.domain.tld
-    CNAME("g", "h"), // g.sub.domain.tld -> h.sub.domain.tld
+    CNAME("g", "h"), // g.sub.sub.domain.tld -> h.sub.sub.domain.tld
 );
 D_EXTEND("sub.domain.tld",
     A("@", "127.0.0.7"), // sub.domain.tld

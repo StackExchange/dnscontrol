@@ -207,7 +207,7 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 
 // SetTargetA sets the target to an A record.
 func (rc *RecordConfig) SetTargetA(s string) error {
-	rdata, err := ParseA([]string{s}, "")
+	rdata, err := ParseA([]string{s}, "", "")
 	if err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ func (rc *RecordConfig) SetTargetA(s string) error {
 
 // SetTargetCNAME sets the target to an A record.
 func (rc *RecordConfig) SetTargetCNAME(s string) error {
-	rdata, err := ParseCNAME([]string{s}, "")
+	rdata, err := ParseCNAME([]string{s}, "", "")
 	if err != nil {
 		return err
 	}

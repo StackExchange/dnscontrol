@@ -17,7 +17,7 @@ func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target strin
 func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) (err error) {
 	rc.Type = "SRV"
 
-	rdata, err := ParseSRV([]string{priority, weight, port, target}, "")
+	rdata, err := ParseSRV([]string{priority, weight, port, target}, "", "")
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) er
 	part := strings.Fields(s)
 	switch len(part) {
 	case 3:
-		rdata, err = ParseSRV([]string{strconv.Itoa(int(priority)), part[0], part[1], part[2]}, "")
+		rdata, err = ParseSRV([]string{strconv.Itoa(int(priority)), part[0], part[1], part[2]}, "", "")
 	case 2:
-		rdata, err = ParseSRV([]string{strconv.Itoa(int(priority)), part[0], part[1], "."}, "")
+		rdata, err = ParseSRV([]string{strconv.Itoa(int(priority)), part[0], part[1], "."}, "", "")
 	default:
 		return fmt.Errorf("SRV value does not contain 3 fields: (%#v)", s)
 	}

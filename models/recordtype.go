@@ -12,7 +12,10 @@ func (rc *RecordConfig) ChangeType(newType string, origin string) {
 	rc.Type = newType
 
 	if IsTypeUpgraded(newType) {
-		rc.ImportFromLegacy(origin)
+		err := rc.ImportFromLegacy(origin)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 }

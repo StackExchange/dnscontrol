@@ -31,7 +31,7 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
 	}
 
-	return rt.PopulateFromRaw(rc, args, meta, origin)
+	return rt.PopulateFromRaw(rc, args, meta, rc.SubDomain, origin)
 }
 
 // CheckAndFixImport checks the records for any that were created with a
@@ -130,7 +130,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, rec.SubDomain, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
 					rawRec.Type,

@@ -81,19 +81,19 @@
         },
         {
           "Fields": {
-            "Target": "f.domain.tld."
+            "Target": "f.sub.domain.tld."
           },
           "name": "e.sub",
-          "target": "f.domain.tld.",
+          "target": "f.sub.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
           "Fields": {
-            "Target": "j.domain.tld."
+            "Target": "j.sub.domain.tld."
           },
           "name": "i.sub",
-          "target": "j.domain.tld.",
+          "target": "j.sub.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
@@ -108,10 +108,10 @@
         },
         {
           "Fields": {
-            "Target": "h.domain.tld."
+            "Target": "h.sub.sub.domain.tld."
           },
           "name": "g.sub.sub",
-          "target": "h.domain.tld.",
+          "target": "h.sub.sub.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
