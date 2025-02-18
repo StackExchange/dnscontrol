@@ -110,10 +110,10 @@ func Test_generatePSZoneDump(t *testing.T) {
 // }
 
 func Test_generatePSModify(t *testing.T) {
-	recA1 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("1.2.3.4")}, nil, 0, "example.com")
-	recA2 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("10.20.30.40")}, nil, 0, "example.com")
-	recMX1 := models.MustCreateRecord("@", models.MX{Preference: 5, Mx: "foo.com."}, nil, 0, "example.com")
-	recMX2 := models.MustCreateRecord("@", models.MX{Preference: 50, Mx: "foo2.com."}, nil, 0, "example.com")
+	recA1 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("1.2.3.4")}, nil, 0, "", "example.com")
+	recA2 := models.MustCreateRecord("@", models.A{A: fieldtypes.MustParseIPv4("10.20.30.40")}, nil, 0, "", "example.com")
+	recMX1 := models.MustCreateRecord("@", models.MX{Preference: 5, Mx: "foo.com."}, nil, 0, "", "example.com")
+	recMX2 := models.MustCreateRecord("@", models.MX{Preference: 50, Mx: "foo2.com."}, nil, 0, "", "example.com")
 
 	type args struct {
 		domain    string

@@ -20,14 +20,14 @@ func TestImportTransform(t *testing.T) {
 	src := &models.DomainConfig{
 		Name: "stackexchange.com",
 		Records: []*models.RecordConfig{
-			models.MustCreateRecord("*", models.A{A: fieldtypes.MustParseIPv4("0.0.2.2")}, nil, 0, "stackexchange.com"),
-			models.MustCreateRecord("www", models.A{A: fieldtypes.MustParseIPv4("0.0.1.1")}, nil, 0, "stackexchange.com"),
+			models.MustCreateRecord("*", models.A{A: fieldtypes.MustParseIPv4("0.0.2.2")}, nil, 0, "", "stackexchange.com"),
+			models.MustCreateRecord("www", models.A{A: fieldtypes.MustParseIPv4("0.0.1.1")}, nil, 0, "", "stackexchange.com"),
 		},
 	}
 	dst := &models.DomainConfig{
 		Name: "internal",
 		Records: []*models.RecordConfig{
-			models.MustCreateRecord("*.stackexchange.com", models.A{A: fieldtypes.MustParseIPv4("0.0.3.3")}, map[string]string{"transform_table": transformSingle}, 0, "stackexchange.com"),
+			models.MustCreateRecord("*.stackexchange.com", models.A{A: fieldtypes.MustParseIPv4("0.0.3.3")}, map[string]string{"transform_table": transformSingle}, 0, "", "stackexchange.com"),
 			makeRC("@", "internal", "stackexchange.com", models.RecordConfig{Type: "IMPORT_TRANSFORM", Metadata: map[string]string{"transform_table": transformDouble}}),
 		},
 	}
