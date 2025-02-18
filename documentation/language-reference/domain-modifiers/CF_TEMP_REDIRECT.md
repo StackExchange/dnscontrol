@@ -15,7 +15,7 @@ parameter_types:
 **WARNING**: Cloudflare is removing this feature and replacing it with a new
 feature called "Dynamic Single Redirect". DNSControl will automatically
 generate "Dynamic Single Redirects" for a limited number of use cases. See
-[`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+[`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
 {% endhint %}
 
 `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page

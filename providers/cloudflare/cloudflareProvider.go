@@ -178,7 +178,7 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 
@@ -441,6 +441,13 @@ func checkProxyVal(v string) (string, error) {
 }
 
 func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.ChangeType("CNAME", dc.Name)
+		}
+	}
+
 	// Determine the default proxy setting.
 	var defProxy string
 	var err error
@@ -815,6 +822,12 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+
+	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	if cr.Type == "SPF" {
+		cr.Type = "TXT"
+	}
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "ALIAS" || cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
@@ -828,11 +841,6 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		Metadata: map[string]string{},
 	}
 	rc.SetLabelFromFQDN(cr.Name, domain)
-
-	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
-	if cr.Type == "SPF" {
-		cr.Type = "TXT"
-	}
 
 	if cr.Type == "A" || cr.Type == "AAAA" || cr.Type == "CNAME" {
 		if cr.Proxied != nil {

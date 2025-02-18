@@ -12,8 +12,8 @@ a provider that supports it, we'd love your contribution to ensure it works corr
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
 
 <!-- provider-matrix-start -->
-| Provider name | Official Support | DNS Provider | Registrar | Concurrency Verified | [`ALIAS`](language-reference/domain-modifiers/ALIAS.md) | [`CAA`](language-reference/domain-modifiers/CAA.md) | [`AUTODNSSEC`](language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`HTTPS`](language-reference/domain-modifiers/HTTPS.md) | [`LOC`](language-reference/domain-modifiers/LOC.md) | [`NAPTR`](language-reference/domain-modifiers/NAPTR.md) | [`PTR`](language-reference/domain-modifiers/PTR.md) | [`SOA`](language-reference/domain-modifiers/SOA.md) | [`SRV`](language-reference/domain-modifiers/SRV.md) | [`SSHFP`](language-reference/domain-modifiers/SSHFP.md) | [`SVCB`](language-reference/domain-modifiers/SVCB.md) | [`TLSA`](language-reference/domain-modifiers/TLSA.md) | [`DS`](language-reference/domain-modifiers/DS.md) | [`DHCID`](language-reference/domain-modifiers/DHCID.md) | [`DNAME`](language-reference/domain-modifiers/DNAME.md) | [`DNSKEY`](language-reference/domain-modifiers/DNSKEY.md) | dual host | create-domains | get-zones |
-| ------------- | ---------------- | ------------ | --------- | -------------------- | ------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------- | --------- | -------------- | --------- |
+| Provider name | Official Support | DNS Provider | Registrar | Concurrency Verified | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) | [`DS`](../language-reference/domain-modifiers/DS.md) | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | dual host | create-domains | get-zones |
+| ------------- | ---------------- | ------------ | --------- | -------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ | --------- | -------------- | --------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -82,13 +82,13 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
-|[`AZURE_DNS`](provider/azure_dns.md)|@vatsalyagoel|
-|[`BIND`](provider/bind.md)|@tlimoncelli|
-|[`CLOUDFLAREAPI`](provider/cloudflareapi.md)|@tresni|
-|[`CSCGLOBAL`](provider/cscglobal.md)|@mikenz|
-|[`GCLOUD`](provider/gcloud.md)|@riyadhalnur|
-|[`MSDNS`](provider/msdns.md)|@tlimoncelli|
-|[`ROUTE53`](provider/route53.md)|@tresni|
+|[`AZURE_DNS`](azure_dns.md)|@vatsalyagoel|
+|[`BIND`](bind.md)|@tlimoncelli|
+|[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
+|[`CSCGLOBAL`](cscglobal.md)|@mikenz|
+|[`GCLOUD`](gcloud.md)|@riyadhalnur|
+|[`MSDNS`](msdns.md)|@tlimoncelli|
+|[`ROUTE53`](route53.md)|@tresni|
 
 ### Providers with "contributor support"
 
@@ -112,50 +112,50 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
-|[`AZURE_PRIVATE_DNS`](provider/azure_private_dns.md)|@matthewmgamble|
-|[`AKAMAIEDGEDNS`](provider/akamaiedgedns.md)|@edglynes|
-|[`AXFRDDNS`](provider/axfrddns.md)|@hnrgrgr|
-|[`BUNNY_DNS`](provider/bunny_dns.md)|@ppmathis|
-|[`CLOUDFLAREAPI`](provider/cloudflareapi.md)|@tresni|
-|[`CLOUDNS`](provider/cloudns.md)|@pragmaton|
-|[`CNR`](provider/cnr.md)|@KaiSchwarz-cnic|
-|[`CSCGLOBAL`](provider/cscglobal.md)|@Air-New-Zealand|
-|[`DESEC`](provider/desec.md)|@D3luxee|
-|[`DIGITALOCEAN`](provider/digitalocean.md)|@Deraen|
-|[`DNSIMPLE`](provider/dnsimple.md)|@onlyhavecans|
-|[`DNSMADEEASY`](provider/dnsmadeeasy.md)|@vojtad|
-|[`DNSOVERHTTPS`](provider/dnsoverhttps.md)|@mikenz|
-|[`DOMAINNAMESHOP`](provider/domainnameshop.md)|@SimenBai|
-|[`EASYNAME`](provider/easyname.md)|@tresni|
-|[`EXOSCALE`](provider/exoscale.md)|@pierre-emmanuelJ|
-|[`GANDI_V5`](provider/gandi_v5.md)|@TomOnTime|
-|[`GCORE`](provider/gcore.md)|@xddxdd|
-|[`HEDNS`](provider/hedns.md)|@rblenkinsopp|
-|[`HETZNER`](provider/hetzner.md)|@das7pad|
-|[`HEXONET`](provider/hexonet.md)|@KaiSchwarz-cnic|
-|[`HOSTINGDE`](provider/hostingde.md)|@membero|
-|[`HUAWEICLOUD`](provider/huaweicloud.md)|@huihuimoe|
-|[`INTERNETBS`](provider/internetbs.md)|@pragmaton|
-|[`INWX`](provider/inwx.md)|@patschi|
-|[`LINODE`](provider/linode.md)|@koesie10|
-|[`LOOPIA`](provider/loopia.md)|@systemcrash|
-|[`LUADNS`](provider/luadns.md)|@riku22|
-|[`NAMECHEAP`](provider/namecheap.md)|@willpower232|
-|[`NETCUP`](provider/netcup.md)|@kordianbruck|
-|[`NETLIFY`](provider/netlify.md)|@SphericalKat|
-|[`NS1`](provider/ns1.md)|@costasd|
-|[`OPENSRS`](provider/opensrs.md)|@philhug|
-|[`ORACLE`](provider/oracle.md)|@kallsyms|
-|[`OVH`](provider/ovh.md)|@masterzen|
-|[`PACKETFRAME`](provider/packetframe.md)|@hamptonmoore|
-|[`POWERDNS`](provider/powerdns.md)|@jpbede|
-|[`REALTIMEREGISTER`](provider/realtimeregister.md)|@PJEilers|
-|[`ROUTE53`](provider/route53.md)|@tresni|
-|[`RWTH`](provider/rwth.md)|@MisterErwin|
-|[`SAKURACLOUD`](provider/sakuracloud.md)|@ttkzw|
-|[`SOFTLAYER`](provider/softlayer.md)|@jamielennox|
-|[`TRANSIP`](provider/transip.md)|@blackshadev|
-|[`VULTR`](provider/vultr.md)|@pgaskin|
+|[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
+|[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
+|[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|
+|[`BUNNY_DNS`](bunny_dns.md)|@ppmathis|
+|[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
+|[`CLOUDNS`](cloudns.md)|@pragmaton|
+|[`CNR`](cnr.md)|@KaiSchwarz-cnic|
+|[`CSCGLOBAL`](cscglobal.md)|@Air-New-Zealand|
+|[`DESEC`](desec.md)|@D3luxee|
+|[`DIGITALOCEAN`](digitalocean.md)|@Deraen|
+|[`DNSIMPLE`](dnsimple.md)|@onlyhavecans|
+|[`DNSMADEEASY`](dnsmadeeasy.md)|@vojtad|
+|[`DNSOVERHTTPS`](dnsoverhttps.md)|@mikenz|
+|[`DOMAINNAMESHOP`](domainnameshop.md)|@SimenBai|
+|[`EASYNAME`](easyname.md)|@tresni|
+|[`EXOSCALE`](exoscale.md)|@pierre-emmanuelJ|
+|[`GANDI_V5`](gandi_v5.md)|@TomOnTime|
+|[`GCORE`](gcore.md)|@xddxdd|
+|[`HEDNS`](hedns.md)|@rblenkinsopp|
+|[`HETZNER`](hetzner.md)|@das7pad|
+|[`HEXONET`](hexonet.md)|@KaiSchwarz-cnic|
+|[`HOSTINGDE`](hostingde.md)|@membero|
+|[`HUAWEICLOUD`](huaweicloud.md)|@huihuimoe|
+|[`INTERNETBS`](internetbs.md)|@pragmaton|
+|[`INWX`](inwx.md)|@patschi|
+|[`LINODE`](linode.md)|@koesie10|
+|[`LOOPIA`](loopia.md)|@systemcrash|
+|[`LUADNS`](luadns.md)|@riku22|
+|[`NAMECHEAP`](namecheap.md)|@willpower232|
+|[`NETCUP`](netcup.md)|@kordianbruck|
+|[`NETLIFY`](netlify.md)|@SphericalKat|
+|[`NS1`](ns1.md)|@costasd|
+|[`OPENSRS`](opensrs.md)|@philhug|
+|[`ORACLE`](oracle.md)|@kallsyms|
+|[`OVH`](ovh.md)|@masterzen|
+|[`PACKETFRAME`](packetframe.md)|@hamptonmoore|
+|[`POWERDNS`](powerdns.md)|@jpbede|
+|[`REALTIMEREGISTER`](realtimeregister.md)|@PJEilers|
+|[`ROUTE53`](route53.md)|@tresni|
+|[`RWTH`](rwth.md)|@MisterErwin|
+|[`SAKURACLOUD`](sakuracloud.md)|@ttkzw|
+|[`SOFTLAYER`](softlayer.md)|@jamielennox|
+|[`TRANSIP`](transip.md)|@blackshadev|
+|[`VULTR`](vultr.md)|@pgaskin|
 
 ### Requested providers
 
@@ -181,7 +181,7 @@ code to support this provider, we'd be glad to help in any way.
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
-A: Following [the bug triage process](bug-triage.md), the request
+A: Following [the bug triage process](../bug-triage.md), the request
 is closed once it is added to this list. If someone chooses to implement the
 provider, they re-open the issue.
 
