@@ -821,7 +821,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {
-		cr.ChangeType("TXT", domain)
+		cr.Type = "TXT"
 	}
 
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
