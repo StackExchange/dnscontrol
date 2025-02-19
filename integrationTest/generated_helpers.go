@@ -46,11 +46,11 @@ func cname(name string, target string) *models.RecordConfig {
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
-func cfsingleredirect(name string, srname string, code uint16, srwhen string, srthen string, srrrulesetid string, srrrulesetruleid string, srdisplay string, prwhen string, prthen string, prpriority int, prdisplay string) *models.RecordConfig {
+func cfsingleredirect(srname string, code uint16, srwhen string, srthen string) *models.RecordConfig {
+	name := srname
 	scode := strconv.Itoa(int(code))
-	sprpriority := strconv.Itoa(prpriority)
 
-	rdata, err := models.ParseCFSINGLEREDIRECT([]string{srname, scode, srwhen, srthen, srrrulesetid, srrrulesetruleid, srdisplay, prwhen, prthen, sprpriority, prdisplay}, "**current-domain**")
+	rdata, err := models.ParseCFSINGLEREDIRECT([]string{srname, scode, srwhen, srthen}, "**current-domain**")
 	if err != nil {
 		panic(err)
 	}

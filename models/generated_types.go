@@ -272,17 +272,17 @@ func (rc *RecordConfig) GetFieldsAsStringsCNAME() [1]string {
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
 type CFSINGLEREDIRECT struct {
-	SRName           string `json:"sr_name,omitempty"`
+	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label"`
 	Code             uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"`
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn"`
-	PRWhen           string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
-	PRThen           string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
-	PRPriority       int    `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
+	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn,noinput"`
+	PRWhen           string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
+	PRThen           string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
+	PRPriority       int    `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
+	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn,noinput"`
 }
 
 func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {

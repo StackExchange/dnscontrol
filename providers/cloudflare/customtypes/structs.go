@@ -14,24 +14,24 @@ type CFSINGLEREDIRECT struct {
 	Hdr dns.RR_Header
 
 	// SR == SingleRedirect
-	SRName string `json:"sr_name,omitempty"` // How is this displayed to the user
+	SRName string `json:"sr_name,omitempty" dnscontrol:"_,label"` // How is this displayed to the user
 	//
 	Code uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"` // 301 or 302
 	//
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
 	// How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
-	SRDisplay string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn"`
+	SRDisplay string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn,noinput"`
 	//
 	// PR == PageRule
-	PRWhen string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
-	PRThen string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
+	PRWhen string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
+	PRThen string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
 
 	// An identifier for the rule.
-	PRPriority int `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn"`
+	PRPriority int `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn,noinput"`
 
 	// How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
-	PRDisplay string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn"`
+	PRDisplay string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn,noinput"`
 }

@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -289,15 +288,6 @@ func SetLabel(r *models.RecordConfig, label, domain string) {
 func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
 	record.Metadata = metadata
 	return record
-}
-
-func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	scode := strconv.Itoa(int(code))
-	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
-	if err != nil {
-		panic(err)
-	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 func aaaa(name, target string) *models.RecordConfig {

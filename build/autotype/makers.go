@@ -7,10 +7,12 @@ import (
 	"text/template"
 )
 
+// funcs lists Go functions imported into the template system.
 var funcs = template.FuncMap{
 	"join": strings.Join,
 }
 
+// valuesTemplate executes a template with the entire Values struct.
 func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
 	b := &bytes.Buffer{}
 	err := theTemplate.Execute(b, vals)
@@ -20,6 +22,7 @@ func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
 	return b.Bytes()
 }
 
+// rtypeTemplate executes a template with values for a single RTypeConfig.
 func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 	b := &bytes.Buffer{}
 	err := theTemplate.Execute(b, vals)
@@ -31,6 +34,7 @@ func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 
 // RecordType
 
+// makeInterfaceConstraint generates the RecordType interface constraint.
 func makeInterfaceConstraint(vals Values) []byte {
 	return valuesTemplate(RecordTypeTmpl, vals)
 }
@@ -44,6 +48,7 @@ type RecordType interface {
 
 // RegisterType
 
+// makeInit generates the init() function that registers all types.
 func makeInit(vals Values) []byte {
 	return valuesTemplate(RegisterTypeTmpl, vals)
 }
@@ -67,6 +72,7 @@ func init() {
 
 // TypeTYPE
 
+// makeTypeTYPE generates the Type{TYPE} for a record type.
 func makeTypeTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(TypeTYPETmpl, rtconfig)
 }
@@ -85,6 +91,7 @@ type {{ .Name }} struct {
 
 // ParseTYPE
 
+// makeParseTYPE generates the func Parse{TYPE} for a record type.
 func makeParseTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(ParseTYPETmpl, rtconfig)
 }
@@ -116,6 +123,26 @@ func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
 
 `))
 
+func mkParser(i int, f Field) string {
+	switch ty := f.Type; ty {
+	case "int":
+		if HasTagOption(f.Tags, "dnscontrol", "redirectcode") {
+			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d], "", origin)`, i)
+		}
+		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "string":
+		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
+		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+		}
+		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "fieldtypes.IPv4":
+		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
+	}
+
+	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
+}
+
 func mkConstructAll(fields []Field) string {
 	var ac []string
 	for _, field := range fields {
@@ -134,6 +161,7 @@ func mkConstructAll(fields []Field) string {
 
 // PopulateFromRawTYPE
 
+// makePopulateFromRawTYPE generates the func PopulateFromRaw{TYPE} for a given record type.
 func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(PopulateFromRawTYPETmpl, rtconfig)
 }
@@ -182,6 +210,7 @@ func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
 
 // GetFieldsTYPE
 
+// makeGetFieldsTYPE generates the method func GetFields{TYPE} for a given record type.
 func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(GetFieldsTYPETmpl, rtconfig)
 }
@@ -276,7 +305,11 @@ func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
 }
 
 var IntTestConstructorTmpl = template.Must(template.New("IntTestConstructor").Parse(`
-func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfig {
+{{- if .NoLabel }}
+func {{ .NameLower }}({{ .InputFieldsAsSignature }}) *models.RecordConfig {
+{{- else }}
+func {{ .NameLower }}(name string, {{ .InputFieldsAsSignature }}) *models.RecordConfig {
+{{- end }}
 {{- range .Fields }}
 {{- if .ConvertToString }}
   {{ .ConvertToString }}
@@ -292,9 +325,12 @@ func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfi
 
 `))
 
-func mkFieldsAsSignature(fields []Field) string {
+func mkInputFieldsAsSignature(fields []Field) string {
 	var ac []string
 	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			continue
+		}
 		if field.Type == "fieldtypes.IPv4" {
 			// accept input as string.
 			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
@@ -306,7 +342,14 @@ func mkFieldsAsSignature(fields []Field) string {
 }
 
 func mkConvertToString(f Field) string {
-	if HasTagOption(f.Tags, "dns", "a") {
+
+	if HasTagOption(f.Tags, "dnscontrol", "label") {
+		// When NoLabel is in use, this marks the actual label.
+		return fmt.Sprintf("name := %s", f.NameLower)
+	}
+
+	// Skip fields that are not input.
+	if HasTagOption(f.Tags, "dns", "a") || HasTagOption(f.Tags, "dnscontrol", "noinput") {
 		return ""
 	}
 
@@ -322,6 +365,8 @@ func mkConvertToString(f Field) string {
 		return fmt.Sprintf("s%s := strconv.Itoa(%s)", f.NameLower, f.NameLower)
 	}
 
+	// There is no "UNKNOWN() function, but this will cause a compile error
+	// which indicates this function needs to add a conversion.
 	return fmt.Sprintf("s%s := UNKNOWN(int(%s))", f.NameLower, f.NameLower)
 
 }
@@ -329,6 +374,9 @@ func mkConvertToString(f Field) string {
 func mkFieldsAsSVars(fields []Field) string {
 	var ac []string
 	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			continue
+		}
 		if HasTagOption(field.Tags, "dns", "a") {
 			ac = append(ac, field.NameLower)
 		} else if field.Type == "string" {

@@ -37,7 +37,7 @@ type RTypeConfig struct {
 	ReturnAsStringsList string
 
 	// Fields as used in a function signature.
-	FieldsAsSignature string
+	InputFieldsAsSignature string
 
 	// the field names, prefixed by "s" if they are not a string.
 	FieldsAsSVars string
@@ -120,7 +120,7 @@ func (cat *TypeCatalog) FixTypes() {
 			t.ReturnIndividualFieldsList = mkReturnIndividualFieldsList(t.Fields)
 			t.ReturnAsStringsList = mkReturnAsStringsList(t.Fields)
 
-			t.FieldsAsSignature = mkFieldsAsSignature(t.Fields)
+			t.InputFieldsAsSignature = mkInputFieldsAsSignature(t.Fields)
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
 		}
 		(*cat)[catName] = t
@@ -150,31 +150,11 @@ func (cat *TypeCatalog) FixFields() {
 				f.ConvertToString = mkConvertToString(f)
 				f.TagsString = f.Tags.String()
 				f.NoRaw = HasTagOption(f.Tags, "dnscontrol", "noraw")
-				f.Parser = parserFor(i, f)
+				f.Parser = mkParser(i, f)
 			}
 			(*cat)[rtype.Name].Fields[i] = f
 		}
 	}
-}
-
-func parserFor(i int, f Field) string {
-	switch ty := f.Type; ty {
-	case "int":
-		if HasTagOption(f.Tags, "dnscontrol", "redirectcode") {
-			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d], "", origin)`, i)
-		}
-		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
-	case "string":
-		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
-		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
-		}
-		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
-	case "fieldtypes.IPv4":
-		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
-	}
-
-	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
 }
 
 func capFirst(s string) string {
