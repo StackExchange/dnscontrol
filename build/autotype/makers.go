@@ -72,6 +72,67 @@ func init() {
 }
 `))
 
+// ImportFromLegacy
+
+// makeImportFromLegacy generates the function that upstreams legacy data to the upgraded record types.
+// Makes: `models/generated_types.go` func ImportFromLegacy
+func makeImportFromLegacy(vals Values) []byte {
+	return valuesTemplate(importFromLegacyTmpl, vals)
+}
+
+var importFromLegacyTmpl = template.Must(template.New("ImportFromLegacy").Parse(`
+// ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
+// the .Fields structure.  It is the reverse of Seal*().
+func (rc *RecordConfig) ImportFromLegacy(origin string) error {
+
+	if IsTypeLegacy(rc.Type) {
+		// Nothing to convert!
+		return nil
+	}
+
+	switch rc.Type {
+{{- range .TypeNamesAndFields -}}
+{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+  case "A":
+    ip, err := fieldtypes.ParseIPv4(rc.target)
+    if err != nil {
+      return err
+    }
+    return RecordUpdateFields(rc, A{A: ip}, nil)
+{{ else if .Config.ConstructFromLegacyFields -}}
+	case "{{ .Name }}":
+		return RecordUpdateFields(rc,
+            {{ .Name }}{ {{- .Config.ConstructFromLegacyFields -}} },
+			nil,
+		)
+{{ end -}}
+{{ end -}}
+	}
+	panic("Should not happen")
+}
+`))
+
+// {{ .Name }}{ {{- $.ConstructFromLegacyFields -}} },
+
+func mkConstructFromLegacyFields(fields []Field) string {
+	var ac []string
+	for i, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
+			continue
+		}
+		if field.LegacyName != "" {
+			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, field.LegacyName))
+		} else if HasTagOption(field.Tags, "dns", "a") {
+			return "IP"
+		} else if i == (len(fields) - 1) {
+			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, "target"))
+		} else if len(fields) == 1 {
+			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, "target"))
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
 // TypeTYPE
 
 // makeTypeTYPE generates the Type{TYPE} for a record type.
@@ -295,6 +356,8 @@ func mkReturnAsStringsList(fields []Field) string {
 	return fmt.Sprintf("[%d]string{", len(ac)) + strings.Join(ac, ", ") + "}"
 }
 
+// IntTestHeader
+
 // makeIntTestHeader generates the header for the integration tests data.
 // Makes: `integrationTest/generated_helpers.go` package main
 func makeIntTestHeader() []byte {
@@ -308,6 +371,8 @@ import (
 
 `)
 }
+
+// IntTestConstructor
 
 // makeIntTestConstructor makes the Integration Test helper function that constructs a {type}.
 // Makes: integrationTest/generated_helpers.go func {type}
@@ -412,36 +477,3 @@ var helpersRawRecordBuilderTmpl = template.Must(template.New("helpersRawRecordBu
 var {{ .Config.Token }} = rawrecordBuilder('{{ .Config.Token }}');
 {{ end -}}
 `))
-
-// importFromLegacyTmpl
-
-// makeImportFromLegacy generates the function that upstreams legacy data to the upgraded record types.
-// Makes `models/rawrecords.go` func ImportFromLegacy
-func makeImportFromLegacy(vals Values) []byte {
-	return valuesTemplate(importFromLegacyTmpl, vals)
-}
-
-var importFromLegacyTmpl = template.Must(template.New("ImportFromLegacy").Parse(`
-// ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
-// the .Fields structure.  It is the reverse of Seal*().
-func (rc *RecordConfig) ImportFromLegacy(origin string) error {
-
-	if IsTypeLegacy(rc.Type) {
-		// Nothing to convert!
-		return nil
-	}
-
-	switch rc.Type {
-{{- range .TypeNamesAndFields -}}
-	case "{{ .Name }}":
-		return RecordUpdateFields(rc,
-			{{ .Name }}{Preference: rc.MxPreference, Mx: rc.target},
-			nil,
-		)
-{{ end -}}
-	}
-	panic("Should not happen")
-}
-`))
-
-//

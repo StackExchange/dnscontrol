@@ -44,12 +44,18 @@ type RTypeConfig struct {
 
 	// If tag dnscontrol "ttl1" is present, this field is set to true
 	TTL1 bool
+
+	// Assign fields to their legacy counterparts.
+	ConstructFromLegacyFields string
 }
 
 type Field struct {
 	Name string          // Name of the field ("Port", "Target", etc)
 	Type string          // Go type of the field ("uint16", "string", etc)
 	Tags *structtag.Tags // Go "tags" for the field.
+
+	// legacy field name from RecordConfig.
+	LegacyName string
 
 	// Generated fields:
 
@@ -122,6 +128,7 @@ func (cat *TypeCatalog) FixTypes() {
 
 			t.InputFieldsAsSignature = mkInputFieldsAsSignature(t.Fields)
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
+			t.ConstructFromLegacyFields = mkConstructFromLegacyFields(t.Fields)
 		}
 		(*cat)[catName] = t
 	}
@@ -217,6 +224,9 @@ func (cat *TypeCatalog) Merge(overlay TypeCatalog, dupesOk bool) error {
 					}
 					if hint.Tags != nil {
 						(*cat)[typeName].Fields[i].Tags = hint.Tags
+					}
+					if hint.LegacyName != "" {
+						(*cat)[typeName].Fields[i].LegacyName = hint.LegacyName
 					}
 				}
 			}

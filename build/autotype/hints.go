@@ -35,14 +35,16 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("A", "", nil)
 
-	addType("MX", "", nil)
+	addType("MX", "", []Field{
+		{Name: "Preference", LegacyName: "MxPreference"},
+	})
 
 	addType("SRV", "",
 		[]Field{
-			{Name: "Priority", Tags: SloppyParseTags(`json:"priority"`)},
-			{Name: "Weight", Tags: SloppyParseTags(`json:"weight"`)},
-			{Name: "Port", Tags: SloppyParseTags(`json:"port"`)},
-			{Name: "Target", Tags: SloppyParseTags(`json:"target" dns:"domain-name"`)},
+			{Name: "Priority", Tags: MustParseTags(`json:"priority"`), LegacyName: "SrvPriority"},
+			{Name: "Weight", Tags: MustParseTags(`json:"weight"`), LegacyName: "SrvWeight"},
+			{Name: "Port", Tags: MustParseTags(`json:"port"`), LegacyName: "SrvPort"},
+			{Name: "Target", Tags: MustParseTags(`json:"target" dns:"domain-name"`), LegacyName: "target"},
 		},
 	)
 
@@ -52,5 +54,7 @@ func GetHints() ([]string, TypeCatalog) {
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")
 
+	//x, _ := json.MarshalIndent(cat, "", "    ")
+	//fmt.Printf("DEBUG: Hints: %s\n", x)
 	return l, cat
 }

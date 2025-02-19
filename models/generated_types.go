@@ -20,6 +20,41 @@ type RecordType interface {
 	A | MX | SRV | CNAME | CFSINGLEREDIRECT
 }
 
+// ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
+// the .Fields structure.  It is the reverse of Seal*().
+func (rc *RecordConfig) ImportFromLegacy(origin string) error {
+
+	if IsTypeLegacy(rc.Type) {
+		// Nothing to convert!
+		return nil
+	}
+
+	switch rc.Type {
+	case "A":
+		ip, err := fieldtypes.ParseIPv4(rc.target)
+		if err != nil {
+			return err
+		}
+		return RecordUpdateFields(rc, A{A: ip}, nil)
+	case "MX":
+		return RecordUpdateFields(rc,
+			MX{Preference: rc.MxPreference, Mx: rc.target},
+			nil,
+		)
+	case "SRV":
+		return RecordUpdateFields(rc,
+			SRV{Priority: rc.SrvPriority, Weight: rc.SrvWeight, Port: rc.SrvPort, Target: rc.target},
+			nil,
+		)
+	case "CNAME":
+		return RecordUpdateFields(rc,
+			CNAME{Target: rc.target},
+			nil,
+		)
+	}
+	panic("Should not happen")
+}
+
 //// A
 
 // A is the fields needed to store a DNS record of type A.
