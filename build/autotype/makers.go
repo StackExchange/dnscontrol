@@ -150,7 +150,7 @@ func mkConstructAll(fields []Field) string {
 			ac = append(ac, fmt.Sprintf(`%s: cfSingleRedirecttargetFromRaw(srname, code, srwhen, srthen)`, field.Name))
 		} else if HasTagOption(field.Tags, "dnscontrol", "parsereturnunknowable") {
 			ac = append(ac, fmt.Sprintf(`%s: "UNKNOWABLE"`, field.Name))
-		} else if HasTagOption(field.Tags, "dnscontrol", "noparsereturn") {
+		} else if HasTagOption(field.Tags, "dnscontrol", "noinput") {
 			// Skip this field.
 		} else {
 			ac = append(ac, fmt.Sprintf("%s: %s", field.Name, field.NameLower))
