@@ -1160,11 +1160,11 @@ func makeTests() []*TestGroup {
 		testgroup("CF_SINGLE_REDIRECT",
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
-			tc("start301", cfSingleRedirect(`name1`, 301, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
-			tc("changecode", cfSingleRedirect(`name1`, 302, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
-			tc("changewhen", cfSingleRedirect(`name1`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
-			tc("changethen", cfSingleRedirect(`name1`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
-			tc("changename", cfSingleRedirect(`name1bis`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
+			tc("start301", cfsingleredirect(`name1`, 301, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changecode", cfsingleredirect(`name1`, 302, `http.host eq "cnn.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changewhen", cfsingleredirect(`name1`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.cnn.com", http.request.uri.path)`)),
+			tc("changethen", cfsingleredirect(`name1`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
+			tc("changename", cfsingleredirect(`name1bis`, 302, `http.host eq "msnbc.slackoverflow.com"`, `concat("https://www.msnbc.com", http.request.uri.path)`)),
 		),
 
 		// CLOUDFLAREAPI: PROXY

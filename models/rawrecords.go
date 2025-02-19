@@ -31,7 +31,7 @@ func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, me
 		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
 	}
 
-	return rt.PopulateFromRaw(rc, args, meta, origin)
+	return rt.PopulateFromRaw(rc, args, meta, effectiveOrigin(rc.SubDomain, origin))
 }
 
 // CheckAndFixImport checks the records for any that were created with a
@@ -73,6 +73,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	case "MX":
 		return RecordUpdateFields(rc,
 			MX{Preference: rc.MxPreference, Mx: rc.target},
+			nil,
+		)
+	case "CNAME":
+		return RecordUpdateFields(rc,
+			CNAME{Target: rc.target},
 			nil,
 		)
 	case "SRV":
@@ -125,7 +130,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, dc.Name)
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, effectiveOrigin(rec.SubDomain, dc.Name))
 			if err != nil {
 				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
 					rawRec.Type,
@@ -148,4 +153,16 @@ func TransformRawRecords(domains []*DomainConfig) error {
 	}
 
 	return nil
+}
+
+// effectiveOrigin returns the effective origin given a "subdomain" and an
+// "origin".  The concept of a subdomain is only relevant in dnsconfig.js and
+// RawRecordConfig.  In the RecordConfig, the "Name" field is the full name
+// (minor the dc.Name) and any .Target or other fields are FQDNs or relative to
+// the effective origin.
+func effectiveOrigin(sub, origin string) string {
+	if sub == "" {
+		return origin
+	}
+	return sub + "." + origin
 }

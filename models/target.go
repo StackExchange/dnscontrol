@@ -21,6 +21,8 @@ func (rc *RecordConfig) GetTargetField() string {
 		return rc.AsA().A.String()
 	case "MX":
 		return rc.AsMX().Mx
+	case "CNAME":
+		return rc.AsCNAME().Target
 	case "SRV":
 		return rc.AsSRV().Target
 	}
@@ -176,6 +178,8 @@ func (rc *RecordConfig) SetTarget(s string) error {
 		}
 		f := rc.AsMX()
 		return rc.SetTargetMX(f.Preference, s)
+	case "CNAME":
+		return rc.SetTargetCNAME(s)
 	case "SRV":
 		if rc.Fields == nil {
 			return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
@@ -204,6 +208,15 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 // SetTargetA sets the target to an A record.
 func (rc *RecordConfig) SetTargetA(s string) error {
 	rdata, err := ParseA([]string{s}, "")
+	if err != nil {
+		return err
+	}
+	return RecordUpdateFields(rc, rdata, nil)
+}
+
+// SetTargetCNAME sets the target to an A record.
+func (rc *RecordConfig) SetTargetCNAME(s string) error {
+	rdata, err := ParseCNAME([]string{s}, "")
 	if err != nil {
 		return err
 	}

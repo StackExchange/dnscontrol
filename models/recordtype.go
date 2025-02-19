@@ -7,8 +7,15 @@ package models
 // Typically this is used to convert an ALIAS to a CNAME, or SPF to TXT. Using
 // this function future-proofs the code since eventually such changes will
 // require extra steps.
-func (rc *RecordConfig) ChangeType(newType string, _ string) {
+func (rc *RecordConfig) ChangeType(newType string, origin string) {
 
 	rc.Type = newType
+
+	if IsTypeUpgraded(newType) {
+		err := rc.ImportFromLegacy(origin)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 }

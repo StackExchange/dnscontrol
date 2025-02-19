@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -291,15 +290,6 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func cfSingleRedirect(name string, code uint16, when, then string) *models.RecordConfig {
-	scode := strconv.Itoa(int(code))
-	rdata, err := models.ParseCFSINGLEREDIRECT([]string{name, scode, when, then}, "**current-domain**")
-	if err != nil {
-		panic(err)
-	}
-	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
-}
-
 func aaaa(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "AAAA")
 }
@@ -356,10 +346,6 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
-}
-
-func cname(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "CNAME")
 }
 
 func dhcid(name, target string) *models.RecordConfig {

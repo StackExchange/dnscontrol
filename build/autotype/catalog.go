@@ -37,7 +37,7 @@ type RTypeConfig struct {
 	ReturnAsStringsList string
 
 	// Fields as used in a function signature.
-	FieldsAsSignature string
+	InputFieldsAsSignature string
 
 	// the field names, prefixed by "s" if they are not a string.
 	FieldsAsSVars string
@@ -101,105 +101,6 @@ func (cat *TypeCatalog) TypeNamesAndFields(order []string) []TypeInfo {
 
 // Fix Types:
 
-func mkConstructAll(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if HasTagOption(field.Tags, "dnscontrol", "srdisplay") {
-			ac = append(ac, fmt.Sprintf(`%s: cfSingleRedirecttargetFromRaw(srname, code, srwhen, srthen)`, field.Name))
-		} else if HasTagOption(field.Tags, "dnscontrol", "parsereturnunknowable") {
-			ac = append(ac, fmt.Sprintf(`%s: "UNKNOWABLE"`, field.Name))
-		} else if HasTagOption(field.Tags, "dnscontrol", "noparsereturn") {
-			// Skip this field.
-		} else {
-			ac = append(ac, fmt.Sprintf("%s: %s", field.Name, field.NameLower))
-		}
-	}
-	return strings.Join(ac, ", ")
-}
-
-func mkFieldsAsSignature(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if field.Type == "fieldtypes.IPv4" {
-			// accept input as string.
-			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
-		} else {
-			ac = append(ac, fmt.Sprintf("%s %s", field.NameLower, field.Type))
-		}
-	}
-	return strings.Join(ac, ", ")
-}
-
-func mkFieldTypesCommaSep(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if !HasTagOption(field.Tags, "dnscontrol", "noraw") {
-			ac = append(ac, field.Type)
-		}
-	}
-	return strings.Join(ac, ", ")
-}
-
-func mkReturnIndividualFieldsList(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
-			continue
-		}
-		if HasTagOption(field.Tags, "dns", "a") {
-			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
-		} else if field.Type == "fieldtypes.IPv4" {
-			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
-		} else {
-			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
-		}
-	}
-	return strings.Join(ac, ", ")
-}
-
-func mkReturnAsStringsList(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
-			continue
-		}
-		if HasTagOption(field.Tags, "dns", "a") {
-			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
-		} else if field.Type == "fieldtypes.IPv4" {
-			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
-		} else if field.Type == "uint16" {
-			ac = append(ac, fmt.Sprintf("strconv.Itoa(int(n.%s))", field.Name))
-		} else {
-			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
-		}
-	}
-	return fmt.Sprintf("[%d]string{", len(ac)) + strings.Join(ac, ", ") + "}"
-}
-
-func mkFieldsAsSVars(fields []Field) string {
-	var ac []string
-	for _, field := range fields {
-		if HasTagOption(field.Tags, "dns", "a") {
-			ac = append(ac, field.NameLower)
-		} else if field.Type == "string" {
-			ac = append(ac, field.NameLower)
-		} else {
-			ac = append(ac, "s"+field.NameLower)
-		}
-	}
-	return strings.Join(ac, ", ")
-}
-
-func countFields(fields []Field) int {
-	c := 0
-	for _, field := range fields {
-		if !HasTagOption(field.Tags, "dnscontrol", "noraw") {
-			c++
-		}
-	}
-	return c
-}
-
 // FixTypes generates the generated fields of each RTypeConfig.
 func (cat *TypeCatalog) FixTypes() {
 	for catName := range *cat {
@@ -219,58 +120,24 @@ func (cat *TypeCatalog) FixTypes() {
 			t.ReturnIndividualFieldsList = mkReturnIndividualFieldsList(t.Fields)
 			t.ReturnAsStringsList = mkReturnAsStringsList(t.Fields)
 
-			t.FieldsAsSignature = mkFieldsAsSignature(t.Fields)
+			t.InputFieldsAsSignature = mkInputFieldsAsSignature(t.Fields)
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
 		}
 		(*cat)[catName] = t
 	}
 }
 
+func countFields(fields []Field) int {
+	c := 0
+	for _, field := range fields {
+		if !HasTagOption(field.Tags, "dnscontrol", "noraw") {
+			c++
+		}
+	}
+	return c
+}
+
 // Fix Fields:
-
-func capFirst(s string) string {
-	return strings.ToUpper(s[:1]) + s[1:]
-}
-
-func parserFor(i int, f Field) string {
-	switch ty := f.Type; ty {
-	case "int":
-		if HasTagOption(f.Tags, "dnscontrol", "redirectcode") {
-			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d], "", origin)`, i)
-		}
-		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
-	case "string":
-		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
-		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
-		}
-		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
-	case "fieldtypes.IPv4":
-		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
-	}
-
-	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
-}
-func mkConvertToString(f Field) string {
-	if HasTagOption(f.Tags, "dns", "a") {
-		return ""
-	}
-
-	switch f.Type {
-
-	case "string":
-		return ""
-
-	case "uint16":
-		return fmt.Sprintf("s%s := strconv.Itoa(int(%s))", f.NameLower, f.NameLower)
-
-	case "int":
-		return fmt.Sprintf("s%s := strconv.Itoa(%s)", f.NameLower, f.NameLower)
-	}
-
-	return fmt.Sprintf("s%s := UNKNOWN(int(%s))", f.NameLower, f.NameLower)
-
-}
 
 // FixFields generates the NameLower and Parser fields of each Field.
 func (cat *TypeCatalog) FixFields() {
@@ -283,11 +150,15 @@ func (cat *TypeCatalog) FixFields() {
 				f.ConvertToString = mkConvertToString(f)
 				f.TagsString = f.Tags.String()
 				f.NoRaw = HasTagOption(f.Tags, "dnscontrol", "noraw")
-				f.Parser = parserFor(i, f)
+				f.Parser = mkParser(i, f)
 			}
 			(*cat)[rtype.Name].Fields[i] = f
 		}
 	}
+}
+
+func capFirst(s string) string {
+	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 // MergeHints applies hints to the catalog.
@@ -305,7 +176,7 @@ func (cat *TypeCatalog) Merge(overlay TypeCatalog, dupesOk bool) error {
 
 		if !dupesOk {
 			if _, ok := (*cat)[typeName]; ok {
-				return fmt.Errorf("Duplicate Rtype Name: %v\n", typeName)
+				return fmt.Errorf("duplicate Rtype Name: %v", typeName)
 			}
 		}
 

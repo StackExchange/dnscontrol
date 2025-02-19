@@ -2,14 +2,17 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"text/template"
 )
 
+// funcs lists Go functions imported into the template system.
 var funcs = template.FuncMap{
 	"join": strings.Join,
 }
 
+// valuesTemplate executes a template with the entire Values struct.
 func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
 	b := &bytes.Buffer{}
 	err := theTemplate.Execute(b, vals)
@@ -19,6 +22,7 @@ func valuesTemplate(theTemplate *template.Template, vals Values) []byte {
 	return b.Bytes()
 }
 
+// rtypeTemplate executes a template with values for a single RTypeConfig.
 func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 	b := &bytes.Buffer{}
 	err := theTemplate.Execute(b, vals)
@@ -30,6 +34,11 @@ func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 
 // RecordType
 
+// makeInterfaceConstraint generates the RecordType interface constraint.
+func makeInterfaceConstraint(vals Values) []byte {
+	return valuesTemplate(RecordTypeTmpl, vals)
+}
+
 var RecordTypeTmpl = template.Must(template.New("RecordType").Funcs(funcs).Parse(`
 // RecordType is a constraint for DNS records.
 type RecordType interface {
@@ -37,11 +46,12 @@ type RecordType interface {
 }
 `))
 
-func makeInterfaceConstraint(vals Values) []byte {
-	return valuesTemplate(RecordTypeTmpl, vals)
-}
-
 // RegisterType
+
+// makeInit generates the init() function that registers all types.
+func makeInit(vals Values) []byte {
+	return valuesTemplate(RegisterTypeTmpl, vals)
+}
 
 var RegisterTypeTmpl = template.Must(template.New("RegisterType").Parse(`
 package models
@@ -60,11 +70,12 @@ func init() {
 }
 `))
 
-func makeInit(vals Values) []byte {
-	return valuesTemplate(RegisterTypeTmpl, vals)
-}
-
 // TypeTYPE
+
+// makeTypeTYPE generates the Type{TYPE} for a record type.
+func makeTypeTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(TypeTYPETmpl, rtconfig)
+}
 
 var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Parse(`
 //// {{ .Name }}
@@ -78,11 +89,12 @@ type {{ .Name }} struct {
 
 `))
 
-func makeTypeTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(TypeTYPETmpl, rtconfig)
-}
-
 // ParseTYPE
+
+// makeParseTYPE generates the func Parse{TYPE} for a record type.
+func makeParseTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(ParseTYPETmpl, rtconfig)
+}
 
 var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
 func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
@@ -111,11 +123,48 @@ func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
 
 `))
 
-func makeParseTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(ParseTYPETmpl, rtconfig)
+func mkParser(i int, f Field) string {
+	switch ty := f.Type; ty {
+	case "int":
+		if HasTagOption(f.Tags, "dnscontrol", "redirectcode") {
+			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d], "", origin)`, i)
+		}
+		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "string":
+		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
+		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+		}
+		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "fieldtypes.IPv4":
+		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
+	}
+
+	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
+}
+
+func mkConstructAll(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "srdisplay") {
+			ac = append(ac, fmt.Sprintf(`%s: cfSingleRedirecttargetFromRaw(srname, code, srwhen, srthen)`, field.Name))
+		} else if HasTagOption(field.Tags, "dnscontrol", "parsereturnunknowable") {
+			ac = append(ac, fmt.Sprintf(`%s: "UNKNOWABLE"`, field.Name))
+		} else if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			// Skip this field.
+		} else {
+			ac = append(ac, fmt.Sprintf("%s: %s", field.Name, field.NameLower))
+		}
+	}
+	return strings.Join(ac, ", ")
 }
 
 // PopulateFromRawTYPE
+
+// makePopulateFromRawTYPE generates the func PopulateFromRaw{TYPE} for a given record type.
+func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(PopulateFromRawTYPETmpl, rtconfig)
+}
 
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
@@ -145,11 +194,11 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
 `))
 
-func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(PopulateFromRawTYPETmpl, rtconfig)
-}
-
 // AsTYPE
+
+func makeAsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(AsTYPETmpl, rtconfig)
+}
 
 var AsTYPETmpl = template.Must(template.New("AsTYPE").Parse(`
 // As{{ .Name }} returns rc.Fields as an {{ .Name }} struct.
@@ -159,11 +208,12 @@ func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
 
 `))
 
-func makeAsTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(AsTYPETmpl, rtconfig)
-}
-
 // GetFieldsTYPE
+
+// makeGetFieldsTYPE generates the method func GetFields{TYPE} for a given record type.
+func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(GetFieldsTYPETmpl, rtconfig)
+}
 
 var GetFieldsTYPETmpl = template.Must(template.New("GetFieldsTYPE").Parse(`
 // GetFields{{ .Name }} returns rc.Fields as individual typed values.
@@ -174,11 +224,38 @@ func (rc *RecordConfig) GetFields{{ .Name }}() ({{ .FieldTypesCommaSep }}) {
 
 `))
 
-func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(GetFieldsTYPETmpl, rtconfig)
+func mkFieldTypesCommaSep(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if !HasTagOption(field.Tags, "dnscontrol", "noraw") {
+			ac = append(ac, field.Type)
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
+func mkReturnIndividualFieldsList(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
+			continue
+		}
+		if HasTagOption(field.Tags, "dns", "a") {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		} else if field.Type == "fieldtypes.IPv4" {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		}
+	}
+	return strings.Join(ac, ", ")
 }
 
 // GetFieldsAsStringsTYPE
+
+func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(GetFieldsAsStringsTYPETmpl, rtconfig)
+}
 
 var GetFieldsAsStringsTYPETmpl = template.Must(template.New("GetFieldsAsStringsTYPE").Parse(`
 // GetFieldsAsStrings{{ .Name }} returns rc.Fields as individual strings.
@@ -189,8 +266,23 @@ func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumRawFields }}]str
 
 `))
 
-func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(GetFieldsAsStringsTYPETmpl, rtconfig)
+func mkReturnAsStringsList(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
+			continue
+		}
+		if HasTagOption(field.Tags, "dns", "a") {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else if field.Type == "fieldtypes.IPv4" {
+			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
+		} else if field.Type == "uint16" {
+			ac = append(ac, fmt.Sprintf("strconv.Itoa(int(n.%s))", field.Name))
+		} else {
+			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
+		}
+	}
+	return fmt.Sprintf("[%d]string{", len(ac)) + strings.Join(ac, ", ") + "}"
 }
 
 // makeIntTestHeader
@@ -208,8 +300,16 @@ import (
 
 // GetFieldsAsStringsTYPE
 
+func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(IntTestConstructorTmpl, rtconfig)
+}
+
 var IntTestConstructorTmpl = template.Must(template.New("IntTestConstructor").Parse(`
-func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfig {
+{{- if .NoLabel }}
+func {{ .NameLower }}({{ .InputFieldsAsSignature }}) *models.RecordConfig {
+{{- else }}
+func {{ .NameLower }}(name string, {{ .InputFieldsAsSignature }}) *models.RecordConfig {
+{{- end }}
 {{- range .Fields }}
 {{- if .ConvertToString }}
   {{ .ConvertToString }}
@@ -225,18 +325,77 @@ func {{ .NameLower }}(name string, {{ .FieldsAsSignature }}) *models.RecordConfi
 
 `))
 
-func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
-	return rtypeTemplate(IntTestConstructorTmpl, rtconfig)
+func mkInputFieldsAsSignature(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			continue
+		}
+		if field.Type == "fieldtypes.IPv4" {
+			// accept input as string.
+			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
+		} else {
+			ac = append(ac, fmt.Sprintf("%s %s", field.NameLower, field.Type))
+		}
+	}
+	return strings.Join(ac, ", ")
+}
+
+func mkConvertToString(f Field) string {
+
+	if HasTagOption(f.Tags, "dnscontrol", "label") {
+		// When NoLabel is in use, this marks the actual label.
+		return fmt.Sprintf("name := %s", f.NameLower)
+	}
+
+	// Skip fields that are not input.
+	if HasTagOption(f.Tags, "dns", "a") || HasTagOption(f.Tags, "dnscontrol", "noinput") {
+		return ""
+	}
+
+	switch f.Type {
+
+	case "string":
+		return ""
+
+	case "uint16":
+		return fmt.Sprintf("s%s := strconv.Itoa(int(%s))", f.NameLower, f.NameLower)
+
+	case "int":
+		return fmt.Sprintf("s%s := strconv.Itoa(%s)", f.NameLower, f.NameLower)
+	}
+
+	// There is no "UNKNOWN() function, but this will cause a compile error
+	// which indicates this function needs to add a conversion.
+	return fmt.Sprintf("s%s := UNKNOWN(int(%s))", f.NameLower, f.NameLower)
+
+}
+
+func mkFieldsAsSVars(fields []Field) string {
+	var ac []string
+	for _, field := range fields {
+		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			continue
+		}
+		if HasTagOption(field.Tags, "dns", "a") {
+			ac = append(ac, field.NameLower)
+		} else if field.Type == "string" {
+			ac = append(ac, field.NameLower)
+		} else {
+			ac = append(ac, "s"+field.NameLower)
+		}
+	}
+	return strings.Join(ac, ", ")
 }
 
 // helpersRawRecordBuilder
+
+func makehelpersRawRecordBuilder(vals Values) []byte {
+	return valuesTemplate(helpersRawRecordBuilderTmpl, vals)
+}
 
 var helpersRawRecordBuilderTmpl = template.Must(template.New("helpersRawRecordBuilder").Parse(`
 {{- range .TypeNamesAndFields -}}
 var {{ .Config.Token }} = rawrecordBuilder('{{ .Config.Token }}');
 {{ end -}}
 `))
-
-func makehelpersRawRecordBuilder(vals Values) []byte {
-	return valuesTemplate(helpersRawRecordBuilderTmpl, vals)
-}

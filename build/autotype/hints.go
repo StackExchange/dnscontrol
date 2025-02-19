@@ -1,11 +1,11 @@
 package main
 
-// ReadHints returns the "hints" configuration as a data structure.  (Right now
-// it returns hardcoded constants.  In the future it should read a YAML file.)
+// GetHints returns the "hints" configuration as a data structure.  (Right now
+// it returns hardcoded constants.  In the future it should read a configuration file.)
 func GetHints() ([]string, TypeCatalog) {
 
 	var l []string
-	var cat TypeCatalog = TypeCatalog{}
+	var cat = TypeCatalog{}
 
 	addType := func(name string, token string, fields []Field) {
 		l = append(l, name)
@@ -45,6 +45,8 @@ func GetHints() ([]string, TypeCatalog) {
 			{Name: "Target", Tags: SloppyParseTags(`json:"target" dns:"domain-name"`)},
 		},
 	)
+
+	addType("CNAME", "", nil)
 
 	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT", nil)
 	setNoLabel("CFSINGLEREDIRECT")

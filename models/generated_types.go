@@ -11,12 +11,13 @@ func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
+	MustRegisterType("CNAME", RegisterOpts{PopulateFromRaw: PopulateFromRawCNAME})
 	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
 }
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | MX | SRV | CFSINGLEREDIRECT
+	A | MX | SRV | CNAME | CFSINGLEREDIRECT
 }
 
 //// A
@@ -210,21 +211,78 @@ func (rc *RecordConfig) GetFieldsAsStringsSRV() [4]string {
 	return [4]string{strconv.Itoa(int(n.Priority)), strconv.Itoa(int(n.Weight)), strconv.Itoa(int(n.Port)), n.Target}
 }
 
+//// CNAME
+
+// CNAME is the fields needed to store a DNS record of type CNAME.
+type CNAME struct {
+	Target string `dns:"cdomain-name"`
+}
+
+func ParseCNAME(rawfields []string, origin string) (CNAME, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 1) {
+		return CNAME{}, fmt.Errorf("rtype CNAME wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
+	}
+	var target string
+	var err error
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], "", origin); err != nil {
+		return CNAME{}, err
+	}
+
+	return CNAME{Target: target}, nil
+}
+
+// PopulateFromRawCNAME updates rc to be an CNAME record with contents from rawfields, meta and origin.
+func PopulateFromRawCNAME(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "CNAME"
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
+	}
+
+	// Parse the remaining fields.
+	rdata, err := ParseCNAME(rawfields[1:], origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsCNAME returns rc.Fields as an CNAME struct.
+func (rc *RecordConfig) AsCNAME() *CNAME {
+	return rc.Fields.(*CNAME)
+}
+
+// GetFieldsCNAME returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsCNAME() string {
+	n := rc.AsCNAME()
+	return n.Target
+}
+
+// GetFieldsAsStringsCNAME returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsCNAME() [1]string {
+	n := rc.AsCNAME()
+	return [1]string{n.Target}
+}
+
 //// CFSINGLEREDIRECT
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
 type CFSINGLEREDIRECT struct {
-	SRName           string `json:"sr_name,omitempty"`
+	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label"`
 	Code             uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"`
 	SRWhen           string `json:"sr_when,omitempty"`
 	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noparsereturn"`
-	PRWhen           string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
-	PRThen           string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable"`
-	PRPriority       int    `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noparsereturn"`
-	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noparsereturn"`
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noinput"`
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noinput"`
+	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noinput"`
+	PRWhen           string `json:"pr_when,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
+	PRThen           string `json:"pr_then,omitempty" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
+	PRPriority       int    `json:"pr_priority,omitempty" dnscontrol:"_,noraw,noinput"`
+	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
 }
 
 func ParseCFSINGLEREDIRECT(rawfields []string, origin string) (CFSINGLEREDIRECT, error) {

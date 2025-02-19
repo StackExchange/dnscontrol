@@ -408,9 +408,6 @@ var CAA = recordBuilder('CAA', {
     },
 });
 
-// CNAME(name,target, recordModifiers...)
-var CNAME = recordBuilder('CNAME');
-
 // DS(name, keytag, algorithm, digestype, digest)
 var DS = recordBuilder('DS', {
     args: [

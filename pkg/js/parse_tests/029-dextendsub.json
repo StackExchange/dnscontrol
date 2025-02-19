@@ -566,29 +566,37 @@
       "name": "example.tld",
       "records": [
         {
+          "Fields": {
+            "Target": "b.sub.example.tld."
+          },
           "name": "a.sub",
-          "subdomain": "sub",
           "target": "b.sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "sub.example.tld."
+          },
           "name": "b.sub",
-          "subdomain": "sub",
           "target": "sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "sub.example.tld."
+          },
           "name": "c.sub",
-          "subdomain": "sub",
           "target": "sub.example.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "Fields": {
+            "Target": "otherdomain.tld."
+          },
           "name": "e.sub",
-          "subdomain": "sub",
           "target": "otherdomain.tld.",
           "ttl": 300,
           "type": "CNAME"
