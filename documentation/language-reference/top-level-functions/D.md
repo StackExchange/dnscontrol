@@ -86,7 +86,7 @@ may have noticed this mistake, but will your coworkers?  Will you in
 six months? You get the idea.
 
 DNSControl command line flag `--domains` matches the full name (with the "!").  If you
-define domains `example.com!george`, `example.com!paul` and `example.com!john` then:
+define domains `example.com!john`, `example.com!paul` and `example.com!george` then:
 
 * `--domains=example.com` will not match any of the three.
 * `--domains='example.com!george'` will match only match the first.
