@@ -88,7 +88,7 @@ six months? You get the idea.
 DNSControl command line flag `--domains` matches the full name (with the "!").  If you
 define domains `example.com!george`, `example.com!paul` and `example.com!john` then:
 
-* `--domains=example.com` will not match either domain.
+* `--domains=example.com` will not match any of the three.
 * `--domains='example.com!george'` will match only match the first.
 * `--domains='example.com!george,example.com!john'` will match george and john.
 * `--domains='example.com!*'` will match all three.
