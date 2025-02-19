@@ -35,6 +35,7 @@ func rtypeTemplate(theTemplate *template.Template, vals RTypeConfig) []byte {
 // RecordType
 
 // makeInterfaceConstraint generates the RecordType interface constraint.
+// Makes: `dnscontrol/models/generated_types.go` type RecordType
 func makeInterfaceConstraint(vals Values) []byte {
 	return valuesTemplate(RecordTypeTmpl, vals)
 }
@@ -49,6 +50,7 @@ type RecordType interface {
 // RegisterType
 
 // makeInit generates the init() function that registers all types.
+// Makes: `models/generated_types.go` func init()
 func makeInit(vals Values) []byte {
 	return valuesTemplate(RegisterTypeTmpl, vals)
 }
@@ -73,6 +75,7 @@ func init() {
 // TypeTYPE
 
 // makeTypeTYPE generates the Type{TYPE} for a record type.
+// Makes: `models/generated_types.go` type Type{TYPE}
 func makeTypeTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(TypeTYPETmpl, rtconfig)
 }
@@ -92,6 +95,7 @@ type {{ .Name }} struct {
 // ParseTYPE
 
 // makeParseTYPE generates the func Parse{TYPE} for a record type.
+// Makes: `models/generated_types.go` func Parse{TYPE}
 func makeParseTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(ParseTYPETmpl, rtconfig)
 }
@@ -162,6 +166,7 @@ func mkConstructAll(fields []Field) string {
 // PopulateFromRawTYPE
 
 // makePopulateFromRawTYPE generates the func PopulateFromRaw{TYPE} for a given record type.
+// Makes: `models/generated_types.go` func PopulateFromRaw{TYPE}
 func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(PopulateFromRawTYPETmpl, rtconfig)
 }
@@ -196,6 +201,8 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
 // AsTYPE
 
+// makeAsTYPE generates the func As{TYPE} which returns the type struct.
+// Makes: `models/generated_types.go` func As{TYPE}
 func makeAsTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(AsTYPETmpl, rtconfig)
 }
@@ -211,6 +218,7 @@ func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
 // GetFieldsTYPE
 
 // makeGetFieldsTYPE generates the method func GetFields{TYPE} for a given record type.
+// Makes: `models/generated_types.go` func GetFields{TYPE}
 func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(GetFieldsTYPETmpl, rtconfig)
 }
@@ -253,6 +261,8 @@ func mkReturnIndividualFieldsList(fields []Field) string {
 
 // GetFieldsAsStringsTYPE
 
+// makeGetFieldsAsStringsTYPE generates the GetFieldsAsStrings{TYPE} function.
+// Makes: `models/generated_types.go` func GetFieldsAsStrings{TYPE}
 func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(GetFieldsAsStringsTYPETmpl, rtconfig)
 }
@@ -285,7 +295,8 @@ func mkReturnAsStringsList(fields []Field) string {
 	return fmt.Sprintf("[%d]string{", len(ac)) + strings.Join(ac, ", ") + "}"
 }
 
-// makeIntTestHeader
+// makeIntTestHeader generates the header for the integration tests data.
+// Makes: `integrationTest/generated_helpers.go` package main
 func makeIntTestHeader() []byte {
 	return []byte(`package main
 
@@ -298,8 +309,8 @@ import (
 `)
 }
 
-// GetFieldsAsStringsTYPE
-
+// makeIntTestConstructor makes the Integration Test helper function that constructs a {type}.
+// Makes: integrationTest/generated_helpers.go func {type}
 func makeIntTestConstructor(rtconfig RTypeConfig) []byte {
 	return rtypeTemplate(IntTestConstructorTmpl, rtconfig)
 }
@@ -390,6 +401,8 @@ func mkFieldsAsSVars(fields []Field) string {
 
 // helpersRawRecordBuilder
 
+// makehelpersRawRecordBuilder generates the helpers-types.js entry for {TYPE}.
+// Makes `pkg/js/helpers-types.js` var {TYPE
 func makehelpersRawRecordBuilder(vals Values) []byte {
 	return valuesTemplate(helpersRawRecordBuilderTmpl, vals)
 }
@@ -399,3 +412,36 @@ var helpersRawRecordBuilderTmpl = template.Must(template.New("helpersRawRecordBu
 var {{ .Config.Token }} = rawrecordBuilder('{{ .Config.Token }}');
 {{ end -}}
 `))
+
+// importFromLegacyTmpl
+
+// makeImportFromLegacy generates the function that upstreams legacy data to the upgraded record types.
+// Makes `models/rawrecords.go` func ImportFromLegacy
+func makeImportFromLegacy(vals Values) []byte {
+	return valuesTemplate(importFromLegacyTmpl, vals)
+}
+
+var importFromLegacyTmpl = template.Must(template.New("ImportFromLegacy").Parse(`
+// ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
+// the .Fields structure.  It is the reverse of Seal*().
+func (rc *RecordConfig) ImportFromLegacy(origin string) error {
+
+	if IsTypeLegacy(rc.Type) {
+		// Nothing to convert!
+		return nil
+	}
+
+	switch rc.Type {
+{{- range .TypeNamesAndFields -}}
+	case "{{ .Name }}":
+		return RecordUpdateFields(rc,
+			{{ .Name }}{Preference: rc.MxPreference, Mx: rc.target},
+			nil,
+		)
+{{ end -}}
+	}
+	panic("Should not happen")
+}
+`))
+
+//
