@@ -115,7 +115,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: slicetype,
-					Tags: SloppyParseTags(fieldtags),
+					Tags: MustParseTags(fieldtags),
 				})
 
 			} else {
@@ -129,7 +129,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: fieldtype,
-					Tags: SloppyParseTags(fieldtags),
+					Tags: MustParseTags(fieldtags),
 				})
 
 			}
@@ -220,13 +220,18 @@ func main() {
 	var mgt []byte
 	// Generate init() with the MustRegisterTypes() statements.
 	mgt = append(mgt, makeInit(values)...)
+	// Generate the RecordType interface constraint.
+	mgt = append(mgt, makeInterfaceConstraint(values)...)
+	// Generate the makeImportFromLegacy() function.
+	//	fmt.Printf("DEBUG: Values: %+v\n", values)
+	//x, _ := json.MarshalIndent(values, "", "    ")
+	//fmt.Printf("DEBUG: Values: %s\n", x)
+	mgt = append(mgt, makeImportFromLegacy(values)...)
 
 	// integrationTest/generated_helpers.go
 	var ith = makeIntTestHeader()
 
-	// Generate the RecordType interface constraint.
-	mgt = append(mgt, makeInterfaceConstraint(values)...)
-
+	// pkg/js/helpers-types.js
 	var hrt = makehelpersRawRecordBuilder(values)
 
 	//fmt.Printf("DEBUG: Types: %s\n", values.TypeNames)
@@ -258,4 +263,5 @@ func main() {
 	writeTo(mgt, "generated_types.go")
 	writeTo(ith, "../integrationTest/generated_helpers.go")
 	writeToJS(hrt, "../pkg/js/helpers-types.js")
+	writeTo(ith, "../integrationTest/generated_helpers.go")
 }

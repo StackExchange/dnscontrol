@@ -6,10 +6,10 @@ import (
 	"github.com/fatih/structtag"
 )
 
-// SloppyParseTags parses a tag string. If the parsing fails, an empty Tags
+// MustParseTags parses a tag string. If the parsing fails, an empty Tags
 // struct is returned and a warning is printed to stderr.
 // This should only be used with static data that is known to be good.
-func SloppyParseTags(s string) *structtag.Tags {
+func MustParseTags(s string) *structtag.Tags {
 	tags, err := structtag.Parse(s)
 	if err != nil {
 		log.Printf("skipping unparsable tag string: %q %v", s, err)
