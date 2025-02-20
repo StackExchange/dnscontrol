@@ -49,13 +49,19 @@ OPTIONS:
 
 * `--domains value`
   * Specifies a comma-separated list of domains to include.
-    Typically all domains are included in `preview`/`push`. Wildcards are 
-    permitted `*` at the start of the entry. For example, `--domains
-    example.com,*.in-addr.arpa` would include `example.com` plus all reverse lookup
-    domains. A wildcard suffix is permitted if the domain contains a tag, and
-    indicates all configured tags of that domain should be selected. A wildcard
-    tagged domain `--domains=example.com!*` would include `example.com!foo` and
-    `example.com!bar` but not `example.com`.
+    Example: `--domains example.com,myexample.net`
+  * Domains may include a wildcard at the beginning.
+    For example, `--domains example.com,*.in-addr.arpa` would include
+    `example.com` plus all IPv4 reverse lookup domains.
+  * Matching includes tags. If the domains are `example.com!foo` and
+    `example.com!bar`, then `--domains example.com!foo` would match the first
+    one, and `--domains example.com` will not match either.
+  * A wildcard tag is permitted and indicates all configured tags of that domain
+    should be selected. Example: `--domains=example.com!*` would match
+    `example.com!foo` and  `example.com!bar` but not `example.com`.
+  * If `--domains` is not specified, the default is all domains.
+  * NOTE: An empty tag is considered equivalent to the untagged domain.
+    For example, `--domains=example.com!` will match `example.com` and `example.com!`
 
 * `--v foo=bar`
   * Sets the variable `foo` to the value `bar` prior to

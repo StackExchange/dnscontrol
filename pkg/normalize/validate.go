@@ -564,6 +564,8 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 	seen := map[string]bool{}
 	for _, d := range config.Domains {
 		uniquename := d.GetUniqueName()
+		// empty tag == untagged ("example.com!" -> "example.com")
+		uniquename = strings.TrimSuffix(uniquename, "!")
 		if seen[uniquename] {
 			return fmt.Errorf("duplicate domain name: %q", uniquename)
 		}

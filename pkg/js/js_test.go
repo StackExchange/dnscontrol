@@ -49,9 +49,9 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			// for _, dc := range conf.Domains {
-			// 	normalize.UpdateNameSplitHorizon(dc)
-			// }
+			for _, dc := range conf.Domains {
+				dc.UpdateSplitHorizonNames()
+			}
 
 			errs := normalize.ValidateAndNormalizeConfig(conf)
 			if len(errs) != 0 {
@@ -114,7 +114,13 @@ func TestParsedFiles(t *testing.T) {
 
 			var dCount int
 			for _, dc := range conf.Domains {
-				zoneFile := filepath.Join(testDir, testName, dc.Name+".zone")
+				var zoneFile string
+				dc.UpdateSplitHorizonNames()
+				if dc.Metadata[models.DomainTag] != "" {
+					zoneFile = filepath.Join(testDir, testName, dc.GetUniqueName()+".zone")
+				} else {
+					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")
+				}
 				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue

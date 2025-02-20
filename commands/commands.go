@@ -308,24 +308,33 @@ func (args *FilterArgs) flags() []cli.Flag {
 // domain is in the list, accounting for wildcards and tags.
 func domainInList(domain string, list []string) bool {
 	for _, item := range list {
-		filterDom, filterTag, filterTagged := strings.Cut(item, "!")
-		if filterTagged {
-			if strings.HasSuffix(item, "*") {
-				splitDomain, _, domainTagged := strings.Cut(domain, "!")
-				if domainTagged && splitDomain == filterDom {
-					return true
-				}
-			} else if filterTag == "" {
-				if domain == filterDom {
-					return true
-				}
-			}
+		if item == domain {
+			return true
 		}
 		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
 			return true
 		}
-		if item == domain {
-			return true
+		filterDom, filterTag, isFilterTagged := strings.Cut(item, "!")
+		splitDom, domainTag, isDomainTagged := strings.Cut(domain, "!")
+		if splitDom == filterDom {
+			if isDomainTagged {
+				if filterTag == "*" {
+					return true
+				}
+				if domainTag == "" && !isFilterTagged {
+					// domain example.com! == filter example.com
+					return true
+				}
+				if isFilterTagged && domainTag == filterTag {
+					return true
+				}
+			}
+			if isFilterTagged {
+				if filterTag == "" && !isDomainTagged {
+					// filter example.com! == domain example.com
+					return true
+				}
+			}
 		}
 	}
 	return false

@@ -82,6 +82,143 @@
         }
       ],
       "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.net"
+      },
+      "name": "example.net",
+      "records": [
+        {
+          "name": "main",
+          "target": "203.0.113.12",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "203.0.113.1",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "inside",
+        "dnscontrol_uniquename": "example.net!inside"
+      },
+      "name": "example.net",
+      "records": [
+        {
+          "name": "main",
+          "target": "192.0.2.1",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "main",
+          "target": "203.0.113.12",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "203.0.113.1",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "outside",
+        "dnscontrol_uniquename": "example.net!outside"
+      },
+      "name": "example.net",
+      "records": [
+        {
+          "name": "main",
+          "target": "203.0.113.1",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "main",
+          "target": "203.0.113.12",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "203.0.113.1",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "empty.example.net"
+      },
+      "name": "empty.example.net",
+      "records": [
+        {
+          "name": "main",
+          "target": "203.0.113.22",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "203.0.113.2",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example-b.net"
+      },
+      "name": "example-b.net",
+      "records": [
+        {
+          "name": "main",
+          "target": "203.0.113.12",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "203.0.113.1",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
     }
   ],
   "registrars": [

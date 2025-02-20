@@ -148,8 +148,20 @@ function D(name, registrar) {
         var m = arguments[i];
         processDargs(m, domain);
     }
+
+    // handle the empty tag ("example.com!" -> "example.com")
+    // replace name with result of removing the empty tag if it exists
+    // keep track so we can explain the situation in the error message
+    var withoutEmptyTag = _removeEmptyTag(name);
+    name = withoutEmptyTag[0];
+    var tagWasRemoved = withoutEmptyTag[1];
+
     if (conf.domain_names.indexOf(name) !== -1) {
-        throw name + ' is declared more than once';
+        var message = name + ' is declared more than once';
+        if (tagWasRemoved) {
+            message += ' (check empty tags)';
+        }
+        throw message;
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
@@ -188,15 +200,31 @@ function D_EXTEND(name) {
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
+// _removeEmptyTag(domain): Remove empty tag.
+function _removeEmptyTag(name) {
+    var tagWasRemoved = false;
+    if (name.slice(-1) === '!') {
+        name = name.slice(0, name.length - 1);
+        tagWasRemoved = true;
+    }
+    return [name, tagWasRemoved];
+}
+
 // _getDomainObject(name): This implements the domain matching
 // algorithm used by D_EXTEND(). Candidate matches are an exact match
 // of the domain's name, or if name is a proper subdomain of the
 // domain's name. The longest match is returned.
 function _getDomainObject(name) {
+    var nameTrimmedTag = _removeEmptyTag(name);
+    name = nameTrimmedTag[0];
     var domain = null;
     var domainLen = 0;
     for (var i = 0; i < conf.domains.length; i++) {
         var thisName = conf.domains[i]['name'];
+        // check for empty tag
+        var thisNameTrimmedTag = _removeEmptyTag(thisName);
+        thisName = thisNameTrimmedTag[0];
+
         var desiredSuffix = '.' + thisName;
         var foundSuffix = name.substr(-desiredSuffix.length);
         // If this is an exact match or the suffix matches...
