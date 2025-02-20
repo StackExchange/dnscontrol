@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/format"
 	"go/types"
@@ -224,9 +225,10 @@ func main() {
 	mgt = append(mgt, makeInterfaceConstraint(values)...)
 	// Generate the makeImportFromLegacy() function.
 	//	fmt.Printf("DEBUG: Values: %+v\n", values)
-	//x, _ := json.MarshalIndent(values, "", "    ")
-	//fmt.Printf("DEBUG: Values: %s\n", x)
+	x, _ := json.MarshalIndent(values, "", "    ")
+	fmt.Printf("DEBUG: Values: %s\n", x)
 	mgt = append(mgt, makeImportFromLegacy(values)...)
+	mgt = append(mgt, makeSeal(values)...)
 
 	// integrationTest/generated_helpers.go
 	var ith = makeIntTestHeader()

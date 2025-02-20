@@ -37,6 +37,7 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("MX", "", []Field{
 		{Name: "Preference", LegacyName: "MxPreference"},
+		{Name: "Mx", LegacyName: "target"},
 	})
 
 	addType("SRV", "",

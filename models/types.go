@@ -27,44 +27,45 @@ func GetTypeName(v any) string {
 	}
 	return typeName
 }
-func (rc *RecordConfig) Seal() error {
-	rc.Type = GetTypeName(rc.Fields)
 
-	// Copy the fields to the legacy fields:
-	// Pre-compute useful things
-	switch rc.Type {
-	case "A":
-		f := rc.Fields.(*A)
-		rc.target = f.A.String()
-		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
-	case "MX":
-		f := rc.Fields.(*MX)
-		rc.MxPreference = f.Preference
-		rc.target = f.Mx
-		rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
-	case "CNAME":
-		f := rc.Fields.(*CNAME)
-		rc.target = f.Target
-		rc.Comparable = f.Target
-	case "SRV":
-		f := rc.Fields.(*SRV)
-		rc.SrvPriority = f.Priority
-		rc.SrvWeight = f.Weight
-		rc.SrvPort = f.Port
-		rc.target = f.Target
-		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
-	case "CF_SINGLE_REDIRECT":
-		// No legacy fields.
-		f := rc.Fields.(*CFSINGLEREDIRECT)
-		rc.target = f.SRDisplay
-		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
-	default:
-		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
-	}
-	rc.Display = rc.Comparable
-
-	return nil
-}
+//func (rc *RecordConfig) Seal() error {
+//	rc.Type = GetTypeName(rc.Fields)
+//
+//	// Copy the fields to the legacy fields:
+//	// Pre-compute useful things
+//	switch rc.Type {
+//	case "A":
+//		f := rc.Fields.(*A)
+//		rc.target = f.A.String()
+//		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+//	case "MX":
+//		f := rc.Fields.(*MX)
+//		rc.MxPreference = f.Preference
+//		rc.target = f.Mx
+//		rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
+//	case "CNAME":
+//		f := rc.Fields.(*CNAME)
+//		rc.target = f.Target
+//		rc.Comparable = f.Target
+//	case "SRV":
+//		f := rc.Fields.(*SRV)
+//		rc.SrvPriority = f.Priority
+//		rc.SrvWeight = f.Weight
+//		rc.SrvPort = f.Port
+//		rc.target = f.Target
+//		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
+//	case "CF_SINGLE_REDIRECT":
+//		// No legacy fields.
+//		f := rc.Fields.(*CFSINGLEREDIRECT)
+//		rc.target = f.SRDisplay
+//		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
+//	default:
+//		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
+//	}
+//	rc.Display = rc.Comparable
+//
+//	return nil
+//}
 
 func MustCreateRecord[T RecordType](label string, rdata T, meta map[string]string, ttl uint32, origin string) *RecordConfig {
 	rc := &RecordConfig{

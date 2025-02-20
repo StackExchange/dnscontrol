@@ -112,8 +112,6 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 }
 `))
 
-// {{ .Name }}{ {{- $.ConstructFromLegacyFields -}} },
-
 func mkConstructFromLegacyFields(fields []Field) string {
 	var ac []string
 	for i, field := range fields {
@@ -131,6 +129,84 @@ func mkConstructFromLegacyFields(fields []Field) string {
 		}
 	}
 	return strings.Join(ac, ", ")
+}
+
+// Seal
+
+// makeSeal generates the function that downstreams upgraded fields data to the legacy record fields.
+// Makes: `models/generated_types.go` func ImportFromLegacy
+func makeSeal(vals Values) []byte {
+	return valuesTemplate(importSealTmpl, vals)
+}
+
+var importSealTmpl = template.Must(template.New("Seal").Parse(`
+func (rc *RecordConfig) Seal() error {
+	rc.Type = GetTypeName(rc.Fields)
+
+	// Copy the fields to the legacy fields:
+	// Pre-compute useful things
+	switch rc.Type {
+{{- range .TypeNamesAndFields -}}
+	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+       case "{{ .Name }}":
+               f := rc.Fields.(*{{ .Name }})
+               rc.target = f.A.String()
+               rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	{{- else if .Config.ConstructFromLegacyFields }}
+       case "{{ .Name }}":
+               f := rc.Fields.(*{{ .Name }})
+		{{- range .Config.Fields }}
+			{{- if .LegacyName }}
+			   rc.{{ .LegacyName }} = f.{{ .Name }}	
+			{{- else }}
+			   rc.target = f.{{ .Name }}	
+			{{- end }}
+		{{- end }}
+
+        rc.Comparable = {{ .Config.ComparableExpr }}
+	{{- end }}
+{{- end }}
+	default:
+		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
+	}
+	rc.Display = rc.Comparable
+
+	return nil
+}
+`))
+
+func mkComparableExpr(fields []Field) string {
+	fmt.Printf("DEBUG: mkComparableExpr(%+v)\n", fields)
+
+	// Single field that is a string, return it.
+	if len(fields) == 1 && fields[0].Type == "string" {
+		return `f.` + fields[0].Name
+	}
+
+	// Otherwise, use fmt.Sprintf to generate it.
+	var fl []string
+	var al []string
+	for _, field := range fields {
+		fmt.Printf("DEBUG: field = %+v\n", field)
+		switch {
+		case HasTagOption(field.Tags, "dns", "a"):
+			fl = append(fl, `"%s"`)
+			al = append(al, "f."+field.Name)
+		case field.Type == "int" || field.Type == "uint16":
+			fl = append(fl, "%d")
+			al = append(al, "f."+field.Name)
+		case field.Type == "string":
+			fl = append(fl, "%s")
+			al = append(al, "f."+field.Name)
+		default:
+			fl = append(fl, "%v")
+			//fl = append(fl, fmt.Sprintf("%%v(%s)", field.Type))
+			al = append(al, "f."+field.Name)
+		}
+	}
+	x := `fmt.Sprintf("` + strings.Join(fl, " ") + `", ` + strings.Join(al, ", ") + `)`
+	fmt.Printf("DEBUG: return = %v\n", x)
+	return x
 }
 
 // TypeTYPE

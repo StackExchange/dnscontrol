@@ -47,6 +47,11 @@ type RTypeConfig struct {
 
 	// Assign fields to their legacy counterparts.
 	ConstructFromLegacyFields string
+
+	// Go expression that generates the .Comparable field.
+	ComparableExpr string
+
+	// NB(tlim): Fields in this struct are populated by FixTypese().
 }
 
 type Field struct {
@@ -73,6 +78,10 @@ type Field struct {
 
 	// This field does not come from user-input (i.e. not part of RawFields)
 	NoRaw bool
+
+	// NB(tlim): If you add a new field here:
+	// * FixFields() should populate it.
+	// * Update the Merge() method.
 }
 
 func (cat *TypeCatalog) TypeNamesAsSet() map[string]struct{} {
@@ -129,6 +138,7 @@ func (cat *TypeCatalog) FixTypes() {
 			t.InputFieldsAsSignature = mkInputFieldsAsSignature(t.Fields)
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
 			t.ConstructFromLegacyFields = mkConstructFromLegacyFields(t.Fields)
+			t.ComparableExpr = mkComparableExpr(t.Fields)
 		}
 		(*cat)[catName] = t
 	}
