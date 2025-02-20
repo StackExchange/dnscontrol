@@ -180,7 +180,7 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 
@@ -446,7 +446,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 
@@ -818,6 +818,11 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+
+	// ALIAS in Cloudflare works like CNAME.
+	if cr.Type == "ALIAS" {
+		cr.Type = "CNAME"
+	}
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {

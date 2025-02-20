@@ -34,7 +34,7 @@ func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "ANAME"
+			rec.ChangeType("ANAME", dc.Name)
 		}
 	}
 
