@@ -13,22 +13,6 @@ If an rType has more than one field, one field goes in .target and the remaining
 Not the best design, but we're stuck with it until we re-do RecordConfig, possibly using generics.
 */
 
-// GetTargetField returns the target. There may be other fields, but they are
-// not included. For example, the .MxPreference field of an MX record isn't included.
-func (rc *RecordConfig) GetTargetField() string {
-	switch rc.Type { // #rtype_variations
-	case "A":
-		return rc.AsA().A.String()
-	case "MX":
-		return rc.AsMX().Mx
-	case "CNAME":
-		return rc.AsCNAME().Target
-	case "SRV":
-		return rc.AsSRV().Target
-	}
-	return rc.target
-}
-
 // GetTargetIP returns the net.IP stored in .target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
 	if rc.Type == "A" {
@@ -169,25 +153,27 @@ func (rc *RecordConfig) SetTarget(s string) error {
 	// Legacy
 	rc.target = s
 
-	switch rc.Type { // #rtype_variations
-	case "A":
-		return rc.SetTargetA(s)
-	case "MX":
-		if rc.Fields == nil {
-			return rc.SetTargetMX(rc.MxPreference, s)
-		}
-		f := rc.AsMX()
-		return rc.SetTargetMX(f.Preference, s)
-	case "CNAME":
-		return rc.SetTargetCNAME(s)
-	case "SRV":
-		if rc.Fields == nil {
-			return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
-		}
-		f := rc.AsSRV()
-		return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
-	}
-	return nil
+	return rc.ImportFromLegacy("")
+
+	// switch rc.Type { // #rtype_variations
+	// case "A":
+	// 	return rc.SetTargetA(s)
+	// case "MX":
+	// 	if rc.Fields == nil {
+	// 		return rc.SetTargetMX(rc.MxPreference, s)
+	// 	}
+	// 	f := rc.AsMX()
+	// 	return rc.SetTargetMX(f.Preference, s)
+	// case "CNAME":
+	// 	return rc.SetTargetCNAME(s)
+	// case "SRV":
+	// 	if rc.Fields == nil {
+	// 		return rc.SetTargetSRV(rc.SrvPriority, rc.SrvWeight, rc.SrvPort, s)
+	// 	}
+	// 	f := rc.AsSRV()
+	// 	return rc.SetTargetSRV(f.Priority, f.Weight, f.Port, s)
+	// }
+	// return nil
 }
 
 // MustSetTarget is like SetTarget, but panics if an error occurs.

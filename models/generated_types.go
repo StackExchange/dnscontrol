@@ -97,6 +97,24 @@ func (rc *RecordConfig) Seal() error {
 	return nil
 }
 
+// GetTargetField returns the target. There may be other fields, but they are
+// not included. For example, the .MxPreference field of an MX record isn't included.
+func (rc *RecordConfig) GetTargetField() string {
+	switch rc.Type { // #rtype_variations
+	case "A":
+		return rc.AsA().A.String()
+	case "MX":
+		return rc.AsMX().Mx
+	case "SRV":
+		return rc.AsSRV().Target
+	case "CNAME":
+		return rc.AsCNAME().Target
+	case "CFSINGLEREDIRECT":
+		return rc.AsCFSINGLEREDIRECT().SRDisplay
+	}
+	return rc.target
+}
+
 //// A
 
 // A is the fields needed to store a DNS record of type A.
