@@ -694,7 +694,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * * `--domains=example.com` will not match either domain.
  * * `--domains='example.com!george'` will match only match the first.
- * * `--domains='example.com!george",example.com!john` will match both.
+ * * `--domains='example.com!george,example.com!john'` will match both.
  *
  * NOTE: The quotes are required if your shell treats `!` as a special
  * character, which is probably does.  If you see an error that mentions
