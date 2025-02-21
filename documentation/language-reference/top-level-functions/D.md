@@ -90,7 +90,7 @@ define domains `example.com!george` and `example.com!john` then:
 
 * `--domains=example.com` will not match either domain.
 * `--domains='example.com!george'` will match only match the first.
-* `--domains='example.com!george",example.com!john` will match both.
+* `--domains='example.com!george,example.com!john'` will match both.
 
 {% hint style="info" %}
 **NOTE**: The quotes are required if your shell treats `!` as a special
