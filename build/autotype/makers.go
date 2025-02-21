@@ -164,7 +164,7 @@ func (rc *RecordConfig) Seal() error {
 
 		rc.Comparable = {{ .Config.ComparableExpr }}
 	{{- else }}
-	case "{{ .Name }}":
+	case "{{ .Config.Token }}":
 		f := rc.Fields.(*{{ .Name }})
 		{{- range .Config.Fields }}
 			{{- if .LegacyName }}

@@ -84,7 +84,7 @@ func (rc *RecordConfig) Seal() error {
 		rc.target = f.Target
 
 		rc.Comparable = f.Target
-	case "CFSINGLEREDIRECT":
+	case "CF_SINGLE_REDIRECT":
 		f := rc.Fields.(*CFSINGLEREDIRECT)
 		rc.target = f.SRDisplay
 
