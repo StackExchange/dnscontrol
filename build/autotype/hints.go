@@ -37,7 +37,6 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("MX", "", []Field{
 		{Name: "Preference", LegacyName: "MxPreference"},
-		{Name: "Mx", LegacyName: "target"},
 	})
 
 	addType("SRV", "",
@@ -51,7 +50,11 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("CNAME", "", nil)
 
-	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT", nil)
+	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT",
+		[]Field{
+			{Name: "SRDisplay", LegacyName: "target"},
+		},
+	)
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")
 
