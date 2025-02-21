@@ -677,14 +677,14 @@ func makeTests() []*TestGroup {
 
 		testgroup("CAA",
 			requires(providers.CanUseCAA),
-			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
-			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
-			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-			tc("CAA many records", caa("@", "issuewild", 128, ";")),
+			tc("CAA record", caa("@", 0, "issue", "letsencrypt.org")),
+			tc("CAA change tag", caa("@", 0, "issuewild", "letsencrypt.org")),
+			tc("CAA change target", caa("@", 0, "issuewild", "example.com")),
+			tc("CAA change flag", caa("@", 128, "issuewild", "example.com")),
+			tc("CAA many records", caa("@", 128, "issuewild", ";")),
 			// Test support of spaces in the 3rd field. Some providers don't
 			// support this.  See providers/exoscale/auditrecords.go as an example.
-			tc("CAA whitespace", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
+			tc("CAA whitespace", caa("@", 0, "issue", "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
 
 		// LOCation records. // No.47
