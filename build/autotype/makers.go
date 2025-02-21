@@ -156,9 +156,9 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*{{ .Name }})
 		{{- range .Config.Fields }}
 			{{- if .LegacyName }}
-		rc.{{ .LegacyName }} = f.{{ .Name }}	
+		rc.{{ .LegacyName }} = f.{{ .Name }}
 			{{- else }}
-		rc.target = f.{{ .Name }}	
+		rc.target = f.{{ .Name }}
 			{{- end }}
 		{{- end }}
 
@@ -168,7 +168,7 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*{{ .Name }})
 		{{- range .Config.Fields }}
 			{{- if .LegacyName }}
-		rc.{{ .LegacyName }} = f.{{ .Name }}	
+		rc.{{ .LegacyName }} = f.{{ .Name }}
 			{{- end }}
 		{{- end }}
 
