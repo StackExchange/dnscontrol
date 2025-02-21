@@ -207,7 +207,7 @@ func mkComparableExpr(fields []Field) string {
 		case HasTagOption(field.Tags, "dnscontrol", "anyascii"):
 			fl = append(fl, "%q")
 			al = append(al, "f."+field.Name)
-		case field.Type == "int" || field.Type == "uint16":
+		case field.Type == "int" || field.Type == "uint16" || field.Type == "uint8":
 			fl = append(fl, "%d")
 			al = append(al, "f."+field.Name)
 		case field.Type == "string":
@@ -517,7 +517,7 @@ func mkReturnAsStringsList(fields []Field) string {
 			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
 		} else if field.Type == "fieldtypes.IPv4" {
 			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
-		} else if field.Type == "uint16" {
+		} else if field.Type == "uint16" || field.Type == "uint8" {
 			ac = append(ac, fmt.Sprintf("strconv.Itoa(int(n.%s))", field.Name))
 		} else {
 			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
@@ -603,7 +603,7 @@ func mkConvertToString(f Field) string {
 	case "string":
 		return ""
 
-	case "uint16":
+	case "uint16", "uint8":
 		return fmt.Sprintf("s%s := strconv.Itoa(int(%s))", f.NameLower, f.NameLower)
 
 	case "int":

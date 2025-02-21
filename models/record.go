@@ -108,8 +108,8 @@ type RecordConfig struct {
 	SrvPriority      uint16            `json:"-"`
 	SrvWeight        uint16            `json:"-"`
 	SrvPort          uint16            `json:"-"`
-	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
+	CaaTag           string            `json:"caatag,omitempty"`
 	DsKeyTag         uint16            `json:"dskeytag,omitempty"`
 	DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
 	DsDigestType     uint8             `json:"dsdigesttype,omitempty"`

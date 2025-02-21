@@ -58,6 +58,14 @@ func GetHints() ([]string, TypeCatalog) {
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")
 
+	addType("CAA", "",
+		[]Field{
+			{Name: "Flag", LegacyName: "CaaFlag"},
+			{Name: "Tag", LegacyName: "CaaTag"},
+			{Name: "Value", Tags: MustParseTags(`dnscontrol:"_,anyascii"`), LegacyName: "target"},
+		},
+	)
+
 	//x, _ := json.MarshalIndent(cat, "", "    ")
 	//fmt.Printf("DEBUG: Hints: %s\n", x)
 	return l, cat

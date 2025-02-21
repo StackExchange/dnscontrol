@@ -306,12 +306,6 @@ func azureAlias(name, aliasType, target string) *models.RecordConfig {
 	return r
 }
 
-func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "CAA")
-	panicOnErr(r.SetTargetCAA(flag, tag, target))
-	return r
-}
-
 func cfProxyA(name, target, status string) *models.RecordConfig {
 	r := a(name, target)
 	r.Metadata = make(map[string]string)

@@ -10,6 +10,8 @@ gh pr create --base branch_gorec --title "Title" --body "Body"
 
 Add the hint for the type.
 
+If we are converting a legacy type, list the legacy fields from RecordType.
+
 - edit integrationTest/helpers_integration_test.go
 
 Remove `func cname()`

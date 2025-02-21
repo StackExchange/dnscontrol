@@ -13,11 +13,12 @@ func init() {
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
 	MustRegisterType("CNAME", RegisterOpts{PopulateFromRaw: PopulateFromRawCNAME})
 	MustRegisterType("CF_SINGLE_REDIRECT", RegisterOpts{PopulateFromRaw: PopulateFromRawCFSINGLEREDIRECT})
+	MustRegisterType("CAA", RegisterOpts{PopulateFromRaw: PopulateFromRawCAA})
 }
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | MX | SRV | CNAME | CFSINGLEREDIRECT
+	A | MX | SRV | CNAME | CFSINGLEREDIRECT | CAA
 }
 
 // ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
@@ -49,6 +50,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	case "CNAME":
 		return RecordUpdateFields(rc,
 			CNAME{Target: rc.target},
+			nil,
+		)
+	case "CAA":
+		return RecordUpdateFields(rc,
+			CAA{Flag: rc.CaaFlag, Tag: rc.CaaTag, Value: rc.target},
 			nil,
 		)
 	}
@@ -89,6 +95,13 @@ func (rc *RecordConfig) Seal() error {
 		rc.target = f.SRDisplay
 
 		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
+	case "CAA":
+		f := rc.Fields.(*CAA)
+		rc.CaaFlag = f.Flag
+		rc.CaaTag = f.Tag
+		rc.target = f.Value
+
+		rc.Comparable = fmt.Sprintf("%d %s %q", f.Flag, f.Tag, f.Value)
 	default:
 		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
 	}
@@ -111,6 +124,8 @@ func (rc *RecordConfig) GetTargetField() string {
 		return rc.AsCNAME().Target
 	case "CFSINGLEREDIRECT":
 		return rc.AsCFSINGLEREDIRECT().SRDisplay
+	case "CAA":
+		return rc.AsCAA().Value
 	}
 	return rc.target
 }
@@ -441,4 +456,71 @@ func (rc *RecordConfig) GetFieldsCFSINGLEREDIRECT() (string, uint16, string, str
 func (rc *RecordConfig) GetFieldsAsStringsCFSINGLEREDIRECT() [4]string {
 	n := rc.AsCFSINGLEREDIRECT()
 	return [4]string{n.SRName, strconv.Itoa(int(n.Code)), n.SRWhen, n.SRThen}
+}
+
+//// CAA
+
+// CAA is the fields needed to store a DNS record of type CAA.
+type CAA struct {
+	Flag  uint8
+	Tag   string
+	Value string `dnscontrol:"_,anyascii"`
+}
+
+func ParseCAA(rawfields []string, origin string) (CAA, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 3) {
+		return CAA{}, fmt.Errorf("rtype CAA wants %d field(s), found %d: %+v", 3, len(rawfields)-1, rawfields[1:])
+	}
+	var flag uint8
+	var tag string
+	var value string
+	var err error
+	if flag, err = fieldtypes.ParseUint8(rawfields[0]); err != nil {
+		return CAA{}, err
+	}
+	if tag, err = fieldtypes.ParseStringTrimmed(rawfields[1]); err != nil {
+		return CAA{}, err
+	}
+	if value, err = fieldtypes.ParseStringTrimmed(rawfields[2]); err != nil {
+		return CAA{}, err
+	}
+
+	return CAA{Flag: flag, Tag: tag, Value: value}, nil
+}
+
+// PopulateFromRawCAA updates rc to be an CAA record with contents from rawfields, meta and origin.
+func PopulateFromRawCAA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "CAA"
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
+	}
+
+	// Parse the remaining fields.
+	rdata, err := ParseCAA(rawfields[1:], origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsCAA returns rc.Fields as an CAA struct.
+func (rc *RecordConfig) AsCAA() *CAA {
+	return rc.Fields.(*CAA)
+}
+
+// GetFieldsCAA returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsCAA() (uint8, string, string) {
+	n := rc.AsCAA()
+	return n.Flag, n.Tag, n.Value
+}
+
+// GetFieldsAsStringsCAA returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsCAA() [3]string {
+	n := rc.AsCAA()
+	return [3]string{strconv.Itoa(int(n.Flag)), n.Tag, n.Value}
 }
