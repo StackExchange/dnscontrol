@@ -43,7 +43,7 @@ func makeInterfaceConstraint(vals Values) []byte {
 var RecordTypeTmpl = template.Must(template.New("RecordType").Funcs(funcs).Parse(`
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-   {{ join .TypeNames " | " }}
+	{{ join .TypeNames " | " }}
 }
 `))
 
@@ -66,9 +66,9 @@ import (
 )
 
 func init() {
-  {{ range .TypeNamesAndFields -}}
-  MustRegisterType("{{ .Config.Token }}", RegisterOpts{PopulateFromRaw: PopulateFromRaw{{ .Config.Name }} })
-  {{ end -}}
+	{{- range .TypeNamesAndFields }}
+	MustRegisterType("{{ .Config.Token }}", RegisterOpts{PopulateFromRaw: PopulateFromRaw{{ .Config.Name -}} })
+	{{- end }}
 }
 `))
 
@@ -93,26 +93,24 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	switch rc.Type {
 {{- range .TypeNamesAndFields -}}
 {{- if eq .Config.ConstructFromLegacyFields "IP" }}
-  case "A":
-    ip, err := fieldtypes.ParseIPv4(rc.target)
-    if err != nil {
-      return err
-    }
-    return RecordUpdateFields(rc, A{A: ip}, nil)
-{{ else if .Config.ConstructFromLegacyFields -}}
+	case "A":
+		ip, err := fieldtypes.ParseIPv4(rc.target)
+		if err != nil {
+			return err
+		}
+		return RecordUpdateFields(rc, A{A: ip}, nil)
+{{- else if .Config.ConstructFromLegacyFields }}
 	case "{{ .Name }}":
 		return RecordUpdateFields(rc,
-            {{ .Name }}{ {{- .Config.ConstructFromLegacyFields -}} },
+			{{ .Name }}{ {{- .Config.ConstructFromLegacyFields -}} },
 			nil,
 		)
-{{ end -}}
-{{ end -}}
+{{- end }}
+{{- end }}
 	}
 	panic("Should not happen")
 }
 `))
-
-// {{ .Name }}{ {{- $.ConstructFromLegacyFields -}} },
 
 func mkConstructFromLegacyFields(fields []Field) string {
 	var ac []string
@@ -125,12 +123,105 @@ func mkConstructFromLegacyFields(fields []Field) string {
 		} else if HasTagOption(field.Tags, "dns", "a") {
 			return "IP"
 		} else if i == (len(fields) - 1) {
-			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, "target"))
-		} else if len(fields) == 1 {
+			// The last field defaults to .target
 			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, "target"))
 		}
 	}
 	return strings.Join(ac, ", ")
+}
+
+// Seal
+
+// makeSeal generates the function that downstreams upgraded fields data to the legacy record fields.
+// Makes: `models/generated_types.go` func ImportFromLegacy
+func makeSeal(vals Values) []byte {
+	return valuesTemplate(importSealTmpl, vals)
+}
+
+var importSealTmpl = template.Must(template.New("Seal").Parse(`
+func (rc *RecordConfig) Seal() error {
+	rc.Type = GetTypeName(rc.Fields)
+
+	// Copy the fields to the legacy fields:
+	// Pre-compute useful things
+	switch rc.Type {
+{{- range .TypeNamesAndFields -}}
+	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+	case "{{ .Name }}":
+		f := rc.Fields.(*{{ .Name }})
+		rc.target = f.A.String()
+		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	{{- else if .Config.ConstructFromLegacyFields }}
+	case "{{ .Name }}":
+		f := rc.Fields.(*{{ .Name }})
+		{{- range .Config.Fields }}
+			{{- if .LegacyName }}
+		rc.{{ .LegacyName }} = f.{{ .Name }}	
+			{{- else }}
+		rc.target = f.{{ .Name }}	
+			{{- end }}
+		{{- end }}
+
+		rc.Comparable = {{ .Config.ComparableExpr }}
+	{{- else }}
+	case "{{ .Config.Token }}":
+		f := rc.Fields.(*{{ .Name }})
+		{{- range .Config.Fields }}
+			{{- if .LegacyName }}
+		rc.{{ .LegacyName }} = f.{{ .Name }}	
+			{{- end }}
+		{{- end }}
+
+		rc.Comparable = {{ .Config.ComparableExpr }}
+	{{- end }}
+{{- end }}
+	default:
+		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
+	}
+	rc.Display = rc.Comparable
+
+	return nil
+}
+`))
+
+func mkComparableExpr(fields []Field) string {
+	fmt.Printf("DEBUG: mkComparableExpr(%+v)\n", fields)
+
+	// Single field that is a string, return it.
+	if len(fields) == 1 && fields[0].Type == "string" {
+		return `f.` + fields[0].Name
+	}
+
+	// Otherwise, use fmt.Sprintf to generate it.
+	var fl []string
+	var al []string
+	for _, field := range fields {
+		fmt.Printf("DEBUG: field = %+v\n", field)
+		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
+			continue
+		}
+		switch {
+		case HasTagOption(field.Tags, "dns", "a"):
+			fl = append(fl, `"%s"`)
+			al = append(al, "f."+field.Name)
+		case HasTagOption(field.Tags, "dnscontrol", "anyascii"):
+			fl = append(fl, "%q")
+			al = append(al, "f."+field.Name)
+		case field.Type == "int" || field.Type == "uint16":
+			fl = append(fl, "%d")
+			al = append(al, "f."+field.Name)
+		case field.Type == "string":
+			fl = append(fl, "%s")
+			al = append(al, "f."+field.Name)
+		default:
+			fl = append(fl, "%v")
+			//fl = append(fl, fmt.Sprintf("%%v(%s)", field.Type))
+			al = append(al, "f."+field.Name)
+		}
+	}
+	x := `fmt.Sprintf("` + strings.Join(fl, " ") + `", ` + strings.Join(al, ", ") + `)`
+	fmt.Printf("DEBUG: return = %v\n", x)
+	return x
 }
 
 // TypeTYPE
@@ -147,7 +238,7 @@ var TypeTYPETmpl = template.Must(template.New("TypeTYPE").Parse(`
 // {{ .Name }} is the fields needed to store a DNS record of type {{ .Name }}.
 type {{ .Name }} struct {
 {{- range .Fields }}
-    {{ .Name }} {{ .Type }} {{ if .TagsString }} ` + "`{{ .Tags }}`" + ` {{- end }}
+	{{ .Name }} {{ .Type }} {{ if .TagsString }} ` + "`{{ .Tags }}`" + ` {{- end }}
 {{- end }}
 }
 
@@ -164,26 +255,26 @@ func makeParseTYPE(rtconfig RTypeConfig) []byte {
 var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
 func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
 
-        // Error checking
-        if errorCheckFieldCount(rawfields, {{ .NumRawFields }}) {
-                return {{ .Name }}{}, fmt.Errorf("rtype {{ .Name }} wants %d field(s), found %d: %+v", {{ .NumRawFields }}, len(rawfields)-1, rawfields[1:])
-        }
+	// Error checking
+	if errorCheckFieldCount(rawfields, {{ .NumRawFields }}) {
+		return {{ .Name }}{}, fmt.Errorf("rtype {{ .Name }} wants %d field(s), found %d: %+v", {{ .NumRawFields }}, len(rawfields)-1, rawfields[1:])
+	}
 
 {{- range .Fields }}
    {{- if not .NoRaw }}
-    var {{ .NameLower }} {{ .Type }}
+	var {{ .NameLower }} {{ .Type }}
    {{- end }}
 {{- end }}
-        var err error
+	var err error
 {{- range .Fields }}
    {{- if not .NoRaw }}
-        if {{ .NameLower }}, err = {{ .Parser }}; err != nil {
-                return {{ $.Name }}{}, err
-        }
-   {{- end }}
+	if {{ .NameLower }}, err = {{ .Parser }}; err != nil {
+		return {{ $.Name }}{}, err
+	}
+	{{- end }}
 {{- end }}
 
-    return {{ .Name }}{ {{- .ConstructAll -}} }, nil
+	return {{ .Name }}{ {{- .ConstructAll -}} }, nil
 }
 
 `))
@@ -235,27 +326,27 @@ func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
 func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
-  rc.Type = "{{ .Token }}"
-  {{- if .TTL1 }}
-  rc.TTL = 1
-  {{- end }}
+	rc.Type = "{{ .Token }}"
+	{{- if .TTL1 }}
+	rc.TTL = 1
+	{{- end }}
 
-  // First rawfield is the label.
-  if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
-    return err
-  }
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
+	}
 
-  // Parse the remaining fields.
-  {{- if .NoLabel }}
-  rdata, err := Parse{{ .Name }}(rawfields, origin)
-  {{- else }}
-  rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
-  {{- end }}
-  if err != nil {
-    return err
-  }
+	// Parse the remaining fields.
+	{{- if .NoLabel }}
+	rdata, err := Parse{{ .Name }}(rawfields, origin)
+	{{- else }}
+	rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
+	{{- end }}
+	if err != nil {
+		return err
+	}
 
-  return RecordUpdateFields(rc, rdata, meta)
+	return RecordUpdateFields(rc, rdata, meta)
 }
 
 `))
@@ -271,7 +362,7 @@ func makeAsTYPE(rtconfig RTypeConfig) []byte {
 var AsTYPETmpl = template.Must(template.New("AsTYPE").Parse(`
 // As{{ .Name }} returns rc.Fields as an {{ .Name }} struct.
 func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
-  return rc.Fields.(*{{ .Name }})
+	return rc.Fields.(*{{ .Name }})
 }
 
 `))
@@ -287,8 +378,8 @@ func makeGetFieldsTYPE(rtconfig RTypeConfig) []byte {
 var GetFieldsTYPETmpl = template.Must(template.New("GetFieldsTYPE").Parse(`
 // GetFields{{ .Name }} returns rc.Fields as individual typed values.
 func (rc *RecordConfig) GetFields{{ .Name }}() ({{ .FieldTypesCommaSep }}) {
-  n := rc.As{{ .Name }}()
-  return {{ .ReturnIndividualFieldsList }}
+	n := rc.As{{ .Name }}()
+	return {{ .ReturnIndividualFieldsList }}
 }
 
 `))
@@ -331,8 +422,8 @@ func makeGetFieldsAsStringsTYPE(rtconfig RTypeConfig) []byte {
 var GetFieldsAsStringsTYPETmpl = template.Must(template.New("GetFieldsAsStringsTYPE").Parse(`
 // GetFieldsAsStrings{{ .Name }} returns rc.Fields as individual strings.
 func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumRawFields }}]string {
-  n := rc.As{{ .Name }}()
-  return {{ .ReturnAsStringsList }}
+	n := rc.As{{ .Name }}()
+	return {{ .ReturnAsStringsList }}
 }
 
 `))
@@ -364,9 +455,9 @@ func makeIntTestHeader() []byte {
 	return []byte(`package main
 
 import (
-  "strconv"
+	"strconv"
 
-  "github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 `)
@@ -388,15 +479,15 @@ func {{ .NameLower }}(name string, {{ .InputFieldsAsSignature }}) *models.Record
 {{- end }}
 {{- range .Fields }}
 {{- if .ConvertToString }}
-  {{ .ConvertToString }}
+	{{ .ConvertToString }}
 {{- end }}
 {{- end }}
 
-  rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "**current-domain**")
-  if err != nil {
-    panic(err)
-  }
-  return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+	rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
 `))

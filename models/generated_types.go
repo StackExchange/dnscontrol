@@ -55,6 +55,48 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	panic("Should not happen")
 }
 
+func (rc *RecordConfig) Seal() error {
+	rc.Type = GetTypeName(rc.Fields)
+
+	// Copy the fields to the legacy fields:
+	// Pre-compute useful things
+	switch rc.Type {
+	case "A":
+		f := rc.Fields.(*A)
+		rc.target = f.A.String()
+		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	case "MX":
+		f := rc.Fields.(*MX)
+		rc.MxPreference = f.Preference
+		rc.target = f.Mx
+
+		rc.Comparable = fmt.Sprintf("%d %s", f.Preference, f.Mx)
+	case "SRV":
+		f := rc.Fields.(*SRV)
+		rc.SrvPriority = f.Priority
+		rc.SrvWeight = f.Weight
+		rc.SrvPort = f.Port
+		rc.target = f.Target
+
+		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Priority, f.Weight, f.Port, f.Target)
+	case "CNAME":
+		f := rc.Fields.(*CNAME)
+		rc.target = f.Target
+
+		rc.Comparable = f.Target
+	case "CF_SINGLE_REDIRECT":
+		f := rc.Fields.(*CFSINGLEREDIRECT)
+		rc.target = f.SRDisplay
+
+		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
+	default:
+		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
+	}
+	rc.Display = rc.Comparable
+
+	return nil
+}
+
 //// A
 
 // A is the fields needed to store a DNS record of type A.
@@ -307,10 +349,10 @@ func (rc *RecordConfig) GetFieldsAsStringsCNAME() [1]string {
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
 type CFSINGLEREDIRECT struct {
-	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label"`
+	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label,anyascii"`
 	Code             uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"`
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
+	SRWhen           string `json:"sr_when,omitempty" dnscontrol:"_,anyascii"`
+	SRThen           string `json:"sr_then,omitempty" dnscontrol:"_,anyascii"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noinput"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noinput"`
 	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noinput"`

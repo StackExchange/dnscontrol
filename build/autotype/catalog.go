@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -47,6 +48,11 @@ type RTypeConfig struct {
 
 	// Assign fields to their legacy counterparts.
 	ConstructFromLegacyFields string
+
+	// Go expression that generates the .Comparable field.
+	ComparableExpr string
+
+	// NB(tlim): Fields in this struct are populated by FixTypes().
 }
 
 type Field struct {
@@ -73,6 +79,10 @@ type Field struct {
 
 	// This field does not come from user-input (i.e. not part of RawFields)
 	NoRaw bool
+
+	// NB(tlim): If you add a new field here:
+	// * FixFields() should populate it.
+	// * Update the Merge() method.
 }
 
 func (cat *TypeCatalog) TypeNamesAsSet() map[string]struct{} {
@@ -92,6 +102,10 @@ func (cat *TypeCatalog) TypeNamesAsSlice() []string {
 }
 
 func (cat *TypeCatalog) TypeNamesAndFields(order []string) []TypeInfo {
+
+	x, _ := json.MarshalIndent(order, "", "    ")
+	fmt.Printf("DEBUG: TypeNamesAndFields: %v\n", x)
+
 	var keys []TypeInfo
 	for _, k := range order {
 		v := (*cat)[k]
@@ -129,6 +143,7 @@ func (cat *TypeCatalog) FixTypes() {
 			t.InputFieldsAsSignature = mkInputFieldsAsSignature(t.Fields)
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
 			t.ConstructFromLegacyFields = mkConstructFromLegacyFields(t.Fields)
+			t.ComparableExpr = mkComparableExpr(t.Fields)
 		}
 		(*cat)[catName] = t
 	}

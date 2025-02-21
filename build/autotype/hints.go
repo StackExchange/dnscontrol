@@ -50,7 +50,11 @@ func GetHints() ([]string, TypeCatalog) {
 
 	addType("CNAME", "", nil)
 
-	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT", nil)
+	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT",
+		[]Field{
+			{Name: "SRDisplay", LegacyName: "target"},
+		},
+	)
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")
 
