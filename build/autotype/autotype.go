@@ -229,6 +229,8 @@ func main() {
 	fmt.Printf("DEBUG: Values: %s\n", x)
 	mgt = append(mgt, makeImportFromLegacy(values)...)
 	mgt = append(mgt, makeSeal(values)...)
+	mgt = append(mgt, makeGetTargetField(values)...)
+	//mgt = append(mgt, makeSetTarget(values)...)
 
 	// integrationTest/generated_helpers.go
 	var ith = makeIntTestHeader()

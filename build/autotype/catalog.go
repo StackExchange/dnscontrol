@@ -52,6 +52,12 @@ type RTypeConfig struct {
 	// Go expression that generates the .Comparable field.
 	ComparableExpr string
 
+	// The field most likely someone means when they say the "Target" of this rtype.
+	TargetField string
+
+	// Legacy field equiv of TargetField.
+	LegacyTargetField string
+
 	// NB(tlim): Fields in this struct are populated by FixTypes().
 }
 
@@ -144,6 +150,7 @@ func (cat *TypeCatalog) FixTypes() {
 			t.FieldsAsSVars = mkFieldsAsSVars(t.Fields)
 			t.ConstructFromLegacyFields = mkConstructFromLegacyFields(t.Fields)
 			t.ComparableExpr = mkComparableExpr(t.Fields)
+			t.TargetField, t.LegacyTargetField = mkTargetField(t.Fields)
 		}
 		(*cat)[catName] = t
 	}

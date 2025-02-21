@@ -156,9 +156,9 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*{{ .Name }})
 		{{- range .Config.Fields }}
 			{{- if .LegacyName }}
-		rc.{{ .LegacyName }} = f.{{ .Name }}	
+		rc.{{ .LegacyName }} = f.{{ .Name }}
 			{{- else }}
-		rc.target = f.{{ .Name }}	
+		rc.target = f.{{ .Name }}
 			{{- end }}
 		{{- end }}
 
@@ -168,7 +168,7 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*{{ .Name }})
 		{{- range .Config.Fields }}
 			{{- if .LegacyName }}
-		rc.{{ .LegacyName }} = f.{{ .Name }}	
+		rc.{{ .LegacyName }} = f.{{ .Name }}
 			{{- end }}
 		{{- end }}
 
@@ -224,6 +224,91 @@ func mkComparableExpr(fields []Field) string {
 	return x
 }
 
+// GetTargetField
+
+// makeGetTargetField generates the function that returns the last field of a record type.
+// Makes: `models/generated_types.go` func GetTargetField
+func makeGetTargetField(vals Values) []byte {
+	return valuesTemplate(importGetTargetFieldTmpl, vals)
+}
+
+var importGetTargetFieldTmpl = template.Must(template.New("GetTargetField").Parse(`
+// GetTargetField returns the target. There may be other fields, but they are
+// not included. For example, the .MxPreference field of an MX record isn't included.
+func (rc *RecordConfig) GetTargetField() string {
+	switch rc.Type { // #rtype_variations
+{{- range .TypeNamesAndFields -}}
+	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+	case "{{ .Name }}":
+		return rc.As{{ .Name }}().{{ .Name }}.String()
+	{{- else }}
+	case "{{ .Name }}":
+		return rc.As{{ .Name }}().{{ .Config.TargetField }}
+	{{- end }}
+{{- end }}
+	}
+	return rc.target
+}
+`))
+
+// mkTargetField returns the field that an average person would consider the
+// "target" field of this rtype.  This is used in the GetTargetField function,
+// which is kind of ambiguous and should be removed.
+func mkTargetField(fields []Field) (string, string) {
+	// If there is only one field, use it.
+	if len(fields) == 1 {
+		return fields[0].Name, fields[0].LegacyName
+	}
+
+	// Use the field named "Target", or tagged as the target, or if the legacy
+	// name is "target".
+	for _, field := range fields {
+		if field.Name == "Target" || HasTagOption(field.Tags, "dnscontrol", "target") || field.LegacyName == "target" {
+			return field.Name, field.LegacyName
+		}
+	}
+
+	// Really? No target field?  Use the last field.
+	return fields[len(fields)-1].Name, fields[len(fields)-1].LegacyName
+}
+
+// // SetTarget
+
+// // makeSetTarget generates the function that sets the last field of a record type.
+// // Makes: `models/generated_types.go` func SetTarget
+// func makeSetTarget(vals Values) []byte {
+// 	return valuesTemplate(importSetTargetTmpl, vals)
+// }
+
+// var importSetTargetTmpl = template.Must(template.New("SetTarget").Parse(`
+// // SetTarget sets the target, assuming that the rtype is appropriate.
+// func (rc *RecordConfig) SetTarget(s string) error {
+// 	// Legacy
+// 	rc.target = s
+
+// 	switch rc.Type { // #rtype_variations
+// {{- range .TypeNamesAndFields -}}
+// 	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+// 	case "A":
+// 		return rc.SetTargetA(s)
+// 	{{- else }}
+// 	case "{{ .Name }}":
+// 		// COUNT={{- .Config.NumRawFields }}
+// 		{{- if ne .Config.NumRawFields 1 }}
+// 		if rc.Fields == nil {
+// 			return rc.SetTarget{{ .Name }}(rc.{{ .Config.LegacyTargetField }}, s)
+// 		}
+// 		{{- end }}
+// 		f := rc.As{{ .Name }}()
+// 		return rc.SetTarget{{ .Name }}(f.{{ .Config.TargetField }}, s)
+// 	{{- end }}
+// {{- end }}
+// 	}
+// 	return nil
+// `))
+
+// mkTargetField() defined above
+
 // TypeTYPE
 
 // makeTypeTYPE generates the Type{TYPE} for a record type.
@@ -241,7 +326,6 @@ type {{ .Name }} struct {
 	{{ .Name }} {{ .Type }} {{ if .TagsString }} ` + "`{{ .Tags }}`" + ` {{- end }}
 {{- end }}
 }
-
 `))
 
 // ParseTYPE
@@ -276,7 +360,6 @@ func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
 
 	return {{ .Name }}{ {{- .ConstructAll -}} }, nil
 }
-
 `))
 
 func mkParser(i int, f Field) string {
@@ -348,7 +431,6 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
 	return RecordUpdateFields(rc, rdata, meta)
 }
-
 `))
 
 // AsTYPE
@@ -364,7 +446,6 @@ var AsTYPETmpl = template.Must(template.New("AsTYPE").Parse(`
 func (rc *RecordConfig) As{{ .Name }}() *{{ .Name }} {
 	return rc.Fields.(*{{ .Name }})
 }
-
 `))
 
 // GetFieldsTYPE
@@ -381,7 +462,6 @@ func (rc *RecordConfig) GetFields{{ .Name }}() ({{ .FieldTypesCommaSep }}) {
 	n := rc.As{{ .Name }}()
 	return {{ .ReturnIndividualFieldsList }}
 }
-
 `))
 
 func mkFieldTypesCommaSep(fields []Field) string {
@@ -425,7 +505,6 @@ func (rc *RecordConfig) GetFieldsAsStrings{{ .Name }}() [{{ .NumRawFields }}]str
 	n := rc.As{{ .Name }}()
 	return {{ .ReturnAsStringsList }}
 }
-
 `))
 
 func mkReturnAsStringsList(fields []Field) string {
@@ -489,7 +568,6 @@ func {{ .NameLower }}(name string, {{ .InputFieldsAsSignature }}) *models.Record
 	}
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
-
 `))
 
 func mkInputFieldsAsSignature(fields []Field) string {
