@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -51,7 +52,7 @@ type RTypeConfig struct {
 	// Go expression that generates the .Comparable field.
 	ComparableExpr string
 
-	// NB(tlim): Fields in this struct are populated by FixTypese().
+	// NB(tlim): Fields in this struct are populated by FixTypes().
 }
 
 type Field struct {
@@ -101,6 +102,10 @@ func (cat *TypeCatalog) TypeNamesAsSlice() []string {
 }
 
 func (cat *TypeCatalog) TypeNamesAndFields(order []string) []TypeInfo {
+
+	x, _ := json.MarshalIndent(order, "", "    ")
+	fmt.Printf("DEBUG: TypeNamesAndFields: %v\n", x)
+
 	var keys []TypeInfo
 	for _, k := range order {
 		v := (*cat)[k]

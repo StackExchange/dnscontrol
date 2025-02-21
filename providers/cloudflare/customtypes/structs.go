@@ -14,12 +14,12 @@ type CFSINGLEREDIRECT struct {
 	Hdr dns.RR_Header
 
 	// SR == SingleRedirect
-	SRName string `json:"sr_name,omitempty" dnscontrol:"_,label"` // How is this displayed to the user
+	SRName string `json:"sr_name,omitempty" dnscontrol:"_,label,anyascii"` // How is this displayed to the user
 	//
 	Code uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"` // 301 or 302
 	//
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
+	SRWhen           string `json:"sr_when,omitempty" dnscontrol:"_,anyascii"`
+	SRThen           string `json:"sr_then,omitempty" dnscontrol:"_,anyascii"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noinput"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noinput"`
 	// How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT

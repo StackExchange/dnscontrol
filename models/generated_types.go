@@ -84,6 +84,11 @@ func (rc *RecordConfig) Seal() error {
 		rc.target = f.Target
 
 		rc.Comparable = f.Target
+	case "CFSINGLEREDIRECT":
+		f := rc.Fields.(*CFSINGLEREDIRECT)
+		rc.target = f.SRDisplay
+
+		rc.Comparable = fmt.Sprintf("%q %d %q %q", f.SRName, f.Code, f.SRWhen, f.SRThen)
 	default:
 		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
 	}
@@ -344,10 +349,10 @@ func (rc *RecordConfig) GetFieldsAsStringsCNAME() [1]string {
 
 // CFSINGLEREDIRECT is the fields needed to store a DNS record of type CFSINGLEREDIRECT.
 type CFSINGLEREDIRECT struct {
-	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label"`
+	SRName           string `json:"sr_name,omitempty" dnscontrol:"_,label,anyascii"`
 	Code             uint16 `json:"code,omitempty" dnscontrol:"_,redirectcode"`
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
+	SRWhen           string `json:"sr_when,omitempty" dnscontrol:"_,anyascii"`
+	SRThen           string `json:"sr_then,omitempty" dnscontrol:"_,anyascii"`
 	SRRRulesetID     string `json:"sr_rulesetid,omitempty" dnscontrol:"_,noraw,noinput"`
 	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty" dnscontrol:"_,noraw,noinput"`
 	SRDisplay        string `json:"sr_display,omitempty" dnscontrol:"_,srdisplay,noraw,noinput"`
