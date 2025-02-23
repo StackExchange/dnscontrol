@@ -3,16 +3,20 @@ package models
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc1035"
 )
 
 // SetTargetCAA sets the CAA fields.
 func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) error {
 	rc.Type = "CAA"
+	//return fmt.Errorf("DEBUG settarget CAA %v\n", CAA{Flag: flag, Tag: tag, Value: target})
 	return RecordUpdateFields(rc, CAA{Flag: flag, Tag: tag, Value: target}, nil)
 }
 
 // SetTargetCAAStrings is like SetTargetCAA but accepts strings.
 func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
+	//fmt.Printf("DEBUG: CAA TESTs: %v %v %v\n", flag, tag, target)
 	i64flag, err := strconv.ParseUint(flag, 10, 8)
 	if err != nil {
 		return fmt.Errorf("CAA flag does not fit in 8 bits: %w", err)
@@ -23,7 +27,9 @@ func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 // SetTargetCAAString is like SetTargetCAA but accepts one big string.
 // Ex: `0 issue "letsencrypt.org"`
 func (rc *RecordConfig) SetTargetCAAString(s string) error {
-	part, err := ParseQuotedFields(s)
+	//fmt.Printf("DEBUG: CAA TEST: %q\n", s)
+	//part, err := ParseQuotedFields(s)
+	part, err := rfc1035.Fields(s)
 	if err != nil {
 		return err
 	}
