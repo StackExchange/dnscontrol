@@ -28,7 +28,10 @@ func RRtoRCTxtBug(rr dns.RR, origin string) (RecordConfig, error) {
 
 // helperRRtoRC converts dns.RR to RecordConfig. If fixBug is true, replaces `\\` to `\` in TXT records to compensate for github.com/miekg/dns/issues/1384.
 func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
-	//fmt.Printf("DEBUG: RRtoRC(%v, %q)\n", rr, origin)
+	// debug := fmt.Sprintf("%T", rr) == "*dns.CAA"
+	// if debug {
+	// 	fmt.Printf("\nDEBUG: RRtoRC(%v, %q)\n", rr, origin)
+	// }
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
 	header := rr.Header()
@@ -48,7 +51,11 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 	case *dns.AAAA:
 		err = rc.SetTarget(v.AAAA.String())
 	case *dns.CAA:
-		err = rc.SetTargetCAA(v.Flag, v.Tag, v.Value)
+		//fmt.Printf("DEBUG:    CAA: value=%s\n", v.Value)
+		// Because dns.CAA uses sprintTxtOctet(), we need to remove the backslashes.
+		x := v.Value
+		x = strings.ReplaceAll(x, `\`, ``)
+		err = rc.SetTargetCAA(v.Flag, v.Tag, x)
 	case *dns.CNAME:
 		err = rc.SetTarget(v.Target)
 	case *dns.DHCID:
@@ -100,6 +107,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 
 	// Must be done after any .SetTarget*(*) calls since they may clear the .NameFQDN field.
 	rc.SetLabelFromFQDN(header.Name, origin)
-	//fmt.Printf("DEBUG:    end RRtoRC(%q, %q)\n", rc.Name, rc.NameFQDN)
+	// if debug {
+	// 	fmt.Printf("DEBUG:    end RRtoRC(%q, %q)\n", rc.Name, rc.NameFQDN)
+	// }
 	return *rc, nil
 }

@@ -409,6 +409,14 @@ func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
 func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	{{ if .IsBuilder -}}
+	rawfields, meta, err := Builder{{ .Name }}(rawfields, meta, origin)
+	if err != nil {
+		return err
+	}
+
+	{{ end -}}
+
 	rc.Type = "{{ .Token }}"
 	{{- if .TTL1 }}
 	rc.TTL = 1

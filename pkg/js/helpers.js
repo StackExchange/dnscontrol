@@ -275,7 +275,7 @@ function DefaultTTL(v) {
 
 // CAA_CRITICAL: Critical CAA flag
 //var CAA_CRITICAL = makeCAAFlag(1 << 7);
-var CAA_CRITICAL = { caa_flag: (1 << 7); }
+var CAA_CRITICAL = { caa_critical: "1" };
 
 // DnsProvider("providerName", 0)
 // nsCount of 0 means don't use or register any nameservers.
@@ -2064,7 +2064,9 @@ function rawrecordBuilder(type) {
             }
             // Store the processed args.
             record.args = processedArgs;
+           //processedMetas.push({ foo: "bar" } );
             record.metas = processedMetas;
+//            record.metas = { foo: "bar" };
 
             // Add this raw record to the list of records.
             d.rawrecords.push(record);

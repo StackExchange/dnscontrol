@@ -10,6 +10,11 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "Flag": 128,
+            "Tag": "iodef",
+            "Value": "https://example.com"
+          },
           "caaflag": 128,
           "caatag": "iodef",
           "name": "@",
@@ -18,14 +23,27 @@
           "type": "CAA"
         },
         {
+          "Fields": {
+            "Flag": 128,
+            "Tag": "iodef",
+            "Value": "mailto:test@example.com"
+          },
           "caaflag": 128,
           "caatag": "iodef",
+          "meta": {
+            "foo": "bar2"
+          },
           "name": "@",
           "target": "mailto:test@example.com",
           "ttl": 300,
           "type": "CAA"
         },
         {
+          "Fields": {
+            "Flag": 0,
+            "Tag": "iodef",
+            "Value": "http://example.com"
+          },
           "caatag": "iodef",
           "name": "@",
           "target": "http://example.com",
@@ -33,6 +51,11 @@
           "type": "CAA"
         },
         {
+          "Fields": {
+            "Flag": 0,
+            "Tag": "issue",
+            "Value": "letsencrypt.org"
+          },
           "caatag": "issue",
           "name": "@",
           "target": "letsencrypt.org",
@@ -40,6 +63,11 @@
           "type": "CAA"
         },
         {
+          "Fields": {
+            "Flag": 0,
+            "Tag": "issuewild",
+            "Value": ";"
+          },
           "caatag": "issuewild",
           "name": "@",
           "target": ";",

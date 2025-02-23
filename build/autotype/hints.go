@@ -32,6 +32,13 @@ func GetHints() ([]string, TypeCatalog) {
 		}
 		cat[name] = n
 	}
+	setIsBuilder := func(name string) {
+		n := cat[name]
+		{
+			n.IsBuilder = true
+		}
+		cat[name] = n
+	}
 
 	addType("A", "", nil)
 
@@ -65,6 +72,7 @@ func GetHints() ([]string, TypeCatalog) {
 			{Name: "Value", Tags: MustParseTags(`dnscontrol:"_,anyascii"`), LegacyName: "target"},
 		},
 	)
+	setIsBuilder("CAA")
 
 	//x, _ := json.MarshalIndent(cat, "", "    ")
 	//fmt.Printf("DEBUG: Hints: %s\n", x)

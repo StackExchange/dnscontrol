@@ -7,23 +7,8 @@ import (
 
 // SetTargetCAA sets the CAA fields.
 func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) error {
-	rc.CaaTag = tag
-	rc.CaaFlag = flag
-	if err := rc.SetTarget(target); err != nil {
-		return err
-	}
-	if rc.Type == "" {
-		rc.Type = "CAA"
-	}
-	if rc.Type != "CAA" {
-		panic("assertion failed: SetTargetCAA called when .Type is not CAA")
-	}
-
-	if tag != "issue" && tag != "issuewild" && tag != "iodef" {
-		return fmt.Errorf("CAA tag (%v) is not one of issue/issuewild/iodef", tag)
-	}
-
-	return nil
+	rc.Type = "CAA"
+	return RecordUpdateFields(rc, CAA{Flag: flag, Tag: tag, Value: target}, nil)
 }
 
 // SetTargetCAAStrings is like SetTargetCAA but accepts strings.

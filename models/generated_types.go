@@ -492,6 +492,11 @@ func ParseCAA(rawfields []string, origin string) (CAA, error) {
 
 // PopulateFromRawCAA updates rc to be an CAA record with contents from rawfields, meta and origin.
 func PopulateFromRawCAA(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rawfields, meta, err := BuilderCAA(rawfields, meta, origin)
+	if err != nil {
+		return err
+	}
+
 	rc.Type = "CAA"
 
 	// First rawfield is the label.
