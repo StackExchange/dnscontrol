@@ -20,15 +20,6 @@ func TestRR(t *testing.T) {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}
 
-	// experiment = RecordConfig{
-	// 	Type:     "CAA",
-	// 	Name:     "@",
-	// 	NameFQDN: "example.com",
-	// 	target:   "mailto:test@example.com",
-	// 	TTL:      300,
-	// 	CaaTag:   "iodef",
-	// 	CaaFlag:  1,
-	// }
 	experiment = *MustCreateRecord("@", CAA{Flag: 1, Tag: "iodef", Value: "mailto:test@example.com"}, nil, 0, "example.com")
 	expected = "example.com.\t300\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
 	found = experiment.ToRR().String()

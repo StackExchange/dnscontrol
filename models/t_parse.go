@@ -62,7 +62,7 @@ var originDotWarning = false
 //	}
 //	return rc, nil
 func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, txtFn func(s string) (string, error)) error {
-	fmt.Printf("DEBUG: PopulateFromStringFunc(%q, %q, %q)\n", rtype, contents, origin)
+	//fmt.Printf("DEBUG: PopulateFromStringFunc(%q, %q, %q)\n", rtype, contents, origin)
 	if rc.Type != "" && rc.Type != rtype {
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
