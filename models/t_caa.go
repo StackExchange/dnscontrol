@@ -7,13 +7,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc1035"
 )
 
-// SetTargetCAA sets the CAA fields.
-func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) error {
-	rc.Type = "CAA"
-	//return fmt.Errorf("DEBUG settarget CAA %v\n", CAA{Flag: flag, Tag: tag, Value: target})
-	return RecordUpdateFields(rc, CAA{Flag: flag, Tag: tag, Value: target}, nil)
-}
-
 // SetTargetCAAStrings is like SetTargetCAA but accepts strings.
 func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 	//fmt.Printf("DEBUG: CAA TESTs: %v %v %v\n", flag, tag, target)

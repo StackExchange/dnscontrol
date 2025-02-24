@@ -74,6 +74,23 @@ func GetHints() ([]string, TypeCatalog) {
 	)
 	setIsBuilder("CAA")
 
+	addType("DS", "",
+		[]Field{
+			{Name: "KeyTag", LegacyName: "DsKeyTag"},
+			{Name: "Algorithm", LegacyName: "DsAlgorithm"},
+			{Name: "DigestType", LegacyName: "DsDigestType"},
+			{Name: "Digest", LegacyName: "DsDigest", Tags: MustParseTags(`dnscontrol:"_,target,alllower"`)},
+		},
+	)
+	addType("DNSKEY", "",
+		[]Field{
+			{Name: "Flags", LegacyName: "DnskeyFlags"},
+			{Name: "Protocol", LegacyName: "DnskeyProtocol"},
+			{Name: "Algorithm", LegacyName: "DnskeyAlgorithm"},
+			{Name: "PublicKey", LegacyName: "DnskeyPublicKey"},
+		},
+	)
+
 	//x, _ := json.MarshalIndent(cat, "", "    ")
 	//fmt.Printf("DEBUG: Hints: %s\n", x)
 	return l, cat

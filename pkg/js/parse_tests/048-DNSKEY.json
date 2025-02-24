@@ -10,12 +10,18 @@
       "name": "foo.com",
       "records": [
         {
+          "Fields": {
+            "Algorithm": 13,
+            "Flags": 257,
+            "Protocol": 3,
+            "PublicKey": "AABBCCDD"
+          },
           "dnskeyalgorithm": 13,
           "dnskeyflags": 257,
           "dnskeyprotocol": 3,
           "dnskeypublickey": "AABBCCDD",
           "name": "@",
-          "target": "",
+          "target": "AABBCCDD",
           "ttl": 300,
           "type": "DNSKEY"
         }

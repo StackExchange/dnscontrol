@@ -32,13 +32,22 @@ var CNAME = recordBuilder('CNAME');
 
 They should call RecordUpdateFields() (see t_mx.go for examples)
 
+Remove unused functions:
+
+```
+fgrep --include='*.go' -r 'SetTargetDSStrings('
+```
+
+
 
 -- fix models/t_parse.go
 
 Add to PopulateFromStringFunc
 
 
---
+-- fix record.go
+
+func (rc *RecordConfig) Copy()
 
 
 
@@ -50,3 +59,5 @@ remove .sub
 update .targets to include the subdomain.
 
 jstest.sh 014-caa.js
+
+-- fix
