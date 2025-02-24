@@ -191,8 +191,8 @@ func ParseStringTrimmed(raw string) (string, error) {
 
 //type StringICTrimmed string (IC = ignore case)
 
-func ParseStringTrimmedAllCaps(raw string) (string, error) {
-	return strings.TrimSpace(strings.ToUpper(raw)), nil
+func ParseStringTrimmedAllLower(raw string) (string, error) {
+	return strings.TrimSpace(strings.ToLower(raw)), nil
 }
 
 //type Uint16 uint16

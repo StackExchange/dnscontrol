@@ -427,8 +427,8 @@ func mkParser(i int, f Field) string {
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
 			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
 		}
-		if HasTagOption(f.Tags, "dnscontrol", "allcaps") {
-			return fmt.Sprintf(`fieldtypes.ParseStringTrimmedAllCaps(rawfields[%d])`, i)
+		if HasTagOption(f.Tags, "dnscontrol", "alllower") {
+			return fmt.Sprintf(`fieldtypes.ParseStringTrimmedAllLower(rawfields[%d])`, i)
 		}
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
 	case "fieldtypes.IPv4":

@@ -79,7 +79,7 @@ func GetHints() ([]string, TypeCatalog) {
 			{Name: "KeyTag", LegacyName: "DsKeyTag"},
 			{Name: "Algorithm", LegacyName: "DsAlgorithm"},
 			{Name: "DigestType", LegacyName: "DsDigestType"},
-			{Name: "Digest", LegacyName: "DsDigest", Tags: MustParseTags(`dnscontrol:"_,target,allcaps"`)},
+			{Name: "Digest", LegacyName: "DsDigest", Tags: MustParseTags(`dnscontrol:"_,target,alllower"`)},
 		},
 	)
 	addType("DNSKEY", "",

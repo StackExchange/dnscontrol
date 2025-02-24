@@ -12,32 +12,32 @@
         {
           "Fields": {
             "Algorithm": 1,
-            "Digest": "FFFF",
+            "Digest": "ffff",
             "DigestType": 1,
             "KeyTag": 1
           },
           "dsalgorithm": 1,
-          "dsdigest": "FFFF",
+          "dsdigest": "ffff",
           "dsdigesttype": 1,
           "dskeytag": 1,
           "name": "@",
-          "target": "FFFF",
+          "target": "ffff",
           "ttl": 300,
           "type": "DS"
         },
         {
           "Fields": {
             "Algorithm": 13,
-            "Digest": "AABBCCDDEEFF",
+            "Digest": "aabbccddeeff",
             "DigestType": 2,
             "KeyTag": 1000
           },
           "dsalgorithm": 13,
-          "dsdigest": "AABBCCDDEEFF",
+          "dsdigest": "aabbccddeeff",
           "dsdigesttype": 2,
           "dskeytag": 1000,
           "name": "@",
-          "target": "AABBCCDDEEFF",
+          "target": "aabbccddeeff",
           "ttl": 300,
           "type": "DS"
         }

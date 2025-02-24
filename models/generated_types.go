@@ -687,7 +687,7 @@ type DS struct {
 	KeyTag     uint16
 	Algorithm  uint8
 	DigestType uint8
-	Digest     string `dnscontrol:"_,target,allcaps"`
+	Digest     string `dnscontrol:"_,target,alllower"`
 }
 
 func ParseDS(rawfields []string, origin string) (DS, error) {
@@ -710,7 +710,7 @@ func ParseDS(rawfields []string, origin string) (DS, error) {
 	if digesttype, err = fieldtypes.ParseUint8(rawfields[2]); err != nil {
 		return DS{}, err
 	}
-	if digest, err = fieldtypes.ParseStringTrimmedAllCaps(rawfields[3]); err != nil {
+	if digest, err = fieldtypes.ParseStringTrimmedAllLower(rawfields[3]); err != nil {
 		return DS{}, err
 	}
 
