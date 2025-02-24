@@ -21,17 +21,17 @@ type RawRecordConfig struct {
 	EnsureAbsent bool `json:"ensure_absent,omitempty"`
 }
 
-// FromRaw converts the RawRecordConfig into a RecordConfig by calling the
-// conversion function provided when the rtype was registered.
-func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
+// // FromRaw converts the RawRecordConfig into a RecordConfig by calling the
+// // conversion function provided when the rtype was registered.
+// func FromRaw(rc *RecordConfig, origin string, typeName string, args []string, meta map[string]string) error {
 
-	rt, ok := rtypeDB[typeName]
-	if !ok {
-		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
-	}
+// 	rt, ok := rtypeDB[typeName]
+// 	if !ok {
+// 		return fmt.Errorf("unknown (FromRaw) rtype %q", typeName)
+// 	}
 
-	return rt.PopulateFromRaw(rc, args, meta, effectiveOrigin(rc.SubDomain, origin))
-}
+// 	return rt.PopulateFromRaw(rc, args, meta, effectiveOrigin(rc.SubDomain, origin))
+// }
 
 // CheckAndFixImport checks the records for any that were created with a
 // provider that has not yet been upgraded. In theory leaving providers in the
@@ -79,11 +79,14 @@ func TransformRawRecords(domains []*DomainConfig) error {
 			}
 
 			// Copy the metadata (convert values to string)
+			//fmt.Printf("DEBUG: TransformRawRecords: %v\n", rawRec.Metadata)
 			for _, m := range rawRec.Metadata {
 				for mk, mv := range m {
 					if v, ok := mv.(string); ok {
+						//fmt.Printf("DEBUG: TransformRawRecords: meta add: %q : %q\n", mk, v)
 						rec.Metadata[mk] = v // Already a string
 					} else {
+						//fmt.Printf("DEBUG: TransformRawRecords: meta add: %q : %q\n", mk, mv)
 						rec.Metadata[mk] = fmt.Sprintf("%v", mv)
 					}
 				}
@@ -96,10 +99,11 @@ func TransformRawRecords(domains []*DomainConfig) error {
 
 			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, effectiveOrigin(rec.SubDomain, dc.Name))
 			if err != nil {
-				return fmt.Errorf("%s (%q, dom=%q) record error: %w",
+				return fmt.Errorf("%s (label=%q, zone=%q args=%v) record error: %w",
 					rawRec.Type,
 					rec.Name,
 					dc.Name,
+					rawRec.Args,
 					err)
 			}
 

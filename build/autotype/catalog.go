@@ -46,6 +46,11 @@ type RTypeConfig struct {
 	// If tag dnscontrol "ttl1" is present, this field is set to true
 	TTL1 bool
 
+	// If the raw fields need to be transmorgrified before being sent to the constructor.
+	// This is used for "builders" and for legacy compatibility.
+	// If true, the rawrecord is passed to Process{TYPE}().
+	IsBuilder bool
+
 	// Assign fields to their legacy counterparts.
 	ConstructFromLegacyFields string
 
@@ -213,21 +218,20 @@ func (cat *TypeCatalog) Merge(overlay TypeCatalog, dupesOk bool) error {
 			(*cat)[typeName] = conf
 		} else {
 			// Merge Token.
+			x := (*cat)[typeName]
 			if conf.Token != "" {
-				x := (*cat)[typeName]
 				x.Token = conf.Token
-				(*cat)[typeName] = x
 			}
 			if conf.NoLabel {
-				x := (*cat)[typeName]
 				x.NoLabel = true
-				(*cat)[typeName] = x
 			}
 			if conf.TTL1 {
-				x := (*cat)[typeName]
 				x.TTL1 = true
-				(*cat)[typeName] = x
 			}
+			if conf.IsBuilder {
+				x.IsBuilder = true
+			}
+			(*cat)[typeName] = x
 
 			// Merge Fields.
 

@@ -26,8 +26,11 @@ Fix the `.json` formatting:
 
 ```
 cd parse_tests
-fmtjson *.json *.json.ACTUAL
+bin/fmtjson *.json *.json.ACTUAL
 ```
+
+(fmtjson can be found in the "bin" directory of the dnscontrol repo)
+
 
 # Copy actuals to expected.
 

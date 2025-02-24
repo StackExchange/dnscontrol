@@ -267,14 +267,15 @@ function DefaultTTL(v) {
     };
 }
 
-function makeCAAFlag(value) {
-    return function (record) {
-        record.caaflag |= value;
-    };
-}
+//function makeCAAFlag(value) {
+//    return function (record) {
+//        record.caaflag |= value;
+//    };
+//}
 
 // CAA_CRITICAL: Critical CAA flag
-var CAA_CRITICAL = makeCAAFlag(1 << 7);
+//var CAA_CRITICAL = makeCAAFlag(1 << 7);
+var CAA_CRITICAL = { caa_critical: "1" };
 
 // DnsProvider("providerName", 0)
 // nsCount of 0 means don't use or register any nameservers.
@@ -390,23 +391,23 @@ function validateR53AliasType(value) {
     );
 }
 
-// CAA(name,tag,value, recordModifiers...)
-var CAA = recordBuilder('CAA', {
-    // TODO(tlim): It should be an error if value is not 0 or 128.
-    args: [
-        ['name', _.isString],
-        ['tag', _.isString],
-        ['value', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.caatag = args.tag;
-        record.target = args.value;
-    },
-    modifierNumber: function (record, value) {
-        record.caaflags |= value;
-    },
-});
+//// CAA(name,tag,value, recordModifiers...)
+//var CAA = recordBuilder('CAA', {
+//    // TODO(tlim): It should be an error if value is not 0 or 128.
+//    args: [
+//        ['name', _.isString],
+//        ['tag', _.isString],
+//        ['value', _.isString],
+//    ],
+//    transform: function (record, args, modifiers) {
+//        record.name = args.name;
+//        record.caatag = args.tag;
+//        record.target = args.value;
+//    },
+//    modifierNumber: function (record, value) {
+//        record.caaflags |= value;
+//    },
+//});
 
 // DS(name, keytag, algorithm, digestype, digest)
 var DS = recordBuilder('DS', {
@@ -2063,7 +2064,9 @@ function rawrecordBuilder(type) {
             }
             // Store the processed args.
             record.args = processedArgs;
+           //processedMetas.push({ foo: "bar" } );
             record.metas = processedMetas;
+//            record.metas = { foo: "bar" };
 
             // Add this raw record to the list of records.
             d.rawrecords.push(record);

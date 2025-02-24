@@ -198,3 +198,13 @@ func ParseUint16(raw string) (uint16, error) {
 	}
 	return uint16(nt), nil
 }
+
+//type Uint8 uint8
+
+func ParseUint8(raw string) (uint8, error) {
+	nt, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, fmt.Errorf("invalid uint8: %q", raw)
+	}
+	return uint8(nt), nil
+}

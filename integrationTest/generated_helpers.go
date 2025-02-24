@@ -56,3 +56,13 @@ func cfsingleredirect(srname string, code uint16, srwhen string, srthen string) 
 	}
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
+
+func caa(name string, flag uint8, tag string, value string) *models.RecordConfig {
+	sflag := strconv.Itoa(int(flag))
+
+	rdata, err := models.ParseCAA([]string{sflag, tag, value}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}

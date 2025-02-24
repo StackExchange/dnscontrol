@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/rfc1035"
 )
 
 // originDotWarning is set to true after the warning is printed. We don't want to print it multiple times.
@@ -77,21 +79,30 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 
 	if IsTypeUpgraded(rtype) {
 		var err error
+		fields, err := rfc1035.Fields(contents)
+		if err != nil {
+			return err
+		}
+
 		switch rtype {
 		case "A":
-			if rdata, err := ParseA([]string{contents}, origin); err == nil {
+			if rdata, err := ParseA(fields, origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		case "MX":
-			if rdata, err := ParseMX(strings.Fields(contents), origin); err == nil {
+			if rdata, err := ParseMX(fields, origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		case "CNAME":
-			if rdata, err := ParseCNAME(strings.Fields(contents), origin); err == nil {
+			if rdata, err := ParseCNAME(fields, origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		case "SRV":
-			if rdata, err := ParseSRV(strings.Fields(contents), origin); err == nil {
+			if rdata, err := ParseSRV(fields, origin); err == nil {
+				return RecordUpdateFields(rc, rdata, nil)
+			}
+		case "CAA":
+			if rdata, err := ParseCAA(fields, origin); err == nil {
 				return RecordUpdateFields(rc, rdata, nil)
 			}
 		}
@@ -107,8 +118,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
 	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR":
 		return rc.SetTarget(contents)
-	case "CAA":
-		return rc.SetTargetCAAString(contents)
 	case "DS":
 		return rc.SetTargetDSString(contents)
 	case "DNSKEY":
