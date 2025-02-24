@@ -350,18 +350,6 @@ func dname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "DNAME")
 }
 
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r := makeRec(name, "", "DS")
-	panicOnErr(r.SetTargetDS(keyTag, algorithm, digestType, digest))
-	return r
-}
-
-func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
-	r := makeRec(name, "", "DNSKEY")
-	panicOnErr(r.SetTargetDNSKEY(flags, protocol, algorithm, publicKey))
-	return r
-}
-
 func https(name string, priority uint16, target string, params string) *models.RecordConfig {
 	r := makeRec(name, target, "HTTPS")
 	r.SvcPriority = priority

@@ -66,3 +66,27 @@ func caa(name string, flag uint8, tag string, value string) *models.RecordConfig
 	}
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
+
+func ds(name string, keytag uint16, algorithm uint8, digesttype uint8, digest string) *models.RecordConfig {
+	skeytag := strconv.Itoa(int(keytag))
+	salgorithm := strconv.Itoa(int(algorithm))
+	sdigesttype := strconv.Itoa(int(digesttype))
+
+	rdata, err := models.ParseDS([]string{skeytag, salgorithm, sdigesttype, digest}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
+func dnskey(name string, flags uint16, protocol uint8, algorithm uint8, publickey string) *models.RecordConfig {
+	sflags := strconv.Itoa(int(flags))
+	sprotocol := strconv.Itoa(int(protocol))
+	salgorithm := strconv.Itoa(int(algorithm))
+
+	rdata, err := models.ParseDNSKEY([]string{sflags, sprotocol, salgorithm, publickey}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}

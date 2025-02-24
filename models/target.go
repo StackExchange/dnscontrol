@@ -190,21 +190,3 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
 	return rc.SetTarget(ip.String())
 }
-
-// SetTargetA sets the target to an A record.
-func (rc *RecordConfig) SetTargetA(s string) error {
-	rdata, err := ParseA([]string{s}, "")
-	if err != nil {
-		return err
-	}
-	return RecordUpdateFields(rc, rdata, nil)
-}
-
-// SetTargetCNAME sets the target to an A record.
-func (rc *RecordConfig) SetTargetCNAME(s string) error {
-	rdata, err := ParseCNAME([]string{s}, "")
-	if err != nil {
-		return err
-	}
-	return RecordUpdateFields(rc, rdata, nil)
-}

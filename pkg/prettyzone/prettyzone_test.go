@@ -354,7 +354,7 @@ func TestWriteZoneFileEach(t *testing.T) {
 	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
 	d = append(d, mustNewRR(`bosun.org.           300 IN DHCID   AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=`))
 	d = append(d, mustNewRR(`dname.bosun.org.     300 IN DNAME   example.com.`))
-	d = append(d, mustNewRR(`dnssec.bosun.org.    300 IN DS      31334 13 2 94cc505ebc36b1f4e051268b820efb230f1572d445e833bb5bf7380d6c2cbc0a`))
+	d = append(d, mustNewRR(`dnssec.bosun.org.    300 IN DS      31334 13 2 94CC505EBC36B1F4E051268B820EFB230F1572D445E833BB5BF7380D6C2CBC0A`))
 	d = append(d, mustNewRR(`dnssec.bosun.org.    300 IN DNSKEY  257 3 13 rNR701yiOPHfqDP53GnsHZdlsRqI7O1ksk60rnFILZVk7Z4eTBd1U49oSkTNVNox9tb7N15N2hboXoMEyFFzcw==`))
 	d = append(d, mustNewRR(`bosun.org.           300 IN HTTPS 1 . alpn="h3,h2"`))
 	d = append(d, mustNewRR(`bosun.org.           300 IN SVCB 1 . alpn="h3,h2"`))
@@ -363,8 +363,8 @@ func TestWriteZoneFileEach(t *testing.T) {
 		t.Fatal(err)
 	}
 	if buf.String() != testdataZFEach {
-		t.Log(buf.String())
-		t.Log(testdataZFEach)
+		t.Log("GOT:\n" + buf.String())
+		t.Log("WANT:\n" + testdataZFEach)
 		t.Fatalf("Zone file does not match.")
 	}
 	parseAndRegen(t, buf, testdataZFEach)

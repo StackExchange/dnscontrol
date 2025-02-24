@@ -122,3 +122,32 @@ func TestParseHostnameDot(t *testing.T) {
 		})
 	}
 }
+func TestParseStringTrimmedAllCaps(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{"all lowercase", "hello", "HELLO", false},
+		{"mixed case", "HeLLo", "HELLO", false},
+		{"leading and trailing spaces", "  hello  ", "HELLO", false},
+		{"all uppercase", "HELLO", "HELLO", false},
+		{"empty string", "", "", false},
+		{"spaces only", "   ", "", false},
+		{"numbers and letters", "123abc", "123ABC", false},
+		{"special characters", "!@# $%^", "!@# $%^", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseStringTrimmedAllCaps(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseStringTrimmedAllCaps() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ParseStringTrimmedAllCaps() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

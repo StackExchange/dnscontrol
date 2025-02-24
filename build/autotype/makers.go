@@ -63,6 +63,7 @@ import (
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+	"github.com/qdm12/reprint"
 )
 
 func init() {
@@ -224,15 +225,45 @@ func mkComparableExpr(fields []Field) string {
 	return x
 }
 
+// Copy
+
+// makeCopy generates the copy function.
+// Makes: `models/generated_types.go` func Copy
+func makeCopy(vals Values) []byte {
+	return valuesTemplate(copyTmpl, vals)
+}
+
+var copyTmpl = template.Must(template.New("Copy").Parse(`
+// Copy returns a deep copy of a RecordConfig.
+func (rc *RecordConfig) Copy() (*RecordConfig, error) {
+	newR := &RecordConfig{}
+	// Copy the exported fields.
+	err := reprint.FromTo(rc, newR) // Deep copy
+	// Copy each unexported field.
+	newR.target = rc.target
+
+	// Copy the fields to new memory so there is no aliasing.
+	switch rc.Type {
+	{{- range .TypeNamesAndFields }}
+	case "{{ .Name }}":
+		newR.Fields = &{{ .Name }}{}
+		newR.Fields = rc.Fields.(*{{ .Name }})
+	{{- end }}
+	}
+	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
+	return newR, err
+}
+`))
+
 // GetTargetField
 
 // makeGetTargetField generates the function that returns the last field of a record type.
 // Makes: `models/generated_types.go` func GetTargetField
 func makeGetTargetField(vals Values) []byte {
-	return valuesTemplate(importGetTargetFieldTmpl, vals)
+	return valuesTemplate(getTargetFieldTmpl, vals)
 }
 
-var importGetTargetFieldTmpl = template.Must(template.New("GetTargetField").Parse(`
+var getTargetFieldTmpl = template.Must(template.New("GetTargetField").Parse(`
 // GetTargetField returns the target. There may be other fields, but they are
 // not included. For example, the .MxPreference field of an MX record isn't included.
 func (rc *RecordConfig) GetTargetField() string {
@@ -309,6 +340,28 @@ func mkTargetField(fields []Field) (string, string) {
 
 // mkTargetField() defined above
 
+// PopulateFromFields
+
+// makePopulateFromFields generates the function that populates the Fields from individual strings.
+// Makes: `models/generated_types.go` func PopulateFromFields
+func makePopulateFromFields(vals Values) []byte {
+	return valuesTemplate(PopulateFromFieldsTmpl, vals)
+}
+
+var PopulateFromFieldsTmpl = template.Must(template.New("PopulateFromFields").Parse(`
+func PopulateFromFields(rc *RecordConfig, rtype string, fields []string, origin string) error {
+	switch rtype {
+{{- range .TypeNamesAndFields }}
+	case "{{ .Name }}":
+		if rdata, err := Parse{{ .Name }}(fields, origin); err == nil {
+		return RecordUpdateFields(rc, rdata, nil)
+	}
+{{- end }}
+	}
+	return fmt.Errorf("rtype %q not found (%v)", rtype, fields)
+ }
+`))
+
 // TypeTYPE
 
 // makeTypeTYPE generates the Type{TYPE} for a record type.
@@ -373,6 +426,9 @@ func mkParser(i int, f Field) string {
 		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
 			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+		}
+		if HasTagOption(f.Tags, "dnscontrol", "allcaps") {
+			return fmt.Sprintf(`fieldtypes.ParseStringTrimmedAllCaps(rawfields[%d])`, i)
 		}
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
 	case "fieldtypes.IPv4":
@@ -533,6 +589,32 @@ func mkReturnAsStringsList(fields []Field) string {
 	}
 	return fmt.Sprintf("[%d]string{", len(ac)) + strings.Join(ac, ", ") + "}"
 }
+
+// SetTargetTYPE
+
+// makeSetTargetTYPE generates the SetTarget{TYPE} function.
+// Makes: `models/generated_types.go` func SetTarget{TYPE}
+func makeSetTargetTYPE(rtconfig RTypeConfig) []byte {
+	return rtypeTemplate(SetTargetTYPETmpl, rtconfig)
+}
+
+var SetTargetTYPETmpl = template.Must(template.New("SetTargetTYPE").Parse(`
+// SetTarget{{ .Name }} sets the {{ .Name }} fields.
+func (rc *RecordConfig) SetTarget{{ .Name }}({{ .InputFieldsAsSignature }}) error {
+	rc.Type = "{{ .Name }}"
+{{- if eq .ConstructFromLegacyFields "IP" }}
+	rdata, err := ParseA([]string{a}, "")
+	if err != nil {
+		return err
+	}
+	return RecordUpdateFields(rc, rdata, nil)
+{{- else }}
+	return RecordUpdateFields(rc, {{ .Name }}{ {{- .ConstructAll -}} }, nil)
+{{- end }}
+}
+`))
+
+// mkConstructAll() defined above
 
 // IntTestHeader
 

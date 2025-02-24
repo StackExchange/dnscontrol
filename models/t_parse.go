@@ -83,31 +83,42 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		if err != nil {
 			return err
 		}
-
-		switch rtype {
-		case "A":
-			if rdata, err := ParseA(fields, origin); err == nil {
-				return RecordUpdateFields(rc, rdata, nil)
-			}
-		case "MX":
-			if rdata, err := ParseMX(fields, origin); err == nil {
-				return RecordUpdateFields(rc, rdata, nil)
-			}
-		case "CNAME":
-			if rdata, err := ParseCNAME(fields, origin); err == nil {
-				return RecordUpdateFields(rc, rdata, nil)
-			}
-		case "SRV":
-			if rdata, err := ParseSRV(fields, origin); err == nil {
-				return RecordUpdateFields(rc, rdata, nil)
-			}
-		case "CAA":
-			if rdata, err := ParseCAA(fields, origin); err == nil {
-				return RecordUpdateFields(rc, rdata, nil)
-			}
-		}
-		return err
+		return PopulateFromFields(rc, rtype, fields, origin)
 	}
+
+	// 	switch rtype {
+
+	// 	case "A":
+	// 		if rdata, err := ParseA(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "MX":
+	// 		if rdata, err := ParseMX(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "CNAME":
+	// 		if rdata, err := ParseCNAME(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "SRV":
+	// 		if rdata, err := ParseSRV(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "CAA":
+	// 		if rdata, err := ParseCAA(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "DS":
+	// 		if rdata, err := ParseDS(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	case "DNSKEY":
+	// 		if rdata, err := ParseDNSKEY(fields, origin); err == nil {
+	// 			return RecordUpdateFields(rc, rdata, nil)
+	// 		}
+	// 	}
+	// 	return err
+	// }
 
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "AAAA":
@@ -118,10 +129,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
 	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR":
 		return rc.SetTarget(contents)
-	case "DS":
-		return rc.SetTargetDSString(contents)
-	case "DNSKEY":
-		return rc.SetTargetDNSKEYString(contents)
 	case "DHCID":
 		return rc.SetTarget(contents)
 	case "DNAME":

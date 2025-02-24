@@ -267,14 +267,7 @@ function DefaultTTL(v) {
     };
 }
 
-//function makeCAAFlag(value) {
-//    return function (record) {
-//        record.caaflag |= value;
-//    };
-//}
-
 // CAA_CRITICAL: Critical CAA flag
-//var CAA_CRITICAL = makeCAAFlag(1 << 7);
 var CAA_CRITICAL = { caa_critical: "1" };
 
 // DnsProvider("providerName", 0)
@@ -391,67 +384,11 @@ function validateR53AliasType(value) {
     );
 }
 
-//// CAA(name,tag,value, recordModifiers...)
-//var CAA = recordBuilder('CAA', {
-//    // TODO(tlim): It should be an error if value is not 0 or 128.
-//    args: [
-//        ['name', _.isString],
-//        ['tag', _.isString],
-//        ['value', _.isString],
-//    ],
-//    transform: function (record, args, modifiers) {
-//        record.name = args.name;
-//        record.caatag = args.tag;
-//        record.target = args.value;
-//    },
-//    modifierNumber: function (record, value) {
-//        record.caaflags |= value;
-//    },
-//});
-
-// DS(name, keytag, algorithm, digestype, digest)
-var DS = recordBuilder('DS', {
-    args: [
-        ['name', _.isString],
-        ['keytag', _.isNumber],
-        ['algorithm', _.isNumber],
-        ['digesttype', _.isNumber],
-        ['digest', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.dskeytag = args.keytag;
-        record.dsalgorithm = args.algorithm;
-        record.dsdigesttype = args.digesttype;
-        record.dsdigest = args.digest;
-        record.target = args.target;
-    },
-});
-
 // DHCID(name,target, recordModifiers...)
 var DHCID = recordBuilder('DHCID');
 
 // DNAME(name,target, recordModifiers...)
 var DNAME = recordBuilder('DNAME');
-
-// DNSKEY(name, flags, protocol, algorithm, publickey)
-var DNSKEY = recordBuilder('DNSKEY', {
-    args: [
-        ['name', _.isString],
-        ['flags', _.isNumber],
-        ['protocol', _.isNumber],
-        ['algorithm', _.isNumber],
-        ['publickey', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.dnskeyflags = args.flags;
-        record.dnskeyprotocol = args.protocol;
-        record.dnskeyalgorithm = args.algorithm;
-        record.dnskeypublickey = args.publickey;
-        record.target = args.target;
-    },
-});
 
 // name, priority, target, params
 var HTTPS = recordBuilder('HTTPS', {
@@ -2064,9 +2001,7 @@ function rawrecordBuilder(type) {
             }
             // Store the processed args.
             record.args = processedArgs;
-           //processedMetas.push({ foo: "bar" } );
             record.metas = processedMetas;
-//            record.metas = { foo: "bar" };
 
             // Add this raw record to the list of records.
             d.rawrecords.push(record);

@@ -7,23 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// SetTargetDS sets the DS fields.
-func (rc *RecordConfig) SetTargetDS(keytag uint16, algorithm, digesttype uint8, digest string) error {
-	rc.DsKeyTag = keytag
-	rc.DsAlgorithm = algorithm
-	rc.DsDigestType = digesttype
-	rc.DsDigest = digest
-
-	if rc.Type == "" {
-		rc.Type = "DS"
-	}
-	if rc.Type != "DS" {
-		panic("assertion failed: SetTargetDS called when .Type is not DS")
-	}
-
-	return nil
-}
-
 // SetTargetDSStrings is like SetTargetDS but accepts strings.
 func (rc *RecordConfig) SetTargetDSStrings(keytag, algorithm, digesttype, digest string) error {
 	u16keytag, err := strconv.ParseUint(keytag, 10, 16)

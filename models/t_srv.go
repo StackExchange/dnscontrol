@@ -6,13 +6,6 @@ import (
 	"strings"
 )
 
-// SetTargetSRV sets the SRV fields.
-func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target string) error {
-	rc.Type = "SRV"
-
-	return RecordUpdateFields(rc, SRV{Priority: priority, Weight: weight, Port: port, Target: target}, nil)
-}
-
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.
 func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) (err error) {
 	rc.Type = "SRV"
