@@ -55,9 +55,9 @@ dnscontrol get-zones --format=js bind BIND example.com
 dnscontrol get-zones --format=js --out=draft.js bind BIND example.com
 ```
 
-This will read the file `zones/example.com.zone`. The system is a bit
-inflexible and that must be the filename. You can copy the zone file to
-that name or use a symlink.
+This will read the file `zones/example.com.zone`. By default the system
+uses directory `zones` and file suffix `.zone`.  You can modify this default
+behaviour by configuring `creds.json` for BIND as described [here](provider/bind.md).
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
 
