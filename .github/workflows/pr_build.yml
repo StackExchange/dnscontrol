@@ -41,7 +41,7 @@ jobs:
       with:
         go-version: stable
     - name: restore_cache
-      uses: actions/cache@v4.2.0
+      uses: actions/cache@v4.2.1
       with:
         key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
         restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
