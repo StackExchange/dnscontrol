@@ -53,7 +53,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 #    - name: Enforce Go Formatted Code
 #      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v4.6.0
+    - uses: actions/upload-artifact@v4.6.1
       with:
         name: unit-tests
         path: ${{ env.TEST_RESULTS }}
