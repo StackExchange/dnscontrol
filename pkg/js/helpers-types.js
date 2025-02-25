@@ -6,3 +6,4 @@ var CF_SINGLE_REDIRECT = rawrecordBuilder('CF_SINGLE_REDIRECT');
 var CAA = rawrecordBuilder('CAA');
 var DS = rawrecordBuilder('DS');
 var DNSKEY = rawrecordBuilder('DNSKEY');
+var NAPTR = rawrecordBuilder('NAPTR');
