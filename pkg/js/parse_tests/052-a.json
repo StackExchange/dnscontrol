@@ -1,0 +1,83 @@
+{
+  "dns_providers": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
+      "records": [
+        {
+          "Fields": {
+            "A": "1.1.1.1"
+          },
+          "name": "@",
+          "target": "1.1.1.1",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "3.3.3.3"
+          },
+          "name": "@",
+          "target": "3.3.3.3",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "5.5.5.5"
+          },
+          "name": "sub",
+          "target": "5.5.5.5",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "4.4.4.4"
+          },
+          "name": "ewww",
+          "target": "4.4.4.4",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "6.6.6.6"
+          },
+          "name": "swww.sub",
+          "target": "6.6.6.6",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "2.2.2.2"
+          },
+          "name": "www",
+          "target": "2.2.2.2",
+          "ttl": 300,
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ]
+}
