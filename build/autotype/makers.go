@@ -424,6 +424,9 @@ func mkParser(i int, f Field) string {
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
 	case "string":
 		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
+		if HasTagOption(f.Tags, "dnscontrol", "empty_becomes_dot") {
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDotNullIsDot(rawfields[%d], "", origin)`, i)
+		}
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
 			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
 		}

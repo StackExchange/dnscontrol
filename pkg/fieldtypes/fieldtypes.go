@@ -123,6 +123,14 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 	return (short + "." + origin + "."), nil
 }
 
+// ParseHostnameDotNullIsDot is like ParseHostnameDot but returns "." if short is empty.
+func ParseHostnameDotNullIsDot(short, subdomain, origin string) (string, error) {
+	if short == "" {
+		return ".", nil
+	}
+	return ParseHostnameDot(short, subdomain, origin)
+}
+
 // IPv4 is an IPv4 address.
 type IPv4 [4]byte
 

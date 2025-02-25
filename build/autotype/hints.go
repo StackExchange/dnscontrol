@@ -91,6 +91,17 @@ func GetHints() ([]string, TypeCatalog) {
 		},
 	)
 
+	addType("NAPTR", "",
+		[]Field{
+			{Name: "Order", LegacyName: "NaptrOrder"},
+			{Name: "Preference", LegacyName: "NaptrPreference"},
+			{Name: "Flags", LegacyName: "NaptrFlags", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+			{Name: "Service", LegacyName: "NaptrService", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+			{Name: "Regexp", LegacyName: "NaptrRegexp", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+			{Name: "Replacement", LegacyName: "target", Tags: MustParseTags(`dnscontrol:"_,empty_becomes_dot"`)},
+		},
+	)
+
 	//x, _ := json.MarshalIndent(cat, "", "    ")
 	//fmt.Printf("DEBUG: Hints: %s\n", x)
 	return l, cat

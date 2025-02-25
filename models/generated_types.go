@@ -17,11 +17,12 @@ func init() {
 	MustRegisterType("CAA", RegisterOpts{PopulateFromRaw: PopulateFromRawCAA})
 	MustRegisterType("DS", RegisterOpts{PopulateFromRaw: PopulateFromRawDS})
 	MustRegisterType("DNSKEY", RegisterOpts{PopulateFromRaw: PopulateFromRawDNSKEY})
+	MustRegisterType("NAPTR", RegisterOpts{PopulateFromRaw: PopulateFromRawNAPTR})
 }
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | MX | SRV | CNAME | CFSINGLEREDIRECT | CAA | DS | DNSKEY
+	A | MX | SRV | CNAME | CFSINGLEREDIRECT | CAA | DS | DNSKEY | NAPTR
 }
 
 // ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
@@ -68,6 +69,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	case "DNSKEY":
 		return RecordUpdateFields(rc,
 			DNSKEY{Flags: rc.DnskeyFlags, Protocol: rc.DnskeyProtocol, Algorithm: rc.DnskeyAlgorithm, PublicKey: rc.DnskeyPublicKey},
+			nil,
+		)
+	case "NAPTR":
+		return RecordUpdateFields(rc,
+			NAPTR{Order: rc.NaptrOrder, Preference: rc.NaptrPreference, Flags: rc.NaptrFlags, Service: rc.NaptrService, Regexp: rc.NaptrRegexp, Replacement: rc.target},
 			nil,
 		)
 	}
@@ -131,6 +137,16 @@ func (rc *RecordConfig) Seal() error {
 		rc.DnskeyPublicKey = f.PublicKey
 
 		rc.Comparable = fmt.Sprintf("%d %d %d %s", f.Flags, f.Protocol, f.Algorithm, f.PublicKey)
+	case "NAPTR":
+		f := rc.Fields.(*NAPTR)
+		rc.NaptrOrder = f.Order
+		rc.NaptrPreference = f.Preference
+		rc.NaptrFlags = f.Flags
+		rc.NaptrService = f.Service
+		rc.NaptrRegexp = f.Regexp
+		rc.target = f.Replacement
+
+		rc.Comparable = fmt.Sprintf("%d %d %q %q %q %s", f.Order, f.Preference, f.Flags, f.Service, f.Regexp, f.Replacement)
 	default:
 		return fmt.Errorf("unknown (Seal) rtype %q", rc.Type)
 	}
@@ -173,6 +189,9 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	case "DNSKEY":
 		newR.Fields = &DNSKEY{}
 		newR.Fields = rc.Fields.(*DNSKEY)
+	case "NAPTR":
+		newR.Fields = &NAPTR{}
+		newR.Fields = rc.Fields.(*NAPTR)
 	}
 	//fmt.Printf("DEBUG: COPYING rc=%v new=%v\n", rc.Fields, newR.Fields)
 	return newR, err
@@ -212,6 +231,10 @@ func PopulateFromFields(rc *RecordConfig, rtype string, fields []string, origin 
 		if rdata, err := ParseDNSKEY(fields, origin); err == nil {
 			return RecordUpdateFields(rc, rdata, nil)
 		}
+	case "NAPTR":
+		if rdata, err := ParseNAPTR(fields, origin); err == nil {
+			return RecordUpdateFields(rc, rdata, nil)
+		}
 	}
 	return fmt.Errorf("rtype %q not found (%v)", rtype, fields)
 }
@@ -236,6 +259,8 @@ func (rc *RecordConfig) GetTargetField() string {
 		return rc.AsDS().Digest
 	case "DNSKEY":
 		return rc.AsDNSKEY().PublicKey
+	case "NAPTR":
+		return rc.AsNAPTR().Replacement
 	}
 	return rc.target
 }
@@ -834,4 +859,92 @@ func (rc *RecordConfig) GetFieldsAsStringsDNSKEY() [4]string {
 func (rc *RecordConfig) SetTargetDNSKEY(flags uint16, protocol uint8, algorithm uint8, publickey string) error {
 	rc.Type = "DNSKEY"
 	return RecordUpdateFields(rc, DNSKEY{Flags: flags, Protocol: protocol, Algorithm: algorithm, PublicKey: publickey}, nil)
+}
+
+//// NAPTR
+
+// NAPTR is the fields needed to store a DNS record of type NAPTR.
+type NAPTR struct {
+	Order       uint16
+	Preference  uint16
+	Flags       string `dnscontrol:"_,anyascii"`
+	Service     string `dnscontrol:"_,anyascii"`
+	Regexp      string `dnscontrol:"_,anyascii"`
+	Replacement string `dnscontrol:"_,empty_becomes_dot"`
+}
+
+func ParseNAPTR(rawfields []string, origin string) (NAPTR, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 6) {
+		return NAPTR{}, fmt.Errorf("rtype NAPTR wants %d field(s), found %d: %+v", 6, len(rawfields)-1, rawfields[1:])
+	}
+	var order uint16
+	var preference uint16
+	var flags string
+	var service string
+	var regexp string
+	var replacement string
+	var err error
+	if order, err = fieldtypes.ParseUint16(rawfields[0]); err != nil {
+		return NAPTR{}, err
+	}
+	if preference, err = fieldtypes.ParseUint16(rawfields[1]); err != nil {
+		return NAPTR{}, err
+	}
+	if flags, err = fieldtypes.ParseStringTrimmed(rawfields[2]); err != nil {
+		return NAPTR{}, err
+	}
+	if service, err = fieldtypes.ParseStringTrimmed(rawfields[3]); err != nil {
+		return NAPTR{}, err
+	}
+	if regexp, err = fieldtypes.ParseStringTrimmed(rawfields[4]); err != nil {
+		return NAPTR{}, err
+	}
+	if replacement, err = fieldtypes.ParseHostnameDotNullIsDot(rawfields[5], "", origin); err != nil {
+		return NAPTR{}, err
+	}
+
+	return NAPTR{Order: order, Preference: preference, Flags: flags, Service: service, Regexp: regexp, Replacement: replacement}, nil
+}
+
+// PopulateFromRawNAPTR updates rc to be an NAPTR record with contents from rawfields, meta and origin.
+func PopulateFromRawNAPTR(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+	rc.Type = "NAPTR"
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+		return err
+	}
+
+	// Parse the remaining fields.
+	rdata, err := ParseNAPTR(rawfields[1:], origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsNAPTR returns rc.Fields as an NAPTR struct.
+func (rc *RecordConfig) AsNAPTR() *NAPTR {
+	return rc.Fields.(*NAPTR)
+}
+
+// GetFieldsNAPTR returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsNAPTR() (uint16, uint16, string, string, string, string) {
+	n := rc.AsNAPTR()
+	return n.Order, n.Preference, n.Flags, n.Service, n.Regexp, n.Replacement
+}
+
+// GetFieldsAsStringsNAPTR returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsNAPTR() [6]string {
+	n := rc.AsNAPTR()
+	return [6]string{strconv.Itoa(int(n.Order)), strconv.Itoa(int(n.Preference)), n.Flags, n.Service, n.Regexp, n.Replacement}
+}
+
+// SetTargetNAPTR sets the NAPTR fields.
+func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags string, service string, regexp string, replacement string) error {
+	rc.Type = "NAPTR"
+	return RecordUpdateFields(rc, NAPTR{Order: order, Preference: preference, Flags: flags, Service: service, Regexp: regexp, Replacement: replacement}, nil)
 }

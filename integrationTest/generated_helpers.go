@@ -90,3 +90,14 @@ func dnskey(name string, flags uint16, protocol uint8, algorithm uint8, publicke
 	}
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
+
+func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, replacement string) *models.RecordConfig {
+	sorder := strconv.Itoa(int(order))
+	spreference := strconv.Itoa(int(preference))
+
+	rdata, err := models.ParseNAPTR([]string{sorder, spreference, flags, service, regexp, replacement}, "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
