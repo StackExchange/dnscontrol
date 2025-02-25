@@ -100,6 +100,13 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 			return err
 		}
 		return RecordUpdateFields(rc, A{A: ip}, nil)
+{{- else if eq .Config.ConstructFromLegacyFields "IPv6" }}
+	case "AAAA":
+		ip, err := fieldtypes.ParseIPv6(rc.target)
+		if err != nil {
+			return err
+		}
+		return RecordUpdateFields(rc, AAAA{AAAA: ip}, nil)
 {{- else if .Config.ConstructFromLegacyFields }}
 	case "{{ .Name }}":
 		return RecordUpdateFields(rc,
@@ -119,10 +126,12 @@ func mkConstructFromLegacyFields(fields []Field) string {
 		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
 			continue
 		}
-		if field.LegacyName != "" {
-			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, field.LegacyName))
-		} else if HasTagOption(field.Tags, "dns", "a") {
+		if HasTagOption(field.Tags, "dns", "a") {
 			return "IP"
+		} else if HasTagOption(field.Tags, "dns", "aaaa") {
+			return "IPv6"
+		} else if field.LegacyName != "" {
+			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, field.LegacyName))
 		} else if i == (len(fields) - 1) {
 			// The last field defaults to .target
 			ac = append(ac, fmt.Sprintf("%s: rc.%s", field.Name, "target"))
@@ -152,6 +161,11 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*{{ .Name }})
 		rc.target = f.A.String()
 		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	{{- else if eq .Config.ConstructFromLegacyFields "IPv6" }}
+	case "{{ .Name }}":
+		f := rc.Fields.(*{{ .Name }})
+		rc.target = f.AAAA.String()
+		rc.Comparable = fmt.Sprintf("%s", f.AAAA.String())
 	{{- else if .Config.ConstructFromLegacyFields }}
 	case "{{ .Name }}":
 		f := rc.Fields.(*{{ .Name }})
@@ -186,7 +200,7 @@ func (rc *RecordConfig) Seal() error {
 `))
 
 func mkComparableExpr(fields []Field) string {
-	fmt.Printf("DEBUG: mkComparableExpr(%+v)\n", fields)
+	//fmt.Printf("DEBUG: mkComparableExpr(%+v)\n", fields)
 
 	// Single field that is a string, return it.
 	if len(fields) == 1 && fields[0].Type == "string" {
@@ -202,7 +216,7 @@ func mkComparableExpr(fields []Field) string {
 			continue
 		}
 		switch {
-		case HasTagOption(field.Tags, "dns", "a"):
+		case HasTagOption(field.Tags, "dns", "a"), HasTagOption(field.Tags, "dns", "aaaa"):
 			fl = append(fl, `"%s"`)
 			al = append(al, "f."+field.Name)
 		case HasTagOption(field.Tags, "dnscontrol", "anyascii"):
@@ -221,7 +235,7 @@ func mkComparableExpr(fields []Field) string {
 		}
 	}
 	x := `fmt.Sprintf("` + strings.Join(fl, " ") + `", ` + strings.Join(al, ", ") + `)`
-	fmt.Printf("DEBUG: return = %v\n", x)
+	//fmt.Printf("DEBUG: return = %v\n", x)
 	return x
 }
 
@@ -270,6 +284,9 @@ func (rc *RecordConfig) GetTargetField() string {
 	switch rc.Type { // #rtype_variations
 {{- range .TypeNamesAndFields -}}
 	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
+	case "{{ .Name }}":
+		return rc.As{{ .Name }}().{{ .Name }}.String()
+	{{- else if eq .Config.ConstructFromLegacyFields "IPv6" }}
 	case "{{ .Name }}":
 		return rc.As{{ .Name }}().{{ .Name }}.String()
 	{{- else }}
@@ -353,7 +370,7 @@ func PopulateFromFields(rc *RecordConfig, rtype string, fields []string, origin 
 	switch rtype {
 {{- range .TypeNamesAndFields }}
 	case "{{ .Name }}":
-		if rdata, err := Parse{{ .Name }}(fields, origin); err == nil {
+		if rdata, err := Parse{{ .Name }}(fields, "", origin); err == nil {
 		return RecordUpdateFields(rc, rdata, nil)
 	}
 {{- end }}
@@ -390,7 +407,7 @@ func makeParseTYPE(rtconfig RTypeConfig) []byte {
 }
 
 var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
-func Parse{{ .Name }}(rawfields []string, origin string) ({{ .Name }}, error) {
+func Parse{{ .Name }}(rawfields []string, subdomain, origin string) ({{ .Name }}, error) {
 
 	// Error checking
 	if errorCheckFieldCount(rawfields, {{ .NumRawFields }}) {
@@ -419,20 +436,25 @@ func mkParser(i int, f Field) string {
 	switch ty := f.Type; ty {
 	case "int":
 		if HasTagOption(f.Tags, "dnscontrol", "redirectcode") {
-			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d], "", origin)`, i)
+			return fmt.Sprintf(`fieldtypes.ParseRedirectCode(rawfields[%d])`, i)
 		}
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
+	case "fieldtypes.IPv4":
+		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
+	case "fieldtypes.IPv6":
+		return fmt.Sprintf(`fieldtypes.ParseIPv6(rawfields[%d])`, i)
 	case "string":
 		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
+		if HasTagOption(f.Tags, "dnscontrol", "empty_becomes_dot") {
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDotNullIsDot(rawfields[%d], origin)`, i)
+		}
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], "", origin)`, i)
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], origin)`, i)
 		}
 		if HasTagOption(f.Tags, "dnscontrol", "alllower") {
 			return fmt.Sprintf(`fieldtypes.ParseStringTrimmedAllLower(rawfields[%d])`, i)
 		}
 		return fmt.Sprintf(`fieldtypes.ParseStringTrimmed(rawfields[%d])`, i)
-	case "fieldtypes.IPv4":
-		return fmt.Sprintf(`fieldtypes.ParseIPv4(rawfields[%d])`, i)
 	}
 
 	return fmt.Sprintf(`fieldtypes.Parse%s(rawfields[%d])`, capFirst(f.Type), i)
@@ -464,7 +486,7 @@ func makePopulateFromRawTYPE(rtconfig RTypeConfig) []byte {
 
 var PopulateFromRawTYPETmpl = template.Must(template.New("PopulateFromRawTYPE").Parse(`
 // PopulateFromRaw{{ .Name }} updates rc to be an {{ .Name }} record with contents from rawfields, meta and origin.
-func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, origin string) error {
+func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain, origin string) error {
 	{{ if .IsBuilder -}}
 	rawfields, meta, err := Builder{{ .Name }}(rawfields, meta, origin)
 	if err != nil {
@@ -479,15 +501,15 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 	{{- end }}
 
 	// First rawfield is the label.
-	if err := rc.SetLabel3(rawfields[0], rc.SubDomain, origin); err != nil {
+	if err := rc.SetLabel3(rawfields[0], subdomain, origin); err != nil {
 		return err
 	}
 
 	// Parse the remaining fields.
 	{{- if .NoLabel }}
-	rdata, err := Parse{{ .Name }}(rawfields, origin)
+	rdata, err := Parse{{ .Name }}(rawfields, "", rc.SubDomain, origin)
 	{{- else }}
-	rdata, err := Parse{{ .Name }}(rawfields[1:], origin)
+	rdata, err := Parse{{ .Name }}(rawfields[1:], rc.SubDomain, origin)
 	{{- end }}
 	if err != nil {
 		return err
@@ -544,10 +566,8 @@ func mkReturnIndividualFieldsList(fields []Field) string {
 		if HasTagOption(field.Tags, "dnscontrol", "noraw") {
 			continue
 		}
-		if HasTagOption(field.Tags, "dns", "a") {
+		if HasTagOption(field.Tags, "dns", "a") || HasTagOption(field.Tags, "dns", "aaaa") {
 			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
-		} else if field.Type == "fieldtypes.IPv4" {
-			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
 		} else {
 			ac = append(ac, fmt.Sprintf("n.%s", field.Name))
 		}
@@ -579,7 +599,7 @@ func mkReturnAsStringsList(fields []Field) string {
 		}
 		if HasTagOption(field.Tags, "dns", "a") {
 			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
-		} else if field.Type == "fieldtypes.IPv4" {
+		} else if HasTagOption(field.Tags, "dns", "aaaa") {
 			ac = append(ac, fmt.Sprintf("n.%s.String()", field.Name))
 		} else if field.Type == "uint16" || field.Type == "uint8" {
 			ac = append(ac, fmt.Sprintf("strconv.Itoa(int(n.%s))", field.Name))
@@ -603,7 +623,13 @@ var SetTargetTYPETmpl = template.Must(template.New("SetTargetTYPE").Parse(`
 func (rc *RecordConfig) SetTarget{{ .Name }}({{ .InputFieldsAsSignature }}) error {
 	rc.Type = "{{ .Name }}"
 {{- if eq .ConstructFromLegacyFields "IP" }}
-	rdata, err := ParseA([]string{a}, "")
+	rdata, err := ParseA([]string{a}, "", "")
+	if err != nil {
+		return err
+	}
+	return RecordUpdateFields(rc, rdata, nil)
+{{- else if eq .ConstructFromLegacyFields "IPv6" }}
+	rdata, err := ParseAAAA([]string{aaaa}, "", "")
 	if err != nil {
 		return err
 	}
@@ -652,7 +678,7 @@ func {{ .NameLower }}(name string, {{ .InputFieldsAsSignature }}) *models.Record
 {{- end }}
 {{- end }}
 
-	rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "**current-domain**")
+	rdata, err := models.Parse{{ .Name }}([]string{ {{- .FieldsAsSVars -}} }, "", "**current-domain**")
 	if err != nil {
 		panic(err)
 	}
@@ -667,6 +693,9 @@ func mkInputFieldsAsSignature(fields []Field) string {
 			continue
 		}
 		if field.Type == "fieldtypes.IPv4" {
+			// accept input as string.
+			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
+		} else if field.Type == "fieldtypes.IPv6" {
 			// accept input as string.
 			ac = append(ac, fmt.Sprintf("%s string", field.NameLower))
 		} else {
@@ -684,7 +713,7 @@ func mkConvertToString(f Field) string {
 	}
 
 	// Skip fields that are not input.
-	if HasTagOption(f.Tags, "dns", "a") || HasTagOption(f.Tags, "dnscontrol", "noinput") {
+	if HasTagOption(f.Tags, "dns", "a") || HasTagOption(f.Tags, "dns", "aaaa") || HasTagOption(f.Tags, "dnscontrol", "noinput") {
 		return ""
 	}
 
@@ -712,7 +741,7 @@ func mkFieldsAsSVars(fields []Field) string {
 		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
 			continue
 		}
-		if HasTagOption(field.Tags, "dns", "a") {
+		if HasTagOption(field.Tags, "dns", "a") || HasTagOption(field.Tags, "dns", "aaaa") {
 			ac = append(ac, field.NameLower)
 		} else if field.Type == "string" {
 			ac = append(ac, field.NameLower)

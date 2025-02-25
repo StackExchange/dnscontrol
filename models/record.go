@@ -287,7 +287,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 func (rc *RecordConfig) SetLabel(short, origin string) {
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("originSL (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
 		if short != "**current-domain**" {
@@ -330,7 +330,7 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("originSLFF (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(fqdn, "..") {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))

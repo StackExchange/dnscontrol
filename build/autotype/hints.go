@@ -40,56 +40,113 @@ func GetHints() ([]string, TypeCatalog) {
 		cat[name] = n
 	}
 
+	// 1
 	addType("A", "", nil)
 
+	// 2
+	//addType("NS", "", nil)
+
+	// 5
+	addType("CNAME", "", nil)
+
+	// 6
+	//addType("SOA", "", nil)
+
+	// 12
+	//addType("PTR", "", nil)
+
+	// 15
 	addType("MX", "", []Field{
 		{Name: "Preference", LegacyName: "MxPreference"},
 	})
 
-	addType("SRV", "",
-		[]Field{
-			{Name: "Priority", Tags: MustParseTags(`json:"priority"`), LegacyName: "SrvPriority"},
-			{Name: "Weight", Tags: MustParseTags(`json:"weight"`), LegacyName: "SrvWeight"},
-			{Name: "Port", Tags: MustParseTags(`json:"port"`), LegacyName: "SrvPort"},
-			{Name: "Target", Tags: MustParseTags(`json:"target" dns:"domain-name"`), LegacyName: "target"},
-		},
+	// 16
+	//addType("TXT", "", []Field{
+	//	{Name: "Text", LegacyName: "Text", Tags: MustParseTags(`dns:"txtsegments"`)},
+	//})
+
+	// 28
+	addType("AAAA", "", []Field{
+		{Name: "AAAA", Tags: MustParseTags(`dns:"aaaa"`)},
+	})
+
+	// 29
+	//addType("LOC", "", nil)
+
+	// 33
+	addType("SRV", "", []Field{
+		{Name: "Priority", Tags: MustParseTags(`json:"priority"`), LegacyName: "SrvPriority"},
+		{Name: "Weight", Tags: MustParseTags(`json:"weight"`), LegacyName: "SrvWeight"},
+		{Name: "Port", Tags: MustParseTags(`json:"port"`), LegacyName: "SrvPort"},
+		{Name: "Target", Tags: MustParseTags(`json:"target" dns:"domain-name"`), LegacyName: "target"},
+	},
 	)
 
-	addType("CNAME", "", nil)
+	// 35
+	addType("NAPTR", "", []Field{
+		{Name: "Order", LegacyName: "NaptrOrder"},
+		{Name: "Preference", LegacyName: "NaptrPreference"},
+		{Name: "Flags", LegacyName: "NaptrFlags", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+		{Name: "Service", LegacyName: "NaptrService", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+		{Name: "Regexp", LegacyName: "NaptrRegexp", Tags: MustParseTags(`dnscontrol:"_,anyascii"`)},
+		{Name: "Replacement", LegacyName: "target", Tags: MustParseTags(`dnscontrol:"_,empty_becomes_dot"`)},
+	},
+	)
+
+	// 39
+	//addType("DNAME", "", nil)
+
+	// 43
+	addType("DS", "", []Field{
+		{Name: "KeyTag", LegacyName: "DsKeyTag"},
+		{Name: "Algorithm", LegacyName: "DsAlgorithm"},
+		{Name: "DigestType", LegacyName: "DsDigestType"},
+		{Name: "Digest", LegacyName: "DsDigest", Tags: MustParseTags(`dnscontrol:"_,target,alllower"`)},
+	},
+	)
+
+	// 44
+	//addType("SSHFP", "", nil)
+
+	// 48
+	addType("DNSKEY", "", []Field{
+		{Name: "Flags", LegacyName: "DnskeyFlags"},
+		{Name: "Protocol", LegacyName: "DnskeyProtocol"},
+		{Name: "Algorithm", LegacyName: "DnskeyAlgorithm"},
+		{Name: "PublicKey", LegacyName: "DnskeyPublicKey"},
+	},
+	)
+
+	// 49
+	//addType("DHCID", "", nil)
+
+	// 52
+	//addType("TLSA", "", nil)
+
+	// 61
+	//addType("OPENPGPKEY", "", nil)
+
+	// 64
+	//addType("SVCB", "", nil)
+
+	// 65
+	//addType("HTTPS", "", nil)
+
+	// 257
+	addType("CAA", "", []Field{
+		{Name: "Flag", LegacyName: "CaaFlag"},
+		{Name: "Tag", LegacyName: "CaaTag"},
+		{Name: "Value", Tags: MustParseTags(`dnscontrol:"_,anyascii"`), LegacyName: "target"},
+	},
+	)
+	setIsBuilder("CAA")
 
 	addType("CFSINGLEREDIRECT", "CF_SINGLE_REDIRECT",
 		[]Field{
 			{Name: "SRDisplay", LegacyName: "target"},
-		},
-	)
+		})
 	setNoLabel("CFSINGLEREDIRECT")
 	setTTL1("CFSINGLEREDIRECT")
-
-	addType("CAA", "",
-		[]Field{
-			{Name: "Flag", LegacyName: "CaaFlag"},
-			{Name: "Tag", LegacyName: "CaaTag"},
-			{Name: "Value", Tags: MustParseTags(`dnscontrol:"_,anyascii"`), LegacyName: "target"},
-		},
-	)
-	setIsBuilder("CAA")
-
-	addType("DS", "",
-		[]Field{
-			{Name: "KeyTag", LegacyName: "DsKeyTag"},
-			{Name: "Algorithm", LegacyName: "DsAlgorithm"},
-			{Name: "DigestType", LegacyName: "DsDigestType"},
-			{Name: "Digest", LegacyName: "DsDigest", Tags: MustParseTags(`dnscontrol:"_,target,alllower"`)},
-		},
-	)
-	addType("DNSKEY", "",
-		[]Field{
-			{Name: "Flags", LegacyName: "DnskeyFlags"},
-			{Name: "Protocol", LegacyName: "DnskeyProtocol"},
-			{Name: "Algorithm", LegacyName: "DnskeyAlgorithm"},
-			{Name: "PublicKey", LegacyName: "DnskeyPublicKey"},
-		},
-	)
 
 	//x, _ := json.MarshalIndent(cat, "", "    ")
 	//fmt.Printf("DEBUG: Hints: %s\n", x)

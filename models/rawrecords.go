@@ -97,7 +97,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, effectiveOrigin(rec.SubDomain, dc.Name))
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, rec.SubDomain, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (label=%q, zone=%q args=%v) record error: %w",
 					rawRec.Type,
@@ -123,14 +123,36 @@ func TransformRawRecords(domains []*DomainConfig) error {
 	return nil
 }
 
-// effectiveOrigin returns the effective origin given a "subdomain" and an
-// "origin".  The concept of a subdomain is only relevant in dnsconfig.js and
-// RawRecordConfig.  In the RecordConfig, the "Name" field is the full name
-// (minor the dc.Name) and any .Target or other fields are FQDNs or relative to
-// the effective origin.
-func effectiveOrigin(sub, origin string) string {
-	if sub == "" {
-		return origin
-	}
-	return sub + "." + origin
-}
+// // effectiveName returns the effective origin given a "subdomain" and an
+// // "origin".  The concept of a subdomain is only relevant in dnsconfig.js and
+// // RawRecordConfig.  In the RecordConfig, the "Name" field is the full name
+// // (minor the dc.Name) and any .Target or other fields are FQDNs or relative to
+// // the effective origin.
+// func effectiveTarget(sub, origin string) string {
+// 	fmt.Printf("DEBUG: effectiveOrigin: %q %q\n", sub, origin)
+// 	if sub == "" {
+// 		fmt.Printf("DEBUG: effectiveOrigin: result=%q\n", origin)
+// 		return origin
+// 	}
+// 	x := sub + "." + origin
+// 	fmt.Printf("DEBUG: effectiveOrigin: result=%q\n", x)
+// 	return x
+// }
+
+// func effectiveLabel(short, sub string) string {
+// 	fmt.Printf("DEBUG: effectiveLabel: called %q %q\n", short, sub)
+// 	var result string
+
+// 	if sub == "" {
+// 		// Not in D_EXTEND() mode.
+// 		result = short
+// 	} else if short == "" || short == "@" {
+// 		// In D_EXTEND() mode.  Short is the (fake) origin.
+// 		result = sub
+// 	} else {
+// 		// In D_EXTEND() mode.
+// 		result = short + "." + sub
+// 	}
+// 	fmt.Printf("DEBUG: effectiveLabel: returned %q\n", result)
+// 	return result
+// }

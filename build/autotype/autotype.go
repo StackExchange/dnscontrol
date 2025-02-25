@@ -121,16 +121,19 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 
 			} else {
 				fieldname := st.Field(i).Name()
+				fieldtags := MustParseTags(st.Tag(i))
 				fieldtype := st.Field(i).Type().String()
-				if fieldtype == "net.IP" {
+				if HasTagOption(fieldtags, "dns", "a") {
 					fieldtype = "fieldtypes.IPv4"
 				}
-				fieldtags := st.Tag(i)
+				if HasTagOption(fieldtags, "dns", "aaaa") {
+					fieldtype = "fieldtypes.IPv6"
+				}
 
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: fieldtype,
-					Tags: MustParseTags(fieldtags),
+					Tags: fieldtags,
 				})
 
 			}

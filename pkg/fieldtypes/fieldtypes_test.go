@@ -80,9 +80,8 @@ func TestParseLabel3(t *testing.T) {
 }
 func TestParseHostnameDot(t *testing.T) {
 	type args struct {
-		short     string
-		subdomain string
-		origin    string
+		short  string
+		origin string
 	}
 	tests := []struct {
 		name    string
@@ -90,25 +89,25 @@ func TestParseHostnameDot(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"origin with dot", args{"short", "subdomain", "origin."}, "FAIL", true},
-		{"origin uppercase", args{"short", "subdomain", "Origin"}, "FAIL", true},
-		{"subdomain uppercase", args{"short", "Subdomain", "origin"}, "FAIL", true},
-		{"empty short", args{"", "subdomain", "origin"}, "FAIL", true},
-		{"empty short no sub", args{"", "", "origin"}, "FAIL", true},
-		{"double-dots", args{"foo..", "", "origin"}, "FAIL", true},
+		{"origin with dot", args{"short", "subdomain.origin."}, "FAIL", true},
+		{"origin uppercase", args{"short", "subdomain.Origin"}, "FAIL", true},
+		{"subdomain uppercase", args{"short", "Subdomain.origin"}, "FAIL", true},
+		{"empty short", args{"", "subdomain.origin"}, "FAIL", true},
+		{"empty short no sub", args{"", "origin"}, "FAIL", true},
+		{"double-dots", args{"foo..", "origin"}, "FAIL", true},
 
-		{"short uppercase", args{"Short", "subdomain", "origin"}, "short.subdomain.origin.", false},
-		{"short with dot", args{"short.", "subdomain", "origin"}, "short.", false},
-		{"short is *", args{"*", "subdomain", "origin"}, "*.subdomain.origin.", false},
-		{"short is * no sub", args{"*", "", "origin"}, "*.origin.", false},
-		{"subdomain in use", args{"short", "subdomain", "origin"}, "short.subdomain.origin.", false},
-		{"subdomain in use with @", args{"@", "subdomain", "origin"}, "subdomain.origin.", false},
-		{"short is @", args{"@", "", "origin"}, "origin.", false},
-		{"normal case", args{"short", "", "origin"}, "short.origin.", false},
+		{"short uppercase", args{"Short", "subdomain.origin"}, "short.subdomain.origin.", false},
+		{"short with dot", args{"short.", "subdomain.origin"}, "short.", false},
+		{"short is *", args{"*", "subdomain.origin"}, "*.subdomain.origin.", false},
+		{"short is * no sub", args{"*", "origin"}, "*.origin.", false},
+		{"subdomain in use", args{"short", "subdomain.origin"}, "short.subdomain.origin.", false},
+		{"subdomain in use with @", args{"@", "subdomain.origin"}, "subdomain.origin.", false},
+		{"short is @", args{"@", "origin"}, "origin.", false},
+		{"normal case", args{"short", "origin"}, "short.origin.", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseHostnameDot(tt.args.short, tt.args.subdomain, tt.args.origin)
+			got, err := ParseHostnameDot(tt.args.short, tt.args.origin)
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("ParseHostnameDot() error = %v, wantErr %v", err, tt.wantErr)

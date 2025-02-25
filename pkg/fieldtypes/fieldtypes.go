@@ -10,10 +10,11 @@ import (
 
 // ParseLabel3 returns a short name and FQDN given 3 components: short name, subdomain, and origin.
 func ParseLabel3(short, subdomain, origin string) (string, string, error) {
+	fmt.Printf("DEBUG: ParseLabel3: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
-	if strings.HasSuffix(origin, ".") {
-		return "FAIL1", "", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
+	if strings.HasSuffix(origin, ".") && !strings.HasSuffix(origin, ".arpa.") {
+		return "FAIL1", "", fmt.Errorf("originPL3 (%s) is not supposed to end with a dot", origin)
 	}
 	if strings.ToLower(origin) != origin {
 		return "FAIL2", "", fmt.Errorf("origin (%s) must be lowercase", origin)
@@ -83,18 +84,18 @@ func lastCharIs(s string, c rune) bool {
 // ParseHostnameDot is a hostname with a trailing dot.
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 // FYI: This calls ToLower on short. After this, we can always assume .target (or whatever) is lowercase.
-func ParseHostnameDot(short, subdomain, origin string) (string, error) {
+func ParseHostnameDot(short, origin string) (string, error) {
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		return "FAIL", fmt.Errorf("origin (%s) is not supposed to end with a dot", origin)
+		return "FAIL", fmt.Errorf("originPHD (%s) is not supposed to end with a dot", origin)
 	}
 	if strings.ToLower(origin) != origin {
 		return "FAIL", fmt.Errorf("origin (%s) must be lowercase", origin)
 	}
-	if strings.ToLower(subdomain) != subdomain {
-		return "FAIL", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
-	}
+	// if strings.ToLower(subdomain) != subdomain {
+	// 	return "FAIL", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
+	// }
 	if short == "" {
 		return "FAIL", fmt.Errorf("short must not be empty")
 	}
@@ -108,19 +109,27 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 		return short, nil
 	}
 
-	if subdomain != "" {
-		// If D_EXTEND() is in use...
-		if short == "" || short == "@" {
-			return (subdomain + "." + origin + "."), nil
-		}
-		return (short + "." + subdomain + "." + origin + "."), nil
-	}
+	// if subdomain != "" {
+	// 	// If D_EXTEND() is in use...
+	// 	if short == "" || short == "@" {
+	// 		return (subdomain + "." + origin + "."), nil
+	// 	}
+	// 	return (short + "." + subdomain + "." + origin + "."), nil
+	// }
 
 	if short == "@" {
 		return (origin + "."), nil
 	}
 
 	return (short + "." + origin + "."), nil
+}
+
+// ParseHostnameDotNullIsDot is like ParseHostnameDot but returns "." if short is empty.
+func ParseHostnameDotNullIsDot(short, origin string) (string, error) {
+	if short == "" {
+		return ".", nil
+	}
+	return ParseHostnameDot(short, origin)
 }
 
 // IPv4 is an IPv4 address.
@@ -170,6 +179,44 @@ func (a *IPv4) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	*a = parsedIP
+	return nil
+}
+
+// IPv6 is an IPv6 address.
+type IPv6 [16]byte
+
+func ParseIPv6(raw string) (IPv6, error) {
+	var ip IPv6
+
+	// Is this formatted as an IPv6 address?
+	addr, err := netip.ParseAddr(raw)
+	if err == nil && addr.Is6() {
+		a6 := addr.As16()
+		ip = a6
+
+	} else { // No, its an error.
+		return ip, fmt.Errorf("not an IPv6 address: %q", raw)
+	}
+	return ip, nil
+}
+
+func (aaaa *IPv6) String() string {
+	//return fmt.Sprintf("%d.%d.%d.%d", a[0], a[1], a[2], a[3])
+	addr, _ := netip.AddrFromSlice(aaaa[:])
+	return addr.String()
+}
+func (aaaa IPv6) MarshalJSON() ([]byte, error) {
+	s := fmt.Sprintf(`"%s"`, aaaa)
+	return []byte(s), nil
+}
+func (aaaa *IPv6) UnmarshalJSON(data []byte) error {
+	// Remove the quotes from the JSON string
+	str := strings.Trim(string(data), `"`)
+	parsedIP, err := ParseIPv6(str)
+	if err != nil {
+		return err
+	}
+	*aaaa = parsedIP
 	return nil
 }
 

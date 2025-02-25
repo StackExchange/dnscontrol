@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type FromRawFn func(rc *RecordConfig, rawfields []string, metadata map[string]string, origin string) error
+type FromRawFn func(rc *RecordConfig, rawfields []string, metadata map[string]string, subdomain, origin string) error
 
 type RegisterOpts struct {
 	Enum            int

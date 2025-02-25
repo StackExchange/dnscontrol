@@ -290,10 +290,6 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func aaaa(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "AAAA")
-}
-
 func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
 }
@@ -405,12 +401,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
-}
-
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
-	r := makeRec(name, target, "NAPTR")
-	panicOnErr(r.SetTargetNAPTR(order, preference, flags, service, regexp, target))
-	return r
 }
 
 func ptr(name, target string) *models.RecordConfig {
