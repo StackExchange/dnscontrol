@@ -81,6 +81,10 @@ func (dc *DomainConfig) UpdateSplitHorizonNames() {
 			name = l[0]
 			tag = l[1]
 		}
+		if tag == "" {
+			// ensure empty tagged domain is treated as untagged
+			unique = name
+		}
 	}
 
 	dc.Name = name
