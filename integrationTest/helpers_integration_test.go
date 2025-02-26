@@ -290,10 +290,6 @@ func withMeta(record *models.RecordConfig, metadata map[string]string) *models.R
 	return record
 }
 
-func aaaa(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "AAAA")
-}
-
 func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
 }
@@ -401,10 +397,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 		recs = append(recs, a(fmt.Sprintf(namePattern, i), target))
 	}
 	return recs
-}
-
-func ns(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS")
 }
 
 func ptr(name, target string) *models.RecordConfig {

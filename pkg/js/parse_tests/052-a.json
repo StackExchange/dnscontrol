@@ -17,56 +17,56 @@
       "name": "foo.com",
       "records": [
         {
-          "meta": {
-            "orig_custom_type": "CF_REDIRECT"
-          },
-          "name": "@",
-          "target": "test1.foo.com,https://goo.com/$1",
-          "ttl": 300,
-          "type": "CF_REDIRECT"
-        },
-        {
-          "meta": {
-            "orig_custom_type": "CF_TEMP_REDIRECT"
-          },
-          "name": "@",
-          "target": "test2.foo.com,https://goo.com/$1",
-          "ttl": 300,
-          "type": "CF_TEMP_REDIRECT"
-        },
-        {
-          "meta": {
-            "orig_custom_type": "CF_WORKER_ROUTE"
-          },
-          "name": "@",
-          "target": "test3.foo.com,test-worker",
-          "ttl": 300,
-          "type": "CF_WORKER_ROUTE"
-        },
-        {
           "Fields": {
-            "A": "10.2.3.1"
+            "A": "1.1.1.1"
           },
-          "name": "test1.sub",
-          "target": "10.2.3.1",
+          "name": "@",
+          "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
           "Fields": {
-            "A": "10.2.3.2"
+            "A": "3.3.3.3"
           },
-          "name": "test2.sub",
-          "target": "10.2.3.2",
+          "name": "@",
+          "target": "3.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
           "Fields": {
-            "A": "10.2.3.3"
+            "A": "4.4.4.4"
           },
-          "name": "test3.sub",
-          "target": "10.2.3.3",
+          "name": "ewww",
+          "target": "4.4.4.4",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "5.5.5.5"
+          },
+          "name": "sub",
+          "target": "5.5.5.5",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "6.6.6.6"
+          },
+          "name": "swww.sub",
+          "target": "6.6.6.6",
+          "ttl": 300,
+          "type": "A"
+        },
+        {
+          "Fields": {
+            "A": "2.2.2.2"
+          },
+          "name": "www",
+          "target": "2.2.2.2",
           "ttl": 300,
           "type": "A"
         }

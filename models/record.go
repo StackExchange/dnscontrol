@@ -89,15 +89,15 @@ import (
 //
 //	rec.Label() == "@"   // Is this record at the apex?
 type RecordConfig struct {
-	Type      string            `json:"type"` // All caps rtype name.
-	Name      string            `json:"name"` // The short name. See above.
-	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
-	SubDomain string            `json:"subdomain,omitempty"`
-	target    string            // If a name, must end with "."
-	TTL       uint32            `json:"ttl,omitempty"`
-	Metadata  map[string]string `json:"meta,omitempty"`
-	Original  interface{}       `json:"-"`                // Store pointer to provider-specific record object. Used in diffing.
-	Fields    interface{}       `json:"Fields,omitempty"` // Pointer to struct with fields.
+	Type     string `json:"type"` // All caps rtype name.
+	Name     string `json:"name"` // The short name. See above.
+	NameFQDN string `json:"-"`    // Must end with ".$origin". See above.
+	//SubDomain string            `json:"subdomain,omitempty"`
+	target   string            // If a name, must end with "."
+	TTL      uint32            `json:"ttl,omitempty"`
+	Metadata map[string]string `json:"meta,omitempty"`
+	Original interface{}       `json:"-"`                // Store pointer to provider-specific record object. Used in diffing.
+	Fields   interface{}       `json:"Fields,omitempty"` // Pointer to struct with fields.
 
 	Comparable string `json:"-"`
 	Display    string `json:"-"`
@@ -287,7 +287,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 func (rc *RecordConfig) SetLabel(short, origin string) {
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("originSL (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
 		if short != "**current-domain**" {
@@ -317,10 +317,6 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 	}
 	rc.Name = label
 	rc.NameFQDN = labelFQDN
-	if origin != "" {
-		// We have consumed the SubDomain, so clear it.
-		rc.SubDomain = ""
-	}
 	return nil
 }
 
@@ -330,7 +326,7 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("originSLFF (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(fqdn, "..") {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))

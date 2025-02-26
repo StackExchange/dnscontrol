@@ -39,21 +39,18 @@
         },
         {
           "name": "4",
-          "subdomain": "4",
           "target": "silly.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
           "name": "5",
-          "subdomain": "5",
           "target": "willy.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
           "name": "6",
-          "subdomain": "6",
           "target": "billy.example.com.",
           "ttl": 300,
           "type": "PTR"

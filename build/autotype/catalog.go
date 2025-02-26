@@ -115,7 +115,7 @@ func (cat *TypeCatalog) TypeNamesAsSlice() []string {
 func (cat *TypeCatalog) TypeNamesAndFields(order []string) []TypeInfo {
 
 	x, _ := json.MarshalIndent(order, "", "    ")
-	fmt.Printf("DEBUG: TypeNamesAndFields: %v\n", x)
+	fmt.Printf("DEBUG: TypeNamesAndFields: %s\n", x)
 
 	var keys []TypeInfo
 	for _, k := range order {

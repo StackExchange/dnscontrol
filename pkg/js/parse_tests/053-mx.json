@@ -1,0 +1,149 @@
+{
+  "dns_providers": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
+      "records": [
+        {
+          "Fields": {
+            "Mx": "aaa.foo.com.",
+            "Preference": 1
+          },
+          "name": "@",
+          "target": "aaa.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "eee.foo.com.",
+            "Preference": 5
+          },
+          "name": "@",
+          "target": "eee.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "bbb.foo.com.",
+            "Preference": 2
+          },
+          "name": "b",
+          "target": "bbb.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "ccc.com.",
+            "Preference": 3
+          },
+          "name": "c",
+          "target": "ccc.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "ddd.foo.com.",
+            "Preference": 4
+          },
+          "name": "dwww",
+          "target": "ddd.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "fff.foo.com.",
+            "Preference": 6
+          },
+          "name": "fwww",
+          "target": "fff.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "ggg.google.com.",
+            "Preference": 7
+          },
+          "name": "gwww",
+          "target": "ggg.google.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "hhh.foo.com.",
+            "Preference": 8
+          },
+          "name": "hwww",
+          "target": "hhh.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "iii.sub.foo.com.",
+            "Preference": 9
+          },
+          "name": "sub",
+          "target": "iii.sub.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "jjj.sub.foo.com.",
+            "Preference": 10
+          },
+          "name": "jwww.sub",
+          "target": "jjj.sub.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "kk.bar.com.",
+            "Preference": 11
+          },
+          "name": "kwww.sub",
+          "target": "kk.bar.com.",
+          "ttl": 300,
+          "type": "MX"
+        },
+        {
+          "Fields": {
+            "Mx": "mmm.sub.foo.com.",
+            "Preference": 12
+          },
+          "name": "mwww.sub",
+          "target": "mmm.sub.foo.com.",
+          "ttl": 300,
+          "type": "MX"
+        }
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ]
+}

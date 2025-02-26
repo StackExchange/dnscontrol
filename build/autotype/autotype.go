@@ -65,8 +65,6 @@ func loadModule(name string) (*types.Package, error) {
 // filter is empty, all types are extracted.
 func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (TypeCatalog, error) {
 
-	//fmt.Printf("DEBUG: Reading module %s; filter=%v\n", modName, filter)
-
 	// Import and type-check the package
 	pkg, err := loadModule(modName)
 	fatalIfErr(err)
@@ -98,7 +96,7 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 				continue
 			}
 		}
-		fmt.Printf("DEBUG: DOING %s\n", typeName)
+		fmt.Printf("DEBUG: SCANNING %s\n", typeName)
 
 		o := scope.Lookup(typeName)
 		st, isEmbedded := getTypeStruct(o.Type(), scope)
@@ -121,16 +119,19 @@ func ExtractTypeDataFromModule(modName string, filter map[string]struct{}) (Type
 
 			} else {
 				fieldname := st.Field(i).Name()
+				fieldtags := MustParseTags(st.Tag(i))
 				fieldtype := st.Field(i).Type().String()
-				if fieldtype == "net.IP" {
+				if HasTagOption(fieldtags, "dns", "a") {
 					fieldtype = "fieldtypes.IPv4"
 				}
-				fieldtags := st.Tag(i)
+				if HasTagOption(fieldtags, "dns", "aaaa") {
+					fieldtype = "fieldtypes.IPv6"
+				}
 
 				fields = append(fields, Field{
 					Name: fieldname,
 					Type: fieldtype,
-					Tags: MustParseTags(fieldtags),
+					Tags: fieldtags,
 				})
 
 			}
@@ -207,7 +208,6 @@ func main() {
 	}
 
 	catalog.MergeHints(hints) // Overwrite catalog items with data from hints.
-	//fmt.Printf("DEBUG: cat+hints = %+v\n", catalog)
 
 	catalog.FixFields() // must be called before FixTypes
 	catalog.FixTypes()
@@ -224,7 +224,6 @@ func main() {
 	// Generate the RecordType interface constraint.
 	mgt = append(mgt, makeInterfaceConstraint(values)...)
 	// Generate the makeImportFromLegacy() function.
-	//	fmt.Printf("DEBUG: Values: %+v\n", values)
 	x, _ := json.MarshalIndent(values, "", "    ")
 	fmt.Printf("DEBUG: Values: %s\n", x)
 	mgt = append(mgt, makeImportFromLegacy(values)...)
@@ -232,7 +231,6 @@ func main() {
 	mgt = append(mgt, makeCopy(values)...)
 	mgt = append(mgt, makePopulateFromFields(values)...)
 	mgt = append(mgt, makeGetTargetField(values)...)
-	//mgt = append(mgt, makeSetTarget(values)...)
 
 	// integrationTest/generated_helpers.go
 	var ith = makeIntTestHeader()

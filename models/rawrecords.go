@@ -65,28 +65,30 @@ func TransformRawRecords(domains []*DomainConfig) error {
 
 	for _, dc := range domains {
 
+		// fmt.Printf("DEBUG: TransformRawRecords: rawRecords=%+v\n", dc.RawRecords)
+
 		for _, rawRec := range dc.RawRecords {
+			// fmt.Printf("DEBUG: TransformRawRecords: record=%+v\n", rawRec)
 
 			if rawRec.TTL == 0 {
 				rawRec.TTL = dc.DefaultTTL
 			}
 
 			rec := &RecordConfig{
-				Type:      rawRec.Type,
-				TTL:       rawRec.TTL,
-				SubDomain: rawRec.SubDomain,
-				Metadata:  map[string]string{},
+				Type:     rawRec.Type,
+				TTL:      rawRec.TTL,
+				Metadata: map[string]string{},
 			}
+			subdomain := rawRec.SubDomain
+			// fmt.Printf("DEBUG: TransformRawRecords: subdomain=%v\n", subdomain)
 
 			// Copy the metadata (convert values to string)
 			//fmt.Printf("DEBUG: TransformRawRecords: %v\n", rawRec.Metadata)
 			for _, m := range rawRec.Metadata {
 				for mk, mv := range m {
 					if v, ok := mv.(string); ok {
-						//fmt.Printf("DEBUG: TransformRawRecords: meta add: %q : %q\n", mk, v)
 						rec.Metadata[mk] = v // Already a string
 					} else {
-						//fmt.Printf("DEBUG: TransformRawRecords: meta add: %q : %q\n", mk, mv)
 						rec.Metadata[mk] = fmt.Sprintf("%v", mv)
 					}
 				}
@@ -97,7 +99,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, effectiveOrigin(rec.SubDomain, dc.Name))
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, subdomain, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (label=%q, zone=%q args=%v) record error: %w",
 					rawRec.Type,
@@ -121,16 +123,4 @@ func TransformRawRecords(domains []*DomainConfig) error {
 	}
 
 	return nil
-}
-
-// effectiveOrigin returns the effective origin given a "subdomain" and an
-// "origin".  The concept of a subdomain is only relevant in dnsconfig.js and
-// RawRecordConfig.  In the RecordConfig, the "Name" field is the full name
-// (minor the dc.Name) and any .Target or other fields are FQDNs or relative to
-// the effective origin.
-func effectiveOrigin(sub, origin string) string {
-	if sub == "" {
-		return origin
-	}
-	return sub + "." + origin
 }
