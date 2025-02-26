@@ -15,7 +15,7 @@
             "Order": 100,
             "Preference": 10,
             "Regexp": "!^.*$!sip:customer-service@example.com!",
-            "Replacement": "example.foo.com.",
+            "Replacement": "short.foo.com.",
             "Service": "E2U+sip"
           },
           "name": "@",
@@ -24,7 +24,7 @@
           "naptrpreference": 10,
           "naptrregexp": "!^.*$!sip:customer-service@example.com!",
           "naptrservice": "E2U+sip",
-          "target": "example.foo.com.",
+          "target": "short.foo.com.",
           "ttl": 300,
           "type": "NAPTR"
         },
@@ -34,7 +34,7 @@
             "Order": 102,
             "Preference": 10,
             "Regexp": "!^.*$!mailto:information@example.com!",
-            "Replacement": "example.foo.com.",
+            "Replacement": "fqdn.com.",
             "Service": "E2U+email"
           },
           "name": "@",
@@ -43,7 +43,7 @@
           "naptrpreference": 10,
           "naptrregexp": "!^.*$!mailto:information@example.com!",
           "naptrservice": "E2U+email",
-          "target": "example.foo.com.",
+          "target": "fqdn.com.",
           "ttl": 300,
           "type": "NAPTR"
         },
