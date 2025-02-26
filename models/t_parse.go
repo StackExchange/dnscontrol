@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"net"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc1035"
@@ -86,48 +85,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return PopulateFromFields(rc, rtype, fields, origin)
 	}
 
-	// 	switch rtype {
-
-	// 	case "A":
-	// 		if rdata, err := ParseA(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "MX":
-	// 		if rdata, err := ParseMX(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "CNAME":
-	// 		if rdata, err := ParseCNAME(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "SRV":
-	// 		if rdata, err := ParseSRV(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "CAA":
-	// 		if rdata, err := ParseCAA(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "DS":
-	// 		if rdata, err := ParseDS(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	case "DNSKEY":
-	// 		if rdata, err := ParseDNSKEY(fields, origin); err == nil {
-	// 			return RecordUpdateFields(rc, rdata, nil)
-	// 		}
-	// 	}
-	// 	return err
-	// }
-
 	switch rc.Type = rtype; rtype { // #rtype_variations
-	case "AAAA":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To16() == nil {
-			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
-		}
-		return rc.SetTargetIP(ip) // Reformat to canonical form.
-	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR":
+	case "AKAMAICDN", "ALIAS", "ANAME":
 		return rc.SetTarget(contents)
 	case "DHCID":
 		return rc.SetTarget(contents)
@@ -135,8 +94,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTarget(contents)
 	case "LOC":
 		return rc.SetTargetLOCString(origin, contents)
-	case "NAPTR":
-		return rc.SetTargetNAPTRString(contents)
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":

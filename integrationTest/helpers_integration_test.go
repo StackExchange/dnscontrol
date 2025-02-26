@@ -399,10 +399,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	return recs
 }
 
-func ptr(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "PTR")
-}
-
 func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordConfig {
 	r := makeRec(name, target, "R53_ALIAS")
 	r.R53Alias = map[string]string{

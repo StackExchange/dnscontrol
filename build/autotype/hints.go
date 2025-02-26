@@ -53,7 +53,7 @@ func GetHints() ([]string, TypeCatalog) {
 	//addType("SOA", "", nil)
 
 	// 12
-	//addType("PTR", "", nil)
+	addType("PTR", "", nil)
 
 	// 15
 	addType("MX", "", []Field{

@@ -9,8 +9,6 @@ func BuilderCAA(rawfields []string, meta map[string]string, origin string) ([]st
 		return rawfields, meta, fmt.Errorf("CAA record must have at least 3 fields")
 	}
 
-	fmt.Printf("DEBUG: BuilderCAA: rawfields=%v meta=%+v\n", rawfields, meta)
-
 	flag := "0"
 	if meta["caa_critical"] != "" {
 		flag = "128"

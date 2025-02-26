@@ -2,9 +2,11 @@ package models
 
 import (
 	"fmt"
+	"net/netip"
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/qdm12/reprint"
 )
 
@@ -12,6 +14,7 @@ func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
 	MustRegisterType("NS", RegisterOpts{PopulateFromRaw: PopulateFromRawNS})
 	MustRegisterType("CNAME", RegisterOpts{PopulateFromRaw: PopulateFromRawCNAME})
+	MustRegisterType("PTR", RegisterOpts{PopulateFromRaw: PopulateFromRawPTR})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("AAAA", RegisterOpts{PopulateFromRaw: PopulateFromRawAAAA})
 	MustRegisterType("SRV", RegisterOpts{PopulateFromRaw: PopulateFromRawSRV})
@@ -24,7 +27,7 @@ func init() {
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | NS | CNAME | MX | AAAA | SRV | NAPTR | DS | DNSKEY | CAA | CFSINGLEREDIRECT
+	A | NS | CNAME | PTR | MX | AAAA | SRV | NAPTR | DS | DNSKEY | CAA | CFSINGLEREDIRECT
 }
 
 // ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
@@ -51,6 +54,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 	case "CNAME":
 		return RecordUpdateFields(rc,
 			CNAME{Target: rc.target},
+			nil,
+		)
+	case "PTR":
+		return RecordUpdateFields(rc,
+			PTR{Ptr: rc.target},
 			nil,
 		)
 	case "MX":
@@ -113,6 +121,11 @@ func (rc *RecordConfig) Seal() error {
 		rc.target = f.Target
 
 		rc.Comparable = f.Target
+	case "PTR":
+		f := rc.Fields.(*PTR)
+		rc.target = f.Ptr
+
+		rc.Comparable = f.Ptr
 	case "MX":
 		f := rc.Fields.(*MX)
 		rc.MxPreference = f.Preference
@@ -196,6 +209,9 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	case "CNAME":
 		newR.Fields = &CNAME{}
 		newR.Fields = rc.Fields.(*CNAME)
+	case "PTR":
+		newR.Fields = &PTR{}
+		newR.Fields = rc.Fields.(*PTR)
 	case "MX":
 		newR.Fields = &MX{}
 		newR.Fields = rc.Fields.(*MX)
@@ -237,6 +253,10 @@ func PopulateFromFields(rc *RecordConfig, rtype string, fields []string, origin 
 		}
 	case "CNAME":
 		if rdata, err := ParseCNAME(fields, "", origin); err == nil {
+			return RecordUpdateFields(rc, rdata, nil)
+		}
+	case "PTR":
+		if rdata, err := ParsePTR(fields, "", origin); err == nil {
 			return RecordUpdateFields(rc, rdata, nil)
 		}
 	case "MX":
@@ -285,6 +305,8 @@ func (rc *RecordConfig) GetTargetField() string {
 		return rc.AsNS().Ns
 	case "CNAME":
 		return rc.AsCNAME().Target
+	case "PTR":
+		return rc.AsPTR().Ptr
 	case "MX":
 		return rc.AsMX().Mx
 	case "AAAA":
@@ -505,6 +527,97 @@ func (rc *RecordConfig) GetFieldsAsStringsCNAME() [1]string {
 func (rc *RecordConfig) SetTargetCNAME(target string) error {
 	rc.Type = "CNAME"
 	return RecordUpdateFields(rc, CNAME{Target: target}, nil)
+}
+
+//// PTR
+
+// PTR is the fields needed to store a DNS record of type PTR.
+type PTR struct {
+	Ptr string `dns:"cdomain-name"`
+}
+
+// ParsePTR parses rawfields into an PTR struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
+func ParsePTR(rawfields []string, subdomain, origin string) (PTR, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 1) {
+		return PTR{}, fmt.Errorf("rtype PTR wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
+	}
+	var ptr string
+	var err error
+	if ptr, err = fieldtypes.ParseHostnameDot(rawfields[0], subdomain, origin); err != nil {
+		return PTR{}, err
+	}
+
+	return PTR{Ptr: ptr}, nil
+}
+
+// PopulateFromRawPTR updates rc to be an PTR record with contents from rawfields, meta and origin.
+func PopulateFromRawPTR(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain, origin string) error {
+	rc.Type = "PTR"
+
+	label := rawfields[0]
+	//fmt.Printf("DEBUG: RawPTR: called label=%s subdomain=%s origin=%s\n", label, subdomain, origin)
+	if _, err := netip.ParseAddr(label); err == nil {
+		// Label is an IP address.
+		subdomain = "" // PtrMagic mode matches the origin properly, thus subdomain is no longer relevant.
+		var err error
+		label, err = transform.PtrNameMagic(label, origin)
+		if err != nil {
+			//fmt.Printf("DEBUG: RawPTR: err %v\n", err)
+			return err
+		}
+		//fmt.Printf("DEBUG: RawPTR: step1 %s\n", label)
+	}
+	//fmt.Printf("DEBUG: RawPTR: SetLabel3(%q, %q, %q)\n", label, subdomain, origin)
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(label, subdomain, origin); err != nil {
+		return err
+	}
+	// {
+	// 	fmt.Printf("DEBUG: RawPTR: called %s %s\n", rc.NameFQDN, origin)
+	// 	if name, err := transform.PtrNameMagic(rc.NameFQDN, origin); err != nil {
+	// 		return err
+	// 	} else {
+	// 		fmt.Printf("DEBUG: RawPTR: step1 %s\n", name)
+	// 		rc.SetLabel(name, origin)
+	// 	}
+	// 	fmt.Printf("DEBUG: RawPTR: result %s %s\n", rc.Name, rc.NameFQDN)
+	// }
+
+	// Parse the remaining fields.
+	rdata, err := ParsePTR(rawfields[1:], subdomain, origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsPTR returns rc.Fields as an PTR struct.
+func (rc *RecordConfig) AsPTR() *PTR {
+	return rc.Fields.(*PTR)
+}
+
+// GetFieldsPTR returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsPTR() string {
+	n := rc.AsPTR()
+	return n.Ptr
+}
+
+// GetFieldsAsStringsPTR returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsPTR() [1]string {
+	n := rc.AsPTR()
+	return [1]string{n.Ptr}
+}
+
+// SetTargetPTR sets the PTR fields.
+func (rc *RecordConfig) SetTargetPTR(ptr string) error {
+	rc.Type = "PTR"
+	return RecordUpdateFields(rc, PTR{Ptr: ptr}, nil)
 }
 
 //// MX
