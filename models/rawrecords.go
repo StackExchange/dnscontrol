@@ -97,7 +97,9 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, rec.SubDomain, dc.Name)
+			subdomain := rec.SubDomain
+			rec.SubDomain = ""
+			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, subdomain, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (label=%q, zone=%q args=%v) record error: %w",
 					rawRec.Type,

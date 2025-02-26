@@ -128,11 +128,11 @@
         },
         {
           "Fields": {
-            "Mx": "mmm.foo.com.",
+            "Mx": "mmm.sub.foo.com.",
             "Preference": 12
           },
           "name": "mwww.sub",
-          "target": "mmm.foo.com.",
+          "target": "mmm.sub.foo.com.",
           "ttl": 300,
           "type": "MX"
         }

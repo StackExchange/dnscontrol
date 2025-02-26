@@ -337,7 +337,7 @@ func PopulateFromRawA(rc *RecordConfig, rawfields []string, meta map[string]stri
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseA(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseA(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -404,7 +404,7 @@ func PopulateFromRawNS(rc *RecordConfig, rawfields []string, meta map[string]str
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseNS(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseNS(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -467,7 +467,7 @@ func PopulateFromRawCNAME(rc *RecordConfig, rawfields []string, meta map[string]
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCNAME(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseCNAME(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -535,7 +535,7 @@ func PopulateFromRawMX(rc *RecordConfig, rawfields []string, meta map[string]str
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseMX(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseMX(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -598,7 +598,7 @@ func PopulateFromRawAAAA(rc *RecordConfig, rawfields []string, meta map[string]s
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseAAAA(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseAAAA(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -680,7 +680,7 @@ func PopulateFromRawSRV(rc *RecordConfig, rawfields []string, meta map[string]st
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseSRV(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseSRV(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -768,7 +768,7 @@ func PopulateFromRawNAPTR(rc *RecordConfig, rawfields []string, meta map[string]
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseNAPTR(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseNAPTR(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -846,7 +846,7 @@ func PopulateFromRawDS(rc *RecordConfig, rawfields []string, meta map[string]str
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseDS(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseDS(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -924,7 +924,7 @@ func PopulateFromRawDNSKEY(rc *RecordConfig, rawfields []string, meta map[string
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseDNSKEY(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseDNSKEY(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -1002,7 +1002,7 @@ func PopulateFromRawCAA(rc *RecordConfig, rawfields []string, meta map[string]st
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCAA(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := ParseCAA(rawfields[1:], subdomain, origin)
 	if err != nil {
 		return err
 	}
@@ -1088,7 +1088,7 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta 
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCFSINGLEREDIRECT(rawfields, rc.SubDomain, origin)
+	rdata, err := ParseCFSINGLEREDIRECT(rawfields, subdomain, origin)
 	if err != nil {
 		return err
 	}

@@ -508,9 +508,9 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
 	// Parse the remaining fields.
 	{{- if .NoLabel }}
-	rdata, err := Parse{{ .Name }}(rawfields, rc.SubDomain, origin)
+	rdata, err := Parse{{ .Name }}(rawfields, subdomain, origin)
 	{{- else }}
-	rdata, err := Parse{{ .Name }}(rawfields[1:], rc.SubDomain, origin)
+	rdata, err := Parse{{ .Name }}(rawfields[1:], subdomain, origin)
 	{{- end }}
 	if err != nil {
 		return err
