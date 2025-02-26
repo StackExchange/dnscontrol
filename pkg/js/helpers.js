@@ -403,9 +403,6 @@ var HTTPS = recordBuilder('HTTPS', {
     },
 });
 
-// PTR(name,target, recordModifiers...)
-var PTR = recordBuilder('PTR');
-
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
     args: [

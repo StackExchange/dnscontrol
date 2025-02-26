@@ -33,6 +33,15 @@ func cname(name string, target string) *models.RecordConfig {
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
+func ptr(name string, ptr string) *models.RecordConfig {
+
+	rdata, err := models.ParsePTR([]string{ptr}, "", "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
 func mx(name string, preference uint16, mx string) *models.RecordConfig {
 	spreference := strconv.Itoa(int(preference))
 

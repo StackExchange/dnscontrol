@@ -11,9 +11,9 @@ D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
     }),
 );
 D_EXTEND(REV("1.2.3.4"),
-    PTR("4", "silly.example.com."),
+    PTR("@", "silly.example.com."),
 );
-D_EXTEND(REV("1.2.3.5"),
+D_EXTEND(REV("1.2.3.5/32"),
     PTR("1.2.3.5", "willy.example.com."),
 );
 D_EXTEND(REV("1.2.3.6"),

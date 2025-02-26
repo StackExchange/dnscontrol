@@ -17,18 +17,27 @@
       "name": "3.2.1.in-addr.arpa",
       "records": [
         {
+          "Fields": {
+            "Ptr": "foo.example.com."
+          },
           "name": "1",
           "target": "foo.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "bar.example.com."
+          },
           "name": "2",
           "target": "bar.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "baz.example.com."
+          },
           "meta": {
             "skip_fqdn_check": "true"
           },
@@ -38,36 +47,54 @@
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "silly.example.com."
+          },
           "name": "4",
           "target": "silly.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "willy.example.com."
+          },
           "name": "5",
           "target": "willy.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "billy.example.com."
+          },
           "name": "6",
           "target": "billy.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "my.example.com."
+          },
           "name": "7",
           "target": "my.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "fair.example.com."
+          },
           "name": "8",
           "target": "fair.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "Fields": {
+            "Ptr": "lady.example.com."
+          },
           "meta": {
             "skip_fqdn_check": "true"
           },

@@ -23,10 +23,11 @@ Remove `func cname()`
 
 Remove the definition of the type:
 
+Example:
+
 ```
 var CNAME = recordBuilder('CNAME');
 ```
-
 
 - Fix models/t_{type}.go
 
@@ -42,13 +43,13 @@ fgrep --include='*.go' -r 'SetTargetDSStrings('
 
 -- fix models/t_parse.go
 
-Add to PopulateFromStringFunc
+Remove any mention of the type.
 
+-- fix models/record.go
 
--- fix record.go
-
-func (rc *RecordConfig) Copy()
-
+Remove any mention of the type in:
+    func Downcase(recs []*RecordConfig) {
+    func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 
 
 -- fix pkg/js/parse_tests
@@ -60,4 +61,9 @@ update .targets to include the subdomain.
 
 jstest.sh 014-caa.js
 
--- fix
+
+Once all types are using RawRecords...
+
+Update pkg/normalize/validate.go
+func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+
