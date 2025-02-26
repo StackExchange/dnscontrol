@@ -434,13 +434,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if err := rec.SetTarget(net.ParseIP(rec.GetTargetField()).String()); err != nil {
 					errs = append(errs, err)
 				}
-				//			} else if rec.Type == "PTR" {
-				//				var err error
-				//				var name string
-				//				if name, err = transform.PtrNameMagic(rec.GetLabel(), domain.Name); err != nil {
-				//					errs = append(errs, err)
-				//				}
-				//				rec.SetLabel(name, domain.Name)
 			} else if rec.Type == "CAA" {
 				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
