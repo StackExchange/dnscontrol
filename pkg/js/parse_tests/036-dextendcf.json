@@ -47,7 +47,7 @@
           "Fields": {
             "A": "10.2.3.1"
           },
-          "name": "test1.foo.com.sub",
+          "name": "test1.sub",
           "target": "10.2.3.1",
           "ttl": 300,
           "type": "A"
@@ -56,7 +56,7 @@
           "Fields": {
             "A": "10.2.3.2"
           },
-          "name": "test2.foo.com.sub",
+          "name": "test2.sub",
           "target": "10.2.3.2",
           "ttl": 300,
           "type": "A"
@@ -65,7 +65,7 @@
           "Fields": {
             "A": "10.2.3.3"
           },
-          "name": "test3.foo.com.sub",
+          "name": "test3.sub",
           "target": "10.2.3.3",
           "ttl": 300,
           "type": "A"

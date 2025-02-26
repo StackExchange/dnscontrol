@@ -399,10 +399,6 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	return recs
 }
 
-func ns(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS")
-}
-
 func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }

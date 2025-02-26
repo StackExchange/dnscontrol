@@ -10,6 +10,7 @@ import (
 
 func init() {
 	MustRegisterType("A", RegisterOpts{PopulateFromRaw: PopulateFromRawA})
+	MustRegisterType("NS", RegisterOpts{PopulateFromRaw: PopulateFromRawNS})
 	MustRegisterType("CNAME", RegisterOpts{PopulateFromRaw: PopulateFromRawCNAME})
 	MustRegisterType("MX", RegisterOpts{PopulateFromRaw: PopulateFromRawMX})
 	MustRegisterType("AAAA", RegisterOpts{PopulateFromRaw: PopulateFromRawAAAA})
@@ -23,7 +24,7 @@ func init() {
 
 // RecordType is a constraint for DNS records.
 type RecordType interface {
-	A | CNAME | MX | AAAA | SRV | NAPTR | DS | DNSKEY | CAA | CFSINGLEREDIRECT
+	A | NS | CNAME | MX | AAAA | SRV | NAPTR | DS | DNSKEY | CAA | CFSINGLEREDIRECT
 }
 
 // ImportFromLegacy copies the legacy fields (MxPreference, SrvPort, etc.) to
@@ -42,6 +43,11 @@ func (rc *RecordConfig) ImportFromLegacy(origin string) error {
 			return err
 		}
 		return RecordUpdateFields(rc, A{A: ip}, nil)
+	case "NS":
+		return RecordUpdateFields(rc,
+			NS{Ns: rc.target},
+			nil,
+		)
 	case "CNAME":
 		return RecordUpdateFields(rc,
 			CNAME{Target: rc.target},
@@ -97,6 +103,11 @@ func (rc *RecordConfig) Seal() error {
 		f := rc.Fields.(*A)
 		rc.target = f.A.String()
 		rc.Comparable = fmt.Sprintf("%d.%d.%d.%d", f.A[0], f.A[1], f.A[2], f.A[3])
+	case "NS":
+		f := rc.Fields.(*NS)
+		rc.target = f.Ns
+
+		rc.Comparable = f.Ns
 	case "CNAME":
 		f := rc.Fields.(*CNAME)
 		rc.target = f.Target
@@ -179,6 +190,9 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	case "A":
 		newR.Fields = &A{}
 		newR.Fields = rc.Fields.(*A)
+	case "NS":
+		newR.Fields = &NS{}
+		newR.Fields = rc.Fields.(*NS)
 	case "CNAME":
 		newR.Fields = &CNAME{}
 		newR.Fields = rc.Fields.(*CNAME)
@@ -215,6 +229,10 @@ func PopulateFromFields(rc *RecordConfig, rtype string, fields []string, origin 
 	switch rtype {
 	case "A":
 		if rdata, err := ParseA(fields, "", origin); err == nil {
+			return RecordUpdateFields(rc, rdata, nil)
+		}
+	case "NS":
+		if rdata, err := ParseNS(fields, "", origin); err == nil {
 			return RecordUpdateFields(rc, rdata, nil)
 		}
 	case "CNAME":
@@ -263,6 +281,8 @@ func (rc *RecordConfig) GetTargetField() string {
 	switch rc.Type { // #rtype_variations
 	case "A":
 		return rc.AsA().A.String()
+	case "NS":
+		return rc.AsNS().Ns
 	case "CNAME":
 		return rc.AsCNAME().Target
 	case "MX":
@@ -352,6 +372,69 @@ func (rc *RecordConfig) SetTargetA(a string) error {
 	return RecordUpdateFields(rc, rdata, nil)
 }
 
+//// NS
+
+// NS is the fields needed to store a DNS record of type NS.
+type NS struct {
+	Ns string `dns:"cdomain-name"`
+}
+
+func ParseNS(rawfields []string, subdomain, origin string) (NS, error) {
+
+	// Error checking
+	if errorCheckFieldCount(rawfields, 1) {
+		return NS{}, fmt.Errorf("rtype NS wants %d field(s), found %d: %+v", 1, len(rawfields)-1, rawfields[1:])
+	}
+	var ns string
+	var err error
+	if ns, err = fieldtypes.ParseHostnameDot(rawfields[0], subdomain, origin); err != nil {
+		return NS{}, err
+	}
+
+	return NS{Ns: ns}, nil
+}
+
+// PopulateFromRawNS updates rc to be an NS record with contents from rawfields, meta and origin.
+func PopulateFromRawNS(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain, origin string) error {
+	rc.Type = "NS"
+
+	// First rawfield is the label.
+	if err := rc.SetLabel3(rawfields[0], subdomain, origin); err != nil {
+		return err
+	}
+
+	// Parse the remaining fields.
+	rdata, err := ParseNS(rawfields[1:], rc.SubDomain, origin)
+	if err != nil {
+		return err
+	}
+
+	return RecordUpdateFields(rc, rdata, meta)
+}
+
+// AsNS returns rc.Fields as an NS struct.
+func (rc *RecordConfig) AsNS() *NS {
+	return rc.Fields.(*NS)
+}
+
+// GetFieldsNS returns rc.Fields as individual typed values.
+func (rc *RecordConfig) GetFieldsNS() string {
+	n := rc.AsNS()
+	return n.Ns
+}
+
+// GetFieldsAsStringsNS returns rc.Fields as individual strings.
+func (rc *RecordConfig) GetFieldsAsStringsNS() [1]string {
+	n := rc.AsNS()
+	return [1]string{n.Ns}
+}
+
+// SetTargetNS sets the NS fields.
+func (rc *RecordConfig) SetTargetNS(ns string) error {
+	rc.Type = "NS"
+	return RecordUpdateFields(rc, NS{Ns: ns}, nil)
+}
+
 //// CNAME
 
 // CNAME is the fields needed to store a DNS record of type CNAME.
@@ -367,7 +450,7 @@ func ParseCNAME(rawfields []string, subdomain, origin string) (CNAME, error) {
 	}
 	var target string
 	var err error
-	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], origin); err != nil {
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[0], subdomain, origin); err != nil {
 		return CNAME{}, err
 	}
 
@@ -435,7 +518,7 @@ func ParseMX(rawfields []string, subdomain, origin string) (MX, error) {
 	if preference, err = fieldtypes.ParseUint16(rawfields[0]); err != nil {
 		return MX{}, err
 	}
-	if mx, err = fieldtypes.ParseHostnameDot(rawfields[1], origin); err != nil {
+	if mx, err = fieldtypes.ParseHostnameDot(rawfields[1], subdomain, origin); err != nil {
 		return MX{}, err
 	}
 
@@ -580,7 +663,7 @@ func ParseSRV(rawfields []string, subdomain, origin string) (SRV, error) {
 	if port, err = fieldtypes.ParseUint16(rawfields[2]); err != nil {
 		return SRV{}, err
 	}
-	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], origin); err != nil {
+	if target, err = fieldtypes.ParseHostnameDot(rawfields[3], subdomain, origin); err != nil {
 		return SRV{}, err
 	}
 
@@ -668,7 +751,7 @@ func ParseNAPTR(rawfields []string, subdomain, origin string) (NAPTR, error) {
 	if regexp, err = fieldtypes.ParseStringTrimmed(rawfields[4]); err != nil {
 		return NAPTR{}, err
 	}
-	if replacement, err = fieldtypes.ParseHostnameDotNullIsDot(rawfields[5], origin); err != nil {
+	if replacement, err = fieldtypes.ParseHostnameDotNullIsDot(rawfields[5], subdomain, origin); err != nil {
 		return NAPTR{}, err
 	}
 
@@ -1005,7 +1088,7 @@ func PopulateFromRawCFSINGLEREDIRECT(rc *RecordConfig, rawfields []string, meta 
 	}
 
 	// Parse the remaining fields.
-	rdata, err := ParseCFSINGLEREDIRECT(rawfields, "", rc.SubDomain, origin)
+	rdata, err := ParseCFSINGLEREDIRECT(rawfields, rc.SubDomain, origin)
 	if err != nil {
 		return err
 	}

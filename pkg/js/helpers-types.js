@@ -1,4 +1,5 @@
 var A = rawrecordBuilder('A');
+var NS = rawrecordBuilder('NS');
 var CNAME = rawrecordBuilder('CNAME');
 var MX = rawrecordBuilder('MX');
 var AAAA = rawrecordBuilder('AAAA');

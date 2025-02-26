@@ -44,7 +44,7 @@ func GetHints() ([]string, TypeCatalog) {
 	addType("A", "", nil)
 
 	// 2
-	//addType("NS", "", nil)
+	addType("NS", "", nil)
 
 	// 5
 	addType("CNAME", "", nil)

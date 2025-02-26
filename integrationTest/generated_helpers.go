@@ -15,6 +15,15 @@ func a(name string, a string) *models.RecordConfig {
 	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
 }
 
+func ns(name string, ns string) *models.RecordConfig {
+
+	rdata, err := models.ParseNS([]string{ns}, "", "**current-domain**")
+	if err != nil {
+		panic(err)
+	}
+	return models.MustCreateRecord(name, rdata, nil, 300, "**current-domain**")
+}
+
 func cname(name string, target string) *models.RecordConfig {
 
 	rdata, err := models.ParseCNAME([]string{target}, "", "**current-domain**")

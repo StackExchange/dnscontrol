@@ -17,15 +17,60 @@
       "name": "3.1.in-addr.arpa",
       "records": [
         {
+          "Fields": {
+            "Ns": "ns1.example.com."
+          },
           "name": "1",
           "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
         },
         {
-          "name": "2",
-          "subdomain": "2",
+          "Fields": {
+            "Ns": "ns2.example.org."
+          },
+          "name": "2.3.1.in-addr.arpa.2",
           "target": "ns2.example.org.",
+          "ttl": 300,
+          "type": "NS"
+        }
+      ],
+      "registrar": "none"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.com"
+      },
+      "name": "example.com",
+      "records": [
+        {
+          "Fields": {
+            "Ns": "ns1.fooexample.com."
+          },
+          "name": "foo",
+          "target": "ns1.fooexample.com.",
+          "ttl": 300,
+          "type": "NS"
+        },
+        {
+          "Fields": {
+            "Ns": "ns1.example.com."
+          },
+          "name": "more.lego",
+          "target": "ns1.example.com.",
+          "ttl": 300,
+          "type": "NS"
+        },
+        {
+          "Fields": {
+            "Ns": "ns1.example.com."
+          },
+          "name": "short.lego",
+          "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
         }

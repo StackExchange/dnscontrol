@@ -84,7 +84,7 @@ func lastCharIs(s string, c rune) bool {
 // ParseHostnameDot is a hostname with a trailing dot.
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 // FYI: This calls ToLower on short. After this, we can always assume .target (or whatever) is lowercase.
-func ParseHostnameDot(short, origin string) (string, error) {
+func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -93,9 +93,9 @@ func ParseHostnameDot(short, origin string) (string, error) {
 	if strings.ToLower(origin) != origin {
 		return "FAIL", fmt.Errorf("origin (%s) must be lowercase", origin)
 	}
-	// if strings.ToLower(subdomain) != subdomain {
-	// 	return "FAIL", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
-	// }
+	if strings.ToLower(subdomain) != subdomain {
+		return "FAIL", fmt.Errorf("subdomain (%s) must be lowercase", subdomain)
+	}
 	if short == "" {
 		return "FAIL", fmt.Errorf("short must not be empty")
 	}
@@ -109,13 +109,13 @@ func ParseHostnameDot(short, origin string) (string, error) {
 		return short, nil
 	}
 
-	// if subdomain != "" {
-	// 	// If D_EXTEND() is in use...
-	// 	if short == "" || short == "@" {
-	// 		return (subdomain + "." + origin + "."), nil
-	// 	}
-	// 	return (short + "." + subdomain + "." + origin + "."), nil
-	// }
+	if subdomain != "" {
+		// If D_EXTEND() is in use...
+		if short == "" || short == "@" {
+			return (subdomain + "." + origin + "."), nil
+		}
+		return (short + "." + subdomain + "." + origin + "."), nil
+	}
 
 	if short == "@" {
 		return (origin + "."), nil
@@ -125,11 +125,11 @@ func ParseHostnameDot(short, origin string) (string, error) {
 }
 
 // ParseHostnameDotNullIsDot is like ParseHostnameDot but returns "." if short is empty.
-func ParseHostnameDotNullIsDot(short, origin string) (string, error) {
+func ParseHostnameDotNullIsDot(short, subdomain, origin string) (string, error) {
 	if short == "" {
 		return ".", nil
 	}
-	return ParseHostnameDot(short, origin)
+	return ParseHostnameDot(short, subdomain, origin)
 }
 
 // IPv4 is an IPv4 address.

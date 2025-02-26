@@ -90,10 +90,10 @@
         },
         {
           "Fields": {
-            "Target": "l.ssub.domain.tld."
+            "Target": "l.domain.tld."
           },
           "name": "k.ssub",
-          "target": "l.ssub.domain.tld.",
+          "target": "l.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
@@ -117,10 +117,10 @@
         },
         {
           "Fields": {
-            "Target": "i.ub.domain.tld."
+            "Target": "i.domain.tld."
           },
           "name": "h.ub",
-          "target": "i.ub.domain.tld.",
+          "target": "i.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         }

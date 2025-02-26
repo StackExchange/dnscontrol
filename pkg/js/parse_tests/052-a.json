@@ -36,19 +36,19 @@
         },
         {
           "Fields": {
-            "A": "5.5.5.5"
+            "A": "4.4.4.4"
           },
-          "name": "sub",
-          "target": "5.5.5.5",
+          "name": "ewww",
+          "target": "4.4.4.4",
           "ttl": 300,
           "type": "A"
         },
         {
           "Fields": {
-            "A": "4.4.4.4"
+            "A": "5.5.5.5"
           },
-          "name": "ewww",
-          "target": "4.4.4.4",
+          "name": "sub",
+          "target": "5.5.5.5",
           "ttl": 300,
           "type": "A"
         },

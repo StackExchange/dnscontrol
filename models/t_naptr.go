@@ -6,30 +6,6 @@ import (
 	"strings"
 )
 
-// SetTargetNAPTR sets the NAPTR fields.
-func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags string, service string, regexp string, target string) error {
-	if target == "" {
-		target = "."
-	}
-	rc.NaptrOrder = order
-	rc.NaptrPreference = preference
-	rc.NaptrFlags = flags
-	rc.NaptrService = service
-	rc.NaptrRegexp = regexp
-	if err := rc.SetTarget(target); err != nil {
-		return err
-	}
-
-	if rc.Type == "" {
-		rc.Type = "NAPTR"
-	}
-	if rc.Type != "NAPTR" {
-		panic("assertion failed: SetTargetNAPTR called when .Type is not NAPTR")
-	}
-
-	return nil
-}
-
 // SetTargetNAPTRStrings is like SetTargetNAPTR but accepts strings.
 func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, service string, regexp string, target string) error {
 	i64order, err := strconv.ParseUint(order, 10, 16)

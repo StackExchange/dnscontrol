@@ -216,9 +216,12 @@ func mkComparableExpr(fields []Field) string {
 			continue
 		}
 		switch {
-		case HasTagOption(field.Tags, "dns", "a"), HasTagOption(field.Tags, "dns", "aaaa"):
+		case HasTagOption(field.Tags, "dns", "a"):
 			fl = append(fl, `"%s"`)
 			al = append(al, "f."+field.Name)
+		// case HasTagOption(field.Tags, "dns", "aaaa"):
+		// 	fl = append(fl, `"%s"`)
+		// 	al = append(al, "f."+field.Name)
 		case HasTagOption(field.Tags, "dnscontrol", "anyascii"):
 			fl = append(fl, "%q")
 			al = append(al, "f."+field.Name)
@@ -230,7 +233,6 @@ func mkComparableExpr(fields []Field) string {
 			al = append(al, "f."+field.Name)
 		default:
 			fl = append(fl, "%v")
-			//fl = append(fl, fmt.Sprintf("%%v(%s)", field.Type))
 			al = append(al, "f."+field.Name)
 		}
 	}
@@ -446,10 +448,10 @@ func mkParser(i int, f Field) string {
 	case "string":
 		//fmt.Printf("DEBUG: parserFor(%d, %+v) ... %v\n", i, f, HasTagOption(f.Tags, "dns", "cdomain-name"))
 		if HasTagOption(f.Tags, "dnscontrol", "empty_becomes_dot") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDotNullIsDot(rawfields[%d], origin)`, i)
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDotNullIsDot(rawfields[%d], subdomain, origin)`, i)
 		}
 		if HasTagOption(f.Tags, "dns", "cdomain-name") || HasTagOption(f.Tags, "dns", "domain-name") {
-			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], origin)`, i)
+			return fmt.Sprintf(`fieldtypes.ParseHostnameDot(rawfields[%d], subdomain, origin)`, i)
 		}
 		if HasTagOption(f.Tags, "dnscontrol", "alllower") {
 			return fmt.Sprintf(`fieldtypes.ParseStringTrimmedAllLower(rawfields[%d])`, i)
@@ -507,7 +509,7 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 
 	// Parse the remaining fields.
 	{{- if .NoLabel }}
-	rdata, err := Parse{{ .Name }}(rawfields, "", rc.SubDomain, origin)
+	rdata, err := Parse{{ .Name }}(rawfields, rc.SubDomain, origin)
 	{{- else }}
 	rdata, err := Parse{{ .Name }}(rawfields[1:], rc.SubDomain, origin)
 	{{- end }}

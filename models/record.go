@@ -317,10 +317,6 @@ func (rc *RecordConfig) SetLabel3(short, subdomain, origin string) error {
 	}
 	rc.Name = label
 	rc.NameFQDN = labelFQDN
-	if origin != "" {
-		// We have consumed the SubDomain, so clear it.
-		rc.SubDomain = ""
-	}
 	return nil
 }
 
