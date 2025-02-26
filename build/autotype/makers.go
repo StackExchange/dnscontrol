@@ -165,7 +165,7 @@ func (rc *RecordConfig) Seal() error {
 	case "{{ .Name }}":
 		f := rc.Fields.(*{{ .Name }})
 		rc.target = f.AAAA.String()
-		rc.Comparable = fmt.Sprintf("%s", f.AAAA.String())
+		rc.Comparable = f.AAAA.String()
 	{{- else if .Config.ConstructFromLegacyFields }}
 	case "{{ .Name }}":
 		f := rc.Fields.(*{{ .Name }})
@@ -200,7 +200,7 @@ func (rc *RecordConfig) Seal() error {
 `))
 
 func mkComparableExpr(fields []Field) string {
-	//fmt.Printf("DEBUG: mkComparableExpr(%+v)\n", fields)
+	//fmt.Printf("DEBUG: mkComparableExpr(%+v) type=%v\n", fields, fields[0].Type)
 
 	// Single field that is a string, return it.
 	if len(fields) == 1 && fields[0].Type == "string" {
@@ -211,11 +211,10 @@ func mkComparableExpr(fields []Field) string {
 	var fl []string
 	var al []string
 	for _, field := range fields {
-		fmt.Printf("DEBUG: field = %+v\n", field)
-		if HasTagOption(field.Tags, "dnscontrol", "noinput") {
-			continue
-		}
+		//fmt.Printf("DEBUG: field = %+v\n", field)
 		switch {
+		case HasTagOption(field.Tags, "dnscontrol", "noinput"):
+			continue
 		case HasTagOption(field.Tags, "dns", "a"):
 			fl = append(fl, `"%s"`)
 			al = append(al, "f."+field.Name)
