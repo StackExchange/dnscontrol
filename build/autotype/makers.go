@@ -165,7 +165,7 @@ func (rc *RecordConfig) Seal() error {
 	case "{{ .Name }}":
 		f := rc.Fields.(*{{ .Name }})
 		rc.target = f.AAAA.String()
-		rc.Comparable = f.AAAA.String()
+		rc.Comparable = rc.target
 	{{- else if .Config.ConstructFromLegacyFields }}
 	case "{{ .Name }}":
 		f := rc.Fields.(*{{ .Name }})

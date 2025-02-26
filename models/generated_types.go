@@ -122,7 +122,7 @@ func (rc *RecordConfig) Seal() error {
 	case "AAAA":
 		f := rc.Fields.(*AAAA)
 		rc.target = f.AAAA.String()
-		rc.Comparable = f.AAAA.String()
+		rc.Comparable = rc.target
 	case "SRV":
 		f := rc.Fields.(*SRV)
 		rc.SrvPriority = f.Priority
