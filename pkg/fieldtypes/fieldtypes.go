@@ -62,6 +62,8 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 		return "FAIL6", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
 	}
 
+	// This is required because NS(REV("1.2.3.4", ...) returns
+	// "3.2.1.in-addr.arpa" (no trailing dot) but we need to treat it like a FQDN.
 	if strings.HasSuffix(short, ".in-addr.arpa") || strings.HasSuffix(short, ".ip6.arpa") {
 		if strings.HasSuffix(short, "."+origin) {
 			r1, r2 := short[0:len(short)-len(origin)-1], short
