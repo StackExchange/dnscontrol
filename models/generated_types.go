@@ -558,35 +558,21 @@ func ParsePTR(rawfields []string, subdomain, origin string) (PTR, error) {
 func PopulateFromRawPTR(rc *RecordConfig, rawfields []string, meta map[string]string, subdomain, origin string) error {
 	rc.Type = "PTR"
 
+	// First rawfield is the label.
 	label := rawfields[0]
-	//fmt.Printf("DEBUG: RawPTR: called label=%s subdomain=%s origin=%s\n", label, subdomain, origin)
+	// Activate PTR Magic!  (if the label looks like an IP address, REV() it)
 	if _, err := netip.ParseAddr(label); err == nil {
 		// Label is an IP address.
-		subdomain = "" // PtrMagic mode matches the origin properly, thus subdomain is no longer relevant.
 		var err error
 		label, err = transform.PtrNameMagic(label, origin)
 		if err != nil {
-			//fmt.Printf("DEBUG: RawPTR: err %v\n", err)
 			return err
 		}
-		//fmt.Printf("DEBUG: RawPTR: step1 %s\n", label)
+		subdomain = "" // subdomain is no longer relevant if we replace the label.
 	}
-	//fmt.Printf("DEBUG: RawPTR: SetLabel3(%q, %q, %q)\n", label, subdomain, origin)
-
-	// First rawfield is the label.
 	if err := rc.SetLabel3(label, subdomain, origin); err != nil {
 		return err
 	}
-	// {
-	// 	fmt.Printf("DEBUG: RawPTR: called %s %s\n", rc.NameFQDN, origin)
-	// 	if name, err := transform.PtrNameMagic(rc.NameFQDN, origin); err != nil {
-	// 		return err
-	// 	} else {
-	// 		fmt.Printf("DEBUG: RawPTR: step1 %s\n", name)
-	// 		rc.SetLabel(name, origin)
-	// 	}
-	// 	fmt.Printf("DEBUG: RawPTR: result %s %s\n", rc.Name, rc.NameFQDN)
-	// }
 
 	// Parse the remaining fields.
 	rdata, err := ParsePTR(rawfields[1:], subdomain, origin)

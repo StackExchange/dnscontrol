@@ -60,9 +60,11 @@ package models
 
 import (
 	"fmt"
+	"net/netip"
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/fieldtypes"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/qdm12/reprint"
 )
 
@@ -464,8 +466,27 @@ func PopulateFromRaw{{ .Name }}(rc *RecordConfig, rawfields []string, meta map[s
 	rc.TTL = 1
 	{{- end }}
 
+	{{ if eq .Name "PTR" }}
+	// First rawfield is the label.
+	label := rawfields[0]
+	// Activate PTR Magic!  (if the label looks like an IP address, REV() it)
+	if _, err := netip.ParseAddr(label); err == nil {
+		// Label is an IP address.
+		var err error
+		label, err = transform.PtrNameMagic(label, origin)
+		if err != nil {
+			return err
+		}
+		subdomain = "" // subdomain is no longer relevant if we replace the label.
+	}
+	{{- end }}
+
+	{{- if eq .Name "PTR" }}
+	if err := rc.SetLabel3(label, subdomain, origin); err != nil {
+	{{- else }}
 	// First rawfield is the label.
 	if err := rc.SetLabel3(rawfields[0], subdomain, origin); err != nil {
+	{{- end }}
 		return err
 	}
 
