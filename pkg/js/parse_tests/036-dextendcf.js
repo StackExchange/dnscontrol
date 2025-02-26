@@ -1,3 +1,4 @@
+// This tests D_EXTEND() when used with Cloudflare special types.
 var REG = NewRegistrar("Third-Party", "NONE");
 var CF = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
 

@@ -10,7 +10,6 @@ import (
 
 // ParseLabel3 returns a short name and FQDN given 3 components: short name, subdomain, and origin.
 func ParseLabel3(short, subdomain, origin string) (string, string, error) {
-	//fmt.Printf("DEBUG: ParseLabel3: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -62,12 +61,13 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 		return "FAIL6", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
 	}
 
-	// This is required because NS(REV("1.2.3.4", ...) returns
-	// "3.2.1.in-addr.arpa" (no trailing dot) but we need to treat it like a FQDN.
+	// Treat *.in-addr.arpa as a FQDN even though it lacks a trailing dot.
+	// This is required because REV("1.2.3.4") returns "3.2.1.in-addr.arpa" (no
+	// trailing dot), but we want to be able to use it as a label.
+	// For example, NS(REV("1.2.3.4), "ns.example.com.").
 	if strings.HasSuffix(short, ".in-addr.arpa") || strings.HasSuffix(short, ".ip6.arpa") {
 		if strings.HasSuffix(short, "."+origin) {
 			r1, r2 := short[0:len(short)-len(origin)-1], short
-			//fmt.Printf("DEBUG: ParseLabel3: ARPA %q %q\n", r1, r2)
 			return r1, r2, nil
 		}
 		return "FAIL7", "", fmt.Errorf("shortrev (%s) must end with (%s)", short, origin)
@@ -96,7 +96,6 @@ func lastCharIs(s string, c rune) bool {
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 // FYI: This calls ToLower on short. After this, we can always assume .target (or whatever) is lowercase.
 func ParseHostnameDot(short, subdomain, origin string) (string, error) {
-	//fmt.Printf("DEBUG: ParseHostnameDot: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -127,7 +126,6 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 			return (subdomain + "." + origin + "."), nil
 		}
 		result := short + "." + subdomain + "." + origin + "."
-		//fmt.Printf("DEBUG: ParseHostnameDot: result=%q\n", result)
 		return result, nil
 	}
 
@@ -136,7 +134,6 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 	}
 
 	result := short + "." + origin + "."
-	//fmt.Printf("DEBUG: ParseHostnameDot: result=%q\n", result)
 	return result, nil
 }
 
@@ -217,7 +214,6 @@ func ParseIPv6(raw string) (IPv6, error) {
 }
 
 func (aaaa *IPv6) String() string {
-	//return fmt.Sprintf("%d.%d.%d.%d", a[0], a[1], a[2], a[3])
 	addr, _ := netip.AddrFromSlice(aaaa[:])
 	return addr.String()
 }

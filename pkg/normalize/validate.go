@@ -423,6 +423,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// We normalize them to a FQDN so there is less variation to handle.  If a
 				// provider API requires a shortname, the provider must do the shortening.
 				origin := domain.Name + "."
+				// D_EXTEND()'s .SubDomain used to be processed at this level. It is now processed at the rawrecords.go level.
 				// if rec.SubDomain != "" {
 				// 	origin = rec.SubDomain + "." + origin
 				// }

@@ -218,9 +218,6 @@ func mkComparableExpr(fields []Field) string {
 		case HasTagOption(field.Tags, "dns", "a"):
 			fl = append(fl, `"%s"`)
 			al = append(al, "f."+field.Name)
-		// case HasTagOption(field.Tags, "dns", "aaaa"):
-		// 	fl = append(fl, `"%s"`)
-		// 	al = append(al, "f."+field.Name)
 		case HasTagOption(field.Tags, "dnscontrol", "anyascii"):
 			fl = append(fl, "%q")
 			al = append(al, "f."+field.Name)
@@ -317,46 +314,9 @@ func mkTargetField(fields []Field) (string, string) {
 		}
 	}
 
-	// Really? No target field?  Use the last field.
+	// Default to the last field.
 	return fields[len(fields)-1].Name, fields[len(fields)-1].LegacyName
 }
-
-// // SetTarget
-
-// // makeSetTarget generates the function that sets the last field of a record type.
-// // Makes: `models/generated_types.go` func SetTarget
-// func makeSetTarget(vals Values) []byte {
-// 	return valuesTemplate(importSetTargetTmpl, vals)
-// }
-
-// var importSetTargetTmpl = template.Must(template.New("SetTarget").Parse(`
-// // SetTarget sets the target, assuming that the rtype is appropriate.
-// func (rc *RecordConfig) SetTarget(s string) error {
-// 	// Legacy
-// 	rc.target = s
-
-// 	switch rc.Type { // #rtype_variations
-// {{- range .TypeNamesAndFields -}}
-// 	{{- if eq .Config.ConstructFromLegacyFields "IP" }}
-// 	case "A":
-// 		return rc.SetTargetA(s)
-// 	{{- else }}
-// 	case "{{ .Name }}":
-// 		// COUNT={{- .Config.NumRawFields }}
-// 		{{- if ne .Config.NumRawFields 1 }}
-// 		if rc.Fields == nil {
-// 			return rc.SetTarget{{ .Name }}(rc.{{ .Config.LegacyTargetField }}, s)
-// 		}
-// 		{{- end }}
-// 		f := rc.As{{ .Name }}()
-// 		return rc.SetTarget{{ .Name }}(f.{{ .Config.TargetField }}, s)
-// 	{{- end }}
-// {{- end }}
-// 	}
-// 	return nil
-// `))
-
-// mkTargetField() defined above
 
 // PopulateFromFields
 
@@ -408,6 +368,9 @@ func makeParseTYPE(rtconfig RTypeConfig) []byte {
 }
 
 var ParseTYPETmpl = template.Must(template.New("ParseTYPE").Parse(`
+// Parse{{ .Name }} parses rawfields into an {{ .Name }} struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func Parse{{ .Name }}(rawfields []string, subdomain, origin string) ({{ .Name }}, error) {
 
 	// Error checking

@@ -1,3 +1,4 @@
+// This tests D_EXTEND() in reverse and forward domains.
 var REGISTRAR = NewRegistrar("none", "NONE"); // No registrar.
 var BIND = NewDnsProvider("bind", "BIND");
 

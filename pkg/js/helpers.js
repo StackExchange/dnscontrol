@@ -175,7 +175,6 @@ function INCLUDE(name) {
 // D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
-    console.log(domain);
     if (domain == null) {
         throw (
             name +
@@ -186,8 +185,6 @@ function D_EXTEND(name) {
         0,
         name.length - domain.obj.name.length - 1
     );
-    console.log("DEBUG: three=", domain.obj.name, name, name.length, domain.obj.name.length);
-    console.log("DEBUG: GLOBAL=", global_currentExtendSubDomain);
     domain.obj.subdomain = global_currentExtendSubDomain;
     // global_currentExtendSubDomain is used by RawRecords. (new)
     // domain.obj.subdomain is used by recordBuilder(). (legacy)

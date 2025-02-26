@@ -1,3 +1,5 @@
+// This tests MX records.
+// This tests D_EXTEND()'s ability to generate proper labels and targets.
 var REG = NewRegistrar("Third-Party", "NONE");
 var CF = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
 

@@ -5,7 +5,9 @@ D("foo.com", "none",
     CAA("@", "issuewild", ";"),
     // Report all violation to test@example.com. If CA does not support
     // this record then refuse to issue any certificate
-    CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL, { foo: "bar2" } ),
+    CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL, {
+        foo: "bar2"
+    }),
     // Optionally report violation to http://example.com
     CAA("@", "iodef", "http://example.com"),
     // Report violation to https://example.com

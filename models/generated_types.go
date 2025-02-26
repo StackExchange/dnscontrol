@@ -312,6 +312,9 @@ type A struct {
 	A fieldtypes.IPv4 `dns:"a"`
 }
 
+// ParseA parses rawfields into an A struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseA(rawfields []string, subdomain, origin string) (A, error) {
 
 	// Error checking
@@ -379,6 +382,9 @@ type NS struct {
 	Ns string `dns:"cdomain-name"`
 }
 
+// ParseNS parses rawfields into an NS struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseNS(rawfields []string, subdomain, origin string) (NS, error) {
 
 	// Error checking
@@ -442,6 +448,9 @@ type CNAME struct {
 	Target string `dns:"cdomain-name"`
 }
 
+// ParseCNAME parses rawfields into an CNAME struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseCNAME(rawfields []string, subdomain, origin string) (CNAME, error) {
 
 	// Error checking
@@ -506,6 +515,9 @@ type MX struct {
 	Mx         string `dns:"cdomain-name"`
 }
 
+// ParseMX parses rawfields into an MX struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseMX(rawfields []string, subdomain, origin string) (MX, error) {
 
 	// Error checking
@@ -573,6 +585,9 @@ type AAAA struct {
 	AAAA fieldtypes.IPv6 `dns:"aaaa"`
 }
 
+// ParseAAAA parses rawfields into an AAAA struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseAAAA(rawfields []string, subdomain, origin string) (AAAA, error) {
 
 	// Error checking
@@ -643,6 +658,9 @@ type SRV struct {
 	Target   string `json:"target" dns:"domain-name"`
 }
 
+// ParseSRV parses rawfields into an SRV struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseSRV(rawfields []string, subdomain, origin string) (SRV, error) {
 
 	// Error checking
@@ -723,6 +741,9 @@ type NAPTR struct {
 	Replacement string `dnscontrol:"_,empty_becomes_dot"`
 }
 
+// ParseNAPTR parses rawfields into an NAPTR struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseNAPTR(rawfields []string, subdomain, origin string) (NAPTR, error) {
 
 	// Error checking
@@ -809,6 +830,9 @@ type DS struct {
 	Digest     string `dnscontrol:"_,target,alllower"`
 }
 
+// ParseDS parses rawfields into an DS struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseDS(rawfields []string, subdomain, origin string) (DS, error) {
 
 	// Error checking
@@ -887,6 +911,9 @@ type DNSKEY struct {
 	PublicKey string `dns:"base64"`
 }
 
+// ParseDNSKEY parses rawfields into an DNSKEY struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseDNSKEY(rawfields []string, subdomain, origin string) (DNSKEY, error) {
 
 	// Error checking
@@ -964,6 +991,9 @@ type CAA struct {
 	Value string `dnscontrol:"_,anyascii"`
 }
 
+// ParseCAA parses rawfields into an CAA struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseCAA(rawfields []string, subdomain, origin string) (CAA, error) {
 
 	// Error checking
@@ -1050,6 +1080,9 @@ type CFSINGLEREDIRECT struct {
 	PRDisplay        string `json:"pr_display" dnscontrol:"_,noraw,parsereturnunknowable,noinput"`
 }
 
+// ParseCFSINGLEREDIRECT parses rawfields into an CFSINGLEREDIRECT struct.
+// subdomain should be "" unless this function is being called by the process that turns dnsconfig.js into the "desired" list.
+// Setting origin to "" activates a legacy mode that will go away when the SetTarget*() functions are removed.
 func ParseCFSINGLEREDIRECT(rawfields []string, subdomain, origin string) (CFSINGLEREDIRECT, error) {
 
 	// Error checking
