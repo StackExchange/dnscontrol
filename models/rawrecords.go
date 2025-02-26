@@ -65,18 +65,22 @@ func TransformRawRecords(domains []*DomainConfig) error {
 
 	for _, dc := range domains {
 
+		// fmt.Printf("DEBUG: TransformRawRecords: rawRecords=%+v\n", dc.RawRecords)
+
 		for _, rawRec := range dc.RawRecords {
+			// fmt.Printf("DEBUG: TransformRawRecords: record=%+v\n", rawRec)
 
 			if rawRec.TTL == 0 {
 				rawRec.TTL = dc.DefaultTTL
 			}
 
 			rec := &RecordConfig{
-				Type:      rawRec.Type,
-				TTL:       rawRec.TTL,
-				SubDomain: rawRec.SubDomain,
-				Metadata:  map[string]string{},
+				Type:     rawRec.Type,
+				TTL:      rawRec.TTL,
+				Metadata: map[string]string{},
 			}
+			subdomain := rawRec.SubDomain
+			// fmt.Printf("DEBUG: TransformRawRecords: subdomain=%v\n", subdomain)
 
 			// Copy the metadata (convert values to string)
 			//fmt.Printf("DEBUG: TransformRawRecords: %v\n", rawRec.Metadata)
@@ -97,8 +101,7 @@ func TransformRawRecords(domains []*DomainConfig) error {
 				return fmt.Errorf("unknown (TRR) rtype %q", rawRec.Type)
 			}
 
-			subdomain := rec.SubDomain
-			rec.SubDomain = ""
+			// fmt.Printf("DEBUG: TransformRawRecords: rec=%v subdomain=%v args=%v\n", rec, subdomain, rawRec.Args)
 			err := rt.PopulateFromRaw(rec, rawRec.Args, rec.Metadata, subdomain, dc.Name)
 			if err != nil {
 				return fmt.Errorf("%s (label=%q, zone=%q args=%v) record error: %w",

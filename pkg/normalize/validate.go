@@ -423,9 +423,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// We normalize them to a FQDN so there is less variation to handle.  If a
 				// provider API requires a shortname, the provider must do the shortening.
 				origin := domain.Name + "."
-				if rec.SubDomain != "" {
-					origin = rec.SubDomain + "." + origin
-				}
+				// if rec.SubDomain != "" {
+				// 	origin = rec.SubDomain + "." + origin
+				// }
 				if err := rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin)); err != nil {
 					errs = append(errs, err)
 				}

@@ -2,12 +2,12 @@ var REGISTRAR = NewRegistrar("none", "NONE"); // No registrar.
 var BIND = NewDnsProvider("bind", "BIND");
 
 // Delegating reverse zones
-D(REV("1.3.0.0/16"), REGISTRAR,
+D(REV("9.8.0.0/16"), REGISTRAR,
     DnsProvider(BIND),
-    NS(REV("1.3.1.0/24"), "ns1.example.com."),
+    NS(REV("9.8.2.1"), "ns1.example.com."),
 );
-D_EXTEND(REV("1.3.2.0/24"),
-    NS(REV("1.3.2.0/24"), "ns2.example.org."),
+D_EXTEND(REV("9.8.7.0/24"),
+    NS(REV("9.8.7.6"), "ns2.example.org."),
 );
 
 // Forward zone

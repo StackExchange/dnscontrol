@@ -10,10 +10,10 @@ import (
 
 // ParseLabel3 returns a short name and FQDN given 3 components: short name, subdomain, and origin.
 func ParseLabel3(short, subdomain, origin string) (string, string, error) {
-	fmt.Printf("DEBUG: ParseLabel3: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
+	//fmt.Printf("DEBUG: ParseLabel3: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
-	if strings.HasSuffix(origin, ".") && !strings.HasSuffix(origin, ".arpa.") {
+	if strings.HasSuffix(origin, ".") {
 		return "FAIL1", "", fmt.Errorf("originPL3 (%s) is not supposed to end with a dot", origin)
 	}
 	if strings.ToLower(origin) != origin {
@@ -62,6 +62,15 @@ func ParseLabel3(short, subdomain, origin string) (string, string, error) {
 		return "FAIL6", "", fmt.Errorf("short2 (%s) must end with (%s.)", short, origin)
 	}
 
+	if strings.HasSuffix(short, ".in-addr.arpa") || strings.HasSuffix(short, ".ip6.arpa") {
+		if strings.HasSuffix(short, "."+origin) {
+			r1, r2 := short[0:len(short)-len(origin)-1], short
+			//fmt.Printf("DEBUG: ParseLabel3: ARPA %q %q\n", r1, r2)
+			return r1, r2, nil
+		}
+		return "FAIL7", "", fmt.Errorf("shortrev (%s) must end with (%s)", short, origin)
+	}
+
 	if subdomain != "" {
 		// If D_EXTEND() is in use...
 		if short == "" || short == "@" {
@@ -85,7 +94,7 @@ func lastCharIs(s string, c rune) bool {
 // FYI: "." is a valid hostname for MX and SRV records. Therefore they are permitted.
 // FYI: This calls ToLower on short. After this, we can always assume .target (or whatever) is lowercase.
 func ParseHostnameDot(short, subdomain, origin string) (string, error) {
-	fmt.Printf("DEBUG: ParseHostnameDot: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
+	//fmt.Printf("DEBUG: ParseHostnameDot: short=%q subdomain=%q origin=%q\n", short, subdomain, origin)
 
 	// Make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
@@ -116,7 +125,7 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 			return (subdomain + "." + origin + "."), nil
 		}
 		result := short + "." + subdomain + "." + origin + "."
-		fmt.Printf("DEBUG: ParseHostnameDot: result=%q\n", result)
+		//fmt.Printf("DEBUG: ParseHostnameDot: result=%q\n", result)
 		return result, nil
 	}
 
@@ -124,7 +133,9 @@ func ParseHostnameDot(short, subdomain, origin string) (string, error) {
 		return (origin + "."), nil
 	}
 
-	return (short + "." + origin + "."), nil
+	result := short + "." + origin + "."
+	//fmt.Printf("DEBUG: ParseHostnameDot: result=%q\n", result)
+	return result, nil
 }
 
 // ParseHostnameDotNullIsDot is like ParseHostnameDot but returns "." if short is empty.

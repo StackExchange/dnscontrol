@@ -12,15 +12,15 @@
       },
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "3.1.in-addr.arpa"
+        "dnscontrol_uniquename": "8.9.in-addr.arpa"
       },
-      "name": "3.1.in-addr.arpa",
+      "name": "8.9.in-addr.arpa",
       "records": [
         {
           "Fields": {
             "Ns": "ns1.example.com."
           },
-          "name": "1",
+          "name": "1.2",
           "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
@@ -29,7 +29,7 @@
           "Fields": {
             "Ns": "ns2.example.org."
           },
-          "name": "2.3.1.in-addr.arpa.2",
+          "name": "6.7",
           "target": "ns2.example.org.",
           "ttl": 300,
           "type": "NS"
@@ -67,10 +67,10 @@
         },
         {
           "Fields": {
-            "Ns": "ns1.example.com."
+            "Ns": "ns1.lego.example.com."
           },
           "name": "short.lego",
-          "target": "ns1.example.com.",
+          "target": "ns1.lego.example.com.",
           "ttl": 300,
           "type": "NS"
         }

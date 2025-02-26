@@ -139,9 +139,9 @@ func TestRecordConfig_Copy(t *testing.T) {
 				// Original         interface{},
 			},
 			want: &RecordConfig{
-				Type:             "type",
-				Name:             "name",
-				SubDomain:        "sub",
+				Type: "type",
+				Name: "name",
+				// SubDomain:        "sub",
 				NameFQDN:         "namef",
 				target:           "targette",
 				TTL:              12345,
@@ -181,9 +181,9 @@ func TestRecordConfig_Copy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rc := &RecordConfig{
-				Type:             tt.fields.Type,
-				Name:             tt.fields.Name,
-				SubDomain:        tt.fields.SubDomain,
+				Type: tt.fields.Type,
+				Name: tt.fields.Name,
+				// SubDomain:        tt.fields.SubDomain,
 				NameFQDN:         tt.fields.NameFQDN,
 				target:           tt.fields.target,
 				TTL:              tt.fields.TTL,

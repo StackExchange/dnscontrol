@@ -108,7 +108,7 @@ func TestParseHostnameDot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseHostnameDot(tt.args.short, tt.args.short, tt.args.origin)
+			got, err := ParseHostnameDot(tt.args.short, tt.args.subdomain, tt.args.origin)
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("ParseHostnameDot() error = %v, wantErr %v", err, tt.wantErr)
