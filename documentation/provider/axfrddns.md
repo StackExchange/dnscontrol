@@ -8,6 +8,16 @@ authoritative DNS server. It has been tested with
 [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
 and [Yadifa](https://www.yadifa.eu/home).
 
+## Important
+
+Do not attempt to use the `axfrddns` provider through docker, podman etc.  e.g. 
+
+`podman run --rm -it -v "$(pwd):/dns" ghcr.io/stackexchange/dnscontrol preview ....`
+
+This will fail with `Error: dial tcp: connect: connection refused` messages.
+
+You must run the binary directly on your host.
+
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`.
