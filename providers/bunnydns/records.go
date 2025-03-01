@@ -31,7 +31,6 @@ func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string)
 
 	// Define a list of record types that are currently not supported by this provider.
 	unsupportedTypes := []recordType{
-		recordTypeRedirect,
 		recordTypeFlatten,
 		recordTypePullZone,
 		recordTypeScript,
@@ -60,6 +59,10 @@ func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	// As no TTL can be configured or retrieved for these NS records, we set it to 0 to avoid unnecessary updates.
 	for _, rc := range dc.Records {
 		if rc.Name == "@" && rc.Type == "NS" {
+			rc.TTL = 0
+		}
+
+		if rc.Type == "BUNNY_DNS_RDR" {
 			rc.TTL = 0
 		}
 
