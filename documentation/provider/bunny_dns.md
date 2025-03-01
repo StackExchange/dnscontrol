@@ -68,11 +68,11 @@ those explicitely listed below. Such records will be completely ignored by DNSCo
 
 ### Redirect
 
-You can configure Bunny's Redirect type with `BUNNY_DNS_REDIRECT`:
+You can configure Bunny's Redirect type with `BUNNY_DNS_RDR`:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-    BUNNY_DNS_REDIRECT("@", "https://foo.bar"),
+    BUNNY_DNS_RDR("@", "https://foo.bar"),
 ```
 {% endcode %}
 
