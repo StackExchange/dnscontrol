@@ -1,3 +1,4 @@
+/node_modules/
 /tmp
 /commands/types/dnscontrol.d.ts
 dnscontrol-Darwin

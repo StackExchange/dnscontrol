@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@umbrelladocs/linkspector": "^0.3.13"
+  }
+}
