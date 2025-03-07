@@ -1406,7 +1406,7 @@ var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
-
+var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')
 // x: Decimal X coordinate.
