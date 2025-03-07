@@ -2732,13 +2732,9 @@ declare function REVCOMPAT(rfc: string): string;
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
+ *   SOA("@", "ns3.example.com.", "hostmaster.example.com.", 3600, 600, 604800, 1440),
  * );
  * ```
- *
- * If you accidentally include an `@` in the email field DNSControl will quietly
- * change it to a `.`. This way you can specify a human-readable email address
- * when you are making it easier for spammers how to find you.
  *
  * ## Notes
  * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
