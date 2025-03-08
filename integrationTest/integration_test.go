@@ -288,6 +288,18 @@ func makeTests() []*TestGroup {
 			tc("Change HTTPS all", https("@", 3, "example.com.", "port=100")),
 		),
 
+		testgroup("Ech",
+			requires(providers.CanUseHTTPS),
+			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
+			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),
+			tc("Ignore the ECH key while changing other values", https("@", 1, "example.net.", "port=80 ech=IGNORE")),
+			tc("Should be a no-op", https("@", 1, "example.net.", "port=80 ech=some+base64+encoded+value///")),
+			tc("Change the ECH key and other values", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=another+base64+encoded+value")),
+			tc("Ignore the ECH key while not changing anything", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=IGNORE")),
+			tc("Should be a no-op", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=another+base64+encoded+value")),
+			tc("Another domain with a different ECH value", https("ech", 1, "example.com.", "ech=some+base64+encoded+value///")),
+		),
+
 		testgroup("SVCB",
 			requires(providers.CanUseSVCB),
 			tc("Create a SVCB record", svcb("@", 1, "test.com.", "port=80")),

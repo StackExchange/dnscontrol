@@ -2,6 +2,7 @@ package diff2
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -247,12 +248,38 @@ func humanDiff(a, b targetConfig) string {
 	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
 }
 
+var echRe = regexp.MustCompile(`ech="?([\w+/=]+)"?`)
+
 func diffTargets(existing, desired []targetConfig) ChangeList {
 	// fmt.Printf("DEBUG: diffTargets(\nexisting=%v\ndesired=%v\nDEBUG.\n", existing, desired)
 
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {
 		return nil
+	}
+
+	echs := make(map[string]string)
+	for _, v := range existing {
+		matches := echRe.FindStringSubmatch(v.rec.SvcParams)
+		if len(matches) == 2 {
+			echs[v.rec.NameFQDN] = matches[1]
+		}
+	}
+	for i, v := range desired {
+		if strings.Contains(v.rec.SvcParams, "ech=IGNORE") {
+			var unquoted, quoted string
+			if _, ok := echs[v.rec.NameFQDN]; ok {
+				unquoted = fmt.Sprintf("ech=%s", echs[v.rec.NameFQDN])
+				quoted = fmt.Sprintf("ech=%q", echs[v.rec.NameFQDN])
+			} else {
+				unquoted = ""
+				quoted = ""
+			}
+			v.rec.SvcParams = echRe.ReplaceAllString(v.rec.SvcParams, unquoted)
+			v.comparableFull = echRe.ReplaceAllString(v.comparableFull, quoted)
+			v.comparableNoTTL = echRe.ReplaceAllString(v.comparableNoTTL, quoted)
+		}
+		desired[i] = v
 	}
 
 	var instructions ChangeList
