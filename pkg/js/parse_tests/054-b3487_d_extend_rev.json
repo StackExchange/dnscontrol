@@ -1,10 +1,4 @@
 {
-  "registrars": [
-    {
-      "name": "none",
-      "type": "-"
-    }
-  ],
   "dns_providers": [
     {
       "name": "bind",
@@ -13,8 +7,6 @@
   ],
   "domains": [
     {
-      "name": "6.10.in-addr.arpa",
-      "registrar": "none",
       "dnsProviders": {
         "bind": -1
       },
@@ -22,69 +14,88 @@
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "6.10.in-addr.arpa"
       },
+      "name": "6.10.in-addr.arpa",
       "records": [
         {
-          "type": "PTR",
-          "name": "0.119",
-          "ttl": 300,
-          "target": "ip-10-6-119-0.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "1.119",
-          "subdomain": "0/27.119",
-          "ttl": 300,
-          "target": "ip-10-6-119-1.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "2.119",
-          "ttl": 300,
-          "target": "ip-10-6-119-2.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "3.119",
-          "ttl": 300,
-          "target": "ip-10-6-119-3.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "50.200",
-          "ttl": 300,
-          "target": "ip-10-6-200-50.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "51.200",
-          "ttl": 300,
-          "target": "ip-10-6-200-51.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "52.200",
-          "ttl": 300,
-          "target": "ip-10-6-200-52.example.com."
-        },
-        {
-          "type": "PTR",
-          "name": "53.200",
-          "ttl": 300,
-          "target": "ip-10-6-200-53.example.com."
-        },
-        {
-          "type": "PTR",
           "name": "31.104",
+          "target": "example.site.com.",
           "ttl": 300,
-          "target": "example.site.com."
+          "type": "PTR"
         },
         {
-          "type": "PTR",
           "name": "206.104",
+          "target": "example2.site.com.",
           "ttl": 300,
-          "target": "example2.site.com."
+          "type": "PTR"
+        },
+        {
+          "name": "0.119",
+          "target": "ip-10-6-119-0.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "1.119",
+          "target": "ip-10-6-119-1.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "2.119",
+          "target": "ip-10-6-119-2.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "3.119",
+          "target": "ip-10-6-119-3.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "50.200",
+          "target": "ip-10-6-200-50.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "51.200",
+          "target": "ip-10-6-200-51.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "52.200",
+          "target": "ip-10-6-200-52.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "53.200",
+          "target": "ip-10-6-200-53.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "20.220",
+          "target": "ip-10-6-220-20.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "30.230",
+          "target": "ip-10-6-230-30.example.com.",
+          "ttl": 300,
+          "type": "PTR"
         }
-      ]
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "none",
+      "type": "-"
     }
   ]
 }

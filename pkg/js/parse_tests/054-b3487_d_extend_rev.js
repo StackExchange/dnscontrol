@@ -6,7 +6,6 @@ D("6.10.in-addr.arpa", REG_CHANGEME,
     PTR("206.104", "example2.site.com."),
 );
 
-
 D_EXTEND(REV("10.6.200.0/24"),
     PTR("50", "ip-10-6-200-50.example.com."),
     PTR("51", "ip-10-6-200-51.example.com."),
@@ -19,4 +18,12 @@ D_EXTEND(REV("10.6.119.0/27"),
     PTR("1", "ip-10-6-119-1.example.com."),
     PTR("2", "ip-10-6-119-2.example.com."),
     PTR("3", "ip-10-6-119-3.example.com."),
+)
+
+D_EXTEND("220.6.10.in-addr.arpa",
+    PTR("20", "ip-10-6-220-20.example.com."),
+)
+
+D_EXTEND("230.6.10.in-addr.arpa",
+    PTR("30", "ip-10-6-230-30.example.com."),
 )

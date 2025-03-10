@@ -24,7 +24,6 @@
         },
         {
           "name": "6.7",
-          "subdomain": "7",
           "target": "ns2.example.org.",
           "ttl": 300,
           "type": "NS"
