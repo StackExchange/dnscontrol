@@ -189,10 +189,24 @@ function D_EXTEND(name) {
             ' was not declared yet and therefore cannot be updated. Use D() before.'
         );
     }
+
+    //console.log(
+    //    'DEBUG: D_EXTEND: 1 edom: ' + name + ' found: ' + domain.obj.name
+    //);
+
+    // Handle weird REV() case.
+    if (name.indexOf('/') !== -1) {
+        name = name.substring(name.indexOf('.') + 1);
+    }
+    //console.log(
+    //    'DEBUG: D_EXTEND: 2 edom: ' + name + ' found: ' + domain.obj.name
+    //);
+
     domain.obj.subdomain = name.substr(
         0,
         name.length - domain.obj.name.length - 1
     );
+
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
