@@ -3,7 +3,7 @@ $TTL 300
 2                IN PTR   bar.example.com.
 3                IN PTR   baz.example.com.
 4                IN PTR   silly.example.com.
-5                IN PTR   willy.example.com.
+1.2.3.5.5        IN PTR   willy.example.com.
 6                IN PTR   billy.example.com.
 7                IN PTR   my.example.com.
 8                IN PTR   fair.example.com.

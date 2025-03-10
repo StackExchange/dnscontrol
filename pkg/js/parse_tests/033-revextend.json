@@ -24,6 +24,7 @@
         },
         {
           "name": "6.7",
+          "subdomain": "7",
           "target": "ns2.example.org.",
           "ttl": 300,
           "type": "NS"
@@ -48,14 +49,14 @@
           "type": "NS"
         },
         {
-          "name": "more.lego",
+          "name": "more",
           "subdomain": "lego",
           "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
         },
         {
-          "name": "short.lego",
+          "name": "short",
           "subdomain": "lego",
           "target": "ns1.lego.example.com.",
           "ttl": 300,

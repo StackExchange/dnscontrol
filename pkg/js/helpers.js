@@ -190,17 +190,10 @@ function D_EXTEND(name) {
         );
     }
 
-    //console.log(
-    //    'DEBUG: D_EXTEND: 1 edom: ' + name + ' found: ' + domain.obj.name
-    //);
-
     // Handle weird REV() case.
     if (name.indexOf('/') !== -1) {
         name = name.substring(name.indexOf('.') + 1);
     }
-    //console.log(
-    //    'DEBUG: D_EXTEND: 2 edom: ' + name + ' found: ' + domain.obj.name
-    //);
 
     domain.obj.subdomain = name.substr(
         0,
@@ -1269,7 +1262,11 @@ function recordBuilder(type, opts) {
                 if (record.name == '@') {
                     record.subdomain = d.subdomain;
                     record.name = d.subdomain;
-                } else if (fqdn != record.name && record.type != 'PTR') {
+                } else if (
+                    fqdn != record.name &&
+                    record.type != 'PTR' &&
+                    record.type != 'NS'
+                ) {
                     record.subdomain = d.subdomain;
                     record.name += '.' + d.subdomain;
                 }
