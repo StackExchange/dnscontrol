@@ -1,0 +1,101 @@
+{
+  "dns_providers": [
+    {
+      "name": "bind",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "6.10.in-addr.arpa"
+      },
+      "name": "6.10.in-addr.arpa",
+      "records": [
+        {
+          "name": "31.104",
+          "target": "example.site.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "206.104",
+          "target": "example2.site.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "0.119",
+          "target": "ip-10-6-119-0.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "1.119",
+          "target": "ip-10-6-119-1.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "2.119",
+          "target": "ip-10-6-119-2.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "3.119",
+          "target": "ip-10-6-119-3.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "50.200",
+          "target": "ip-10-6-200-50.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "51.200",
+          "target": "ip-10-6-200-51.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "52.200",
+          "target": "ip-10-6-200-52.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "53.200",
+          "target": "ip-10-6-200-53.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "20.220",
+          "target": "ip-10-6-220-20.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "30.230",
+          "target": "ip-10-6-230-30.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        }
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "none",
+      "type": "-"
+    }
+  ]
+}

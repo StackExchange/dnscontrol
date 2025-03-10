@@ -1,3 +1,5 @@
+// This tests PTR records, REV(), and PTR label magic.
+// This tests D_EXTEND()'s ability to generate proper labels when REV() is used as a label.
 var REGISTRAR = NewRegistrar('none', 'NONE'); // No registrar.
 var BIND = NewDnsProvider('bind', 'BIND');
 
@@ -9,9 +11,9 @@ D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
     }),
 );
 D_EXTEND(REV("1.2.3.4"),
-    PTR("4", "silly.example.com."),
+    PTR("@", "silly.example.com."),
 );
-D_EXTEND(REV("1.2.3.5"),
+D_EXTEND(REV("1.2.3.5/32"),
     PTR("1.2.3.5", "willy.example.com."),
 );
 D_EXTEND(REV("1.2.3.6"),

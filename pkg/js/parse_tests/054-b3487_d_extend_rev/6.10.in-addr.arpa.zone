@@ -1,0 +1,13 @@
+$TTL 300
+31.104           IN PTR   example.site.com.
+206.104          IN PTR   example2.site.com.
+0.119            IN PTR   ip-10-6-119-0.example.com.
+1.119            IN PTR   ip-10-6-119-1.example.com.
+2.119            IN PTR   ip-10-6-119-2.example.com.
+3.119            IN PTR   ip-10-6-119-3.example.com.
+50.200           IN PTR   ip-10-6-200-50.example.com.
+51.200           IN PTR   ip-10-6-200-51.example.com.
+52.200           IN PTR   ip-10-6-200-52.example.com.
+53.200           IN PTR   ip-10-6-200-53.example.com.
+20.220           IN PTR   ip-10-6-220-20.example.com.
+30.230           IN PTR   ip-10-6-230-30.example.com.
