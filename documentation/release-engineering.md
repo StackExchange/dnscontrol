@@ -25,6 +25,7 @@ git checkout main
 git pull
 go fmt ./...
 bin/fmtjson $(find . -type f -name \*.json -print)
+for i in pkg/js/parse_tests/*.js ; do dnscontrol fmt -i $i -o $i ; done
 go generate ./...
 go mod tidy
 git status
