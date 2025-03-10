@@ -297,7 +297,7 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 	if strings.HasSuffix(short, ".") {
 		if short != "**current-domain**" {
-			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", short))
 		}
 	}
 
