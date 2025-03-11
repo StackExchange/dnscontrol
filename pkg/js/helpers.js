@@ -12,6 +12,13 @@
 // debugging/developing this code, it may be faster to specify the
 // -dev file to have helpers.js read from the file instead.
 
+// If this javascript interpreter doesn't have a .endsWith() function on strings, add one.
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -58,7 +65,7 @@ function NewRegistrar() {
                 return oldNewRegistrar(arguments[0], '-', arguments[1]);
             }
             break;
-        default: // le
+        default: // do nothing
     }
     return oldNewRegistrar.apply(null, arguments);
 }
@@ -1146,12 +1153,6 @@ function getModifiers(args, start) {
         mods.push(args[i]);
     }
     return mods;
-}
-
-if (typeof String.prototype.endsWith !== 'function') {
-    String.prototype.endsWith = function (suffix) {
-        return this.indexOf(suffix, this.length - suffix.length) !== -1;
-    };
 }
 
 /**
