@@ -199,6 +199,7 @@ function D_EXTEND(name) {
         0,
         name.length - domain.obj.name.length - 1
     );
+    //console.log( "DEBUG: SUBDOMAIN: name='" + name + "' dom='" + domain.obj.name + "' RESULT sub='" + domain.obj.subdomain + "'");
 
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
@@ -1148,6 +1149,12 @@ function getModifiers(args, start) {
     return mods;
 }
 
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 /**
  * Record type builder
  * @param {string} type Record type
@@ -1249,6 +1256,7 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
+            // Fix the labels.  (Fixing targets is done in pkg/normalize/validate.go)
             if (
                 d.subdomain &&
                 record.type != 'CF_SINGLE_REDIRECT' &&
@@ -1256,19 +1264,28 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE'
             ) {
-                fqdn = [d.subdomain, d.name].join('.');
+                //fqdn = [d.subdomain, d.name].join('.');
+                //console.log("DEBUG: FIXLABEL: name='" + record.name + "' sub='" + d.subdomain + "' fqdn='" + fqdn + "'");
+                //console.log( "DEBUG: FIXLABEL: name='" + record.name + "' sub='" + d.subdomain + "'");
 
                 record.subdomain = d.subdomain;
+
+                // @ sub dom                  ->   sub sub
+                // one two dom                ->   one.two
+                // 4.3.2.1.in-addr.arpa 4.3   ->   4.3 2.1.in-addr.arpa
+                // 1.2.3.4  sub               ->   1.2.3.4 sub
+
                 if (record.name == '@') {
-                    record.subdomain = d.subdomain;
                     record.name = d.subdomain;
-                } else if (
-                    fqdn != record.name &&
-                    record.type != 'PTRx' &&
-                    record.type != 'NSx'
-                ) {
-                    record.subdomain = d.subdomain;
-                    record.name += '.' + d.subdomain;
+                } else if (record.name.endsWith('.in-addr.arpa')) {
+                    if (record.name.endsWith(d.subdomain)) {
+                        record.name = record.name.slice(
+                            0,
+                            -d.subdomain.length - 1
+                        );
+                    }
+                } else {
+                    record.name = record.name + '.' + d.subdomain;
                 }
             }
 

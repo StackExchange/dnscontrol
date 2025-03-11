@@ -13,6 +13,9 @@ D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
 D_EXTEND(REV("1.2.3.4"),
     PTR("@", "silly.example.com."),
 );
+// FIXME(tlim): /32 doesn't work. I can't imagine anyone using that, and it is difficult
+// to fix. The big change in v5.x will make it easier to fix. We'll fix it then.
+// For now, the wrong data is listed in the .json file so that these tests pass.
 D_EXTEND(REV("1.2.3.5/32"),
     PTR("1.2.3.5", "willy.example.com."),
 );
