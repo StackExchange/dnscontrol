@@ -23,12 +23,10 @@ git commit -a -m "CHORE: Update dependencies"
 ```shell
 git checkout main
 git pull
-go fmt ./...
-bin/fmtjson $(find . -type f -name \*.json -print)
-for i in pkg/js/parse_tests/*.js ; do dnscontrol fmt -i $i -o $i ; done
-go generate ./...
-go mod tidy
+git checkout -b generate
+bin/generate-all.sh
 git status
+git commit -a -m "CHORE: generate-all.sh"
 ```
 
 There should be no modified files. If there are, check them in then start over from the beginning:
