@@ -16,7 +16,6 @@ D_EXTEND(REV("1.2.3.4"),
 D_EXTEND(REV("1.2.3.5/32"),
     PTR("1.2.3.5", "willy.example.com."),
 );
-// FIXME(tlim) The 1.2.3.5/32 test case is broken.  The JSON file encodes the bug. Fix this in v5.0
 D_EXTEND(REV("1.2.3.6"),
     PTR(REV("1.2.3.6"), "billy.example.com."),
 );

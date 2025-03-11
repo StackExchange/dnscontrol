@@ -799,15 +799,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-              ? 42849672.95
-              : args.alt.toString()) + 'm';
+                ? 42849672.95
+                : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-              ? 0
-              : args.siz.toString()) +
+                ? 0
+                : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -847,8 +847,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-              ? 0
-              : record.localtitude;
+                ? 0
+                : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -1264,8 +1264,8 @@ function recordBuilder(type, opts) {
                     record.name = d.subdomain;
                 } else if (
                     fqdn != record.name &&
-                    record.type != 'PTR' &&
-                    record.type != 'NS'
+                    record.type != 'PTRx' &&
+                    record.type != 'NSx'
                 ) {
                     record.subdomain = d.subdomain;
                     record.name += '.' + d.subdomain;
@@ -1682,7 +1682,7 @@ function CAA_BUILDER(value) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }
 
-    var CAA_TTL = function () {};
+    var CAA_TTL = function () { };
     if (value.ttl) {
         CAA_TTL = TTL(value.ttl);
     }
@@ -1699,7 +1699,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issue_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1708,7 +1708,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuewild) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuewild_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1948,20 +1948,20 @@ function M365_BUILDER(name, value) {
             CNAME(
                 'selector1._domainkey',
                 'selector1-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
         r.push(
             CNAME(
                 'selector2._domainkey',
                 'selector2-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
     }

@@ -23,7 +23,7 @@
           "type": "NS"
         },
         {
-          "name": "6.7",
+          "name": "6.7.8.9.in-addr.arpa.7",
           "subdomain": "7",
           "target": "ns2.example.org.",
           "ttl": 300,
@@ -49,14 +49,14 @@
           "type": "NS"
         },
         {
-          "name": "more",
+          "name": "more.lego",
           "subdomain": "lego",
           "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
         },
         {
-          "name": "short",
+          "name": "short.lego",
           "subdomain": "lego",
           "target": "ns1.lego.example.com.",
           "ttl": 300,
