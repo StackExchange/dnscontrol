@@ -58,7 +58,7 @@ function NewRegistrar() {
                 return oldNewRegistrar(arguments[0], '-', arguments[1]);
             }
             break;
-        default: // do nothing
+        default: // le
     }
     return oldNewRegistrar.apply(null, arguments);
 }
@@ -199,7 +199,6 @@ function D_EXTEND(name) {
         0,
         name.length - domain.obj.name.length - 1
     );
-    //console.log( "DEBUG: SUBDOMAIN: name='" + name + "' dom='" + domain.obj.name + "' RESULT sub='" + domain.obj.subdomain + "'");
 
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
@@ -1264,10 +1263,6 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE'
             ) {
-                //fqdn = [d.subdomain, d.name].join('.');
-                //console.log("DEBUG: FIXLABEL: name='" + record.name + "' sub='" + d.subdomain + "' fqdn='" + fqdn + "'");
-                //console.log( "DEBUG: FIXLABEL: name='" + record.name + "' sub='" + d.subdomain + "'");
-
                 record.subdomain = d.subdomain;
 
                 // @ sub dom                  ->   sub sub
@@ -1277,6 +1272,8 @@ function recordBuilder(type, opts) {
 
                 if (record.name == '@') {
                     record.name = d.subdomain;
+                } else if (record.name.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    // leave it alone
                 } else if (record.name.endsWith('.in-addr.arpa')) {
                     if (record.name.endsWith(d.subdomain)) {
                         record.name = record.name.slice(

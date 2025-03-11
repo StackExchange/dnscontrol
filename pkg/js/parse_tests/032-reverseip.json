@@ -45,7 +45,7 @@
           "type": "PTR"
         },
         {
-          "name": "1.2.3.5.5",
+          "name": "5",
           "subdomain": "5",
           "target": "willy.example.com.",
           "ttl": 300,
