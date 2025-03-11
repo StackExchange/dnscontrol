@@ -528,6 +528,10 @@ func (rc *RecordConfig) Key() RecordKey {
 
 // GetSVCBValue returns the SVCB Key/Values as a list of Key/Values.
 func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
+	if !strings.Contains(rc.SvcParams, "IGNORE+DNSCONTROL") {
+		rc.SvcParams = strings.ReplaceAll(rc.SvcParams, "ech=IGNORE", "ech=IGNORE+DNSCONTROL+++")
+	}
+
 	record, err := dns.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
 	if err != nil {
 		log.Fatalf("could not parse SVCB record: %s", err)
