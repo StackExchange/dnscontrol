@@ -15,25 +15,18 @@ git checkout -b update_deps
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
 go mod tidy
-git commit -a -m "CHORE: Update dependencies"
+git commit -m "CHORE: Update dependencies" go.sum go.mod
 ```
 
 ## Step 1. Rebuild generated files
 
 ```shell
-git checkout main
-git pull
+git fetch origin main
+git reset --hard origin/main
 git checkout -b generate
 bin/generate-all.sh
 git status
-git commit -a -m "CHORE: generate-all.sh"
-```
-
-There should be no modified files. If there are, check them in then start over from the beginning:
-
-```
-git checkout -b gogenerate
-git commit -a -m "Update generated files"
+git commit -am "CHORE: generate-all.sh"
 ```
 
 ## Step 2. Tag the commit in main that you want to release
