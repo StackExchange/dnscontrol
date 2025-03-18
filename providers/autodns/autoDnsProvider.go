@@ -247,8 +247,11 @@ func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig
 	}
 	rc.SetLabel(record.Name, domain)
 
-	if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
-		return nil, err
+	// special record types are handled below, skip the `rc.PopulateFromString` method
+	if record.Type != "MX" && record.Type != "SRV" {
+		if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
+			return nil, err
+		}
 	}
 
 	if record.Type == "MX" {
