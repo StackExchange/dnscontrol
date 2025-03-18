@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
@@ -25,7 +27,15 @@ type ZoneListRequest struct {
 	Filter []*ZoneListFilter `json:"filters"`
 }
 
+var (
+	// Default retry configuration
+	defaultRetryWait = 3 * time.Second
+	defaultRetryMax  = 4
+)
+
 func (api *autoDNSProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
+	var retryCounter = 0
+
 	client := &http.Client{}
 
 	requestURL := api.baseURL
@@ -43,18 +53,35 @@ func (api *autoDNSProvider) request(method string, requestPath string, data inte
 		request.Body = io.NopCloser(buffer)
 	}
 
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
+	for {
+		response, err := client.Do(request)
+		if err != nil {
+			return nil, err
+		}
+		defer response.Body.Close()
 
-	responseText, _ := io.ReadAll(response.Body)
-	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
+		responseText, _ := io.ReadAll(response.Body)
+
+		if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusTooManyRequests {
+			return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
+		}
+
+		if response.StatusCode == http.StatusOK {
+			return responseText, nil
+		}
+
+		if retryCounter == defaultRetryMax { // the condition stops matching
+			break // break out of the loop
+		}
+
+		retryCounter++
+
+		sleepDuration := time.Duration(math.Pow(2, float64(retryCounter)) * float64(defaultRetryWait))
+
+		time.Sleep(sleepDuration)
 	}
 
-	return responseText, nil
+	return nil, errors.New("Failed to fetch" + requestURL.Path + " after 4 retries")
 }
 
 func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nameserver, error) {
@@ -89,7 +116,12 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	}
 
 	// if resolving of a systemNameServer succeeds the system contains this zone
-	responseData, _ := api.request("GET", "zone/"+domain+"/"+systemNameServer.Name, nil)
+	responseData, err2 := api.request("GET", "zone/"+domain+"/"+systemNameServer.Name, nil)
+
+	if err2 != nil {
+		return nil, err2
+	}
+
 	var responseObject JSONResponseDataZone
 	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
 	unmErr := json.Unmarshal(responseData, &responseObject)
@@ -106,7 +138,11 @@ func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*Resourc
 		return err
 	}
 
-	zone, _ := api.getZone(domain)
+	zone, err2 := api.getZone(domain)
+
+	if err2 != nil {
+		return err2
+	}
 
 	zone.Origin = domain
 	zone.SystemNameServer = systemNameServer.Name
