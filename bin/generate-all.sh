@@ -7,7 +7,7 @@ if [[ -x node_modules/.bin/prettier ]]; then
 fi
 
 # JSON
-bin/fmtjson $(find . -type f -name \*.json -print)
+bin/fmtjson $(find . -type f -name "*.json" ! -name "package-lock.json" -print)
 
 # dnsconfig.js-compatible files:
 for i in pkg/js/parse_tests/*.js ; do dnscontrol fmt -i $i -o $i ; done
