@@ -12,6 +12,13 @@
 // debugging/developing this code, it may be faster to specify the
 // -dev file to have helpers.js read from the file instead.
 
+// If this javascript interpreter doesn't have a .endsWith() function on strings, add one.
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -189,10 +196,17 @@ function D_EXTEND(name) {
             ' was not declared yet and therefore cannot be updated. Use D() before.'
         );
     }
+
+    // Handle weird REV() case.
+    if (name.indexOf('/') !== -1) {
+        name = name.substring(name.indexOf('.') + 1);
+    }
+
     domain.obj.subdomain = name.substr(
         0,
         name.length - domain.obj.name.length - 1
     );
+
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -1242,6 +1256,7 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
+            // Fix the labels.  (Fixing targets is done in pkg/normalize/validate.go)
             if (
                 d.subdomain &&
                 record.type != 'CF_SINGLE_REDIRECT' &&
@@ -1249,15 +1264,26 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE'
             ) {
-                fqdn = [d.subdomain, d.name].join('.');
-
                 record.subdomain = d.subdomain;
+
+                // @ sub dom                  ->   sub sub
+                // one two dom                ->   one.two
+                // 4.3.2.1.in-addr.arpa 4.3   ->   4.3 2.1.in-addr.arpa
+                // 1.2.3.4  sub               ->   1.2.3.4 sub
+
                 if (record.name == '@') {
-                    record.subdomain = d.subdomain;
                     record.name = d.subdomain;
-                } else if (fqdn != record.name && record.type != 'PTR') {
-                    record.subdomain = d.subdomain;
-                    record.name += '.' + d.subdomain;
+                } else if (record.name.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    // leave it alone
+                } else if (record.name.endsWith('.in-addr.arpa')) {
+                    if (record.name.endsWith(d.subdomain)) {
+                        record.name = record.name.slice(
+                            0,
+                            -d.subdomain.length - 1
+                        );
+                    }
+                } else {
+                    record.name = record.name + '.' + d.subdomain;
                 }
             }
 
