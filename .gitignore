@@ -1,3 +1,4 @@
+/node_modules/
 /tmp
 /commands/types/dnscontrol.d.ts
 dnscontrol-Darwin
@@ -28,6 +29,7 @@ stack.sh
 types-dnscontrol.d.ts
 
 dist/
+node_modules/
 
 // Test artifact:
 *.ACTUAL
