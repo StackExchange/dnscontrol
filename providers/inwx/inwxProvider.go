@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nrdcg/goinwx"
@@ -227,56 +227,47 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
-// checkRecords ensures that there is no single-quote inside TXT records which would be ignored by INWX.
-func checkRecords(records models.Records) error {
-	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
-	for _, r := range records {
-		if r.Type == "TXT" {
-			if strings.ContainsAny(r.GetTargetTXTJoined(), "`") {
-				return errors.New("INWX TXT records do not support single-quotes in their target")
-			}
-		}
-	}
-	return nil
-}
-
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
-	err := checkRecords(dc.Records)
+
+	var corrections []*models.Correction
+
+	changes, actualChangeCount, err := diff2.ByRecord(foundRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-
-	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, 0, err
+	for _, change := range changes {
+		changeMsgs := change.MsgsJoined
+		dcName := dc.Name
+		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: changeMsgs})
+		case diff2.CHANGE:
+			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F: func() error {
+					return api.updateRecord(recID, change.New[0])
+				},
+			})
+		case diff2.CREATE:
+			changeNew := change.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F: func() error {
+					return api.createRecord(dcName, changeNew)
+				},
+			})
+		case diff2.DELETE:
+			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F:   func() error { return api.deleteRecord(recID) },
+			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
+		}
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
-
-	for _, d := range create {
-		des := d.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.createRecord(dc.Name, des) },
-		})
-	}
-	for _, d := range del {
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.deleteRecord(existingID) },
-		})
-	}
-	for _, d := range mod {
-		rec := d.Desired
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.updateRecord(existingID, rec) },
-		})
-	}
-
 	return corrections, actualChangeCount, nil
 }
 
