@@ -2,7 +2,7 @@
 
 DNSControl can generate a machine-parseable report of changes.
 
-The report is JSON formated and contains the zonename, the provider or
+The report is JSON formatted and contains the zonename, the provider or
 registrar name, and the number of changes.
 
 To generate the report, add the `--report <filename>` option to a preview or

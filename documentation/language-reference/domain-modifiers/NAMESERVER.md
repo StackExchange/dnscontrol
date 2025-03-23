@@ -57,7 +57,7 @@ the registrar who does the hard work of talking to the people that
 control `.com`.  If the domain was `gmeet.io`, the registrar does
 the right thing to talk to the people that control `.io`.
 
-(A better name might have been `PARENTNAMESERVER()` but we didn"t
+(A better name might have been `PARENTNAMESERVER()` but we didn't
 think of that at the time.)
 
 Each registrar handles delegations differently.  Most use

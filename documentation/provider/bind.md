@@ -130,7 +130,7 @@ any files named `*.zone` and assumes they are zone files.
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 
-If `filenameformat` is defined, `dnscontrol` makes an guess at which
+If `filenameformat` is defined, `dnscontrol` makes a guess at which
 filenames are zones but doesn't try to hard to get it right, which is
 mathematically impossible in some cases.  Feel free to file an issue if
 your format string doesn't work. I love a challenge!
