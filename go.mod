@@ -21,13 +21,13 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.49.1
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.50.0
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.29.1
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.7
 	github.com/cloudflare/cloudflare-go v0.115.0
-	github.com/digitalocean/godo v1.138.0
+	github.com/digitalocean/godo v1.141.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale v0.102.4
@@ -36,7 +36,7 @@ require (
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/miekg/dns v1.1.63
+	github.com/miekg/dns v1.1.64
 	github.com/mittwald/go-powerdns v0.6.6
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.10.0
@@ -53,13 +53,13 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/oauth2 v0.28.0
-	google.golang.org/api v0.224.0
+	google.golang.org/api v0.227.0
 	gopkg.in/ns1/ns1-go.v2 v2.13.0
 )
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.0
-	github.com/G-Core/gcore-dns-sdk-go v0.2.9
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.1
+	github.com/G-Core/gcore-dns-sdk-go v0.3.0
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.10
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/fatih/color v1.18.0
@@ -67,11 +67,11 @@ require (
 	github.com/go-acme/lego/v4 v4.22.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.139
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.141
 	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.20
-	github.com/oracle/oci-go-sdk/v65 v65.85.0
+	github.com/oracle/oci-go-sdk/v65 v65.87.0
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
 	golang.org/x/text v0.23.0
@@ -115,7 +115,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.5 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -159,8 +159,8 @@ require (
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250227231956-55c901821b1e // indirect
-	google.golang.org/grpc v1.70.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/grpc v1.71.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	moul.io/http2curl v1.0.0 // indirect
