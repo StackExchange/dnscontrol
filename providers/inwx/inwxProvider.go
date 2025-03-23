@@ -279,9 +279,10 @@ func (api *inwxAPI) getDefaultNameservers() []string {
 	return InwxProductionDefaultNs
 }
 
-// GetNameservers returns the default nameservers for INWX.
+// GetNameservers returns the nameservers provisioned for the domain or the
+// default INWX nameservers.
 func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.ToNameservers(api.getDefaultNameservers())
+	return models.ToNameservers(api.fetchRegistrationNSSet(domain))
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
@@ -377,18 +378,21 @@ func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
 func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	info, err := api.client.Domains.Info(dc.Name, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	sort.Strings(info.Nameservers)
-	foundNameservers := strings.Join(info.Nameservers, ",")
-	expected := []string{}
+	regNameservers := api.fetchRegistrationNSSet(dc.Name)
+	combined := map[string]bool{}
 	for _, ns := range dc.Nameservers {
-		expected = append(expected, ns.Name)
+		combined[ns.Name] = true
+	}
+	for _, rs := range regNameservers {
+		combined[rs] = true
+	}
+	var expected []string
+	for k := range combined {
+		expected = append(expected, k)
+
 	}
 	sort.Strings(expected)
+	foundNameservers := strings.Join(regNameservers, ",")
 	expectedNameservers := strings.Join(expected, ",")
 
 	if foundNameservers != expectedNameservers {
@@ -425,6 +429,15 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 	return nil
 }
 
+func (api *inwxAPI) fetchRegistrationNSSet(domain string) []string {
+	info, err := api.client.Domains.Info(domain, 0)
+	if err != nil {
+		return api.getDefaultNameservers()
+	}
+	sort.Strings(info.Nameservers)
+	return info.Nameservers
+}
+
 // EnsureZoneExists creates a zone if it does not exist
 func (api *inwxAPI) EnsureZoneExists(domain string) error {
 	if api.domainIndex == nil { // only pull the data once.
@@ -441,7 +454,7 @@ func (api *inwxAPI) EnsureZoneExists(domain string) error {
 	request := &goinwx.NameserverCreateRequest{
 		Domain:      domain,
 		Type:        "MASTER",
-		Nameservers: api.getDefaultNameservers(),
+		Nameservers: api.fetchRegistrationNSSet(domain),
 	}
 	var id int
 	id, err := api.client.Nameservers.Create(request)
