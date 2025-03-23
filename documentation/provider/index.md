@@ -15,7 +15,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | Provider name | Official Support | DNS Provider | Registrar | Concurrency Verified | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) | [`DS`](../language-reference/domain-modifiers/DS.md) | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | dual host | create-domains | get-zones |
 | ------------- | ---------------- | ------------ | --------- | -------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ | --------- | -------------- | --------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
-| [`AUTODNS`](autodns.md) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
+| [`AUTODNS`](autodns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
@@ -164,17 +164,20 @@ code to support this provider, we'd be glad to help in any way.
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
+* [BookMyName](https://github.com/StackExchange/dnscontrol/issues/3451) (#3451)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
 * [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
 * [GoDaddy](https://github.com/StackExchange/dnscontrol/issues/2596) (#2596)
+* [IPv64](https://github.com/StackExchange/dnscontrol/issues/3471) (#3471)
 * [Imperva](https://github.com/StackExchange/dnscontrol/issues/1484) (#1484)
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
 * [Plesk](https://github.com/StackExchange/dnscontrol/issues/2261) (#2261)
 * [Rackspace Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/2980) (#2980)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [Spaceship](https://github.com/StackExchange/dnscontrol/issues/3452) (#3452)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
 * [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
 * [Vercel](https://github.com/StackExchange/dnscontrol/issues/3379) (#3379)

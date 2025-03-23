@@ -19,7 +19,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -174,7 +174,11 @@ func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	zone, _ := api.getZone(domain)
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, err
+	}
+
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
 		var err error
