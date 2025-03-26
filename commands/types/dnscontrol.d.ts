@@ -3368,4 +3368,4 @@ declare function getConfiguredDomains(): string[];
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/require_glob
  */
-declare function require_glob(path: string, recursive: boolean): void;
+declare function require_glob(path: string, recursive?: boolean): void;
