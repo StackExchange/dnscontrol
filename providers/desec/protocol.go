@@ -262,6 +262,11 @@ func (c *desecProvider) createDomain(domain string) error {
 	}
 	printer.Printf("To enable DNSSEC validation for your domain, make sure to convey the DS record(s) to your registrar:\n")
 	printer.Printf("%+q", dm.Keys)
+	c.domainIndexLock.Lock()
+	defer c.domainIndexLock.Unlock()
+	if c.domainIndex != nil {
+		c.domainIndex[domain] = dm.MinimumTTL
+	}
 	return nil
 }
 
