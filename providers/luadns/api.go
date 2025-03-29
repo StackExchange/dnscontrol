@@ -110,9 +110,15 @@ func (l *luadnsProvider) createDomain(domain string) error {
 	params := jsonRequestParams{
 		"name": domain,
 	}
-	if _, err := l.get("/zones", "POST", params); err != nil {
+	body, err := l.get("/zones", "POST", params)
+	if err != nil {
 		return fmt.Errorf("failed create domain (LuaDNS): %w", err)
 	}
+	z := zoneRecord{}
+	if err = json.Unmarshal(body, &z); err != nil {
+		return fmt.Errorf("error parsing zone response (LuaDNS): %w", err)
+	}
+	l.domainIndex[domain] = z.ID
 	return nil
 }
 
