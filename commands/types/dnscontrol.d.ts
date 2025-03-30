@@ -1491,7 +1491,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * as a last resort. Even then, test extensively.
  *
  * * There is no locking.  If the external system and DNSControl make updates at the exact same time, the results are undefined.
- * * IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
+ * * `IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
  * * `targetSpec` does not match fields other than the primary target.  For example, `MX` records have a target hostname plus a priority. There is no way to match the priority.
  * * The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external records.  It will seem like they were not ignored, but in reality BIND didn't have visibility to them so that they could be ignored.
  *
