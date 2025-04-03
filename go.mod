@@ -2,6 +2,8 @@ module github.com/StackExchange/dnscontrol/v4
 
 go 1.23.0
 
+toolchain go1.24.1
+
 retract v4.8.0
 
 require google.golang.org/protobuf v1.36.6 // indirect
@@ -54,7 +56,7 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/oauth2 v0.28.0
 	google.golang.org/api v0.228.0
-	gopkg.in/ns1/ns1-go.v2 v2.13.0
+	gopkg.in/ns1/ns1-go.v2 v2.14.0
 )
 
 require (
