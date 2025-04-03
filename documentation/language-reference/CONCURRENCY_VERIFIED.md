@@ -3,7 +3,7 @@ name: CONCURRENCY_VERIFIED
 ---
 
 ✅  - A checkmark means "this has been tested, and will run concurrently".  
-❔  - The questionmark means "it hasn't been tested, so we don't know"  
+❔  - The questionmark means "it hasn't been tested, safety unknown"  
 ❌  - The red "X" means "this has been tested, and it will _not_ work concurrently".  
 
 
