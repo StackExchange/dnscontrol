@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
+	"golang.org/x/net/idna"
 )
 
 /*
@@ -418,7 +419,14 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 			return err
 		}
 		for _, domain := range info.Domains {
-			zones[domain.Domain] = domain.RoID
+			// If this is an IDN domain, Nameservers.List.Domains[].Domain
+			// will contain the Unicode name but subsequent calls use the ACE
+			// encoded name. We will convert it now for use as the cache key
+			if aceName, err := idna.ToASCII(domain.Domain); err == nil {
+				zones[aceName] = domain.RoID
+			} else {
+				return err
+			}
 		}
 		if len(zones) >= info.Count {
 			break
