@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
 
@@ -228,12 +230,119 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
+// appendDeleteCorrection is a helper function to append delete corrections to the list of corrections
+func (api *inwxAPI) appendDeleteCorrection(corrections []*models.Correction, rec *models.RecordConfig, removals map[string]struct{}) ([]*models.Correction, map[string]struct{}) {
+	// prevent duplicate delete instructions
+	if _, found := removals[rec.ToComparableNoTTL()]; found {
+		return corrections, removals
+	}
+	corrections = append(corrections, &models.Correction{
+		Msg: color.RedString("- DELETE %s %s %s ttl=%d", rec.GetLabelFQDN(), rec.Type, rec.ToComparableNoTTL(), rec.TTL),
+		F: func() error {
+			return api.deleteRecord(rec.Original.(goinwx.NameserverRecord).ID)
+		},
+	})
+	removals[rec.ToComparableNoTTL()] = struct{}{}
+	return corrections, removals
+}
+
+// isNullMX checks if a record is a null MX record.
+func isNullMX(rec *models.RecordConfig) bool {
+	return rec.Type == "MX" && rec.MxPreference == 0 && rec.GetTargetField() == "."
+}
+
+// MXCorrections generates required delete corrections when a MX change can not be applied in an updateRecord call.
+func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, models.Records, error) {
+
+	// If a null MX is present in the zone, we have to take special care of any
+	// planned MX changes: No non-null MX records can be added until the null
+	// MX is deleted. If a null MX is planned to be added and the diff is
+	// trying to replace an existing regular MX, we need to delete the existing
+	// MX record because an update would be rejected with "2308 Data management policy violation"
+
+	removals := make(map[string]struct{})
+	corrections := []*models.Correction{}
+	tempRecords := []*models.RecordConfig{}
+
+	// Detect Null MX in foundRecords
+	nullMXInFound := slices.ContainsFunc(foundRecords.GetByType("MX"), isNullMX)
+
+	// Detect Null MX and regular MX in desired records
+	nullMXInDesired := false
+	regularMXInDesired := false
+	for _, rec := range dc.Records.GetByType("MX") {
+		if isNullMX(rec) {
+			nullMXInDesired = true
+		} else {
+			regularMXInDesired = true
+		}
+	}
+
+	// invalid state. Null MX and regular MX are both present in the configuration
+	if nullMXInDesired && regularMXInDesired {
+		return nil, nil, fmt.Errorf("desired configuration contains both Null MX and regular MX records")
+	}
+
+	if nullMXInFound && !nullMXInDesired {
+		// Null MX exists in foundRecords, but desired configuration contains only regular MX records
+		// Safe to delete the Null MX record
+		for _, rec := range foundRecords {
+			if isNullMX(rec) {
+				corrections, removals = api.appendDeleteCorrection(corrections, rec, removals)
+			}
+		}
+	} else if !nullMXInFound && nullMXInDesired {
+		// Null MX is being added, ensure all existing MX records are deleted
+		for _, rec := range foundRecords {
+			if rec.Type == "MX" {
+				corrections, removals = api.appendDeleteCorrection(corrections, rec, removals)
+			}
+		}
+	}
+
+	mxRecords := foundRecords.GetByType("MX")
+	mxonlyDc, err := dc.Copy()
+	if err != nil {
+		return nil, nil, err
+	}
+	mxonlyDc.Records = mxonlyDc.Records.GetByType("MX")
+
+	mxchanges, _, err := diff2.ByRecord(mxRecords, mxonlyDc, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, change := range mxchanges {
+		if change.Type == diff2.CHANGE {
+			// INWX will not apply a MX preference update of >=1 to 0. The updateRecord
+			// endpoint will not report an error, so the zone and config will be out of
+			// sync unless we handle this as a delete then create
+			if change.New[0].MxPreference == 0 && change.Old[0].MxPreference != 0 {
+				corrections, removals = api.appendDeleteCorrection(corrections, change.Old[0], removals)
+			}
+		}
+	}
+
+	// We need to remove the RRs already in corrections
+	for _, rec := range foundRecords {
+		if _, found := removals[rec.ToComparableNoTTL()]; !found {
+			tempRecords = append(tempRecords, rec)
+		}
+	}
+
+	cleanedRecords := models.Records(tempRecords)
+	return corrections, cleanedRecords, nil
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 
-	var corrections []*models.Correction
+	corrections, records, err := api.MXCorrections(dc, foundRecords)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	changes, actualChangeCount, err := diff2.ByRecord(foundRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
