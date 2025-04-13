@@ -71,6 +71,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseHTTPS:            providers.Can(),
+	providers.CanUseSVCB:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -302,6 +304,16 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 		srvPort, _ := strconv.ParseUint(c[1], 10, 16)
 		rc.SrvPort = uint16(srvPort)
 		err = rc.SetTarget(c[2])
+	case "HTTPS":
+		fallthrough
+	case "SVCB":
+		// 5 . ech=AAAAABBBBB...
+		c := strings.Split(r.Content, " ")
+
+		svcPriority, _ := strconv.ParseUint(c[0], 10, 16)
+		rc.SvcPriority = uint16(svcPriority)
+		rc.SvcParams = c[2]
+		err = rc.SetTarget(c[1])
 	default:
 		err = rc.SetTarget(r.Content)
 	}
@@ -351,6 +363,11 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "TLSA":
 		req["content"] = fmt.Sprintf("%d %d %d %s",
 			rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
+	case "HTTPS":
+		fallthrough
+	case "SVCB":
+		req["content"] = fmt.Sprintf("%d %s %s",
+			rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
 	default:
 		return nil, fmt.Errorf("porkbun.toReq rtype %q unimplemented", rc.Type)
 	}
