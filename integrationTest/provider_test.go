@@ -170,6 +170,17 @@ func TestDuplicateNameservers(t *testing.T) {
 	}
 
 	t.Log("Clearing everything")
+	dc.Records = []*models.RecordConfig{}
+	n := 0
+	for _, ns := range dc.Nameservers {
+		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
+			continue
+		}
+		dc.Nameservers[n] = ns
+		n++
+	}
+	dc.Nameservers = dc.Nameservers[:n]
+	nameservers.AddNSRecords(dc)
 	run(0, "Clearing everything", true)
 
 	// add bogus nameservers and duplicate nameservers
@@ -200,7 +211,7 @@ func TestDuplicateNameservers(t *testing.T) {
 
 	t.Log("Removing test nameservers")
 	dc.Records = []*models.RecordConfig{}
-	n := 0
+	n = 0
 	for _, ns := range dc.Nameservers {
 		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
 			continue
