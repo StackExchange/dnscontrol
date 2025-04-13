@@ -3,6 +3,7 @@ package azuredns
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -238,6 +239,12 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		dcn := dc.Name
 		chaKey := change.Key
 
+		if change.Type == diff2.CHANGE || change.Type == diff2.CREATE {
+			if chaKey.Type == "NS" && dcn == removeTrailingDot(change.Key.NameFQDN) {
+				change.New = deduplicateNameServerTargets(change.New)
+			}
+		}
+
 		switch change.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
@@ -279,13 +286,14 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	rrset.Properties.TTL = &i
 
 	waitTime := 1
-retry:
 
+retry:
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
 
-	if e, ok := err.(*azcore.ResponseError); ok {
+	var e *azcore.ResponseError
+	if errors.As(err, &e) {
 		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
@@ -318,7 +326,8 @@ retry:
 	defer cancel()
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
 
-	if e, ok := err.(*azcore.ResponseError); ok {
+	var e *azcore.ResponseError
+	if errors.As(err, &e) {
 		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
@@ -607,7 +616,8 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 
 		if recordsErr != nil {
 			err := recordsErr
-			if e, ok := err.(*azcore.ResponseError); ok {
+			var e *azcore.ResponseError
+			if errors.As(err, &e) {
 				if e.StatusCode == http.StatusTooManyRequests {
 					waitTime = waitTime * 2
 					if waitTime > 300 {
@@ -640,4 +650,20 @@ func (a *azurednsProvider) EnsureZoneExists(domain string) error {
 		return err
 	}
 	return nil
+}
+
+func removeTrailingDot(record string) string {
+	return strings.TrimSuffix(record, ".")
+}
+
+func deduplicateNameServerTargets(newRecs models.Records) models.Records {
+	dedupedMap := make(map[string]bool)
+	var deduped models.Records
+	for _, rec := range newRecs {
+		if !dedupedMap[rec.GetTargetField()] {
+			dedupedMap[rec.GetTargetField()] = true
+			deduped = append(deduped, rec)
+		}
+	}
+	return deduped
 }
