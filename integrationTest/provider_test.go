@@ -51,8 +51,8 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// add bogus nameservers
 	dc.Records = []*models.RecordConfig{}
-	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
-	dc.Nameservers = append(dc.Nameservers, nslist...)
+	nsList, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
+	dc.Nameservers = append(dc.Nameservers, nsList...)
 	nameservers.AddNSRecords(dc)
 	t.Log("Adding test nameservers")
 	run()
@@ -185,29 +185,16 @@ func TestDuplicateNameservers(t *testing.T) {
 
 	// add bogus nameservers and duplicate nameservers
 	dc.Records = []*models.RecordConfig{}
-	nslist, _ := models.ToNameservers([]string{"ns1.example.com"})
+	nsList, _ := models.ToNameservers([]string{"ns1.example.com"})
 	dc.Nameservers = append(dc.Nameservers, dc.Nameservers...)
-	dc.Nameservers = append(dc.Nameservers, nslist...)
+	dc.Nameservers = append(dc.Nameservers, nsList...)
 	nameservers.AddNSRecords(dc)
 	t.Log("Adding test nameservers")
 	run(1, "Expect 1 correction, but found %d.", false)
 
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	rs, cs, actualChangeCount, err := zonerecs.CorrectZoneRecords(p, dc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if actualChangeCount != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", actualChangeCount)
-		for i, c := range rs {
-			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
-		}
-		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
-		}
-		t.FailNow()
-	}
+	run(0, "Expect no corrections on second run, but found %d.", false)
 
 	t.Log("Removing test nameservers")
 	dc.Records = []*models.RecordConfig{}
