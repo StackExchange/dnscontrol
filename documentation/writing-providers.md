@@ -219,7 +219,7 @@ an automated way to test for this bug.  The manual steps are here in
   * Add the name of the provider to the PROVIDERS list.
 * Edit `documentation/providers.md`:
   * Remove the provider from the `Requested providers` list (near the end of the doc) (if needed).
-  * Add the new provider to the [Providers with "contributor support"](provider/index.md#providers-with-contributor-support) section.
+  * Add the new provider to the [Providers with "contributor support"](provider/index#providers-with-contributor-support) section.
 * Edit `documentation/SUMMARY.md`:
   * Add the provider to the "Providers" list.
 * Create `documentation/provider/PROVIDERNAME.md`:
