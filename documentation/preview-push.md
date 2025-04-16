@@ -96,16 +96,16 @@ OPTIONS:
     provider does not implement zone creation). This flag disables that feature.
 
 * `--depopulate`
-
-  > **WARNING**
-  >
-  > Delete unknown zones at provider.
+  * Delete unknown zones at provider. Default is false.
+    > **WARNING**
+    >
+    > Use `--depopulate=true` with care. All zones not managed by DNSControl will be removed.
 
 * `--populate-on-preview`
-
-  > **WARNING**
-  >
-  > Auto-create zones on preview.
+  * Auto-create zones on preview. Default is true.
+    > **WARNING**
+    >
+    > Use `--populate-on-preview=false` to avoid creating zones on preview.
 
 * `--full`
   * Add headings, providers names, notifications of no changes, etc. to
