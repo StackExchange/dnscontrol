@@ -347,14 +347,14 @@ func (api *inwxAPI) AutoDnssecToggle(dc *models.DomainConfig, corrections []*mod
 
 	if desiredAutoDNSSEC && !publishedAutoDNSSEC {
 		corrections = append(corrections, &models.Correction{
-			Msg: "Enable AutoDNSSEC",
+			Msg: color.YellowString("Enable AutoDNSSEC"),
 			F: func() error {
 				return api.enableAutoDNSSEC(dc.Name)
 			},
 		})
 	} else if !desiredAutoDNSSEC && publishedAutoDNSSEC {
 		corrections = append(corrections, &models.Correction{
-			Msg: "Disable AutoDNSSEC",
+			Msg: color.RedString("Disable AutoDNSSEC"),
 			F: func() error {
 				return api.disableAutoDNSSEC(dc.Name)
 			},
