@@ -96,12 +96,16 @@ OPTIONS:
     provider does not implement zone creation). This flag disables that feature.
 
 * `--depopulate`
-    > [!WARNING]
-    > Delete unknown zones at provider.
+
+  > **WARNING**
+  >
+  > Delete unknown zones at provider.
 
 * `--populate-on-preview`
-    > [!WARNING]
-    > Auto-create zones on preview.
+
+  > **WARNING**
+  >
+  > Auto-create zones on preview.
 
 * `--full`
   * Add headings, providers names, notifications of no changes, etc. to
