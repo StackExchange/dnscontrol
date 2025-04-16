@@ -47,7 +47,7 @@ var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
@@ -252,7 +252,7 @@ func isNullMX(rec *models.RecordConfig) bool {
 }
 
 // MXCorrections generates required delete corrections when a MX change can not be applied in an updateRecord call.
-func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, models.Records, error) {
+func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.Records, corrections []*models.Correction) ([]*models.Correction, models.Records, error) {
 
 	// If a null MX is present in the zone, we have to take special care of any
 	// planned MX changes: No non-null MX records can be added until the null
@@ -261,7 +261,6 @@ func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.R
 	// MX record because an update would be rejected with "2308 Data management policy violation"
 
 	removals := make(map[string]struct{})
-	corrections := []*models.Correction{}
 	tempRecords := []*models.RecordConfig{}
 
 	// Detect Null MX in foundRecords
@@ -334,10 +333,47 @@ func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.R
 	return corrections, cleanedRecords, nil
 }
 
+// AutoDnssecToggle enables and disables AutoDNSSEC for INWX domains.
+func (api *inwxAPI) AutoDnssecToggle(dc *models.DomainConfig, corrections []*models.Correction) ([]*models.Correction, error) {
+	if dc.AutoDNSSEC == "" {
+		// neither of AUTODNSSEC_ON or AUTODNSSEC_OFF is set, so do nothing
+		return corrections, nil
+	}
+	desiredAutoDNSSEC := dc.AutoDNSSEC == "on"
+	publishedAutoDNSSEC, err := api.zoneIsAutoDNSSECEnabled(dc.Name)
+	if err != nil {
+		return corrections, err
+	}
+
+	if desiredAutoDNSSEC && !publishedAutoDNSSEC {
+		corrections = append(corrections, &models.Correction{
+			Msg: "Enable AutoDNSSEC",
+			F: func() error {
+				return api.enableAutoDNSSEC(dc.Name)
+			},
+		})
+	} else if !desiredAutoDNSSEC && publishedAutoDNSSEC {
+		corrections = append(corrections, &models.Correction{
+			Msg: "Disable AutoDNSSEC",
+			F: func() error {
+				return api.disableAutoDNSSEC(dc.Name)
+			},
+		})
+	}
+	return corrections, nil
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
 
-	corrections, records, err := api.MXCorrections(dc, foundRecords)
+	corrections := []*models.Correction{}
+
+	corrections, records, err := api.MXCorrections(dc, foundRecords, corrections)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	corrections, err = api.AutoDnssecToggle(dc, corrections)
 	if err != nil {
 		return nil, 0, err
 	}
