@@ -8,7 +8,7 @@ NAME:
    dnscontrol preview - read live configuration and identify changes to be made, without applying them
 
 USAGE:
-   dnscontrol preview [command options] [arguments...]
+   dnscontrol preview [command options]
 
 CATEGORY:
    main
@@ -23,10 +23,13 @@ OPTIONS:
    --domains value                                            Comma separated list of domain names to include
    --notify                                                   set to true to send notifications to configured destinations (default: false)
    --expect-no-changes                                        set to true for non-zero return code if there are changes (default: false)
-   --no-populate                                              Use this flag to not auto-create non-existing zones at the provider (default: false)
+   --cmode value                                              Which providers to run concurrently: concurrent, none, all (default: "concurrent")
+   --no-populate                                              Do not auto-create zones at the provider (default: false)
+   --depopulate                                               Delete unknown zones at provider (dangerous!) (default: false)
+   --populate-on-preview                                      Auto-create zones on preview (default: true)
    --full                                                     Add headings, providers names, notifications of no changes, etc (default: false)
    --bindserial value                                         Force BIND serial numbers to this value (for reproducibility) (default: 0)
-   --report value                                             Generate a JSON-formatted report of the number of changes.
+   --report value                                             Generate a machine-parseable report of corrections.
    --help, -h                                                 show help
 ```
 
@@ -84,10 +87,21 @@ OPTIONS:
     preview --expect-no-changes` daily to determine if changes have been made to
     a domain outside of DNSControl.
 
+* `--cmode value`
+  * Concurrency mode. See below.
+
 * `--no-populate`
   * Do not auto-create non-existing zones at the provider.
     Normally non-existent zones are automatically created at a provider (unless the
     provider does not implement zone creation). This flag disables that feature.
+
+* `--depopulate`
+    > [!WARNING]
+    > Delete unknown zones at provider.
+
+* `--populate-on-preview`
+    > [!WARNING]
+    > Auto-create zones on preview.
 
 * `--full`
   * Add headings, providers names, notifications of no changes, etc. to
@@ -99,9 +113,6 @@ OPTIONS:
     BIND provider generates SOA serial numbers automatically. This flag forces the
     serial number generator to output the value specified for all domains. This is
     generally used for reproducibility in testing pipelines.
-
-* `--cmode value`
-  * Concurrency mode. See below.
 
 * `--report name`
   * Write a machine-parseable report of
