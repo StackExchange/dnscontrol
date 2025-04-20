@@ -49,16 +49,16 @@ var features = providers.DocumentationNotes{
 // hednsProvider stores login credentials and represents and API connection
 type vercelProvider struct {
 	client vercelClient.Client
+	teamID string
 }
 
 func init() {
 	const providerName = "Vercel"
 	const providerMaintainer = "@SukkaW"
 	fns := providers.DspFuncs{
-		Initializer:   newProvider,
-		RecordAuditor: AuditRecords,
+		Initializer: newProvider,
 	}
-	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -82,7 +82,11 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	}
 
 	c = c.WithTeam(team)
-	return &vercelProvider{client: c}, nil
+	return &vercelProvider{
+		client: *c,
+		// store this information so that we can access this anywhere we want
+		teamID: creds["account_id"],
+	}, nil
 }
 
 // GetNameservers returns the default Vercel nameservers.
@@ -90,4 +94,29 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 // Let's hard-coded this for now
 func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
+}
+
+func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	var zoneRecords []*models.RecordConfig
+	ctx := context.Background()
+
+	records, err := c.client.ListDNSRecords(ctx, domain, c.teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, record := range records {
+		zoneRecords = append(zoneRecords, &models.RecordConfig{
+			Type:     record.RecordType,
+			Name:     record.Name,
+			Original: record,
+			TTL:      uint32(record.TTL), // we can do this convertion safely as TTL won't be that big and 4294967295 would be enough
+		})
+	}
+
+	return zoneRecords, nil
+}
+
+func (c *vercelProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
+	return nil, 0, nil
 }
