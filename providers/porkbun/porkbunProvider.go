@@ -2,6 +2,7 @@ package porkbun
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -48,7 +48,7 @@ func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error
 	c.apiKey, c.secretKey = m["api_key"], m["secret_key"]
 
 	if c.apiKey == "" || c.secretKey == "" {
-		return nil, fmt.Errorf("missing porkbun api_key or secret_key")
+		return nil, errors.New("missing porkbun api_key or secret_key")
 	}
 
 	return c, nil
@@ -59,7 +59,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -71,6 +71,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseHTTPS:            providers.Can(),
+	providers.CanUseSVCB:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -224,7 +226,11 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 		if shouldSkip {
 			continue
 		}
-		existingRecords = append(existingRecords, toRc(domain, &records[i]))
+		newr, err := toRc(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
+		existingRecords = append(existingRecords, newr)
 	}
 	for i := range forwards {
 		r := &forwards[i]
@@ -238,14 +244,16 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 			},
 		}
 		rc.SetLabel(r.Subdomain, domain)
-		rc.SetTarget(r.Location)
+		if err := rc.SetTarget(r.Location); err != nil {
+			return nil, err
+		}
 		existingRecords = append(existingRecords, rc)
 	}
 	return existingRecords, nil
 }
 
 // parses the porkbun format into our standard RecordConfig
-func toRc(domain string, r *domainRecord) *models.RecordConfig {
+func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)
 
@@ -258,14 +266,15 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	}
 	rc.SetLabelFromFQDN(r.Name, domain)
 
+	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXT(r.Content)
+		err = rc.SetTargetTXT(r.Content)
 	case "MX", "CNAME", "ALIAS", "NS":
 		if strings.HasSuffix(r.Content, ".") {
-			rc.SetTarget(r.Content)
+			err = rc.SetTarget(r.Content)
 		} else {
-			rc.SetTarget(r.Content + ".")
+			err = rc.SetTarget(r.Content + ".")
 		}
 	case "CAA":
 		// 0, issue, "letsencrypt.org"
@@ -274,7 +283,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		caaFlag, _ := strconv.ParseUint(c[0], 10, 8)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = c[1]
-		rc.SetTarget(strings.ReplaceAll(c[2], "\"", ""))
+		err = rc.SetTarget(strings.ReplaceAll(c[2], "\"", ""))
 	case "TLSA":
 		// 0 0 0 00000000000000000000000
 		c := strings.Split(r.Content, " ")
@@ -285,7 +294,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		rc.TlsaSelector = uint8(tlsaSelector)
 		tlsaMatchingType, _ := strconv.ParseUint(c[2], 10, 8)
 		rc.TlsaMatchingType = uint8(tlsaMatchingType)
-		rc.SetTarget(c[3])
+		err = rc.SetTarget(c[3])
 	case "SRV":
 		// 5 5060 sip.example.com
 		c := strings.Split(r.Content, " ")
@@ -294,12 +303,21 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		rc.SrvWeight = uint16(srvWeight)
 		srvPort, _ := strconv.ParseUint(c[1], 10, 16)
 		rc.SrvPort = uint16(srvPort)
-		rc.SetTarget(c[2])
-	default:
-		rc.SetTarget(r.Content)
-	}
+		err = rc.SetTarget(c[2])
+	case "HTTPS":
+		fallthrough
+	case "SVCB":
+		// 5 . ech=AAAAABBBBB...
+		c := strings.Split(r.Content, " ")
 
-	return rc
+		svcPriority, _ := strconv.ParseUint(c[0], 10, 16)
+		rc.SvcPriority = uint16(svcPriority)
+		rc.SvcParams = c[2]
+		err = rc.SetTarget(c[1])
+	default:
+		err = rc.SetTarget(r.Content)
+	}
+	return rc, err
 }
 
 // toReq takes a RecordConfig and turns it into the native format used by the API.
@@ -345,6 +363,11 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "TLSA":
 		req["content"] = fmt.Sprintf("%d %d %d %s",
 			rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
+	case "HTTPS":
+		fallthrough
+	case "SVCB":
+		req["content"] = fmt.Sprintf("%d %s %s",
+			rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
 	default:
 		return nil, fmt.Errorf("porkbun.toReq rtype %q unimplemented", rc.Type)
 	}

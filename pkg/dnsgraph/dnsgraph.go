@@ -145,7 +145,6 @@ func (edges Edges[T]) RemoveNode(toRemove *Node[T]) Edges[T] {
 
 // Contains returns true if a node is in the graph AND is in that direction.
 func (edges Edges[T]) Contains(toFind *Node[T], direction edgeDirection) bool {
-
 	for _, edge := range edges {
 		if edge.Node == toFind && edge.Direction == direction {
 			return true

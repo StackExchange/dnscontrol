@@ -20,17 +20,18 @@ func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	curRecords := models.Records{}
 	zone, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, canonical(domain))
 	if err != nil {
+		if _, ok := err.(pdnshttp.ErrNotFound); ok {
+			// Zone is not found, but everything else is okay so return no records
+			return curRecords, nil
+		}
 		return nil, err
 	}
 
-	curRecords := models.Records{}
 	// loop over grouped records by type, called RRSet
 	for _, rrset := range zone.ResourceRecordSets {
-		if rrset.Type == "SOA" {
-			continue
-		}
 		// loop over single records of this group and create records
 		for _, pdnsRecord := range rrset.Records {
 			r, err := toRecordConfig(domain, pdnsRecord, rrset.TTL, rrset.Name, rrset.Type)
@@ -46,7 +47,6 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]strin
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-
 	corrections, actualChangeCount, err := dsp.getDiff2DomainCorrections(dc, existing)
 	if err != nil {
 		return nil, 0, err

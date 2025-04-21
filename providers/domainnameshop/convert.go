@@ -7,7 +7,7 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.RecordConfig {
+func toRecordConfig(domain string, currentRecord *domainNameShopRecord) (*models.RecordConfig, error) {
 	name := dnsutil.AddOrigin(currentRecord.Host, domain)
 
 	target := currentRecord.Data
@@ -24,12 +24,16 @@ func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.
 		CaaFlag:      uint8(currentRecord.CAAFlag),
 	}
 
-	t.SetTarget(target)
+	if err := t.SetTarget(target); err != nil {
+		return nil, err
+	}
 	t.SetLabelFromFQDN(name, domain)
 
 	switch rtype := currentRecord.Type; rtype {
 	case "TXT":
-		t.SetTargetTXT(target)
+		if err := t.SetTargetTXT(target); err != nil {
+			return nil, err
+		}
 	case "CAA":
 		if currentRecord.CAATag == "0" {
 			t.CaaTag = "issue"
@@ -41,7 +45,7 @@ func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.
 	default:
 		// nothing additional required
 	}
-	return t
+	return t, nil
 }
 
 func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *models.RecordConfig) (*domainNameShopRecord, error) {

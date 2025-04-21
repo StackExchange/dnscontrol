@@ -2,7 +2,7 @@ package bunnydns
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -13,7 +13,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can("Bunny flattens CNAME records into A/AAAA records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Cannot(),
@@ -45,12 +45,14 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+
+	providers.RegisterCustomRecordType("BUNNY_DNS_RDR", providerName, "")
 }
 
 func newBunnydns(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	apiKey := settings["api_key"]
 	if apiKey == "" {
-		return nil, fmt.Errorf("missing BUNNY_DNS api_key")
+		return nil, errors.New("missing BUNNY_DNS api_key")
 	}
 
 	return &bunnydnsProvider{

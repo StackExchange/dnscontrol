@@ -24,7 +24,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -141,7 +141,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 			if isQuotedTXT(r.Content) {
 				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
 			} else {
-				err = rec.SetTargetTXT(fmt.Sprintf("legacy: %s", r.Content))
+				err = rec.SetTargetTXT("legacy: " + r.Content)
 			}
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
@@ -306,7 +306,7 @@ func (c *dnsimpleProvider) getAccountID() (string, error) {
 			return "", err
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", fmt.Errorf("DNSimple token appears to be a user token. Please supply an account token")
+			return "", errors.New("DNSimple token appears to be a user token. Please supply an account token")
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
 	}
@@ -461,7 +461,6 @@ func (c *dnsimpleProvider) getNameservers(domainName string) ([]string, error) {
 	}
 
 	if domainResponse.Data.State == stateRegistered {
-
 		delegationResponse, err := client.Registrar.GetDomainDelegation(context.Background(), accountID, domainName)
 		if err != nil {
 			var errorResponse *dnsimpleapi.ErrorResponse
@@ -651,7 +650,7 @@ func newProvider(m map[string]string, _ json.RawMessage) (*dnsimpleProvider, err
 	api := &dnsimpleProvider{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
-		return nil, fmt.Errorf("missing DNSimple token")
+		return nil, errors.New("missing DNSimple token")
 	}
 
 	if m["baseurl"] != "" {

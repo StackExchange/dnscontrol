@@ -8,12 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	egoscale "github.com/exoscale/egoscale/v2"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	egoscale "github.com/exoscale/egoscale/v2"
 )
 
 const (
@@ -57,7 +56,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Unimplemented(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -94,7 +93,7 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
-	//dc.Punycode()
+	// dc.Punycode()
 
 	domain, err := c.findDomainByName(domainName)
 	if err != nil {
@@ -166,7 +165,7 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 		switch rtype {
 		case "ALIAS", "URL":
 			rc.Type = rtype
-			rc.SetTarget(rcontent)
+			err = rc.SetTarget(rcontent)
 		case "MX":
 			var prio uint16
 			if record.Priority != nil {
@@ -188,7 +187,6 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]str
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	removeOtherNS(dc)
 	domain, err := c.findDomainByName(dc.Name)
 	if err != nil {
@@ -220,11 +218,11 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, mod := range modify {
-		old := mod.Existing.Original.(*egoscale.DNSDomainRecord)
-		new := mod.Desired
+		old_ := mod.Existing.Original.(*egoscale.DNSDomainRecord)
+		new_ := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, domainID),
+			F:   c.updateRecordFunc(old_, new_, domainID),
 		})
 	}
 

@@ -5,6 +5,7 @@ package rwth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,7 +53,7 @@ func checkIsLockedSystemAPIRecord(record RecordReply) error {
 	if record.Type == "soa_record" {
 		// The upload of a BIND zone file can change the SOA record.
 		// Implementing this edge case this is too complex for now.
-		return fmt.Errorf("SOA records are locked in RWTH zones. They are hence not available for updating")
+		return errors.New("SOA records are locked in RWTH zones. They are hence not available for updating")
 	}
 	return nil
 }
@@ -61,7 +62,7 @@ func checkIsLockedSystemRecord(record *models.RecordConfig) error {
 	if record.Type == "SOA" {
 		// The upload of a BIND zone file can change the SOA record.
 		// Implementing this edge case this is too complex for now.
-		return fmt.Errorf("SOA records are locked in RWTH zones. They are hence not available for updating")
+		return errors.New("SOA records are locked in RWTH zones. They are hence not available for updating")
 	}
 	return nil
 }
@@ -189,7 +190,7 @@ func (api *rwthProvider) request(endpoint string, method string, request url.Val
 	defer cleanupResponseBody()
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		printer.Printf(string(data))
+		printer.Printf("%s", string(data))
 		return fmt.Errorf("bad status code from RWTH: %d not 200", resp.StatusCode)
 	}
 	if target == nil {

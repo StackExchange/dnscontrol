@@ -3,6 +3,7 @@ package ovh
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/miekg/dns/dnsutil"
@@ -10,8 +11,7 @@ import (
 )
 
 // Void an empty structure.
-type Void struct {
-}
+type Void struct{}
 
 // fetchDomainList gets list of zones for account
 func (c *ovhProvider) fetchZones() error {
@@ -23,7 +23,6 @@ func (c *ovhProvider) fetchZones() error {
 	var response []string
 
 	err := c.client.CallAPI("GET", "/domain/zone", nil, &response, true)
-
 	if err != nil {
 		return err
 	}
@@ -186,9 +185,9 @@ func adaptNativeRecord(r *Record) error {
 		// make sure target is fully unquoted to prevent "Invalid subfield found in DMARC" error
 		r.Target = models.StripQuotes(r.Target)
 	}
-	// DMARC record can be created only for `_dmarc` subdomain
-	if r.FieldType == "DMARC" && r.SubDomain != "_dmarc" {
-		return fmt.Errorf("native OVH DMARC record requires subdomain to always be _dmarc, %s given", r.SubDomain)
+	// DMARC record can be created only for subdomains starting with`_dmarc`
+	if r.FieldType == "DMARC" && !strings.HasPrefix(r.SubDomain, "_dmarc") {
+		return fmt.Errorf("native OVH DMARC record requires subdomain to always start with _dmarc, %s given", r.SubDomain)
 	}
 	return nil
 }
@@ -301,7 +300,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 	// by default zones are in "hosted" mode meaning they default
 	// to OVH default NS. In this mode, the NS can't be updated.
 	domain := Domain{NameServerType: "external"}
-	err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/%s", fqdn), &domain, &Void{}, true)
+	err := c.client.CallAPI("PUT", "/domain/"+fqdn, &domain, &Void{}, true)
 	if err != nil {
 		return err
 	}

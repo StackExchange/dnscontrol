@@ -1,144 +1,14 @@
 package main
 
+// Data-driven tests that exercize the DNS Provider APIs.
+
 import (
-	"encoding/json"
-	"flag"
-	"fmt"
-	"os"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
-	"github.com/miekg/dns/dnsutil"
 )
-
-var providerFlag = flag.String("provider", "", "Provider to run (if empty, deduced from -profile)")
-var profileFlag = flag.String("profile", "", "Entry in profiles.json to use (if empty, copied from -provider)")
-var startIdx = flag.Int("start", -1, "Test number to begin with")
-var endIdx = flag.Int("end", -1, "Test index to stop after")
-var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
-var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
-var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
-var enableCFRedirectMode = flag.String("cfredirect", "", "cloudflare pagerule tests: default=page_rules, c=convert old to enw, n=new-style, o=none")
-
-func init() {
-	testing.Init()
-
-	flag.Parse()
-}
-
-// Helper constants/funcs for the CLOUDFLARE proxy testing:
-
-func CfProxyOff() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
-func CfProxyOn() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
-func CfProxyFull1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
-func CfProxyFull2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
-func CfCProxyOff() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CfCProxyOn() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
-
-// ---
-
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string]string) {
-	if *providerFlag == "" && *profileFlag == "" {
-		t.Log("No -provider or -profile specified")
-		return nil, "", nil
-	}
-
-	// Load the profile values
-
-	jsons, err := credsfile.LoadProviderConfigs("profiles.json")
-	if err != nil {
-		t.Fatalf("Error loading provider configs: %s", err)
-	}
-
-	// Which profile are we using? Use the profile but default to the provider.
-	targetProfile := *profileFlag
-	if targetProfile == "" {
-		targetProfile = *providerFlag
-	}
-
-	var profileName, profileType string
-	var cfg map[string]string
-
-	// Find the profile we want to use.
-	for p, c := range jsons {
-		if p == targetProfile {
-			cfg = c
-			profileName = p
-			profileType = cfg["TYPE"]
-			if profileType == "" {
-				t.Fatalf("profiles.json profile %q does not have a TYPE field", *profileFlag)
-			}
-			break
-		}
-	}
-	if profileName == "" {
-		t.Fatalf("Profile not found: -profile=%q -provider=%q", *profileFlag, *providerFlag)
-		return nil, "", nil
-	}
-
-	// Fill in -profile if blank.
-	if *profileFlag == "" {
-		*profileFlag = profileName
-	}
-
-	// Fix legacy use of -provider.
-	if *providerFlag != profileType {
-		fmt.Printf("WARNING: -provider=%q does not match profile TYPE=%q.  Using profile TYPE.\n", *providerFlag, profileType)
-		*providerFlag = profileType
-	}
-
-	//fmt.Printf("DEBUG flag=%q Profile=%q TYPE=%q\n", *providerFlag, profileName, profileType)
-	fmt.Printf("Testing Profile=%q TYPE=%q\n", profileName, profileType)
-
-	var metadata json.RawMessage
-
-	// CLOUDFLAREAPI tests related to CLOUDFLAREAPI_SINGLE_REDIRECT/CF_REDIRECT/CF_TEMP_REDIRECT
-	// requires metadata to enable this feature.
-	// In hindsight, I have no idea why this metadata flag is required to
-	// use this feature. Maybe because we didn't have the capabilities
-	// feature at the time?
-	if profileType == "CLOUDFLAREAPI" {
-		items := []string{}
-		if *enableCFWorkers {
-			items = append(items, `"manage_workers": true`)
-		}
-		switch *enableCFRedirectMode {
-		case "":
-			items = append(items, `"manage_redirects": true`)
-		case "c":
-			items = append(items, `"manage_redirects": true`)
-			items = append(items, `"manage_single_redirects": true`)
-		case "n":
-			items = append(items, `"manage_single_redirects": true`)
-		case "o":
-		}
-		metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
-	}
-
-	provider, err := providers.CreateDNSProvider(profileType, cfg, metadata)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if profileType == "CLOUDFLAREAPI" && *enableCFWorkers {
-		// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
-		if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	return provider, cfg["domain"], cfg
-}
 
 func TestDNSProviders(t *testing.T) {
 	provider, domain, cfg := getProvider(t)
@@ -152,726 +22,9 @@ func TestDNSProviders(t *testing.T) {
 	t.Run(domain, func(t *testing.T) {
 		runTests(t, provider, domain, cfg)
 	})
-
 }
-
-func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
-	dc := &models.DomainConfig{
-		Name: domainName,
-	}
-	dc.UpdateSplitHorizonNames()
-
-	// fix up nameservers
-	ns, err := prv.GetNameservers(domainName)
-	if err != nil {
-		t.Fatal("Failed getting nameservers", err)
-	}
-	dc.Nameservers = ns
-	nameservers.AddNSRecords(dc)
-	return dc
-}
-
-// testPermitted returns nil if the test is permitted, otherwise an
-// error explaining why it is not.
-func testPermitted(p string, f TestGroup) error {
-
-	// not() and only() can't be mixed.
-	if len(f.only) != 0 && len(f.not) != 0 {
-		return fmt.Errorf("invalid filter: can't mix not() and only()")
-	}
-	// TODO(tlim): Have a separate validation pass so that such mistakes
-	// are more visible?
-
-	// If there are any trueflags, make sure they are all true.
-	for _, c := range f.trueflags {
-		if !c {
-			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
-		}
-	}
-
-	// If there are any required capabilities, make sure they all exist.
-	if len(f.required) != 0 {
-		for _, c := range f.required {
-			if !providers.ProviderHasCapability(*providerFlag, c) {
-				return fmt.Errorf("%s not supported", c)
-			}
-		}
-	}
-
-	// If there are any "only" items, you must be one of them.
-	if len(f.only) != 0 {
-		for _, provider := range f.only {
-			if p == provider {
-				return nil
-			}
-		}
-		return fmt.Errorf("disabled by only")
-	}
-
-	// If there are any "not" items, you must NOT be one of them.
-	if len(f.not) != 0 {
-		for _, provider := range f.not {
-			if p == provider {
-				return fmt.Errorf("excluded by not(\"%s\")", provider)
-			}
-		}
-		return nil
-	}
-
-	return nil
-}
-
-// makeChanges runs one set of DNS record tests. Returns true on success.
-func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
-	domainName := dc.Name
-
-	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
-		dom, _ := dc.Copy()
-		for _, r := range tst.Records {
-			rc := models.RecordConfig(*r)
-			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
-			}
-			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
-			}
-			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
-				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
-			}
-			//if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
-			if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
-			}
-			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
-				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
-			}
-			//}
-			dom.Records = append(dom.Records, &rc)
-		}
-		dom.Unmanaged = tst.Unmanaged
-		dom.UnmanagedUnsafe = tst.UnmanagedUnsafe
-		// Bind will refuse a DDNS update when the resulting zone
-		// contains a NS record without an associated address
-		// records (A or AAAA). In order to run the integration tests
-		// against bind, the initial zone contains the following records:
-		// - `@ NS dummy-ns.example.com`
-		// - `dummy-ns A 9.8.7.6`
-		// We 'hardcode' an ignore rule for the `A` record.
-		dom.Unmanaged = append(dom.Unmanaged, &models.UnmanagedConfig{
-			LabelPattern:  "dummy-ns",
-			RTypePattern:  "A",
-			TargetPattern: "",
-		})
-		models.PostProcessRecords(dom.Records)
-		dom2, _ := dom.Copy()
-
-		if err := providers.AuditRecords(*providerFlag, dom.Records); err != nil {
-			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
-			return
-		}
-
-		// get and run corrections for first time
-		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
-		if err != nil {
-			t.Fatal(fmt.Errorf("runTests: %w", err))
-		}
-		if tst.Changeless {
-			if actualChangeCount != 0 {
-				t.Logf("Expected 0 corrections on FIRST run, but found %d.", actualChangeCount)
-				for i, c := range corrections {
-					t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
-				}
-				t.FailNow()
-			}
-		} else if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
-			t.Fatalf("Expected changes, but got none")
-		}
-		for _, c := range corrections {
-			if *verbose {
-				t.Log("\n" + c.Msg)
-			}
-			if c.F != nil { // F == nil if there is just a msg, no action.
-				err = c.F()
-				if err != nil {
-					t.Fatal(err)
-				}
-			}
-		}
-
-		// If we just emptied out the zone, no need for a second pass.
-		if len(tst.Records) == 0 {
-			return
-		}
-
-		// run a second time and expect zero corrections
-		_, corrections, actualChangeCount, err = zonerecs.CorrectZoneRecords(prv, dom2)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if actualChangeCount != 0 {
-			t.Logf("Expected 0 corrections on second run, but found %d.", actualChangeCount)
-			for i, c := range corrections {
-				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
-			}
-			t.FailNow()
-		}
-
-	})
-}
-
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
-	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	testGroups := makeTests()
-
-	firstGroup := *startIdx
-	if firstGroup == -1 {
-		firstGroup = 0
-	}
-	lastGroup := *endIdx
-	if lastGroup == -1 {
-		lastGroup = len(testGroups)
-	}
-
-	curGroup := -1
-	for gIdx, group := range testGroups {
-
-		// Abide by -start -end flags
-		curGroup++
-		if curGroup < firstGroup || curGroup > lastGroup {
-			continue
-		}
-
-		// Abide by filter
-		//fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
-		if err := testPermitted(*profileFlag, *group); err != nil {
-			//t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
-			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
-			continue
-		}
-
-		// Start the testgroup with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
-
-		// Run the tests.
-		start := time.Now()
-
-		for _, tst := range group.tests {
-
-			// TODO(tlim): This is the old version. It skipped the remaining tc() statements if one failed.
-			// The new code continues to test the remaining tc() statements.  Keeping this as a comment
-			// in case we ever want to do something similar.
-			// https://github.com/StackExchange/dnscontrol/pull/2252#issuecomment-1492204409
-			//      makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
-			//      if t.Failed() {
-			//        break
-			//      }
-			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig); !ok {
-				break
-			}
-
-		}
-
-		elapsed := time.Since(start)
-		if *printElapsed {
-			fmt.Printf("ELAPSED %02d %7.2f %q\n", gIdx, elapsed.Seconds(), group.Desc)
-		}
-
-	}
-
-}
-
-func TestDualProviders(t *testing.T) {
-	p, domain, _ := getProvider(t)
-	if p == nil {
-		return
-	}
-	if domain == "" {
-		t.Fatal("NO DOMAIN SET!  Exiting!")
-	}
-	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerFlag, providers.DocDualHost) {
-		t.Skip("Skipping.  DocDualHost == Cannot")
-		return
-	}
-	// clear everything
-	run := func() {
-		dom, _ := dc.Copy()
-
-		rs, cs, _, err := zonerecs.CorrectZoneRecords(p, dom)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for i, c := range rs {
-			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
-		}
-		for i, c := range cs {
-			t.Logf("#%d:\n%s", i+1, c.Msg)
-			if err = c.F(); err != nil {
-				t.Fatal(err)
-			}
-		}
-	}
-	t.Log("Clearing everything")
-	run()
-	// add bogus nameservers
-	dc.Records = []*models.RecordConfig{}
-	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
-	dc.Nameservers = append(dc.Nameservers, nslist...)
-	nameservers.AddNSRecords(dc)
-	t.Log("Adding test nameservers")
-	run()
-	// run again to make sure no corrections
-	t.Log("Running again to ensure stability")
-	rs, cs, actualChangeCount, err := zonerecs.CorrectZoneRecords(p, dc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if actualChangeCount != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", actualChangeCount)
-		for i, c := range rs {
-			t.Logf("INFO#%d:\n%s", i+1, c.Msg)
-		}
-		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
-		}
-		t.FailNow()
-	}
-
-	t.Log("Removing test nameservers")
-	dc.Records = []*models.RecordConfig{}
-	n := 0
-	for _, ns := range dc.Nameservers {
-		if ns.Name == "ns1.example.com" || ns.Name == "ns2.example.com" {
-			continue
-		}
-		dc.Nameservers[n] = ns
-		n++
-	}
-	dc.Nameservers = dc.Nameservers[:n]
-	nameservers.AddNSRecords(dc)
-	run()
-}
-
-func TestNameserverDots(t *testing.T) {
-	// Issue https://github.com/StackExchange/dnscontrol/issues/491
-	// If this fails, the provider's GetNameservers() function uses
-	// models.ToNameserversStripTD() instead of models.ToNameservers()
-	// or vise-versa.
-
-	// Setup:
-	p, domain, _ := getProvider(t)
-	if p == nil {
-		return
-	}
-	if domain == "" {
-		t.Fatal("NO DOMAIN SET!  Exiting!")
-	}
-	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerFlag, providers.DocDualHost) {
-		t.Skip("Skipping.  DocDualHost == Cannot")
-		return
-	}
-
-	t.Run("No trailing dot in nameserver", func(t *testing.T) {
-		for _, nameserver := range dc.Nameservers {
-			//fmt.Printf("DEBUG: nameserver.Name = %q\n", nameserver.Name)
-			if strings.HasSuffix(nameserver.Name, ".") {
-				t.Errorf("Provider returned nameserver with trailing dot: %q", nameserver)
-			}
-		}
-	})
-}
-
-type TestGroup struct {
-	Desc      string
-	required  []providers.Capability
-	only      []string
-	not       []string
-	trueflags []bool
-	tests     []*TestCase
-}
-
-type TestCase struct {
-	Desc            string
-	Records         []*models.RecordConfig
-	Unmanaged       []*models.UnmanagedConfig
-	UnmanagedUnsafe bool // DISABLE_IGNORE_SAFETY_CHECK
-	Changeless      bool // set to true if any changes would be an error
-}
-
-// ExpectNoChanges indicates that no changes is not an error, it is a requirement.
-func (tc *TestCase) ExpectNoChanges() *TestCase {
-	tc.Changeless = true
-	return tc
-}
-
-// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK
-func (tc *TestCase) UnsafeIgnore() *TestCase {
-	tc.UnmanagedUnsafe = true
-	return tc
-}
-
-func SetLabel(r *models.RecordConfig, label, domain string) {
-	r.Name = label
-	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
-}
-
-func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
-	record.Metadata = metadata
-	return record
-}
-
-func a(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "A")
-}
-
-func aaaa(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "AAAA")
-}
-
-func alias(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "ALIAS")
-}
-
-func azureAlias(name, aliasType, target string) *models.RecordConfig {
-	r := makeRec(name, target, "AZURE_ALIAS")
-	r.AzureAlias = map[string]string{
-		"type": aliasType,
-	}
-	return r
-}
-
-func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "CAA")
-	r.SetTargetCAA(flag, tag, target)
-	return r
-}
-
-func cfProxyA(name, target, status string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_proxy"] = status
-	return r
-}
-
-func cfProxyCNAME(name, target, status string) *models.RecordConfig {
-	r := cname(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_proxy"] = status
-	return r
-}
-
-func cfSingleRedirectEnabled() bool {
-	return ((*enableCFRedirectMode) != "")
-}
-
-func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	err := cfsingleredirect.FromRaw(r, []any{name, code, when, then})
-	if err != nil {
-		panic("Should not happen... cfSingleRedirect")
-	}
-	return r
-}
-
-func cfWorkerRoute(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_WORKER_ROUTE")
-	return r
-}
-
-func cfRedir(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_REDIRECT")
-	return r
-}
-
-func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_TEMP_REDIRECT")
-	return r
-}
-
-func cname(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "CNAME")
-}
-
-func dhcid(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "DHCID")
-}
-
-func dname(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "DNAME")
-}
-
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r := makeRec(name, "", "DS")
-	r.SetTargetDS(keyTag, algorithm, digestType, digest)
-	return r
-}
-
-func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
-	r := makeRec(name, "", "DNSKEY")
-	r.SetTargetDNSKEY(flags, protocol, algorithm, publicKey)
-	return r
-}
-
-func https(name string, priority uint16, target string, params string) *models.RecordConfig {
-	r := makeRec(name, target, "HTTPS")
-	r.SvcPriority = priority
-	r.SvcParams = params
-	return r
-}
-
-func ignoreName(labelSpec string) *models.RecordConfig {
-	return ignore(labelSpec, "*", "*")
-}
-
-func ignoreTarget(targetSpec string, typeSpec string) *models.RecordConfig {
-	return ignore("*", typeSpec, targetSpec)
-}
-
-func ignore(labelSpec string, typeSpec string, targetSpec string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type:     "IGNORE",
-		Metadata: map[string]string{},
-	}
-
-	r.Metadata["ignore_LabelPattern"] = labelSpec
-	r.Metadata["ignore_RTypePattern"] = typeSpec
-	r.Metadata["ignore_TargetPattern"] = targetSpec
-	return r
-}
-
-func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32) *models.RecordConfig {
-	r := makeRec(name, "", "LOC")
-	r.SetLOCParams(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
-	return r
-}
-
-func makeRec(name, target, typ string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type: typ,
-		TTL:  300,
-	}
-	SetLabel(r, name, "**current-domain**")
-	r.SetTarget(target)
-	return r
-}
-
-func manyA(namePattern, target string, n int) []*models.RecordConfig {
-	recs := []*models.RecordConfig{}
-	for i := 0; i < n; i++ {
-		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
-	}
-	return recs
-}
-
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "MX")
-	r.MxPreference = prio
-	return r
-}
-
-func ns(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "NS")
-}
-
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
-	r := makeRec(name, target, "NAPTR")
-	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
-	return r
-}
-
-func ptr(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "PTR")
-}
-
-func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordConfig {
-	r := makeRec(name, target, "R53_ALIAS")
-	r.R53Alias = map[string]string{
-		"type":                   aliasType,
-		"evaluate_target_health": evalTargetHealth,
-	}
-	return r
-}
-
-func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
-	r := makeRec(name, "", "SOA")
-	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SRV")
-	r.SetTargetSRV(priority, weight, port, target)
-	return r
-}
-
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "SSHFP")
-	r.SetTargetSSHFP(algorithm, fingerprint, target)
-	return r
-}
-
-func svcb(name string, priority uint16, target string, params string) *models.RecordConfig {
-	r := makeRec(name, target, "SVCB")
-	r.SvcPriority = priority
-	r.SvcParams = params
-	return r
-}
-
-func ovhdkim(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "DKIM")
-}
-
-func ovhspf(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "SPF")
-}
-
-func ovhdmarc(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "DMARC")
-}
-
-func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.Metadata = make(map[string]string)
-	r.Metadata["create_ovh_native_record"] = rType
-	r.SetTarget(target)
-	return r
-}
-
-func testgroup(desc string, items ...interface{}) *TestGroup {
-	group := &TestGroup{Desc: desc}
-	for _, item := range items {
-		switch v := item.(type) {
-		case requiresFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: requires() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.required = append(group.required, v.caps...)
-		case notFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: not() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.not = append(group.not, v.names...)
-		case onlyFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: only() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.only = append(group.only, v.names...)
-		case alltrueFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: alltrue() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.trueflags = append(group.trueflags, v.flags...)
-		case *TestCase:
-			group.tests = append(group.tests, v)
-		default:
-			fmt.Printf("I don't know about type %T (%v)\n", v, v)
-		}
-	}
-	return group
-}
-
-func tc(desc string, recs ...*models.RecordConfig) *TestCase {
-	var records []*models.RecordConfig
-	var unmanagedItems []*models.UnmanagedConfig
-	for _, r := range recs {
-		if r == nil {
-			continue
-		}
-		switch r.Type {
-		case "IGNORE":
-			unmanagedItems = append(unmanagedItems, &models.UnmanagedConfig{
-				LabelPattern:  r.Metadata["ignore_LabelPattern"],
-				RTypePattern:  r.Metadata["ignore_RTypePattern"],
-				TargetPattern: r.Metadata["ignore_TargetPattern"],
-			})
-			continue
-		default:
-			records = append(records, r)
-		}
-	}
-	return &TestCase{
-		Desc:      desc,
-		Records:   records,
-		Unmanaged: unmanagedItems,
-	}
-}
-
-func txt(name, target string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.SetTargetTXT(target)
-	return r
-}
-
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
-func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
-	r.TTL = t
-	return r
-}
-
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r := makeRec(name, target, "TLSA")
-	r.SetTargetTLSA(usage, selector, matchingtype, target)
-	return r
-}
-
-func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.RecordConfig {
-	r := makeRec(name, target, "PORKBUN_URLFWD")
-	r.Metadata = make(map[string]string)
-	r.Metadata["type"] = t
-	r.Metadata["includePath"] = includePath
-	r.Metadata["wildcard"] = wildcard
-	return r
-}
-
-func clear() *TestCase {
-	return tc("Empty")
-}
-
-type requiresFilter struct {
-	caps []providers.Capability
-}
-
-func requires(c ...providers.Capability) requiresFilter {
-	return requiresFilter{caps: c}
-}
-
-type notFilter struct {
-	names []string
-}
-
-func not(n ...string) notFilter {
-	return notFilter{names: n}
-}
-
-type onlyFilter struct {
-	names []string
-}
-
-func only(n ...string) onlyFilter {
-	return onlyFilter{names: n}
-}
-
-type alltrueFilter struct {
-	flags []bool
-}
-
-func alltrue(f ...bool) alltrueFilter {
-	return alltrueFilter{flags: f}
-}
-
-//
 
 func makeTests() []*TestGroup {
-
 	sha256hash := strings.Repeat("0123456789abcdef", 4)
 	sha512hash := strings.Repeat("0123456789abcdef", 8)
 	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
@@ -906,12 +59,11 @@ func makeTests() []*TestGroup {
 	// whether or not a certain kind of record can be created and
 	// deleted.
 
-	// clear() is the same as tc("Empty").  It removes all records.
-	// Each testgroup() begins with clear() automagically. You do not
-	// have to include the clear() in each testgroup().
+	// emptyzone() is the same as tc("Empty").  It removes all records.
+	// Each testgroup() begins with tcEmptyZone() automagically. You do not
+	// have to include the tcEmptyZone() in each testgroup().
 
 	tests := []*TestGroup{
-
 		// START HERE
 
 		// Narrative:  Hello friend!  Are you adding a new DNS provider to
@@ -1040,7 +192,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("ManyAtOnce",
 			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
-			clear(),
+			tcEmptyZone(),
 			tc("Create an A record", a("www", "1.1.1.1")),
 			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
 			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
@@ -1048,7 +200,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("manyTypesAtOnce",
 			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
-			clear(),
+			tcEmptyZone(),
 			tc("Create an A record", a("www", "1.1.1.1")),
 			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
 			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
@@ -1165,14 +317,14 @@ func makeTests() []*TestGroup {
 
 		testgroup("CNAME",
 			tc("Record pointing to @",
-				cname("foo", "**current-domain**"),
+				cname("foo", "**current-domain**."),
 				a("@", "1.2.3.4"),
 			),
 		),
 
 		testgroup("ApexMX",
 			tc("Record pointing to @",
-				mx("foo", 8, "**current-domain**"),
+				mx("foo", 8, "**current-domain**."),
 				a("@", "1.2.3.4"),
 			),
 		),
@@ -1190,8 +342,8 @@ func makeTests() []*TestGroup {
 			tc("unnull", // Change to regular MX.
 				a("nmx", "1.2.3.3"),
 				a("www", "1.2.3.9"),
-				mx("nmx", 3, "nmx.**current-domain**"),
-				mx("nmx", 9, "www.**current-domain**"),
+				mx("nmx", 3, "nmx.**current-domain**."),
+				mx("nmx", 9, "www.**current-domain**."),
 			),
 			tc("renull", // Change back to Null MX.
 				a("nmx", "1.2.3.3"),
@@ -1213,8 +365,8 @@ func makeTests() []*TestGroup {
 			tc("unnull", // Change to regular MX.
 				a("@", "1.2.3.2"),
 				a("www", "1.2.3.8"),
-				mx("@", 2, "**current-domain**"),
-				mx("@", 8, "www.**current-domain**"),
+				mx("@", 2, "**current-domain**."),
+				mx("@", 8, "www.**current-domain**."),
 			),
 			tc("renull", // Change back to Null MX.
 				a("@", "1.2.3.2"),
@@ -1231,7 +383,7 @@ func makeTests() []*TestGroup {
 			),
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
+			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**.")),
 		),
 
 		//// TXT tests
@@ -1286,7 +438,7 @@ func makeTests() []*TestGroup {
 			tc("a 764-byte TXT", txt("foo764", strings.Repeat("G", 764))), // 255*3-1
 			tc("a 765-byte TXT", txt("foo765", strings.Repeat("H", 765))), // 255*3
 			tc("a 766-byte TXT", txt("foo766", strings.Repeat("J", 766))), // 255*3+1
-			//clear(),
+			// tcEmptyZone(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
 			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
@@ -1301,14 +453,14 @@ func makeTests() []*TestGroup {
 			tc("TXT with semicolon ws", txt("foosc2", `wssemi ; colon`)),
 
 			tc("TXT interior ws", txt("foosp", "with spaces")),
-			//tc("TXT leading ws", txt("foowsb", " leadingspace")),
+			// tc("TXT leading ws", txt("foowsb", " leadingspace")),
 			tc("TXT trailing ws", txt("foows1", "trailingws ")),
 
 			// Vultr syntax-checks TXT records with SPF contents.
 			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 
 			// Nobody needs this and many APIs don't allow it.
-			//tc("Create TXT with frequently difficult characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+			// tc("Create TXT with frequently difficult characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		testgroup("TXT backslashes",
@@ -1352,7 +504,7 @@ func makeTests() []*TestGroup {
 			),
 			tc("deleteOne",
 				a("foo", "1.2.3.4"),
-				//a("foo", "3.4.5.6"), // Delete
+				// a("foo", "3.4.5.6"), // Delete
 			),
 			tc("addOne",
 				a("foo", "1.2.3.4"),
@@ -1367,29 +519,29 @@ func makeTests() []*TestGroup {
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
 				a("foo", "3.4.5.6"),
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
+				mx("foo", 10, "foo.**current-domain**."),
+				mx("foo", 20, "bar.**current-domain**."),
 			),
 			tc("changeOne",
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
 				a("foo", "8.8.8.8"), // Change
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
+				mx("foo", 10, "foo.**current-domain**."),
+				mx("foo", 20, "bar.**current-domain**."),
 			),
 			tc("deleteOne",
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
-				//a("foo", "8.8.8.8"),  // Delete
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
+				// a("foo", "8.8.8.8"),  // Delete
+				mx("foo", 10, "foo.**current-domain**."),
+				mx("foo", 20, "bar.**current-domain**."),
 			),
 			tc("addOne",
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
 				a("foo", "8.8.8.8"), // Add
-				mx("foo", 10, "foo.**current-domain**"),
-				mx("foo", 20, "bar.**current-domain**"),
+				mx("foo", 10, "foo.**current-domain**."),
+				mx("foo", 20, "bar.**current-domain**."),
 			),
 		),
 
@@ -1444,7 +596,7 @@ func makeTests() []*TestGroup {
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"DIGITALOCEAN",  // No paging. Why bother?
 				"DESEC",         // Skip due to daily update limits.
-				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				// "CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
@@ -1452,34 +604,34 @@ func makeTests() []*TestGroup {
 				"MSDNS",      // No paging done. No need to test.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
-				//"ROUTE53",       // Batches up changes in pages.
+				// "ROUTE53",       // Batches up changes in pages.
 				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",     // Test beaks limits.
 			),
-			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
-			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
-			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
+			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
+			tc("101 records", manyA("pager101-rec%04d", "1.2.3.4", 101)...),
 		),
 
 		testgroup("pager601",
 			only(
-				//"AZURE_DNS",     // Removed because it is too slow
+				// "AZURE_DNS",     // Removed because it is too slow
 				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
-			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
+			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
+			tc("Update 601 records", manyA("pager601-rec%04d", "1.2.3.5", 600)...),
 		),
 
 		testgroup("pager1201",
 			only(
-				//"AKAMAIEDGEDNS", // No paging done. No need to test.
+				// "AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
@@ -1487,13 +639,13 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"MSDNS",         // No paging done. No need to test.
-				"GCLOUD",
+				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),
-			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
-			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+			tc("1200 records", manyA("pager1201-rec%04d", "1.2.3.4", 1200)...),
+			tc("Update 1200 records", manyA("pager1201-rec%04d", "1.2.3.5", 1200)...),
 		),
 
 		// Test the boundaries of Google' batch system.
@@ -1501,16 +653,17 @@ func makeTests() []*TestGroup {
 		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
-				"GCLOUD",
+				//"GCLOUD",
+				"HOSTINGDE", // Pages.
 			),
 			tc("1200 records",
-				manyA("rec%04d", "1.2.3.4", 1200)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records and Create others", append(
-				manyA("arec%04d", "1.2.3.4", 1200),
-				manyA("rec%04d", "1.2.3.5", 1200)...)...),
+				manyA("batch-arec%04d", "1.2.3.4", 1200),
+				manyA("batch-rec%04d", "1.2.3.5", 1200)...)...),
 			tc("Update 1200 records and Create and Delete others", append(
-				manyA("rec%04d", "1.2.3.4", 1200),
-				manyA("zrec%04d", "1.2.3.4", 1200)...)...),
+				manyA("batch-rec%04d", "1.2.3.4", 1200),
+				manyA("batch-zrec%04d", "1.2.3.4", 1200)...)...),
 		),
 
 		//// CanUse* types:
@@ -1524,33 +677,33 @@ func makeTests() []*TestGroup {
 
 		testgroup("CAA",
 			requires(providers.CanUseCAA),
-			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
-			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
-			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-			tc("CAA many records", caa("@", "issuewild", 128, ";")),
+			tc("CAA record", caa("@", 0, "issue", "letsencrypt.org")),
+			tc("CAA change tag", caa("@", 0, "issuewild", "letsencrypt.org")),
+			tc("CAA change target", caa("@", 0, "issuewild", "example.com")),
+			tc("CAA change flag", caa("@", 128, "issuewild", "example.com")),
+			tc("CAA many records", caa("@", 128, "issuewild", ";")),
 			// Test support of spaces in the 3rd field. Some providers don't
 			// support this.  See providers/exoscale/auditrecords.go as an example.
-			tc("CAA whitespace", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
+			tc("CAA whitespace", caa("@", 0, "issue", "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
 
 		// LOCation records. // No.47
 		testgroup("LOC",
 			requires(providers.CanUseLOC),
-			//42 21 54     N  71 06  18     W -24m 30m
+			// 42 21 54     N  71 06  18     W -24m 30m
 			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24.05, 30, 0, 0)),
-			//42 21 54     N  71 06  18     W -24m 30m
+			// 42 21 54     N  71 06  18     W -24m 30m
 			tc("Update single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24.06, 30, 10, 0)),
-			tc("Multiple LOC records-create a-d modify apex", //create a-d, modify @
-				//42 21 54     N  71 06  18     W -24m 30m
+			tc("Multiple LOC records-create a-d modify apex", // create a-d, modify @
+				// 42 21 54     N  71 06  18     W -24m 30m
 				loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24, 30, 0, 0),
-				//42 21 43.952 N  71 5   6.344  W -24m 1m 200m
+				// 42 21 43.952 N  71 5   6.344  W -24m 1m 200m
 				loc("a", 42, 21, 43.952, "N", 71, 5, 6.344, "W", -24.33, 1, 200, 10),
-				//52 14 05     N  00 08  50     E 10m
+				// 52 14 05     N  00 08  50     E 10m
 				loc("b", 52, 14, 5, "N", 0, 8, 50, "E", 10.22, 0, 0, 0),
-				//32  7 19     S 116  2  25     E 10m
+				// 32  7 19     S 116  2  25     E 10m
 				loc("c", 32, 7, 19, "S", 116, 2, 25, "E", 10, 0, 0, 0),
-				//42 21 28.764 N  71 00  51.617 W -44m 2000m
+				// 42 21 28.764 N  71 00  51.617 W -44m 2000m
 				loc("d", 42, 21, 28.764, "N", 71, 0, 51.617, "W", -44, 2000, 0, 0),
 			),
 		),
@@ -1590,7 +743,7 @@ func makeTests() []*TestGroup {
 		// SOA
 		testgroup("SOA",
 			requires(providers.CanUseSOA),
-			clear(), // Extra clear required or only the first run passes.
+			tcEmptyZone(), // Required or only the first run passes.
 			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
@@ -1610,7 +763,7 @@ func makeTests() []*TestGroup {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			clear(),
+			tcEmptyZone(),
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
@@ -1713,7 +866,7 @@ func makeTests() []*TestGroup {
 				ds("child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
 				ns("child", "ns101.cloudns.net."),
 			),
-			//tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
+			// tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
 			tc("delete 1, create 1",
 				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
 				ns("another-child", "ns101.cloudns.net."),
@@ -1726,7 +879,7 @@ func makeTests() []*TestGroup {
 			),
 			// in CLouDNS  we must delete DS Record before deleting NS record
 			// should no longer be necessary, provider should handle order correctly
-			//tc("delete all DS",
+			// tc("delete all DS",
 			//	ns("another-child", "ns101.cloudns.net."),
 			//),
 		),
@@ -1790,17 +943,17 @@ func makeTests() []*TestGroup {
 			tc("ALIAS to A record in same zone",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
-				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/A/foo.a"),
 			),
 			tc("change aliasA",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
-				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/A/quux.a"),
 			),
 			tc("change backA",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
-				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/A/foo.a"),
 			),
 		),
 
@@ -1813,17 +966,17 @@ func makeTests() []*TestGroup {
 			tc("ALIAS to CNAME record in same zone",
 				cname("foo.cname", "google.com."),
 				cname("quux.cname", "google2.com."),
-				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/CNAME/foo.cname"),
 			),
 			tc("change aliasCNAME",
 				cname("foo.cname", "google.com."),
 				cname("quux.cname", "google2.com."),
-				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/CNAME/quux.cname"),
 			),
 			tc("change backCNAME",
 				cname("foo.cname", "google.com."),
 				cname("quux.cname", "google2.com."),
-				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain**/CNAME/foo.cname"),
 			),
 		),
 
@@ -1838,12 +991,12 @@ func makeTests() []*TestGroup {
 			tc("ALIAS to A record in same zone",
 				a("kyle", "1.2.3.4"),
 				a("cartman", "2.3.4.5"),
-				r53alias("kenny", "A", "kyle.**current-domain**", "false"),
+				r53alias("kenny", "A", "kyle.**current-domain**.", "false"),
 			),
 			tc("modify an r53 alias",
 				a("kyle", "1.2.3.4"),
 				a("cartman", "2.3.4.5"),
-				r53alias("kenny", "A", "cartman.**current-domain**", "false"),
+				r53alias("kenny", "A", "cartman.**current-domain**.", "false"),
 			),
 		),
 
@@ -1856,12 +1009,12 @@ func makeTests() []*TestGroup {
 			tc("add an alias to 18",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
 			),
 			tc("modify alias to 19",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**.", "false"),
 			),
 			tc("remove alias",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1870,17 +1023,17 @@ func makeTests() []*TestGroup {
 			tc("add an alias back",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**.", "false"),
 			),
 			tc("remove cnames",
-				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**.", "false"),
 			),
 		),
 
 		testgroup("R53_ALIAS_CNAME",
 			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
@@ -1891,7 +1044,7 @@ func makeTests() []*TestGroup {
 			// See https://github.com/StackExchange/dnscontrol/issues/2107
 			requires(providers.CanUseRoute53Alias),
 			tc("loop should fail",
-				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**", "false"),
+				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**.", "false"),
 			),
 		),
 
@@ -1899,7 +1052,7 @@ func makeTests() []*TestGroup {
 		testgroup("R53_alias pre-existing",
 			requires(providers.CanUseRoute53Alias),
 			tc("Create some records",
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**", "false"),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 			tc("Add a new record - ignoring foo",
@@ -1911,11 +1064,11 @@ func makeTests() []*TestGroup {
 		testgroup("R53_alias evaluate_target_health",
 			requires(providers.CanUseRoute53Alias),
 			tc("Create alias and cname",
-				r53alias("test-record", "CNAME", "test-record-1.**current-domain**", "false"),
+				r53alias("test-record", "CNAME", "test-record-1.**current-domain**.", "false"),
 				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 			tc("modify evaluate target health",
-				r53alias("test-record", "CNAME", "test-record-1.**current-domain**", "true"),
+				r53alias("test-record", "CNAME", "test-record-1.**current-domain**.", "true"),
 				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
@@ -1932,76 +1085,76 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_REDIRECT",
 			only("CLOUDFLAREAPI"),
-			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
-			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
-			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("redir", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+			tc("change", cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
+			tc("changelabel", cfRedir("cable.**current-domain**/*", "https://change.cnn.com/$1")),
 
 			// Removed these for speed.  They tested if order matters,
 			// which it doesn't seem to.  Re-add if needed.
-			clear(),
+			tcEmptyZone(),
 			tc("multipleA",
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
 			),
-			clear(),
+			tcEmptyZone(),
 			tc("multipleB",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
 			),
 			tc("change1",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
 			),
 			tc("change1",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
 			),
 
 			// NB(tlim): This test case used to fail but mysteriously started working.
-			clear(),
+			tcEmptyZone(),
 			tc("multiple3",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-				cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
+				cfRedir("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
 			),
 
 			// Repeat the above tests using CF_TEMP_REDIR instead
-			clear(),
-			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
-			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
-			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
-			clear(),
+			tcEmptyZone(),
+			tc("tempredir", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+			tc("tempchange", cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
+			tc("tempchangelabel", cfRedirTemp("cable.**current-domain**/*", "https://change.cnn.com/$1")),
+			tcEmptyZone(),
 			tc("tempmultipleA",
-				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
 			),
-			clear(),
+			tcEmptyZone(),
 			tc("tempmultipleB",
-				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
 			),
 			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
 			),
 			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
 			),
 			// NB(tlim): This test case used to fail but mysteriously started working.
 			tc("tempmultiple3",
-				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
 			),
 		),
 
 		testgroup("CF_REDIRECT_CONVERT",
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
-			tc("start301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
-			tc("convert302", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
-			tc("convert301", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+			tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+			tc("convert301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 		),
 
 		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
@@ -2018,10 +1171,10 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_PROXY A create",
 			only("CLOUDFLAREAPI"),
-			CfProxyOff(), clear(),
-			CfProxyOn(), clear(),
-			CfProxyFull1(), clear(),
-			CfProxyFull2(), clear(),
+			CfProxyOff(), tcEmptyZone(),
+			CfProxyOn(), tcEmptyZone(),
+			CfProxyFull1(), tcEmptyZone(),
+			CfProxyFull2(), tcEmptyZone(),
 		),
 
 		// These next testgroups attempt every possible transition between off, on, full1 and full2.
@@ -2030,89 +1183,89 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_PROXY A off to X",
 			only("CLOUDFLAREAPI"),
-			//CF_PROXY_OFF(), CF_PROXY_OFF(), clear(), // redundant
-			CfProxyOff(), CfProxyOn(), clear(),
-			CfProxyOff(), CfProxyFull1(), clear(),
-			CfProxyOff(), CfProxyFull2(), clear(),
+			// CF_PROXY_OFF(), CF_PROXY_OFF(), tcEmptyZone(), // redundant
+			CfProxyOff(), CfProxyOn(), tcEmptyZone(),
+			CfProxyOff(), CfProxyFull1(), tcEmptyZone(),
+			CfProxyOff(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A on to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyOn(), CfProxyOff(), clear(),
-			//CF_PROXY_ON(), CF_PROXY_ON(), clear(), // redundant
-			//CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), clear(), // Removed for speed
-			CfProxyOn(), CfProxyFull2(), clear(),
+			CfProxyOn(), CfProxyOff(), tcEmptyZone(),
+			// CF_PROXY_ON(), CF_PROXY_ON(), tcEmptyZone(), // redundant
+			// CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			CfProxyOn(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A full1 to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyFull1(), CfProxyOff(), clear(),
-			//CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
-			//CF_PROXY_FULL1(), CF_PROXY_FULL1(), clear(), // redundant
-			CfProxyFull1(), CfProxyFull2(), clear(),
+			CfProxyFull1(), CfProxyOff(), tcEmptyZone(),
+			// CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			// CF_PROXY_FULL1(), tcEmptyZone(), // redundant
+			CfProxyFull1(), CfProxyFull2(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY A full2 to X",
 			only("CLOUDFLAREAPI"),
-			CfProxyFull2(), CfProxyOff(), clear(),
-			CfProxyFull2(), CfProxyOn(), clear(),
-			CfProxyFull2(), CfProxyFull1(), clear(),
-			//CF_PROXY_FULL2(), CF_PROXY_FULL2(), clear(), // redundant
+			CfProxyFull2(), CfProxyOff(), tcEmptyZone(),
+			CfProxyFull2(), CfProxyOn(), tcEmptyZone(),
+			CfProxyFull2(), CfProxyFull1(), tcEmptyZone(),
+			// CF_PROXY_FULL2(), CF_PROXY_FULL2(), tcEmptyZone(), // redundant
 		),
 
 		testgroup("CF_PROXY CNAME create",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOff(), clear(),
-			CfCProxyOn(), clear(),
-			CfCProxyFull(), clear(),
+			CfCProxyOff(), tcEmptyZone(),
+			CfCProxyOn(), tcEmptyZone(),
+			CfCProxyFull(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY CNAME off to X",
 			only("CLOUDFLAREAPI"),
-			//CF_CPROXY_OFF(), CF_CPROXY_OFF(), clear(),  // redundant
-			CfCProxyOff(), CfCProxyOn(), clear(),
-			CfCProxyOff(), CfCProxyFull(), clear(),
+			// CF_CPROXY_OFF(), CF_CPROXY_OFF(), tcEmptyZone(),  // redundant
+			CfCProxyOff(), CfCProxyOn(), tcEmptyZone(),
+			CfCProxyOff(), CfCProxyFull(), tcEmptyZone(),
 		),
 
 		testgroup("CF_PROXY CNAME on to X",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOn(), CfCProxyOff(), clear(),
-			//CF_CPROXY_ON(), CF_CPROXY_ON(), clear(), // redundant
-			//CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), clear(), // Removed for speed
+			CfCProxyOn(), CfCProxyOff(), tcEmptyZone(),
+			// CF_CPROXY_ON(), CF_CPROXY_ON(), tcEmptyZone(), // redundant
+			// CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
 		),
 
 		testgroup("CF_PROXY CNAME full to X",
 			only("CLOUDFLAREAPI"),
-			CfCProxyFull(), CfCProxyOff(), clear(),
-			//CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), clear(), // Removed for speed
-			//CF_CPROXY_FULL(), CF_CPROXY_FULL(), clear(), // redundant
+			CfCProxyFull(), CfCProxyOff(), tcEmptyZone(),
+			// CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
+			// CF_CPROXY_FULL(), tcEmptyZone(), // redundant
 		),
 
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
 			// TODO(fdcastel): Add worker scripts via api call before test execution
-			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
-			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
-			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
-			clear(),
+			tc("simple", cfWorkerRoute("cnn.**current-domain**/*", "dnscontrol_integrationtest_cnn")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain**/*", "dnscontrol_integrationtest_msnbc")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain**/*", "dnscontrol_integrationtest_msnbc")),
+			tcEmptyZone(),
 			tc("createMultiple",
-				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
-				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
 			),
 			tc("addOne",
-				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
-				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
-				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
 			tc("changeOne",
-				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
-				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
-				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msn.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
 			tc("deleteOne",
-				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
-				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msn.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("api.**current-domain**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
 		),
 
@@ -2137,9 +1290,9 @@ func makeTests() []*TestGroup {
 				// NB(tlim): This ignores 1 record of a recordSet. This should
 				// fail for diff2.ByRecordSet() providers if diff2 is not
 				// implemented correctly.
-				//a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
-				//txt("foo", "simple"),
+				// a("foo", "1.2.3.4"),
+				// a("foo", "2.3.4.5"),
+				// txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("foo", "", ""),
@@ -2153,8 +1306,8 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("ignore label,type",
-				//a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
+				// a("foo", "1.2.3.4"),
+				// a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2169,7 +1322,7 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("ignore label,type,target",
-				//a("foo", "1.2.3.4"),
+				// a("foo", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
@@ -2185,10 +1338,10 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("ignore type",
-				//a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
+				// a("foo", "1.2.3.4"),
+				// a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
-				//a("bar", "5.5.5.5"),
+				// a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A", ""),
 			).ExpectNoChanges(),
@@ -2202,7 +1355,7 @@ func makeTests() []*TestGroup {
 
 			tc("ignore type,target",
 				a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
+				// a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2218,7 +1371,7 @@ func makeTests() []*TestGroup {
 
 			tc("ignore target",
 				a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
+				// a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2234,10 +1387,10 @@ func makeTests() []*TestGroup {
 
 			// Many types:
 			tc("ignore manytypes",
-				//a("foo", "1.2.3.4"),
-				//a("foo", "2.3.4.5"),
-				//txt("foo", "simple"),
-				//a("bar", "5.5.5.5"),
+				// a("foo", "1.2.3.4"),
+				// a("foo", "2.3.4.5"),
+				// txt("foo", "simple"),
+				// a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A,TXT", ""),
 			).ExpectNoChanges(),
@@ -2255,7 +1408,7 @@ func makeTests() []*TestGroup {
 				a("foo", "2.3.4.5"),
 				txt("foo", "simple"),
 				a("bar", "5.5.5.5"),
-				//cname("mail", "ghs.googlehosted.com."),
+				// cname("mail", "ghs.googlehosted.com."),
 				ignore("", "CNAME", "*.googlehosted.com."),
 			).ExpectNoChanges(),
 			tc("VERIFY PREVIOUS",
@@ -2281,13 +1434,13 @@ func makeTests() []*TestGroup {
 				// NB(tlim): This ignores 1 record of a recordSet. This should
 				// fail for diff2.ByRecordSet() providers if diff2 is not
 				// implemented correctly.
-				//a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
-				//txt("@", "simple"),
+				// a("@", "1.2.3.4"),
+				// a("@", "2.3.4.5"),
+				// txt("@", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("@", "", ""),
-				//ignore("", "NS", ""),
+				// ignore("", "NS", ""),
 				// NB(tlim): .UnsafeIgnore is needed because the NS records
 				// that providers injects into zones are treated like input
 				// from dnsconfig.js.
@@ -2301,8 +1454,8 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("apex label,type",
-				//a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
+				// a("@", "1.2.3.4"),
+				// a("@", "2.3.4.5"),
 				txt("@", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2317,7 +1470,7 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("apex label,type,target",
-				//a("@", "1.2.3.4"),
+				// a("@", "1.2.3.4"),
 				a("@", "2.3.4.5"),
 				txt("@", "simple"),
 				a("bar", "5.5.5.5"),
@@ -2336,10 +1489,10 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("apex type",
-				//a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
+				// a("@", "1.2.3.4"),
+				// a("@", "2.3.4.5"),
 				txt("@", "simple"),
-				//a("bar", "5.5.5.5"),
+				// a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A", ""),
 			).ExpectNoChanges(),
@@ -2353,7 +1506,7 @@ func makeTests() []*TestGroup {
 
 			tc("apex type,target",
 				a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
+				// a("@", "2.3.4.5"),
 				txt("@", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2369,7 +1522,7 @@ func makeTests() []*TestGroup {
 
 			tc("apex target",
 				a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
+				// a("@", "2.3.4.5"),
 				txt("@", "simple"),
 				a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
@@ -2385,10 +1538,10 @@ func makeTests() []*TestGroup {
 
 			// Many types:
 			tc("apex manytypes",
-				//a("@", "1.2.3.4"),
-				//a("@", "2.3.4.5"),
-				//txt("@", "simple"),
-				//a("bar", "5.5.5.5"),
+				// a("@", "1.2.3.4"),
+				// a("@", "2.3.4.5"),
+				// txt("@", "simple"),
+				// a("bar", "5.5.5.5"),
 				cname("mail", "ghs.googlehosted.com."),
 				ignore("", "A,TXT", ""),
 			).ExpectNoChanges(),
@@ -2452,9 +1605,9 @@ func makeTests() []*TestGroup {
 			),
 
 			tc("ignore label=foo.*",
-				//a("foo.bat", "1.2.3.4"),
-				//a("foo.bat", "2.3.4.5"),
-				//txt("foo.bat", "simple"),
+				// a("foo.bat", "1.2.3.4"),
+				// a("foo.bat", "2.3.4.5"),
+				// txt("foo.bat", "simple"),
 				a("bar.bat", "5.5.5.5"),
 				cname("mail.bat", "ghs.googlehosted.com."),
 				ignore("foo.*", "", ""),
@@ -2468,10 +1621,10 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("ignore label=foo.bat,type",
-				//a("foo.bat", "1.2.3.4"),
-				//a("foo.bat", "2.3.4.5"),
+				// a("foo.bat", "1.2.3.4"),
+				// a("foo.bat", "2.3.4.5"),
 				txt("foo.bat", "simple"),
-				//a("bar.bat", "5.5.5.5"),
+				// a("bar.bat", "5.5.5.5"),
 				cname("mail.bat", "ghs.googlehosted.com."),
 				ignore("*.bat", "A", ""),
 			).ExpectNoChanges(),
@@ -2488,7 +1641,7 @@ func makeTests() []*TestGroup {
 				a("foo.bat", "2.3.4.5"),
 				txt("foo.bat", "simple"),
 				a("bar.bat", "5.5.5.5"),
-				//cname("mail.bat", "ghs.googlehosted.com."),
+				// cname("mail.bat", "ghs.googlehosted.com."),
 				ignore("", "", "*.googlehosted.com."),
 			).ExpectNoChanges(),
 			tc("VERIFY PREVIOUS",
@@ -2521,8 +1674,8 @@ func makeTests() []*TestGroup {
 				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
 				mx("foo", 10, "aspmx.l.google.com."),
 				mx("foo", 20, "alt1.aspmx.l.google.com."),
-				//a("zzz", "3.3.3.3"),
-				//a("zzz", "4.4.4.4"),
+				// a("zzz", "3.3.3.3"),
+				// a("zzz", "4.4.4.4"),
 				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
 			),
 			tc("VERIFY PREVIOUS",
@@ -2542,8 +1695,8 @@ func makeTests() []*TestGroup {
 				a("foo", "1.1.1.1"),
 				a("foo", "12.12.12.12"), // CHANGE
 				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
-				//mx("foo", 10, "aspmx.l.google.com."),
-				//mx("foo", 20, "alt1.aspmx.l.google.com"),
+				// mx("foo", 10, "aspmx.l.google.com."),
+				// mx("foo", 20, "alt1.aspmx.l.google.com"),
 				a("zzz", "3.3.3.3"),
 				a("zzz", "4.4.4.4"),
 				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
@@ -2564,9 +1717,9 @@ func makeTests() []*TestGroup {
 				ignore("foo", "MX,AAAA", ""),
 				a("foo", "1.1.1.1"),
 				a("foo", "13.13.13.13"), // CHANGE
-				//aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
-				//mx("foo", 10, "aspmx.l.google.com."),
-				//mx("foo", 20, "alt1.aspmx.l.google.com"),
+				// aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
+				// mx("foo", 10, "aspmx.l.google.com."),
+				// mx("foo", 20, "alt1.aspmx.l.google.com"),
 				a("zzz", "3.3.3.3"),
 				a("zzz", "4.4.4.4"),
 				aaaa("zzz", "2003:dd:d7ff::fe71:cccc"),
@@ -2585,7 +1738,7 @@ func makeTests() []*TestGroup {
 			// Change within a (name+type+data) ("ByRecord")
 			tc("IGNORE change ByRecord",
 				ignore("foo", "A", "1.1.1.1"),
-				//a("foo", "1.1.1.1"),
+				// a("foo", "1.1.1.1"),
 				a("foo", "14.14.14.14"),
 				aaaa("foo", "2003:dd:d7ff::fe71:aaaa"),
 				mx("foo", 10, "aspmx.l.google.com."),
@@ -2658,7 +1811,7 @@ func makeTests() []*TestGroup {
 				a("testdefined", "9.9.9.9"),
 			),
 			tc("ignore",
-				//a("testignore", "8.8.8.8"),
+				// a("testignore", "8.8.8.8"),
 				a("testdefined", "9.9.9.9"),
 				ignore("testignore", "", ""),
 			).ExpectNoChanges(),
@@ -2677,7 +1830,7 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 
 			tc("ignore with change",
-				//a("testignore", "8.8.8.8"),
+				// a("testignore", "8.8.8.8"),
 				a("testdefined", "2.2.2.2"),
 				ignore("testignore", "", ""),
 			),

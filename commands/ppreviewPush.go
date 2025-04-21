@@ -3,6 +3,7 @@ package commands
 import (
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -28,45 +29,12 @@ type zoneCache struct {
 	sync.Mutex
 }
 
-const legacywarn = `WARNING: --cmode=legacy will go away in v4.16 or later.` +
-	` Please test --cmode=concurrent and report any bugs ASAP.` +
-	` See https://docs.dnscontrol.org/commands/preview-push#cmode` +
-	"\n"
-
-const ppreviewwarn = `WARNING: ppreview is going away in v4.16 or later.` +
-	` Use "preview" instead.` +
-	"\n"
-
-const ppushwarn = `WARNING: ppush is going away in v4.16 or later.` +
-	` Use "push" instead.` +
-	"\n"
-
 var _ = cmd(catMain, func() *cli.Command {
 	var args PPreviewArgs
 	return &cli.Command{
 		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
 		Action: func(ctx *cli.Context) error {
-			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, legacywarn)
-				return exit(Preview(args))
-			}
-			return exit(PPreview(args))
-		},
-		Flags: args.flags(),
-	}
-}())
-
-var _ = cmd(catMain, func() *cli.Command {
-	var args PPreviewArgs
-	return &cli.Command{
-		Name:  "ppreview",
-		Usage: "Deprecated. Same as: preview --cmode=concurrent",
-		Action: func(ctx *cli.Context) error {
-			fmt.Fprint(os.Stderr, ppreviewwarn)
-			if args.ConcurMode == "legacy" {
-				return exit(Preview(args))
-			}
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -78,17 +46,18 @@ type PPreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify      bool
-	WarnChanges bool
-	ConcurMode  string
-	NoPopulate  bool
-	DePopulate  bool
-	Report      string
-	Full        bool
+	Notify            bool
+	WarnChanges       bool
+	ConcurMode        string
+	NoPopulate        bool
+	DePopulate        bool
+	PopulateOnPreview bool
+	Report            string
+	Full              bool
 }
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
-//type ReportItem struct {
+// type ReportItem struct {
 //	Domain      string `json:"domain"`
 //	Corrections int    `json:"corrections"`
 //	Provider    string `json:"provider,omitempty"`
@@ -113,10 +82,11 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "cmode",
 		Destination: &args.ConcurMode,
 		Value:       "concurrent",
-		Usage:       `Which providers to run concurrently: legacy, concurrent, none, all`,
+		Usage:       `Which providers to run concurrently: concurrent, none, all`,
 		Action: func(c *cli.Context, s string) error {
-			if !slices.Contains([]string{"legacy", "concurrent", "none", "all"}, s) {
-				fmt.Printf("%q is not a valid option for --cmode.  Values are: legacy, concurrent, none, all\n", s)
+			if !slices.Contains([]string{"concurrent", "none", "all"}, s) {
+				fmt.Printf("%q is not a valid option for --cmode.  Values are: concurrent, none, all\n", s)
+				os.Exit(1)
 			}
 			return nil
 		},
@@ -132,6 +102,12 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Usage:       `Delete unknown zones at provider (dangerous!)`,
 	})
 	flags = append(flags, &cli.BoolFlag{
+		Name:        "populate-on-preview",
+		Destination: &args.PopulateOnPreview,
+		Value:       true,
+		Usage:       `Auto-create zones on preview`,
+	})
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "full",
 		Destination: &args.Full,
 		Usage:       `Add headings, providers names, notifications of no changes, etc`,
@@ -140,8 +116,8 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:   "reportmax",
 		Hidden: true,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, max int) error {
-			printer.MaxReport = max
+		Action: func(ctx *cli.Context, maxreport int) error {
+			printer.MaxReport = maxreport
 			return nil
 		},
 	})
@@ -164,26 +140,6 @@ var _ = cmd(catMain, func() *cli.Command {
 		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
 		Action: func(ctx *cli.Context) error {
-			if args.ConcurMode == "legacy" {
-				fmt.Fprint(os.Stderr, legacywarn)
-				return exit(Push(args))
-			}
-			return exit(PPush(args))
-		},
-		Flags: args.flags(),
-	}
-}())
-
-var _ = cmd(catMain, func() *cli.Command {
-	var args PPushArgs
-	return &cli.Command{
-		Name:  "ppush",
-		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
-			fmt.Fprint(os.Stderr, ppushwarn)
-			if args.ConcurMode == "legacy" {
-				return exit(Push(args))
-			}
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
@@ -220,7 +176,6 @@ var pobsoleteDiff2FlagUsed = false
 
 // run is the main routine common to preview/push
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report string) error {
-
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
 	fullMode := args.Full
@@ -250,7 +205,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.PrintfIf(fullMode, "Normalizing and validating 'desired'..\n")
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("exiting due to validation errors")
+		return errors.New("exiting due to validation errors")
 	}
 
 	zcache := NewZoneCache()
@@ -258,7 +213,58 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
-	out.PrintfIf(fullMode, "PHASE 1: GATHERING data\n")
+
+	var totalCorrections int
+	var reportItems []*ReportItem
+	var anyErrors bool
+
+	// Populate the zones (if desired/needed/able):
+	if !args.NoPopulate {
+		out.PrintfIf(fullMode, "PHASE 1: CHECKING for missing zones\n")
+		var wg sync.WaitGroup
+		wg.Add(len(zonesConcurrent))
+		out.PrintfIf(fullMode, "CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
+		for _, zone := range optimizeOrder(zonesConcurrent) {
+			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
+			go func(zone *models.DomainConfig) {
+				defer wg.Done()
+				oneZonePopulate(zone, zcache)
+			}(zone)
+		}
+		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
+		for _, zone := range zonesSerial {
+			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
+			oneZonePopulate(zone, zcache)
+		}
+		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
+		wg.Wait()
+		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
+
+		for _, zone := range zonesToProcess {
+			started := false // Do not emit noise when no provider has corrections.
+			providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
+			for _, provider := range zone.DNSProviderInstances {
+				corrections := zone.GetPopulateCorrections(provider.Name)
+				if len(corrections) == 0 {
+					continue // Do not emit noise when zone exists
+				}
+				if !started {
+					out.StartDomain(zone.GetUniqueName())
+					started = true
+				}
+				skip := skipProvider(provider.Name, providersToProcess)
+				out.StartDNSProvider(provider.Name, skip)
+				if !skip {
+					totalCorrections += len(corrections)
+					out.EndProvider2(provider.Name, len(corrections))
+					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push || args.PopulateOnPreview, interactive, notifier, report))
+				}
+			}
+		}
+	}
+
+	out.PrintfIf(fullMode, "PHASE 2: GATHERING data\n")
 	var wg sync.WaitGroup
 	wg.Add(len(zonesConcurrent))
 	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
@@ -266,23 +272,20 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
 			defer wg.Done()
-			oneZone(zone, args, zcache)
+			oneZone(zone, args)
 		}(zone, args, zcache)
 	}
 	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
 		out.Printf("Serially Gathering: %q\n", zone.Name)
-		oneZone(zone, args, zcache)
+		oneZone(zone, args)
 	}
 	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
 	wg.Wait()
 	out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
 
 	// Now we know what to do, print or do the tasks.
-	out.PrintfIf(fullMode, "PHASE 2: CORRECTIONS\n")
-	var totalCorrections int
-	var reportItems []*ReportItem
-	var anyErrors bool
+	out.PrintfIf(fullMode, "PHASE 3: CORRECTIONS\n")
 	for _, zone := range zonesToProcess {
 		out.StartDomain(zone.GetUniqueName())
 
@@ -312,7 +315,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 		}
-
 	}
 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
@@ -323,18 +325,18 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	err = writeReport(report, reportItems)
 	if err != nil {
-		return fmt.Errorf("could not write report")
+		return errors.New("could not write report")
 	}
 	if anyErrors {
-		return fmt.Errorf("completed with errors")
+		return errors.New("completed with errors")
 	}
 	if totalCorrections != 0 && args.WarnChanges {
-		return fmt.Errorf("there are pending changes")
+		return errors.New("there are pending changes")
 	}
 	return nil
 }
 
-//func countActions(corrections []*models.Correction) int {
+// func countActions(corrections []*models.Correction) int {
 //	r := 0
 //	for _, c := range corrections {
 //		if c.F != nil {
@@ -344,6 +346,10 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 //	return r
 //}
 
+// whichZonesToProcess takes a list of DomainConfigs and a filter string and
+// returns a list of DomainConfigs whose metadata[DomainUniqueName] matched the
+// filter. The filter string is a comma-separated list of domain names. If the
+// filter string is empty or "all", all domains are returned.
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
 	if filter == "" || filter == "all" {
 		return domains
@@ -352,7 +358,7 @@ func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*model
 	permitList := strings.Split(filter, ",")
 	var picked []*models.DomainConfig
 	for _, domain := range domains {
-		if domainInList(domain.Name, permitList) {
+		if domainInList(domain.GetUniqueName(), permitList) {
 			picked = append(picked, domain)
 		}
 	}
@@ -382,12 +388,12 @@ func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*m
 // concurrency.  Otherwise false is returned.
 func allConcur(dc *models.DomainConfig) bool {
 	if !providers.ProviderHasCapability(dc.RegistrarInstance.ProviderType, providers.CanConcur) {
-		//fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
+		// fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
 		return false
 	}
 	for _, p := range dc.DNSProviderInstances {
 		if !providers.ProviderHasCapability(p.ProviderType, providers.CanConcur) {
-			//fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
+			// fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
 			return false
 		}
 	}
@@ -414,20 +420,21 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, zc *zoneCache) {
+	// Loop over all the providers configured for that zone:
+	for _, provider := range zone.DNSProviderInstances {
+		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
+		zone.StorePopulateCorrections(provider.Name, populateCorrections)
+	}
+}
+
+func oneZone(zone *models.DomainConfig, args PPreviewArgs) {
 	// Fix the parent zone's delegation: (if able/needed)
 	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
-
-		// Populate the zones at the provider (if desired/needed/able):
-		if !args.NoPopulate {
-			populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
-			zone.StoreCorrections(provider.Name, populateCorrections)
-		}
-
 		// Update the zone's records at the provider:
 		zoneCor, rep, actualChangeCount := generateZoneCorrections(zone, provider)
 		zone.StoreCorrections(provider.Name, rep)
@@ -441,7 +448,6 @@ func oneZone(zone *models.DomainConfig, args PPreviewArgs, zc *zoneCache) {
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
-
 	if filter == "all" { // all
 		return providers
 	}
@@ -477,7 +483,6 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 }
 
 func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
-
 	// Only count the actions, not the messages.
 	cnt := 0
 	for _, cor := range corrections {
@@ -502,7 +507,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 	cc := 0
 	cn := 0
 	for _, correction := range corrections {
-
 		// Print what we're about to do.
 		if correction.F == nil {
 			out.PrintReport(cn, correction)
@@ -514,7 +518,6 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 
 		var err error
 		if push {
-
 			// If interactive, ask "are you sure?" and skip if not.
 			if interactive && !out.PromptToRun() {
 				continue
@@ -542,7 +545,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 		return nil
 	}
 
-	f, err := os.OpenFile(report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(report, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -558,7 +561,6 @@ func writeReport(report string, reportItems []*ReportItem) error {
 }
 
 func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
-
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil // We can't generate a list. No corrections are possible.
@@ -595,7 +597,7 @@ func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProv
 }
 
 func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) ([]*models.Correction, int) {
-	//fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
+	// fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
 		return msg(fmt.Sprintf("DetermineNS: zone %q; Error: %s", zone.Name, err)), 0
@@ -645,7 +647,7 @@ func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
 	}
 	if err != nil {
-		return
+		return notify, err
 	}
 
 	registrars := map[string]providers.Registrar{}
@@ -674,7 +676,7 @@ func PInitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
-	return
+	return notify, err
 }
 
 // pproviderTypeFieldName is the name of the field in creds.json that specifies the provider type id.
@@ -765,7 +767,6 @@ func puniqueStrings(stringSlice []string) []string {
 }
 
 func prefineProviderType(credEntryName string, t string, credFields map[string]string, source string) (replacementType string, warnMsg string, err error) {
-
 	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
 	if t == "" {
 		t = "-"
@@ -778,7 +779,7 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 	// - or ""  GANDI        lookup worked. Nothing to say.
 	// - or ""  - or ""      ERROR "creds.json has invalid or missing data"
 	// GANDI    ""           WARNING "Working but.... Please fix as follows..."
-	// GANDI    GANDI        INFO "working but unneeded: clean up as follows..."
+	// GANDI    INFO "working but unneeded: clean up as follows..."
 	// GANDI    NAMEDOT      ERROR "error mismatched: please fix as follows..."
 
 	// ERROR: Invalid.
@@ -869,5 +870,4 @@ func prefineProviderType(credEntryName string, t string, credFields map[string]s
 		// use the value in creds.json (this should be the normal case)
 		return ct, "", nil
 	}
-
 }

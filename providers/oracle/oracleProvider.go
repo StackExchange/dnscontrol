@@ -3,7 +3,8 @@ package oracle
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"net/http"
 	"strings"
 	"time"
 
@@ -20,7 +21,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(), // should be supported, but getting 500s in tests
@@ -99,7 +100,6 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 			CompartmentId: &o.compartment,
 			Page:          listResp.OpcNextPage,
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +124,7 @@ func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	if err == nil {
 		return nil
 	}
-	if getResp.RawResponse.StatusCode != 404 {
+	if getResp.RawResponse.StatusCode != http.StatusNotFound {
 		return err
 	}
 
@@ -173,11 +173,10 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	}
 
 	nssNoStrip, err := models.ToNameservers(nss)
-
 	if err != nil {
 		nssStrip, err := models.ToNameserversStripTD(nss)
 		if err != nil {
-			return nil, fmt.Errorf("could not determine if trailing dots should be stripped or not")
+			return nil, errors.New("could not determine if trailing dots should be stripped or not")
 		}
 
 		return nssStrip, nil

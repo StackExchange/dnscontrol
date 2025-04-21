@@ -2,6 +2,7 @@ package netcup
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -13,7 +14,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
@@ -37,13 +38,13 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api-key"] == "" || settings["api-password"] == "" || settings["customer-number"] == "" {
-		return nil, fmt.Errorf("missing netcup login parameters")
+		return nil, errors.New("missing netcup login parameters")
 	}
 
 	api := &netcupProvider{}
 	err := api.login(settings["api-key"], settings["api-password"], settings["customer-number"])
 	if err != nil {
-		return nil, fmt.Errorf("login to netcup DNS failed, please check your credentials: %v", err)
+		return nil, fmt.Errorf("login to netcup DNS failed, please check your credentials: %w", err)
 	}
 	return api, nil
 }

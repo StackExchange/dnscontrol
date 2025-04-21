@@ -3,11 +3,10 @@ package gcloud
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -125,7 +124,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		}
 		if len(g.Visibility) != 0 {
 			if ok := visibilityCheck.MatchString(g.Visibility); !ok {
-				return nil, fmt.Errorf("GCLOUD :visibility set but not one of \"public\" or \"private\"")
+				return nil, errors.New("GCLOUD :visibility set but not one of \"public\" or \"private\"")
 			}
 			printer.Printf("GCLOUD :visibility %s configured\n", g.Visibility)
 		}
@@ -242,7 +241,6 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
@@ -258,7 +256,6 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	var newAdds, newDels *gdns.ResourceRecordSet
 
 	for _, change := range changes {
-
 		// Determine the work to be done.
 		n := change.Key.NameFQDN + "."
 		ty := change.Key.Type
@@ -303,7 +300,6 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		if len(newMsgs) != 0 {
 			accumlatedMsgs = append(accumlatedMsgs, newMsgs...)
 		}
-
 	}
 
 	// Process the remaining work.
@@ -380,7 +376,6 @@ func (g *gcloudProvider) mkCorrection(corrections []*models.Correction, accumula
 
 // process calls the Google DNS API to process a Change and re-tries if needed.
 func (g *gcloudProvider) process(origin string, batch *gdns.Change) error {
-
 	zoneName, err := g.getZone(origin)
 	if err != nil || zoneName == nil {
 		return fmt.Errorf("zoneNameMap: no zone named %q", origin)
@@ -490,67 +485,4 @@ func (g *gcloudProvider) EnsureZoneExists(domain string) error {
 	printer.Printf("\n")
 	g.zones[domain+"."], err = g.client.ManagedZones.Create(g.project, mz).Do()
 	return err
-}
-
-const initialBackoff = time.Second * 10 // First delay duration
-const maxBackoff = time.Minute * 3      // Maximum backoff delay
-
-// backoff is the amount of time to sleep if a 429 or 504 is received.
-// It is doubled after each use.
-var backoff = initialBackoff
-var backoff404 = false // Set if the last call requested a retry of a 404
-
-func retryNeeded(resp *googleapi.ServerResponse, err error) bool {
-	if err != nil {
-		return false // Not an error.
-	}
-	serr, ok := err.(*googleapi.Error)
-	if !ok {
-		return false // Not a google error.
-	}
-	if serr.Code == 200 {
-		backoff = initialBackoff // Reset
-		return false             // Success! No need to retry.
-	}
-
-	if serr.Code == 404 {
-		// serr.Code == 404 happens occasionally when GCLOUD hasn't
-		// finished updating the database yet.  We pause and retry
-		// exactly once. There should be a better way to do this, such as
-		// a callback that would tell us a transaction is complete.
-		if backoff404 {
-			backoff404 = false
-			return false // Give up. We've done this already.
-		}
-		log.Printf("Special 404 pause-and-retry for GCLOUD: Pausing %s\n", backoff)
-		time.Sleep(backoff)
-		backoff404 = true
-		return true // Request a retry.
-	}
-	backoff404 = false
-
-	if serr.Code != 429 && serr.Code != 502 && serr.Code != 503 {
-		return false // Not an error that permits retrying.
-	}
-
-	// TODO(tlim): In theory, resp.Header has a header that says how
-	// long to wait but I haven't been able to capture that header in
-	// the wild. If you get these "RUNCHANGE HEAD" messages, please
-	// file a bug with the contents!
-
-	if resp != nil {
-		log.Printf("NOTE: If you see this message, please file a bug with the output below:\n")
-		log.Printf("RUNCHANGE CODE = %+v\n", resp.HTTPStatusCode)
-		log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
-	}
-
-	// a simple exponential back-off
-	log.Printf("Pausing due to ratelimit: %v seconds\n", backoff)
-	time.Sleep(backoff)
-	backoff = backoff + (backoff / 2)
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
-
-	return true // Request the API call be re-tried.
 }

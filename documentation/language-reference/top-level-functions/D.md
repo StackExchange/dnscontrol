@@ -16,7 +16,7 @@ add records with [A](../domain-modifiers/A.md), [CNAME](../domain-modifiers/CNAM
 
 Modifier arguments are processed according to type as follows:
 
-- A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers-modifiers) return such functions.
+- A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
 - An object argument will be merged into the domain's metadata collection.
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
@@ -86,11 +86,12 @@ may have noticed this mistake, but will your coworkers?  Will you in
 six months? You get the idea.
 
 DNSControl command line flag `--domains` matches the full name (with the "!").  If you
-define domains `example.com!george` and `example.com!john` then:
+define domains `example.com!john`, `example.com!paul`, and `example.com!george` then:
 
-* `--domains=example.com` will not match either domain.
-* `--domains='example.com!george'` will match only match the first.
-* `--domains='example.com!george",example.com!john` will match both.
+* `--domains=example.com` will not match any of the three.
+* `--domains='example.com!george'` will only match george.
+* `--domains='example.com!george,example.com!john'` will match george and john.
+* `--domains='example.com!*'` will match all three.
 
 {% hint style="info" %}
 **NOTE**: The quotes are required if your shell treats `!` as a special

@@ -2,7 +2,9 @@ package realtimeregister
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,7 +13,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
-	"golang.org/x/exp/slices"
 )
 
 /*
@@ -30,7 +31,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Cannot(),
@@ -66,7 +67,7 @@ func newRtr(config map[string]string, _ json.RawMessage) (*realtimeregisterAPI, 
 	sandbox := config["sandbox"] == "1"
 
 	if apikey == "" {
-		return nil, fmt.Errorf("realtime register: apikey must be provided")
+		return nil, errors.New("realtime register: apikey must be provided")
 	}
 
 	api := &realtimeregisterAPI{
@@ -204,7 +205,6 @@ func (api *realtimeregisterAPI) GetRegistrarCorrections(dc *models.DomainConfig)
 }
 
 func toRecordConfig(domain string, record *Record) *models.RecordConfig {
-
 	recordConfig := &models.RecordConfig{
 		Type:         record.Type,
 		TTL:          uint32(record.TTL),

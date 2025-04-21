@@ -25,7 +25,7 @@ func NewFromRecords(recs models.Records) *RecordDB {
 
 // ContainsLT returns true if recdb contains rec. Matching is done
 // on the record's label and type (i.e. the RecordKey)
-//func (recdb RecordDB) ContainsLT(rec *models.RecordConfig) bool {
+// func (recdb RecordDB) ContainsLT(rec *models.RecordConfig) bool {
 //	_, ok := recdb.labelAndTypeMap[rec.Key()]
 //	return ok
 //}

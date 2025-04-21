@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -66,7 +67,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Can(),
 	providers.CanUseCAA:              providers.Cannot("Azure Private DNS does not support CAA records"),
@@ -196,7 +197,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, change := range changes {
-
 		// Copy all param values to local variables to avoid overwrites
 		msgs := change.MsgsJoined
 		dcn := dc.Name
@@ -229,7 +229,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 }
 
 func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
-
 	rrset, azRecType, err := a.recordToNativeDiff2(reckey, recs)
 	if err != nil {
 		return err
@@ -251,7 +250,7 @@ retry:
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, azRecType, recordName, *rrset, nil)
 
 	if e, ok := err.(*azcore.ResponseError); ok {
-		if e.StatusCode == 429 {
+		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
 				return err
@@ -266,7 +265,6 @@ retry:
 }
 
 func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey) error {
-
 	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
 	if shortName == zoneName {
 		shortName = "@"
@@ -285,7 +283,7 @@ retry:
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, azRecType, shortName, nil)
 
 	if e, ok := err.(*azcore.ResponseError); ok {
-		if e.StatusCode == 429 {
+		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
 				return err
@@ -345,7 +343,6 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			}
 		} else {
 			panic(fmt.Errorf("nativeToRecords rtype %v unimplemented", *set.Type))
-
 		}
 	case "Microsoft.Network/privateDnsZones/AAAA":
 		if set.Properties.AaaaRecords != nil {
@@ -427,7 +424,6 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 // NOTE recordToNativeDiff2 is really "convert []RecordConfig to rrset".
 
 func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
-
 	recordKeyType := recordKey.Type
 	//	if recordKeyType == "AZURE_ALIAS" {
 	//		fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXXXXXXXXXXXXXXXXX %v\n", recordKeyType)
@@ -501,7 +497,6 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	recordsPager := a.recordsClient.NewListPager(*a.resourceGroup, zoneName, nil)
 
 	for recordsPager.More() {
-
 		waitTime := 1
 	retry:
 
@@ -510,8 +505,7 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 		if recordsErr != nil {
 			err := recordsErr
 			if e, ok := err.(*azcore.ResponseError); ok {
-
-				if e.StatusCode == 429 {
+				if e.StatusCode == http.StatusTooManyRequests {
 					waitTime = waitTime * 2
 					if waitTime > 300 {
 						return nil, err

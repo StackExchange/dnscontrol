@@ -1,14 +1,12 @@
 package rfc4183
 
-import (
-	"fmt"
-)
+import "errors"
 
 // reverseIPv6 returns the ipv6.arpa string suitable for reverse DNS lookups.
 func reverseIPv6(ip []byte, maskbits int) (arpa string, err error) {
 	// Must be IPv6
 	if len(ip) != 16 {
-		return "", fmt.Errorf("not IPv6")
+		return "", errors.New("not IPv6")
 	}
 
 	buf := []byte("x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.ip6.arpa")

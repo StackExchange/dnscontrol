@@ -1,6 +1,7 @@
 package dynadot
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -21,7 +22,7 @@ Info required in `creds.json`:
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanConcur: providers.Cannot(),
+	providers.CanConcur: providers.Unimplemented(),
 }
 
 func init() {
@@ -36,7 +37,7 @@ func newDynadot(m map[string]string) (providers.Registrar, error) {
 
 	d.key = m["key"]
 	if d.key == "" {
-		return nil, fmt.Errorf("missing Dynadot key")
+		return nil, errors.New("missing Dynadot key")
 	}
 
 	return d, nil

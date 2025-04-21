@@ -5,6 +5,7 @@ package mythicbeasts
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,7 +34,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -59,10 +60,10 @@ func init() {
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["keyID"] == "" {
-		return nil, fmt.Errorf("missing Mythic Beasts auth keyID")
+		return nil, errors.New("missing Mythic Beasts auth keyID")
 	}
 	if conf["secret"] == "" {
-		return nil, fmt.Errorf("missing Mythic Beasts auth secret")
+		return nil, errors.New("missing Mythic Beasts auth secret")
 	}
 	return &mythicBeastsProvider{
 		keyID:  conf["keyID"],

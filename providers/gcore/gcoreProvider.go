@@ -3,15 +3,15 @@ package gcore
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
+	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-
-	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
 )
 
 /*
@@ -29,7 +29,7 @@ type gcoreProvider struct {
 // NewGCore creates the provider.
 func NewGCore(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["api-key"] == "" {
-		return nil, fmt.Errorf("missing G-Core API key")
+		return nil, errors.New("missing G-Core API key")
 	}
 
 	c := &gcoreProvider{
@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -139,7 +139,6 @@ func generateChangeMsg(updates []string) string {
 // correction, and a message to output to the user when the change is
 // made.
 func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-
 	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction
 	var deletions []*models.Correction
@@ -148,7 +147,7 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	// Gcore auto uses ALIAS for apex zone CNAME records, just like CloudFlare
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 

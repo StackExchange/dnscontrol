@@ -2,6 +2,7 @@ package hedns
 
 import (
 	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -47,7 +48,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -188,7 +189,6 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-
 	// Get the SOA record to get the ZoneID, then remove it from the list.
 	zoneID := uint64(0)
 	var prunedRecords models.Records
@@ -329,7 +329,7 @@ func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (m
 			err = rc.SetTargetSRVPriorityString(priority, data)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
-			rc.Type = "TXT"
+			rc.ChangeType("TXT", domain)
 			fallthrough
 		default:
 			err = rc.PopulateFromStringFunc(rc.Type, data, domain, txtutil.ParseQuoted)
@@ -400,7 +400,6 @@ func (c *hednsProvider) authUsernameAndPassword() (authenticated bool, requiresT
 }
 
 func (c *hednsProvider) auth2FA() (authenticated bool, err error) {
-
 	if c.TfaValue == "" && c.TfaSecret == "" {
 		return false, errors.New("account requires two-factor authentication but neither totp or totp-key were provided")
 	}
@@ -438,7 +437,6 @@ func (c *hednsProvider) auth2FA() (authenticated bool, err error) {
 }
 
 func (c *hednsProvider) authenticate() error {
-
 	if c.SessionFilePath != "" {
 		_ = c.loadSessionFile()
 	}
@@ -613,7 +611,7 @@ func (c *hednsProvider) generateCredentialHash() string {
 	hash.Write([]byte(c.Username))
 	hash.Write([]byte(c.Password))
 	hash.Write([]byte(c.TfaSecret))
-	return fmt.Sprintf("%x", hash.Sum(nil))
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func (c *hednsProvider) saveSessionFile() error {
@@ -632,7 +630,7 @@ func (c *hednsProvider) saveSessionFile() error {
 	}
 
 	fileName := path.Join(c.SessionFilePath, sessionFileName)
-	err = os.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0600)
+	err = os.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0o600)
 	return err
 }
 
@@ -674,7 +672,7 @@ func (c *hednsProvider) loadSessionFile() error {
 }
 
 func (c *hednsProvider) parseResponseForDocumentAndErrors(response *http.Response) (document *goquery.Document, err error) {
-	var ignoredErrorMessages = [...]string{
+	ignoredErrorMessages := [...]string{
 		errorImproperDelegation,
 	}
 

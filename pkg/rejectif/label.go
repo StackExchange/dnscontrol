@@ -1,7 +1,7 @@
 package rejectif
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
@@ -12,7 +12,7 @@ import (
 // is only permitted at the apex.
 func LabelNotApex(rc *models.RecordConfig) error {
 	if rc.GetLabel() != "@" {
-		return fmt.Errorf("use not at apex")
+		return errors.New("use not at apex")
 	}
 	return nil
 }

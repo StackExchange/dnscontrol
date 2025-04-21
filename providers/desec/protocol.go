@@ -20,7 +20,7 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex     map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
+	domainIndex     map[string]uint32 // stores the minimum ttl of each domain. (key = domain and value = ttl)
 	domainIndexLock sync.Mutex
 	token           string
 }
@@ -106,9 +106,9 @@ func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool
 func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 	endpoint := "/domains/"
 	var domainIndex map[string]uint32
-	var bodyString, resp, err = c.get(endpoint, "GET")
-	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
-		//pagination is required
+	bodyString, resp, err := c.get(endpoint, "GET")
+	if resp.StatusCode == http.StatusBadRequest && resp.Header.Get("Link") != "" {
+		// pagination is required
 		links := convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
 		printer.Debugf("initial endpoint %s\n", endpoint)
@@ -126,11 +126,11 @@ func (c *desecProvider) fetchDomainIndex() (map[string]uint32, error) {
 			printer.Debugf("next endpoint %s\n", endpoint)
 		}
 		printer.Debugf("Domain Index fetched with pagination (%d domains)\n", len(domainIndex))
-		return domainIndex, nil //domainIndex was build using pagination without errors
+		return domainIndex, nil // domainIndex was build using pagination without errors
 	}
 
-	//no pagination required
-	if err != nil && resp.StatusCode != 400 {
+	// no pagination required
+	if err != nil && resp.StatusCode != http.StatusBadRequest {
 		return nil, fmt.Errorf("failed fetching domains: %w", err)
 	}
 	domainIndex, err = appendDomainIndexFromResponse(domainIndex, bodyString)
@@ -152,8 +152,8 @@ func appendDomainIndexFromResponse(domainIndex map[string]uint32, bodyString []b
 		domainIndex = make(map[string]uint32, len(dr))
 	}
 	for _, domain := range dr {
-		//deSEC allows different minimum ttls per domain
-		//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
+		// deSEC allows different minimum ttls per domain
+		// we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
 		domainIndex[domain.Name] = domain.MinimumTTL
 	}
 	return domainIndex, nil
@@ -176,7 +176,7 @@ func convertLinks(links string) map[string]string {
 			continue
 		}
 		// mapping["$label"] = "$URL"
-		//URL = https://desec.io/api/v1/domains/{domain}/rrsets/?cursor=:next_cursor
+		// URL = https://desec.io/api/v1/domains/{domain}/rrsets/?cursor=:next_cursor
 		mapping[matches[1]] = strings.TrimSuffix(strings.TrimPrefix(tmpurl[0], "<"), ">")
 	}
 	return mapping
@@ -185,16 +185,16 @@ func convertLinks(links string) map[string]string {
 func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
 	var rrsNew []resourceRecord
-	var bodyString, resp, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
-	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
-		//pagination required
+	bodyString, resp, err := c.get(fmt.Sprintf(endpoint, domain), "GET")
+	if resp.StatusCode == http.StatusBadRequest && resp.Header.Get("Link") != "" {
+		// pagination required
 		links := convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
 		printer.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
-				if resp.StatusCode == 404 {
+				if resp.StatusCode == http.StatusNotFound {
 					return rrsNew, nil
 				}
 				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %w", err)
@@ -209,9 +209,9 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 			printer.Debugf("getRecords: next endpoint %s\n", endpoint)
 		}
 		printer.Debugf("Build rrset using pagination (%d rrs)\n", len(rrsNew))
-		return rrsNew, nil //domainIndex was build using pagination without errors
+		return rrsNew, nil // domainIndex was build using pagination without errors
 	}
-	//no pagination
+	// no pagination
 	if err != nil {
 		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %w", domain, err)
 	}
@@ -277,7 +277,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 
 // Uncomment this function in case of using it
 // It was commented out to satisfy `staticcheck` warnings about unused code
-//func (c *desecProvider) deleteRR(domain, shortname, t string) error {
+// func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 //	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 //	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
 //		return fmt.Errorf("failed delete RRset (deSEC): %w", err)
@@ -297,7 +297,7 @@ retry:
 	client := &http.Client{}
 	req, _ := http.NewRequest(method, endpoint, nil)
 	q := req.URL.Query()
-	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.token))
+	req.Header.Add("Authorization", "Token "+c.token)
 
 	req.URL.RawQuery = q.Encode()
 
@@ -309,9 +309,9 @@ retry:
 	bodyString, _ := io.ReadAll(resp.Body)
 	// Got error from API ?
 	if resp.StatusCode > 299 {
-		if resp.StatusCode == 429 && retrycnt < 5 {
+		if resp.StatusCode == http.StatusTooManyRequests && retrycnt < 5 {
 			retrycnt++
-			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			// we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
 			waitfor := resp.Header.Get("Retry-After")
 			if waitfor != "" {
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
@@ -361,7 +361,7 @@ retry:
 	}
 	q := req.URL.Query()
 	if endpoint != "/auth/login/" {
-		req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.token))
+		req.Header.Add("Authorization", "Token "+c.token)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -376,9 +376,9 @@ retry:
 
 	// Got error from API ?
 	if resp.StatusCode > 299 {
-		if resp.StatusCode == 429 && retrycnt < 5 {
+		if resp.StatusCode == http.StatusTooManyRequests && retrycnt < 5 {
 			retrycnt++
-			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			// we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
 			waitfor := resp.Header.Get("Retry-After")
 			if waitfor != "" {
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
@@ -409,6 +409,6 @@ retry:
 		}
 		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
-	//time.Sleep(334 * time.Millisecond)
+	// time.Sleep(334 * time.Millisecond)
 	return bodyString, nil
 }

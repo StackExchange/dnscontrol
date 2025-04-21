@@ -26,8 +26,7 @@ type Differ interface {
 	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, []string, int, error)
 }
 
-type differ struct {
-}
+type differ struct{}
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {

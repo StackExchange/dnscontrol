@@ -2,6 +2,7 @@ package luadns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -22,7 +23,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -51,7 +52,7 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	l := &luadnsProvider{}
 	l.creds.email, l.creds.apikey = m["email"], m["apikey"]
 	if l.creds.email == "" || l.creds.apikey == "" {
-		return nil, fmt.Errorf("missing LuaDNS email or apikey")
+		return nil, errors.New("missing LuaDNS email or apikey")
 	}
 
 	// Get a domain to validate authentication
@@ -65,7 +66,9 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 // GetNameservers returns the nameservers for a domain.
 func (l *luadnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if len(l.nameserversNames) == 0 {
-		l.fetchAvailableNameservers()
+		if err := l.fetchAvailableNameservers(); err != nil {
+			return nil, err
+		}
 	}
 	return models.ToNameserversStripTD(l.nameserversNames)
 }
@@ -94,7 +97,11 @@ func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (
 	}
 	existingRecords := make([]*models.RecordConfig, len(records))
 	for i := range records {
-		existingRecords[i] = nativeToRecord(domain, &records[i])
+		newr, err := nativeToRecord(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
+		existingRecords[i] = newr
 	}
 	return existingRecords, nil
 }

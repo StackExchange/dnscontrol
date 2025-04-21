@@ -3,7 +3,7 @@ package namedotcom
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -24,7 +24,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
@@ -49,7 +49,7 @@ func newProvider(conf map[string]string) (*namedotcomProvider, error) {
 	api.client.Server = conf["apiurl"]
 	api.APIUser, api.APIKey, api.APIUrl = conf["apiuser"], conf["apikey"], conf["apiurl"]
 	if api.APIKey == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("missing Name.com apikey or apiuser")
+		return nil, errors.New("missing Name.com apikey or apiuser")
 	}
 	if api.APIUrl == "" {
 		api.APIUrl = defaultAPIBase

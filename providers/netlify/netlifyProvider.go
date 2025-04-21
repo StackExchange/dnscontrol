@@ -2,6 +2,7 @@ package netlify
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -54,7 +55,7 @@ func newNetlify(m map[string]string, message json.RawMessage) (providers.DNSServ
 	api := &netlifyProvider{}
 	api.apiToken = m["token"]
 	if api.apiToken == "" {
-		return nil, fmt.Errorf("missing Netlify personal access token")
+		return nil, errors.New("missing Netlify personal access token")
 	}
 
 	api.accountSlug = m["slug"]
@@ -83,7 +84,7 @@ func (n *netlifyProvider) getZone(domain string) (*dnsZone, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no zones found for this domain")
+	return nil, errors.New("no zones found for this domain")
 }
 
 func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {

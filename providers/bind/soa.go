@@ -30,7 +30,7 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 	}
 
 	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
-	soaRec.SetTargetSOA(
+	err := soaRec.SetTargetSOA(
 		firstNonNull(desired.GetTargetField(), existing.GetTargetField(), defSoa.Ns, "DEFAULT_NOT_SET."),
 		soaMail,
 		firstNonZero(desired.SoaSerial, existing.SoaSerial, defSoa.Serial, 1),
@@ -39,6 +39,9 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 		firstNonZero(desired.SoaExpire, existing.SoaExpire, defSoa.Expire, 604800),
 		firstNonZero(desired.SoaMinttl, existing.SoaMinttl, defSoa.Minttl, 1440),
 	)
+	if err != nil {
+		panic(err) // Should never happen.
+	}
 
 	return &soaRec, generateSerial(soaRec.SoaSerial)
 }

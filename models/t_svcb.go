@@ -10,7 +10,9 @@ import (
 // SetTargetSVCB sets the SVCB fields.
 func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []dns.SVCBKeyValue) error {
 	rc.SvcPriority = priority
-	rc.SetTarget(target)
+	if err := rc.SetTarget(target); err != nil {
+		return err
+	}
 	paramsStr := []string{}
 	for _, kv := range params {
 		paramsStr = append(paramsStr, fmt.Sprintf("%s=%s", kv.Key(), kv.String()))
@@ -32,7 +34,7 @@ func (rc *RecordConfig) SetTargetSVCBString(origin, contents string) error {
 	}
 	record, err := dns.NewRR(fmt.Sprintf("%s. %s %s", origin, rc.Type, contents))
 	if err != nil {
-		return fmt.Errorf("could not parse SVCB record: %s", err)
+		return fmt.Errorf("could not parse SVCB record: %w", err)
 	}
 	switch r := record.(type) {
 	case *dns.HTTPS:

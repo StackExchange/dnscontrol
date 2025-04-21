@@ -23,7 +23,10 @@ const (
 )
 
 func init() {
-	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
+	// go up a directory so we helpers.js is in a consistent place.
+	if err := os.Chdir("../.."); err != nil {
+		panic(err)
+	}
 }
 
 func TestParsedFiles(t *testing.T) {
@@ -46,9 +49,9 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			// for _, dc := range conf.Domains {
-			// 	normalize.UpdateNameSplitHorizon(dc)
-			// }
+			for _, dc := range conf.Domains {
+				dc.UpdateSplitHorizonNames()
+			}
 
 			errs := normalize.ValidateAndNormalizeConfig(conf)
 			if len(errs) != 0 {
@@ -56,8 +59,8 @@ func TestParsedFiles(t *testing.T) {
 			}
 
 			for _, dc := range conf.Domains {
-				//fmt.Printf("DEBUG: PrettySort: domain=%q #rec=%d\n", dc.Name, len(dc.Records))
-				//fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
+				// fmt.Printf("DEBUG: PrettySort: domain=%q #rec=%d\n", dc.Name, len(dc.Records))
+				// fmt.Printf("DEBUG: records = %d %v\n", len(dc.Records), dc.Records)
 				ps := prettyzone.PrettySort(dc.Records, dc.Name, 0, nil)
 				dc.Records = ps.Records
 				if len(dc.Records) == 0 {
@@ -67,7 +70,7 @@ func TestParsedFiles(t *testing.T) {
 
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
-				var pcfg = map[string]string{}
+				pcfg := map[string]string{}
 
 				if dProv.Type == "-" {
 					// Pretend any "look up provider type in creds.json" results
@@ -101,15 +104,23 @@ func TestParsedFiles(t *testing.T) {
 			es := string(expectedJSON)
 			as := string(actualJSON)
 			_, _ = es, as
-			// When debugging, leave behind the actual result:
-			os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644) // Leave behind the actual result:
+			// Leave behind the actual result:
+			if err := os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0o644); err != nil {
+				t.Fatal(err)
+			}
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
 
 			var dCount int
 			for _, dc := range conf.Domains {
-				zoneFile := filepath.Join(testDir, testName, dc.Name+".zone")
+				var zoneFile string
+				dc.UpdateSplitHorizonNames()
+				if dc.Metadata[models.DomainTag] != "" {
+					zoneFile = filepath.Join(testDir, testName, dc.GetUniqueName()+".zone")
+				} else {
+					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")
+				}
 				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue
@@ -128,16 +139,16 @@ func TestParsedFiles(t *testing.T) {
 				as := actualZone
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
-					os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644)
+					if err := os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0o644); err != nil {
+						t.Fatal(err)
+					}
 				}
 				testifyrequire.Equal(t, es, as, "EXPECTING %q =\n```\n%s```", zoneFile, as)
 			}
 			if dCount > 0 && (len(conf.Domains) != dCount) {
 				t.Fatal(fmt.Errorf("only %d of %d domains in %q have zonefiles", dCount, len(conf.Domains), name))
 			}
-
 		})
-
 	}
 }
 
@@ -160,6 +171,5 @@ func TestErrors(t *testing.T) {
 				t.Fatal("Expected error but found none")
 			}
 		})
-
 	}
 }

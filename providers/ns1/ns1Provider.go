@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -50,7 +51,6 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
-	providers.RegisterCustomRecordType("NS1_URLFWD", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -60,7 +60,7 @@ type nsone struct {
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
 	if creds["api_token"] == "" {
-		return nil, fmt.Errorf("api_token required for ns1")
+		return nil, errors.New("api_token required for ns1")
 	}
 
 	// Enable Sleep API Rate limit strategy - it will sleep until new tokens are available
@@ -93,7 +93,7 @@ func (n *nsone) EnsureZoneExists(domain string) error {
 
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Zones.Create(zone)
-		if err == rest.ErrZoneExists {
+		if errors.Is(err, rest.ErrZoneExists) {
 			// if domain exists already, just return nil, nothing to do here.
 			return nil
 		}
@@ -155,7 +155,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 	for rtr := 0; ; rtr++ {
 		_, httpResp, err := n.DNSSEC.Get(domain)
 		// rest.ErrDNSECNotEnabled is our "disabled" state
-		if err != nil && err == rest.ErrDNSECNotEnabled {
+		if err != nil && errors.Is(err, rest.ErrDNSECNotEnabled) {
 			return false, nil
 		}
 		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
@@ -173,7 +173,6 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 
 // getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
 func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.Correction {
-
 	// get dnssec status from NS1 for domain
 	// if errors are returned, we bail out without any DNSSEC corrections
 	status, err := n.GetZoneDNSSEC(domain)
@@ -238,7 +237,6 @@ func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecor
 		default:
 			panic(fmt.Sprintf("unhandled inst.Type %s", change.Type))
 		}
-
 	}
 	return corrections, actualChangeCount, nil
 }
@@ -254,10 +252,6 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
-	if key.Type == "NS1_URLFWD" {
-		key.Type = "URLFWD"
-	}
-
 	for rtr := 0; ; rtr++ {
 		httpResp, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
@@ -318,10 +312,11 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		} else if r.Type == "CAA" {
 			rec.AddAnswer(&dns.Answer{
 				Rdata: []string{
-					fmt.Sprintf("%v", r.CaaFlag),
+					strconv.FormatUint(uint64(r.CaaFlag), 10),
 					r.CaaTag,
 					r.GetTargetField(),
-				}})
+				},
+			})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()))})
 		} else if r.Type == "NAPTR" {
@@ -331,28 +326,28 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				r.NaptrFlags,
 				r.NaptrService,
 				r.NaptrRegexp,
-				r.GetTargetField()}})
+				r.GetTargetField(),
+			}})
 		} else if r.Type == "DS" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.DsKeyTag)),
 				strconv.Itoa(int(r.DsAlgorithm)),
 				strconv.Itoa(int(r.DsDigestType)),
-				r.DsDigest}})
-		} else if r.Type == "NS1_URLFWD" {
-			printer.Warnf("NS1_URLFWD is deprecated and may stop working anytime now. Please avoid such records going forward.\n")
-			rec.Type = "URLFWD"
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
+				r.DsDigest,
+			}})
 		} else if r.Type == "SVCB" || r.Type == "HTTPS" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.SvcPriority)),
 				r.GetTargetField(),
-				r.SvcParams}})
+				r.SvcParams,
+			}})
 		} else if r.Type == "TLSA" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.TlsaUsage)),
 				strconv.Itoa(int(r.TlsaSelector)),
 				strconv.Itoa(int(r.TlsaMatchingType)),
-				r.GetTargetField()}})
+				r.GetTargetField(),
+			}})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
@@ -379,13 +374,8 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			if err := rec.SetTarget(ans); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
-		case "URLFWD":
-			rec.Type = "NS1_URLFWD"
-			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
-			}
 		case "CAA":
-			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
+			// dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			xAns := strings.SplitN(ans, " ", 3)
 			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)

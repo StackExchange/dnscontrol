@@ -8,12 +8,11 @@ import (
 
 func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
 	rc.SetLabel(label, domain)
-	rc.SetTarget(target)
+	rc.MustSetTarget(target)
 	return &rc
 }
 
 func TestImportTransform(t *testing.T) {
-
 	const transformDouble = "0.0.0.0~1.1.1.1~~9.0.0.0,10.0.0.0"
 	const transformSingle = "0.0.0.0~1.1.1.1~~8.0.0.0"
 	src := &models.DomainConfig{

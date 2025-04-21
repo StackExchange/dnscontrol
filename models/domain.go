@@ -36,7 +36,7 @@ type DomainConfig struct {
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
-	//DNSSEC        bool              `json:"dnssec,omitempty"`
+	// DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:
@@ -49,10 +49,11 @@ type DomainConfig struct {
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
 
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
-	pendingCorrectionsMutex  sync.Mutex                 // Protect pendingCorrections*
-	pendingCorrections       map[string]([]*Correction) // Work to be done for each provider
-	pendingCorrectionsOrder  []string                   // Call the providers in this order
-	pendingActualChangeCount map[string](int)           // Number of changes to report (cumulative)
+	pendingCorrectionsMutex    sync.Mutex               // Protect pendingCorrections*
+	pendingCorrections         map[string][]*Correction // Work to be done for each provider
+	pendingCorrectionsOrder    []string                 // Call the providers in this order
+	pendingActualChangeCount   map[string]int           // Number of changes to report (cumulative)
+	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
@@ -79,6 +80,10 @@ func (dc *DomainConfig) UpdateSplitHorizonNames() {
 		if len(l) == 2 {
 			name = l[0]
 			tag = l[1]
+		}
+		if tag == "" {
+			// ensure empty tagged domain is treated as untagged
+			unique = name
 		}
 	}
 
@@ -124,15 +129,19 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD":
+		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD", "BUNNY_DNS_RDR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {
 				return err
 			}
-			rec.SetTarget(t)
+			if err := rec.SetTarget(t); err != nil {
+				return err
+			}
 		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
-			rec.SetTarget(rec.GetTargetField())
+			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
+				return err
+			}
 		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "NAPTR", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
@@ -196,4 +205,22 @@ func (dc *DomainConfig) GetChangeCount(providerName string) int {
 	defer dc.pendingCorrectionsMutex.Unlock()
 
 	return dc.pendingActualChangeCount[providerName]
+}
+
+// StorePopulateCorrections accumulates corrections in a thread-safe way.
+func (dc *DomainConfig) StorePopulateCorrections(providerName string, corrections []*Correction) {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+
+	if dc.pendingPopulateCorrections == nil {
+		dc.pendingPopulateCorrections = make(map[string][]*Correction, 1)
+	}
+	dc.pendingPopulateCorrections[providerName] = append(dc.pendingPopulateCorrections[providerName], corrections...)
+}
+
+// GetPopulateCorrections returns zone corrections in a thread-safe way.
+func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correction {
+	dc.pendingCorrectionsMutex.Lock()
+	defer dc.pendingCorrectionsMutex.Unlock()
+	return dc.pendingPopulateCorrections[providerName]
 }

@@ -22,7 +22,7 @@ func makeRCmeta(meta map[string]string) *models.RecordConfig {
 		Metadata: meta,
 	}
 	rc.SetLabel("foo", "example.tld")
-	rc.SetTarget("1.2.3.4")
+	rc.MustSetTarget("1.2.3.4")
 	return &rc
 }
 
@@ -88,7 +88,7 @@ func TestPreprocess_DefaultProxy_Validation(t *testing.T) {
 }
 
 func TestIpRewriting(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		Given, Expected string
 		Proxy           string
 	}{
@@ -106,10 +106,11 @@ func TestIpRewriting(t *testing.T) {
 		Low:      net.ParseIP("1.2.3.0"),
 		High:     net.ParseIP("1.2.3.40"),
 		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
-		NewIPs:   nil}}
+		NewIPs:   nil,
+	}}
 	for _, tst := range tests {
 		rec := &models.RecordConfig{Type: "A", Metadata: map[string]string{metaProxy: tst.Proxy}}
-		rec.SetTarget(tst.Given)
+		rec.MustSetTarget(tst.Given)
 		domain.Records = append(domain.Records, rec)
 	}
 	err := cf.preprocessConfig(domain)

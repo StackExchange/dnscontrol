@@ -17,6 +17,7 @@ Settings from `creds.json`:
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -50,7 +51,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAKAMAICDN:        providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
@@ -86,10 +87,10 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 // newHelper generates a handle.
 func newHelper(m map[string]string, _ json.RawMessage) (*APIClient, error) {
 	if m["username"] == "" {
-		return nil, fmt.Errorf("missing Loopia API username")
+		return nil, errors.New("missing Loopia API username")
 	}
 	if m["password"] == "" {
-		return nil, fmt.Errorf("missing Loopia API password")
+		return nil, errors.New("missing Loopia API password")
 	}
 
 	const booleanStringWarn = " setting as a 'string': 't', 'true', 'True' etc"
@@ -99,7 +100,7 @@ func newHelper(m map[string]string, _ json.RawMessage) (*APIClient, error) {
 	if m["modify_name_servers"] != "" { // optional
 		modifyNameServers, err = strconv.ParseBool(m["modify_name_servers"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the modify_name_servers" + booleanStringWarn)
+			return nil, errors.New("creds.json requires the modify_name_servers" + booleanStringWarn)
 		}
 	}
 
@@ -107,15 +108,15 @@ func newHelper(m map[string]string, _ json.RawMessage) (*APIClient, error) {
 	if m["fetch_apex_ns_entries"] != "" { // optional
 		fetchApexNSEntries, err = strconv.ParseBool(m["fetch_apex_ns_entries"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the fetch_apex_ns_entries" + booleanStringWarn)
+			return nil, errors.New("creds.json requires the fetch_apex_ns_entries" + booleanStringWarn)
 		}
 	}
 
 	dbg := false
-	if m["debug"] != "" { //debug is optional
+	if m["debug"] != "" { // debug is optional
 		dbg, err = strconv.ParseBool(m["debug"])
 		if err != nil {
-			return nil, fmt.Errorf("creds.json requires the debug" + booleanStringWarn)
+			return nil, errors.New("creds.json requires the debug" + booleanStringWarn)
 		}
 	}
 
@@ -133,7 +134,6 @@ func newHelper(m map[string]string, _ json.RawMessage) (*APIClient, error) {
 
 // ListZones lists the zones on this account.
 func (c *APIClient) ListZones() ([]string, error) {
-
 	listResp, err := c.getDomains()
 	if err != nil {
 		return nil, err
@@ -163,12 +163,11 @@ func (c *APIClient) ListZones() ([]string, error) {
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-
 	// Two approaches. One: get all SubDomains, and get their respective records
 	// simultaneously, or first get subdomains then fill each subdomain with its
 	// respective records on a subsequent pass.
 
-	//step 1: subdomains
+	// step 1: subdomains
 	// Get existing subdomains for a domain:
 	subdomains, err := c.GetSubDomains(domain)
 	if err != nil {
@@ -182,12 +181,12 @@ func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (model
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
 	for _, subdomain := range subdomains {
-		//here seems like a good place to get the records for a subdomain.
-		//fukn ballz tho: each subdomain requires one API call. 💩
+		// here seems like a good place to get the records for a subdomain.
+		// fukn ballz tho: each subdomain requires one API call. 💩
 		if c.Debug {
 			fmt.Printf("%s\n", subdomain)
 		}
-		//step 2: records for subdomains
+		// step 2: records for subdomains
 		// Get subdomain records:
 		subdomainrecords, err := c.getDomainRecords(domain, subdomain)
 		if err != nil {
@@ -195,16 +194,13 @@ func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (model
 		}
 
 		for _, subdRr := range subdomainrecords {
-
-			//Note: subdomain cannot be any of [.-_ ]
+			// Note: subdomain cannot be any of [.-_ ]
 			record, err := nativeToRecord(subdRr, domain, subdomain)
 			if err != nil {
 				return nil, err
 			}
 			existingRecords = append(existingRecords, record)
-
 		}
-
 	}
 
 	if c.Debug {
@@ -216,7 +212,7 @@ func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (model
 
 // PrepFoundRecords munges any records to make them compatible with
 // this provider. Usually this is a no-op.
-//func PrepFoundRecords(recs models.Records) models.Records {
+// func PrepFoundRecords(recs models.Records) models.Records {
 // If there are records that need to be modified, removed, etc. we
 // do it here.  Usually this is a no-op.
 //return recs
@@ -234,7 +230,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 		if rec.Type == "ALIAS" {
 			// Loopia does not support ALIAS.
 			// Therefore, we change this to a CNAME.
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 		if rec.TTL < 300 {
 			/* you can submit TTL lower than 300 but the dig results are normalized to 300 */
@@ -271,7 +267,6 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-
 	if c.Debug {
 		debugRecords("GenerateZoneRecordsCorrections input:\n", existingRecords)
 	}
@@ -330,7 +325,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 				subdomain := dnsutil.TrimDomainName(fqdn, dc.Name)
 				if d.Existing.NameFQDN == fqdn && d.Existing.Name == subdomain {
 					// fmt.Printf("fqdn extinct wtf: %s\n", fqdn)
-					//deletion is a member of fqdn. skip its deletion (otherwise extra API call and its error)
+					// deletion is a member of fqdn. skip its deletion (otherwise extra API call and its error)
 					skip = true
 				}
 			}
@@ -357,8 +352,8 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
 			F: func() error {
-				//weird BUG: if we provide d.Desired.Name, instead of 'subdomain',
-				//all change records get assigned a single subdomain, common across all change records.
+				// weird BUG: if we provide d.Desired.Name, instead of 'subdomain',
+				// all change records get assigned a single subdomain, common across all change records.
 				// return c.UpdateRecordSimulate(dc.Name, subdomain, zrec)
 				return c.UpdateRecord(dc.Name, subdomain, zrec)
 			},
@@ -370,7 +365,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 
 // debugRecords prints a list of RecordConfig.
 func debugRecords(note string, recs []*models.RecordConfig) {
-	printer.Debugf(note)
+	printer.Debugf("%s", note)
 	for k, v := range recs {
 		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}
@@ -392,7 +387,6 @@ func (c *APIClient) GetNameservers(domain string) ([]*models.Nameserver, error) 
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
 func (c *APIClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
 	existingNs, err := c.GetDomainNS(dc.Name)
 	if err != nil {
 		return nil, err
@@ -411,7 +405,8 @@ func (c *APIClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 				F: func() (err error) {
 					// err = c.UpdateNameServers(dc.Name, desiredNs)
 					return
-				}},
+				},
+			},
 		}, nil
 	}
 	return nil, nil

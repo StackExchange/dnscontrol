@@ -11,9 +11,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/urfave/cli/v2"
-
 	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
 )
 
 // categories of commands
@@ -65,7 +64,7 @@ func Run(v string) int {
 			Usage:  "Obsolete flag. Will be removed in v5 or later",
 			Hidden: true,
 			Action: func(ctx *cli.Context, v bool) error {
-				obsoleteDiff2FlagUsed = true
+				pobsoleteDiff2FlagUsed = true
 				return nil
 			},
 		},
@@ -165,7 +164,7 @@ func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 // convenient access patterns. Does everything we need to prepare for the validation phase, but
 // cannot do anything that requires the credentials file yet.
 func preloadProviders(cfg *models.DNSConfig) (*models.DNSConfig, error) {
-	//build name to type maps
+	// build name to type maps
 	cfg.RegistrarsByName = map[string]*models.RegistrarConfig{}
 	cfg.DNSProvidersByName = map[string]*models.DNSProviderConfig{}
 	for _, reg := range cfg.Registrars {
@@ -305,40 +304,37 @@ func (args *FilterArgs) flags() []cli.Flag {
 	}
 }
 
-func (args *FilterArgs) shouldRunProvider(name string, dc *models.DomainConfig) bool {
-	if args.Providers == "all" {
-		return true
-	}
-	if args.Providers == "" {
-		for _, pri := range dc.DNSProviderInstances {
-			if pri.Name == name {
-				return pri.IsDefault
-			}
-		}
-		return true
-	}
-	for _, prov := range strings.Split(args.Providers, ",") {
-		if prov == name {
-			return true
-		}
-	}
-	return false
-}
-
-func (args *FilterArgs) shouldRunDomain(d string) bool {
-	if args.Domains == "" {
-		return true
-	}
-	return domainInList(d, strings.Split(args.Domains, ","))
-}
-
+// domainInList takes a domain and a list of domains and returns true if the
+// domain is in the list, accounting for wildcards and tags.
 func domainInList(domain string, list []string) bool {
 	for _, item := range list {
+		if item == domain {
+			return true
+		}
 		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
 			return true
 		}
-		if item == domain {
-			return true
+		filterDom, filterTag, isFilterTagged := strings.Cut(item, "!")
+		splitDom, domainTag, isDomainTagged := strings.Cut(domain, "!")
+		if splitDom == filterDom {
+			if isDomainTagged {
+				if filterTag == "*" {
+					return true
+				}
+				if domainTag == "" && !isFilterTagged {
+					// domain example.com! == filter example.com
+					return true
+				}
+				if isFilterTagged && domainTag == filterTag {
+					return true
+				}
+			}
+			if isFilterTagged {
+				if filterTag == "" && !isDomainTagged {
+					// filter example.com! == domain example.com
+					return true
+				}
+			}
 		}
 	}
 	return false

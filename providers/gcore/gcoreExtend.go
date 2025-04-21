@@ -65,7 +65,7 @@ func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri 
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("APIKey %s", apiKey))
+	req.Header.Set("Authorization", "APIKey "+apiKey)
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
@@ -93,7 +93,7 @@ func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri 
 		return nil
 	}
 
-	// nolint: wrapcheck
+	//nolint: wrapcheck
 	return json.NewDecoder(resp.Body).Decode(dest)
 }
 
@@ -115,7 +115,7 @@ func (c *gcoreProvider) dnssdkRRSets(domain string) (gcoreRRSets, error) {
 
 func (c *gcoreProvider) dnssdkGetDNSSEC(domain string) (bool, error) {
 	var result gcoreZone
-	url := fmt.Sprintf("/v2/zones/%s", domain)
+	url := "/v2/zones/" + domain
 
 	err := dnssdkDo(c.ctx, c.provider, c.apiKey, http.MethodGet, url, nil, &result)
 	if err != nil {

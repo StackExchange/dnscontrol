@@ -221,7 +221,7 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
 declare function AAAA(name: string, address: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
+ * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
  * The AKAMAICDN target must be preconfigured in the Akamai network.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/akamai-edge-dns/akamaicdn
@@ -475,7 +475,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * WARNING: Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
- * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
  * generate a HTTP 301 permanent redirect.
@@ -508,8 +508,8 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
 declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP 301
- * (permanent) or 302 (temporary) redirects.
+ * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
+ * Typically one uses 302 (temporary) or (less likely) 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
@@ -518,16 +518,16 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_SINGLE_REDIRECT("name", 301, "when", "then"),
- *   CF_SINGLE_REDIRECT('redirect www.example.com', 301, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
- *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 301, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ *   CF_SINGLE_REDIRECT("name", 302, "when", "then"),
+ *   CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
+ *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
  * );
  * ```
  *
  * The fields are:
  *
  * * name: The name (basically a comment, but it must be unique)
- * * code: Either 301 (permanent) or 302 (temporary) redirects. May be a number or string.
+ * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
@@ -541,7 +541,7 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * WARNING: Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
- * [`CLOUDFLAREAPI`](../provider/cloudflareapi.md) for details.
+ * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
@@ -624,7 +624,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * Modifier arguments are processed according to type as follows:
  *
- * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers-modifiers) return such functions.
+ * - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
  * - An object argument will be merged into the domain's metadata collection.
  * - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
  *    be used like a macro in multiple domains.
@@ -690,11 +690,12 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * six months? You get the idea.
  *
  * DNSControl command line flag `--domains` matches the full name (with the "!").  If you
- * define domains `example.com!george` and `example.com!john` then:
+ * define domains `example.com!john`, `example.com!paul`, and `example.com!george` then:
  *
- * * `--domains=example.com` will not match either domain.
- * * `--domains='example.com!george'` will match only match the first.
- * * `--domains='example.com!george",example.com!john` will match both.
+ * * `--domains=example.com` will not match any of the three.
+ * * `--domains='example.com!george'` will only match george.
+ * * `--domains='example.com!george,example.com!john'` will match george and john.
+ * * `--domains='example.com!*'` will match all three.
  *
  * NOTE: The quotes are required if your shell treats `!` as a special
  * character, which is probably does.  If you see an error that mentions
@@ -1490,7 +1491,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  * as a last resort. Even then, test extensively.
  *
  * * There is no locking.  If the external system and DNSControl make updates at the exact same time, the results are undefined.
- * * IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
+ * * `IGNORE` works fine with records inserted into a `D()` via `D_EXTEND()`. The matching is done on the resulting FQDN of the label or target.
  * * `targetSpec` does not match fields other than the primary target.  For example, `MX` records have a target hostname plus a priority. There is no way to match the priority.
  * * The BIND provider can not ignore records it doesn't know about.  If it does not have access to an existing zonefile, it will create a zonefile from scratch. That new zonefile will not have any external records.  It will seem like they were not ignored, but in reality BIND didn't have visibility to them so that they could be ignored.
  *
@@ -2295,32 +2296,6 @@ declare const NO_PURGE: DomainModifier;
 declare function NS(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `NS1_URLFWD` is an NS1-specific feature that maps to NS1's URLFWD record, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
- *
- * ```javascript
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   NS1_URLFWD("urlfwd", "/ http://example.com 302 2 0")
- * );
- * ```
- *
- * The fields are:
- * * name: the record name
- * * target: a complex field containing the following, space separated:
- *     * from - the path to match
- *     * to - the url to redirect to
- *     * redirectType - (0 - masking, 301, 302)
- *     * pathForwardingMode - (0 - All, 1 - Capture, 2 - None)
- *     * queryForwardingMode - (0 - disabled, 1 - enabled)
- *
- * WARNING: According to NS1, this type of record is deprecated and in the process
- * of being replaced by the premium-only `REDIRECT` record type. While still able to be
- * configured through the API, as suggested by NS1, please try not to use it, going forward.
- *
- * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/ns1/ns1_urlfwd
- */
-declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
  * NewDnsProvider activates a DNS Service Provider (DSP) specified in `creds.json`.
  * A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
  * answers on port 53 to queries related to the zone).
@@ -2510,7 +2485,7 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this by using the
- * [`D_EXTEND()`](../global/D_EXTEND.md)
+ * [`D_EXTEND()`](../top-level-functions/D_EXTEND.md)
  * function to insert `A` and `PTR` records into previously-defined domains.
  *
  * ```javascript
@@ -2704,7 +2679,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *
  * DNSControl does not automatically generate forward and reverse lookups. However
  * it is possible to write a macro that does this.  See
- * [`PTR()`](../domain/PTR.md)   for an example.
+ * [`PTR()`](../domain-modifiers/PTR.md)   for an example.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/rev
  */
@@ -2757,13 +2732,9 @@ declare function REVCOMPAT(rfc: string): string;
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   SOA("@", "ns3.example.com.", "hostmaster@example.com", 3600, 600, 604800, 1440),
+ *   SOA("@", "ns3.example.com.", "hostmaster.example.com.", 3600, 600, 604800, 1440),
  * );
  * ```
- *
- * If you accidentally include an `@` in the email field DNSControl will quietly
- * change it to a `.`. This way you can specify a human-readable email address
- * when you are making it easier for spammers how to find you.
  *
  * ## Notes
  * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
@@ -3397,4 +3368,4 @@ declare function getConfiguredDomains(): string[];
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/require_glob
  */
-declare function require_glob(path: string, recursive: boolean): void;
+declare function require_glob(path: string, recursive?: boolean): void;

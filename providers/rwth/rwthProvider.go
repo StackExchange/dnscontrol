@@ -2,7 +2,7 @@ package rwth
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
@@ -18,7 +18,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by RWTH but not implemented yet."),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
@@ -48,7 +48,7 @@ func init() {
 // New allocates a DNS service provider.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_token"] == "" {
-		return nil, fmt.Errorf("missing RWTH api_token")
+		return nil, errors.New("missing RWTH api_token")
 	}
 
 	api := &rwthProvider{apiToken: settings["api_token"]}

@@ -49,10 +49,19 @@ OPTIONS:
 
 * `--domains value`
   * Specifies a comma-separated list of domains to include.
-    Typically all domains are included in `preview`/`push`. Wildcards are not
-    permitted except `*` at the start of the entry. For example, `--domains
-    example.com,*.in-addr.arpa` would include `example.com` plus all reverse lookup
-    domains.
+    Example: `--domains example.com,myexample.net`
+  * Domains may include a wildcard at the beginning.
+    For example, `--domains example.com,*.in-addr.arpa` would include
+    `example.com` plus all IPv4 reverse lookup domains.
+  * Matching includes tags. If the domains are `example.com!foo` and
+    `example.com!bar`, then `--domains example.com!foo` would match the first
+    one, and `--domains example.com` will not match either.
+  * A wildcard tag is permitted and indicates all configured tags of that domain
+    should be selected. Example: `--domains=example.com!*` would match
+    `example.com!foo` and  `example.com!bar` but not `example.com`.
+  * If `--domains` is not specified, the default is all domains.
+  * NOTE: An empty tag is considered equivalent to the untagged domain.
+    For example, `--domains=example.com!` will match `example.com` and `example.com!`
 
 * `--v foo=bar`
   * Sets the variable `foo` to the value `bar` prior to
@@ -106,24 +115,20 @@ from providers and zones.  This collection can be done sequentially or concurren
 
 The `--cmode` value may be one of the following:
 
-* `legacy` -- Use the older, sequential code.  All data is gathered sequentially. This option and the related code will removed in release v4.16 (or later).  Please test `--cmode concurrent` and [report any bugs](https://github.com/StackExchange/dnscontrol/issues) ASAP.
+* `legacy` -- Use the older, sequential code.  All data is gathered sequentially. This option is removed as of release v4.16.
 * `concurrent` -- Gathering is done either sequentially or concurrently depending on whether the provider is marked as having been tested to run concurrently.
-* `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.  While this is logically the same as `legacy`, it is implemented using the newer concurrent code, with concurrency disabled.
+* `none` -- All providers are run sequentially. This is the safest mode. It can be used if a concurrency bug is discovered.
 * `all` -- This is unsafe. It runs all providers concurrently, even the ones that have not be validated to run concurrently. It is generally only used for demonstrating bugs.
 
 The default value of `--cmode` will change over time:
 
 * v4.14: `--cmode legacy`
 * v4.15: `--cmode concurrent`
-* v4.16 or later (target 1-Jan-2025): The `--cmode legacy` option will be removed, along with the old serial code.
+* v4.16: The `--cmode legacy` option was removed, along with the old serial code.
 
 ## ppreview/ppush
 
 {% hint style="warning" %}
-These commands will go away in v4.16 or later.  Starting in v4.14, please use
-`preview`/`push` with `--cmode concurrent` instead.
+`ppreview`/`ppush` are the same as `preview`/`push` with `--cmode concurrent` instead.
+These commands were for testing and were removed in v4.16.
 {% endhint %}
-
-The `ppreview`/`ppush` subcommands are a preview of a future feature where zone
-data is gathered concurrently. The commands will go away when
-they replace the existing `preview`/`push` commands.

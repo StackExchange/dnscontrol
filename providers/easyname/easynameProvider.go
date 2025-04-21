@@ -1,6 +1,7 @@
 package easyname
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -19,7 +20,7 @@ type easynameProvider struct {
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanConcur: providers.Cannot(),
+	providers.CanConcur: providers.Unimplemented(),
 }
 
 func init() {
@@ -33,7 +34,7 @@ func newEasyname(m map[string]string) (providers.Registrar, error) {
 	api := &easynameProvider{}
 
 	if m["email"] == "" || m["userid"] == "" || m["apikey"] == "" || m["authsalt"] == "" || m["signsalt"] == "" {
-		return nil, fmt.Errorf("missing easyname email, userid, apikey, authsalt and/or signsalt")
+		return nil, errors.New("missing easyname email, userid, apikey, authsalt and/or signsalt")
 	}
 
 	api.apikey, api.signSalt = m["apikey"], m["signsalt"]

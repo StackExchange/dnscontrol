@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -26,24 +27,53 @@ type azurednsProvider struct {
 	subscriptionID *string
 }
 
+// Modified `newAzureDNSDsp` to maintain backward compatibility with the new OIDC support.
 func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	return newAzureDNS(conf, metadata)
 }
 
+// Updated function to prioritize DefaultAzureCredential and fallback to OIDC or client-secret-based methods.
 func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, error) {
 	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 	clientID, clientSecret, tenantID := m["ClientID"], m["ClientSecret"], m["TenantID"]
-	credential, authErr := aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
-	if authErr != nil {
-		return nil, authErr
+	useOIDC := m["UseOIDC"] == "true"
+
+	var credential azcore.TokenCredential
+	var authErr error
+
+	// Authentication Logic
+	if useOIDC {
+		// OIDC Authentication with `InteractiveBrowserCredential`
+		oidcCredentialOpts := aauth.InteractiveBrowserCredentialOptions{
+			TenantID: tenantID,
+		}
+		credential, authErr = aauth.NewInteractiveBrowserCredential(&oidcCredentialOpts)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create OIDC credential: %w", authErr)
+		}
+	} else if clientID != "" && clientSecret != "" {
+		// Client ID and Secret-based Authentication
+		credential, authErr = aauth.NewClientSecretCredential(tenantID, clientID, clientSecret, nil)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create Client Secret credential: %w", authErr)
+		}
+	} else {
+		// Default Azure Credential as the default mechanism
+		credential, authErr = aauth.NewDefaultAzureCredential(nil)
+		if authErr != nil {
+			return nil, fmt.Errorf("failed to create Default Azure credential: %w", authErr)
+		}
 	}
-	zonesClient, zoneErr := adns.NewZonesClient(subID, credential, nil)
-	if zoneErr != nil {
-		return nil, zoneErr
+
+	// Create DNS clients using the selected credential
+	zonesClient, err := adns.NewZonesClient(subID, credential, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create zones client: %w", err)
 	}
-	recordsClient, recordErr := adns.NewRecordSetsClient(subID, credential, nil)
-	if recordErr != nil {
-		return nil, recordErr
+
+	recordsClient, err := adns.NewRecordSetsClient(subID, credential, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create records client: %w", err)
 	}
 
 	api := &azurednsProvider{
@@ -52,10 +82,12 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 		resourceGroup:  to.StringPtr(rg),
 		subscriptionID: to.StringPtr(subID),
 	}
-	err := api.getZones()
-	if err != nil {
+
+	// Initialize zones
+	if err := api.getZones(); err != nil {
 		return nil, err
 	}
+
 	return api, nil
 }
 
@@ -202,7 +234,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, change := range changes {
-
 		// Copy all param values to local variables to avoid overwrites
 		msgs := change.MsgsJoined
 		dcn := dc.Name
@@ -235,7 +266,6 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 }
 
 func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
-
 	rrset, azRecType, err := a.recordToNativeDiff2(reckey, recs)
 	if err != nil {
 		return err
@@ -257,7 +287,7 @@ retry:
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
 
 	if e, ok := err.(*azcore.ResponseError); ok {
-		if e.StatusCode == 429 {
+		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
 				return err
@@ -272,7 +302,6 @@ retry:
 }
 
 func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey) error {
-
 	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
 	if shortName == zoneName {
 		shortName = "@"
@@ -291,7 +320,7 @@ retry:
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
 
 	if e, ok := err.(*azcore.ResponseError); ok {
-		if e.StatusCode == 429 {
+		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
 				return err
@@ -486,7 +515,6 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 // NOTE recordToNativeDiff2 is really "convert []RecordConfig to rrset".
 
 func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
-
 	recordKeyType := recordKey.Type
 	//	if recordKeyType == "AZURE_ALIAS" {
 	//		fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXXXXXXXXXXXXXXXXX %v\n", recordKeyType)
@@ -573,7 +601,6 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	recordsPager := a.recordsClient.NewListAllByDNSZonePager(*a.resourceGroup, zoneName, nil)
 
 	for recordsPager.More() {
-
 		waitTime := 1
 	retry:
 
@@ -582,8 +609,7 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 		if recordsErr != nil {
 			err := recordsErr
 			if e, ok := err.(*azcore.ResponseError); ok {
-
-				if e.StatusCode == 429 {
+				if e.StatusCode == http.StatusTooManyRequests {
 					waitTime = waitTime * 2
 					if waitTime > 300 {
 						return nil, err

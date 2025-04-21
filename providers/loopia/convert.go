@@ -19,7 +19,9 @@ func nativeToRecord(zr zoneRecord, origin string, subdomain string) (rc *models.
 		Type:     record.Type,
 	}
 	rc.SetLabel(subdomain, origin)
-	rc.SetTarget(record.Rdata)
+	if err := rc.SetTarget(record.Rdata); err != nil {
+		return nil, err
+	}
 
 	switch rtype := record.Type; rtype {
 	case "CAA":
@@ -42,7 +44,7 @@ func nativeToRecord(zr zoneRecord, origin string, subdomain string) (rc *models.
 }
 
 func recordToNative(rc *models.RecordConfig, id ...uint32) paramStruct {
-	//rc is the record from dnscontrol to loopia
+	// rc is the record from dnscontrol to loopia
 	zrec := zRec{}
 	zrec.Type = rc.Type
 	zrec.TTL = rc.TTL

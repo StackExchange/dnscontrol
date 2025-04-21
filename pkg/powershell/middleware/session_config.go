@@ -91,5 +91,5 @@ func (c *UserPasswordCredential) prepare(s Middleware) (interface{}, error) {
 		return nil, errors.Annotate(err, "Could not create PSCredential object")
 	}
 
-	return fmt.Sprintf("$%s", name), nil
+	return "$" + name, nil
 }

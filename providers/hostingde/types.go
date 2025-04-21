@@ -11,9 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	errZoneNotFound = errors.Errorf("zone not found")
-)
+var errZoneNotFound = errors.Errorf("zone not found")
 
 type request struct {
 	AuthToken      string  `json:"authToken"`
@@ -138,7 +136,7 @@ type responseData struct {
 	TotalPages uint `json:"totalPages"`
 }
 
-func (r record) nativeToRecord(domain string) *models.RecordConfig {
+func (r record) nativeToRecord(domain string) (*models.RecordConfig, error) {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if r.Type == "ALIAS" || r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		if r.Content != "." {
@@ -159,7 +157,7 @@ func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	switch r.Type {
 	case "ALIAS":
 		rc.Type = r.Type
-		rc.SetTarget(r.Content)
+		err = rc.SetTarget(r.Content)
 	case "NULLMX":
 		err = rc.PopulateFromString("MX", "0 .", domain)
 	case "MX":
@@ -170,15 +168,9 @@ func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	case "SRV":
 		err = rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 	default:
-		if err := rc.PopulateFromString(r.Type, r.Content, domain); err != nil {
-			panic(err)
-		}
+		err = rc.PopulateFromString(r.Type, r.Content, domain)
 	}
-	if err != nil {
-		panic(err)
-	}
-
-	return rc
+	return rc, err
 }
 
 func recordToNative(rc *models.RecordConfig) *record {

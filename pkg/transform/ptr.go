@@ -51,19 +51,22 @@ func ipv4magic(name, domain string) (string, error) {
 	if strings.HasSuffix(rev, "."+domain) {
 		return result, nil
 	}
-	if ipMatchesClasslessDomain(ip, domain) {
-		return strings.SplitN(rev, ".", 2)[0], nil
+	octets := ipMatchesClasslessDomain(ip, domain)
+	if octets > 0 {
+		return strings.Join(strings.SplitN(rev, ".", octets+1)[0:octets], "."), nil
 	}
 
 	return "", fmt.Errorf("PTR record %v in wrong IPv4 domain (%v)", name, domain)
 }
 
 var isRfc2317Format1 = regexp.MustCompile(`(\d{1,3})/(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.in-addr\.arpa$`)
+var isRfc4183Format1 = regexp.MustCompile(`(\d{1,3})-(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.in-addr\.arpa$`)
+var isRfc4183Format2 = regexp.MustCompile(`(\d{1,3})-(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.in-addr\.arpa$`)
+var isRfc4183Format3 = regexp.MustCompile(`(\d{1,3})-(\d{1,3})\.(\d{1,3})\.in-addr\.arpa$`)
 
 // ipMatchesClasslessDomain returns true if ip is appropriate for domain.
 // domain is a reverse DNS lookup zone (in-addr.arpa) as described in RFC2317.
-func ipMatchesClasslessDomain(ip net.IP, domain string) bool {
-
+func ipMatchesClasslessDomain(ip net.IP, domain string) int {
 	// The unofficial but preferred format in RFC2317:
 	m := isRfc2317Format1.FindStringSubmatch(domain)
 	if m != nil {
@@ -78,13 +81,67 @@ func ipMatchesClasslessDomain(ip net.IP, domain string) bool {
 		f, m, x, y, z := atob(m[1]), atob(m[2]), atob(m[3]), atob(m[4]), atob(m[5])
 		masked := ip.Mask(net.CIDRMask(int(m), 32))
 		if a == z && b == y && c == x && masked.Equal(net.IPv4(a, b, c, f)) {
-			return true
+			return 1
+		}
+	}
+
+	// The format in RFC4183 for /25 to /32:
+	m = isRfc4183Format1.FindStringSubmatch(domain)
+	if m != nil {
+		// IP:          Domain:
+		// 172.20.18.27 128-27.18.20.172.in-addr.arpa
+		// A   B  C  D  F   M  X  Y  Z
+		// The following should be true:
+		//   A==Z, B==Y, C==X.
+		//   If you mask ip by M, the last octet should be F.
+		ii := ip.To4()
+		a, b, c, _ := ii[0], ii[1], ii[2], ii[3]
+		f, m, x, y, z := atob(m[1]), atob(m[2]), atob(m[3]), atob(m[4]), atob(m[5])
+		masked := ip.Mask(net.CIDRMask(int(m), 32))
+		if a == z && b == y && c == x && masked.Equal(net.IPv4(a, b, c, f)) {
+			return 1
+		}
+	}
+
+	// The format in RFC4183 for /17 to /23:
+	m = isRfc4183Format2.FindStringSubmatch(domain)
+	if m != nil {
+		// IP:          Domain:
+		// 172.20.18.27 128-27.20.172.in-addr.arpa
+		// A   B  C  D  F   M  Y  Z
+		// The following should be true:
+		//   A==Z, B==Y,
+		//   If you mask ip by M, the second last octet should be F.
+		ii := ip.To4()
+		a, b, _, _ := ii[0], ii[1], ii[2], ii[3]
+		f, m, y, z := atob(m[1]), atob(m[2]), atob(m[3]), atob(m[4])
+		masked := ip.Mask(net.CIDRMask(int(m), 32))
+		if a == z && b == y && masked.Equal(net.IPv4(a, b, f, 0)) {
+			return 2
+		}
+	}
+
+	// The format in RFC4183 for /9 to /15:
+	m = isRfc4183Format3.FindStringSubmatch(domain)
+	if m != nil {
+		// IP:          Domain:
+		// 172.20.18.27 128-27.172.in-addr.arpa
+		// A   B  C  D  F   M  Z
+		// The following should be true:
+		//   A==Z,
+		//   If you mask ip by M, the third last octet should be F.
+		ii := ip.To4()
+		a, _, _, _ := ii[0], ii[1], ii[2], ii[3]
+		f, m, z := atob(m[1]), atob(m[2]), atob(m[3])
+		masked := ip.Mask(net.CIDRMask(int(m), 32))
+		if a == z && masked.Equal(net.IPv4(a, f, 0, 0)) {
+			return 3
 		}
 	}
 
 	// To extend this to include other formats, add them here.
 
-	return false
+	return 0
 }
 
 // atob converts a to a byte value or panics.

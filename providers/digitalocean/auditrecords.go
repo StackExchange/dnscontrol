@@ -1,7 +1,7 @@
 package digitalocean
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
@@ -42,10 +42,10 @@ func MaxLengthDO(rc *models.RecordConfig) error {
 	// including the quotes, backlashes used for escapes, spaces between
 	// substrings.
 	// In other words, they're doing the checking on the API protocol
-	// encoded data instead of on on the resulting TXT record.  Sigh.
+	// encoded data instead of on the resulting TXT record.  Sigh.
 
 	if len(rc.GetTargetRFC1035Quoted()) > 509 {
-		return fmt.Errorf("encoded txt too long")
+		return errors.New("encoded txt too long")
 	}
 
 	return nil

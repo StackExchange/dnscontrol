@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/net/idna"
-	"golang.org/x/oauth2"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/vultr/govultr/v2"
+	"golang.org/x/net/idna"
+	"golang.org/x/oauth2"
 )
 
 /*
@@ -29,7 +28,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -68,7 +67,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, fmt.Errorf("missing Vultr API token")
+		return nil, errors.New("missing Vultr API token")
 	}
 
 	config := &oauth2.Config{}
@@ -120,13 +119,15 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 
 	for _, rec := range dc.Records {
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToUnicode(rec.GetTargetField())
 			if err != nil {
 				return nil, 0, err
 			}
-			rec.SetTarget(t)
+			if err := rec.SetTarget(t); err != nil {
+				return nil, 0, err
+			}
 		default:
 			// Nothing to do.
 		}
@@ -229,7 +230,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype {
-	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR":
 		var err error
 		data, err = idna.ToUnicode(data)
 		if err != nil {

@@ -20,14 +20,13 @@ type psHandle struct {
 }
 
 func eLog(s string) {
-	f, _ := os.OpenFile("powershell.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	f.WriteString(s)
-	f.WriteString("\n")
+	f, _ := os.OpenFile("powershell.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	_, _ = f.WriteString(s)
+	_, _ = f.WriteString("\n")
 	f.Close()
 }
 
 func newPowerShell(config map[string]string) (*psHandle, error) {
-
 	back := &backend.Local{}
 	sh, err := ps.New(back)
 	if err != nil {
@@ -107,7 +106,6 @@ func generatePSZoneAll(dnsserver string) string {
 }
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
-
 	tmpfile, err := os.CreateTemp("", "zonerecords.*.json")
 	if err != nil {
 		log.Fatal(err)
@@ -134,10 +132,10 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	os.Remove(filename) // TODO(tlim): There should be a debug flag that leaves the tmp file around.
 
-	//printer.Printf("CONTENTS = %s\n", contents)
-	//printer.Printf("CONTENTS STR = %q\n", contents[:10])
-	//printer.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
-	//os.WriteFile("/temp/list.json", contents, 0777)
+	// printer.Printf("CONTENTS = %s\n", contents)
+	// printer.Printf("CONTENTS STR = %q\n", contents[:10])
+	// printer.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
+	// os.WriteFile("/temp/list.json", contents, 0777)
 	var records []nativeRecord
 	err = json.Unmarshal(contents, &records)
 	if err != nil {
@@ -199,11 +197,10 @@ func generatePSZoneDump(dnsserver, domainname, filename string) string {
 // Functions for record manipulation
 
 func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error {
-
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSDeleteNaptr(dnsserver, domain, rec)
-		//printer.Printf("DEBUG: deleteNAPTR: %s\n", c)
+		// printer.Printf("DEBUG: deleteNAPTR: %s\n", c)
 	} else {
 		c = generatePSDelete(dnsserver, domain, rec)
 	}
@@ -223,14 +220,13 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 }
 
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
-
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo DELETE "%s" "%s" %q`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
 		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
-		//printer.Printf("NAPTR DELETE: %s\n", x)
+		// printer.Printf("NAPTR DELETE: %s\n", x)
 		return x
 	}
 
@@ -252,19 +248,18 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	} else {
 		fmt.Fprintf(&b, ` -RecordData %q`, rec.GetTargetField())
 	}
-	//printer.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
+	// printer.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
 
 func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error {
-
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSCreateNaptr(dnsserver, domain, rec)
-		//printer.Printf("DEBUG: createNAPTR: %s\n", c)
+		// printer.Printf("DEBUG: createNAPTR: %s\n", c)
 	} else {
 		c = generatePSCreate(dnsserver, domain, rec)
-		//printer.Printf("DEBUG: PScreate\n")
+		// printer.Printf("DEBUG: PScreate\n")
 	}
 
 	eLog(c)
@@ -303,25 +298,25 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		fmt.Fprintf(&b, ` -A -IPv4Address "%s"`, rec.GetTargetIP())
 	case "AAAA":
 		fmt.Fprintf(&b, ` -AAAA -IPv6Address "%s"`, rec.GetTargetIP())
-	//case "ATMA":
+	// case "ATMA":
 	//	fmt.Fprintf(&b, ` -Atma -Address <String> -AddressType {E164 | AESA}`, rec.GetTargetField())
-	//case "AFSDB":
+	// case "AFSDB":
 	//	fmt.Fprintf(&b, ` -Afsdb -ServerName <String> -SubType <UInt16>`, rec.GetTargetField())
 	case "SRV":
 		fmt.Fprintf(&b, ` -Srv -DomainName "%s" -Port %d -Priority %d -Weight %d`, rec.GetTargetField(), rec.SrvPort, rec.SrvPriority, rec.SrvWeight)
 	case "CNAME":
 		fmt.Fprintf(&b, ` -CName -HostNameAlias "%s"`, rec.GetTargetField())
-	//case "X25":
+	// case "X25":
 	//	fmt.Fprintf(&b, ` -X25 -PsdnAddress <String>`, rec.GetTargetField())
-	//case "WKS":
+	// case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		//printer.Printf("DEBUG TXT len = %v\n", rec.GetTargetTXTSegmentCount())
-		//printer.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		// printer.Printf("DEBUG TXT len = %v\n", rec.GetTargetTXTSegmentCount())
+		// printer.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText %q`, rec.GetTargetTXTJoined())
-	//case "RT":
+	// case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
-	//case "RP":
+	// case "RP":
 	//	fmt.Fprintf(&b, ` -RP -Description <String> -ResponsiblePerson <String>`, rec.GetTargetField())
 	case "PTR":
 		fmt.Fprintf(&b, ` -Ptr -PtrDomainName "%s"`, rec.GetTargetField())
@@ -329,15 +324,15 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		fmt.Fprintf(&b, ` -NS -NameServer "%s"`, rec.GetTargetField())
 	case "MX":
 		fmt.Fprintf(&b, ` -MX -MailExchange "%s" -Preference %d`, rec.GetTargetField(), rec.MxPreference)
-	//case "ISDN":
+	// case "ISDN":
 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, rec.GetTargetField())
-	//case "HINFO":
+	// case "HINFO":
 	//	fmt.Fprintf(&b, ` -HInfo -Cpu <String> -OperatingSystem <String>`, rec.GetTargetField())
-	//case "DNAME":
+	// case "DNAME":
 	//	fmt.Fprintf(&b, ` -DName -DomainNameAlias <String>`, rec.GetTargetField())
-	//case "DHCID":
+	// case "DHCID":
 	//	fmt.Fprintf(&b, ` -DhcId -DhcpIdentifier <String>`, rec.GetTargetField())
-	//case "TLSA":
+	// case "TLSA":
 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 	default:
 		panic(fmt.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
@@ -345,7 +340,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	//printer.Printf("DEBUG PSCreate CMD = (DEBUG-START\n%s\nDEBUG-END)\n", b.String())
+	// printer.Printf("DEBUG PSCreate CMD = (DEBUG-START\n%s\nDEBUG-END)\n", b.String())
 	return b.String()
 }
 
@@ -364,6 +359,7 @@ func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.Rec
 	}
 	return nil
 }
+
 func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) string {
 	// The simple way is to just remove the old record and insert the new record.
 	return "\n\r" + generatePSDelete(dnsserver, domain, old) + " ; " + generatePSCreate(dnsserver, domain, rec) + "\n\r"

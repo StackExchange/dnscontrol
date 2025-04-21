@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 func generateOwnersFile() error {

@@ -2,6 +2,7 @@ package cnr
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -13,8 +14,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
-// CNRRecord covers an individual DNS resource record.
-type CNRRecord struct {
+// Record covers an individual DNS resource record.
+type Record struct {
 	// DomainName is the zone that the record belongs to.
 	DomainName string
 	// Host is the hostname relative to the zone: e.g. for a record for blog.example.org, domain would be "example.org" and host would be "blog".
@@ -23,7 +24,7 @@ type CNRRecord struct {
 	Host string
 	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".". FQDN is ignored in CreateRecord, specify via the Host field instead.
 	Fqdn string
-	// Type is one of the following: A, AAAA, ANAME, CNAME, MX, NS, SRV, or TXT.
+	// Type is one of the following: A, AAAA, ANAME, ALIAS, CNAME, MX, NS, SRV, or TXT.
 	Type string
 	// Answer is either the IP address for A or AAAA records; the target for ANAME, CNAME, MX, or NS records; the text for TXT records.
 	// For SRV records, answer has the following format: "{weight} {port} {target}" e.g. "1 5061 sip.example.org".
@@ -35,7 +36,7 @@ type CNRRecord struct {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *CNRClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n *Client) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -46,11 +47,10 @@ func (n *CNRClient) GetZoneRecords(domain string, meta map[string]string) (model
 	}
 
 	return actual, nil
-
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (n *CNRClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
+func (n *Client) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, int, error) {
 	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
 	if err != nil {
 		return nil, 0, err
@@ -82,7 +82,7 @@ func (n *CNRClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mo
 		changes = true
 		fmt.Fprintln(buf, d)
 		key := fmt.Sprintf("DELRR%d", delrridx)
-		oldRecordString := n.deleteRecordString(d.Existing.Original.(*CNRRecord))
+		oldRecordString := n.deleteRecordString(d.Existing.Original.(*Record))
 		params[key] = oldRecordString
 		fmt.Fprintf(&builder, "\033[31m- %s = %s\033[0m\n", key, oldRecordString)
 		delrridx++
@@ -92,7 +92,7 @@ func (n *CNRClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mo
 		fmt.Fprintln(buf, chng)
 		// old record deletion
 		key := fmt.Sprintf("DELRR%d", delrridx)
-		oldRecordString := n.deleteRecordString(chng.Existing.Original.(*CNRRecord))
+		oldRecordString := n.deleteRecordString(chng.Existing.Original.(*Record))
 		params[key] = oldRecordString
 		fmt.Fprintf(&builder, "\033[31m- %s = %s\033[0m\n", key, oldRecordString)
 		delrridx++
@@ -123,7 +123,7 @@ func (n *CNRClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mo
 	return corrections, actualChangeCount, nil
 }
 
-func toRecord(r *CNRRecord, origin string) *models.RecordConfig {
+func toRecord(r *Record, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
@@ -150,7 +150,7 @@ func toRecord(r *CNRRecord, origin string) *models.RecordConfig {
 				panic(fmt.Errorf("unparsable SRV record received from centralnic reseller API: %w", err))
 			}
 		}
-	default: // "A", "AAAA", "ANAME", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
+	default: // "A", "AAAA", "ANAME", "ALIAS", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
 		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, r.Fqdn, txtutil.ParseQuoted); err != nil {
 			panic(fmt.Errorf("unparsable record received from centralnic reseller API: %w", err))
 		}
@@ -159,7 +159,7 @@ func toRecord(r *CNRRecord, origin string) *models.RecordConfig {
 }
 
 // updateZoneBy updates the zone with the provided changes.
-func (n *CNRClient) updateZoneBy(params map[string]interface{}, domain string) error {
+func (n *Client) updateZoneBy(params map[string]interface{}, domain string) error {
 	zone := domain
 	cmd := map[string]interface{}{
 		"COMMAND": "ModifyDNSZone",
@@ -170,14 +170,14 @@ func (n *CNRClient) updateZoneBy(params map[string]interface{}, domain string) e
 	}
 	r := n.client.Request(cmd)
 	if !r.IsSuccess() {
-		return n.GetCNRApiError("Error while updating zone", zone, r)
+		return n.GetAPIError("Error while updating zone", zone, r)
 	}
 	return nil
 }
 
-// deleteRecordString constructs the record string based on the provided CNRRecord.
-func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
-	var records []*CNRRecord
+// deleteRecordString constructs the record string based on the provided Record.
+func (n *Client) getRecords(domain string) ([]*Record, error) {
+	var records []*Record
 
 	// Command to find out the total numbers of resource records for the zone
 	// so that the follow-up query can be done with the correct limit
@@ -186,7 +186,8 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		"DNSZONE": domain,
 		"ORDERBY": "type",
 		"FIRST":   "0",
-		"LIMIT":   "1",
+		"LIMIT":   "10000",
+		"WIDE":    "1",
 	}
 	r := n.client.Request(cmd)
 
@@ -201,33 +202,20 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 				}
 			} else {
 				// Return specific error if the zone does not exist
-				return nil, n.GetCNRApiError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
+				return nil, n.GetAPIError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
 			}
 		}
 		// Return general error for any other issues
-		return nil, n.GetCNRApiError("Failed loading resource records for zone", domain, r)
+		return nil, n.GetAPIError("Failed loading resource records for zone", domain, r)
 	}
 	totalRecords := r.GetRecordsTotalCount()
 	if totalRecords <= 0 {
 		return nil, nil
 	}
-	limitation := 100
-	totalRecords += limitation
-
-	// finally request all resource records available for the zone
-	cmd["LIMIT"] = fmt.Sprintf("%d", totalRecords)
-	cmd["WIDE"] = "1"
-	r = n.client.Request(cmd)
-
-	// Check if the request was successful
-	if !r.IsSuccess() {
-		// Return general error for any other issues
-		return nil, n.GetCNRApiError("Failed loading resource records for zone", domain, r)
-	}
 
 	// loop over the records array
 	rrs := r.GetRecords()
-	for i := 0; i < len(rrs); i++ {
+	for i := range len(rrs) {
 		data := rrs[i].GetData()
 		// fmt.Printf("Data: %+v\n", data)
 		if _, exists := data["NAME"]; !exists {
@@ -250,23 +238,23 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 		priority, _ := strconv.ParseUint(data["PRIO"], 10, 32)
 
 		// Add dot to Answer if supported by the record type
-		pattern := `^CNAME|MX|NS|SRV|PTR$`
+		pattern := `^ALIAS|CNAME|MX|NS|SRV|PTR$`
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			return nil, fmt.Errorf("error compiling regex in getRecords: %s", err)
+			return nil, fmt.Errorf("error compiling regex in getRecords: %w", err)
 		}
 		if re.MatchString(data["TYPE"]) && !strings.HasSuffix(data["CONTENT"], ".") {
-			data["CONTENT"] = fmt.Sprintf("%s.", data["CONTENT"])
+			data["CONTENT"] = data["CONTENT"] + "."
 		}
 
 		// Only append domain if it's not already a fully qualified domain name
-		fqdn := fmt.Sprintf("%s.", domain)
+		fqdn := domain + "."
 		if data["NAME"] != "@" && !strings.HasSuffix(data["NAME"], domain+".") {
 			fqdn = fmt.Sprintf("%s.%s.", data["NAME"], domain)
 		}
 
-		// Initialize a new CNRRecord
-		record := &CNRRecord{
+		// Initialize a new Record
+		record := &Record{
 			DomainName: domain,
 			Host:       data["NAME"],
 			Fqdn:       fqdn,
@@ -286,25 +274,25 @@ func (n *CNRClient) getRecords(domain string) ([]*CNRRecord, error) {
 }
 
 // Function to create record string from given RecordConfig for the ADDRR# API parameter
-func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (string, error) {
+func (n *Client) createRecordString(rc *models.RecordConfig, domain string) (string, error) {
 	host := rc.GetLabel()
 	answer := ""
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":
+	case "A", "AAAA", "ANAME", "ALIAS", "CNAME", "MX", "NS", "PTR":
 		answer = rc.GetTargetField()
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "SSHFP":
 		answer = fmt.Sprintf(`%v %v %s`, rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "NAPTR":
 		answer = fmt.Sprintf(`%v %v "%v" "%v" "%v" %v`, rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.GetTargetField())
 		if domain == host {
-			host = fmt.Sprintf(`%s.`, host)
+			host = host + "."
 		}
 	case "TLSA":
 		answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
@@ -314,7 +302,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		answer = txtutil.EncodeQuoted(rc.GetTargetTXTJoined())
 	case "SRV":
 		if rc.GetTargetField() == "." {
-			return "", fmt.Errorf("SRV records with empty targets are not supported")
+			return "", errors.New("SRV records with empty targets are not supported")
 		}
 		// _service._proto.name. TTL Type Priority Weight Port Target.
 		// e.g. _sip._tcp.phone.example.org. 86400 IN SRV 5 6 7 sip.example.org.
@@ -325,7 +313,7 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 		// that have not been updated for a new RR type.
 	}
 
-	str := host + " " + fmt.Sprint(rc.TTL) + " "
+	str := host + " " + strconv.FormatUint(uint64(rc.TTL), 10) + " "
 
 	if rc.Type != "NS" { // TODO
 		str += "IN "
@@ -333,23 +321,23 @@ func (n *CNRClient) createRecordString(rc *models.RecordConfig, domain string) (
 	str += rc.Type + " "
 	// Handle MX records which have priority
 	if rc.Type == "MX" {
-		str += fmt.Sprint(uint32(rc.MxPreference)) + " "
+		str += strconv.FormatUint(uint64(uint32(rc.MxPreference)), 10) + " "
 	}
 	str += answer
 	return str, nil
 }
 
-// deleteRecordString constructs the record string based on the provided CNRRecord.
-func (n *CNRClient) deleteRecordString(record *CNRRecord) string {
+// deleteRecordString constructs the record string based on the provided Record.
+func (n *Client) deleteRecordString(record *Record) string {
 	// Initialize values slice
 	values := []string{
 		record.Host,
-		fmt.Sprintf("%v", record.TTL),
+		strconv.FormatUint(uint64(record.TTL), 10),
 		"IN",
 		record.Type,
 	}
 	if record.Type == "SRV" {
-		values = append(values, fmt.Sprintf("%d", record.Priority))
+		values = append(values, strconv.FormatUint(uint64(record.Priority), 10))
 	}
 	values = append(values, record.Answer)
 
@@ -375,6 +363,7 @@ func isNoPopulate() bool {
 }
 
 // Function to check if debug mode is enabled
-func (n *CNRClient) isDebugOn() bool {
-	return n.conf["debugmode"] == "1" || n.conf["debugmode"] == "2"
+func (n *Client) isDebugOn() bool {
+	debugMode, exists := n.conf["debugmode"]
+	return exists && (debugMode == "1" || debugMode == "2")
 }

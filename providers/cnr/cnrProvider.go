@@ -4,7 +4,7 @@ package cnr
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	cnrcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/apiclient"
@@ -15,8 +15,8 @@ var (
 	version = "dev"
 )
 
-// CNRClient describes a connection to the CNR API.
-type CNRClient struct {
+// Client describes a connection to the CNR API.
+type Client struct {
 	conf        map[string]string
 	APILogin    string
 	APIPassword string
@@ -36,7 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
 	// --- Supported record types ---
 	// providers.CanUseAKAMAICDN: 	      providers.Cannot(), // can only be supported by Akamai EdgeDns provider
-	providers.CanUseAlias: providers.Cannot("Not supported. You may use CNAME records instead. An Alternative solution is planned."),
+	providers.CanUseAlias: providers.Can(),
 	// providers.CanUseAzureAlias:		  providers.Cannot(), // can only be supported by Azure provider
 	providers.CanUseCAA:           providers.Can(),
 	providers.CanUseDHCID:         providers.Cannot("Ask for this feature."),
@@ -56,8 +56,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:  providers.Can(),
 }
 
-func newProvider(conf map[string]string) (*CNRClient, error) {
-	api := &CNRClient{
+func newProvider(conf map[string]string) (*Client, error) {
+	api := &Client{
 		conf:   conf,
 		client: cnrcl.NewAPIClient(),
 	}
@@ -67,13 +67,13 @@ func newProvider(conf map[string]string) (*CNRClient, error) {
 		api.client.EnableDebugMode()
 	}
 	if api.APIEntity != "OTE" && api.APIEntity != "LIVE" {
-		return nil, fmt.Errorf("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
+		return nil, errors.New("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
 	}
 	if api.APIEntity == "OTE" {
 		api.client.UseOTESystem()
 	}
 	if api.APILogin == "" || api.APIPassword == "" {
-		return nil, fmt.Errorf("missing login credentials apilogin or apipassword")
+		return nil, errors.New("missing login credentials apilogin or apipassword")
 	}
 	api.client.SetCredentials(api.APILogin, api.APIPassword)
 	return api, nil

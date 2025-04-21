@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -67,7 +68,7 @@ func ToNameservers(nss []string) ([]*Nameserver, error) {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
 		if strings.HasSuffix(ns, ".") {
-			return nil, fmt.Errorf("provider code leaves trailing dot on nameserver")
+			return nil, errors.New("provider code leaves trailing dot on nameserver")
 			// If you see this error, maybe the provider should call
 			// ToNameserversStripTD instead.
 		}

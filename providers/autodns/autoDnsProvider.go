@@ -19,7 +19,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -84,7 +84,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	msgs, changed, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 
 	if changed {
-
 		msgs = append(msgs, "Zone update for "+domain)
 		msg := strings.Join(msgs, "\n")
 
@@ -94,7 +93,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-
 					nameServers := nameServers
 					zoneTTL := zoneTTL
 					resourceRecords := resourceRecords
@@ -107,7 +105,6 @@ func (api *autoDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 					return nil
 				},
 			})
-
 	}
 
 	return corrections, actualChangeCount, nil
@@ -119,7 +116,6 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 	var resourceRecords []*ResourceRecord
 
 	for _, record := range recs {
-
 		if record.Type == "NS" && record.Name == "@" {
 			// NS records for the APEX should be handled differently
 			nameServers = append(nameServers, &models.Nameserver{
@@ -169,7 +165,6 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 // GetNameservers returns the nameservers for a domain.
 func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
-
 	if err != nil {
 		return nil, err
 	}
@@ -179,11 +174,18 @@ func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	zone, _ := api.getZone(domain)
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, err
+	}
+
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
-		existingRecords[i] = toRecordConfig(domain, resourceRecord)
-
+		var err error
+		existingRecords[i], err = toRecordConfig(domain, resourceRecord)
+		if err != nil {
+			return nil, err
+		}
 		// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
 		if existingRecords[i].TTL == 0 {
 			existingRecords[i].TTL = zone.Soa.TTL
@@ -241,7 +243,7 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
-func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig {
+func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
 		TTL:      uint32(record.TTL),
@@ -249,11 +251,18 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	}
 	rc.SetLabel(record.Name, domain)
 
-	_ = rc.PopulateFromString(record.Type, record.Value, domain)
+	// special record types are handled below, skip the `rc.PopulateFromString` method
+	if record.Type != "MX" && record.Type != "SRV" {
+		if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
+			return nil, err
+		}
+	}
 
 	if record.Type == "MX" {
 		rc.MxPreference = uint16(record.Pref)
-		rc.SetTarget(record.Value)
+		if err := rc.SetTarget(record.Value); err != nil {
+			return nil, err
+		}
 	}
 
 	if record.Type == "SRV" {
@@ -261,8 +270,14 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 
 		re := regexp.MustCompile(`(\d+) (\d+) (.+)$`)
 		found := re.FindStringSubmatch(record.Value)
+		if len(found) != 4 {
+			return nil, fmt.Errorf("invalid SRV record value: %s", record.Value)
+		}
 
-		weight, _ := strconv.Atoi(found[1])
+		weight, err := strconv.Atoi(found[1])
+		if err != nil {
+			return nil, err
+		}
 		if weight < 0 {
 			rc.SrvWeight = 0
 		} else if weight > 65535 {
@@ -271,7 +286,10 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 			rc.SrvWeight = uint16(weight)
 		}
 
-		port, _ := strconv.Atoi(found[2])
+		port, err := strconv.Atoi(found[2])
+		if err != nil {
+			return nil, err
+		}
 		if port < 0 {
 			rc.SrvPort = 0
 		} else if port > 65535 {
@@ -280,8 +298,10 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 			rc.SrvPort = uint16(port)
 		}
 
-		rc.SetTarget(found[3])
+		if err := rc.SetTarget(found[3]); err != nil {
+			return nil, err
+		}
 	}
 
-	return rc
+	return rc, nil
 }

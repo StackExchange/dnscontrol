@@ -1,7 +1,7 @@
 package route53
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
@@ -25,7 +25,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 func rejectifTargetEqualsLabel(rc *models.RecordConfig) error {
 	if (rc.GetLabelFQDN() + ".") == rc.GetTargetField() {
-		return fmt.Errorf("alias target loop")
+		return errors.New("alias target loop")
 	}
 	return nil
 }

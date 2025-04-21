@@ -61,9 +61,22 @@ records. You will need to generate an [API key](https://dash.bunny.net/account/s
 
 If a domain does not exist in your Bunny account, DNSControl will automatically add it with the `push` command.
 
+## Custom record types
+
+Any custom record types like Script, Flatten or Pull Zone are currently not supported by this provider, except
+those explicitely listed below. Such records will be completely ignored by DNSControl and left as-is.
+
+### Redirect
+
+You can configure Bunny's Redirect type with `BUNNY_DNS_RDR`:
+
+{% code title="dnsconfig.js" %}
+```javascript
+    BUNNY_DNS_RDR("@", "https://foo.bar"),
+```
+{% endcode %}
+
 ## Caveats
 
 - Bunny DNS does not support dual-hosting or configuring custom TTLs for NS records on the zone apex.
 - While custom nameservers are properly recognized by this provider, it is currently not possible to configure them.
-- Any custom record types like Script, Redirect, Flatten or Pull Zone are currently not supported by this provider. Such
-  records will be completely ignored by DNSControl and left as-is.

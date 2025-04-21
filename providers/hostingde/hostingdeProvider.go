@@ -2,6 +2,7 @@ package hostingde
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -20,7 +21,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
@@ -56,7 +57,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	authToken, ownerAccountID, filterAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
 
 	if authToken == "" {
-		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
+		return nil, errors.New("hosting.de: authtoken must be provided")
 	}
 
 	if baseURL == "" {
@@ -103,19 +104,23 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string, meta map[string]strin
 	if err != nil {
 		return nil, err
 	}
-	return hp.APIRecordsToStandardRecordsModel(domain, zone.Records), nil
+	return hp.APIRecordsToStandardRecordsModel(domain, zone.Records)
 }
 
-func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(domain string, src []record) models.Records {
+func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(domain string, src []record) (models.Records, error) {
 	records := []*models.RecordConfig{}
 	for _, r := range src {
 		if r.Type == "SOA" {
 			continue
 		}
-		records = append(records, r.nativeToRecord(domain))
+		newr, err := r.nativeToRecord(domain)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, newr)
 	}
 
-	return records
+	return records, nil
 }
 
 func soaToString(s soaValues) string {
@@ -271,9 +276,9 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	corrections = append(corrections, &models.Correction{
-		Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
+		Msg: "\n" + strings.Join(msg, "\n"),
 		F: func() error {
-			for i := 0; i < 10; i++ {
+			for i := range 10 {
 				err := hp.updateZone(&zone.ZoneConfig, DNSSecOptions, create, del, mod)
 				if err == nil {
 					return nil
@@ -287,7 +292,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 				// Base of 1.8 seemed like a good trade-off, retrying for approximately 45 seconds.
 				time.Sleep(time.Duration(math.Pow(1.8, float64(i))) * 100 * time.Millisecond)
 			}
-			return fmt.Errorf("retry exhaustion: zone blocked for 10 attempts")
+			return errors.New("retry exhaustion: zone blocked for 10 attempts")
 		},
 	},
 	)
@@ -353,7 +358,7 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 
 func (hp *hostingdeProvider) EnsureZoneExists(domain string) error {
 	_, err := hp.getZoneConfig(domain)
-	if err == errZoneNotFound {
+	if errors.Is(err, errZoneNotFound) {
 		if err := hp.createZone(domain); err != nil {
 			return err
 		}
@@ -371,5 +376,4 @@ func (hp *hostingdeProvider) ListZones() ([]string, error) {
 		zones = append(zones, zoneConfig.Name)
 	}
 	return zones, nil
-
 }

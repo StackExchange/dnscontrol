@@ -2,13 +2,12 @@ package powerdns
 
 import (
 	"encoding/json"
-	"fmt"
-
-	"github.com/mittwald/go-powerdns/apis/zones"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	pdns "github.com/mittwald/go-powerdns"
+	"github.com/mittwald/go-powerdns/apis/zones"
 )
 
 var features = providers.DocumentationNotes{
@@ -16,7 +15,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
@@ -24,6 +23,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Unimplemented("Normalization within the PowerDNS API seems to be buggy, so disabled", "https://github.com/PowerDNS/pdns/issues/10558"),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -63,17 +63,17 @@ func newDSP(m map[string]string, metadata json.RawMessage) (providers.DNSService
 
 	dsp.APIKey = m["apiKey"]
 	if dsp.APIKey == "" {
-		return nil, fmt.Errorf("PowerDNS API Key is required")
+		return nil, errors.New("PowerDNS API Key is required")
 	}
 
 	dsp.APIUrl = m["apiUrl"]
 	if dsp.APIUrl == "" {
-		return nil, fmt.Errorf("PowerDNS API URL is required")
+		return nil, errors.New("PowerDNS API URL is required")
 	}
 
 	dsp.ServerName = m["serverName"]
 	if dsp.ServerName == "" {
-		return nil, fmt.Errorf("PowerDNS server name is required")
+		return nil, errors.New("PowerDNS server name is required")
 	}
 
 	// load js config

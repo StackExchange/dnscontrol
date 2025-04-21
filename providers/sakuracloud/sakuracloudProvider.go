@@ -2,6 +2,7 @@ package sakuracloud
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -14,7 +15,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
@@ -61,12 +62,12 @@ func newSakuracloud(config map[string]string, _ json.RawMessage) (*sakuracloudPr
 	// config -- the key/values from creds.json
 	accessToken := config["access_token"]
 	if accessToken == "" {
-		return nil, fmt.Errorf("access_token is required")
+		return nil, errors.New("access_token is required")
 	}
 
 	accessTokenSecret := config["access_token_secret"]
 	if accessTokenSecret == "" {
-		return nil, fmt.Errorf("access_token_secret is required")
+		return nil, errors.New("access_token_secret is required")
 	}
 
 	endpoint := config["endpoint"]

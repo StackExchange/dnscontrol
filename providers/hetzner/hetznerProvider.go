@@ -2,11 +2,12 @@ package hetzner
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -47,31 +48,23 @@ func init() {
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	apiKey := settings["api_key"]
 	if apiKey == "" {
-		return nil, fmt.Errorf("missing HETZNER api_key")
+		return nil, errors.New("missing HETZNER api_key")
 	}
 
-	return &hetznerProvider{
-		apiKey: apiKey,
-	}, nil
+	api := &hetznerProvider{apiKey: apiKey}
+	api.zoneCache = zoneCache.New(api.fetchAllZones)
+	return api, nil
 }
 
 // EnsureZoneExists creates a zone if it does not exist
 func (api *hetznerProvider) EnsureZoneExists(domain string) error {
-	domains, err := api.ListZones()
-	if err != nil {
+	if ok, err := api.zoneCache.HasZone(domain); err != nil || ok {
 		return err
 	}
 
-	for _, d := range domains {
-		if d == domain {
-			return nil
-		}
-	}
-
-	if err = api.createZone(domain); err != nil {
+	if err := api.createZone(domain); err != nil {
 		return err
 	}
-	api.resetZoneCache()
 	return nil
 }
 
@@ -86,7 +79,7 @@ func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	// Start corrections with the reports
 	corrections := diff.GenerateMessageCorrections(toReport)
 
-	z, err := api.getZone(domain)
+	z, err := api.zoneCache.GetZone(domain)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -143,7 +136,7 @@ func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 // GetNameservers returns the nameservers for a domain.
 func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	z, err := api.getZone(domain)
+	z, err := api.zoneCache.GetZone(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -169,13 +162,5 @@ func (api *hetznerProvider) GetZoneRecords(domain string, meta map[string]string
 
 // ListZones lists the zones on this account.
 func (api *hetznerProvider) ListZones() ([]string, error) {
-	zones, err := api.getAllZones()
-	if err != nil {
-		return nil, err
-	}
-	domains := make([]string, 0, len(zones))
-	for domain := range zones {
-		domains = append(domains, domain)
-	}
-	return domains, nil
+	return api.zoneCache.GetZoneNames()
 }

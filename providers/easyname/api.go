@@ -72,7 +72,9 @@ func (c *easynameProvider) request(method, uri string, body *bytes.Buffer, resul
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-	json.Unmarshal(bodyString, &result)
+	if err := json.Unmarshal(bodyString, &result); err != nil {
+		return err
+	}
 
 	status := result.GetStatus()
 	if status.Type != "success" && status.Type != "pending" {
@@ -115,7 +117,9 @@ func (c *easynameProvider) updateNameservers(nss []string, domain int) error {
 
 func (c *easynameProvider) getDomain(domain string) (easynameDomain, error) {
 	if c.domains == nil {
-		c.fetchDomainList()
+		if err := c.fetchDomainList(); err != nil {
+			return easynameDomain{}, err
+		}
 	}
 
 	d, ok := c.domains[domain]

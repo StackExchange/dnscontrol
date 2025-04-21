@@ -2,7 +2,7 @@ package domainnameshop
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),        // Maybe there is support for it
 	providers.CanGetZones:            providers.Unimplemented(), //
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
@@ -61,9 +61,9 @@ func init() {
 // newDomainNameShopProvider creates a Domainnameshop specific DNS provider.
 func newDomainNameShopProvider(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["token"] == "" {
-		return nil, fmt.Errorf("no Domainnameshop token provided")
+		return nil, errors.New("no Domainnameshop token provided")
 	} else if conf["secret"] == "" {
-		return nil, fmt.Errorf("no Domainnameshop secret provided")
+		return nil, errors.New("no Domainnameshop secret provided")
 	}
 
 	api := &domainNameShopProvider{

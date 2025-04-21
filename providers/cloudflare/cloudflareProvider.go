@@ -3,23 +3,24 @@ package cloudflare
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/fatih/color"
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/fatih/color"
 )
 
 /*
@@ -93,46 +94,25 @@ type cloudflareProvider struct {
 	tcLogFh       *os.File // Transcode Log file handle
 	tcZone        string   // Transcode Current zone
 
-	sync.Mutex                      // Protects all access to the following fields:
-	domainIndex map[string]string   // Cache of zone name to zone ID.
-	nameservers map[string][]string // Cache of zone name to list of nameservers.
+	zoneCache zoneCache.ZoneCache[cloudflare.Zone]
 }
 
 // GetNameservers returns the nameservers for a domain.
 func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	z, err := c.zoneCache.GetZone(domain)
+	if err != nil {
 		return nil, err
 	}
-
-	ns, ok := c.nameservers[domain]
-	if !ok {
-		return nil, fmt.Errorf("nameservers for %s not found in cloudflare cache(%q)", domain, c.accountID)
-	}
-	return models.ToNameservers(ns)
+	return models.ToNameservers(z.NameServers)
 }
 
 // ListZones returns a list of the DNS zones.
 func (c *cloudflareProvider) ListZones() ([]string, error) {
-
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
-		return nil, err
-	}
-
-	zones := make([]string, 0, len(c.domainIndex))
-	for d := range c.domainIndex {
-		zones = append(zones, d)
-	}
-	return zones, nil
+	return c.zoneCache.GetZoneNames()
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-
 	domainID, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
@@ -189,26 +169,18 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 }
 
 func (c *cloudflareProvider) getDomainID(name string) (string, error) {
-
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	z, err := c.zoneCache.GetZone(name)
+	if err != nil {
 		return "", err
 	}
-
-	id, ok := c.domainIndex[name]
-	if !ok {
-		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
-	}
-	return id, nil
+	return z.ID, nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			rec.Type = "CNAME"
+			rec.ChangeType("CNAME", dc.Name)
 		}
 	}
 
@@ -243,7 +215,6 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	for _, inst := range instructions {
-
 		addToFront := false
 		var corrs []*models.Correction
 
@@ -335,7 +306,6 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 }
 
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
-
 	var idTxt string
 	switch oldrec.Type {
 	case "PAGE_RULE":
@@ -374,7 +344,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	default:
 		e := oldrec.Original.(cloudflare.DNSRecord)
 		proxy := e.Proxiable && newrec.Metadata[metaProxy] != "off"
-		//fmt.Fprintf(os.Stderr, "DEBUG: proxy := %v && %v != off is... %v\n", e.Proxiable, newrec.Metadata[metaProxy], proxy)
+		// fmt.Fprintf(os.Stderr, "DEBUG: proxy := %v && %v != off is... %v\n", e.Proxiable, newrec.Metadata[metaProxy], proxy)
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, newrec) },
@@ -383,7 +353,6 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 }
 
 func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.RecordConfig, domainID string, msg string) []*models.Correction {
-
 	var idTxt string
 	switch recType {
 	case "PAGE_RULE":
@@ -437,7 +406,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id string) (changed bool, newState bool, err error) {
 	expectedStr := dc.Metadata[metaUniversalSSL]
 	if expectedStr == "" {
-		return false, false, fmt.Errorf("metadata not set")
+		return false, false, errors.New("metadata not set")
 	}
 
 	if actual, err := c.getUniversalSSL(id); err == nil {
@@ -454,7 +423,7 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 		}
 		return false, expected, nil
 	}
-	return false, false, fmt.Errorf("error receiving universal ssl state")
+	return false, false, errors.New("error receiving universal ssl state")
 }
 
 const (
@@ -474,6 +443,12 @@ func checkProxyVal(v string) (string, error) {
 }
 
 func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.ChangeType("CNAME", dc.Name)
+		}
+	}
 
 	// Determine the default proxy setting.
 	var defProxy string
@@ -506,9 +481,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.Metadata = map[string]string{}
 		}
 		// cloudflare uses "1" to mean "auto-ttl"
-		// if we get here and ttl is not specified (or is the dnscontrol default of 300),
+		// if we get here and ttl is not specified
 		// use automatic mode instead.
-		if rec.TTL == 0 || rec.TTL == 300 {
+		if rec.TTL == 0 {
 			rec.TTL = 1
 		}
 		if rec.TTL != 1 && rec.TTL < 60 {
@@ -536,7 +511,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		// CF_REDIRECT record types:
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
 			if !c.manageRedirects && !c.manageSingleRedirects {
-				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
+				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
 			}
 			code := uint16(301)
 			if rec.Type == "CF_TEMP_REDIRECT" {
@@ -548,19 +523,21 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			prPriority++
 
 			// Convert this record to a PAGE_RULE.
-			cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen)
+			if err := cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen); err != nil {
+				return err
+			}
 			rec.SetLabel("@", dc.Name)
 
 			if c.manageRedirects && !c.manageSingleRedirects {
 				// Old-Style only.  No additional work needed.
-
 			} else if !c.manageRedirects && c.manageSingleRedirects {
 				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
-				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
+					return err
+				}
 				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
 					return err
 				}
-
 			} else {
 				// Both old-style and new-style enabled!
 				// Retain the PAGE_RULE and append an additional SINGLEREDIRECT.
@@ -571,7 +548,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 					return err
 				}
 				// The copy becomes the CF SingleRedirect
-				cfsingleredirect.TranscodePRtoSR(rec)
+				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
+					return err
+				}
 				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
 					return err
 				}
@@ -580,18 +559,16 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 				// The original PAGE_RULE remains untouched.
 			}
-
 		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
-				return fmt.Errorf("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
+				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
 			}
-
 		} else if rec.Type == "CF_WORKER_ROUTE" {
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
-				return fmt.Errorf("invalid data specified for cloudflare worker record")
+				return errors.New("invalid data specified for cloudflare worker record")
 			}
 			rec.TTL = 1
 			rec.Type = "WORKER_ROUTE"
@@ -617,7 +594,9 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			return err
 		}
 		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
-		rec.SetTarget(newIP.String())
+		if err := rec.SetTarget(newIP.String()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -632,7 +611,7 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 
 	// File not opened already? Open it.
 	if c.tcLogFh == nil {
-		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 		if err != nil {
 			return err
 		}
@@ -657,12 +636,13 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
+	api.zoneCache = zoneCache.New(api.fetchAllZones)
 	// check api keys from creds json file
 	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
-		return nil, fmt.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
+		return nil, errors.New("if cloudflare apitoken is not set, apikey and apiuser must be provided")
 	}
 	if m["apitoken"] != "" && (m["apikey"] != "" || m["apiuser"] != "") {
-		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
+		return nil, errors.New("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
 	optRP := cloudflare.UsingRetryPolicy(20, 1, 120)
@@ -839,6 +819,16 @@ func stringDefault(value interface{}, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 
+	// ALIAS in Cloudflare works like CNAME.
+	if cr.Type == "ALIAS" {
+		cr.Type = "CNAME"
+	}
+
+	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	if cr.Type == "SPF" {
+		cr.Type = "TXT"
+	}
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "ALIAS" || cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
@@ -852,11 +842,6 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		Metadata: map[string]string{},
 	}
 	rc.SetLabelFromFQDN(cr.Name, domain)
-
-	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
-	if cr.Type == "SPF" {
-		cr.Type = "TXT"
-	}
 
 	if cr.Type == "A" || cr.Type == "AAAA" || cr.Type == "CNAME" {
 		if cr.Proxied != nil {
@@ -907,27 +892,21 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 		proxied = r.Metadata[metaProxy] != "off"
 	}
 	return map[string]string{
-		"proxy": fmt.Sprint(proxied),
+		"proxy": strconv.FormatBool(proxied),
 	}
 }
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
-
-	c.Lock()
-	defer c.Unlock()
-	if err := c.cacheDomainList(); err != nil {
+	if ok, err := c.zoneCache.HasZone(domain); err != nil || ok {
 		return err
 	}
-
-	if _, ok := c.domainIndex[domain]; ok {
-		return nil
-	}
-	var id string
 	id, err := c.createZone(domain)
+	if err != nil {
+		return err
+	}
 	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
-	clear(c.domainIndex) // clear the cache so that the next caller has to refresh it, thus loading the new ID.
-	return err
+	return nil
 }
 
 // PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE integration tests.
