@@ -335,24 +335,26 @@ func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.R
 
 // AutoDnssecToggle enables and disables AutoDNSSEC for INWX domains.
 func (api *inwxAPI) AutoDnssecToggle(dc *models.DomainConfig, corrections []*models.Correction) ([]*models.Correction, error) {
-	if dc.AutoDNSSEC == "" {
-		// neither of AUTODNSSEC_ON or AUTODNSSEC_OFF is set, so do nothing
-		return corrections, nil
-	}
-	desiredAutoDNSSEC := dc.AutoDNSSEC == "on"
-	publishedAutoDNSSEC, err := api.zoneIsAutoDNSSECEnabled(dc.Name)
+
+	dnssecStatus, err := api.DNSSecStatus(dc.Name)
 	if err != nil {
 		return corrections, err
 	}
 
-	if desiredAutoDNSSEC && !publishedAutoDNSSEC {
+	if dnssecStatus == ManualDNSSECStatus && dc.AutoDNSSEC != "" {
+		return corrections, fmt.Errorf("INWX: Domain %s has manual DNSSEC enabled. Disable it before using AUTODNSSEC_ON/AUTODNSSEC_OFF", dc.Name)
+	}
+
+	if dnssecStatus != AutoDNSSECStatus && dc.AutoDNSSEC == "on" {
 		corrections = append(corrections, &models.Correction{
 			Msg: color.YellowString("Enable AutoDNSSEC"),
 			F: func() error {
 				return api.enableAutoDNSSEC(dc.Name)
 			},
 		})
-	} else if !desiredAutoDNSSEC && publishedAutoDNSSEC {
+	}
+
+	if dnssecStatus == AutoDNSSECStatus && dc.AutoDNSSEC == "off" {
 		corrections = append(corrections, &models.Correction{
 			Msg: color.RedString("Disable AutoDNSSEC"),
 			F: func() error {

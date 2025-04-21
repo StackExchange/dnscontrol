@@ -4,19 +4,32 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// zoneIsAutoDNSSECEnabled checks for active autodnssec configuration
-func (api *inwxAPI) zoneIsAutoDNSSECEnabled(domain string) (bool, error) {
-
-	resp, err := api.client.Dnssec.Info([]string{domain})
-	if err != nil {
-		return false, err
-	}
-
+const (
 	// https://www.inwx.com/en/help/apidoc/f/ch03.html#type.dnssecdomainstatus
 	// claims status values can be 'DELETE_ALL', 'MANUAL', 'UPDATE', but
 	// testing shows 'AUTO' is what to expect if the domain has automatic
 	// DNSSEC enabled.
-	return resp.Data[0].DNSSecStatus == "AUTO", nil
+
+	// AutoDNSSEC is the status for DNSSEC enabled with automatic management
+	AutoDNSSECStatus = "AUTO"
+	// ManualDNSSEC is the status for DNSSEC enabled with manual management
+	ManualDNSSECStatus = "MANUAL"
+)
+
+// DNSSecStatus returns domain dnssec status
+func (api *inwxAPI) DNSSecStatus(domain string) (string, error) {
+
+	resp, err := api.client.Dnssec.Info([]string{domain})
+	if err != nil {
+		return "", err
+	}
+
+	// domain has no DNSSEC configuration
+	if len(resp.Data) == 0 {
+		return "", nil
+	}
+
+	return resp.Data[0].DNSSecStatus, nil
 }
 
 // enableAutoDNSSEC enables automatic management of DNSSEC
