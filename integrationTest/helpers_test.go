@@ -17,6 +17,7 @@ import (
 var (
 	providerFlag         = flag.String("provider", "", "Provider to run (if empty, deduced from -profile)")
 	profileFlag          = flag.String("profile", "", "Entry in profiles.json to use (if empty, copied from -provider)")
+	auditRecordsTestFlag = flag.String("auditrecords", "", "Audit records mode: ignore, validate (default is to skip tests if provider's AuditRecords rules dictate it)")
 	enableCFWorkers      = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
 	enableCFRedirectMode = flag.String("cfredirect", "", "cloudflare pagerule tests: default=page_rules, c=convert old to enw, n=new-style, o=none")
 )
@@ -69,6 +70,11 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 			break
 		}
 	}
+
+	fmt.Printf("DEBUG: profileName=%q profileType=%q\n", profileName, profileType)
+	fmt.Printf("TYPE: %q\n", cfg["TYPE"])
+	fmt.Printf("username: %q\n", cfg["username"])
+
 	if profileName == "" {
 		t.Fatalf("Profile not found: -profile=%q -provider=%q", *profileFlag, *providerFlag)
 		return nil, "", nil
@@ -130,4 +136,14 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 	}
 
 	return provider, cfg["domain"], cfg
+}
+
+func getMode(t *testing.T) (mode string) {
+	switch *auditRecordsTestFlag {
+	case "", "ignore", "validate":
+		mode = *auditRecordsTestFlag
+	default:
+		t.Fatalf("Invalid -auditrecords=%q.  Must be one of: skip, ignore, validate", *auditRecordsTestFlag)
+	}
+	return
 }

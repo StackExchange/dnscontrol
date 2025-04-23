@@ -1,0 +1,332 @@
+name: "reusable integration tests - do not run directly"
+
+# This workflow is to be reused by the main PR integration tests and
+# by other special mode integration tests run manually or on a schedule.
+on:
+  workflow_call:
+    inputs:
+      # "test-args-*" are variables to append to test arguments. These specify how the integration tests are run. See the
+      # arguments in integrationTest/helpers_test.go for details.
+      test-args-cfworkers:
+        # sets CF provider metadata 'manage_workers' to true|false
+        default: "true"
+        description: "Set false to disable CF worker tests"
+        required: false
+        type: string 
+      test-args-cfredirect:
+        # if unset, the CF provider metadata will have 'manage_redirects' set to true
+        default: ""
+        description: "cloudflare pagerule tests: default=page_rules, c=convert old to enw, n=new-style, o=none"
+        required: false
+        type: string
+      test-args-auditrecords:
+        # if unset, normal AuditRecords rules prevail, unsupported RRs will not be tested
+        default: ""
+        description: "Audit records mode: ignore, validate (default is to skip tests if provider's AuditRecords rules dictate it)"
+        required: false
+        type: string
+      test-args-start:
+        # index of the first test to run
+        default: ""
+        description: "Test number to begin with"
+        required: false
+        type: string
+      test-args-end:
+        # index of the last test to run
+        default: ""
+        description: "Test number to stop after"
+        required: false
+        type: string
+      test-args-print-elapsed:
+        default: "false"
+        description: "Print elapsed time for each testgroup"
+        required: false
+        type: string
+
+    secrets:
+      # secrets have to be explicitly referenced here in the reusable workflow
+      AXFRDDNS_MASTER:
+      AXFRDDNS_NAMESERVERS:
+      AXFRDDNS_TRANSFER_KEY:
+      AXFRDDNS_TRANSFER_MODE:
+      AXFRDDNS_UPDATE_KEY:
+      AXFRDDNS_UPDATE_MODE:
+      #
+      AXFRDDNS_DNSSEC_MASTER:
+      AXFRDDNS_DNSSEC_NAMESERVERS:
+      AXFRDDNS_DNSSEC_TRANSFER_KEY:
+      AXFRDDNS_DNSSEC_TRANSFER_MODE:
+      AXFRDDNS_DNSSEC_UPDATE_KEY:
+      AXFRDDNS_DNSSEC_UPDATE_MODE:
+      #
+      AZURE_DNS_CLIENT_ID:
+      AZURE_DNS_CLIENT_SECRET:
+      AZURE_DNS_RESOURCE_GROUP:
+      AZURE_DNS_SUBSCRIPTION_ID:
+      AZURE_DNS_TENANT_ID:
+      #
+      BUNNY_DNS_API_KEY:
+      #
+      CLOUDFLAREAPI_ACCOUNTID:
+      CLOUDFLAREAPI_TOKEN:
+      #
+      CLOUDNS_AUTH_ID:
+      CLOUDNS_AUTH_PASSWORD:
+      #
+      CSCGLOBAL_APIKEY:
+      CSCGLOBAL_USERTOKEN:
+      #
+      CNR_UID:
+      CNR_PW:
+      CNR_ENTITY:
+      #
+      DIGITALOCEAN_TOKEN:
+      #
+      GANDI_V5_APIKEY:
+      #
+      GCLOUD_EMAIL:
+      GCLOUD_PRIVATEKEY:
+      GCLOUD_PROJECT:
+      GCLOUD_TYPE:
+      #
+      HEDNS_PASSWORD:
+      HEDNS_TOTP_SECRET:
+      HEDNS_USERNAME:
+      #
+      HEXONET_ENTITY:
+      HEXONET_PW:
+      HEXONET_UID:
+      #
+      HUAWEICLOUD_REGION:
+      HUAWEICLOUD_KEY_ID:
+      HUAWEICLOUD_KEY:
+      #
+      INWX_USERNAME:
+      INWX_PASSWORD:
+      #
+      MYTHICBEASTS_KEYID:
+      MYTHICBEASTS_SECRET:
+      #
+      NAMEDOTCOM_KEY:
+      NAMEDOTCOM_URL:
+      NAMEDOTCOM_USER:
+      #
+      NS1_TOKEN:
+      #
+      POWERDNS_APIKEY:
+      POWERDNS_APIURL:
+      POWERDNS_SERVERNAME:
+      #
+      ROUTE53_KEY:
+      ROUTE53_KEY_ID:
+      #
+      SAKURACLOUD_ACCESS_TOKEN:
+      SAKURACLOUD_ACCESS_TOKEN_SECRET:
+      #
+      TRANSIP_ACCOUNT_NAME:
+      TRANSIP_PRIVATE_KEY:
+
+# Environment Variables
+env:
+  # cache-key: Change to force cache reset `pwsh > Get-Date -UFormat %s`
+  cache-key: 1639697695
+  # go-mod-path: Where go-mod writes temp files
+  go-mod-path: /go/pkg/mod
+  # BIND_DOMAIN: BIND is the one providers that we always test. By
+  # defining this here, we know it will always be set.
+  BIND_DOMAIN: example.com
+
+jobs:
+
+# integration-test-providers: Determine which providers have a _DOMAIN variable set.
+# That variable enables testing for the provider.  The results are
+# stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
+# where integration-tests can pick it up.
+  integration-test-providers:
+    #needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
+    steps:
+    - name: Set Integration Test Providers
+      id: get_integration_test_providers
+      shell: pwsh
+      run: |
+        $Providers = @()
+        $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
+        $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
+        $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
+        ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+          if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
+            $Providers += $_
+          }
+        }
+        Write-Host "Integration test providers: $Providers"
+        echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
+      env:
+        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        ENV_CONTEXT: ${{ toJson(env) }}
+        VARS_CONTEXT: ${{ toJson(vars) }}
+        SECRETS_CONTEXT: ${{ toJson(secrets) }}
+
+# integration-tests: Run the integration tests on any provider listed
+# in needs.integration-test-providers.outputs.integration_test_providers.
+  integration-tests:
+    if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.23
+    needs:
+    - integration-test-providers
+    env:
+      TEST_RESULTS: "/tmp/test-results"
+      GOTESTSUM_FORMAT: testname
+
+      # PROVIDER DOMAIN LIST
+      # These providers will be tested if the env variable is set.
+      # Set it to the domain name to use during the test.
+      AXFRDDNS_DOMAIN: ${{ vars.AXFRDDNS_DOMAIN }}
+      AXFRDDNS_DNSSEC_DOMAIN: ${{ vars.AXFRDDNS_DNSSEC_DOMAIN }}
+      AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
+      BIND_DOMAIN: ${{ vars.BIND_DOMAIN }}
+      BUNNY_DNS_DOMAIN: ${{ vars.BUNNY_DNS_DOMAIN }}
+      CLOUDFLAREAPI_DOMAIN: ${{ vars.CLOUDFLAREAPI_DOMAIN }}
+      CLOUDNS_DOMAIN: ${{ vars.CLOUDNS_DOMAIN }}
+      CNR_DOMAIN: ${{ vars.CNR_DOMAIN }}
+      CSCGLOBAL_DOMAIN: ${{ vars.CSCGLOBAL_DOMAIN }}
+      DIGITALOCEAN_DOMAIN: ${{ vars.DIGITALOCEAN_DOMAIN }}
+      GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
+      GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
+      HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+      HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
+      HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
+      INWX_DOMAIN: ${{ vars.INWX_DOMAIN }}
+      MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
+      NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
+      POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
+      ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
+      SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
+      TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
+
+      # PROVIDER SECRET LIST
+      # The above providers have additional env variables they
+      # need for credentials and such.
+      #
+      AXFRDDNS_MASTER: ${{ secrets.AXFRDDNS_MASTER }}
+      AXFRDDNS_NAMESERVERS: ${{ secrets.AXFRDDNS_NAMESERVERS }}
+      AXFRDDNS_TRANSFER_KEY: ${{ secrets.AXFRDDNS_TRANSFER_KEY }}
+      AXFRDDNS_TRANSFER_MODE: ${{ secrets.AXFRDDNS_TRANSFER_MODE }}
+      AXFRDDNS_UPDATE_KEY: ${{ secrets.AXFRDDNS_UPDATE_KEY }}
+      AXFRDDNS_UPDATE_MODE: ${{ secrets.AXFRDDNS_UPDATE_MODE }}
+      #
+      AXFRDDNS_DNSSEC_MASTER: ${{ secrets.AXFRDDNS_DNSSEC_MASTER }}
+      AXFRDDNS_DNSSEC_NAMESERVERS: ${{ secrets.AXFRDDNS_DNSSEC_NAMESERVERS }}
+      AXFRDDNS_DNSSEC_TRANSFER_KEY: ${{ secrets.AXFRDDNS_DNSSEC_TRANSFER_KEY }}
+      AXFRDDNS_DNSSEC_TRANSFER_MODE: ${{ secrets.AXFRDDNS_DNSSEC_TRANSFER_MODE }}
+      AXFRDDNS_DNSSEC_UPDATE_KEY: ${{ secrets.AXFRDDNS_DNSSEC_UPDATE_KEY }}
+      AXFRDDNS_DNSSEC_UPDATE_MODE: ${{ secrets.AXFRDDNS_DNSSEC_UPDATE_MODE }}
+      #
+      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
+      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
+      AZURE_DNS_RESOURCE_GROUP: ${{ secrets.AZURE_DNS_RESOURCE_GROUP }}
+      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
+      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+      #
+      BUNNY_DNS_API_KEY: ${{ secrets.BUNNY_DNS_API_KEY }}
+      #
+      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
+      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+      #
+      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
+      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
+      #
+      CSCGLOBAL_APIKEY: ${{ secrets.CSCGLOBAL_APIKEY }}
+      CSCGLOBAL_USERTOKEN: ${{ secrets.CSCGLOBAL_USERTOKEN }}
+      #
+      CNR_UID: ${{ secrets.CNR_UID }}
+      CNR_PW: ${{ secrets.CNR_PW }}
+      CNR_ENTITY: ${{ secrets.CNR_ENTITY }}
+      #
+      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      #
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+      #
+      GCLOUD_EMAIL: ${{ secrets.GCLOUD_EMAIL }}
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+      GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
+      GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE }}
+      #
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+      #
+      HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
+      HEXONET_PW: ${{ secrets.HEXONET_PW }}
+      HEXONET_UID: ${{ secrets.HEXONET_UID }}
+      #
+      HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
+      HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
+      HUAWEICLOUD_KEY: ${{ secrets.HUAWEICLOUD_KEY }}
+      #
+      INWX_USERNAME: ${{ secrets.INWX_USERNAME }}
+      INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+      #
+      MYTHICBEASTS_KEYID: ${{ secrets.MYTHICBEASTS_KEYID }}
+      MYTHICBEASTS_SECRET: ${{ secrets.MYTHICBEASTS_SECRET }}
+      #
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+      NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
+      NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+      #
+      NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
+      #
+      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
+      #
+      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
+      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+      #
+      SAKURACLOUD_ACCESS_TOKEN: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN }}
+      SAKURACLOUD_ACCESS_TOKEN_SECRET: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN_SECRET }}
+      #
+      TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
+      TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.provider }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
+    steps:
+    - uses: actions/checkout@v4
+    - run: mkdir -p "$TEST_RESULTS"
+    - name: restore_cache
+      uses: actions/cache@v4.2.3
+      with:
+        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+        path: ${{ env.go-mod-path }}
+    - name: Run integration tests for ${{ matrix.provider }} provider
+      run: |-
+        go install gotest.tools/gotestsum@latest
+        testArgs=""
+        if [ "${{ inputs.test-args-print-elapsed }}" != "" ] ; then testArgs="$testArgs -elapsed=${{ inputs.test-args-print-elapsed }}"; fi
+        if [ "${{ inputs.test-args-cfworkers }}" != "" ] ;     then testArgs="$testArgs -cfworkers=${{ inputs.test-args-cfworkers }}"; fi
+        if [ "${{ inputs.test-args-cfredirect }}" != "" ] ;    then testArgs="$testArgs -cfredirect=${{ inputs.test-args-cfredirect }}"; fi
+        if [ "${{ inputs.test-args-auditrecords }}" != "" ] ;  then testArgs="$testArgs -auditrecords=${{ inputs.test-args-auditrecords }}"; fi
+        if [ "${{ inputs.test-args-start }}" != "" ] ;         then testArgs="$testArgs -startIdx=${{ inputs.test-args-start }}"; fi
+        if [ "${{ inputs.test-args-end }}" != "" ] ;           then testArgs="$testArgs -endIdx=${{ inputs.test-args-end }}"; fi
+
+        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
+          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} $testArgs
+        else
+          echo "Skip test for ${{ matrix.provider }} provider"
+        fi
+      working-directory: integrationTest
+    - uses: actions/upload-artifact@v4.6.2
+      with:
+        name: integration-tests-${{ matrix.provider }}
+        path: ${{ env.TEST_RESULTS }}

@@ -1,24 +1,28 @@
-name: "PR: Run INTEGRATION tests"
+name: "SCHED: Validate AuditRecords rules"
 
-# When will this pipeline be activated?
-# 1. On any pull-request, or if someone pushes to a branch called
-# "tlim_testpr".
+# This workflow is used to run the integration tests in a special mode
+# to detect whether the provider AuditRecords rules are still valid.
+
+# To test this in the context of this suggested change, the workflow has to be
+# registered in GitHub with a `on: pull_request:` or `on: push:` trigger.
+# under normal circumstances, the workflow should be triggered by wokflow_dispatch or a cron.
+# manual run only
 on:
-  pull_request:
   workflow_dispatch:
-  # Want to trigger all the tests without making a PR?
-  # Run: git push origin main:tlim_testpr --force
-  # This will trigger a full PR test on the main branch.
-  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_integration_tests.yml?query=branch%3Atlim_testpr
+  schedule:
+    - cron: '0 0 * */3 0' # every third month
   push:
     branches:
-      - 'tlim_testpr'
+      - elih-scratch-tests
+      - elih-tests-auditrules
+
 
 jobs:
   call-reusable:
     uses: ./.github/workflows/base_integration_tests.yml
     with:
       test-args-cfworkers: 'false'
+      test-args-auditrecords: 'validate'
     secrets:
       AXFRDDNS_MASTER: ${{ secrets.AXFRDDNS_MASTER }}
       AXFRDDNS_NAMESERVERS: ${{ secrets.AXFRDDNS_NAMESERVERS }}

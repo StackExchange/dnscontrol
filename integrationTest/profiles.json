@@ -185,8 +185,8 @@
     "TYPE": "INWX",
     "domain": "$INWX_DOMAIN",
     "password": "$INWX_PASSWORD",
-    "sandbox": "1",
-    "username": "$INWX_USER"
+    "username": "$INWX_USERNAME",
+    "sandbox": "1"
   },
   "LINODE": {
     "TYPE": "LINODE",
