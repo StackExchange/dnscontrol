@@ -23,6 +23,7 @@ type zone struct {
 	Domain      string `json:"Domain"`
 	Nameserver1 string `json:"Nameserver1"`
 	Nameserver2 string `json:"Nameserver2"`
+	HasDNSSEC   bool   `json:"DnsSecEnabled"`
 }
 
 func (zone *zone) Nameservers() []string {
@@ -165,6 +166,16 @@ func (b *bunnydnsProvider) modifyRecord(zoneID int64, recordID int64, r *record)
 func (b *bunnydnsProvider) deleteRecord(zoneID, recordID int64) error {
 	url := fmt.Sprintf("/dnszone/%d/records/%d", zoneID, recordID)
 	return b.request("DELETE", url, nil, nil, nil, []int{http.StatusNoContent})
+}
+
+func (b *bunnydnsProvider) enableDNSSEC(zoneID int64) error {
+	url := fmt.Sprintf("/dnszone/%d/dnssec", zoneID)
+	return b.request("POST", url, nil, nil, nil, []int{http.StatusOK})
+}
+
+func (b *bunnydnsProvider) disableDNSSEC(zoneID int64) error {
+	url := fmt.Sprintf("/dnszone/%d/dnssec", zoneID)
+	return b.request("DELETE", url, nil, nil, nil, []int{http.StatusOK})
 }
 
 func (b *bunnydnsProvider) request(method, endpoint string, query queryParams, body, target any, validStatus []int) error {
