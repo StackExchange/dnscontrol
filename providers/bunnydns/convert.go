@@ -19,12 +19,6 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		TTL:   rc.TTL,
 	}
 
-	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
-	// To avoid confusion, any trailing dots are removed from the record value.
-	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") {
-		r.Value = strings.TrimSuffix(r.Value, ".")
-	}
-
 	switch r.Type {
 	case recordTypeNS:
 		if r.Name == "" {
@@ -39,6 +33,13 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
 		r.Priority = rc.MxPreference
+	}
+
+	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
+	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX record.
+	isNullMX := r.Type == recordTypeMX && r.Priority == 0 && r.Value == "."
+	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullMX {
+		r.Value = strings.TrimSuffix(r.Value, ".")
 	}
 
 	return &r, nil
