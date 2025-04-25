@@ -102,27 +102,8 @@ func testPermitted(p string, f TestGroup) error {
 }
 
 // makeChanges runs one set of DNS record tests. Returns true on success.
-func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, auditRecordsTestMode string) bool {
+func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, validateAuditRecords bool) bool {
 	domainName := dc.Name
-
-	// AuditRecords validation and ignore modes are used to check the continued
-	// need for the rules defined in the provider's AuditRecords function. Over
-	// time, the service provider may add support for a feature that was
-	// previously unsupported and blocked. These modes can be used in spot-
-	// checking or scheduled in a CI job.
-	ignoreAuditRecords := auditRecordsTestMode == "ignore"
-	validateAuditRecords := auditRecordsTestMode == "validate"
-	/*
-		// fixme: we may not want to conflate these two modes: individual tests
-		// can be set to expect failure seperate from the provider's
-		// AuditRecords rules.
-
-		// set the test to invert the normal expectation if we are running
-		// in validation mode
-		if validateAuditRecords {
-			tst.ExpectFailure = true
-		}
-	*/
 
 	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
 		dom, _ := dc.Copy()
@@ -162,21 +143,23 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
-		if !ignoreAuditRecords {
-			err := providers.AuditRecords(*providerFlag, dom.Records)
-			if validateAuditRecords && err == nil {
-				// This is a special test run to validate the provider's
-				// AuditRecords filters. In the interest of test efficiency, skip
-				// tests that run in a normal integrationTest job.
-				//t.Skip("***SKIPPED(this is an AuditRecords validation test)")
-				t.SkipNow() // reduce log noise
-				return
-			}
+		filterRec := providers.AuditRecords(*providerFlag, dom.Records)
 
-			if !validateAuditRecords && err != nil {
-				t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
-				return
-			}
+		// validateAuditRecords is used to check the continued need for the rules
+		// defined in the provider's AuditRecords function. Over time, the
+		// service provider may add support for a feature that was previously
+		// unsupported and blocked. These modes can be used in spot-checking or
+		// scheduled in a CI job.
+		if validateAuditRecords && filterRec == nil {
+			// In the interest of test efficiency, skip tests that run in a
+			// normal integrationTest job.
+			t.SkipNow()
+			return
+		}
+
+		if !validateAuditRecords && filterRec != nil {
+			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", filterRec, desc)
+			return
 		}
 
 		// get and run corrections for first time
@@ -219,7 +202,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if c.F != nil { // F == nil if there is just a msg, no action.
 				err = c.F()
 				if validateAuditRecords && err == nil {
-					// if this is an AuditRecords validation test, we have hit
+					// if this is a validateAuditRecords test, we have hit
 					// an unexpected success. In this context it is a 'failure'
 					// that indicates the provider may now support the tested
 					// zone correction(s)
@@ -246,7 +229,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Fatal(err)
 		}
 		if actualChangeCount == 0 && (tst.ExpectFailure || validateAuditRecords) {
-			// This is an AuditRecords validation test. We expect at least one
+			// This is a validateAuditRecords test. We expect at least one
 			// correction to be made because according to the filter, this
 			// operation is not supported. If we get zero, it means the provider
 			// has added support for the tested zone correction(s) and the
@@ -265,7 +248,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 	})
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string, auditRecordsTestMode string) {
+func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string, validateAuditRecords bool) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	testGroups := makeTests()
 
@@ -290,12 +273,12 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		// fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
 		if err := testPermitted(*profileFlag, *group); err != nil {
 			// t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
-			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig, auditRecordsTestMode)
+			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig, validateAuditRecords)
 			continue
 		}
 
 		// Start the testgroup with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil, auditRecordsTestMode)
+		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil, validateAuditRecords)
 
 		// Run the tests.
 		start := time.Now()
@@ -309,7 +292,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			//      if t.Failed() {
 			//        break
 			//      }
-			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig, auditRecordsTestMode); !ok {
+			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig, validateAuditRecords); !ok {
 				break
 			}
 		}

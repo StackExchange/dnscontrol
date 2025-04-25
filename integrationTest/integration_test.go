@@ -19,10 +19,10 @@ func TestDNSProviders(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 
-	auditRecordsTestMode := getMode(t)
+	validateAuditRecords := getAuditRecordsMode(t)
 
 	t.Run(domain, func(t *testing.T) {
-		runTests(t, provider, domain, cfg, auditRecordsTestMode)
+		runTests(t, provider, domain, cfg, validateAuditRecords)
 	})
 }
 
@@ -1913,15 +1913,6 @@ func makeTests() []*TestGroup {
 				"gcore_ip":                 "4.3.2.1",
 			})),
 			tc("Delete metadata from record", a("@", "1.2.3.4")),
-		),
-
-		testgroup("INWX AuditRecord tests",
-			// this group contains tests that validate the rules in provider's
-			// AuditRecord function.
-			only("INWX"),
-			tc("TXT trailing ws", txt("foows1", "trailingws ")).ExpectTestFailure(),
-			tc("TXT with 1 backtick", txt("foobt", "blah`blah")).ExpectTestFailure(),
-			tc("a 0-byte TXT", txt("foo0", "")).ExpectTestFailure(),
 		),
 
 		// This MUST be the last test.
