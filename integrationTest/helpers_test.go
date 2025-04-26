@@ -71,10 +71,6 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		}
 	}
 
-	fmt.Printf("DEBUG: profileName=%q profileType=%q\n", profileName, profileType)
-	fmt.Printf("TYPE: %q\n", cfg["TYPE"])
-	fmt.Printf("username: %q\n", cfg["username"])
-
 	if profileName == "" {
 		t.Fatalf("Profile not found: -profile=%q -provider=%q", *profileFlag, *providerFlag)
 		return nil, "", nil
