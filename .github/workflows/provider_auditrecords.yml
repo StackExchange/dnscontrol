@@ -11,10 +11,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * */3 0' # every third month
-  push:
-    branches:
-      - elih-scratch-tests
-      - elih-tests-auditrules
 
 jobs:
   call-reusable:
