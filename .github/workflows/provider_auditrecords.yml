@@ -22,7 +22,7 @@ jobs:
     uses: ./.github/workflows/base_integration_tests.yml
     with:
       test-args-cfworkers: 'false'
-      test-args-auditrecords: 'validate'
+      test-args-auditrecords: 'true'
     secrets:
       AXFRDDNS_MASTER: ${{ secrets.AXFRDDNS_MASTER }}
       AXFRDDNS_NAMESERVERS: ${{ secrets.AXFRDDNS_NAMESERVERS }}
