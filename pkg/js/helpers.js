@@ -1275,6 +1275,9 @@ function recordBuilder(type, opts) {
                     record.name = d.subdomain;
                 } else if (record.name.match(/^\d+\.\d+\.\d+\.\d+$/)) {
                     // leave it alone
+                } else if (d.name.endsWith('.ip6.arpa')) {
+                    record.name = d.subdomain;
+                    d.subdomain = undefined;
                 } else if (record.name.endsWith('.in-addr.arpa')) {
                     if (record.name.endsWith(d.subdomain)) {
                         record.name = record.name.slice(
