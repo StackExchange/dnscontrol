@@ -52,7 +52,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/oauth2 v0.28.0
+	golang.org/x/oauth2 v0.29.0
 	google.golang.org/api v0.228.0
 	gopkg.in/ns1/ns1-go.v2 v2.13.0
 )
