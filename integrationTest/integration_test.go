@@ -1913,6 +1913,22 @@ func makeTests() []*TestGroup {
 			tc("Delete metadata from record", a("@", "1.2.3.4")),
 		),
 
+		// NAMECHEAP features
+
+		testgroup("NAMECHEAP url redirect records",
+			only("NAMECHEAP"),
+			tc("Create the three types",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			),
+			tc("VERIFY PREVIOUS",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			).ExpectNoChanges(),
+		),
+
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),

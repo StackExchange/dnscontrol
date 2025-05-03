@@ -301,6 +301,8 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 		switch dnsHost.Type {
 		case "MX":
 			err = record.SetTargetMX(uint16(dnsHost.MXPref), dnsHost.Address)
+		case "FRAME", "URL", "URL301":
+			err = record.SetTarget(dnsHost.Address)
 		default:
 			err = record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
 		}
