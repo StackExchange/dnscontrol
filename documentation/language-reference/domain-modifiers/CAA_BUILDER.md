@@ -14,9 +14,9 @@ parameter_types:
   label: string?
   iodef: string
   iodef_critical: boolean?
-  issue: string[]
+  issue: string[]|string
   issue_critical: boolean?
-  issuewild: string[]
+  issuewild: string[]|string
   issuewild_critical: boolean?
   ttl: Duration?
 ---
