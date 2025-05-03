@@ -600,6 +600,18 @@ func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.Record
 	return r
 }
 
+func url(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URL")
+}
+
+func url301(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URL301")
+}
+
+func frame(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "FRAME")
+}
+
 func tcEmptyZone() *TestCase {
 	return tc("Empty")
 }

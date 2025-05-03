@@ -27,8 +27,8 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 
 	name = items[0].(string)
 	code = items[1].(uint16)
-	if code != 301 && code != 302 {
-		return fmt.Errorf("code (%03d) is not 301 or 302", code)
+	if code != 301 && code != 302 && code != 303 && code != 307 && code != 308 {
+		return fmt.Errorf("code (%03d) is not 301,302,303,307,308", code)
 	}
 	when = items[2].(string)
 	then = items[3].(string)

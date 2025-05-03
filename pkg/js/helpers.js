@@ -1275,6 +1275,9 @@ function recordBuilder(type, opts) {
                     record.name = d.subdomain;
                 } else if (record.name.match(/^\d+\.\d+\.\d+\.\d+$/)) {
                     // leave it alone
+                } else if (d.name.endsWith('.ip6.arpa')) {
+                    record.name = d.subdomain;
+                    d.subdomain = undefined;
                 } else if (record.name.endsWith('.in-addr.arpa')) {
                     if (record.name.endsWith(d.subdomain)) {
                         record.name = record.name.slice(
@@ -1675,8 +1678,8 @@ function SPF_BUILDER(value) {
 // label: The DNS label for the CAA record. (default: '@')
 // iodef: The contact mail address. (optional)
 // iodef_critical: Boolean if sending report is required/critical. If not supported, certificate should be refused. (optional)
-// issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each).
-// issuewild: Allowed CAs which can issue wildcard certificates for this domain. (creates one record for each)
+// issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each), or the string 'none'.
+// issuewild: List of allowed CAs which can issue wildcard certificates for this domain, or the string 'none'. (creates one record for each)
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
 function CAA_BUILDER(value) {

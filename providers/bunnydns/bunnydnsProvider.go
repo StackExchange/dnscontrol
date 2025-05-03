@@ -11,9 +11,9 @@ import (
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can("Bunny flattens CNAME records into A/AAAA records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Cannot(),
