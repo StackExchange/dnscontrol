@@ -8,6 +8,8 @@ on:
 
 jobs:
   draft_release:
+    outputs:
+      hashes: ${{ steps.collect.outputs.hashes }}
     name: draft release
     runs-on: ubuntu-latest
     permissions:
@@ -61,3 +63,22 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    -
+      name: Collect artifact digests
+      id: collect
+      run: |
+        echo "generating digests for artifacts"
+        echo "hashes=$(find dist -type f \( -name \*dnscontrol\* -o -name \*checksums.txt \) -exec sha256sum {} \; | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+  slsa:
+    needs: [draft_release]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: ${{ needs.draft_release.outputs.hashes }}
+      upload-assets: true
+      draft-release: true
