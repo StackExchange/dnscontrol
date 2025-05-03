@@ -1,0 +1,73 @@
+{
+  "dns_providers": [
+    {
+      "name": "bind",
+      "type": "BIND"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "d.c.b.a.1.1.0.2.ip6.arpa"
+      },
+      "name": "d.c.b.a.1.1.0.2.ip6.arpa",
+      "records": [
+        {
+          "name": "1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "target": "host11.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "2.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "target": "host22.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        }
+      ],
+      "registrar": "none"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "8.b.d.0.1.0.0.2.ip6.arpa"
+      },
+      "name": "8.b.d.0.1.0.0.2.ip6.arpa",
+      "records": [
+        {
+          "name": "1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "target": "server11.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "2.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "target": "server22.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        },
+        {
+          "name": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "subdomain": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "target": "abcd.example.com.",
+          "ttl": 300,
+          "type": "PTR"
+        }
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "none",
+      "type": "-"
+    }
+  ]
+}

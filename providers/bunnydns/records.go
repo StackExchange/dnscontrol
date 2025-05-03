@@ -105,6 +105,12 @@ func (b *bunnydnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		}
 	}
 
+	dnssecCorrections, err := b.getDNSSECCorrections(dc, zone)
+	if err != nil {
+		return nil, 0, err
+	}
+	corrections = append(corrections, dnssecCorrections...)
+
 	return corrections, actualChangeCount, nil
 }
 
