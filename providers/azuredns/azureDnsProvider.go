@@ -3,8 +3,10 @@ package azuredns
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -173,6 +175,13 @@ func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 		for _, ns := range zone.Properties.NameServers {
 			nss = append(nss, *ns)
 		}
+
+		nonDefaultNss, err := a.getNameNonDefaultNameServers(domain, nss)
+		if err != nil {
+			return nil, err
+		}
+
+		nss = append(nss, nonDefaultNss...)
 	}
 
 	return models.ToNameserversStripTD(nss)
@@ -191,6 +200,52 @@ func (a *azurednsProvider) ListZones() ([]string, error) {
 	}
 
 	return zones, nil
+}
+
+func (a *azurednsProvider) getNameNonDefaultNameServers(domain string, nss []string) ([]string, error) {
+	zone, ok := a.zones[domain]
+	if !ok {
+		return nil, errNoExist{domain}
+	}
+	zoneName := *zone.Name
+	var nameServers []string
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	recordsPager := a.recordsClient.NewListByTypePager(*a.resourceGroup, zoneName, "NS", nil)
+
+	for recordsPager.More() {
+		waitTime := 1
+	retry:
+		nextResult, recordsErr := recordsPager.NextPage(ctx)
+
+		if recordsErr != nil {
+			err := recordsErr
+			var e *azcore.ResponseError
+			if errors.As(err, &e) {
+				if e.StatusCode == http.StatusTooManyRequests {
+					waitTime = waitTime * 2
+					if waitTime > 300 {
+						return nil, err
+					}
+					printer.Printf("AZURE_DNS: rate-limit paused for %v.\n", waitTime)
+					time.Sleep(time.Duration(waitTime+1) * time.Second)
+					goto retry
+				}
+			}
+		}
+
+		for _, record := range nextResult.Value {
+			if record.Properties != nil && domain == removeTrailingDot(*record.Properties.Fqdn) {
+				for _, ns := range record.Properties.NsRecords {
+					if !slices.Contains(nss, *ns.Nsdname) {
+						nameServers = append(nameServers, *ns.Nsdname)
+					}
+				}
+			}
+		}
+	}
+
+	return nameServers, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -239,6 +294,12 @@ func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		dcn := dc.Name
 		chaKey := change.Key
 
+		if change.Type == diff2.CHANGE || change.Type == diff2.CREATE {
+			if chaKey.Type == "NS" && dcn == removeTrailingDot(change.Key.NameFQDN) {
+				change.New = deduplicateNameServerTargets(change.New)
+			}
+		}
+
 		switch change.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
@@ -280,13 +341,14 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	rrset.Properties.TTL = &i
 
 	waitTime := 1
-retry:
 
+retry:
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
 
-	if e, ok := err.(*azcore.ResponseError); ok {
+	var e *azcore.ResponseError
+	if errors.As(err, &e) {
 		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
@@ -319,7 +381,8 @@ retry:
 	defer cancel()
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
 
-	if e, ok := err.(*azcore.ResponseError); ok {
+	var e *azcore.ResponseError
+	if errors.As(err, &e) {
 		if e.StatusCode == http.StatusTooManyRequests {
 			waitTime = waitTime * 2
 			if waitTime > 300 {
@@ -608,7 +671,8 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 
 		if recordsErr != nil {
 			err := recordsErr
-			if e, ok := err.(*azcore.ResponseError); ok {
+			var e *azcore.ResponseError
+			if errors.As(err, &e) {
 				if e.StatusCode == http.StatusTooManyRequests {
 					waitTime = waitTime * 2
 					if waitTime > 300 {
@@ -642,4 +706,20 @@ func (a *azurednsProvider) EnsureZoneExists(domain string) error {
 	}
 	a.zones[domain] = &z.Zone
 	return nil
+}
+
+func removeTrailingDot(record string) string {
+	return strings.TrimSuffix(record, ".")
+}
+
+func deduplicateNameServerTargets(newRecs models.Records) models.Records {
+	dedupedMap := make(map[string]bool)
+	var deduped models.Records
+	for _, rec := range newRecs {
+		if !dedupedMap[rec.GetTargetField()] {
+			dedupedMap[rec.GetTargetField()] = true
+			deduped = append(deduped, rec)
+		}
+	}
+	return deduped
 }
