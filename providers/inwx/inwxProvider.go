@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -50,7 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
-	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
 	providers.CanUseHTTPS:            providers.Can(),
@@ -566,7 +567,14 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 			return err
 		}
 		for _, domain := range info.Domains {
-			zones[domain.Domain] = domain.RoID
+			// If this is an IDN domain, Nameservers.List.Domains[].Domain
+			// will contain the Unicode name but subsequent calls use the ACE
+			// encoded name. We will convert it now for use as the cache key
+			aceName, err := idna.ToASCII(domain.Domain)
+			if err != nil {
+				return err
+			}
+			zones[aceName] = domain.RoID
 		}
 		if len(zones) >= info.Count {
 			break
