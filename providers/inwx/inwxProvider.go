@@ -51,7 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
-	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
 	providers.CanUseHTTPS:            providers.Can(),
