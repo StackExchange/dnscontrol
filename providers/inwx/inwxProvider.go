@@ -189,7 +189,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	   Records with empty targets (i.e. records with target ".")
 	   are allowed.
 	*/
-	case "CNAME", "NS":
+	case "CNAME", "NS", "ALIAS":
 		req.Content = content[:len(content)-1]
 	case "MX":
 		req.Priority = int(rec.MxPreference)
@@ -456,6 +456,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		   are allowed.
 		*/
 		rtypeAddDot := map[string]bool{
+			"ALIAS": true,
 			"CNAME": true,
 			"MX":    true,
 			"NS":    true,
