@@ -414,15 +414,18 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 //     this, we simply move all R53_ALIAS instructions to the end of the list, thus
 //     guaranteeing they will happen after the records they refer to have been
 //     reated.
+//   - We don't move DELETE instructions for R53_ALIAS records, because they must be
+//     before other instructions for the records they refer to. For example, DELETE for R53_ALIAS(example.com) must
+//     come before CREATE for CNAME(example.com)..
 func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
 	var main, tail diff2.ChangeList
 	for _, change := range changes {
-		// Reports should be early in the list.
-		// R53_ALIAS_ records should go to the tail.
-		if change.Type != diff2.REPORT && strings.HasPrefix(change.Key.Type, "R53_ALIAS_") {
-			tail = append(tail, change)
-		} else {
+		if !strings.HasPrefix(change.Key.Type, "R53_ALIAS_") {
 			main = append(main, change)
+		} else if change.Type == diff2.REPORT || change.Type == diff2.DELETE {
+			main = append(main, change)
+		} else {
+			tail = append(tail, change)
 		}
 	}
 	return append(main, tail...)
