@@ -114,6 +114,24 @@ func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	return systemNameServer, nil
 }
 
+func (api *autoDNSProvider) createZone(domain string, zone *Zone) (*Zone, error) {
+	responseData, err := api.request("POST", "zone", zone)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataZone
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	if len(responseObject.Data) != 1 {
+		return nil, errors.New("Zone " + domain + " not returned")
+	}
+
+	return responseObject.Data[0], nil
+}
+
 func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/providers/bind"
 )
 
 var features = providers.DocumentationNotes{
@@ -241,6 +243,31 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	}
 
 	return existingRecords, nil
+}
+
+func (api *autoDNSProvider) EnsureZoneExists(domain string) error {
+	// try to get zone
+	_, err := api.getZone(domain)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+
+	_, err = api.createZone(domain, &Zone{
+		Origin: domain,
+		NameServers: []*models.Nameserver{
+			{Name: "a.ns14.net"}, {Name: "b.ns14.net"},
+			{Name: "c.ns14.net"}, {Name: "d.ns14.net"},
+		},
+		Soa: &bind.SoaDefaults{
+			Expire:  1209600,
+			Refresh: 43200,
+			Retry:   7200,
+			TTL:     86400,
+		},
+	})
+
+	return err
 }
 
 func (api *autoDNSProvider) ListZones() ([]string, error) {
