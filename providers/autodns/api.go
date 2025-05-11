@@ -64,7 +64,8 @@ func (api *autoDNSProvider) request(method string, requestPath string, data inte
 
 		responseText, _ := io.ReadAll(response.Body)
 
-		if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusTooManyRequests {
+		// FUTUREWORK: 202 starts a long-running task. Should we instead poll here until task is completed?
+		if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusTooManyRequests {
 			return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 		}
 
