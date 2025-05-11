@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -43,15 +44,19 @@ func init() {
 	const providerName = "AUTODNS"
 	const providerMaintainer = "@arnoschoon"
 	fns := providers.DspFuncs{
-		Initializer:   New,
+		Initializer: func(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+			return new(settings), nil
+		},
 		RecordAuditor: AuditRecords,
 	}
+	providers.RegisterRegistrarType(providerName, func(settings map[string]string) (providers.Registrar, error) {
+		return new(settings), nil
+	}, features)
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// New creates a new API handle.
-func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func new(settings map[string]string) *autoDNSProvider {
 	api := &autoDNSProvider{}
 
 	api.baseURL = url.URL{
@@ -70,7 +75,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		"X-Domainrobot-Context": []string{settings["context"]},
 	}
 
-	return api, nil
+	return api
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -272,6 +277,45 @@ func (api *autoDNSProvider) EnsureZoneExists(domain string) error {
 
 func (api *autoDNSProvider) ListZones() ([]string, error) {
 	return api.getZones()
+}
+
+func (api *autoDNSProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domain, err := api.getDomain(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	existingNs := make([]string, 0, len(domain.NameServers))
+	for _, ns := range domain.NameServers {
+		existingNs = append(existingNs, ns.Name)
+	}
+	sort.Strings(existingNs)
+	existing := strings.Join(existingNs, ",")
+
+	desiredNs := models.NameserversToStrings(dc.Nameservers)
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+
+	if existing != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", existing, desired),
+				F: func() error {
+					nameservers := make([]*NameServer, 0, len(desiredNs))
+					for _, name := range desiredNs {
+						nameservers = append(nameservers, &NameServer{
+							Name: name,
+						})
+					}
+					return api.updateDomain(dc.Name, &Domain{
+						NameServers: nameservers,
+					})
+				},
+			},
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {

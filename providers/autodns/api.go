@@ -133,6 +133,24 @@ func (api *autoDNSProvider) createZone(domain string, zone *Zone) (*Zone, error)
 	return responseObject.Data[0], nil
 }
 
+func (api *autoDNSProvider) getDomain(domain string) (*Domain, error) {
+	responseData, err := api.request("GET", "domain/"+domain, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataDomain
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	if len(responseObject.Data) != 1 {
+		return nil, fmt.Errorf("Domain "+domain+" could not be found in AutoDNS: %w", os.ErrNotExist)
+	}
+
+	return responseObject.Data[0], nil
+}
+
 func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 	if err != nil {
@@ -210,6 +228,15 @@ func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*Resourc
 
 	if putErr != nil {
 		return putErr
+	}
+
+	return nil
+}
+
+func (api *autoDNSProvider) updateDomain(name string, domain *Domain) error {
+	_, err := api.request("PUT", "domain/"+name, domain)
+	if err != nil {
+		return err
 	}
 
 	return nil

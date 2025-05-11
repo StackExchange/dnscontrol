@@ -61,8 +61,31 @@ type Zone struct {
 	SystemNameServer string `json:"virtualNameServer,omitempty"`
 }
 
+// Domain represents the Domain in API calls.
+// These are only present for domains where AUTODNS also is a registrar.
+type Domain struct {
+	Name string `json:"name,omitempty"`
+
+	NameServers []*NameServer `json:"nameServers"`
+	Zone        *Zone         `json:"zone,omitempty"`
+}
+
+type NameServer struct {
+	// Host name of the nameserver written as a Fully-Qualified-Domain-Name (FQDN).
+	Name string `json:"name"`
+	// Time-to-live value of the nameservers in seconds
+	TTL uint64 `json:"ttl,omitempty"`
+	// IPv4 and IPv6 addresses of the name server. For GLUE records only; optional. The values for the IP addresses are only relevant for domain operations and are only used there in the case of glue name servers.
+	IPAddresses []string `json:"ipAddresses,omitempty"`
+}
+
 // JSONResponseDataZone represents the response to the DataZone call.
 type JSONResponseDataZone struct {
 	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.
 	Data []*Zone `json:"data"`
+}
+
+type JSONResponseDataDomain struct {
+	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.
+	Data []*Domain `json:"data"`
 }
