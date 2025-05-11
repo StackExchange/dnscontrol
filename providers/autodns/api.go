@@ -104,7 +104,7 @@ func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	}
 
 	if len(responseObject.Data) != 1 {
-		return nil, errors.New("Domain " + domain + " could not be found in AutoDNS")
+		return nil, errors.New("Zone " + domain + " could not be found in AutoDNS")
 	}
 
 	systemNameServer := &models.Nameserver{Name: responseObject.Data[0].SystemNameServer}
