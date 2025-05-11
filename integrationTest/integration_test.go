@@ -1073,6 +1073,36 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		// Bug https://github.com/StackExchange/dnscontrol/issues/3493
+		// Summary: R53_ALIAS -> CNAME conversion doesn't work.
+		testgroup("R53_B3493",
+			requires(providers.CanUseRoute53Alias),
+			// Create the R53_ALIAS:
+			tc("b3493 create alias+cname in one step",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert R53_ALIAS -> CNAME.
+			tc("convert r53alias to cname",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+		// Verify CNAME -> R53_ALIAS works too. (not part of the bug, but worth verifying)
+		testgroup("R53_B3493_REV",
+			requires(providers.CanUseRoute53Alias),
+			// Create the CNAME
+			tc("b3493 create cnames",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert CNAME -> R53_ALIAS.
+			tc("convert cname to r53_alias",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+
 		// CLOUDFLAREAPI features
 
 		// CLOUDFLAREAPI: Redirects:
