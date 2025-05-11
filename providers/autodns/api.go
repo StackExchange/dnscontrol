@@ -134,6 +134,25 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	return responseObject.Data[0], nil
 }
 
+func (api *autoDNSProvider) getZones() ([]string, error) {
+	responseData, err := api.request("POST", "zone/_search", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataZone
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	names := make([]string, 0, len(responseObject.Data))
+	for _, zone := range responseObject.Data {
+		names = append(names, zone.Origin)
+	}
+
+	return names, nil
+}
+
 func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 	if err != nil {

@@ -243,6 +243,10 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
+func (api *autoDNSProvider) ListZones() ([]string, error) {
+	return api.getZones()
+}
+
 func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
