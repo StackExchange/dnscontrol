@@ -99,7 +99,10 @@ func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	}
 
 	var responseObject JSONResponseDataZone
-	_ = json.Unmarshal(responseData, &responseObject)
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
 	if len(responseObject.Data) != 1 {
 		return nil, errors.New("Domain " + domain + " could not be found in AutoDNS")
 	}
@@ -124,9 +127,8 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 
 	var responseObject JSONResponseDataZone
 	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
-	unmErr := json.Unmarshal(responseData, &responseObject)
-	if unmErr != nil {
-		return nil, unmErr
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
 	}
 
 	return responseObject.Data[0], nil
