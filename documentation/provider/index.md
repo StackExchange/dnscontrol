@@ -21,7 +21,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ✅ | ✅ | ❌ | ❔ | ❌ | ❌ | ❔ | ❔ | ❌ | ❌ | ✅ | ❔ | ✅ | ❌ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`BUNNY_DNS`](bunny_dns.md) | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❔ | ❌ | ❌ | ❌ | ❔ | ❔ | ❌ | ✅ | ✅ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ❔ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ |

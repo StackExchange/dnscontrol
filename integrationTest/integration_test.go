@@ -795,6 +795,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
+			not("CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
