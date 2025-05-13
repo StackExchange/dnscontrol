@@ -307,7 +307,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	if err != nil {
 		return nil, 0, err
 	}
-	instructions = reorderInstructions(instructions)
 	var reports []*models.Correction
 
 	// wasReport := false
@@ -407,27 +406,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return append(reports, corrections...), actualChangeCount, nil
-}
-
-// reorderInstructions returns changes reordered to comply with AWS's requirements:
-//   - The R43_ALIAS updates must come after records they refer to.  To handle
-//     this, we simply move all R53_ALIAS instructions to the end of the list, thus
-//     guaranteeing they will happen after the records they refer to have been
-//     reated.
-func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
-	var main, tail diff2.ChangeList
-	for _, change := range changes {
-		// Reports should be early in the list.
-		// R53_ALIAS_ records should go to the tail.
-		if change.Type != diff2.REPORT && strings.HasPrefix(change.Key.Type, "R53_ALIAS_") {
-			tail = append(tail, change)
-		} else {
-			main = append(main, change)
-		}
-	}
-	return append(main, tail...)
-	// NB(tlim): This algorithm is O(n*2) but it is simple and usually only
-	// operates on very small lists.
 }
 
 func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {
