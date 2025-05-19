@@ -1,6 +1,7 @@
 package infomaniak
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,6 +43,14 @@ type dnsRecord struct {
 	UpdatedAt int64  `json:"updated_at,omitempty"`
 }
 
+type dnsRecordCreate struct {
+	Source string `json:"source,omitempty"`
+	Type   string `json:"type,omitempty"`
+	TTL    int64  `json:"ttl,omitempty"`
+	Target string `json:"target,omitempty"`
+}
+
+// Get zone information
 // See https://developer.infomaniak.com/docs/api/get/2/zones/%7Bzone%7D
 func (p *infomaniakProvider) getDNSZone(zone string) (*dnsZone, error) {
 	reqURL := fmt.Sprintf("%s/zones/%s", baseURL, zone)
@@ -57,8 +66,9 @@ func (p *infomaniakProvider) getDNSZone(zone string) (*dnsZone, error) {
 	if err != nil {
 		return nil, err
 	}
-	response := &dnsZoneResponse{}
+	defer res.Body.Close()
 
+	response := &dnsZoneResponse{}
 	err = json.NewDecoder(res.Body).Decode(response)
 	if err != nil {
 		return nil, err
@@ -67,6 +77,7 @@ func (p *infomaniakProvider) getDNSZone(zone string) (*dnsZone, error) {
 	return &response.Data, nil
 }
 
+// Retrieve all dns record for a given zone
 // See https://developer.infomaniak.com/docs/api/get/2/zones/%7Bzone%7D/records
 func (p *infomaniakProvider) getDNSRecords(zone string) ([]dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/zones/%s/records", baseURL, zone)
@@ -82,8 +93,9 @@ func (p *infomaniakProvider) getDNSRecords(zone string) ([]dnsRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	response := &dnsRecordResponse{}
+	defer res.Body.Close()
 
+	response := &dnsRecordResponse{}
 	err = json.NewDecoder(res.Body).Decode(response)
 	if err != nil {
 		return nil, err
@@ -92,6 +104,8 @@ func (p *infomaniakProvider) getDNSRecords(zone string) ([]dnsRecord, error) {
 	return response.Data, nil
 }
 
+// Delete a dns record
+// See https://developer.infomaniak.com/docs/api/delete/2/zones/%7Bzone%7D/records/%7Brecord%7D
 func (p *infomaniakProvider) deleteDNSRecord(zone string, record string) error {
 	reqURL := fmt.Sprintf("%s/zones/%s/records/%s", baseURL, zone, record)
 
@@ -108,36 +122,43 @@ func (p *infomaniakProvider) deleteDNSRecord(zone string, record string) error {
 	}
 	defer res.Body.Close()
 
+	response := &boolResponse{}
+	err = json.NewDecoder(res.Body).Decode(response)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// func (p *infomaniakProvider) createDNSRecord(zoneID string, rec *dnsRecordCreate) (*dnsRecord, error) {
-// 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
+// Create a dns record in a given zone
+// See https://developer.infomaniak.com/docs/api/post/2/zones/%7Bzone%7D/records
+func (p *infomaniakProvider) createDNSRecord(zone string, rec *dnsRecordCreate) (*dnsRecord, error) {
+	reqURL := fmt.Sprintf("%s/zones/%s/records", baseURL, zone)
 
-// 	data, err := json.Marshal(rec)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	data, err := json.Marshal(rec)
+	if err != nil {
+		return nil, err
+	}
 
-// 	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(data))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	req.Header.Add("Authorization", "Bearer "+n.apiToken)
-// 	req.Header.Add("Content-Type", "application/json")
+	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+p.apiToken)
+	req.Header.Add("Content-Type", "application/json")
 
-// 	res, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer res.Body.Close()
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
 
-// 	record := &dnsRecord{}
+	record := &dnsRecord{}
+	err = json.NewDecoder(res.Body).Decode(record)
+	if err != nil {
+		return nil, err
+	}
 
-// 	err = json.NewDecoder(res.Body).Decode(record)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return record, nil
-// }
+	return record, nil
+}
