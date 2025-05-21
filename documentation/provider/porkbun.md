@@ -23,14 +23,27 @@ This provider does not recognize any special metadata fields unique to Porkbun.
 
 ## Usage
 
-An example configuration:
+An example configuration: (DNS hosted with Porkbun):
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_NONE = NewRegistrar("none");
+var REG_PORKBUN = NewRegistrar("porkbun");
 var DSP_PORKBUN = NewDnsProvider("porkbun");
 
-D("example.com", REG_NONE, DnsProvider(DSP_PORKBUN),
+D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+    A("test", "1.2.3.4"),
+);
+```
+{% endcode %}
+
+An example configuration: (Registrar only. DNS hosted elsewhere)
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_PORKBUN = NewRegistrar("porkbun");
+var DSP_R53 = NewDnsProvider("r53");
+
+D("example.com", REG_PORKBUN, DnsProvider(DSP_R53),
     A("test", "1.2.3.4"),
 );
 ```
