@@ -254,14 +254,20 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 		case diff2.CHANGE:
 			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
-			label := inst.Key.NameFQDN
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			// DNSControl attempts to lowercase all labels (See Opinion #4 in
+			// https://docs.dnscontrol.org/developer-info/opinions).
+			// Sadly, the Gandi API has a bug (I consider it a bug) that to
+			// update the records at a particular label, the request must use
+			// the same case for the label as what is stored at Gandi.
+			// In other words, the update API is not case-insensitive for labels.
+			// Luckily we save the record as it came from the API in `.Original`.
+			originalRrsetName := inst.Old[0].Original.(livedns.DomainRecord).RrsetName
 			ns := recordsToNative(inst.New, dc.Name)
 			corrections = append(corrections,
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
-						res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
+						res, err := g.UpdateDomainRecordsByName(domain, originalRrsetName, ns)
 						if err != nil {
 							return fmt.Errorf("%+v ret=%03d: %w", res, res.Code, err)
 						}
