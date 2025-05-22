@@ -30,7 +30,7 @@ func generateFeatureMatrix() error {
 func markdownTable(matrix *FeatureMatrix) (string, error) {
 	var tableHeaders []string
 	tableHeaders = append(tableHeaders, "Provider name")
-	tableHeaders = append(tableHeaders, matrix.Features1st...)
+	tableHeaders = append(tableHeaders, matrix.FeatureTables[0]...)
 
 	var tableData [][]string
 	for _, providerName := range allProviderNames() {
@@ -38,7 +38,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 
 		var tableDataRow []string
 		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
-		for _, featureName := range matrix.Features1st {
+		for _, featureName := range matrix.FeatureTables[0] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
 		tableData = append(tableData, tableDataRow)
@@ -99,61 +99,37 @@ func matrixData() *FeatureMatrix {
 
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
-		Features: []string{
-			OfficialSupport,
-			ProviderDNSProvider,
-			ProviderRegistrar,
-			ProviderThreadSafe,
-			DomainModifierAlias,
-			DomainModifierCaa,
-			DomainModifierDnssec,
-			DomainModifierHTTPS,
-			DomainModifierLoc,
-			DomainModifierNaptr,
-			DomainModifierPtr,
-			DomainModifierSoa,
-			DomainModifierSrv,
-			DomainModifierSshfp,
-			DomainModifierSvcb,
-			DomainModifierTlsa,
-			DomainModifierDs,
-			DomainModifierDhcid,
-			DomainModifierDname,
-			DomainModifierDnskey,
-			DualHost,
-			CreateDomains,
-			// NoPurge,
-			GetZones,
-		},
-		Features1st: []string{
-			OfficialSupport,
-			ProviderDNSProvider,
-			ProviderRegistrar,
-			ProviderThreadSafe,
-			DualHost,
-			CreateDomains,
-			// NoPurge,
-			GetZones,
-		},
-		Features2nd: []string{
-			DomainModifierAlias,
-			DomainModifierCaa,
-			DomainModifierDnssec,
-			DomainModifierHTTPS,
-			DomainModifierLoc,
-			DomainModifierNaptr,
-			DomainModifierPtr,
-			DomainModifierSoa,
-		},
-		Features3rd: []string{
-			DomainModifierSrv,
-			DomainModifierSshfp,
-			DomainModifierSvcb,
-			DomainModifierTlsa,
-			DomainModifierDs,
-			DomainModifierDhcid,
-			DomainModifierDname,
-			DomainModifierDnskey,
+		FeatureTables: [][]string{
+			[]string{
+				OfficialSupport,
+				ProviderDNSProvider,
+				ProviderRegistrar,
+				ProviderThreadSafe,
+				DualHost,
+				CreateDomains,
+				// NoPurge,
+				GetZones,
+			},
+			[]string{
+				DomainModifierAlias,
+				DomainModifierCaa,
+				DomainModifierHTTPS,
+				DomainModifierLoc,
+				DomainModifierNaptr,
+				DomainModifierPtr,
+				DomainModifierSoa,
+				DomainModifierSrv,
+			},
+			[]string{
+				DomainModifierSshfp,
+				DomainModifierSvcb,
+				DomainModifierTlsa,
+				DomainModifierDnssec,
+				DomainModifierDs,
+				DomainModifierDnskey,
+				DomainModifierDhcid,
+				DomainModifierDname,
+			},
 		},
 	}
 
@@ -352,10 +328,7 @@ func (featureMap FeatureMap) SetSimple(
 // FeatureMatrix describes features and which providers support it.
 type FeatureMatrix struct {
 	Providers map[string]FeatureMap
-	Features  []string
-	Features1st  []string
-	Features2nd  []string
-	Features3rd  []string
+	FeatureTables [][]string
 }
 
 func replaceInlineContent(
