@@ -26,6 +26,7 @@ stack.sh
 *.nupkg
 .DS_Store
 .vscode
+*.sw[a-p]
 .jekyll-cache
 types-dnscontrol.d.ts
 
