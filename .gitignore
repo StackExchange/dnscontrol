@@ -5,6 +5,7 @@ dnscontrol-Darwin
 dnscontrol-Linux
 dnscontrol.exe
 dnscontrol
+/build/generate/generate
 /dnsconfig.js
 /creds.json
 ExternalDNS
