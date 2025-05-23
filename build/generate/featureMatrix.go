@@ -16,7 +16,7 @@ func generateFeatureMatrix() error {
 	matrix := matrixData()
 
 	for i := 0; i < len(matrix.FeatureTables); i++ {
-		replacementContent += fmt.Sprintf("\n### Table %d\n\n", i)
+		replacementContent += fmt.Sprintf("\n### Table %d\n\n", i+1)
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
