@@ -13,7 +13,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 <!-- provider-matrix-start -->
 
-### Table 1
+### Table 1/3
 
 | Provider name | Official Support | DNS Provider | Registrar | [Concurrency Verified](../concurrency-verified.md) | dual host | create-domains | get-zones |
 | ------------- | ---------------- | ------------ | --------- | -------------------------------------------------- | --------- | -------------- | --------- |
@@ -72,7 +72,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ✅ |
 
 
-### Table 2
+### Table 2/3
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
@@ -131,7 +131,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❌ | ✅ | ❔ | ❌ | ❔ | ❌ | ❔ | ✅ |
 
 
-### Table 3
+### Table 3/3
 
 | Provider name | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`DS`](../language-reference/domain-modifiers/DS.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) |
 | ------------- | ---------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------- |
