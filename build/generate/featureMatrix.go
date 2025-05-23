@@ -4,6 +4,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
@@ -11,26 +12,33 @@ import (
 )
 
 func generateFeatureMatrix() error {
+	var replacementContent string = ""
 	matrix := matrixData()
-	markdownTable, err := markdownTable(matrix)
-	if err != nil {
-		return err
+
+	for i := 0; i <= 2; i++ {
+		replacementContent += fmt.Sprintf("\n### Table %d\n\n",i)
+		markdownTable, err := markdownTable(matrix, int32(i))
+		if err != nil {
+			return err
+		}
+		replacementContent += markdownTable
+		replacementContent += "\n"
 	}
 
 	replaceInlineContent(
 		"documentation/provider/index.md",
 		"<!-- provider-matrix-start -->",
 		"<!-- provider-matrix-end -->",
-		markdownTable,
+		replacementContent,
 	)
 
 	return nil
 }
 
-func markdownTable(matrix *FeatureMatrix) (string, error) {
+func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	var tableHeaders []string
 	tableHeaders = append(tableHeaders, "Provider name")
-	tableHeaders = append(tableHeaders, matrix.FeatureTables[0]...)
+	tableHeaders = append(tableHeaders, matrix.FeatureTables[tableNumber]...)
 
 	var tableData [][]string
 	for _, providerName := range allProviderNames() {
@@ -38,7 +46,7 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 
 		var tableDataRow []string
 		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
-		for _, featureName := range matrix.FeatureTables[0] {
+		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
 		tableData = append(tableData, tableDataRow)
