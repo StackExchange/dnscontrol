@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sort"
 	"strings"
-	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
@@ -16,7 +16,7 @@ func generateFeatureMatrix() error {
 	matrix := matrixData()
 
 	for i := 0; i < len(matrix.FeatureTables); i++ {
-		replacementContent += fmt.Sprintf("\n### Table %d\n\n",i)
+		replacementContent += fmt.Sprintf("\n### Table %d\n\n", i)
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
@@ -335,7 +335,7 @@ func (featureMap FeatureMap) SetSimple(
 
 // FeatureMatrix describes features and which providers support it.
 type FeatureMatrix struct {
-	Providers map[string]FeatureMap
+	Providers     map[string]FeatureMap
 	FeatureTables [][]string
 }
 
