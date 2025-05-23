@@ -108,35 +108,41 @@ func matrixData() *FeatureMatrix {
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
 		FeatureTables: [][]string{
-			[]string{
+			[]string{ // provider type
 				OfficialSupport,
 				ProviderDNSProvider,
 				ProviderRegistrar,
+			},
+			[]string{ // provider API
 				ProviderThreadSafe,
 				DualHost,
 				CreateDomains,
 				// NoPurge,
 				GetZones,
 			},
-			[]string{
+			[]string{ // DNS extensions
 				DomainModifierAlias,
-				DomainModifierCaa,
-				DomainModifierHTTPS,
 				DomainModifierLoc,
-				DomainModifierNaptr,
 				DomainModifierPtr,
 				DomainModifierSoa,
-				DomainModifierSrv,
+				DomainModifierDname,
 			},
-			[]string{
-				DomainModifierSshfp,
+			[]string{ // service discovery
+				DomainModifierDhcid,
+				DomainModifierNaptr,
+				DomainModifierSrv,
 				DomainModifierSvcb,
+			},
+			[]string{ // security
+				DomainModifierCaa,
 				DomainModifierTlsa,
-				DomainModifierDnssec,
+				DomainModifierSshfp,
+				DomainModifierHTTPS,
+			},
+			[]string{ // dnssec
 				DomainModifierDs,
 				DomainModifierDnskey,
-				DomainModifierDhcid,
-				DomainModifierDname,
+				DomainModifierDnssec,
 			},
 		},
 	}
