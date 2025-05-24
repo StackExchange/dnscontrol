@@ -42,6 +42,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ | ❔ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ | ❔ | ❌ | ✅ | ❔ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
+| [`INFOMANIAK`](infomaniak.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❌ | ✅ |
 | [`INTERNETBS`](internetbs.md) | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](inwx.md) | ❌ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ |
