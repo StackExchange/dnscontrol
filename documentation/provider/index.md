@@ -7,7 +7,7 @@ DNSControl providers.  These table are
 [automatically generated from metadata](https://github.com/StackExchange/dnscontrol/tree/main/build/generate)
 supplied by the provider when they register themselves inside dnscontrol.
 
-An empty space may indicate the feature is not supported by a provider, or it
+An empty space or ❔ may indicate the feature is not supported by a provider, or it
 may simply mean the feature has not been investigated and implemented yet. If a
 feature you need is missing from a provider that supports it, we'd love your
 contribution to ensure it works correctly and add it to this matrix.
