@@ -132,10 +132,10 @@ func matrixData() *FeatureMatrix {
 			},
 			[]string{ // DNS extensions
 				DomainModifierAlias,
+				DomainModifierDname,
 				DomainModifierLoc,
 				DomainModifierPtr,
 				DomainModifierSoa,
-				DomainModifierDname,
 			},
 			[]string{ // service discovery
 				DomainModifierDhcid,
@@ -145,14 +145,14 @@ func matrixData() *FeatureMatrix {
 			},
 			[]string{ // security
 				DomainModifierCaa,
-				DomainModifierTlsa,
-				DomainModifierSshfp,
 				DomainModifierHTTPS,
+				DomainModifierSshfp,
+				DomainModifierTlsa,
 			},
 			[]string{ // dnssec
-				DomainModifierDs,
 				DomainModifierDnskey,
 				DomainModifierDnssec,
+				DomainModifierDs,
 			},
 		},
 	}
