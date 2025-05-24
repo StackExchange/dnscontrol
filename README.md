@@ -80,6 +80,7 @@ Currently supported Domain Registrars:
 - Name.com
 - OpenSRS
 - OVH
+- Porkbun
 - Realtime Register
 
 At Stack Overflow, we use this system to manage hundreds of domains
