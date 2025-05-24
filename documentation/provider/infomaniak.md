@@ -9,7 +9,7 @@ Examples:
 {% code title="creds.json" %}
 ```json
 {
-  "netlify": {
+  "infomaniak": {
     "TYPE": "INFOMANIAK",
     "token": "your-infomaniak-account-access-token",
   }
