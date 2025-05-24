@@ -18,14 +18,14 @@ type infomaniakProvider struct {
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:      providers.Can(),
-	providers.CanUseCAA:        providers.Can(),
-	providers.CanUseDNAME:      providers.Can(),
-	providers.CanUseDS:         providers.Can(),
-	providers.CanUseSSHFP:      providers.Can(),
-	providers.CanUseTLSA:       providers.Can(),
-	providers.CanUseSRV:        providers.Can(),
-	providers.DocCreateDomains: providers.Can(),
+	providers.CanGetZones: providers.Can(),
+	providers.CanUseCAA:   providers.Can(),
+	providers.CanUseDNAME: providers.Can(),
+	providers.CanUseDS:    providers.Can(),
+	providers.CanUseSSHFP: providers.Can(),
+	providers.CanUseTLSA:  providers.Can(),
+	providers.CanUseSRV:   providers.Can(),
+	// providers.DocCreateDomains: providers.Can(),
 }
 
 func newInfomaniak(m map[string]string, message json.RawMessage) (providers.DNSServiceProvider, error) {
