@@ -150,8 +150,8 @@ func matrixData() *FeatureMatrix {
 				DomainModifierTlsa,
 			},
 			[]string{ // dnssec
-				DomainModifierDnskey,
 				DomainModifierDnssec,
+				DomainModifierDnskey,
 				DomainModifierDs,
 			},
 		},
