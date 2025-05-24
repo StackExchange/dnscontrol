@@ -13,7 +13,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 <!-- provider-matrix-start -->
 
-### Table 1/6
+### Provider Type (table 1/6)
 
 | Provider name | Official Support | DNS Provider | Registrar |
 | ------------- | ---------------- | ------------ | --------- |
@@ -72,7 +72,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❌ | ✅ | ❌ |
 
 
-### Table 2/6
+### Provider API (table 2/6)
 
 | Provider name | [Concurrency Verified](../concurrency-verified.md) | dual host | create-domains | get-zones |
 | ------------- | -------------------------------------------------- | --------- | -------------- | --------- |
@@ -131,7 +131,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ✅ |
 
 
-### Table 3/6
+### DNS extensions (table 3/6)
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------- |
@@ -190,7 +190,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❌ | ❌ | ❌ | ❔ | ❔ |
 
 
-### Table 4/6
+### Service discovery (table 4/6)
 
 | Provider name | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
@@ -249,7 +249,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ❔ |
 
 
-### Table 5/6
+### Security (table 5/6)
 
 | Provider name | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) |
 | ------------- | ------------------------------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
@@ -308,7 +308,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`VULTR`](vultr.md) | ✅ | ❌ | ✅ | ❔ |
 
 
-### Table 6/6
+### DNSSEC (table 6/6)
 
 | Provider name | [`DS`](../language-reference/domain-modifiers/DS.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) |
 | ------------- | ---------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |

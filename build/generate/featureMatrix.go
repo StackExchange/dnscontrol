@@ -16,7 +16,8 @@ func generateFeatureMatrix() error {
 	matrix := matrixData()
 
 	for i := 0; i < len(matrix.FeatureTables); i++ {
-		replacementContent += fmt.Sprintf("\n### Table %d/%d\n\n", i+1, len(matrix.FeatureTables))
+		var tableTitle = matrix.FeatureTablesTitles[i];
+		replacementContent += fmt.Sprintf("\n### %s (table %d/%d)\n\n", tableTitle, i+1, len(matrix.FeatureTables))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
@@ -107,6 +108,14 @@ func matrixData() *FeatureMatrix {
 
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
+		FeatureTablesTitles: []string{
+			"Provider Type",
+			"Provider API",
+			"DNS extensions",
+			"Service discovery",
+			"Security",
+			"DNSSEC",
+		},
 		FeatureTables: [][]string{
 			[]string{ // provider type
 				OfficialSupport,
@@ -343,6 +352,7 @@ func (featureMap FeatureMap) SetSimple(
 type FeatureMatrix struct {
 	Providers     map[string]FeatureMap
 	FeatureTables [][]string
+	FeatureTablesTitles []string
 }
 
 func replaceInlineContent(
