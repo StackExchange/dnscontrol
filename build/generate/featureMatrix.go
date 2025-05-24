@@ -102,7 +102,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierDhcid  = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname  = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
 		DomainModifierDnskey = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
-		DualHost             = "dual host"
+		DualHost             = "[dual host](../dual-host.md)"
 		CreateDomains        = "create-domains"
 		GetZones             = "get-zones"
 	)
