@@ -25,10 +25,10 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_INFOMANIAK = NewRegistrar("infomaniak");
+var REG_NONE = NewRegistrar("none");
 var DSP_INFOMANIAK = NewDnsProvider("infomaniak");
 
-D("example.com", REG_INFOMANIAK, DnsProvider(DSP_INFOMANIAK),
+D("example.com", REG_NONE, DnsProvider(DSP_INFOMANIAK),
     A("test", "1.2.3.4"),
 );
 ```
