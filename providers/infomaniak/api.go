@@ -13,19 +13,33 @@ type dnssecRecord struct {
 	IsEnabled bool `json:"is_enabled"`
 }
 
+type errorRecord struct {
+	Code        string `json:"code"`
+	Description string `json:"description"`
+}
+
 type dnsZoneResponse struct {
-	Result string  `json:"result"`
-	Data   dnsZone `json:"data"`
+	Result string      `json:"result"`
+	Data   dnsZone     `json:"data,omitempty"`
+	Error  errorRecord `json:"error,omitempty"`
+}
+
+type dnsRecordsResponse struct {
+	Result string      `json:"result"`
+	Data   []dnsRecord `json:"data,omitempty"`
+	Error  errorRecord `json:"error,omitempty"`
 }
 
 type dnsRecordResponse struct {
 	Result string      `json:"result"`
-	Data   []dnsRecord `json:"data"`
+	Data   dnsRecord   `json:"data,omitempty"`
+	Error  errorRecord `json:"error,omitempty"`
 }
 
 type boolResponse struct {
-	Result string `json:"result"`
-	Data   bool   `json:"data"`
+	Result string      `json:"result"`
+	Data   bool        `json:"data,omitempty"`
+	Error  errorRecord `json:"error,omitempty"`
 }
 type dnsZone struct {
 	ID          int64        `json:"id,omitempty"`
@@ -35,7 +49,7 @@ type dnsZone struct {
 }
 
 type dnsRecord struct {
-	ID        string `json:"hostname,omitempty"`
+	ID        int64  `json:"id,omitempty"`
 	Source    string `json:"source,omitempty"`
 	Type      string `json:"type,omitempty"`
 	TTL       int64  `json:"ttl,omitempty"`
@@ -95,7 +109,7 @@ func (p *infomaniakProvider) getDNSRecords(zone string) ([]dnsRecord, error) {
 	}
 	defer res.Body.Close()
 
-	response := &dnsRecordResponse{}
+	response := &dnsRecordsResponse{}
 	err = json.NewDecoder(res.Body).Decode(response)
 	if err != nil {
 		return nil, err
@@ -106,8 +120,8 @@ func (p *infomaniakProvider) getDNSRecords(zone string) ([]dnsRecord, error) {
 
 // Delete a dns record
 // See https://developer.infomaniak.com/docs/api/delete/2/zones/%7Bzone%7D/records/%7Brecord%7D
-func (p *infomaniakProvider) deleteDNSRecord(zone string, record string) error {
-	reqURL := fmt.Sprintf("%s/zones/%s/records/%s", baseURL, zone, record)
+func (p *infomaniakProvider) deleteDNSRecord(zone string, recordID string) error {
+	reqURL := fmt.Sprintf("%s/zones/%s/records/%s", baseURL, zone, recordID)
 
 	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
@@ -126,6 +140,10 @@ func (p *infomaniakProvider) deleteDNSRecord(zone string, record string) error {
 	err = json.NewDecoder(res.Body).Decode(response)
 	if err != nil {
 		return err
+	}
+
+	if response.Result == "error" {
+		return fmt.Errorf("failed to delete record %s in zone %s: %s", recordID, zone, response.Error.Description)
 	}
 
 	return nil
@@ -154,11 +172,15 @@ func (p *infomaniakProvider) createDNSRecord(zone string, rec *dnsRecordCreate) 
 	}
 	defer res.Body.Close()
 
-	record := &dnsRecord{}
-	err = json.NewDecoder(res.Body).Decode(record)
+	response := &dnsRecordResponse{}
+	err = json.NewDecoder(res.Body).Decode(response)
 	if err != nil {
 		return nil, err
 	}
 
-	return record, nil
+	if response.Result == "error" {
+		return nil, fmt.Errorf("failed to create %s record in zone %s: %s", rec.Type, zone, response.Error.Description)
+	}
+
+	return &response.Data, nil
 }
