@@ -51,7 +51,15 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
-		tableData = append(tableData, tableDataRow)
+                skipThisRow := true
+                for status := range tableDataRow[1:] {
+                        if tableDataRow[status+1] != "❔" {
+                                skipThisRow = false
+                        }
+                }
+                if !skipThisRow {
+                        tableData = append(tableData, tableDataRow)
+                }
 	}
 
 	markdownTable, err := markdown.NewTableFormatterBuilder().
