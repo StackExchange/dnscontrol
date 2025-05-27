@@ -23,9 +23,10 @@ Currently supported DNS providers:
 - Azure Private DNS
 - BIND
 - Bunny DNS
+- CentralNic Reseller (CNR) - formerly RRPProxy
 - Cloudflare
 - ClouDNS
-- CentralNic Reseller (CNR) - formerly RRPProxy
+- CSC Global (*Experimental*)
 - deSEC
 - DigitalOcean
 - DNS Made Easy
@@ -46,8 +47,8 @@ Currently supported DNS providers:
 - LuaDNS
 - Microsoft Windows Server DNS Server
 - Mythic Beasts
-- Namecheap
 - Name.com
+- Namecheap
 - Netcup
 - Netlify
 - NS1
@@ -66,8 +67,9 @@ Currently supported DNS providers:
 Currently supported Domain Registrars:
 
 - AWS Route 53
-- CSC Global
 - CentralNic Reseller (CNR) - formerly RRPProxy
+- CSC Global
+- DNSimple
 - DNSOVERHTTPS
 - Dynadot
 - easyname
@@ -76,8 +78,9 @@ Currently supported Domain Registrars:
 - hosting.de
 - Internet.bs
 - INWX
-- Namecheap
+- Loopia
 - Name.com
+- Namecheap
 - OpenSRS
 - OVH
 - Porkbun
