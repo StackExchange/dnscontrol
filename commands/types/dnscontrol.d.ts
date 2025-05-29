@@ -1131,7 +1131,13 @@ declare function DefaultTTL(ttl: Duration): DomainModifier;
 declare function DnsProvider(name: string, nsCount?: number): DomainModifier;
 
 /**
- * Documentation needed.
+ * This is provider specific type of record and not a DNS standard. It may behave differently for each provider that handles it.
+ *
+ * ### Namecheap
+ *
+ * This is a URL Redirect record with a type of "Masked", it creates a framed HTML page to the target.
+ *
+ * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/).
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/frame
  */
@@ -3256,18 +3262,30 @@ declare function TTL(ttl: Duration): RecordModifier;
 declare function TXT(name: string, contents: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * Documentation needed.
+ * This is provider specific type of record and not a DNS standard. It may behave differently for each provider that handles it.
+ *
+ * ### Namecheap
+ *
+ * This is a URL Redirect record with a type of "Unmasked", it creates a 302 redirect to the target.
+ *
+ * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/)
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
  */
 declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * Documentation needed.
+ * This is provider specific type of record and not a DNS standard. It may behave differently for each provider that handles it.
+ *
+ * ### Namecheap
+ *
+ * This is a URL Redirect record with a type of "Permanent", it creates a 301 redirect to the target.
+ *
+ * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/).
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
  */
-declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function URL301(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
