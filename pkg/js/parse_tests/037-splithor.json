@@ -1,4 +1,10 @@
 {
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
   "dns_providers": [
     {
       "name": "otherconfig",
@@ -15,6 +21,8 @@
   ],
   "domains": [
     {
+      "name": "example.com",
+      "registrar": "Third-Party",
       "dnsProviders": {
         "otherconfig": -1
       },
@@ -22,30 +30,30 @@
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
-      "name": "example.com",
       "records": [
         {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
           "Fields": {
             "A": "3.3.3.3"
           },
-          "name": "main",
-          "target": "3.3.3.3",
-          "ttl": 300,
-          "type": "A"
+          "target": "3.3.3.3"
         },
         {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
           "Fields": {
             "A": "33.33.33.33"
           },
-          "name": "www",
-          "target": "33.33.33.33",
-          "ttl": 300,
-          "type": "A"
+          "target": "33.33.33.33"
         }
-      ],
-      "registrar": "Third-Party"
+      ]
     },
     {
+      "name": "example.com",
+      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -53,30 +61,30 @@
         "dnscontrol_tag": "inside",
         "dnscontrol_uniquename": "example.com!inside"
       },
-      "name": "example.com",
       "records": [
         {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
           "Fields": {
             "A": "1.1.1.1"
           },
-          "name": "main",
-          "target": "1.1.1.1",
-          "ttl": 300,
-          "type": "A"
+          "target": "1.1.1.1"
         },
         {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
           "Fields": {
             "A": "11.11.11.11"
           },
-          "name": "main",
-          "target": "11.11.11.11",
-          "ttl": 300,
-          "type": "A"
+          "target": "11.11.11.11"
         }
-      ],
-      "registrar": "Third-Party"
+      ]
     },
     {
+      "name": "example.com",
+      "registrar": "Third-Party",
       "dnsProviders": {
         "bind": -1
       },
@@ -84,25 +92,190 @@
         "dnscontrol_tag": "outside",
         "dnscontrol_uniquename": "example.com!outside"
       },
-      "name": "example.com",
       "records": [
         {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
           "Fields": {
             "A": "8.8.8.8"
           },
-          "name": "main",
-          "target": "8.8.8.8",
-          "ttl": 300,
-          "type": "A"
+          "target": "8.8.8.8"
         }
-      ],
-      "registrar": "Third-Party"
-    }
-  ],
-  "registrars": [
+      ]
+    },
     {
-      "name": "Third-Party",
-      "type": "NONE"
+      "name": "example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example.net"
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.12"
+          },
+          "target": "203.0.113.12"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.1"
+          },
+          "target": "203.0.113.1"
+        }
+      ]
+    },
+    {
+      "name": "example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "inside",
+        "dnscontrol_uniquename": "example.net!inside"
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "192.0.2.1"
+          },
+          "target": "192.0.2.1"
+        },
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.12"
+          },
+          "target": "203.0.113.12"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.1"
+          },
+          "target": "203.0.113.1"
+        }
+      ]
+    },
+    {
+      "name": "example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "outside",
+        "dnscontrol_uniquename": "example.net!outside"
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.1"
+          },
+          "target": "203.0.113.1"
+        },
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.12"
+          },
+          "target": "203.0.113.12"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.1"
+          },
+          "target": "203.0.113.1"
+        }
+      ]
+    },
+    {
+      "name": "empty.example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "empty.example.net"
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.22"
+          },
+          "target": "203.0.113.22"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.2"
+          },
+          "target": "203.0.113.2"
+        }
+      ]
+    },
+    {
+      "name": "example-b.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "bind": -1
+      },
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "example-b.net"
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "main",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.12"
+          },
+          "target": "203.0.113.12"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "Fields": {
+            "A": "203.0.113.1"
+          },
+          "target": "203.0.113.1"
+        }
+      ]
     }
   ]
 }

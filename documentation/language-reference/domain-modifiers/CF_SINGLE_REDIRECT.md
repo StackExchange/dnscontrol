@@ -15,8 +15,8 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP 301
-(permanent) or 302 (temporary) redirects.
+`CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
+Typically one uses 302 (temporary) or (less likely) 301 (permanent).
 
 This feature manages dynamic "Single Redirects". (Single Redirects can be
 static or dynamic but DNSControl only maintains dynamic redirects).
@@ -26,9 +26,9 @@ Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwardin
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  CF_SINGLE_REDIRECT("name", 301, "when", "then"),
-  CF_SINGLE_REDIRECT('redirect www.example.com', 301, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
-  CF_SINGLE_REDIRECT('redirect yyy.example.com', 301, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+  CF_SINGLE_REDIRECT("name", 302, "when", "then"),
+  CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
+  CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
 );
 ```
 {% endcode %}
@@ -36,7 +36,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 The fields are:
 
 * name: The name (basically a comment, but it must be unique)
-* code: Either 301 (permanent) or 302 (temporary) redirects. May be a number or string.
+* code: Any of 301, 302, 303, 307, 308. May be a number or string.
 * when: What Cloudflare sometimes calls the "rule expression".
 * then: The replacement expression.
 

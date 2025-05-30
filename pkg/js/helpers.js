@@ -12,6 +12,13 @@
 // debugging/developing this code, it may be faster to specify the
 // -dev file to have helpers.js read from the file instead.
 
+// If this javascript interpreter doesn't have a .endsWith() function on strings, add one.
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -151,8 +158,20 @@ function D(name, registrar) {
         var m = arguments[i];
         processDargs(m, domain);
     }
+
+    // handle the empty tag ("example.com!" -> "example.com")
+    // replace name with result of removing the empty tag if it exists
+    // keep track so we can explain the situation in the error message
+    var withoutEmptyTag = _removeEmptyTag(name);
+    name = withoutEmptyTag[0];
+    var tagWasRemoved = withoutEmptyTag[1];
+
     if (conf.domain_names.indexOf(name) !== -1) {
-        throw name + ' is declared more than once';
+        var message = name + ' is declared more than once';
+        if (tagWasRemoved) {
+            message += ' (check empty tags)';
+        }
+        throw message;
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
@@ -181,6 +200,12 @@ function D_EXTEND(name) {
             ' was not declared yet and therefore cannot be updated. Use D() before.'
         );
     }
+
+    // Handle weird REV() case.
+    if (name.indexOf('/') !== -1) {
+        name = name.substring(name.indexOf('.') + 1);
+    }
+
     global_currentExtendSubDomain = name.substr(
         0,
         name.length - domain.obj.name.length - 1
@@ -196,15 +221,31 @@ function D_EXTEND(name) {
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
+// _removeEmptyTag(domain): Remove empty tag.
+function _removeEmptyTag(name) {
+    var tagWasRemoved = false;
+    if (name.slice(-1) === '!') {
+        name = name.slice(0, name.length - 1);
+        tagWasRemoved = true;
+    }
+    return [name, tagWasRemoved];
+}
+
 // _getDomainObject(name): This implements the domain matching
 // algorithm used by D_EXTEND(). Candidate matches are an exact match
 // of the domain's name, or if name is a proper subdomain of the
 // domain's name. The longest match is returned.
 function _getDomainObject(name) {
+    var nameTrimmedTag = _removeEmptyTag(name);
+    name = nameTrimmedTag[0];
     var domain = null;
     var domainLen = 0;
     for (var i = 0; i < conf.domains.length; i++) {
         var thisName = conf.domains[i]['name'];
+        // check for empty tag
+        var thisNameTrimmedTag = _removeEmptyTag(thisName);
+        thisName = thisNameTrimmedTag[0];
+
         var desiredSuffix = '.' + thisName;
         var foundSuffix = name.substr(-desiredSuffix.length);
         // If this is an exact match or the suffix matches...
@@ -268,7 +309,7 @@ function DefaultTTL(v) {
 }
 
 // CAA_CRITICAL: Critical CAA flag
-var CAA_CRITICAL = { caa_critical: "1" };
+var CAA_CRITICAL = { caa_critical: '1' };
 
 // DnsProvider("providerName", 0)
 // nsCount of 0 means don't use or register any nameservers.
@@ -661,15 +702,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-                ? 42849672.95
-                : args.alt.toString()) + 'm';
+              ? 42849672.95
+              : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-                ? 0
-                : args.siz.toString()) +
+              ? 0
+              : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -709,8 +750,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-                ? 0
-                : record.localtitude;
+              ? 0
+              : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -1094,6 +1135,7 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
+            // Fix the labels.  (Fixing targets is done in pkg/normalize/validate.go)
             if (
                 d.subdomain &&
                 record.type != 'CF_SINGLE_REDIRECT' &&
@@ -1101,15 +1143,29 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE'
             ) {
-                fqdn = [d.subdomain, d.name].join('.');
-
                 record.subdomain = d.subdomain;
+
+                // @ sub dom                  ->   sub sub
+                // one two dom                ->   one.two
+                // 4.3.2.1.in-addr.arpa 4.3   ->   4.3 2.1.in-addr.arpa
+                // 1.2.3.4  sub               ->   1.2.3.4 sub
+
                 if (record.name == '@') {
-                    record.subdomain = d.subdomain;
                     record.name = d.subdomain;
-                } else if (fqdn != record.name && record.type != 'PTR') {
-                    record.subdomain = d.subdomain;
-                    record.name += '.' + d.subdomain;
+                } else if (record.name.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    // leave it alone
+                } else if (d.name.endsWith('.ip6.arpa')) {
+                    record.name = d.subdomain;
+                    d.subdomain = undefined;
+                } else if (record.name.endsWith('.in-addr.arpa')) {
+                    if (record.name.endsWith(d.subdomain)) {
+                        record.name = record.name.slice(
+                            0,
+                            -d.subdomain.length - 1
+                        );
+                    }
+                } else {
+                    record.name = record.name + '.' + d.subdomain;
                 }
             }
 
@@ -1258,7 +1314,7 @@ var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
-
+var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')
 // x: Decimal X coordinate.
@@ -1501,8 +1557,8 @@ function SPF_BUILDER(value) {
 // label: The DNS label for the CAA record. (default: '@')
 // iodef: The contact mail address. (optional)
 // iodef_critical: Boolean if sending report is required/critical. If not supported, certificate should be refused. (optional)
-// issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each).
-// issuewild: Allowed CAs which can issue wildcard certificates for this domain. (creates one record for each)
+// issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each), or the string 'none'.
+// issuewild: List of allowed CAs which can issue wildcard certificates for this domain, or the string 'none'. (creates one record for each)
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
 function CAA_BUILDER(value) {
@@ -1523,7 +1579,7 @@ function CAA_BUILDER(value) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }
 
-    var CAA_TTL = function () { };
+    var CAA_TTL = function () {};
     if (value.ttl) {
         CAA_TTL = TTL(value.ttl);
     }
@@ -1540,7 +1596,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function () { };
+        var flag = function () {};
         if (value.issue_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1549,7 +1605,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuewild) {
-        var flag = function () { };
+        var flag = function () {};
         if (value.issuewild_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1789,20 +1845,20 @@ function M365_BUILDER(name, value) {
             CNAME(
                 'selector1._domainkey',
                 'selector1-' +
-                value.domainGUID +
-                '._domainkey.' +
-                value.initialDomain +
-                '.'
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
             )
         );
         r.push(
             CNAME(
                 'selector2._domainkey',
                 'selector2-' +
-                value.domainGUID +
-                '._domainkey.' +
-                value.initialDomain +
-                '.'
+                    value.domainGUID +
+                    '._domainkey.' +
+                    value.initialDomain +
+                    '.'
             )
         );
     }
@@ -1981,4 +2037,4 @@ function rawrecordBuilder(type) {
             return record;
         };
     };
-};
+}

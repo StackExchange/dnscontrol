@@ -15,7 +15,7 @@ import (
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanConcur: providers.Cannot(),
+	providers.CanConcur: providers.Unimplemented(),
 }
 
 func init() {

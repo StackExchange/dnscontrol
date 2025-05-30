@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -225,6 +225,21 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	result := append(reports, deletions...)
 	result = append(result, corrections...)
 	return result, actualChangeCount, nil
+}
+
+// ListZones return all the zones in the account
+func (c *gcoreProvider) ListZones() ([]string, error) {
+	zones, err := c.provider.Zones(c.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var zoneList []string
+	for _, zone := range zones {
+		zoneList = append(zoneList, zone.Name)
+	}
+
+	return zoneList, nil
 }
 
 func comparableFunc(rec *models.RecordConfig) string {

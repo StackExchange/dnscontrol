@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // nativeToRecord takes a DNS record from deSEC and returns a native RecordConfig struct.
@@ -34,7 +35,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 	return rcs
 }
 
-func recordsToNative(rcs []*models.RecordConfig) []resourceRecord {
+func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord {
 	// Take a list of RecordConfig and return an equivalent list of resourceRecord.
 	// deSEC requires one resourceRecord for each label:key tuple, therefore we
 	// might collapse many RecordConfig into one resourceRecord.
@@ -42,7 +43,7 @@ func recordsToNative(rcs []*models.RecordConfig) []resourceRecord {
 	keys := map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
 	for _, r := range rcs {
-		label := r.GetLabel()
+		label := dnsutil.TrimDomainName(r.GetLabel(), origin)
 		if label == "@" {
 			label = ""
 		}

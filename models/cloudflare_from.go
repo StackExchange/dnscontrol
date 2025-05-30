@@ -40,7 +40,7 @@ func MakePageRule(rc *RecordConfig, priority int, code uint16, when, then string
 
 // mkPageRuleBlob creates the 1,301,when,then string used in displays.
 func mkPageRuleBlob(priority int, code uint16, when, then string) string {
-	return fmt.Sprintf("%d,%03d,%s,%s", priority, code, when, then)
+	return fmt.Sprintf("%03d,%03d,%s,%s", priority, code, when, then)
 }
 
 // MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
@@ -100,5 +100,5 @@ func makeSingleRedirectFromConvert(rc *RecordConfig,
 
 // targetFromConverted makes the display text used when a redirect was the result of converting a PAGE_RULE.
 func targetFromConverted(prPriority int, code uint16, prWhen, prThen, srWhen, srThen string) string {
-	return fmt.Sprintf("%d,%03d,%s,%s code=(%03d) when=(%s) then=(%s)", prPriority, code, prWhen, prThen, code, srWhen, srThen)
+	return fmt.Sprintf("%03d,%03d,%s,%s code=(%03d) when=(%s) then=(%s)", prPriority, code, prWhen, prThen, code, srWhen, srThen)
 }

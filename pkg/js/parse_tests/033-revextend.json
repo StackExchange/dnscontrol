@@ -1,4 +1,10 @@
 {
+  "registrars": [
+    {
+      "name": "none",
+      "type": "NONE"
+    }
+  ],
   "dns_providers": [
     {
       "name": "bind",
@@ -7,6 +13,8 @@
   ],
   "domains": [
     {
+      "name": "8.9.in-addr.arpa",
+      "registrar": "none",
       "dnsProviders": {
         "bind": -1
       },
@@ -14,30 +22,30 @@
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "8.9.in-addr.arpa"
       },
-      "name": "8.9.in-addr.arpa",
       "records": [
         {
+          "type": "NS",
+          "name": "1.2",
+          "ttl": 300,
           "Fields": {
             "Ns": "ns1.example.com."
           },
-          "name": "1.2",
-          "target": "ns1.example.com.",
-          "ttl": 300,
-          "type": "NS"
+          "target": "ns1.example.com."
         },
         {
+          "type": "NS",
+          "name": "6.7",
+          "ttl": 300,
           "Fields": {
             "Ns": "ns2.example.org."
           },
-          "name": "6.7",
-          "target": "ns2.example.org.",
-          "ttl": 300,
-          "type": "NS"
+          "target": "ns2.example.org."
         }
-      ],
-      "registrar": "none"
+      ]
     },
     {
+      "name": "example.com",
+      "registrar": "none",
       "dnsProviders": {
         "bind": -1
       },
@@ -45,43 +53,35 @@
         "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
-      "name": "example.com",
       "records": [
         {
+          "type": "NS",
+          "name": "foo",
+          "ttl": 300,
           "Fields": {
             "Ns": "ns1.fooexample.com."
           },
-          "name": "foo",
-          "target": "ns1.fooexample.com.",
-          "ttl": 300,
-          "type": "NS"
+          "target": "ns1.fooexample.com."
         },
         {
+          "type": "NS",
+          "name": "more.lego",
+          "ttl": 300,
           "Fields": {
             "Ns": "ns1.example.com."
           },
-          "name": "more.lego",
-          "target": "ns1.example.com.",
-          "ttl": 300,
-          "type": "NS"
+          "target": "ns1.example.com."
         },
         {
+          "type": "NS",
+          "name": "short.lego",
+          "ttl": 300,
           "Fields": {
             "Ns": "ns1.lego.example.com."
           },
-          "name": "short.lego",
-          "target": "ns1.lego.example.com.",
-          "ttl": 300,
-          "type": "NS"
+          "target": "ns1.lego.example.com."
         }
-      ],
-      "registrar": "none"
-    }
-  ],
-  "registrars": [
-    {
-      "name": "none",
-      "type": "NONE"
+      ]
     }
   ]
 }

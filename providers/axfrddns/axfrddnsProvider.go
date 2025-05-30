@@ -309,6 +309,7 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 			dns.TypeNSEC,
 			dns.TypeNSEC3,
 			dns.TypeNSEC3PARAM,
+			dns.TypeZONEMD,
 			65534:
 			// Ignoring DNSSec RRs, but replacing it with a single
 			// "TXT" placeholder

@@ -5,7 +5,7 @@ parameters:
   - recursive
 parameter_types:
   path: string
-  recursive: boolean
+  recursive: boolean?
 ---
 
 `require_glob()` recursively loads `.js` files that match a glob (wildcard). The recursion can be disabled.

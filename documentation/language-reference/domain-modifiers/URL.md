@@ -11,5 +11,11 @@ parameter_types:
 ---
 
 {% hint style="info" %}
-Documentation needed.
+This is provider specific type of record and not a DNS standard. It may behave differently for each provider that handles it.
 {% endhint %}
+
+### Namecheap
+
+This is a URL Redirect record with a type of "Unmasked", it creates a 302 redirect to the target.
+
+You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/)
