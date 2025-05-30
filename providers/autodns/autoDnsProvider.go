@@ -6,20 +6,23 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/providers/bind"
 )
 
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -41,15 +44,19 @@ func init() {
 	const providerName = "AUTODNS"
 	const providerMaintainer = "@arnoschoon"
 	fns := providers.DspFuncs{
-		Initializer:   New,
+		Initializer: func(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+			return new(settings), nil
+		},
 		RecordAuditor: AuditRecords,
 	}
+	providers.RegisterRegistrarType(providerName, func(settings map[string]string) (providers.Registrar, error) {
+		return new(settings), nil
+	}, features)
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// New creates a new API handle.
-func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func new(settings map[string]string) *autoDNSProvider {
 	api := &autoDNSProvider{}
 
 	api.baseURL = url.URL{
@@ -68,7 +75,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		"X-Domainrobot-Context": []string{settings["context"]},
 	}
 
-	return api, nil
+	return api
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -174,7 +181,11 @@ func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	zone, _ := api.getZone(domain)
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, err
+	}
+
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
 		var err error
@@ -239,6 +250,74 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
+func (api *autoDNSProvider) EnsureZoneExists(domain string) error {
+	// try to get zone
+	_, err := api.getZone(domain)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+
+	_, err = api.createZone(domain, &Zone{
+		Origin: domain,
+		NameServers: []*models.Nameserver{
+			{Name: "a.ns14.net"}, {Name: "b.ns14.net"},
+			{Name: "c.ns14.net"}, {Name: "d.ns14.net"},
+		},
+		Soa: &bind.SoaDefaults{
+			Expire:  1209600,
+			Refresh: 43200,
+			Retry:   7200,
+			TTL:     86400,
+		},
+	})
+
+	return err
+}
+
+func (api *autoDNSProvider) ListZones() ([]string, error) {
+	return api.getZones()
+}
+
+func (api *autoDNSProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domain, err := api.getDomain(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	existingNs := make([]string, 0, len(domain.NameServers))
+	for _, ns := range domain.NameServers {
+		existingNs = append(existingNs, ns.Name)
+	}
+	sort.Strings(existingNs)
+	existing := strings.Join(existingNs, ",")
+
+	desiredNs := models.NameserversToStrings(dc.Nameservers)
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+
+	if existing != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", existing, desired),
+				F: func() error {
+					nameservers := make([]*NameServer, 0, len(desiredNs))
+					for _, name := range desiredNs {
+						nameservers = append(nameservers, &NameServer{
+							Name: name,
+						})
+					}
+					return api.updateDomain(dc.Name, &Domain{
+						NameServers: nameservers,
+					})
+				},
+			},
+		}, nil
+	}
+
+	return nil, nil
+}
+
 func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
@@ -247,8 +326,11 @@ func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig
 	}
 	rc.SetLabel(record.Name, domain)
 
-	if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
-		return nil, err
+	// special record types are handled below, skip the `rc.PopulateFromString` method
+	if record.Type != "MX" && record.Type != "SRV" {
+		if err := rc.PopulateFromString(record.Type, record.Value, domain); err != nil {
+			return nil, err
+		}
 	}
 
 	if record.Type == "MX" {

@@ -1,9 +1,11 @@
+/node_modules/
 /tmp
 /commands/types/dnscontrol.d.ts
 dnscontrol-Darwin
 dnscontrol-Linux
 dnscontrol.exe
 dnscontrol
+/build/generate/generate
 /dnsconfig.js
 /creds.json
 ExternalDNS
@@ -24,10 +26,12 @@ stack.sh
 *.nupkg
 .DS_Store
 .vscode
+*.sw[a-p]
 .jekyll-cache
 types-dnscontrol.d.ts
 
 dist/
+node_modules/
 
 // Test artifact:
 *.ACTUAL

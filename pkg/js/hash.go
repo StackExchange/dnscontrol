@@ -19,13 +19,13 @@ func hashFunc(call otto.FunctionCall) otto.Value {
 	value := call.Argument(1).String()     // The value to hash
 	//lint:ignore SA4006 work around bug in staticcheck. This value is needed if the switch statement follows the default path.
 	result := otto.Value{} //nolint:staticcheck
-	fmt.Printf("%s\n", value)
+	// fmt.Printf("%s\n", value)
 
 	switch algorithm {
 	case "SHA1", "sha1":
 		tmp := sha1.New()
 		tmp.Write([]byte(value))
-		fmt.Printf("%s\n", hex.EncodeToString(tmp.Sum(nil)))
+		// fmt.Printf("%s\n", hex.EncodeToString(tmp.Sum(nil)))
 		result, _ = otto.ToValue(hex.EncodeToString(tmp.Sum(nil)))
 	case "SHA256", "sha256":
 		tmp := sha256.New()

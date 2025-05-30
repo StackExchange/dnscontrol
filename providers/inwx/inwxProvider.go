@@ -4,16 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/fatih/color"
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
+	"golang.org/x/net/idna"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 /*
@@ -44,10 +48,10 @@ var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Cannot(),
-	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
+	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
 	providers.CanUseHTTPS:            providers.Can(),
@@ -185,7 +189,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	   Records with empty targets (i.e. records with target ".")
 	   are allowed.
 	*/
-	case "CNAME", "NS":
+	case "CNAME", "NS", "ALIAS":
 		req.Content = content[:len(content)-1]
 	case "MX":
 		req.Priority = int(rec.MxPreference)
@@ -227,56 +231,192 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
-// checkRecords ensures that there is no single-quote inside TXT records which would be ignored by INWX.
-func checkRecords(records models.Records) error {
-	// TODO(tlim) Remove this function.  auditrecords.go takes care of this now.
-	for _, r := range records {
-		if r.Type == "TXT" {
-			if strings.ContainsAny(r.GetTargetTXTJoined(), "`") {
-				return errors.New("INWX TXT records do not support single-quotes in their target")
+// appendDeleteCorrection is a helper function to append delete corrections to the list of corrections
+func (api *inwxAPI) appendDeleteCorrection(corrections []*models.Correction, rec *models.RecordConfig, removals map[string]struct{}) ([]*models.Correction, map[string]struct{}) {
+	// prevent duplicate delete instructions
+	if _, found := removals[rec.ToComparableNoTTL()]; found {
+		return corrections, removals
+	}
+	corrections = append(corrections, &models.Correction{
+		Msg: color.RedString("- DELETE %s %s %s ttl=%d", rec.GetLabelFQDN(), rec.Type, rec.ToComparableNoTTL(), rec.TTL),
+		F: func() error {
+			return api.deleteRecord(rec.Original.(goinwx.NameserverRecord).ID)
+		},
+	})
+	removals[rec.ToComparableNoTTL()] = struct{}{}
+	return corrections, removals
+}
+
+// isNullMX checks if a record is a null MX record.
+func isNullMX(rec *models.RecordConfig) bool {
+	return rec.Type == "MX" && rec.MxPreference == 0 && rec.GetTargetField() == "."
+}
+
+// MXCorrections generates required delete corrections when a MX change can not be applied in an updateRecord call.
+func (api *inwxAPI) MXCorrections(dc *models.DomainConfig, foundRecords models.Records, corrections []*models.Correction) ([]*models.Correction, models.Records, error) {
+
+	// If a null MX is present in the zone, we have to take special care of any
+	// planned MX changes: No non-null MX records can be added until the null
+	// MX is deleted. If a null MX is planned to be added and the diff is
+	// trying to replace an existing regular MX, we need to delete the existing
+	// MX record because an update would be rejected with "2308 Data management policy violation"
+
+	removals := make(map[string]struct{})
+	tempRecords := []*models.RecordConfig{}
+
+	// Detect Null MX in foundRecords
+	nullMXInFound := slices.ContainsFunc(foundRecords.GetByType("MX"), isNullMX)
+
+	// Detect Null MX and regular MX in desired records
+	nullMXInDesired := false
+	regularMXInDesired := false
+	for _, rec := range dc.Records.GetByType("MX") {
+		if isNullMX(rec) {
+			nullMXInDesired = true
+		} else {
+			regularMXInDesired = true
+		}
+	}
+
+	// invalid state. Null MX and regular MX are both present in the configuration
+	if nullMXInDesired && regularMXInDesired {
+		return nil, nil, fmt.Errorf("desired configuration contains both Null MX and regular MX records")
+	}
+
+	if nullMXInFound && !nullMXInDesired {
+		// Null MX exists in foundRecords, but desired configuration contains only regular MX records
+		// Safe to delete the Null MX record
+		for _, rec := range foundRecords {
+			if isNullMX(rec) {
+				corrections, removals = api.appendDeleteCorrection(corrections, rec, removals)
+			}
+		}
+	} else if !nullMXInFound && nullMXInDesired {
+		// Null MX is being added, ensure all existing MX records are deleted
+		for _, rec := range foundRecords {
+			if rec.Type == "MX" {
+				corrections, removals = api.appendDeleteCorrection(corrections, rec, removals)
 			}
 		}
 	}
-	return nil
+
+	mxRecords := foundRecords.GetByType("MX")
+	mxonlyDc, err := dc.Copy()
+	if err != nil {
+		return nil, nil, err
+	}
+	mxonlyDc.Records = mxonlyDc.Records.GetByType("MX")
+
+	mxchanges, _, err := diff2.ByRecord(mxRecords, mxonlyDc, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, change := range mxchanges {
+		if change.Type == diff2.CHANGE {
+			// INWX will not apply a MX preference update of >=1 to 0. The updateRecord
+			// endpoint will not report an error, so the zone and config will be out of
+			// sync unless we handle this as a delete then create
+			if change.New[0].MxPreference == 0 && change.Old[0].MxPreference != 0 {
+				corrections, removals = api.appendDeleteCorrection(corrections, change.Old[0], removals)
+			}
+		}
+	}
+
+	// We need to remove the RRs already in corrections
+	for _, rec := range foundRecords {
+		if _, found := removals[rec.ToComparableNoTTL()]; !found {
+			tempRecords = append(tempRecords, rec)
+		}
+	}
+
+	cleanedRecords := models.Records(tempRecords)
+	return corrections, cleanedRecords, nil
+}
+
+// AutoDnssecToggle enables and disables AutoDNSSEC for INWX domains.
+func (api *inwxAPI) AutoDnssecToggle(dc *models.DomainConfig, corrections []*models.Correction) ([]*models.Correction, error) {
+
+	dnssecStatus, err := api.DNSSecStatus(dc.Name)
+	if err != nil {
+		return corrections, err
+	}
+
+	if dnssecStatus == ManualDNSSECStatus && dc.AutoDNSSEC != "" {
+		return corrections, fmt.Errorf("INWX: Domain %s has manual DNSSEC enabled. Disable it before using AUTODNSSEC_ON/AUTODNSSEC_OFF", dc.Name)
+	}
+
+	if dnssecStatus != AutoDNSSECStatus && dc.AutoDNSSEC == "on" {
+		corrections = append(corrections, &models.Correction{
+			Msg: color.YellowString("Enable AutoDNSSEC"),
+			F: func() error {
+				return api.enableAutoDNSSEC(dc.Name)
+			},
+		})
+	}
+
+	if dnssecStatus == AutoDNSSECStatus && dc.AutoDNSSEC == "off" {
+		corrections = append(corrections, &models.Correction{
+			Msg: color.RedString("Disable AutoDNSSEC"),
+			F: func() error {
+				return api.disableAutoDNSSEC(dc.Name)
+			},
+		})
+	}
+	return corrections, nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, int, error) {
-	err := checkRecords(dc.Records)
+
+	corrections := []*models.Correction{}
+
+	corrections, records, err := api.MXCorrections(dc, foundRecords, corrections)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	toReport, create, del, mod, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(foundRecords)
+	corrections, err = api.AutoDnssecToggle(dc, corrections)
 	if err != nil {
 		return nil, 0, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
 
-	for _, d := range create {
-		des := d.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.createRecord(dc.Name, des) },
-		})
+	changes, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
+	if err != nil {
+		return nil, 0, err
 	}
-	for _, d := range del {
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.deleteRecord(existingID) },
-		})
+	for _, change := range changes {
+		changeMsgs := change.MsgsJoined
+		dcName := dc.Name
+		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: changeMsgs})
+		case diff2.CHANGE:
+			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F: func() error {
+					return api.updateRecord(recID, change.New[0])
+				},
+			})
+		case diff2.CREATE:
+			changeNew := change.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F: func() error {
+					return api.createRecord(dcName, changeNew)
+				},
+			})
+		case diff2.DELETE:
+			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: changeMsgs,
+				F:   func() error { return api.deleteRecord(recID) },
+			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
+		}
 	}
-	for _, d := range mod {
-		rec := d.Desired
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.updateRecord(existingID, rec) },
-		})
-	}
-
 	return corrections, actualChangeCount, nil
 }
 
@@ -288,9 +428,10 @@ func (api *inwxAPI) getDefaultNameservers() []string {
 	return InwxProductionDefaultNs
 }
 
-// GetNameservers returns the default nameservers for INWX.
+// GetNameservers returns the nameservers provisioned for the domain or the
+// default INWX nameservers.
 func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.ToNameservers(api.getDefaultNameservers())
+	return models.ToNameservers(api.fetchRegistrationNSSet(domain))
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
@@ -315,6 +456,7 @@ func (api *inwxAPI) GetZoneRecords(domain string, meta map[string]string) (model
 		   are allowed.
 		*/
 		rtypeAddDot := map[string]bool{
+			"ALIAS": true,
 			"CNAME": true,
 			"MX":    true,
 			"NS":    true,
@@ -386,18 +528,21 @@ func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
 func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	info, err := api.client.Domains.Info(dc.Name, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	sort.Strings(info.Nameservers)
-	foundNameservers := strings.Join(info.Nameservers, ",")
-	expected := []string{}
+	regNameservers := api.fetchRegistrationNSSet(dc.Name)
+	combined := map[string]bool{}
 	for _, ns := range dc.Nameservers {
-		expected = append(expected, ns.Name)
+		combined[ns.Name] = true
+	}
+	for _, rs := range regNameservers {
+		combined[rs] = true
+	}
+	var expected []string
+	for k := range combined {
+		expected = append(expected, k)
+
 	}
 	sort.Strings(expected)
+	foundNameservers := strings.Join(regNameservers, ",")
 	expectedNameservers := strings.Join(expected, ",")
 
 	if foundNameservers != expectedNameservers {
@@ -423,7 +568,14 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 			return err
 		}
 		for _, domain := range info.Domains {
-			zones[domain.Domain] = domain.RoID
+			// If this is an IDN domain, Nameservers.List.Domains[].Domain
+			// will contain the Unicode name but subsequent calls use the ACE
+			// encoded name. We will convert it now for use as the cache key
+			aceName, err := idna.ToASCII(domain.Domain)
+			if err != nil {
+				return err
+			}
+			zones[aceName] = domain.RoID
 		}
 		if len(zones) >= info.Count {
 			break
@@ -432,6 +584,15 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 	}
 	api.domainIndex = zones
 	return nil
+}
+
+func (api *inwxAPI) fetchRegistrationNSSet(domain string) []string {
+	info, err := api.client.Domains.Info(domain, 0)
+	if err != nil {
+		return api.getDefaultNameservers()
+	}
+	sort.Strings(info.Nameservers)
+	return info.Nameservers
 }
 
 // EnsureZoneExists creates a zone if it does not exist
@@ -450,13 +611,13 @@ func (api *inwxAPI) EnsureZoneExists(domain string) error {
 	request := &goinwx.NameserverCreateRequest{
 		Domain:      domain,
 		Type:        "MASTER",
-		Nameservers: api.getDefaultNameservers(),
+		Nameservers: api.fetchRegistrationNSSet(domain),
 	}
-	var id int
 	id, err := api.client.Nameservers.Create(request)
 	if err != nil {
 		return err
 	}
 	printer.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	api.domainIndex[domain] = id
 	return nil
 }

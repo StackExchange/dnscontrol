@@ -84,6 +84,7 @@ import (
 // This is the subdomain path, if any, imported from the configuration. If
 // present at the time of canonicalization it is inserted between the
 // Name and origin when constructing a canonical (FQDN) target.
+// (the SubDomain is not used in processing the label itself. That was done in helpers.js)
 //
 // Idioms:
 //
@@ -291,7 +292,7 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 	if strings.HasSuffix(short, ".") {
 		if short != "**current-domain**" {
-			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", short))
 		}
 	}
 
@@ -620,7 +621,7 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA":
+		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV", "TLSA", "AZURE_ALIAS":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?

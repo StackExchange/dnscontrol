@@ -19,12 +19,6 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		TTL:   rc.TTL,
 	}
 
-	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
-	// To avoid confusion, any trailing dots are removed from the record value.
-	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") {
-		r.Value = strings.TrimSuffix(r.Value, ".")
-	}
-
 	switch r.Type {
 	case recordTypeNS:
 		if r.Name == "" {
@@ -39,6 +33,13 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
 		r.Priority = rc.MxPreference
+	}
+
+	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
+	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX record.
+	isNullMX := r.Type == recordTypeMX && r.Priority == 0 && r.Value == "."
+	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullMX {
+		r.Value = strings.TrimSuffix(r.Value, ".")
 	}
 
 	return &r, nil
@@ -61,6 +62,8 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 
 	var err error
 	switch rc.Type {
+	case "BUNNY_DNS_RDR":
+		err = rc.SetTarget(r.Value)
 	case "CAA":
 		err = rc.SetTargetCAA(r.Flags, r.Tag, recordValue)
 	case "MX":
@@ -107,8 +110,6 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeTXT
 	case "MX":
 		return recordTypeMX
-	case "REDIRECT":
-		return recordTypeRedirect
 	case "FLATTEN":
 		return recordTypeFlatten
 	case "PULL_ZONE":
@@ -123,6 +124,8 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeScript
 	case "NS":
 		return recordTypeNS
+	case "BUNNY_DNS_RDR":
+		return recordTypeRedirect
 	default:
 		panic(fmt.Errorf("BUNNY_DNS: rtype %v unimplemented", t))
 	}
@@ -141,7 +144,7 @@ func recordTypeToString(t recordType) string {
 	case recordTypeMX:
 		return "MX"
 	case recordTypeRedirect:
-		return "REDIRECT"
+		return "BUNNY_DNS_RDR"
 	case recordTypeFlatten:
 		return "FLATTEN"
 	case recordTypePullZone:

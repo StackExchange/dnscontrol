@@ -795,6 +795,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
+			not("CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
@@ -1070,6 +1071,36 @@ func makeTests() []*TestGroup {
 			tc("modify evaluate target health",
 				r53alias("test-record", "CNAME", "test-record-1.**current-domain**.", "true"),
 				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+
+		// Bug https://github.com/StackExchange/dnscontrol/issues/3493
+		// Summary: R53_ALIAS -> CNAME conversion doesn't work.
+		testgroup("R53_B3493",
+			requires(providers.CanUseRoute53Alias),
+			// Create the R53_ALIAS:
+			tc("b3493 create alias+cname in one step",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert R53_ALIAS -> CNAME.
+			tc("convert r53alias to cname",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+		// Verify CNAME -> R53_ALIAS works too. (not part of the bug, but worth verifying)
+		testgroup("R53_B3493_REV",
+			requires(providers.CanUseRoute53Alias),
+			// Create the CNAME
+			tc("b3493 create cnames",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert CNAME -> R53_ALIAS.
+			tc("convert cname to r53_alias",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
 
@@ -1911,6 +1942,22 @@ func makeTests() []*TestGroup {
 				"gcore_ip":                 "4.3.2.1",
 			})),
 			tc("Delete metadata from record", a("@", "1.2.3.4")),
+		),
+
+		// NAMECHEAP features
+
+		testgroup("NAMECHEAP url redirect records",
+			only("NAMECHEAP"),
+			tc("Create the three types",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			),
+			tc("VERIFY PREVIOUS",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			).ExpectNoChanges(),
 		),
 
 		// This MUST be the last test.

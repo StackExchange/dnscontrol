@@ -82,6 +82,10 @@ func (dc *DomainConfig) UpdateSplitHorizonNames() {
 			name = l[0]
 			tag = l[1]
 		}
+		if tag == "" {
+			// ensure empty tagged domain is treated as untagged
+			unique = name
+		}
 	}
 
 	dc.Name = name
@@ -126,7 +130,7 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD":
+		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD", "BUNNY_DNS_RDR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {
