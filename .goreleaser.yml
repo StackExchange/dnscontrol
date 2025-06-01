@@ -172,7 +172,7 @@ homebrew_casks:
       owner: dnscontrol
       name: homebrew-tap
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
 
 release:
   draft: true
