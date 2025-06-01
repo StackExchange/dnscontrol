@@ -153,6 +153,26 @@ checksum:
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
+homebrew_casks:
+  -
+    name: dnscontrol
+    url_template: "https://github.com/DNSControl/dnscontrol/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Formula
+    homepage: "https://docs.dnscontrol.org/"
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    license: "MIT"
+    conflicts:
+      - formula: dnscontrol
+    repository:
+      owner: dnscontrol
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.GITHUB_TOKEN }}"
+
 release:
   draft: true
   prerelease: auto
