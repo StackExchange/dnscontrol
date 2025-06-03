@@ -205,7 +205,7 @@ release:
     ##### Install with [Homebrew](https://brew.sh) (recommended)
 
     ```shell
-    brew install dnscontrol
+    brew install dnscontrol/tap/dnscontrol
     ```
 
     ##### Using with [Docker](https://www.docker.com)
@@ -233,7 +233,7 @@ release:
     #### Update with [Homebrew](https://brew.sh)
 
     ```shell
-    brew upgrade dnscontrol
+    brew upgrade dnscontrol/tap/dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.
