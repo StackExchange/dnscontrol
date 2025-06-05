@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net/http"
+	"os"
 	"sort"
 	"time"
 
@@ -62,7 +64,8 @@ func (api *autoDNSProvider) request(method string, requestPath string, data inte
 
 		responseText, _ := io.ReadAll(response.Body)
 
-		if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusTooManyRequests {
+		// FUTUREWORK: 202 starts a long-running task. Should we instead poll here until task is completed?
+		if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusTooManyRequests {
 			return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 		}
 
@@ -99,14 +102,53 @@ func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	}
 
 	var responseObject JSONResponseDataZone
-	_ = json.Unmarshal(responseData, &responseObject)
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
 	if len(responseObject.Data) != 1 {
-		return nil, errors.New("Domain " + domain + " could not be found in AutoDNS")
+		return nil, fmt.Errorf("Zone "+domain+" could not be found in AutoDNS: %w", os.ErrNotExist)
 	}
 
 	systemNameServer := &models.Nameserver{Name: responseObject.Data[0].SystemNameServer}
 
 	return systemNameServer, nil
+}
+
+func (api *autoDNSProvider) createZone(domain string, zone *Zone) (*Zone, error) {
+	responseData, err := api.request("POST", "zone", zone)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataZone
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	if len(responseObject.Data) != 1 {
+		return nil, errors.New("Zone " + domain + " not returned")
+	}
+
+	return responseObject.Data[0], nil
+}
+
+func (api *autoDNSProvider) getDomain(domain string) (*Domain, error) {
+	responseData, err := api.request("GET", "domain/"+domain, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataDomain
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	if len(responseObject.Data) != 1 {
+		return nil, fmt.Errorf("Domain "+domain+" could not be found in AutoDNS: %w", os.ErrNotExist)
+	}
+
+	return responseObject.Data[0], nil
 }
 
 func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
@@ -124,12 +166,30 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 
 	var responseObject JSONResponseDataZone
 	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
-	unmErr := json.Unmarshal(responseData, &responseObject)
-	if unmErr != nil {
-		return nil, unmErr
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
 	}
 
 	return responseObject.Data[0], nil
+}
+
+func (api *autoDNSProvider) getZones() ([]string, error) {
+	responseData, err := api.request("POST", "zone/_search", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject JSONResponseDataZone
+	if err := json.Unmarshal(responseData, &responseObject); err != nil {
+		return nil, err
+	}
+
+	names := make([]string, 0, len(responseObject.Data))
+	for _, zone := range responseObject.Data {
+		names = append(names, zone.Origin)
+	}
+
+	return names, nil
 }
 
 func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
@@ -168,6 +228,15 @@ func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*Resourc
 
 	if putErr != nil {
 		return putErr
+	}
+
+	return nil
+}
+
+func (api *autoDNSProvider) updateDomain(name string, domain *Domain) error {
+	_, err := api.request("PUT", "domain/"+name, domain)
+	if err != nil {
+		return err
 	}
 
 	return nil

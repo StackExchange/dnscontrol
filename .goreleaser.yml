@@ -48,7 +48,7 @@ changelog:
       regexp: "(?i)^.*(build|ci|cicd)[(\\w)]*:+.*$"
       order: 4
     - title: 'Dependencies:'
-      regexp: "(?i)^.*Build\\(deps\\)*:+.*$|(?i)^.*update deps+.*$"
+      regexp: "(?i)^.*\\b(deps|dependencies)\\b.*$"
       order: 5
     - title: 'Other changes and improvements:'
       order: 9

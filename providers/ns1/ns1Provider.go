@@ -75,6 +75,26 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	)}, nil
 }
 
+func (n *nsone) ListZones() ([]string, error) {
+	var zones []string
+
+	for rtr := 0; ; rtr++ {
+		zs, httpResp, err := n.Zones.List()
+		if httpResp.StatusCode == http.StatusTooManyRequests && rtr < clientRetries {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		for _, zone := range zs {
+			zones = append(zones, zone.Zone)
+		}
+		return zones, nil
+	}
+
+}
+
 // A wrapper around rest.Client's Zones.Get() implementing retries
 // no explicit sleep is needed, it is implemented in NS1 client's RateLimitStrategy we used
 func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
@@ -109,6 +129,14 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	var nservers []string
 
 	z, _, err := n.Zones.Get(domain, true)
+	if err != nil && errors.Is(err, rest.ErrZoneMissing) {
+		// if we get here, zone wasn't created, but we ended up continuing regardless.
+		// This should be revisited, but for now let's get out early with a relevant message
+		// one case: preview --no-populate
+		printer.Warnf("GetNameservers: Zone %s not created in NS1. Either create manually or ensure dnscontrol can create it.\n", domain)
+		return models.ToNameservers(nservers)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -131,6 +159,13 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	z, _, err := n.Zones.Get(domain, true)
+	if err != nil && errors.Is(err, rest.ErrZoneMissing) {
+		// if we get here, zone wasn't created, but we ended up continuing regardless.
+		// This should be revisited, but for now let's get out early with a relevant message
+		// one case: preview --no-populate
+		printer.Warnf("GetZonerecords: Zone %s not created in NS1. Either create manually or ensure dnscontrol can create it.\n", domain)
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}

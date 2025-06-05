@@ -385,6 +385,11 @@ Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol`
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
 were created outside of DNSControl.
 
+## DS records
+
+Cloudflare has restrictions that may result in DNSControl's attempt to insert
+DS records to fail.
+
 ## Integration testing
 
 The integration tests assume that Cloudflare Workers are enabled and the credentials used
@@ -398,7 +403,6 @@ go test -v -verbose -profile CLOUDFLAREAPI -cfworkers=false
 ```
 
 When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.
-
 
 ## Cloudflare special TTLs
 
