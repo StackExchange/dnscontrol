@@ -430,6 +430,7 @@ code to support this provider, we'd be glad to help in any way.
 * [Plesk](https://github.com/StackExchange/dnscontrol/issues/2261) (#2261)
 * [Rackspace Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/2980) (#2980)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [Scaleway](https://github.com/StackExchange/dnscontrol/issues/3606) (#3606)
 * [Spaceship](https://github.com/StackExchange/dnscontrol/issues/3452) (#3452)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
 * [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
