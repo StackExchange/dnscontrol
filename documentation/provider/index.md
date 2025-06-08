@@ -414,6 +414,8 @@ Providers in this category and their maintainers are:
 We have received requests for the following providers. If you would like to contribute
 code to support this provider, we'd be glad to help in any way.
 
+*(The list below is sorted alphabetically.)*
+
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
 * [BookMyName](https://github.com/StackExchange/dnscontrol/issues/3451) (#3451)
