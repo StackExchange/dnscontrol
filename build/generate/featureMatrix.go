@@ -93,7 +93,7 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport      = "Official Support" // vs. community supported
 		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
-		ProviderThreadSafe   = "[Concurrency Verified](../concurrency-verified.md)"
+		ProviderThreadSafe   = "[Concurrency Verified](../advanced-feaures/concurrency-verified.md)"
 		DomainModifierAlias  = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa    = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
 		DomainModifierDnssec = "[`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
@@ -110,7 +110,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierDhcid  = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname  = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
 		DomainModifierDnskey = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
-		DualHost             = "[dual host](../dual-host.md)"
+		DualHost             = "[dual host](../advanced-features/dual-host.md)"
 		CreateDomains        = "create-domains"
 		GetZones             = "get-zones"
 	)
