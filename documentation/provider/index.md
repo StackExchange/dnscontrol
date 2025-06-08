@@ -74,8 +74,8 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 ### Provider API <!--(table 2/6)-->
 
-| Provider name | [Concurrency Verified](../advanced-feaures/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
-| ------------- | ------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
+| Provider name | [Concurrency Verified](../advanced-features/concurrency-verified) | [dual host](../advanced-features/dual-host) | create-domains | get-zones |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------- | -------------- | --------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
