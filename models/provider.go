@@ -9,6 +9,7 @@ type DNSProvider interface {
 
 // Registrar is an interface for Registrar plug-ins.
 type Registrar interface {
+	GetNameservers(domain string) ([]*Nameserver, error)
 	GetRegistrarCorrections(dc *DomainConfig) ([]*Correction, error)
 }
 
