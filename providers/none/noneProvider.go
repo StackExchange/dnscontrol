@@ -9,6 +9,11 @@ None is a basic provider type that does absolutely nothing. Can be useful as a p
 
 */
 
+// None is the struct that is used to hold state for the provider.
+//
+// This same struct is used for all domains that use this provider. Thus
+// per-domain data should be stored as a map[domain]thing and be protected by
+// mutexes.
 type None struct{}
 
 var featuresNone = providers.DocumentationNotes{

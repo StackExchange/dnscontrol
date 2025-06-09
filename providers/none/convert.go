@@ -1,10 +1,10 @@
 package none
 
-//// toRc converts a native record (what is received from the API) to a RecordConfig.
+// toRc converts a native record (what is received from the API) to a RecordConfig.
 //func toRc(domain string, r theSdkModule.NativeRecordType) (*models.RecordConfig, error) {
 //}
 
-//// toRc converts a RecordConfig to a native record (what is received from the API).
+// toRc converts a RecordConfig to a native record (what is received from the API).
 //func toNative(rc *models.RecordConfig) theSdkModule.NativeRecordType {
 //}
 
