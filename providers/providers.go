@@ -153,46 +153,6 @@ func AuditRecords(dType string, rcs models.Records) []error {
 	return p.RecordAuditor(rcs)
 }
 
-// None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
-type None struct{}
-
-// GetRegistrarCorrections returns corrections to update registrars.
-func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	return nil, nil
-}
-
-// GetNameservers returns the current nameservers for a domain.
-func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
-	return nil, nil
-}
-
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	return nil, nil
-}
-
-// GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-	return nil, 0, nil
-}
-
-// GetDomainCorrections returns corrections to update a domain.
-func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	return nil, nil
-}
-
-var featuresNone = DocumentationNotes{
-	// The default for unlisted capabilities is 'Cannot'.
-	// See providers/capabilities.go for the entire list of capabilities.
-	CanConcur: Can(),
-}
-
-func init() {
-	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
-		return None{}, nil
-	}, featuresNone)
-}
-
 // CustomRType stores an rtype that is only valid for this DSP.
 type CustomRType struct {
 	Name     string
