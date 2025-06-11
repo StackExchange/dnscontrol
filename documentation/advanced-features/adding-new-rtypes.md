@@ -153,7 +153,7 @@ example we removed `providers.CanUseCAA` from the
 
 Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-[`A()`](language-reference/domain-modifiers/A.md) and [`MX()`](language-reference/domain-modifiers/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
+[`A()`](../language-reference/domain-modifiers/A.md) and [`MX()`](../language-reference/domain-modifiers/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
@@ -300,7 +300,7 @@ Add a new Markdown file to `documentation/language-reference/domain-modifiers`. 
 
 The rest of the file is the documentation. You can use Markdown syntax to format the text.
 
-Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
+Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](../SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](../SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](../SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
 
 {% code title="documentation/SUMMARY.md" %}
 ```diff

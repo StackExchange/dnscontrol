@@ -4,14 +4,14 @@
 
 ## Getting Started
 
-* [Overview](getting-started.md)
-* [Examples](examples.md)
-* [Migrating zones to DNSControl](migrating.md)
-* [TypeScript autocomplete and type checking](typescript.md)
+* [Overview](getting-started/getting-started.md)
+* [Examples](getting-started/examples.md)
+* [Migrating zones to DNSControl](getting-started/migrating.md)
+* [TypeScript autocomplete and type checking](getting-started/typescript.md)
 
 ## Language Reference
 
-* [JavaScript DSL](js.md)
+* [JavaScript DSL](language-reference/js.md)
 * Top Level Functions
   * [D](language-reference/top-level-functions/D.md)
   * [DEFAULTS](language-reference/top-level-functions/DEFAULTS.md)
@@ -97,7 +97,7 @@
         * Amazon Route 53
             * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
             * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md)
-* [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
+* [Why CNAME/MX/NS targets require a "dot"](language-reference/why-the-dot.md)
 
 ## Provider
 
@@ -158,43 +158,43 @@
 
 ## Commands
 
-* [preview/push](preview-push.md)
-* [check-creds](check-creds.md)
-* [get-zones](get-zones.md)
-* [get-certs](get-certs.md)
-* [fmt](fmt.md)
-* [creds.json](creds-json.md)
-* [Global Flag](globalflags.md)
-* [Disabling Colors](colors.md)
+* [preview/push](commands/preview-push.md)
+* [check-creds](commands/check-creds.md)
+* [get-zones](commands/get-zones.md)
+* [get-certs](commands/get-certs.md)
+* [fmt](commands/fmt.md)
+* [creds.json](commands/creds-json.md)
+* [Global Flag](commands/globalflags.md)
+* [Disabling Colors](commands/colors.md)
 
 ## Advanced features
 
-* [CI/CD example for GitLab](ci-cd-gitlab.md)
-* [CLI variables](cli-variables.md)
-* [Nameservers and Delegations](nameservers.md)
-* [Notifications](notifications.md)
-* [Useful code tricks](code-tricks.md)
-* [JSON Reports](json-reports.md)
+* [CI/CD example for GitLab](advanced-features/ci-cd-gitlab.md)
+* [CLI variables](advanced-features/cli-variables.md)
+* [Nameservers and Delegations](advanced-features/nameservers.md)
+* [Notifications](advanced-features/notifications.md)
+* [Useful code tricks](advanced-features/code-tricks.md)
+* [JSON Reports](advanced-features/json-reports.md)
 
 ## Developer info
 
-* [Code Style Guide](styleguide-code.md)
-* [Documentation Style Guide](styleguide-doc.md)
-* [DNSControl is an opinionated system](opinions.md)
-* [Writing new DNS providers](writing-providers.md)
-* [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
-* [Integration Tests](integration-tests.md)
-* [Test a branch](test-a-branch.md)
-* [Unit Testing DNS Data](unittests.md)
-* [Bug Triage Process](bug-triage.md)
-* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
-* [Debugging with dlv](debugging-with-dlv.md)
-* [ALIAS Records](alias.md)
-* [TXT record testing](testing-txt-records.md)
-* [DNS records ordering](ordering.md)
+* [Code Style Guide](advanced-features/styleguide-code.md)
+* [Documentation Style Guide](advanced-features/styleguide-doc.md)
+* [DNSControl is an opinionated system](advanced-features/opinions.md)
+* [Writing new DNS providers](advanced-features/writing-providers.md)
+* [Creating new DNS Resource Types (rtypes)](advanced-features/adding-new-rtypes.md)
+* [Integration Tests](advanced-features/integration-tests.md)
+* [Test a branch](advanced-features/test-a-branch.md)
+* [Unit Testing DNS Data](advanced-features/unittests.md)
+* [Bug Triage Process](advanced-features/bug-triage.md)
+* [Bring-Your-Own-Secrets for automated testing](advanced-features/byo-secrets.md)
+* [Debugging with dlv](advanced-features/debugging-with-dlv.md)
+* [ALIAS Records](advanced-features/alias.md)
+* [TXT record testing](advanced-features/testing-txt-records.md)
+* [DNS records ordering](advanced-features/ordering.md)
 
 ## Release
 
-* [How to build and ship a release](release-engineering.md)
-* [Changelog v3.16.0](v316.md)
+* [How to build and ship a release](release/release-engineering.md)
+* [Changelog v3.16.0](release/v316.md)
 * [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)

@@ -51,7 +51,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
 {% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The [`IP()`](language-reference/top-level-functions/IP.md) function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
+**NOTE**: The [`IP()`](../language-reference/top-level-functions/IP.md) function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
 {% endhint %}
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -210,4 +210,4 @@ D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
 
 ### More advanced examples
 
-See the [Code Tricks](code-tricks.md) page.
+See the [Code Tricks](../advanced-features/code-tricks.md) page.

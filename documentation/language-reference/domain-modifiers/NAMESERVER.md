@@ -18,7 +18,7 @@ This is different than the [`NS()`](NS.md) function, which inserts NS records
 in the current zone and accepts a label. [`NS()`](NS.md) is for downward
 delegations. `NAMESERVER()` is for informing upstream delegations.
 
-For more information, refer to [this page](../../nameservers.md).
+For more information, refer to [this page](../../advanced-features/nameservers.md).
 
 {% code title="dnsconfig.js" %}
 ```javascript

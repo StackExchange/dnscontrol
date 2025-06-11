@@ -38,7 +38,7 @@ hand, possibly with your text editor's search and replace functions.
 However, where's the fun in that?
 
 The `dnscontrol get-zones` subcommand
-[documented here](get-zones.md)
+[documented here](../commands/get-zones.md)
 can automate 90% of the conversion for you. It reads BIND-style zonefiles,
 or will use a providers API to gather the DNS records.  It will then output
 the records in a variety of formats, including as a `D()` statement
@@ -57,7 +57,7 @@ dnscontrol get-zones --format=js --out=draft.js bind BIND example.com
 
 This will read the file `zones/example.com.zone`. By default the system
 uses directory `zones` and file suffix `.zone`.  You can modify this default
-behaviour by configuring `creds.json` for BIND as described [here](provider/bind.md).
+behaviour by configuring `creds.json` for BIND as described [here](../provider/bind.md).
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
 

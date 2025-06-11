@@ -1,6 +1,6 @@
 # GitLab CI/CD example
 
-Before discussing the GitLab CI/CD setup, let's assume you already have a working DNSControl setup. Aren't you there yet? Then first check out the '[Getting Started](getting-started.md)' section.
+Before discussing the GitLab CI/CD setup, let's assume you already have a working DNSControl setup. Aren't you there yet? Then first check out the '[Getting Started](../getting-started/getting-started.md)' section.
 
 ## DNSControl - Demo setup
 
@@ -59,9 +59,9 @@ hY/gnT/MmXXko3YAcI4eQL8=
 
 _Example of variable `$TRANSIP_PRIVATE_KEY` contents._
 
-![GitLab CI/CD variables](assets/ci-cd-gitlab/settings-ci-cd-variables.png)
+![GitLab CI/CD variables](../assets/ci-cd-gitlab/settings-ci-cd-variables.png)
 
-![Insert GitLab CI/CD variable TRANSIP_PRIVATE_KEY](assets/ci-cd-gitlab/settings-ci-cd-variables-insert.png)
+![Insert GitLab CI/CD variable TRANSIP_PRIVATE_KEY](../assets/ci-cd-gitlab/settings-ci-cd-variables-insert.png)
 
 ## GitLab CI - DNSControl preview
 
@@ -132,7 +132,7 @@ dnscontrol "3.20.0" ("8bb63be8f5ed996a7ae0a21091954fcab996621b") built 26 Aug 22
 Done. 1 corrections.
 ```
 
-![CI/CD job output for DNSControl preview](assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-preview.png)
+![CI/CD job output for DNSControl preview](../assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-preview.png)
 
 ## GitLab CI - DNSControl push
 
@@ -162,7 +162,7 @@ What does this (new) YAML configuration mean?
 - The `dnscontrol push` is run within the GitLab CI [predefined stage](https://docs.gitlab.com/ee/ci/yaml/#stages) `deploy`.
 - This only happens when you start a GitLab pipeline from the [GitLab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) for the default branch (e.g. `main`).
 
-![Start new CI/CD pipeline from the GitLab web interface](assets/ci-cd-gitlab/ci-cd-pipelines-new.png)
+![Start new CI/CD pipeline from the GitLab web interface](../assets/ci-cd-gitlab/ci-cd-pipelines-new.png)
 
 When we start the new [GitLab pipeline](https://gitlab.com/cafferata/dnscontrol/-/pipelines/656368384) from the [GitLab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new), we see the GitLab job [dnscontrol-push](https://gitlab.com/cafferata/dnscontrol/-/jobs/3115896199) which makes the changes within the DNS provider TransIP.
 
@@ -183,7 +183,7 @@ SUCCESS!
 Done. 1 corrections.
 ```
 
-![CI/CD job output for DNSControl push](assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-push.png)
+![CI/CD job output for DNSControl push](../assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-push.png)
 
 ## GitLab CI - Duplicate YAML configuration
 
