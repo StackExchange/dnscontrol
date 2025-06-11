@@ -169,12 +169,14 @@
 
 ## Advanced features
 
+* [Concurrency Verified](advanced-features/concurrency-verified.md)
 * [CI/CD example for GitLab](advanced-features/ci-cd-gitlab.md)
 * [CLI variables](advanced-features/cli-variables.md)
 * [Nameservers and Delegations](advanced-features/nameservers.md)
 * [Notifications](advanced-features/notifications.md)
 * [Useful code tricks](advanced-features/code-tricks.md)
 * [JSON Reports](advanced-features/json-reports.md)
+* [Dual Host](advanced-features/dual-host.md)
 
 ## Developer info
 
