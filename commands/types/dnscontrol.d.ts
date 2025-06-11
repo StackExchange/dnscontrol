@@ -1119,7 +1119,7 @@ declare function DefaultTTL(ttl: Duration): DomainModifier;
  * Using a different number, ie: `DnsProvider("name",2)`, means "fetch all nameservers from this provider,
  * but limit it to this many.
  *
- * See [this page](../../nameservers.md) for a detailed explanation of how DNSControl handles nameservers and NS records.
+ * See [this page](../../advanced-features/nameservers.md) for a detailed explanation of how DNSControl handles nameservers and NS records.
  *
  * If a domain (`D()`) does not include any `DnsProvider()` functions,
  * the DNS records will not be modified. In fact, if you want to control
@@ -1934,7 +1934,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * in the current zone and accepts a label. [`NS()`](NS.md) is for downward
  * delegations. `NAMESERVER()` is for informing upstream delegations.
  *
- * For more information, refer to [this page](../../nameservers.md).
+ * For more information, refer to [this page](../../advanced-features/nameservers.md).
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER,
@@ -2310,13 +2310,13 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  *
  * * `name` must match the name of an entry in `creds.json`.
  * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../provider/index.md).
- *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
+ *   * Starting with [v3.16](../../release/v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
  *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
  * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider/index.md) for details.
  *
  * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
  *
- * Prior to [v3.16](../../v316.md):
+ * Prior to [v3.16](../../release/v316.md):
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
@@ -2327,7 +2327,7 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  * );
  * ```
  *
- * In [v3.16](../../v316.md) and later:
+ * In [v3.16](../../release/v316.md) and later:
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom");
@@ -2349,13 +2349,13 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
  *
  * * `name` must match the name of an entry in `creds.json`.
  * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../provider/index.md).
- *   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
+ *   * Starting with [v3.16](../../release/v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
  *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
  * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider/index.md) for details.
  *
  * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
  *
- * Prior to [v3.16](../../v316.md):
+ * Prior to [v3.16](../../release/v316.md):
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
@@ -2366,7 +2366,7 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
  * );
  * ```
  *
- * In [v3.16](../../v316.md) and later:
+ * In [v3.16](../../release/v316.md) and later:
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom");
@@ -2718,7 +2718,7 @@ declare function REV(address: string): string;
  * v4 defaults to RFC 2317.  In v5.0 the default will change to RFC 4183.
  * `REVCOMPAT()` is provided for those that wish to retain the old behavior.
  *
- * For more information, see [Opinion #9](../../opinions.md#opinion-9-rfc-4183-is-better-than-rfc-2317).
+ * For more information, see [Opinion #9](../../advanced-features/opinions.md#opinion-9-rfc-4183-is-better-than-rfc-2317).
  *
  * # Transition plan
  *

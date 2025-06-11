@@ -18,7 +18,7 @@ ARGUMENTS:
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 ```
 
-Starting in [v3.16](v316.md), "provider" is optional.  If it is omitted (or the placeholder value `-` is used), the `TYPE` specified in `creds.json` will be used instead. A warning will be displayed with advice on how to remain compatible with v4.0.
+Starting in [v3.16](../release/v316.md), "provider" is optional.  If it is omitted (or the placeholder value `-` is used), the `TYPE` specified in `creds.json` will be used instead. A warning will be displayed with advice on how to remain compatible with v4.0.
 
 Starting in v4.0, the "provider" argument is expected to go away.
 
@@ -28,7 +28,7 @@ Starting in v4.0, the "provider" argument is expected to go away.
 dnscontrol check-creds myr53 ROUTE53
 ```
 
-Starting in [v3.16](v316.md):
+Starting in [v3.16](../release/v316.md):
 
 ```shell
 dnscontrol check-creds myr53

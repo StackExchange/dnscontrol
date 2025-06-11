@@ -102,7 +102,7 @@ D("example.com", REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and [the provider docs](provider/index.md) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](../language-reference/js.md) and [the provider docs](../provider/index.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -295,7 +295,7 @@ $TTL 300
 ```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
-for the [BIND provider](provider/bind.md) to set
+for the [BIND provider](../provider/bind.md) to set
 the "master" and "mbox" settings.  Try that now.
 
 
@@ -306,7 +306,7 @@ a real domain (or a test domain if you have one).
 
 Set up the provider:  Add the providers's definition to `dnsconfig.js`
 and list any credentials in `creds.json`.  Each provider is different.
-See [the provider docs](provider/index.md) for
+See [the provider docs](../provider/index.md) for
 specifics.
 
 Edit the domain: Add the `D()` entry for the domain, or repurpose
@@ -322,7 +322,7 @@ The [Migrating](migrating.md) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[dnscontrol get-zones](get-zones.md)
+[dnscontrol get-zones](../commands/get-zones.md)
 command to import the zone from (most) providers and output it as code
 that can be added to `dnsconfig.js` and used with very little
 modification.
@@ -337,5 +337,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like [GitLab](ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Use a CI/CD tool like [GitLab](../advanced-features/ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
 * Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).

@@ -74,8 +74,8 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 ### Provider API <!--(table 2/6)-->
 
-| Provider name | [Concurrency Verified](../concurrency-verified.md) | [dual host](../dual-host.md) | create-domains | get-zones |
-| ------------- | -------------------------------------------------- | ---------------------------- | -------------- | --------- |
+| Provider name | [Concurrency Verified](../advanced-features/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
+| ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
@@ -440,7 +440,7 @@ code to support this provider, we'd be glad to help in any way.
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
-A: Following [the bug triage process](../bug-triage.md), the request
+A: Following [the bug triage process](../advanced-features/bug-triage.md), the request
 is closed once it is added to this list. If someone chooses to implement the
 provider, they re-open the issue.
 
@@ -453,5 +453,5 @@ DNSControl tries to make writing a provider as easy as possible.  DNSControl
 does most of the work for you, you only have to write code to authenticate,
 download DNS records, and perform create/modify/delete operations on those
 records. Please read the directions for [Writing new DNS
-providers](../writing-providers.md).  The DNS maintainers will gladly
+providers](../advanced-features/writing-providers.md).  The DNS maintainers will gladly
 coach you through the process.

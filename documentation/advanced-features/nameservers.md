@@ -248,7 +248,7 @@ a notified if the delegation diverges.
 Why?
 Sometimes you just want to know if something changes!
 
-See the [DNS-over-HTTPS Provider](provider/dnsoverhttps.md) documentation for more info.
+See the [DNS-over-HTTPS Provider](../provider/dnsoverhttps.md) documentation for more info.
 
 {% code title="dnsconfig.js" %}
 ```javascript

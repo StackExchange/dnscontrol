@@ -4,10 +4,10 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA_BUILDER](language-reference/domain-modifiers/CAA_BUILDER.md)
-* [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
-* [M365_BUILDER](language-reference/domain-modifiers/M365_BUILDER.md)
-* [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
+* [CAA_BUILDER](../language-reference/domain-modifiers/CAA_BUILDER.md)
+* [DMARC_BUILDER](../language-reference/domain-modifiers/DMARC_BUILDER.md)
+* [M365_BUILDER](../language-reference/domain-modifiers/M365_BUILDER.md)
+* [SPF_BUILDER](../language-reference/domain-modifiers/SPF_BUILDER.md)
 
 # Trailing commas
 
@@ -172,5 +172,5 @@ domain exists, who requested it, any associated ticket numbers, and so
 on.
 
 We also comment the individual parts of a record. Look at the [SPF
-Optimizer](language-reference/domain-modifiers/SPF_BUILDER.md) example.  Each part of
+Optimizer](../language-reference/domain-modifiers/SPF_BUILDER.md) example.  Each part of
 the SPF record has a comment.

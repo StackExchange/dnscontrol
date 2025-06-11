@@ -36,7 +36,7 @@ Within the git repo, docs are grouped:
 Files in the `documentation/language-reference/{record,domain,global}` subdirectories
 have a header at the top that is used to populate other systems.
 
-Here's an example from [`A`](language-reference/domain-modifiers/A.md)
+Here's an example from [`A`](../language-reference/domain-modifiers/A.md)
 
 ```
 ---
@@ -62,7 +62,7 @@ parameter_types:
 
 When you submit a GitHub pull request, you can view the result in advance. This allows you to check the impact of changes.
 
-![](assets/styleguide-doc/pull-request-preview.webp)
+![](../assets/styleguide-doc/pull-request-preview.webp)
 
 ### How to access preview links
 
@@ -126,7 +126,7 @@ D("example.com", REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-[Source code](markdown-examples/code/dnsconfig-code-example-with-filename.md?plain=1)
+[Source code](../markdown-examples/code/dnsconfig-code-example-with-filename.md?plain=1)
 
 Long example: (without filename)
 
@@ -141,7 +141,7 @@ D("example.com", REG_NONE, DnsProvider(DNS_BIND),
 ```
 {% endcode %}
 
-[Source code](markdown-examples/code/dnsconfig-code-example-without-filename.md?plain=1)
+[Source code](../markdown-examples/code/dnsconfig-code-example-without-filename.md?plain=1)
 
 ### Hint
 
@@ -155,25 +155,25 @@ There are 4 different types of hints, and both inline content and formatting are
 **Info hints** are great for showing general information, or providing tips and tricks.
 {% endhint %}
 
- [Source code](markdown-examples/hint/hint-info.md?plain=1)
+ [Source code](../markdown-examples/hint/hint-info.md?plain=1)
 
 {% hint style="success" %}
 **Success hints** are good for showing positive actions or achievements.
 {% endhint %}
 
- [Source code](markdown-examples/hint/hint-success.md?plain=1)
+ [Source code](../markdown-examples/hint/hint-success.md?plain=1)
 
 {% hint style="warning" %}
 **Warning hints** are good for showing important information or non-critical warnings.
 {% endhint %}
 
- [Source code](markdown-examples/hint/hint-warning.md?plain=1)
+ [Source code](../markdown-examples/hint/hint-warning.md?plain=1)
 
 {% hint style="danger" %}
 **Danger hints** are good for highlighting destructive actions or raising attention to critical information.
 {% endhint %}
 
- [Source code](markdown-examples/hint/hint-danger.md?plain=1)
+ [Source code](../markdown-examples/hint/hint-danger.md?plain=1)
 
 {% hint style="info" %}
 ### This is a heading
@@ -193,7 +193,7 @@ However, the first mention on a page should always
 be a link.  Others are at the authors digression.
 
 ```markdown
-The [`PTR`](language-reference/domain-modifiers/PTR.md) feature is helpful in LANs.
+The [`PTR`](../language-reference/domain-modifiers/PTR.md) feature is helpful in LANs.
 ```
 
 #### Mentioning functions from the Source code
