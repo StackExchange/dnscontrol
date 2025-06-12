@@ -516,24 +516,24 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 			cc++
 		}
 
-		var err error
-		if push {
-			// If interactive, ask "are you sure?" and skip if not.
-			if interactive && !out.PromptToRun() {
-				continue
-			}
+		// If interactive, ask "are you sure?" and skip if not.
+		if push && interactive && !out.PromptToRun() {
+			continue
+		}
 
-			// If it is an action (not an informational message), notify and execute.
-			if correction.F != nil {
-				err = notifier.Notify(zoneName, providerName, correction.Msg, err, false)
-				if err != nil {
-					out.Printf("Error sending notification: %s\n", err)
-				}
+		// If it is an action (not an informational message), notify and execute.
+		if correction.F != nil {
+			var err error
+			if push {
 				err = correction.F()
 				out.EndCorrection(err)
 				if err != nil {
 					anyErrors = true
 				}
+			}
+			notifyErr := notifier.Notify(zoneName, providerName, correction.Msg, err, !push)
+			if notifyErr != nil {
+				out.Warnf("Error sending notification: %s\n", notifyErr)
 			}
 		}
 	}
