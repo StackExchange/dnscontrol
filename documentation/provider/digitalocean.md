@@ -1,7 +1,7 @@
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `DIGITALOCEAN`
-along with your [DigitalOcean OAuth Token](https://cloud.digitalocean.com/settings/applications).
+along with your [DigitalOcean Personal Access Token Token](https://cloud.digitalocean.com/account/api/tokens).
 
 Example:
 
@@ -10,7 +10,7 @@ Example:
 {
   "mydigitalocean": {
     "TYPE": "DIGITALOCEAN",
-    "token": "your-digitalocean-ouath-token"
+    "token": "your-digitalocean-token"
   }
 }
 ```
@@ -34,7 +34,9 @@ D("example.com", REG_NONE, DnsProvider(DSP_DIGITALOCEAN),
 {% endcode %}
 
 ## Activation
-[Create OAuth Token](https://cloud.digitalocean.com/settings/applications)
+[Create Personal Access Token](https://cloud.digitalocean.com/account/api/tokens)
+
+Your access token must have access to create, read, update and delete domain records.
 
 ## Limitations
 
