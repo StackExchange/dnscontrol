@@ -525,7 +525,10 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 
 			// If it is an action (not an informational message), notify and execute.
 			if correction.F != nil {
-				notifier.Notify(zoneName, providerName, correction.Msg, err, false)
+				err = notifier.Notify(zoneName, providerName, correction.Msg, err, false)
+				if err != nil {
+					out.Printf("Error sending notification: %s\n", err)
+				}
 				err = correction.F()
 				out.EndCorrection(err)
 				if err != nil {

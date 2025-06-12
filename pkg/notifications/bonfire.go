@@ -18,7 +18,7 @@ func init() {
 // bonfire notifier for stack exchange internal chat. String is just url with room and token in it
 type bonfireNotifier string
 
-func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview bool) {
+func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload string
 	if preview {
 		payload = fmt.Sprintf(`**Preview: %s[%s] -** %s`, domain, provider, msg)
@@ -30,8 +30,12 @@ func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview
 	// chat doesn't markdownify multiline messages. Split in two so the first line can have markdown
 	parts := strings.SplitN(payload, "\n", 2)
 	for _, p := range parts {
-		_, _ = http.Post(string(b), "text/markdown", strings.NewReader(p))
+		_, err = http.Post(string(b), "text/markdown", strings.NewReader(p))
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (b bonfireNotifier) Done() {}

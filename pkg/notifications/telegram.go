@@ -29,7 +29,7 @@ type telegramNotifier struct {
 	ChatID   string
 }
 
-func (s *telegramNotifier) Notify(domain, provider, msg string, err error, preview bool) {
+func (s *telegramNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload struct {
 		ChatID int64  `json:"chat_id"`
 		Text   string `json:"text"`
@@ -49,7 +49,8 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 
 	marshaledPayload, _ := json.Marshal(payload)
 
-	_, _ = http.Post(url, "application/json", bytes.NewBuffer(marshaledPayload))
+	_, posterr := http.Post(url, "application/json", bytes.NewBuffer(marshaledPayload))
+	return posterr
 }
 
 func (s *telegramNotifier) Done() {}

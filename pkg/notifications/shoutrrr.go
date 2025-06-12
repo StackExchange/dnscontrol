@@ -17,7 +17,7 @@ func init() {
 
 type shoutrrrNotifier string
 
-func (b shoutrrrNotifier) Notify(domain, provider, msg string, err error, preview bool) {
+func (b shoutrrrNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload string
 	if preview {
 		payload = fmt.Sprintf("DNSControl preview: %s[%s]:\n%s", domain, provider, msg)
@@ -26,7 +26,7 @@ func (b shoutrrrNotifier) Notify(domain, provider, msg string, err error, previe
 	} else {
 		payload = fmt.Sprintf("DNSControl successfully ran correction for %s[%s]:\n%s", domain, provider, msg)
 	}
-	_ = shoutrrr.Send(string(b), payload)
+	return shoutrrr.Send(string(b), payload)
 }
 
 func (b shoutrrrNotifier) Done() {}

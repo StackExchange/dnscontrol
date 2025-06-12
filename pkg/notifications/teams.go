@@ -27,7 +27,7 @@ type teamsNotifier struct {
 	URL string
 }
 
-func (s *teamsNotifier) Notify(domain, provider, msg string, err error, preview bool) {
+func (s *teamsNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload struct {
 		Username string `json:"username"`
 		Text     string `json:"text"`
@@ -46,7 +46,8 @@ func (s *teamsNotifier) Notify(domain, provider, msg string, err error, preview 
 	}
 
 	json, _ := json.Marshal(payload)
-	_, _ = http.Post(s.URL, "text/json", bytes.NewReader(json))
+	_, posterr := http.Post(s.URL, "text/json", bytes.NewReader(json))
+	return posterr
 }
 
 func (s *teamsNotifier) Done() {}
