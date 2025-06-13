@@ -12,8 +12,19 @@ import (
 )
 
 func generateFeatureMatrix() error {
-	var replacementContent string = ""
+	var replacementContent string = "Jump to a table:\n\n"
 	matrix := matrixData()
+
+	for i := 0; i < len(matrix.FeatureTables); i++ {
+		var tableTitle = matrix.FeatureTablesTitles[i]
+		var jumptotableContent string = ""
+
+		var anchor string = strings.ToLower(tableTitle)
+		anchor = strings.Replace(anchor, " ", "-", -1)
+
+		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
+		replacementContent += jumptotableContent
+	}
 
 	for i := 0; i < len(matrix.FeatureTables); i++ {
 		var tableTitle = matrix.FeatureTablesTitles[i]
