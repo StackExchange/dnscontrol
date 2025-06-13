@@ -53,7 +53,7 @@ func init() {
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if runtime.GOOS != "windows" {
 		printer.Println("INFO: MSDNS deactivated. Required OS not detected.")
-		return providers.None{}, nil
+		return &msdnsProvider{}, nil
 	}
 
 	var err error
