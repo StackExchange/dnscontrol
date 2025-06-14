@@ -12,7 +12,7 @@ import (
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	var nservers []string
 
-	z, _, err := n.Zones.Get(domain, true)
+	z, err := n.GetZone(domain)
 	if err != nil && errors.Is(err, rest.ErrZoneMissing) {
 		// if we get here, zone wasn't created, but we ended up continuing regardless.
 		// This should be revisited, but for now let's get out early with a relevant message
