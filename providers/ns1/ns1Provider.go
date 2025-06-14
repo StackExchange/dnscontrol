@@ -25,6 +25,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
@@ -42,7 +43,7 @@ func init() {
 		Initializer:   newProvider,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType(providerName, fns, docNotes)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
