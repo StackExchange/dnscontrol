@@ -11,11 +11,15 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2021-03-01
+	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2025-03-01
 
 	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2021-03-01
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2025-04-24
+
+	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2025-04-24
+
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2025-04-24
 
 	return a.Audit(records)
 }
