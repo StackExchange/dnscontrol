@@ -1,7 +1,9 @@
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `RWTH`
-along with your [API Token](https://noc-portal.rz.rwth-aachen.de/dns-admin/en/api_tokens).
+along with your API Token (which you can create via noc-portal.rz.rwth-aachen.de/dns-admin/en/api_tokens).
+
+The provider may only be used from within the intranet.
 
 Example:
 
