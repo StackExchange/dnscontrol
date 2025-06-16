@@ -7,6 +7,7 @@ files:
 ignorePatterns:
   - pattern: '.*?plain=1$'
   - pattern: '.*.md#$'
+  - pattern: '^https://cloud.digitalocean.com/account/api/tokens'
   - pattern: '^https://cloud.digitalocean.com/settings/applications'
   - pattern: '^https://dns.hetzner.com/settings/api-token'
   - pattern: '^https://github.com/StackExchange/dnscontrol/settings/.*$'
