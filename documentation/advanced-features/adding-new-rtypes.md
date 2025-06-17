@@ -300,7 +300,7 @@ Add a new Markdown file to `documentation/language-reference/domain-modifiers`. 
 
 The rest of the file is the documentation. You can use Markdown syntax to format the text.
 
-Add the new file `FOO.md` to the documentation table of contents [`documentation/SUMMARY.md`](../SUMMARY.md#domain-modifiers), and/or to the [`Service Provider specific`](../SUMMARY.md#service-provider-specific) section if you made a record specific to a provider, and to the [`Record Modifiers`](../SUMMARY.md#record-modifiers) section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
+Add the new file `FOO.md` to the documentation table of contents `documentation/SUMMARY.md` > `Domain Modifiers`, and/or to the `Service Provider specific` section if you made a record specific to a provider, and to the `Record Modifiers` section if you created any `*_BUILDER` or `*_HELPER` or similar functions for the new record type:
 
 {% code title="documentation/SUMMARY.md" %}
 ```diff
