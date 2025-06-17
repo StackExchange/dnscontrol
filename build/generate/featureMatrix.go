@@ -15,8 +15,7 @@ func generateFeatureMatrix() error {
 	var replacementContent string = "Jump to a table:\n\n"
 	matrix := matrixData()
 
-	for i := 0; i < len(matrix.FeatureTables); i++ {
-		var tableTitle = matrix.FeatureTablesTitles[i]
+	for i, tableTitle := range matrix.FeatureTablesTitles; i++ {
 		var jumptotableContent string = ""
 
 		var anchor string = strings.ToLower(tableTitle)
