@@ -5,6 +5,7 @@ files:
   - README.md
   - SECURITY.md
 ignorePatterns:
+  - pattern: '.*#opinion-3-dnsconfig.js-are-not-zonefiles$'
   - pattern: '.*?plain=1$'
   - pattern: '.*.md#$'
   - pattern: '^https://cloud.digitalocean.com/account/api/tokens'
