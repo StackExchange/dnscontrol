@@ -15,7 +15,7 @@ func generateFeatureMatrix() error {
 	var replacementContent string = "Jump to a table:\n\n"
 	matrix := matrixData()
 
-	for i, tableTitle := range matrix.FeatureTablesTitles; i++ {
+	for _, tableTitle := range matrix.FeatureTablesTitles {
 		var jumptotableContent string = ""
 
 		var anchor string = strings.ToLower(tableTitle)
@@ -25,10 +25,9 @@ func generateFeatureMatrix() error {
 		replacementContent += jumptotableContent
 	}
 
-	for i := 0; i < len(matrix.FeatureTables); i++ {
-		var tableTitle = matrix.FeatureTablesTitles[i]
+	for i, tableTitle := range matrix.FeatureTablesTitles {
 		replacementContent += fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
-			tableTitle, i+1, len(matrix.FeatureTables))
+			tableTitle, i+1, len(matrix.FeatureTablesTitles))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
