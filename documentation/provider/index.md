@@ -117,7 +117,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`MSDNS`](msdns.md) | ❔ | ❌ | ❌ | ✅ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ✅ | ❌ | ✅ |
+| [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
 | [`NETCUP`](netcup.md) | ❔ | ❌ | ❌ | ❌ |
