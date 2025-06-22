@@ -154,7 +154,7 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 	case "A", "AAAA":
 		re.Answer = rc.GetTargetIP().String()
 
-	case "CNAME":
+	case "CNAME", "ALIAS":
 		re.Answer = rc.GetTargetField()
 		re.Answer = dnsutil.TrimDomainName(re.Answer, domain)
 
@@ -163,6 +163,9 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 
 	case "AAAA_PASSTHROUGH":
 		re.Answer = "AAAA"
+
+	default:
+		return re, fmt.Errorf("rtype %s is not supported", rc.Type)
 	}
 
 	return re, nil
@@ -190,7 +193,12 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	} else {
 		answer := dnsutil.TrimDomainName(r.Answer, domain)
 		rc.SetTarget(answer)
-		rc.Type = "CNAME"
+
+		if r.Domain == domain {
+			rc.Type = "ALIAS"
+		} else {
+			rc.Type = "CNAME"
+		}
 	}
 
 	if (rc.Type == "A_PASSTHROUGH" && r.Answer != "A") ||
