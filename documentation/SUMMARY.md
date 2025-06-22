@@ -78,6 +78,9 @@
     * [URL](language-reference/domain-modifiers/URL.md)
     * [URL301](language-reference/domain-modifiers/URL301.md)
     * Service Provider specific
+        * AdGuard Home
+            * [A_PASSTHROUGH](language-reference/domain-modifiers/A_PASSTHROUGH.md)
+            * [AAAA_PASSTHROUGH](language-reference/domain-modifiers/AAAA_PASSTHROUGH.md)
         * Akamai Edge Dns
             * [AKAMAICDN](language-reference/domain-modifiers/AKAMAICDN.md)
         * Amazon Route 53

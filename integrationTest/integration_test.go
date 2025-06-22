@@ -1316,6 +1316,16 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		testgroup("A_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAPassthrough("foo", "")),
+		),
+
+		testgroup("AAAA_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAAAAPassthrough("foo", "")),
+		),
+
 		//// IGNORE* features
 
 		// Narrative: You're basically done now. These remaining tests
