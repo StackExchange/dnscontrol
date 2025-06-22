@@ -221,6 +221,25 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
 declare function AAAA(name: string, address: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `AAAA_PASSTHROUGH` represents the literal 'A'. AdGuardHome uses this to passthrough
+ * the original values of a record type.
+ *
+ * The second argument to this record type must be empty.
+ *
+ * See [this](https://github.com/AdguardTeam/Adguardhome/wiki/Configuration) page for
+ * more information.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   AAAA_PASSTHROUGH("foo", ""),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//aaaa_passthrough
+ */
+declare function AAAA_PASSTHROUGH(source: string, destination: string): DomainModifier;
+
+/**
  * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
  * The AKAMAICDN target must be preconfigured in the Akamai network.
  *
@@ -338,6 +357,25 @@ declare const AUTODNSSEC_ON: DomainModifier;
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/azure-dns/azure_alias
  */
 declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `A_PASSTHROUGH` represents the literal 'A'. AdGuardHome uses this to passthrough
+ * the original values of a record type.
+ *
+ * The second argument to this record type must be empty.
+ *
+ * See [this](https://github.com/AdguardTeam/Adguardhome/wiki/Configuration) page for
+ * more information.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   A_PASSTHROUGH("foo", ""),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//a_passthrough
+ */
+declare function A_PASSTHROUGH(source: string, destination: string): DomainModifier;
 
 /**
  * `CAA()` adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
