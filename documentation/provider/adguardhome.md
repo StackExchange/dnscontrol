@@ -1,5 +1,16 @@
 This is the provider for [AdGuardHome](https://github.com/AdguardTeam/AdGuardHome).
 
+## Important notes
+
+This provider only supports the following record types.
+
+* A
+* AAAA
+* CNAME
+* ALIAS
+* A_PASSTHROUGH
+* AAAA_PASSTHROUGH
+
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `ADGUARDHOME`.
@@ -18,7 +29,7 @@ Example:
     "TYPE": "ADGUARDHOME",
     "username": "admin",
     "password": "your-password",
-    "host": "foo.com"
+    "host": "https://foo.com"
   }
 }
 ```
@@ -44,16 +55,3 @@ D("example.com", REG_NONE, DnsProvider(DSP_ADGUARDHOME),
 ```
 {% endcode %}
 
-## Integration testing
-
-The integration tests assume that Cloudflare Workers are enabled and the credentials used
-have the required permissions listed above.  The flag `-cfworkers=false` will disable tests related to Workers.
-This flag is intended for use with legacy domains where the integration test credentials do not
-have access to read/edit Workers. This flag will eventually go away.
-
-```shell
-cd integrationTest              # NOTE: Not needed if already in that subdirectory
-go test -v -verbose -profile CLOUDFLAREAPI -cfworkers=false
-```
-
-When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.
