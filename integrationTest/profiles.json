@@ -1,4 +1,11 @@
 {
+  "ADGUARDHOME": {
+    "TYPE": "ADGUARDHOME",
+    "username": "$ADGUARDHOME_USERNAME",
+    "password": "$ADGUARDHOME_PASSWORD",
+    "host": "$ADGUARDHOME_HOST",
+    "domain": "$ADGUARDHOME_DOMAIN"
+  },
   "AKAMAIEDGEDNS": {
     "TYPE": "AKAMAIEDGEDNS",
     "access_token": "$AED_ACCESS_TOKEN",

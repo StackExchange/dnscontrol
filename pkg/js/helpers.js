@@ -1262,7 +1262,9 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_REDIRECT' &&
                 record.type != 'CF_TEMP_REDIRECT' &&
-                record.type != 'CF_WORKER_ROUTE'
+                record.type != 'CF_WORKER_ROUTE' &&
+                record.type != "A_PASSTHROUGH" &&
+                record.type != "AAAA_PASSTHROUGH"
             ) {
                 record.subdomain = d.subdomain;
 
@@ -1429,6 +1431,10 @@ var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
         record.target = args.pattern + ',' + args.script;
     },
 });
+
+var A_PASSTHROUGH = recordBuilder('A_PASSTHROUGH');
+
+var AAAA_PASSTHROUGH = recordBuilder('AAAA_PASSTHROUGH');
 
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
