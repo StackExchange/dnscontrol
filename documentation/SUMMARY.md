@@ -194,6 +194,7 @@
 * [ALIAS Records](advanced-features/alias.md)
 * [TXT record testing](advanced-features/testing-txt-records.md)
 * [DNS records ordering](advanced-features/ordering.md)
+* [How to add a requested provider](developer-info/provider-request.md)
 
 ## Release
 
