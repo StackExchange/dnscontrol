@@ -115,7 +115,7 @@ Jump to a table:
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
-| [`LUADNS`](luadns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`MSDNS`](msdns.md) | ❔ | ❌ | ❌ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
@@ -276,7 +276,7 @@ Jump to a table:
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
-| [`LUADNS`](luadns.md) | ✅ | ❔ | ✅ | ✅ |
+| [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`MSDNS`](msdns.md) | ❌ | ❔ | ❔ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
