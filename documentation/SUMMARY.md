@@ -123,6 +123,7 @@
 * [Dynadot](provider/dynadot.md)
 * [easyname](provider/easyname.md)
 * [Exoscale](provider/exoscale.md)
+* [Fortigate](provider/fortigate.md)
 * [Gandi_v5](provider/gandi_v5.md)
 * [Gcore](provider/gcore.md)
 * [Google Cloud DNS](provider/gcloud.md)

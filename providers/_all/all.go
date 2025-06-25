@@ -56,4 +56,5 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/transip"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/vultr"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/fortigate"
 )
