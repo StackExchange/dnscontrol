@@ -131,9 +131,10 @@
   "FORTIGATE": {
     "TYPE": "FORTIGATE",
     "domain": "$FORTIGATE_DOMAIN",
-    "api_key": "$FORTIGATE_API_KEY",
+    "apiKey": "$FORTIGATE_API_KEY",
     "vdom": "$FORTIGATE_VDOM",
-    "host": "$FORTIGATE_HOST"
+    "host": "$FORTIGATE_HOST",
+    "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY"
   },
   "GANDI_V5": {
     "TYPE": "GANDI_V5",
