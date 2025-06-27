@@ -745,7 +745,7 @@ func makeTests() []*TestGroup {
 		testgroup("PTR",
 			requires(providers.CanUsePTR),
 			not("CLOUDNS",
-				"FORTIGATE", // Supports only IP Addresses as PTR target
+				"FORTIGATE", // FortiGate does not really support ARPA Zones and handles PTR records really weired
 			),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),

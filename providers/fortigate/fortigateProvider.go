@@ -15,7 +15,7 @@ import (
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUsePTR:              providers.Can(), // FortiGate only accepts IPs in PTR; no real target support
+	providers.CanUsePTR:              providers.Cannot(), // FortiGate does not really support ARPA Zones and handles PTR records really weired
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanConcur:              providers.Unimplemented(),
 	providers.DocCreateDomains:       providers.Can(),

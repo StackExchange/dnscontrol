@@ -14,13 +14,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 		switch rc.Type {
 		case "A", "AAAA", "CNAME":
 			// Supported – no problem.
-		case "PTR":
-			if rc.GetTargetIP() == nil {
-				problems = append(problems,
-					fmt.Errorf("PTR %s has non-IP target %q – FortiGate only supports IPs as PTR targets",
-						rc.GetLabelFQDN(), rc.GetTargetField()))
-			}
-		case "NS":
+		case "NS,PTR":
 			// FortiGate limitations: these record types are not fully supported.
 			problems = append(problems,
 				fmt.Errorf("record type %s is not supported by FortiGate provider (name: %s)", rc.Type, rc.GetLabelFQDN()))
