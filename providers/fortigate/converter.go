@@ -67,21 +67,8 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 			return nil, err
 		}
 
-	case "PTR", "PTR_V6":
-		var ip net.IP
-		if n.Type == "PTR" {
-			ip = net.ParseIP(n.IP)
-		} else {
-			ip = net.ParseIP(n.IPv6)
-		}
-		if ip == nil {
-			return nil, fmt.Errorf("%s record without valid IP (id=%d)", n.Type, n.ID)
-		}
-		rc.Type = "PTR"
-		rc.SetTargetIP(ip)
-
 	default:
-		// NS is not supported due to FortiGate limitations
+		// NS and PTR are not supported due to FortiGate limitations
 		return nil, fmt.Errorf("record type %q is not supported by fortigate provider", rc.Type)
 	}
 
@@ -148,20 +135,6 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 				target = ascii
 			}
 			n.CanonicalName = target
-
-		case "PTR":
-			ip := net.ParseIP(record.GetTargetField())
-			if ip == nil {
-				errors = append(errors, fmt.Errorf("PTR record %s has invalid target %q: FortiGate only supports IP addresses", record.GetLabelFQDN(), record.GetTargetField()))
-				continue
-			}
-			if ip.To4() != nil {
-				n.Type = "PTR"
-				n.IP = ip.String()
-			} else {
-				n.Type = "PTR_V6"
-				n.IPv6 = ip.String()
-			}
 
 		default:
 			errors = append(errors, fmt.Errorf("record type %q is not supported by FortiGate provider: %s", n.Type, record.GetLabelFQDN()))
