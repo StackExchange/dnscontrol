@@ -2,8 +2,8 @@ package fortigate
 
 import (
 	"fmt"
-	"strings"
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"strings"
 )
 
 // AuditRecords performs basic validation and returns warnings for known limitations.
@@ -28,7 +28,6 @@ func AuditRecords(records []*models.RecordConfig) []error {
 				fmt.Errorf("CNAME at apex (@) is not allowed (name: %s)", rc.GetLabelFQDN()))
 		}
 
-	
 		// Wildcard support
 		if strings.Contains(rc.GetLabelFQDN(), "*") {
 			problems = append(problems,

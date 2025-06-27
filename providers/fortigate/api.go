@@ -17,7 +17,8 @@ import (
 // ---------------------------------------------------------------------------
 
 // apiClient wraps all HTTP traffic to endpoints of the form:
-//   https://<host>/api/v2/cmdb/<path>?vdom=<vdom>&datasource=1
+//
+//	https://<host>/api/v2/cmdb/<path>?vdom=<vdom>&datasource=1
 type apiClient struct {
 	base string       // e.g. "https://fw.example.com/api/v2/cmdb/"
 	vdom string       // target VDOM
@@ -46,11 +47,11 @@ type fgDNSRecord struct {
 // newClient builds a new apiClient.
 //
 // Parameters:
-//   host     – base URL with protocol, without trailing slash
-//   vdom     – VDOM (tenant) to operate on
-//   key      – REST API token (System ▸ Administrators ▸ REST API Admin)
-//   insecure – true = skip TLS certificate verification (self‑signed, etc.)
 //
+//	host     – base URL with protocol, without trailing slash
+//	vdom     – VDOM (tenant) to operate on
+//	key      – REST API token (System ▸ Administrators ▸ REST API Admin)
+//	insecure – true = skip TLS certificate verification (self‑signed, etc.)
 func newClient(host, vdom, key string, insecure bool) *apiClient {
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -76,11 +77,12 @@ func newClient(host, vdom, key string, insecure bool) *apiClient {
 // do executes a request.
 //
 // Arguments:
-//   method – HTTP verb (GET, POST, PUT, DELETE …)
-//   path   – part after /cmdb/, e.g. "system/dns-database"
-//   qs     – optional query parameters; vdom/datasource added automatically
-//   body   – request body (struct, map, etc.) or nil
-//   out    – pointer to struct for JSON decode or nil
+//
+//	method – HTTP verb (GET, POST, PUT, DELETE …)
+//	path   – part after /cmdb/, e.g. "system/dns-database"
+//	qs     – optional query parameters; vdom/datasource added automatically
+//	body   – request body (struct, map, etc.) or nil
+//	out    – pointer to struct for JSON decode or nil
 //
 // A non‑2xx HTTP status is returned as error.
 // If out ≠ nil, the JSON response body is decoded into it.
