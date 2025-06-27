@@ -33,6 +33,7 @@ Currently supported DNS providers:
 - DNSimple
 - Domainnameshop (Domeneshop)
 - Exoscale
+- Fortigate
 - Gandi
 - Gcore
 - Google DNS
