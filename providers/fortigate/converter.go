@@ -29,9 +29,10 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 	rc.SetLabel(label, domain)
 
 	// --- TTL --------------------------------------------------------------
-	rc.TTL = n.TTL
-	if rc.TTL == 0 {
-		rc.TTL = 300 // oder ggf. dc.DefaultTTL
+	if n.TTL == 0 {
+		rc.TTL = 0 // inherit
+	} else {
+		rc.TTL = n.TTL
 	}
 
 	// --- Status → Metadata ------------------------------------------------
@@ -84,17 +85,10 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 		return nil, fmt.Errorf("record type %q is not supported by fortigate provider", rc.Type)
 	}
 
-	fmt.Printf("FINAL RC: type=%s fqdn=%s target=%s ttl=%d\n",
-		rc.Type,
-		rc.GetLabelFQDN(),
-		rc.GetTargetField(),
-		rc.TTL,
-	)
-
 	return rc, nil
 }
 
-func recordsToNative(recs, existing models.Records) ([]*fgDNSRecord, []error) {
+func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 	var resourceRecords []*fgDNSRecord
 	var errors []error
 
@@ -105,7 +99,11 @@ func recordsToNative(recs, existing models.Records) ([]*fgDNSRecord, []error) {
 		n := &fgDNSRecord{
 			Status: "enable",
 			Type:   strings.ToUpper(record.Type),
-			TTL:    record.TTL, // 0 = inherit
+		}
+
+		// --- TTL -------------------------------------------------
+		if ttl := record.TTL; ttl > 0 {
+			n.TTL = ttl
 		}
 
 		// --- Wildcard support -------------------------------------------------
@@ -169,13 +167,6 @@ func recordsToNative(recs, existing models.Records) ([]*fgDNSRecord, []error) {
 			errors = append(errors, fmt.Errorf("record type %q is not supported by FortiGate provider: %s", n.Type, record.GetLabelFQDN()))
 			continue
 		}
-
-		fmt.Printf("recordToNative(): %s => %s ID=%d\n", record.GetLabelFQDN(), n.Hostname, n.ID)
-		fmt.Printf("RECORD TO NATIVE: fqdn=%s target=%s ttl=%d\n",
-			record.GetLabelFQDN(),
-			record.GetTargetField(),
-			record.TTL,
-		)
 
 		n.ID = id
 		id++

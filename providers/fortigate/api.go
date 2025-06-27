@@ -125,11 +125,6 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 	// Execute request
 	// -----------------------------------------------------------------------
 
-	b, _ := json.MarshalIndent(body, "", "  ")
-fmt.Println("FINAL API PAYLOAD:", string(b))
-
-
-
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return err

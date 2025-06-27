@@ -99,9 +99,6 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 		return nil, fmt.Errorf("fortigate: fetching zone %q failed: %w", domain, err)
 	}
 
-b, _ := json.MarshalIndent(resp, "", "  ")
-fmt.Println("DEBUG: Raw response from FortiGate:", string(b))
-
 	if len(resp.Results) == 0 {
 		// Zone exists but no dns-entry data found
 		return records, nil
@@ -116,11 +113,7 @@ fmt.Println("DEBUG: Raw response from FortiGate:", string(b))
 			return nil, err
 		}
 		records = append(records, rc)
-
-		fmt.Printf("[GetZoneRecords] GOT: %s %s %s\n", rc.GetLabelFQDN(), rc.Type, rc.GetTargetField())
 	}
-
-	fmt.Printf("DEBUG: Found %d DNS entries in %s\n", len(resp.Results[0].DNSEntry), domain)
 
 	return records, nil
 }
@@ -133,13 +126,6 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 	var corrections []*models.Correction
 
-	for _, r := range existingRecords {
-		fmt.Println("EXISTING:", r.GetLabelFQDN(), r.Type, r.GetTargetField())
-	}
-	for _, r := range dc.Records {
-		fmt.Println("DESIRED :", r.GetLabelFQDN(), r.Type, r.GetTargetField())
-	}
-
 	result, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
@@ -151,15 +137,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 		msgs = append(msgs, "Zone update for "+domain)
 		msg := strings.Join(msgs, "\n")
 
-		resourceRecords, errs := recordsToNative(result.DesiredPlus, existingRecords)
-
-		for _, r := range result.DesiredPlus {
-			fmt.Println("DESIRED:", r.GetLabelFQDN(), r.Type, r.GetTargetField())
-		}
-
-		for _, rec := range resourceRecords {
-			fmt.Printf("API OUT: %s %s %s\n", rec.Hostname, rec.Type, rec.IP+rec.IPv6+rec.CanonicalName)
-		}
+		resourceRecords, errs := recordsToNative(result.DesiredPlus)
 
 		if len(errs) > 0 {
 			return nil, 0, fmt.Errorf("failed to convert records: %v", errs)
