@@ -45,6 +45,7 @@ Jump to a table:
 | [`DYNADOT`](dynadot.md) | ❌ | ❌ | ✅ |
 | [`EASYNAME`](easyname.md) | ❌ | ❌ | ✅ |
 | [`EXOSCALE`](exoscale.md) | ❌ | ✅ | ❌ |
+| [`FORTIGATE`](fortigate.md) | ❌ | ✅ | ❌ |
 | [`GANDI_V5`](gandi_v5.md) | ❌ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
@@ -103,6 +104,7 @@ Jump to a table:
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
@@ -158,6 +160,7 @@ Jump to a table:
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
