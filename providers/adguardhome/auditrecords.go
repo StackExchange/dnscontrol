@@ -11,5 +11,7 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
+	a.Add("ALIAS", rejectif.LabelNotApex)
+
 	return a.Audit(records)
 }
