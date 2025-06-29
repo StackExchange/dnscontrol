@@ -1,6 +1,8 @@
 package adguardhome
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
@@ -13,5 +15,17 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("ALIAS", rejectif.LabelNotApex)
 
+	a.Add("ADGUARDHOME_A_PASSTHROUGH", nonNullValue)
+
+	a.Add("ADGUARDHOME_AAAA_PASSTHROUGH", nonNullValue)
+
 	return a.Audit(records)
+}
+
+func nonNullValue(v *models.RecordConfig) error {
+	if len(v.GetTargetField()) != 0 {
+		return fmt.Errorf("%s rtype value should be empty", v.Type)
+	}
+
+	return nil
 }
