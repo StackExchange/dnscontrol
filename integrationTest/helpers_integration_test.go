@@ -360,12 +360,12 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 }
 
 func aghAPassthrough(pattern, target string) *models.RecordConfig {
-	r := makeRec(pattern, target, "A_PASSTHROUGH")
+	r := makeRec(pattern, target, "ADGUARDHOME_A_PASSTHROUGH")
 	return r
 }
 
 func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
-	r := makeRec(pattern, target, "AAAA_PASSTHROUGH")
+	r := makeRec(pattern, target, "ADGUARDHOME_AAAA_PASSTHROUGH")
 	return r
 }
 

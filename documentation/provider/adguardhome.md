@@ -8,8 +8,8 @@ This provider only supports the following record types.
 * AAAA
 * CNAME
 * ALIAS
-* A_PASSTHROUGH
-* AAAA_PASSTHROUGH
+* ADGUARDHOME_A_PASSTHROUGH
+* ADGUARDHOME_AAAA_PASSTHROUGH
 
 ## Configuration
 
@@ -49,8 +49,8 @@ D("example.com", REG_NONE, DnsProvider(DSP_ADGUARDHOME),
     AAAA("another", "2003::1"),
     ALIAS("@", "www.example.com."),
     CNAME("myalias", "www.example.com."),
-    A_PASSTHROUGH("abc", ""),
-    AAAA_PASSTHROUGH("abc", ""),
+    ADGUARDHOME_A_PASSTHROUGH("abc", ""),
+    ADGUARDHOME_AAAA_PASSTHROUGH("abc", ""),
 );
 ```
 {% endcode %}

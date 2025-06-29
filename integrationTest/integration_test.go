@@ -1316,12 +1316,12 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		testgroup("A_PASSTHROUGH",
+		testgroup("ADGUARDHOME_A_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAPassthrough("foo", "")),
 		),
 
-		testgroup("AAAA_PASSTHROUGH",
+		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAAAAPassthrough("foo", "")),
 		),

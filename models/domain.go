@@ -138,7 +138,7 @@ func (dc *DomainConfig) Punycode() error {
 			if err := rec.SetTarget(t); err != nil {
 				return err
 			}
-		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "A_PASSTHROUGH", "AAAA_PASSTHROUGH":
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
 			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
 				return err
 			}
