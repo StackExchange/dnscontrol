@@ -63,6 +63,12 @@ func (c *adguardHomeProvider) GetNameservers(domain string) ([]*models.Nameserve
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *adguardHomeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	// TTLs don't matter in ADGUARDHOME and
+	// we use the default value of 300
+	for _, record := range dc.Records {
+		record.TTL = 300
+	}
+
 	var corrections []*models.Correction
 
 	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc,
@@ -173,7 +179,7 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 
 func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
-		TTL:      1,
+		TTL:      300,
 		Original: r,
 	}
 	rc.SetLabelFromFQDN(r.Domain, domain)
