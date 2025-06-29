@@ -50,8 +50,8 @@ func init() {
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterCustomRecordType("A_PASSTHROUGH", providerName, "")
-	providers.RegisterCustomRecordType("AAAA_PASSTHROUGH", providerName, "")
+	providers.RegisterCustomRecordType("ADGUARDHOME_A_PASSTHROUGH", providerName, "")
+	providers.RegisterCustomRecordType("ADGUARDHOME_AAAA_PASSTHROUGH", providerName, "")
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -158,10 +158,10 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 		re.Answer = rc.GetTargetField()
 		re.Answer = dnsutil.TrimDomainName(re.Answer, domain)
 
-	case "A_PASSTHROUGH":
+	case "ADGUARDHOME_A_PASSTHROUGH":
 		re.Answer = "A"
 
-	case "AAAA_PASSTHROUGH":
+	case "ADGUARDHOME_AAAA_PASSTHROUGH":
 		re.Answer = "AAAA"
 
 	default:
@@ -187,9 +187,9 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 			rc.Type = "AAAA"
 		}
 	} else if r.Answer == "A" {
-		rc.Type = "A_PASSTHROUGH"
+		rc.Type = "ADGUARDHOME_A_PASSTHROUGH"
 	} else if r.Answer == "AAAA" {
-		rc.Type = "AAAA_PASSTHROUGH"
+		rc.Type = "ADGUARDHOME_AAAA_PASSTHROUGH"
 	} else {
 		answer := dnsutil.TrimDomainName(r.Answer, domain)
 		rc.SetTarget(answer)
@@ -201,9 +201,9 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 		}
 	}
 
-	if (rc.Type == "A_PASSTHROUGH" && r.Answer != "A") ||
-		(rc.Type == "AAAA_PASSTHROUGH" && r.Answer != "AAAA") {
-		return rc, errors.New("found invalid values for A_PASSTHROUGH or AAAA_PASSTHROUGH record")
+	if (rc.Type == "ADGUARDHOME_A_PASSTHROUGH" && r.Answer != "A") ||
+		(rc.Type == "ADGUARDHOME_AAAA_PASSTHROUGH" && r.Answer != "AAAA") {
+		return rc, errors.New("found invalid values for ADGUARDHOME_A_PASSTHROUGH or ADGUARDHOME_AAAA_PASSTHROUGH record")
 	}
 
 	return rc, nil
