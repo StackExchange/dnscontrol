@@ -2,12 +2,12 @@ package commands
 
 import "github.com/StackExchange/dnscontrol/v4/providers"
 
-// NewZoneCache creates a zoneCache.
-func NewZoneCache() *zoneCache {
-	return &zoneCache{}
+// NewCmdZoneCache creates a zoneCache.
+func NewCmdZoneCache() *cmdZoneCache {
+	return &cmdZoneCache{}
 }
 
-func (zc *zoneCache) zoneList(name string, lister providers.ZoneLister) (*[]string, error) {
+func (zc *cmdZoneCache) zoneList(name string, lister providers.ZoneLister) (*[]string, error) {
 	zc.Lock()
 	defer zc.Unlock()
 
