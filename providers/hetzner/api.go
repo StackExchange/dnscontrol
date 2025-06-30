@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 
 type hetznerProvider struct {
 	apiKey             string
-	zoneCache          zoneCache.ZoneCache[zone]
+	zoneCache          zonecache.ZoneCache[zone]
 	requestRateLimiter requestRateLimiter
 }
 

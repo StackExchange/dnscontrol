@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
@@ -95,7 +95,7 @@ type cloudflareProvider struct {
 	tcLogFh       *os.File // Transcode Log file handle
 	tcZone        string   // Transcode Current zone
 
-	zoneCache zoneCache.ZoneCache[cloudflare.Zone]
+	zoneCache zonecache.ZoneCache[cloudflare.Zone]
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -637,7 +637,7 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
-	api.zoneCache = zoneCache.New(api.fetchAllZones)
+	api.zoneCache = zonecache.New(api.fetchAllZones)
 	// check api keys from creds json file
 	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
 		return nil, errors.New("if cloudflare apitoken is not set, apikey and apiuser must be provided")

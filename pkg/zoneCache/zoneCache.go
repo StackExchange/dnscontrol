@@ -1,4 +1,4 @@
-package zoneCache
+package zonecache
 
 import (
 	"errors"
