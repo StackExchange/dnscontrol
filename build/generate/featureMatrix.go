@@ -12,13 +12,13 @@ import (
 )
 
 func generateFeatureMatrix() error {
-	var replacementContent string = "Jump to a table:\n\n"
+	var replacementContent = "Jump to a table:\n\n"
 	matrix := matrixData()
 
 	for _, tableTitle := range matrix.FeatureTablesTitles {
-		var jumptotableContent string = ""
+		var jumptotableContent = ""
 
-		var anchor string = strings.ToLower(tableTitle)
+		var anchor = strings.ToLower(tableTitle)
 		anchor = strings.Replace(anchor, " ", "-", -1)
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)

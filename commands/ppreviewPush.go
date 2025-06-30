@@ -24,7 +24,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-type zoneCache struct {
+type cmdZoneCache struct {
 	cache map[string]*[]string
 	sync.Mutex
 }
@@ -208,7 +208,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return errors.New("exiting due to validation errors")
 	}
 
-	zcache := NewZoneCache()
+	zcache := NewCmdZoneCache()
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
@@ -270,7 +270,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
 	for _, zone := range optimizeOrder(zonesConcurrent) {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
-		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
+		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
 			defer wg.Done()
 			oneZone(zone, args)
 		}(zone, args, zcache)
@@ -420,7 +420,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) {
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
 		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
@@ -563,7 +563,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *cmdZoneCache) []*models.Correction {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil // We can't generate a list. No corrections are possible.
