@@ -183,11 +183,6 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	if err != nil {
 		return nil, 0, err
 	}
-	//lint:ignore S1024 Fixing this without unit tests scares me.
-	// TODO(tlim): I think the fix is the line below but since this code
-	// may be decommed eventually, and since there are no unit tests,
-	// I'm not excited about making this change.
-	// var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	daysLeft := float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }
@@ -303,9 +298,12 @@ func (c *certManager) getAndRunCorrections(d *models.DomainConfig) error {
 	for _, corr := range cs {
 		fmt.Printf("Running [%s]\n", corr.Msg)
 		err = corr.F()
-		c.notifier.Notify(d.Name, "certs", corr.Msg, err, false)
+		err2 := c.notifier.Notify(d.Name, "certs", corr.Msg, err, false)
 		if err != nil {
 			return err
+		}
+		if err2 != nil {
+			return err2
 		}
 	}
 	return nil

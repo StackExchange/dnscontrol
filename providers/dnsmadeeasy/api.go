@@ -71,7 +71,7 @@ func (api *dnsMadeEasyProvider) domainExists(name string) (bool, error) {
 	return ok, nil
 }
 
-func (api *dnsMadeEasyProvider) findDomainId(name string) (int, error) {
+func (api *dnsMadeEasyProvider) findDomainID(name string) (int, error) {
 	if err := api.loadDomains(); err != nil {
 		return 0, err
 	}
@@ -85,12 +85,12 @@ func (api *dnsMadeEasyProvider) findDomainId(name string) (int, error) {
 }
 
 func (api *dnsMadeEasyProvider) fetchDomainRecords(domainName string) ([]recordResponseDataEntry, error) {
-	domainId, err := api.findDomainId(domainName)
+	domainID, err := api.findDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := api.restAPI.recordGet(domainId)
+	res, err := api.restAPI.recordGet(domainID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching records failed: %w", err)
 	}
@@ -108,12 +108,12 @@ func (api *dnsMadeEasyProvider) fetchDomainRecords(domainName string) ([]recordR
 }
 
 func (api *dnsMadeEasyProvider) fetchDomainNameServers(domainName string) ([]string, error) {
-	domainId, err := api.findDomainId(domainName)
+	domainID, err := api.findDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := api.restAPI.singleDomainGet(domainId)
+	res, err := api.restAPI.singleDomainGet(domainID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching domain from DNSMADEEASY failed: %w", err)
 	}
