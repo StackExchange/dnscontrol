@@ -23,6 +23,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/dynadot"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/easyname"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/exoscale"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/fortigate"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcore"
