@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
-// ---- Feature Declaration --------------------------------------------------
+// Feature Declaration
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
@@ -22,7 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(), // unofficial integration
 }
 
-// ---- Provider Registration ------------------------------------------------
+// Provider Registration
 
 func init() {
 	const name = "FORTIGATE"
@@ -32,7 +32,7 @@ func init() {
 	}, features)
 }
 
-// ---- Provider Struct ------------------------------------------------------
+// Provider Struct
 
 type fortigateProvider struct {
 	vdom     string
@@ -42,7 +42,7 @@ type fortigateProvider struct {
 	client   *apiClient
 }
 
-// ---- Constructor ----------------------------------------------------------
+// Constructor
 
 func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	host, vdom, apiKey := m["host"], m["vdom"], m["apiKey"]
@@ -73,14 +73,12 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 	return p, nil
 }
 
-// ---- Record Fetching ------------------------------------------------------
+// Record Fetching
 
 func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records := models.Records{}
 
-	// -----------------------------------------------------------------------
 	// Request the zone object from FortiGate
-	// -----------------------------------------------------------------------
 	path := fmt.Sprintf("system/dns-database/%s", strings.TrimSuffix(domain, "."))
 
 	// According to the API, "results" is an array of objects
@@ -104,9 +102,7 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 		return records, nil
 	}
 
-	// -----------------------------------------------------------------------
 	// Convert native records to dnscontrol Records
-	// -----------------------------------------------------------------------
 	for _, n := range resp.Results[0].DNSEntry {
 		rc, err := nativeToRecord(domain, n)
 		if err != nil {
@@ -118,7 +114,7 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 	return records, nil
 }
 
-// ---- Correction Planning --------------------------------------------------
+// Correction Planning
 
 func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
@@ -169,7 +165,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	return corrections, actualChangeCount, nil
 }
 
-// ---- Zone Existence Check & Creation --------------------------------------
+// Zone Existence Check & Creation
 func (p *fortigateProvider) EnsureZoneExists(domain string) error {
 	var probe struct{ Results []any }
 
@@ -187,7 +183,7 @@ func (p *fortigateProvider) EnsureZoneExists(domain string) error {
 	}
 }
 
-// ---- Misc DNSControl Plumbing ---------------------------------------------
+// Misc DNSControl Plumbing
 
 func (p *fortigateProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil // FortiGate is authoritative only internally

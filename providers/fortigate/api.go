@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-// ---------------------------------------------------------------------------
+//
 // Structure
-// ---------------------------------------------------------------------------
+//
 
 // apiClient wraps all HTTP traffic to endpoints of the form:
 //
@@ -40,9 +40,9 @@ type fgDNSRecord struct {
 	CanonicalName string `json:"canonical-name,omitempty"` // CNAME/NS/PTR target
 }
 
-// ---------------------------------------------------------------------------
+//
 // Constructor
-// ---------------------------------------------------------------------------
+//
 
 // newClient builds a new apiClient.
 //
@@ -70,9 +70,9 @@ func newClient(host, vdom, key string, insecure bool) *apiClient {
 	}
 }
 
-// ---------------------------------------------------------------------------
+//
 // Central request helper
-// ---------------------------------------------------------------------------
+// 
 
 // do executes a request.
 //
@@ -87,9 +87,9 @@ func newClient(host, vdom, key string, insecure bool) *apiClient {
 // A non‑2xx HTTP status is returned as error.
 // If out ≠ nil, the JSON response body is decoded into it.
 func (c *apiClient) do(method, path string, qs url.Values, body any, out any) error {
-	// -----------------------------------------------------------------------
+	//
 	// Build query string
-	// -----------------------------------------------------------------------
+	//
 	if qs == nil {
 		qs = url.Values{}
 	}
@@ -98,9 +98,9 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 
 	u := c.base + strings.TrimLeft(path, "/") + "?" + qs.Encode()
 
-	// -----------------------------------------------------------------------
+	//
 	// Serialize body (if any)
-	// -----------------------------------------------------------------------
+	//
 	var rdr io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -110,9 +110,9 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 		rdr = bytes.NewReader(b)
 	}
 
-	// -----------------------------------------------------------------------
+	//
 	// Build request
-	// -----------------------------------------------------------------------
+	//
 	req, err := http.NewRequest(method, u, rdr)
 	if err != nil {
 		return err
@@ -123,9 +123,9 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 	}
 	req.Header.Set("Authorization", "Bearer "+c.key)
 
-	// -----------------------------------------------------------------------
+	//
 	// Execute request
-	// -----------------------------------------------------------------------
+	//
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -133,18 +133,18 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 	}
 	defer resp.Body.Close()
 
-	// -----------------------------------------------------------------------
+	//
 	// Handle non‑success status codes
-	// -----------------------------------------------------------------------
+	//
 	if resp.StatusCode >= 300 {
 		// Read a small chunk to include in the error message
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<10))
 		return fmt.Errorf("fortigate: %s %s → %s: %s", method, path, resp.Status, strings.TrimSpace(string(b)))
 	}
 
-	// -----------------------------------------------------------------------
+	//
 	// Optionally decode JSON response
-	// -----------------------------------------------------------------------
+	//
 	if out != nil {
 		if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
 			return fmt.Errorf("fortigate: decode: %w", err)
@@ -153,9 +153,9 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 	return nil
 }
 
-// ---------------------------------------------------------------------------
+//
 // Helper
-// ---------------------------------------------------------------------------
+//
 
 // isNotFound returns true if the error represents a 404 Not Found response.
 func isNotFound(err error) bool {
