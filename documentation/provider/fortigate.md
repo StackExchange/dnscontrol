@@ -1,4 +1,3 @@
-
 # FortiGate DNS Provider
 
 This DNS provider lets you manage DNS zones hosted on a Fortinet FortiGate device via its REST API.
@@ -62,6 +61,6 @@ D("example.com", REG_NONE, DnsProvider("FORTIGATE"),
 
 - ✅ Supported record types: `A`, `AAAA`, `CNAME`.
 
-## Development Notes
+## Development notes
 
 This provider uses the FortiGate REST API (`/api/v2/cmdb/system/dns-database`) to manage zones and DNS entries. It assumes you are managing the **"shadow" view** and expects zones to be configured in **primary mode**.
