@@ -165,7 +165,6 @@ func makeTests() []*TestGroup {
 		// correctly!
 
 		testgroup("MX",
-			not("ADGUARDHOME"),
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
@@ -177,7 +176,6 @@ func makeTests() []*TestGroup {
 		// tests for later. Let's just test a simple string.
 
 		testgroup("TXT",
-			not("ADGUARDHOME"),
 			tc("Create TXT", txt("testtxt", "simple")),
 			tc("Change TXT target", txt("testtxt", "changed")),
 		),
@@ -201,7 +199,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("manyTypesAtOnce",
-			not("ADGUARDHOME"), // ADGUARDHOME does not support MX records
 			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
 			tcEmptyZone(),
 			tc("Create an A record", a("www", "1.1.1.1")),
@@ -216,16 +213,14 @@ func makeTests() []*TestGroup {
 		// weirdest edge-case we've ever seen.
 
 		testgroup("Attl",
-			not("LINODE"),      // Linode does not support arbitrary TTLs: both are rounded up to 3600.
-			not("ADGUARDHOME"), // ADGUARDHOME does not support TTLs at all
+			not("LINODE"), // Linode does not support arbitrary TTLs: both are rounded up to 3600.
 			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
 			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
 		),
 
 		testgroup("TTL",
-			not("NETCUP"),      // NETCUP does not support TTLs.
-			not("LINODE"),      // Linode does not support arbitrary TTLs: 666 and 1000 are both rounded up to 3600.
-			not("ADGUARDHOME"), // ADGUARDHOME does not support TTLs
+			not("NETCUP"), // NETCUP does not support TTLs.
+			not("LINODE"), // Linode does not support arbitrary TTLs: 666 and 1000 are both rounded up to 3600.
 			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
@@ -248,7 +243,6 @@ func makeTests() []*TestGroup {
 		// Next we add an additional record at the same label AND change
 		// the TTL of the existing record.
 		testgroup("add to label and change orig ttl",
-			not("ADGUARDHOME"), // ADGUARDHOME does not support TTLs at all
 			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
 			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 		),
@@ -264,7 +258,6 @@ func makeTests() []*TestGroup {
 		// delete the old record and create a new record in its place.
 
 		testgroup("TypeChange",
-			not("ADGUARDHOME"),
 			// Test whether the provider properly handles a label changing
 			// from one rtype to another.
 			tc("Create A", a("foo", "1.2.3.4")),
@@ -342,7 +335,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("ApexMX",
-			not("ADGUARDHOME"),
 			tc("Record pointing to @",
 				mx("foo", 8, "**current-domain**."),
 				a("@", "1.2.3.4"),
@@ -353,7 +345,6 @@ func makeTests() []*TestGroup {
 		testgroup("NullMX",
 			not(
 				"TRANSIP", // TRANSIP is slow and doesn't support NullMX. Skip to save time.
-				"ADGUARDHOME",
 			),
 			tc("create", // Install a Null MX.
 				a("nmx", "1.2.3.3"), // Install this so it is ready for the next tc()
@@ -377,7 +368,6 @@ func makeTests() []*TestGroup {
 		testgroup("NullMXApex",
 			not(
 				"TRANSIP", // TRANSIP is slow and doesn't support NullMX. Skip to save time.
-				"ADGUARDHOME",
 			),
 			tc("create", // Install a Null MX.
 				a("@", "1.2.3.2"),   // Install this so it is ready for the next tc()
@@ -399,11 +389,10 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS",
 			not(
-				"DNSIMPLE",    // Does not support NS records nor subdomains.
-				"EXOSCALE",    // Not supported.
-				"NETCUP",      // NS records not currently supported.
-				"FORTIGATE",   // Not supported
-				"ADGUARDHOME", // Not supported
+				"DNSIMPLE",  // Does not support NS records nor subdomains.
+				"EXOSCALE",  // Not supported.
+				"NETCUP",    // NS records not currently supported.
+				"FORTIGATE", // Not supported
 			),
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
@@ -432,7 +421,6 @@ func makeTests() []*TestGroup {
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
-			not("ADGUARDHOME"),
 			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
@@ -489,7 +477,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("TXT backslashes",
-			not("ADGUARDHOME"),
 			tc("TXT with backslashs",
 				txt("fooosbs1", `1back\slash`),
 				txt("fooosbs2", `2back\\slash`),
@@ -509,7 +496,6 @@ func makeTests() []*TestGroup {
 		// DNSControl downcases all DNS labels. These tests make sure
 		// that's all done correctly.
 		testgroup("Case Sensitivity",
-			not("ADGUARDHOME"), // ADGUARDHOME does not support MX records
 			// The decoys are required so that there is at least one actual
 			// change in each tc.
 			tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
@@ -542,7 +528,6 @@ func makeTests() []*TestGroup {
 		// Make sure we can manipulate one DNS record when there is
 		// another at the same RecordSet.
 		testgroup("testByRecordSet",
-			not("ADGUARDHOME"), // Does not support MX records
 			tc("initial",
 				a("bar", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
@@ -959,8 +944,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("ALIAS on subdomain",
 			requires(providers.CanUseAlias),
-			not("TRANSIP"),     // TransIP does support ALIAS records, but only for apex records (@)
-			not("ADGUARDHOME"), // ADGUARDHOME supports ALIAS on apex and CNAME on subdomains
+			not("TRANSIP"), // TransIP does support ALIAS records, but only for apex records (@)
 			tc("ALIAS at subdomain", alias("test", "foo.com.")),
 			tc("change it", alias("test", "foo2.com.")),
 		),
@@ -1351,8 +1335,6 @@ func makeTests() []*TestGroup {
 		// them anyway because one never knows.  Ready?  Let's go!
 
 		testgroup("IGNORE main",
-			not("ADGUARDHOME"),
-
 			tc("Create some records",
 				a("foo", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
@@ -1497,8 +1479,6 @@ func makeTests() []*TestGroup {
 
 		// Same as "main" but with an apex ("@") record.
 		testgroup("IGNORE apex",
-			not("ADGUARDHOME"),
-
 			tc("Create some records",
 				a("@", "1.2.3.4"),
 				a("@", "2.3.4.5"),
@@ -1634,8 +1614,6 @@ func makeTests() []*TestGroup {
 		// IGNORE with unsafe notation
 
 		testgroup("IGNORE unsafe",
-			not("ADGUARDHOME"),
-
 			tc("Create some records",
 				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
@@ -1675,8 +1653,6 @@ func makeTests() []*TestGroup {
 		// IGNORE with wildcards
 
 		testgroup("IGNORE wilds",
-			not("ADGUARDHOME"),
-
 			tc("Create some records",
 				a("foo.bat", "1.2.3.4"),
 				a("foo.bat", "2.3.4.5"),
@@ -1736,8 +1712,6 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
-			not("ADGUARDHOME"),
-
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
@@ -2014,7 +1988,6 @@ func makeTests() []*TestGroup {
 
 		// This MUST be the last test.
 		testgroup("final",
-			not("ADGUARDHOME"), // ADGUARDHOME does not support TXT records
 			tc("final", txt("final", `TestDNSProviders was successful!`)),
 		),
 
