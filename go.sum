@@ -81,6 +81,8 @@ github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6/go.mod h1
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9 h1:2vQTbEJvFsyd1VefzZ34GUkUD6TkJleYYJh9/25WBE4=
 github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9/go.mod h1:bqqNsI2akL+lLWyApkYY0cxquWPKwEBU0Wd3chi3TEg=
+github.com/bits-and-blooms/bitset v1.14.3 h1:Gd2c8lSNf9pKXom5JtD7AaKO8o7fGQ2LtFj1436qilA=
+github.com/bits-and-blooms/bitset v1.14.3/go.mod h1:7hO7Gc7Pp1vODcmWvKMRA9BNmbv6a/7QIWpPxHddWR8=
 github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyXcs=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
@@ -126,6 +128,8 @@ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/exoscale/egoscale v0.102.4 h1:GBKsZMIOzwBfSu+4ZmWka3Ejf2JLiaBDHp4CQUgvp2E=
 github.com/exoscale/egoscale v0.102.4/go.mod h1:ROSmPtle0wvf91iLZb09++N/9BH2Jo9XxIpAEumvocA=
+github.com/failsafe-go/failsafe-go v0.6.9 h1:7HWEzOlFOjNerxgWd8onWA2j/aEuqyAtuX6uWya/364=
+github.com/failsafe-go/failsafe-go v0.6.9/go.mod h1:zb7xfp1/DJ7Mn4xJhVSZ9F2qmmMEGvYHxEOHYK5SIm0=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.18.0 h1:S8gINlzdQ840/4pfAwic/ZE0djQEH3wM94VfqLTZcOM=
 github.com/fatih/color v1.18.0/go.mod h1:4FelSpRwEGDpQ12mAdzqdOukCy4u8WUtOY6lkT/6HfU=

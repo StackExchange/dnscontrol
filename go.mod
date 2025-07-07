@@ -62,6 +62,7 @@ require (
 	github.com/G-Core/gcore-dns-sdk-go v0.3.0
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.15
 	github.com/containrrr/shoutrrr v0.8.0
+	github.com/failsafe-go/failsafe-go v0.6.9
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/go-acme/lego/v4 v4.23.1

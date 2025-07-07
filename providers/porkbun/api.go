@@ -12,6 +12,9 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/failsafe-go/failsafe-go"
+	"github.com/failsafe-go/failsafe-go/failsafehttp"
+	"github.com/failsafe-go/failsafe-go/retrypolicy"
 )
 
 const (
@@ -70,31 +73,31 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 		return []byte{}, err
 	}
 
-	client := &http.Client{}
+	retryPolicy := failsafehttp.RetryPolicyBuilder().
+		WithMaxRetries(5).
+		// Exponential backoff between 1 and 10 seconds
+		WithBackoff(time.Second, 10*time.Second).
+		WithJitter(100 * time.Millisecond).
+		OnRetryScheduled(func(f failsafe.ExecutionScheduledEvent[*http.Response]) {
+			printer.Debugf("Porkbun API response code %d, waiting for %s until next attempt\n", f.LastResult().StatusCode, f.Delay)
+		}).
+		Build()
+
+	client := &http.Client{
+		Transport: failsafehttp.NewRoundTripper(nil, retryPolicy),
+	}
 	req, _ := http.NewRequest(http.MethodPost, baseURL+endpoint, bytes.NewBuffer(personJSON))
 
-	retrycnt := 0
-
-	// If request sending too fast, the server will fail with the following error:
-	// porkbun API error: Create error: We were unable to create the DNS record.
-retry:
-	time.Sleep(time.Second)
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		if errors.Is(err, retrypolicy.ErrExceeded) {
+			// Return the underlying error rather than the wrapped error, which has too much detail
+			return nil, retrypolicy.ErrExceeded
+		}
+		return nil, err
 	}
 
 	bodyString, _ := io.ReadAll(resp.Body)
-
-	if resp.StatusCode == http.StatusAccepted || resp.StatusCode == http.StatusServiceUnavailable {
-		retrycnt++
-		if retrycnt == 5 {
-			return bodyString, errors.New("rate limiting exceeded")
-		}
-		printer.Warnf("Rate limiting.. waiting for %d second(s)\n", retrycnt*10)
-		time.Sleep(time.Second * time.Duration(retrycnt*10))
-		goto retry
-	}
 
 	// Got error from API ?
 	var errResp errorResponse
