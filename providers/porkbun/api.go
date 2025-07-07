@@ -68,7 +68,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	params["apikey"] = c.apiKey
 	params["secretapikey"] = c.secretKey
 
-	personJSON, err := json.Marshal(params)
+	paramsJSON, err := json.Marshal(params)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -86,7 +86,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	client := &http.Client{
 		Transport: failsafehttp.NewRoundTripper(nil, retryPolicy),
 	}
-	req, _ := http.NewRequest(http.MethodPost, baseURL+endpoint, bytes.NewBuffer(personJSON))
+	req, _ := http.NewRequest(http.MethodPost, baseURL+endpoint, bytes.NewBuffer(paramsJSON))
 
 	resp, err := client.Do(req)
 	if err != nil {
