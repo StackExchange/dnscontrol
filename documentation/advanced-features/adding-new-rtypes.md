@@ -16,12 +16,10 @@ Our general philosophy is:
 -   Anywhere we have a special case for a particular Rtype, we use a `switch` statement and have a `case` for every single record type, usually with a `default:` case that calls `panic()`. This way developers adding a new record type will quickly find where they need to add code (the panic will tell them where). Before we did this, missing implementation code would go unnoticed for months.
 -   Keep things alphabetical. If you are adding your record type to a case statement, function library, or whatever, please list it alphabetically along with the others when possible.
 
-Step 2 requires `stringer`.
+Step 2 requires `stringer` which is available using
 ```shell
-go install golang.org/x/tools/cmd/stringer@latest
+go tool stringer
 ```
-You may need to symlink stringer into your PATH.
-
 ## Step 1: Update `RecordConfig` in `models/record.go`
 
 If the record has any unique fields, add them to `RecordConfig`.
@@ -61,7 +59,7 @@ a minimum.
 
 ```shell
 pushd; cd providers/;
-stringer -type=Capability
+go tool stringer -type=Capability
 popd
 ```
 alternatively

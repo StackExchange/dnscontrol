@@ -1,4 +1,4 @@
-//go:generate stringer -type=State
+//go:generate go tool stringer -type=State
 
 package txtutil
 
