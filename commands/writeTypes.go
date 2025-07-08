@@ -4,12 +4,8 @@ import (
 	_ "embed" // Required by go:embed
 	"os"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/urfave/cli/v2"
-)
-
-// GoReleaser: version
-var (
-	version = "dev"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -58,7 +54,7 @@ func WriteTypes(args TypesArgs) error {
 	if _, err := file.WriteString("// To update it, run `dnscontrol write-types`.\n\n"); err != nil {
 		return err
 	}
-	if _, err := file.WriteString("// " + version + "\n"); err != nil {
+	if _, err := file.WriteString("// " + version.Version() + "\n"); err != nil {
 		return err
 	}
 	if _, err := file.WriteString(dtsContent); err != nil {

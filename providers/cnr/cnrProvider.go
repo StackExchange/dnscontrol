@@ -6,13 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	cnrcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/apiclient"
-)
-
-// GoReleaser: version
-var (
-	version = "dev"
 )
 
 // Client describes a connection to the CNR API.
@@ -61,7 +57,7 @@ func newProvider(conf map[string]string) (*Client, error) {
 		conf:   conf,
 		client: cnrcl.NewAPIClient(),
 	}
-	api.client.SetUserAgent("DNSControl", version)
+	api.client.SetUserAgent("DNSControl", version.Version())
 	api.APILogin, api.APIPassword, api.APIEntity = conf["apilogin"], conf["apipassword"], conf["apientity"]
 	if conf["debugmode"] == "2" {
 		api.client.EnableDebugMode()
