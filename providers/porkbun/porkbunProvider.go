@@ -312,7 +312,9 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 
 		svcPriority, _ := strconv.ParseUint(c[0], 10, 16)
 		rc.SvcPriority = uint16(svcPriority)
-		rc.SvcParams = c[2]
+		if len(c) > 2 {
+			rc.SvcParams = strings.Join(c[2:], " ")
+		}
 		err = rc.SetTarget(c[1])
 	default:
 		err = rc.SetTarget(r.Content)
