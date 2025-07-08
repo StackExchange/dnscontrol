@@ -128,6 +128,14 @@
     "domain": "$EXOSCALE_DOMAIN",
     "secretkey": "$EXOSCALE_SECRET_KEY"
   },
+  "FORTIGATE": {
+    "TYPE": "FORTIGATE",
+    "domain": "$FORTIGATE_DOMAIN",
+    "apiKey": "$FORTIGATE_API_KEY",
+    "vdom": "$FORTIGATE_VDOM",
+    "host": "$FORTIGATE_HOST",
+    "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY"
+  },
   "GANDI_V5": {
     "TYPE": "GANDI_V5",
     "apikey": "$GANDI_V5_APIKEY",
