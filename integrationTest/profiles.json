@@ -1,10 +1,10 @@
 {
   "ADGUARDHOME": {
     "TYPE": "ADGUARDHOME",
-    "username": "$ADGUARDHOME_USERNAME",
-    "password": "$ADGUARDHOME_PASSWORD",
+    "domain": "$ADGUARDHOME_DOMAIN",
     "host": "$ADGUARDHOME_HOST",
-    "domain": "$ADGUARDHOME_DOMAIN"
+    "password": "$ADGUARDHOME_PASSWORD",
+    "username": "$ADGUARDHOME_USERNAME"
   },
   "AKAMAIEDGEDNS": {
     "TYPE": "AKAMAIEDGEDNS",
