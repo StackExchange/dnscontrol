@@ -1,6 +1,6 @@
 package diff2
 
-//go:generate stringer -type=Verb
+//go:generate go tool stringer -type=Verb
 
 // This module provides functions that "diff" the existing records
 // against the desired records.

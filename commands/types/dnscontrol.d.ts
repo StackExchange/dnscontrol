@@ -221,6 +221,44 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
 declare function AAAA(name: string, address: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `ADGUARDHOME_AAAA_PASSTHROUGH` represents the literal 'A'. AdGuardHome uses this to passthrough
+ * the original values of a record type.
+ *
+ * The second argument to this record type must be empty.
+ *
+ * See [this](https://github.com/AdguardTeam/Adguardhome/wiki/Configuration) page for
+ * more information.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   ADGUARDHOME_AAAA_PASSTHROUGH("foo", ""),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//adguardhome_aaaa_passthrough
+ */
+declare function ADGUARDHOME_AAAA_PASSTHROUGH(source: string, destination: string): DomainModifier;
+
+/**
+ * `ADGUARDHOME_A_PASSTHROUGH` represents the literal 'A'. AdGuardHome uses this to passthrough
+ * the original values of a record type.
+ *
+ * The second argument to this record type must be empty.
+ *
+ * See [this](https://github.com/AdguardTeam/Adguardhome/wiki/Configuration) page for
+ * more information.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   ADGUARDHOME_A_PASSTHROUGH("foo", ""),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//adguardhome_a_passthrough
+ */
+declare function ADGUARDHOME_A_PASSTHROUGH(source: string, destination: string): DomainModifier;
+
+/**
  * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
  * The AKAMAICDN target must be preconfigured in the Akamai network.
  *
