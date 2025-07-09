@@ -7,7 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
@@ -52,7 +52,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	}
 
 	api := &hetznerProvider{apiKey: apiKey}
-	api.zoneCache = zoneCache.New(api.fetchAllZones)
+	api.zoneCache = zonecache.New(api.fetchAllZones)
 	return api, nil
 }
 
