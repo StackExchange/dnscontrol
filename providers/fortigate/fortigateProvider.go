@@ -25,11 +25,13 @@ var features = providers.DocumentationNotes{
 // Provider Registration
 
 func init() {
-	const name = "FORTIGATE"
-	providers.RegisterDomainServiceProviderType(name, providers.DspFuncs{
+	const providerName = "FORTIGATE"
+	const providerMaintainer = "@KlettIT"
+	providers.RegisterDomainServiceProviderType(providerName, providers.DspFuncs{
 		Initializer:   NewFortiGate,
 		RecordAuditor: AuditRecords,
 	}, features)
+	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // Provider Struct
