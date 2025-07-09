@@ -213,12 +213,6 @@
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
   },
-  "MSDNS": {
-    "TYPE": "MSDNS",
-    "dnsserver": "$MSDNS_DNSSERVER",
-    "domain": "$MSDNS_DOMAIN",
-    "pssession": "$MSDNS_PSSESSION"
-  },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
     "domain": "$MYTHICBEASTS_DOMAIN",

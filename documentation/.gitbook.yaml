@@ -32,7 +32,6 @@ redirects:
   service-providers/providers/linode: provider/linode.md
   service-providers/providers/loopia: provider/loopia.md
   service-providers/providers/luadns: provider/luadns.md
-  service-providers/providers/msdns: provider/msdns.md
   service-providers/providers/mythicbeasts: provider/mythicbeasts.md
   service-providers/providers/namecheap: provider/namecheap.md
   service-providers/providers/namedotcom: provider/namedotcom.md
