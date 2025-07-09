@@ -60,6 +60,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❌ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
+| [`MSDNS`](msdns.md) | ✅ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ✅ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ✅ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❌ | ✅ | ✅ |
@@ -119,6 +120,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`MSDNS`](msdns.md) | ❔ | ❌ | ❌ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
@@ -174,6 +176,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ❔ | ✅ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`MSDNS`](msdns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
@@ -226,6 +229,7 @@ Jump to a table:
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ✅ | ❔ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
+| [`MSDNS`](msdns.md) | ❔ | ✅ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ❔ | ✅ | ❔ |
@@ -279,6 +283,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ❔ | ✅ | ✅ |
+| [`MSDNS`](msdns.md) | ❌ | ❔ | ❔ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
 | [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ |
@@ -348,6 +353,7 @@ Providers in this category and their maintainers are:
 |[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](cscglobal.md)|@mikenz|
 |[`GCLOUD`](gcloud.md)|@riyadhalnur|
+|[`MSDNS`](msdns.md)|@tlimoncelli|
 |[`ROUTE53`](route53.md)|@tresni|
 
 ### Providers with "contributor support"

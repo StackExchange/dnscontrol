@@ -38,6 +38,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/loopia"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/luadns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/msdns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/mythicbeasts"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/namedotcom"

@@ -1,10 +1,10 @@
 {
   "ADGUARDHOME": {
     "TYPE": "ADGUARDHOME",
-    "domain": "$ADGUARDHOME_DOMAIN",
-    "host": "$ADGUARDHOME_HOST",
+    "username": "$ADGUARDHOME_USERNAME",
     "password": "$ADGUARDHOME_PASSWORD",
-    "username": "$ADGUARDHOME_USERNAME"
+    "host": "$ADGUARDHOME_HOST",
+    "domain": "$ADGUARDHOME_DOMAIN"
   },
   "AKAMAIEDGEDNS": {
     "TYPE": "AKAMAIEDGEDNS",
@@ -219,6 +219,12 @@
     "apikey": "$LUADNS_APIKEY",
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
+  },
+  "MSDNS": {
+    "TYPE": "MSDNS",
+    "dnsserver": "$MSDNS_DNSSERVER",
+    "domain": "$MSDNS_DOMAIN",
+    "pssession": "$MSDNS_PSSESSION"
   },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
