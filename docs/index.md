@@ -115,6 +115,9 @@ title: DNSControl
                 <li>
                      <a href="https://docs.dnscontrol.org/commands/get-zones">get-zones</a>: Query a provider for zone info
                 </li>
+                <li>
+                    <a href="https://docs.dnscontrol.org/commands/get-certs">get-certs</a>: Renew SSL/TLS certs (DEPRECATED)
+                </li>
             </ul>
 
         </div>
