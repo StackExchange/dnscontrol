@@ -15,7 +15,7 @@ var goos = flag.String("os", "", "OS to build (linux, windows, or darwin) Defaul
 
 func main() {
 	flag.Parse()
-	flags := fmt.Sprintf(`-s -w -X "main.version=%s"`, getVersion())
+	flags := fmt.Sprintf(`-s -w -X "github.com/StackExchange/dnscontrol/v4/pkg/version.version=%s"`, getVersion())
 	pkg := "github.com/StackExchange/dnscontrol/v4"
 
 	build := func(out, goos string) {

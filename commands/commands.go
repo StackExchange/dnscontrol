@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 )
@@ -34,16 +35,15 @@ var _ = cmd(catDebug, &cli.Command{
 	Name:  "version",
 	Usage: "Print version information",
 	Action: func(c *cli.Context) error {
-		_, err := fmt.Println(version)
+		_, err := fmt.Println(version.Version())
 		return err
 	},
 })
 
 // Run will execute the CLI
 func Run(v string) int {
-	version = v
 	app := cli.NewApp()
-	app.Version = version
+	app.Version = v
 	app.Name = "dnscontrol"
 	app.HideVersion = true
 	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
