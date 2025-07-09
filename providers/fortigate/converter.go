@@ -9,7 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-
 // nativeToRecord – convert an fgDNSRecord coming from FortiGate into a *models.RecordConfig that dnscontrol understands
 func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{}
@@ -144,7 +143,6 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 
 	return resourceRecords, errors
 }
-
 
 // ensureDot – make sure an FQDN ends with a trailing dot
 func ensureDot(fqdn string) string {

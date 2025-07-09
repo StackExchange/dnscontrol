@@ -72,7 +72,7 @@ func newClient(host, vdom, key string, insecure bool) *apiClient {
 
 //
 // Central request helper
-// 
+//
 
 // do executes a request.
 //
