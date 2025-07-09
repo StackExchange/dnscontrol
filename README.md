@@ -169,7 +169,6 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 ## Deprecation warnings (updated 2024-03-25)
 
 - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-- **MSDNS maintainer needed!** Without a new volunteer, this DNS provider will lose support after April 2025. See https://github.com/StackExchange/dnscontrol/issues/2878
 - **NAMEDOTCOM and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 
 ## More info at our website

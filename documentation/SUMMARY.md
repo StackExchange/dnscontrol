@@ -140,7 +140,6 @@
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
-* [Microsoft DNS Server on Microsoft Windows Server](provider/msdns.md)
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)
