@@ -25,6 +25,7 @@ Jump to a table:
 
 | Provider name | Official Support | DNS Provider | Registrar |
 | ------------- | ---------------- | ------------ | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
@@ -85,6 +86,7 @@ Jump to a table:
 
 | Provider name | [Concurrency Verified](../advanced-features/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
@@ -144,6 +146,7 @@ Jump to a table:
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
+| [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ❔ | ✅ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
