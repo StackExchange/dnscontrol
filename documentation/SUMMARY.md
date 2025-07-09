@@ -78,6 +78,9 @@
     * [URL](language-reference/domain-modifiers/URL.md)
     * [URL301](language-reference/domain-modifiers/URL301.md)
     * Service Provider specific
+        * AdGuard Home
+            * [ADGUARDHOME_A_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_A_PASSTHROUGH.md)
+            * [ADGUARDHOME_AAAA_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_AAAA_PASSTHROUGH.md)
         * Akamai Edge Dns
             * [AKAMAICDN](language-reference/domain-modifiers/AKAMAICDN.md)
         * Amazon Route 53
@@ -123,6 +126,7 @@
 * [Dynadot](provider/dynadot.md)
 * [easyname](provider/easyname.md)
 * [Exoscale](provider/exoscale.md)
+* [Fortigate](provider/fortigate.md)
 * [Gandi_v5](provider/gandi_v5.md)
 * [Gcore](provider/gcore.md)
 * [Google Cloud DNS](provider/gcloud.md)
@@ -136,7 +140,6 @@
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
-* [Microsoft DNS Server on Microsoft Windows Server](provider/msdns.md)
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)
@@ -161,7 +164,6 @@
 * [preview/push](commands/preview-push.md)
 * [check-creds](commands/check-creds.md)
 * [get-zones](commands/get-zones.md)
-* [get-certs](commands/get-certs.md)
 * [fmt](commands/fmt.md)
 * [creds.json](commands/creds-json.md)
 * [Global Flag](commands/globalflags.md)

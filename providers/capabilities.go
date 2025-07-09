@@ -1,4 +1,4 @@
-//go:generate stringer -type=Capability
+//go:generate go tool stringer -type=Capability
 
 package providers
 

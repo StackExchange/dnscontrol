@@ -389,9 +389,10 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS",
 			not(
-				"DNSIMPLE", // Does not support NS records nor subdomains.
-				"EXOSCALE", // Not supported.
-				"NETCUP",   // NS records not currently supported.
+				"DNSIMPLE",  // Does not support NS records nor subdomains.
+				"EXOSCALE",  // Not supported.
+				"NETCUP",    // NS records not currently supported.
+				"FORTIGATE", // Not supported
 			),
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
@@ -613,12 +614,12 @@ func makeTests() []*TestGroup {
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
-				"MSDNS",      // No paging done. No need to test.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
 				// "ROUTE53",       // Batches up changes in pages.
-				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
-				"CNR",     // Test beaks limits.
+				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
+				"CNR",       // Test beaks limits.
+				"FORTIGATE", // No paging
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
@@ -632,7 +633,6 @@ func makeTests() []*TestGroup {
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
-				//"MSDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
@@ -650,7 +650,6 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
-				//"MSDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
@@ -742,7 +741,9 @@ func makeTests() []*TestGroup {
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
 		testgroup("PTR",
 			requires(providers.CanUsePTR),
-			not("CLOUDNS"),
+			not("CLOUDNS",
+				"FORTIGATE", // FortiGate does not really support ARPA Zones and handles PTR records really weired
+			),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
@@ -1310,6 +1311,16 @@ func makeTests() []*TestGroup {
 				cfWorkerRoute("msn.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
 				cfWorkerRoute("api.**current-domain**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
+		),
+
+		testgroup("ADGUARDHOME_A_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAPassthrough("foo", "")),
+		),
+
+		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAAAAPassthrough("foo", "")),
 		),
 
 		//// IGNORE* features

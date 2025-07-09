@@ -33,6 +33,7 @@ Currently supported DNS providers:
 - DNSimple
 - Domainnameshop (Domeneshop)
 - Exoscale
+- Fortigate
 - Gandi
 - Gcore
 - Google DNS
@@ -134,14 +135,14 @@ See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-starte
   will upload your DNS records to multiple providers, which means you
   can test one while switching to another. We've switched providers 3
   times in three years and we've never lost a DNS record.
-- **Adopt CI/CD principles to DNS!**  At StackOverflow we maintain our
+- **Apply CI/CD principles to DNS!**  At StackOverflow we maintain our
   DNSControl configurations in Git and use our CI system to roll out
   changes.  Keeping DNS information in a VCS means we have full
   history.  Using CI enables us to include unit-tests and
   system-tests.  Remember when you forgot to include a "." at the end
   of an MX record?  We haven't had that problem since we included a
   test to make sure Tom doesn't make that mistake... again.
-- **Adopt PR-based updates.**  Allow developers to send updates as PRs,
+- **Adopt (GitOps) PR-based updates.**  Allow developers to send updates as PRs,
   which you can review before you approve.
 - **Variables save time!**  Assign an IP address to a constant and use the
   variable name throughout the file. Need to change the IP address
@@ -168,9 +169,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 ## Deprecation warnings (updated 2024-03-25)
 
 - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-- **MSDNS maintainer needed!** Without a new volunteer, this DNS provider will lose support after April 2025. See https://github.com/StackExchange/dnscontrol/issues/2878
 - **NAMEDOTCOM and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
-- **get-certs/ACME support is frozen and will be removed without notice between now and July 2025.** It has been unsupported since December 2022.  If you don't use this feature, do not start. If you do use this feature, migrate ASAP.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 
 ## More info at our website
 

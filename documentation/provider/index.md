@@ -25,6 +25,7 @@ Jump to a table:
 
 | Provider name | Official Support | DNS Provider | Registrar |
 | ------------- | ---------------- | ------------ | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
@@ -45,6 +46,7 @@ Jump to a table:
 | [`DYNADOT`](dynadot.md) | ❌ | ❌ | ✅ |
 | [`EASYNAME`](easyname.md) | ❌ | ❌ | ✅ |
 | [`EXOSCALE`](exoscale.md) | ❌ | ✅ | ❌ |
+| [`FORTIGATE`](fortigate.md) | ❌ | ✅ | ❌ |
 | [`GANDI_V5`](gandi_v5.md) | ❌ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
@@ -58,7 +60,6 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❌ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
-| [`MSDNS`](msdns.md) | ✅ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ✅ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ✅ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❌ | ✅ | ✅ |
@@ -84,6 +85,7 @@ Jump to a table:
 
 | Provider name | [Concurrency Verified](../advanced-features/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
@@ -103,6 +105,7 @@ Jump to a table:
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
@@ -116,7 +119,6 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`MSDNS`](msdns.md) | ❔ | ❌ | ❌ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
@@ -127,7 +129,7 @@ Jump to a table:
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ✅ |
 | [`OVH`](ovh.md) | ❔ | ✅ | ❌ | ✅ |
 | [`PACKETFRAME`](packetframe.md) | ❔ | ❌ | ❌ | ❔ |
-| [`PORKBUN`](porkbun.md) | ❔ | ❌ | ❌ | ✅ |
+| [`PORKBUN`](porkbun.md) | ✅ | ❌ | ❌ | ✅ |
 | [`POWERDNS`](powerdns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`REALTIMEREGISTER`](realtimeregister.md) | ❔ | ❌ | ✅ | ✅ |
 | [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ | ✅ |
@@ -142,6 +144,7 @@ Jump to a table:
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
+| [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ❔ | ✅ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
@@ -158,6 +161,7 @@ Jump to a table:
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
@@ -170,7 +174,6 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ❔ | ✅ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`MSDNS`](msdns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
@@ -223,7 +226,6 @@ Jump to a table:
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ✅ | ❔ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
-| [`MSDNS`](msdns.md) | ❔ | ✅ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ❔ | ✅ | ❔ |
@@ -277,7 +279,6 @@ Jump to a table:
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`MSDNS`](msdns.md) | ❌ | ❔ | ❔ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
 | [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ |
@@ -347,7 +348,6 @@ Providers in this category and their maintainers are:
 |[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](cscglobal.md)|@mikenz|
 |[`GCLOUD`](gcloud.md)|@riyadhalnur|
-|[`MSDNS`](msdns.md)|@tlimoncelli|
 |[`ROUTE53`](route53.md)|@tresni|
 
 ### Providers with "contributor support"
