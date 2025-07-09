@@ -22,7 +22,7 @@ Take advantage of the advanced features. Use macros and variables for easier upd
 * Runs on Linux, Windows, Mac, or any operating system supported by Go.
 * Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.
 * [Assign an IP address to a constant](getting-started/examples.md#variables-for-common-ip-addresses) and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile".
-* Keep similar domains in sync with transforms, [macros](getting-started/examples.md#macro-to-for-repeated-records), and variables.
+* Keep similar domains in sync with transforms, [macros](getting-started/examples.md#macro-for-repeated-records), and variables.
 {% endhint %}
 
 # Get Involved

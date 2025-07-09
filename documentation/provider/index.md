@@ -12,11 +12,20 @@ a provider that supports it, we'd love your contribution to ensure it works corr
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
 
 <!-- provider-matrix-start -->
+Jump to a table:
+
+- [Provider Type](#provider-type)
+- [Provider API](#provider-api)
+- [DNS extensions](#dns-extensions)
+- [Service discovery](#service-discovery)
+- [Security](#security)
+- [DNSSEC](#dnssec)
 
 ### Provider Type <!--(table 1/6)-->
 
 | Provider name | Official Support | DNS Provider | Registrar |
 | ------------- | ---------------- | ------------ | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
@@ -37,6 +46,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`DYNADOT`](dynadot.md) | ❌ | ❌ | ✅ |
 | [`EASYNAME`](easyname.md) | ❌ | ❌ | ✅ |
 | [`EXOSCALE`](exoscale.md) | ❌ | ✅ | ❌ |
+| [`FORTIGATE`](fortigate.md) | ❌ | ✅ | ❌ |
 | [`GANDI_V5`](gandi_v5.md) | ❌ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
@@ -76,6 +86,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 | Provider name | [Concurrency Verified](../advanced-features/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
+| [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
@@ -95,6 +106,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
@@ -109,7 +121,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`MSDNS`](msdns.md) | ❔ | ❌ | ❌ | ✅ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ✅ | ❌ | ✅ |
+| [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
 | [`NETCUP`](netcup.md) | ❔ | ❌ | ❌ | ❌ |
@@ -119,7 +131,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ✅ |
 | [`OVH`](ovh.md) | ❔ | ✅ | ❌ | ✅ |
 | [`PACKETFRAME`](packetframe.md) | ❔ | ❌ | ❌ | ❔ |
-| [`PORKBUN`](porkbun.md) | ❔ | ❌ | ❌ | ✅ |
+| [`PORKBUN`](porkbun.md) | ✅ | ❌ | ❌ | ✅ |
 | [`POWERDNS`](powerdns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`REALTIMEREGISTER`](realtimeregister.md) | ❔ | ❌ | ✅ | ✅ |
 | [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ | ✅ |
@@ -134,6 +146,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
+| [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ❔ | ✅ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
@@ -150,6 +163,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
@@ -432,6 +446,7 @@ code to support this provider, we'd be glad to help in any way.
 * [Plesk](https://github.com/StackExchange/dnscontrol/issues/2261) (#2261)
 * [Rackspace Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/2980) (#2980)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [Sav.com](https://github.com/StackExchange/dnscontrol/issues/3633) (#3633)
 * [Scaleway](https://github.com/StackExchange/dnscontrol/issues/3606) (#3606)
 * [Spaceship](https://github.com/StackExchange/dnscontrol/issues/3452) (#3452)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
@@ -440,7 +455,7 @@ code to support this provider, we'd be glad to help in any way.
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
-A: Following [the bug triage process](../advanced-features/bug-triage.md), the request
+A: Following [provider requests](../developer-info/provider-request.md), the request
 is closed once it is added to this list. If someone chooses to implement the
 provider, they re-open the issue.
 

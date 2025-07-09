@@ -1,3 +1,4 @@
+providers/adguardhome @ishanjain28
 providers/akamaiedgedns @edglynes
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
@@ -18,6 +19,7 @@ providers/domainnameshop @SimenBai
 providers/dynadot @e-im
 providers/easyname @tresni
 providers/exoscale @pierre-emmanuelJ
+providers/fortigate @KlettIT
 providers/gandiv5 @TomOnTime
 providers/gcloud @riyadhalnur
 providers/gcore @xddxdd

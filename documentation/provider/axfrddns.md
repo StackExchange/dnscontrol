@@ -6,7 +6,7 @@ IP-based authentication (ACLs).
 It is able to work with any standards-compliant
 authoritative DNS server. It has been tested with
 [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
-and [Yadifa](https://www.yadifa.eu/home).
+and [Yadifa](https://yadifa.eu/home.html).
 
 ## Configuration
 
