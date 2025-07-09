@@ -22,7 +22,7 @@ builds:
         goarch: "386"
     ldflags:
       - -linkmode=internal -s -w
-      - -X main.version={{ .Version }}
+      - -X github.com/StackExchange/dnscontrol/v4/pkg/version.version={{ .Version }}
 before:
   hooks:
     - go fmt ./...
