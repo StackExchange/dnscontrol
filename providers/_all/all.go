@@ -35,6 +35,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/huaweicloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/inwx"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/joker"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/loopia"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/luadns"
