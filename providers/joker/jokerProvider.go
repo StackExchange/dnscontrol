@@ -65,11 +65,11 @@ func init() {
 
 // jokerProvider is the handle for API calls.
 type jokerProvider struct {
-	apiURL    string
-	username  string
-	password  string
-	apiKey    string
-	authSID   string
+	apiURL     string
+	username   string
+	password   string
+	apiKey     string
+	authSID    string
 	httpClient *http.Client
 }
 
@@ -112,13 +112,13 @@ func (api *jokerProvider) EnsureZoneExists(domain string) error {
 		// Zone exists
 		return nil
 	}
-	
+
 	// Zone doesn't exist, but Joker automatically creates zones for domains you manage
 	// We'll create an empty zone by putting an empty zone file
 	params := url.Values{}
 	params.Set("domain", domain)
 	params.Set("zone", "# Empty zone file created by dnscontrol")
-	
+
 	_, _, err = api.makeRequest("dns-zone-put", params)
 	return err
 }
@@ -126,7 +126,7 @@ func (api *jokerProvider) EnsureZoneExists(domain string) error {
 // authenticate logs in to Joker DMAPI and stores the session ID.
 func (api *jokerProvider) authenticate() error {
 	data := url.Values{}
-	
+
 	if api.apiKey != "" {
 		data.Set("api-key", api.apiKey)
 	} else {
@@ -148,7 +148,7 @@ func (api *jokerProvider) authenticate() error {
 	// Parse the response headers and body
 	respStr := string(body)
 	headers, _ := api.parseResponse(respStr)
-	
+
 	if headers["Status-Code"] != "" && headers["Status-Code"] != "0" {
 		return fmt.Errorf("login failed: %s", headers["Status-Text"])
 	}
@@ -166,7 +166,7 @@ func (api *jokerProvider) authenticate() error {
 func (api *jokerProvider) parseResponse(response string) (map[string]string, string) {
 	headers := make(map[string]string)
 	lines := strings.Split(response, "\n")
-	
+
 	var bodyStart int
 	for i, line := range lines {
 		if line == "" {
@@ -180,12 +180,12 @@ func (api *jokerProvider) parseResponse(response string) (map[string]string, str
 			}
 		}
 	}
-	
+
 	body := ""
 	if bodyStart < len(lines) {
 		body = strings.Join(lines[bodyStart:], "\n")
 	}
-	
+
 	return headers, body
 }
 
@@ -208,7 +208,7 @@ func (api *jokerProvider) makeRequest(endpoint string, params url.Values) (map[s
 	}
 
 	headers, responseBody := api.parseResponse(string(body))
-	
+
 	if headers["Status-Code"] != "" && headers["Status-Code"] != "0" {
 		return nil, "", fmt.Errorf("API error: %s", headers["Status-Text"])
 	}
@@ -240,7 +240,7 @@ func (api *jokerProvider) GetZoneRecords(domain string, meta map[string]string) 
 // parseZoneRecords parses Joker zone format into RecordConfig format.
 func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Records, error) {
 	var records models.Records
-	
+
 	lines := strings.Split(strings.TrimSpace(zoneData), "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
@@ -255,9 +255,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 
 		label := parts[0]
 		recordType := parts[1]
-		priority := parts[2] 
+		priority := parts[2]
 		target := parts[3]
-		
+
 		// Default TTL if not specified in zone record
 		var ttl uint32 = 300
 		if len(parts) >= 5 {
@@ -272,9 +272,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 		}
 
 		rc := &models.RecordConfig{
-			TTL:  ttl,
+			TTL: ttl,
 		}
-		
+
 		// Set the label and domain correctly
 		rc.SetLabel(label, domain)
 
@@ -353,7 +353,7 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 				tag := parts[6]
 				value := strings.Join(parts[7:], " ")
 				value = strings.Trim(value, "\"")
-				
+
 				if flagsInt, err := strconv.ParseUint(flags, 10, 8); err == nil {
 					rc.CaaFlag = uint8(flagsInt)
 				}
@@ -436,7 +436,7 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 // updateZone replaces the entire zone with new records.
 func (api *jokerProvider) updateZone(domain string, records models.Records) error {
 	zoneData := api.recordsToZoneFormat(domain, records)
-	
+
 	params := url.Values{}
 	params.Set("domain", domain)
 	params.Set("zone", zoneData)
@@ -448,7 +448,7 @@ func (api *jokerProvider) updateZone(domain string, records models.Records) erro
 // recordsToZoneFormat converts RecordConfig records to Joker zone format.
 func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Records) string {
 	var lines []string
-	
+
 	for _, rc := range records {
 		label := rc.Name
 		if label == "" {
@@ -478,8 +478,8 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 			lines = append(lines, line)
 		case "NAPTR":
 			priority := fmt.Sprintf("%d/%d", rc.NaptrOrder, rc.NaptrPreference)
-			line := fmt.Sprintf("%s %s %s %s 0 0 \"%s\" \"%s\" \"%s\"", 
-				label, rc.Type, priority, rc.GetTargetField(), 
+			line := fmt.Sprintf("%s %s %s %s 0 0 \"%s\" \"%s\" \"%s\"",
+				label, rc.Type, priority, rc.GetTargetField(),
 				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 			lines = append(lines, line)
 		}
