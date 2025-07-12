@@ -237,6 +237,52 @@ func (api *jokerProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return records, nil
 }
 
+// parseZoneLine parses a zone file line while preserving quoted strings.
+func parseZoneLine(line string) []string {
+	var parts []string
+	var current strings.Builder
+	inQuotes := false
+	escaped := false
+
+	for _, r := range line {
+		if escaped {
+			current.WriteRune(r)
+			escaped = false
+			continue
+		}
+
+		if r == '\\' {
+			escaped = true
+			current.WriteRune(r)
+			continue
+		}
+
+		if r == '"' {
+			inQuotes = !inQuotes
+			current.WriteRune(r)
+			continue
+		}
+
+		if !inQuotes && (r == ' ' || r == '\t') {
+			// Skip multiple consecutive spaces
+			if current.Len() > 0 {
+				parts = append(parts, current.String())
+				current.Reset()
+			}
+			continue
+		}
+
+		current.WriteRune(r)
+	}
+
+	// Add the final part if any
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+
+	return parts
+}
+
 // parseZoneRecords parses Joker zone format into RecordConfig format.
 func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Records, error) {
 	var records models.Records
@@ -248,7 +294,8 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			continue
 		}
 
-		parts := strings.Fields(line)
+		// Parse the line while preserving quoted strings
+		parts := parseZoneLine(line)
 		if len(parts) < 4 {
 			continue
 		}
