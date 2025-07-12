@@ -330,5 +330,11 @@
     "TYPE": "VULTR",
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "JOKER": {
+    "TYPE": "JOKER",
+    "username": "$JOKER_USERNAME",
+    "password": "$JOKER_PASSWORD",
+    "domain": "$JOKER_DOMAIN"
   }
 }
