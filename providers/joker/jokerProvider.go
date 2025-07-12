@@ -457,30 +457,30 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 
 		switch rc.Type {
 		case "A", "AAAA":
-			line := fmt.Sprintf("%s %s 0 %s", label, rc.Type, rc.GetTargetField())
+			line := fmt.Sprintf("%s %s 0 %s %d", label, rc.Type, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "CNAME":
-			line := fmt.Sprintf("%s %s 0 %s", label, rc.Type, rc.GetTargetField())
+			line := fmt.Sprintf("%s %s 0 %s %d", label, rc.Type, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "MX":
-			line := fmt.Sprintf("%s %s %d %s", label, rc.Type, rc.MxPreference, rc.GetTargetField())
+			line := fmt.Sprintf("%s %s %d %s %d", label, rc.Type, rc.MxPreference, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "TXT":
-			line := fmt.Sprintf("%s %s 0 \"%s\"", label, rc.Type, rc.GetTargetField())
+			line := fmt.Sprintf("%s %s 0 \"%s\" %d", label, rc.Type, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "SRV":
 			target := fmt.Sprintf("%s:%d", rc.GetTargetField(), rc.SrvPort)
 			priority := fmt.Sprintf("%d/%d", rc.SrvPriority, rc.SrvWeight)
-			line := fmt.Sprintf("%s %s %s %s", label, rc.Type, priority, target)
+			line := fmt.Sprintf("%s %s %s %s %d", label, rc.Type, priority, target, rc.TTL)
 			lines = append(lines, line)
 		case "CAA":
-			line := fmt.Sprintf("%s %s %d %s \"%s\"", label, rc.Type, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
+			line := fmt.Sprintf("%s %s %d %s \"%s\" %d", label, rc.Type, rc.CaaFlag, rc.CaaTag, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "NAPTR":
 			priority := fmt.Sprintf("%d/%d", rc.NaptrOrder, rc.NaptrPreference)
-			line := fmt.Sprintf("%s %s %s %s 0 0 \"%s\" \"%s\" \"%s\"",
+			line := fmt.Sprintf("%s %s %s %s 0 0 \"%s\" \"%s\" \"%s\" %d",
 				label, rc.Type, priority, rc.GetTargetField(),
-				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
+				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.TTL)
 			lines = append(lines, line)
 		}
 	}
