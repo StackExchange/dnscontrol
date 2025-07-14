@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/vault/api v1.20.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/miekg/dns v1.1.67
-	github.com/mittwald/go-powerdns v0.6.6
+	github.com/mittwald/go-powerdns v0.6.7
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.11.0
 	github.com/ovh/go-ovh v1.9.0
@@ -53,7 +53,7 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/oauth2 v0.30.0
-	google.golang.org/api v0.240.0
+	google.golang.org/api v0.241.0
 	gopkg.in/ns1/ns1-go.v2 v2.14.4
 )
 
@@ -69,8 +69,8 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.157
-	github.com/juju/errors v1.0.0
 	github.com/kylelemons/godebug v1.1.0
+	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/oracle/oci-go-sdk/v65 v65.95.1
 	github.com/vultr/govultr/v2 v2.17.2
