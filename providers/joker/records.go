@@ -293,7 +293,7 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corrections = append(corrections, &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					return api.updateZone(dc.Name, dc.Records)
+					return api.updateZoneRecords(dc.Name, dc.Records)
 				},
 			})
 			// Only add one correction for zone update since we replace the entire zone
@@ -304,8 +304,8 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	return corrections, actualChangeCount, nil
 }
 
-// updateZone replaces the entire zone with new records.
-func (api *jokerProvider) updateZone(domain string, records models.Records) error {
+// updateZoneRecords replaces the entire zone with new records.
+func (api *jokerProvider) updateZoneRecords(domain string, records models.Records) error {
 	zoneData := api.recordsToZoneFormat(domain, records)
 	
 	params := url.Values{}
