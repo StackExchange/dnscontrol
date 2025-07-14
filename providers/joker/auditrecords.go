@@ -12,36 +12,24 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	var errs []error
 
+	// Supported record types
+	supported := map[string]bool{
+		"A":     true,
+		"AAAA":  true,
+		"CAA":   true,
+		"CNAME": true,
+		"MX":    true,
+		"NAPTR": true,
+		"NS":    true,
+		"SRV":   true,
+		"TXT":   true,
+	}
+
 	for _, rc := range records {
-		if rc.Type == "ALIAS" {
-			errs = append(errs, fmt.Errorf("joker does not support ALIAS records"))
-		}
-		if rc.Type == "DS" {
-			errs = append(errs, fmt.Errorf("joker does not support DS records"))
-		}
-		if rc.Type == "DNSKEY" {
-			errs = append(errs, fmt.Errorf("joker does not support DNSKEY records"))
-		}
-		if rc.Type == "HTTPS" {
-			errs = append(errs, fmt.Errorf("joker does not support HTTPS records"))
-		}
-		if rc.Type == "LOC" {
-			errs = append(errs, fmt.Errorf("joker does not support LOC records"))
-		}
-		if rc.Type == "PTR" {
-			errs = append(errs, fmt.Errorf("joker does not support PTR records"))
-		}
-		if rc.Type == "SOA" {
-			errs = append(errs, fmt.Errorf("joker does not support SOA records"))
-		}
-		if rc.Type == "SSHFP" {
-			errs = append(errs, fmt.Errorf("joker does not support SSHFP records"))
-		}
-		if rc.Type == "SVCB" {
-			errs = append(errs, fmt.Errorf("joker does not support SVCB records"))
-		}
-		if rc.Type == "TLSA" {
-			errs = append(errs, fmt.Errorf("joker does not support TLSA records"))
+		// Check if record type is supported
+		if !supported[rc.Type] {
+			errs = append(errs, fmt.Errorf("joker does not support %s records", rc.Type))
+			continue
 		}
 
 		// Check TTL minimum - NAPTR and SVC records can have TTL=0, others need >= 300
@@ -51,17 +39,10 @@ func AuditRecords(records []*models.RecordConfig) []error {
 			}
 		}
 
-		// Validate MX records
-		if rc.Type == "MX" {
-			if rc.MxPreference == 0 {
-				errs = append(errs, fmt.Errorf("MX records must have a preference value"))
-			}
-		}
-
 		// Validate SRV records
 		if rc.Type == "SRV" {
 			if rc.SrvPort == 0 {
-				errs = append(errs, fmt.Errorf("SRV records must have a port"))
+				errs = append(errs, fmt.Errorf("SRV records must have a non-zero port"))
 			}
 			if rc.GetTargetField() == "" {
 				errs = append(errs, fmt.Errorf("SRV records must have a target"))
