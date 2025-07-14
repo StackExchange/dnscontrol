@@ -278,30 +278,25 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	var corrections []*models.Correction
-
-	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
+	result, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	for _, change := range changes {
-		switch change.Type {
-		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-		case diff2.CREATE, diff2.CHANGE, diff2.DELETE:
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F: func() error {
-					return api.updateZoneRecords(dc.Name, dc.Records)
-				},
-			})
-			// Only add one correction for zone update since we replace the entire zone
-			break
-		}
+	if !result.HasChanges {
+		return []*models.Correction{}, result.ActualChangeCount, nil
 	}
 
-	return corrections, actualChangeCount, nil
+	msg := fmt.Sprintf("Zone update for %s\n%s", dc.Name, strings.Join(result.Msgs, "\n"))
+
+	correction := &models.Correction{
+		Msg: msg,
+		F: func() error {
+			return api.updateZoneRecords(dc.Name, dc.Records)
+		},
+	}
+
+	return []*models.Correction{correction}, result.ActualChangeCount, nil
 }
 
 // updateZoneRecords replaces the entire zone with new records.
