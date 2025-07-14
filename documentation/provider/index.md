@@ -57,6 +57,7 @@ Jump to a table:
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
 | [`INTERNETBS`](internetbs.md) | ❌ | ❌ | ✅ |
 | [`INWX`](inwx.md) | ❌ | ✅ | ✅ |
+| [`JOKER`](joker.md) | ❌ | ✅ | ❌ |
 | [`LINODE`](linode.md) | ❌ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
@@ -116,6 +117,7 @@ Jump to a table:
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
 | [`INTERNETBS`](internetbs.md) | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
+| [`JOKER`](joker.md) | ❌ | ❌ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
@@ -171,6 +173,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
+| [`JOKER`](joker.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ❔ | ✅ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
@@ -224,6 +227,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
+| [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ✅ | ❔ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
@@ -276,6 +280,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❌ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
+| [`JOKER`](joker.md) | ✅ | ❌ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
@@ -318,6 +323,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
+| [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ❔ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
