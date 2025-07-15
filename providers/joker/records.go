@@ -105,6 +105,8 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			quoteEnd := strings.LastIndex(line, "\"")
 			if quoteStart != -1 && quoteEnd != -1 && quoteEnd > quoteStart {
 				target = line[quoteStart+1 : quoteEnd]
+				// Unescape any escaped quotes in the target
+				target = strings.ReplaceAll(target, "\\\"", "\"")
 				// Parse TTL from the end if present
 				afterQuote := strings.TrimSpace(line[quoteEnd+1:])
 				if afterQuote != "" {
