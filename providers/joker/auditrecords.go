@@ -35,7 +35,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 		// Check TTL minimum - NAPTR and SVC records can have TTL=0, others need >= 300
 		if rc.TTL != 0 && rc.TTL < 300 {
 			if rc.Type != "NAPTR" && rc.Type != "SVC" {
-				errs = append(errs, fmt.Errorf("joker requires TTL to be 300 or higher (except NAPTR and SVC which can be 0)"))
+				rc.TTL = 300
 			}
 		}
 
