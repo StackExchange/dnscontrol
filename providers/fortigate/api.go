@@ -107,6 +107,7 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 		if err != nil {
 			return err
 		}
+		fmt.Printf("[DEBUG] %s %s\nPayload:\n%s\n", method, u, string(b))
 		rdr = bytes.NewReader(b)
 	}
 

@@ -57,12 +57,22 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 		if n.CanonicalName == "" {
 			return nil, fmt.Errorf("CNAME record without canonical-name (id=%d)", n.ID)
 		}
-		if err := rc.SetTarget(ensureDot(n.CanonicalName)); err != nil {
+		if err := rc.SetTarget(n.CanonicalName); err != nil {
+			return nil, err
+		}
+	
+	case "NS":
+		if n.Hostname == "" {
+			return nil, fmt.Errorf("NS record missing hostname (id=%d)", n.ID)
+		}
+		 
+		rc.SetLabel("@", domain)
+		if err := rc.SetTarget(n.Hostname); err != nil {
 			return nil, err
 		}
 
 	default:
-		// NS and PTR are not supported due to FortiGate limitations
+		// PTR is currently not supported due to FortiGate limitations
 		return nil, fmt.Errorf("record type %q is not supported by fortigate provider", rc.Type)
 	}
 
@@ -124,11 +134,19 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 			n.IPv6 = ip.String()
 
 		case "CNAME":
-			target := strings.TrimSuffix(record.GetTargetField(), ".")
+			target := record.GetTargetField()
 			if ascii, err := idna.ToASCII(target); err == nil {
 				target = ascii
 			}
 			n.CanonicalName = target
+
+		case "NS":
+			target := record.GetTargetField()
+			if ascii, err := idna.ToASCII(target); err == nil {
+				target = ascii
+			}
+			n.Hostname = target
+			n.CanonicalName = ""
 
 		default:
 			errors = append(errors, fmt.Errorf("record type %q is not supported by FortiGate provider: %s", n.Type, record.GetLabelFQDN()))

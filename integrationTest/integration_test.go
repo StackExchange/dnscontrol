@@ -399,6 +399,16 @@ func makeTests() []*TestGroup {
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**.")),
 		),
 
+		testgroup("NS only APEX",
+			not(
+				"DNSIMPLE",  // Does not support NS records nor subdomains.
+				"EXOSCALE",  // Not supported.
+				"NETCUP",    // NS records not currently supported.
+			),
+			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
+			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
+		),
+
 		//// TXT tests
 
 		// Narrative: TXT records are weird. It's just text, right?  Sadly
