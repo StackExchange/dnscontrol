@@ -278,8 +278,23 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 	return records, nil
 }
 
+// fixTTLs enforces minimum TTL requirements for Joker provider.
+// NAPTR and SVC records can have TTL=0, others need >= 300.
+func fixTTLs(records models.Records) {
+	for _, rc := range records {
+		if rc.TTL != 0 && rc.TTL < 300 {
+			if rc.Type != "NAPTR" && rc.Type != "SVC" {
+				rc.TTL = 300
+			}
+		}
+	}
+}
+
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	// Apply TTL fixes to desired records before comparison
+	fixTTLs(dc.Records)
+	
 	result, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err

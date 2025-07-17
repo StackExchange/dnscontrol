@@ -32,12 +32,6 @@ func AuditRecords(records []*models.RecordConfig) []error {
 			continue
 		}
 
-		// Check TTL minimum - NAPTR and SVC records can have TTL=0, others need >= 300
-		if rc.TTL != 0 && rc.TTL < 300 {
-			if rc.Type != "NAPTR" && rc.Type != "SVC" {
-				rc.TTL = 300
-			}
-		}
 
 		// Validate SRV records
 		if rc.Type == "SRV" {
