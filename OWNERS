@@ -1,3 +1,4 @@
+providers/adguardhome @ishanjain28
 providers/akamaiedgedns @edglynes
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
@@ -32,7 +33,6 @@ providers/inwx @patschi
 providers/linode @koesie10
 providers/loopia @systemcrash
 providers/luadns @riku22
-providers/msdns @tlimoncelli
 providers/mythicbeasts @tomfitzhenry
 providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER

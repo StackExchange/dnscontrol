@@ -1,4 +1,11 @@
 {
+  "ADGUARDHOME": {
+    "TYPE": "ADGUARDHOME",
+    "domain": "$ADGUARDHOME_DOMAIN",
+    "host": "$ADGUARDHOME_HOST",
+    "password": "$ADGUARDHOME_PASSWORD",
+    "username": "$ADGUARDHOME_USERNAME"
+  },
   "AKAMAIEDGEDNS": {
     "TYPE": "AKAMAIEDGEDNS",
     "access_token": "$AED_ACCESS_TOKEN",
@@ -130,11 +137,11 @@
   },
   "FORTIGATE": {
     "TYPE": "FORTIGATE",
-    "domain": "$FORTIGATE_DOMAIN",
     "apiKey": "$FORTIGATE_API_KEY",
-    "vdom": "$FORTIGATE_VDOM",
+    "domain": "$FORTIGATE_DOMAIN",
     "host": "$FORTIGATE_HOST",
-    "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY"
+    "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY",
+    "vdom": "$FORTIGATE_VDOM"
   },
   "GANDI_V5": {
     "TYPE": "GANDI_V5",
@@ -212,12 +219,6 @@
     "apikey": "$LUADNS_APIKEY",
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
-  },
-  "MSDNS": {
-    "TYPE": "MSDNS",
-    "dnsserver": "$MSDNS_DNSSERVER",
-    "domain": "$MSDNS_DOMAIN",
-    "pssession": "$MSDNS_PSSESSION"
   },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
