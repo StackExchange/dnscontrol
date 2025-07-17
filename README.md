@@ -42,6 +42,7 @@ Currently supported DNS providers:
 - hosting.de
 - Huawei Cloud DNS
 - Hurricane Electric DNS
+- Infomaniak
 - INWX
 - Linode
 - Loopia
