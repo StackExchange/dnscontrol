@@ -2,6 +2,12 @@
 
 This DNS provider lets you manage DNS zones hosted on a Fortinet FortiGate device via its REST API.
 
+
+## Supported Features
+
+- `dnscontrol get-zones` is supported. Lists all DNS zones configured on the FortiGate device.
+- Supported record types: `A`, `AAAA`, `CNAME`, `NS`, `MX`
+
 ## Configuration
 
 The provider is configured using the following environment variables or entries in `creds.json`:
@@ -26,6 +32,45 @@ Example `creds.json` entry:
 }
 ```
 
+## Metadata
+
+### Domain Metadata
+
+The following domain-level metadata keys are supported. These affect zone-level properties:
+
+| Key            | Type    | Description                                                                 |
+|----------------|---------|-----------------------------------------------------------------------------|
+| `authoritative`| string  | Set to `"false"` to disable authoritative mode. Defaults to `"true"`.      |
+| `forwarder`    | string  | Optional. IPv4 address to set as a forwarder for the zone.                  |
+
+#### Example:
+
+```javascript
+D("example.com", REG_NONE, DnsProvider("FORTIGATE"),
+  A("@", "192.0.2.1"),
+  {
+    metadata: {
+      authoritative: "false",
+      forwarder: "8.8.8.8"
+    }
+  }
+)
+```
+
+If `forwarder` is provided, it must be a valid IPv4 address. An error will be raised otherwise.
+
+### Record Metadata
+
+| Key               | Type   | Applies to | Description                                       |
+|-------------------|--------|------------|---------------------------------------------------|
+| `fortigate_status`| string | All records | Set to `"disable"` to mark a record as disabled.  |
+
+#### Example:
+
+```javascript
+A("test", "192.0.2.123", { metadata: { fortigate_status: "disable" } })
+```
+
 ## Usage
 
 To use this provider in a `dnsconfig.js`:
@@ -39,18 +84,30 @@ D("example.com", REG_NONE, DnsProvider("FORTIGATE"),
 )
 ```
 
-### Record Status (Enable/Disable)
+## Activation
 
-FortiGate supports disabling DNS records (setting them as `status: disable`).  
-This provider maps that setting to record metadata in dnscontrol.
+To enable DNS API access for DNSControl, a FortiGate admin user with an appropriate access profile must be created. This user should have `read-write` access to the system group to manage DNS zones and records.
 
-To disable a record, set the following metadata key:
+### Step-by-step (via CLI)
 
-```javascript
-A("disabledhost", "192.0.2.123", { metadata: { fortigate_status: "disable" } })
+Log in to the FortiGate CLI (via SSH or console), then run:
+
+```bash
+config global
+config system accprofile
+edit "DNSControl"
+    set sysgrp read-write
+next
+end
 ```
 
-✅ Supported record types: `A`, `AAAA`, `CNAME`, `NS`, `MX`
+This creates an admin profile named DNSControl with sufficient permissions to read and write DNS configuration.
+
+### Assigning the profile to an API user
+
+After creating the profile, create an admin user via CLI or GUI and assign the DNSControl profile to it. Then, generate an API token for this user.
+Refer to Fortinet’s documentation on [How to configure REST API access](https://docs.fortinet.com/document/fortigate/7.6.3/administration-guide/399023/rest-api-administrator) for more details.
+Once you have the token, use it in your `creds.json` as shown above.
 
 ## Caveats
 

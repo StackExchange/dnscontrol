@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"net"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -146,9 +147,9 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 			resourceRecords = []*fgDNSRecord{}
 		}
 
-		payload := map[string]any{
-			"forwarder": nil,
-			"dns-entry": resourceRecords,
+		payload, err := buildZonePayload(dc, resourceRecords)
+		if err != nil {
+			return nil, 0, err
 		}
 
 		corrections = append(corrections,
@@ -204,4 +205,32 @@ func (p *fortigateProvider) ListZones() ([]string, error) {
 		zones[i] = z.Name
 	}
 	return zones, nil
+}
+
+// Helper
+
+func buildZonePayload(dc *models.DomainConfig, resourceRecords []*fgDNSRecord) (map[string]any, error) {
+	payload := map[string]any{
+		"dns-entry": resourceRecords,
+	}
+
+	// default values
+	payload["forwarder"] = nil
+	payload["authoritative"] = "enable"
+
+	if v, ok := dc.Metadata["forwarder"]; ok {
+		ip := net.ParseIP(v)
+		if ip == nil || ip.To4() == nil {
+			return nil, fmt.Errorf("[FORTIGATE] Invalid forwarder IP: %q", v)
+		}
+		payload["forwarder"] = []string{v}
+	}
+
+	if v, ok := dc.Metadata["authoritative"]; ok {
+		if strings.ToLower(v) == "false" {
+			payload["authoritative"] = "disable"
+		}
+	}
+
+	return payload, nil
 }
