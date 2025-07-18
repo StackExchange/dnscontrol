@@ -20,11 +20,11 @@ import (
 //
 //	https://<host>/api/v2/cmdb/<path>?vdom=<vdom>&datasource=1
 type apiClient struct {
-	base string       // e.g. "https://fw.example.com/api/v2/cmdb/"
-	vdom string       // target VDOM
-	key  string       // API token (Bearer)
-	debug bool		  // Debug Mode
-	http *http.Client // configured HTTP client
+	base  string       // e.g. "https://fw.example.com/api/v2/cmdb/"
+	vdom  string       // target VDOM
+	key   string       // API token (Bearer)
+	debug bool         // Debug Mode
+	http  *http.Client // configured HTTP client
 }
 
 // fgDNSRecord represents a single entry inside the FortiGate dns-entry array.
@@ -61,9 +61,9 @@ func newClient(host, vdom, key string, insecure bool, debug bool) *apiClient {
 		},
 	}
 	return &apiClient{
-		base: strings.TrimRight(host, "/") + "/api/v2/cmdb/",
-		vdom: vdom,
-		key:  key,
+		base:  strings.TrimRight(host, "/") + "/api/v2/cmdb/",
+		vdom:  vdom,
+		key:   key,
 		debug: debug,
 		http: &http.Client{
 			Transport: tr,
@@ -141,7 +141,6 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 		return err
 	}
 	defer resp.Body.Close()
-
 
 	//
 	// Read response body (once)

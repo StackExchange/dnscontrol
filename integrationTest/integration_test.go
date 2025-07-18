@@ -403,9 +403,9 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
-				"DNSIMPLE",  // Does not support NS records nor subdomains.
-				"EXOSCALE",  // Not supported.
-				"NETCUP",    // NS records not currently supported.
+				"DNSIMPLE", // Does not support NS records nor subdomains.
+				"EXOSCALE", // Not supported.
+				"NETCUP",   // NS records not currently supported.
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),

@@ -30,14 +30,14 @@ func AuditRecords(records []*models.RecordConfig) []error {
 		}
 
 		//Handle NS Records limitations
-		if rc.Type == "NS" &&  rc.GetLabel() != "@" &&  rc.GetLabel() != "" {
+		if rc.Type == "NS" && rc.GetLabel() != "@" && rc.GetLabel() != "" {
 			problems = append(problems,
 				fmt.Errorf("NS records are only supported at the zone apex (@): %s", rc.GetLabelFQDN()))
 		}
 
 		//Handle MX Records limitations
 		if rc.Type == "MX" {
-			
+
 			// MX only supported at zone apex
 			if rc.GetLabel() != "@" && rc.GetLabel() != "" {
 				problems = append(problems,

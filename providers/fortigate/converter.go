@@ -60,12 +60,12 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 		if err := rc.SetTarget(n.CanonicalName); err != nil {
 			return nil, err
 		}
-	
+
 	case "NS":
 		if n.Hostname == "" {
 			return nil, fmt.Errorf("[FORTIGATE] NS record missing hostname (id=%d)", n.ID)
 		}
-		 
+
 		rc.SetLabel("@", domain)
 		if err := rc.SetTarget(n.Hostname); err != nil {
 			return nil, err
@@ -75,14 +75,13 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 		if n.Hostname == "" {
 			return nil, fmt.Errorf("[FORTIGATE] MX record missing hostname (id=%d)", n.ID)
 		}
-		 
+
 		rc.SetLabel("@", domain)
 		rc.MxPreference = n.Preference
 
 		if err := rc.SetTarget(n.Hostname); err != nil {
 			return nil, err
 		}
-
 
 	default:
 		// Not supported due to FortiGate limitations
