@@ -71,8 +71,21 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 			return nil, err
 		}
 
+	case "MX":
+		if n.Hostname == "" {
+			return nil, fmt.Errorf("MX record missing hostname (id=%d)", n.ID)
+		}
+		 
+		rc.SetLabel("@", domain)
+		rc.MxPreference = n.Preference
+
+		if err := rc.SetTarget(n.Hostname); err != nil {
+			return nil, err
+		}
+
+
 	default:
-		// PTR is currently not supported due to FortiGate limitations
+		// Not supported due to FortiGate limitations
 		return nil, fmt.Errorf("record type %q is not supported by fortigate provider", rc.Type)
 	}
 
@@ -148,6 +161,15 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 			n.Hostname = target
 			n.CanonicalName = ""
 
+		case "MX":
+			target := record.GetTargetField()
+			if ascii, err := idna.ToASCII(target); err == nil {
+				target = ascii
+			}
+			n.Hostname = target
+			n.Preference = record.MxPreference
+			n.CanonicalName = ""
+
 		default:
 			errors = append(errors, fmt.Errorf("record type %q is not supported by FortiGate provider: %s", n.Type, record.GetLabelFQDN()))
 			continue
@@ -160,12 +182,4 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 	}
 
 	return resourceRecords, errors
-}
-
-// ensureDot – make sure an FQDN ends with a trailing dot
-func ensureDot(fqdn string) string {
-	if fqdn == "" || strings.HasSuffix(fqdn, ".") {
-		return fqdn
-	}
-	return fqdn + "."
 }
