@@ -42,28 +42,50 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 	case "A":
 		ip := net.ParseIP(n.IP)
 		if ip == nil || ip.To4() == nil {
-			return nil, fmt.Errorf("invalid IPv4 address %q in %+v", n.IP, n)
+			return nil, fmt.Errorf("[FORTIGATE] Invalid IPv4 address %q in %+v", n.IP, n)
 		}
 		rc.SetTargetIP(ip)
 
 	case "AAAA":
 		ip := net.ParseIP(n.IPv6)
 		if ip == nil || ip.To16() == nil || ip.To4() != nil {
-			return nil, fmt.Errorf("invalid IPv6 address %q in %+v", n.IPv6, n)
+			return nil, fmt.Errorf("[FORTIGATE] Invalid IPv6 address %q in %+v", n.IPv6, n)
 		}
 		rc.SetTargetIP(ip)
 
 	case "CNAME":
 		if n.CanonicalName == "" {
-			return nil, fmt.Errorf("CNAME record without canonical-name (id=%d)", n.ID)
+			return nil, fmt.Errorf("[FORTIGATE] CNAME record without canonical-name (id=%d)", n.ID)
 		}
-		if err := rc.SetTarget(ensureDot(n.CanonicalName)); err != nil {
+		if err := rc.SetTarget(n.CanonicalName); err != nil {
+			return nil, err
+		}
+
+	case "NS":
+		if n.Hostname == "" {
+			return nil, fmt.Errorf("[FORTIGATE] NS record missing hostname (id=%d)", n.ID)
+		}
+
+		rc.SetLabel("@", domain)
+		if err := rc.SetTarget(n.Hostname); err != nil {
+			return nil, err
+		}
+
+	case "MX":
+		if n.Hostname == "" {
+			return nil, fmt.Errorf("[FORTIGATE] MX record missing hostname (id=%d)", n.ID)
+		}
+
+		rc.SetLabel("@", domain)
+		rc.MxPreference = n.Preference
+
+		if err := rc.SetTarget(n.Hostname); err != nil {
 			return nil, err
 		}
 
 	default:
-		// NS and PTR are not supported due to FortiGate limitations
-		return nil, fmt.Errorf("record type %q is not supported by fortigate provider", rc.Type)
+		// Not supported due to FortiGate limitations
+		return nil, fmt.Errorf("[FORTIGATE] Record type %q is not supported by fortigate provider", rc.Type)
 	}
 
 	return rc, nil
@@ -89,7 +111,7 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 
 		// Wildcard support
 		if strings.Contains(record.GetLabelFQDN(), "*") {
-			errors = append(errors, fmt.Errorf("wildcard records are not supported by FortiGate: %s", record.GetLabelFQDN()))
+			errors = append(errors, fmt.Errorf("[FORTIGATE] Wildcard records are not supported: %s", record.GetLabelFQDN()))
 			continue
 		}
 
@@ -110,7 +132,7 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 		case "A":
 			ip := record.GetTargetIP()
 			if ip == nil || ip.To4() == nil {
-				errors = append(errors, fmt.Errorf("a record is missing a valid IPv4 address: %s", record.GetLabelFQDN()))
+				errors = append(errors, fmt.Errorf("[FORTIGATE] A record is missing a valid IPv4 address: %s", record.GetLabelFQDN()))
 				continue
 			}
 			n.IP = ip.String()
@@ -118,20 +140,37 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 		case "AAAA":
 			ip := record.GetTargetIP()
 			if ip == nil || ip.To16() == nil || ip.To4() != nil {
-				errors = append(errors, fmt.Errorf("AAAA record is missing a valid IPv6 address: %s", record.GetLabelFQDN()))
+				errors = append(errors, fmt.Errorf("[FORTIGATE] AAAA record is missing a valid IPv6 address: %s", record.GetLabelFQDN()))
 				continue
 			}
 			n.IPv6 = ip.String()
 
 		case "CNAME":
-			target := strings.TrimSuffix(record.GetTargetField(), ".")
+			target := record.GetTargetField()
 			if ascii, err := idna.ToASCII(target); err == nil {
 				target = ascii
 			}
 			n.CanonicalName = target
 
+		case "NS":
+			target := record.GetTargetField()
+			if ascii, err := idna.ToASCII(target); err == nil {
+				target = ascii
+			}
+			n.Hostname = target
+			n.CanonicalName = ""
+
+		case "MX":
+			target := record.GetTargetField()
+			if ascii, err := idna.ToASCII(target); err == nil {
+				target = ascii
+			}
+			n.Hostname = target
+			n.Preference = record.MxPreference
+			n.CanonicalName = ""
+
 		default:
-			errors = append(errors, fmt.Errorf("record type %q is not supported by FortiGate provider: %s", n.Type, record.GetLabelFQDN()))
+			errors = append(errors, fmt.Errorf("[FORTIGATE] Record type %q is not supported: %s", n.Type, record.GetLabelFQDN()))
 			continue
 		}
 
@@ -142,12 +181,4 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 	}
 
 	return resourceRecords, errors
-}
-
-// ensureDot – make sure an FQDN ends with a trailing dot
-func ensureDot(fqdn string) string {
-	if fqdn == "" || strings.HasSuffix(fqdn, ".") {
-		return fqdn
-	}
-	return fqdn + "."
 }
