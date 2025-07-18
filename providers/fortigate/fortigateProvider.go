@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -60,10 +61,11 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 		missing = append(missing, "apiKey")
 	}
 	if len(missing) > 0 {
-		return nil, errors.New("Fortigate provider: missing required field(s): " + strings.Join(missing, ", "))
+		return nil, errors.New("[FORTIGATE] Missing required field(s): " + strings.Join(missing, ", "))
 	}
 
 	insecure := strings.EqualFold(m["insecure_tls"], "true")
+	debug := strings.EqualFold(m["debug_http"], "true")
 
 	p := &fortigateProvider{
 		host:     host,
@@ -71,7 +73,7 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 		apiKey:   apiKey,
 		insecure: insecure,
 	}
-	p.client = newClient(host, vdom, apiKey, insecure)
+	p.client = newClient(host, vdom, apiKey, insecure, debug)
 	return p, nil
 }
 
@@ -96,7 +98,7 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 			// Zone does not exist yet – return empty record list
 			return records, nil
 		}
-		return nil, fmt.Errorf("fortigate: fetching zone %q failed: %w", domain, err)
+		return nil, fmt.Errorf("[FORTIGATE] Fetching zone %q failed: %w", domain, err)
 	}
 
 	if len(resp.Results) == 0 {
@@ -120,7 +122,7 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 
 func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
-	domain := dc.Name
+	domain := strings.TrimSuffix(dc.Name, ".")
 
 	var corrections []*models.Correction
 
@@ -132,22 +134,22 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	msgs, changed, actualChangeCount := result.Msgs, result.HasChanges, result.ActualChangeCount
 
 	if changed {
-		msgs = append(msgs, "Zone update for "+domain)
+		msgs = append(msgs, "[FORTIGATE] Zone update for "+domain)
 		msg := strings.Join(msgs, "\n")
 
 		resourceRecords, errs := recordsToNative(result.DesiredPlus)
 
 		if len(errs) > 0 {
-			return nil, 0, fmt.Errorf("failed to convert records: %v", errs)
+			return nil, 0, fmt.Errorf("[FORTIGATE] Failed to convert records: %v", errs)
 		}
 
 		if resourceRecords == nil {
 			resourceRecords = []*fgDNSRecord{}
 		}
 
-		payload := map[string]any{
-			"forwarder": nil,
-			"dns-entry": resourceRecords,
+		payload, err := buildZonePayload(dc, resourceRecords)
+		if err != nil {
+			return nil, 0, err
 		}
 
 		corrections = append(corrections,
@@ -188,7 +190,7 @@ func (p *fortigateProvider) EnsureZoneExists(domain string) error {
 // Misc DNSControl Plumbing
 
 func (p *fortigateProvider) GetNameservers(string) ([]*models.Nameserver, error) {
-	return nil, nil // FortiGate is authoritative only internally
+	return []*models.Nameserver{}, nil // FortiGate is authoritative only internally
 }
 
 func (p *fortigateProvider) ListZones() ([]string, error) {
@@ -203,4 +205,32 @@ func (p *fortigateProvider) ListZones() ([]string, error) {
 		zones[i] = z.Name
 	}
 	return zones, nil
+}
+
+// Helper
+
+func buildZonePayload(dc *models.DomainConfig, resourceRecords []*fgDNSRecord) (map[string]any, error) {
+	payload := map[string]any{
+		"dns-entry": resourceRecords,
+	}
+
+	// default values
+	payload["forwarder"] = nil
+	payload["authoritative"] = "enable"
+
+	if v, ok := dc.Metadata["forwarder"]; ok {
+		ip := net.ParseIP(v)
+		if ip == nil || ip.To4() == nil {
+			return nil, fmt.Errorf("[FORTIGATE] Invalid forwarder IP: %q", v)
+		}
+		payload["forwarder"] = []string{v}
+	}
+
+	if v, ok := dc.Metadata["authoritative"]; ok {
+		if strings.ToLower(v) == "false" {
+			payload["authoritative"] = "disable"
+		}
+	}
+
+	return payload, nil
 }

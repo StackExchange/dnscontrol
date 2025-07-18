@@ -53,10 +53,10 @@ type powerdnsProvider struct {
 	APIKey         string
 	APIUrl         string
 	ServerName     string
-	DefaultNS      []string       `json:"default_ns"`
-	DNSSecOnCreate bool           `json:"dnssec_on_create"`
-	ZoneKind       zones.ZoneKind `json:"zone_kind"`
-	SOAEditAPI     string         `json:"soa_edit_api,omitempty"`
+	DefaultNS      []string             `json:"default_ns"`
+	DNSSecOnCreate bool                 `json:"dnssec_on_create"`
+	ZoneKind       zones.ZoneKind       `json:"zone_kind"`
+	SOAEditAPI     zones.ZoneSOAEditAPI `json:"soa_edit_api,omitempty"`
 
 	nameservers []*models.Nameserver
 }
