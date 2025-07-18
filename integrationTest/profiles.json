@@ -141,7 +141,8 @@
     "domain": "$FORTIGATE_DOMAIN",
     "host": "$FORTIGATE_HOST",
     "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY",
-    "vdom": "$FORTIGATE_VDOM"
+    "vdom": "$FORTIGATE_VDOM",
+    "debug_http": "$FORTIGATE_DEBUG_HTTP"
   },
   "GANDI_V5": {
     "TYPE": "GANDI_V5",

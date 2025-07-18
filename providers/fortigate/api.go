@@ -23,6 +23,7 @@ type apiClient struct {
 	base string       // e.g. "https://fw.example.com/api/v2/cmdb/"
 	vdom string       // target VDOM
 	key  string       // API token (Bearer)
+	debug bool		  // Debug Mode
 	http *http.Client // configured HTTP client
 }
 
@@ -52,7 +53,7 @@ type fgDNSRecord struct {
 //	vdom     – VDOM (tenant) to operate on
 //	key      – REST API token (System ▸ Administrators ▸ REST API Admin)
 //	insecure – true = skip TLS certificate verification (self‑signed, etc.)
-func newClient(host, vdom, key string, insecure bool) *apiClient {
+func newClient(host, vdom, key string, insecure bool, debug bool) *apiClient {
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
@@ -63,6 +64,7 @@ func newClient(host, vdom, key string, insecure bool) *apiClient {
 		base: strings.TrimRight(host, "/") + "/api/v2/cmdb/",
 		vdom: vdom,
 		key:  key,
+		debug: debug,
 		http: &http.Client{
 			Transport: tr,
 			Timeout:   20 * time.Second,
@@ -108,6 +110,13 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 			return err
 		}
 		rdr = bytes.NewReader(b)
+
+		if c.debug {
+			fmt.Printf("[FORTIGATE] [DEBUG] %s %s\nPayload:\n%s\n", method, u, string(b))
+		}
+
+	} else if c.debug {
+		fmt.Printf("[FORTIGATE] [DEBUG] %s %s\n", method, u)
 	}
 
 	//
@@ -133,21 +142,31 @@ func (c *apiClient) do(method, path string, qs url.Values, body any, out any) er
 	}
 	defer resp.Body.Close()
 
+
+	//
+	// Read response body (once)
+	//
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("[FORTIGATE] Failed to read response: %w", err)
+	}
+
 	//
 	// Handle non‑success status codes
 	//
 	if resp.StatusCode >= 300 {
-		// Read a small chunk to include in the error message
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<10))
-		return fmt.Errorf("fortigate: %s %s → %s: %s", method, path, resp.Status, strings.TrimSpace(string(b)))
+		return fmt.Errorf("[FORTIGATE] %s %s → %s: %s", method, path, resp.Status, strings.TrimSpace(string(respBytes)))
 	}
 
 	//
 	// Optionally decode JSON response
 	//
 	if out != nil {
-		if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
-			return fmt.Errorf("fortigate: decode: %w", err)
+		if err := json.Unmarshal(respBytes, out); err != nil {
+			return fmt.Errorf("[FORTIGATE] Failed to decode json: %w", err)
+		}
+		if c.debug {
+			fmt.Printf("[FORTIGATE] [DEBUG] Response:\n%s\n", prettyJSON(respBytes))
 		}
 	}
 	return nil
@@ -164,4 +183,13 @@ func isNotFound(err error) bool {
 	}
 	msg := err.Error()
 	return strings.Contains(msg, "404") && strings.Contains(strings.ToLower(msg), "not found")
+}
+
+func prettyJSON(b []byte) string {
+	var out bytes.Buffer
+	err := json.Indent(&out, b, "", "  ")
+	if err != nil {
+		return string(b) // Fallback: raw JSON
+	}
+	return out.String()
 }

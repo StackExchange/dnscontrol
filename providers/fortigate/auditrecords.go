@@ -37,6 +37,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 		//Handle MX Records limitations
 		if rc.Type == "MX" {
+			
 			// MX only supported at zone apex
 			if rc.GetLabel() != "@" && rc.GetLabel() != "" {
 				problems = append(problems,
