@@ -121,7 +121,7 @@ func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string
 
 func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 
-	domain := dc.Name
+	domain := strings.TrimSuffix(dc.Name, ".")
 
 	var corrections []*models.Correction
 
@@ -189,7 +189,7 @@ func (p *fortigateProvider) EnsureZoneExists(domain string) error {
 // Misc DNSControl Plumbing
 
 func (p *fortigateProvider) GetNameservers(string) ([]*models.Nameserver, error) {
-	return nil, nil // FortiGate is authoritative only internally
+	return []*models.Nameserver{}, nil // FortiGate is authoritative only internally
 }
 
 func (p *fortigateProvider) ListZones() ([]string, error) {
