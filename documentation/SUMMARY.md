@@ -106,6 +106,7 @@
 ## Provider
 
 * [Supported providers](provider/index.md)
+* [AdGuard Home](provider/adguardhome.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
