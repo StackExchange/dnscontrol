@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -69,11 +70,15 @@ var nameServerSuffixes = []string{
 	".dnsimple-edge.com.",
 }
 
+var onceFetchAccountId sync.Once
+
 // dnsimpleProvider is the handle for this provider.
 type dnsimpleProvider struct {
 	AccountToken string // The account access token
 	BaseURL      string // An alternate base URI
-	accountID    string // Account id cache
+
+	// This is protected under onceFetchAccountId so that this is fully safe concurrently.
+	accountID string // Account id cache
 }
 
 // GetNameservers returns the name servers for a domain.
@@ -299,16 +304,22 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 }
 
 func (c *dnsimpleProvider) getAccountID() (string, error) {
-	if c.accountID == "" {
+	var onceErr error
+	onceFetchAccountId.Do(func() {
 		client := c.getClient()
 		whoamiResponse, err := client.Identity.Whoami(context.Background())
 		if err != nil {
-			return "", err
+			onceErr = err
+			return
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", errors.New("DNSimple token appears to be a user token. Please supply an account token")
+			onceErr = errors.New("DNSimple token appears to be a user token. Please supply an account token")
+			return
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
+	})
+	if onceErr != nil {
+		return "", onceErr
 	}
 	return c.accountID, nil
 }
