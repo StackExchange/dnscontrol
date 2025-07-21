@@ -372,6 +372,7 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
+|[`ADGUARDHOME`](adguardhome.md)|@ishanjain28|
 |[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
 |[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|
