@@ -99,7 +99,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ❔ | ❌ | ❌ | ✅ |
+| [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
