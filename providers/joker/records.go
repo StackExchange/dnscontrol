@@ -105,8 +105,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			quoteEnd := strings.LastIndex(line, "\"")
 			if quoteStart != -1 && quoteEnd != -1 && quoteEnd > quoteStart {
 				target = line[quoteStart+1 : quoteEnd]
-				// Unescape any escaped quotes in the target
+				// Properly handle escaped characters
 				target = strings.ReplaceAll(target, "\\\"", "\"")
+				target = strings.ReplaceAll(target, "\\\\", "\\")
 				// Parse TTL from the end if present
 				afterQuote := strings.TrimSpace(line[quoteEnd+1:])
 				if afterQuote != "" {
@@ -221,10 +222,10 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 		case "CAA":
 			rc.Type = recordType
 			// CAA format: flags tag "value"
-			if len(parts) >= 7 {
-				flags := parts[2]
-				tag := parts[6]
-				value := strings.Join(parts[7:], " ")
+			if len(parts) >= 5 {
+				flags := priority // priority field contains flags for CAA
+				tag := parts[3]   // target field contains tag for CAA
+				value := strings.Join(parts[4:], " ")
 				value = strings.Trim(value, "\"")
 
 				if flagsInt, err := strconv.ParseUint(flags, 10, 8); err == nil {
@@ -237,7 +238,7 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			}
 		case "NAPTR":
 			rc.Type = recordType
-			// NAPTR format: order/preference replacement flags service regex
+			// NAPTR format: order/preference flags service regex replacement
 			if len(parts) >= 8 {
 				if strings.Contains(priority, "/") {
 					priorityParts := strings.Split(priority, "/")
@@ -250,21 +251,23 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 						}
 					}
 				}
+				// Parse flags, service, and regex from correct positions
+				if len(parts) > 4 {
+					rc.NaptrFlags = strings.Trim(parts[4], "\"")
+				}
+				if len(parts) > 5 {
+					rc.NaptrService = strings.Trim(parts[5], "\"")
+				}
+				if len(parts) > 6 {
+					rc.NaptrRegexp = strings.Trim(parts[6], "\"")
+				}
+				// Replacement is in the target field
 				// Ensure NAPTR targets are fully qualified if they're not empty or "."
 				if target != "" && target != "." && !strings.HasSuffix(target, ".") {
 					target = target + "."
 				}
 				if err := rc.SetTarget(target); err != nil {
 					continue
-				}
-				if len(parts) > 7 {
-					rc.NaptrFlags = strings.Trim(parts[6], "\"")
-				}
-				if len(parts) > 8 {
-					rc.NaptrService = strings.Trim(parts[7], "\"")
-				}
-				if len(parts) > 9 {
-					rc.NaptrRegexp = strings.Trim(parts[8], "\"")
 				}
 			}
 		default:
@@ -353,8 +356,10 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 			line := fmt.Sprintf("%s %s %d %s %d", label, rc.Type, rc.MxPreference, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "TXT":
-			// Escape quotes in TXT content
-			content := strings.ReplaceAll(rc.GetTargetField(), "\"", "\\\"")
+			// Properly escape content for TXT records
+			content := rc.GetTargetField()
+			content = strings.ReplaceAll(content, "\\", "\\\\")
+			content = strings.ReplaceAll(content, "\"", "\\\"")
 			line := fmt.Sprintf("%s %s 0 \"%s\" %d", label, rc.Type, content, rc.TTL)
 			lines = append(lines, line)
 		case "SRV":
@@ -367,9 +372,9 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 			lines = append(lines, line)
 		case "NAPTR":
 			priority := fmt.Sprintf("%d/%d", rc.NaptrOrder, rc.NaptrPreference)
-			line := fmt.Sprintf("%s %s %s %s %d 0 0 \"%s\" \"%s\" \"%s\"",
-				label, rc.Type, priority, rc.GetTargetField(), rc.TTL,
-				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
+			line := fmt.Sprintf("%s %s %s %s \"%s\" \"%s\" \"%s\" %d",
+				label, rc.Type, priority, rc.GetTargetField(),
+				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.TTL)
 			lines = append(lines, line)
 		}
 	}

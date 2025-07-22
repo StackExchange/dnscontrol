@@ -115,12 +115,12 @@ func (api *jokerProvider) makeRequest(endpoint string, params url.Values) (map[s
 				
 				headers2, responseBody2 := api.parseResponse(string(body2))
 				if headers2["Status-Code"] != "" && headers2["Status-Code"] != "0" {
-					return nil, "", fmt.Errorf("API error after re-auth: %s", headers2["Status-Text"])
+					return nil, "", fmt.Errorf("API error after re-auth: %s (Status-Code: %s)", headers2["Status-Text"], headers2["Status-Code"])
 				}
 				return headers2, responseBody2, nil
 			}
 		}
-		return nil, "", fmt.Errorf("API error: %s", statusText)
+		return nil, "", fmt.Errorf("API error: %s (Status-Code: %s)", statusText, headers["Status-Code"])
 	}
 
 	return headers, responseBody, nil
