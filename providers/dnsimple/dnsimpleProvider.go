@@ -70,12 +70,16 @@ var nameServerSuffixes = []string{
 	".dnsimple-edge.com.",
 }
 
-var onceFetchAccountId sync.Once
-
 // dnsimpleProvider is the handle for this provider.
 type dnsimpleProvider struct {
 	AccountToken string // The account access token
 	BaseURL      string // An alternate base URI
+
+	// We can have multiple _distinct_ versions of this struct, authenticated to
+	// different accounts, so _each_ version needs to be initialized just once.
+	// Note that sync.Once contains a reference to sync.noCopy so this will cause
+	// `go vet` to catch attempts to copy this outer provider struct.
+	onceFetchAccountId sync.Once
 
 	// This is protected under onceFetchAccountId so that this is fully safe concurrently.
 	accountID string // Account id cache
@@ -305,7 +309,7 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 
 func (c *dnsimpleProvider) getAccountID() (string, error) {
 	var onceErr error
-	onceFetchAccountId.Do(func() {
+	c.onceFetchAccountId.Do(func() {
 		client := c.getClient()
 		whoamiResponse, err := client.Identity.Whoami(context.Background())
 		if err != nil {
