@@ -34,3 +34,22 @@ An account ID determined on the first query?
 That probably needs to be protected, even if every fetch returns the same data.
 
 The `-race` build is a helpful hint but is not a guarantee.
+
+#### Multiple Providers
+
+Most simple use-cases likely use just one copy of a given provider, managing
+zones in an account.  But there can be multiple _distinct_ copies, each for
+different accounts.  Someone might use this while migrating accounts, for
+instance.  You might have two fields in `creds.json` both with a `TYPE` of
+your provider.
+
+The uses of the provider objects should never create copies; each is created
+by a constructor, but thereafter is a singleton per constructed provider.
+Thus it is safe to have synchronization objects inside the provider struct.
+
+See, for example, the `dnsimple` provider, where there is a `sync.Once` _per
+object_, not at a global level, so that the `.accountID` can be fetched just
+once per configured provider.  Because `sync.Once` contains a reference to
+`sync.noCopy`, the `go vet` command will catch attempts to copy that object,
+and so will catch attempts to copy the containing `dnsimpleProvider` object.
+
