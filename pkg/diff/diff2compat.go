@@ -38,16 +38,16 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (reportM
 		return nil, nil, nil, nil, 0, err
 	}
 
-	if len(dc.EnsureAbsent) != 0 {
+	if len(d.dc.EnsureAbsent) != 0 {
 		reportMsgs = append(reportMsgs, "WARNING: This provider does not reliably support ENSURE_ABSENT")
 	}
-	if dc.KeepUknown {
+	if d.dc.KeepUknown {
 		reportMsgs = append(reportMsgs, "WARNING: This provider does not reliably support NO_PURGE")
 	}
-	if len(dc.UnmanagedConfig) != 0 {
+	if len(d.dc.UnmanagedConfig) != 0 {
 		reportMsgs = append(reportMsgs, "WARNING: This provider does not reliably support IGNORE() and friends")
 	}
-	if dc.UnmanagedUnsafe {
+	if d.dc.UnmanagedUnsafe {
 		reportMsgs = append(reportMsgs, "WARNING: This provider does not reliably support DISABLE_IGNORE_SAFETY_CHECK")
 	}
 

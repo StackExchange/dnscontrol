@@ -1812,9 +1812,7 @@ function DKIM_BUILDER(value) {
     }
 
     r = []; // The list of records to return.
-    r.push(
-        TXT(value.label, kvs.join('\; '), DKIM_TTL)
-    );
+    r.push(TXT(value.label, kvs.join('\; '), DKIM_TTL));
     return r;
 }
 
