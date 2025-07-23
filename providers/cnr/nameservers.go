@@ -66,11 +66,16 @@ func (n *Client) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Cor
 	if err != nil {
 		return nil, err
 	}
-	foundNameservers := strings.Join(nss, ",")
+	foundLower := make([]string, len(nss))
+	for i, ns := range nss {
+		foundLower[i] = strings.ToLower(ns)
+	}
+	sort.Strings(foundLower)
+	foundNameservers := strings.Join(foundLower, ",")
 
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
-		name := strings.TrimRight(ns.Name, ".")
+		name := strings.ToLower(strings.TrimRight(ns.Name, "."))
 		expected = append(expected, name)
 	}
 	sort.Strings(expected)
