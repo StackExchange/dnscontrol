@@ -70,7 +70,13 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
 	DNSProviderTypes[name] = fns
-	unwrapProviderCapabilities(name, pm)
+	pm = append(pm, Can())
+
+	var features = DocumentationNotes{
+		CanDiff2: Can(),
+	}
+
+	unwrapProviderCapabilities(name, append(pm, features))
 }
 
 var ProviderMaintainers = map[string]string{}

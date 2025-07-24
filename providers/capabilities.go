@@ -25,6 +25,10 @@ const (
 	// work when used concurrently.  The default is Cannot().
 	CanConcur
 
+	// CanDiff2 indicates the diff2 engine is used.  Without this capability,
+	// IGNORE() and other features simply do not work.
+	CanDiff2
+
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 
