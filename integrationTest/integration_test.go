@@ -403,9 +403,13 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
-				"DNSIMPLE", // Does not support NS records nor subdomains.
-				"EXOSCALE", // Not supported.
-				"NETCUP",   // NS records not currently supported.
+				"DNSIMPLE",    // Does not support NS records nor subdomains.
+				"EXOSCALE",    // Not supported.
+				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
+				"NAMEDOTCOM",  // "Ignores @ for NS records"
+				"NETCUP",      // NS records not currently supported.
+				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
+				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
