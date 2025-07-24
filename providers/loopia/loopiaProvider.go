@@ -56,14 +56,18 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Cannot(), // Verified 2025-07-24
+	providers.CanUseDNSKEY:           providers.Cannot(), // Verified 2025-07-24
 	providers.CanUseDS:               providers.Cannot("Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end."),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseHTTPS:            providers.Cannot(), // Verified 2025-07-24
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot("💩"),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseSVCB:             providers.Cannot(), // Verified 2025-07-24
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocDualHost:            providers.Can(),

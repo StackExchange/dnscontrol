@@ -224,7 +224,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
-| [`LOOPIA`](loopia.md) | ❔ | ✅ | ✅ | ❔ |
+| [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
@@ -277,7 +277,7 @@ Jump to a table:
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❌ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
-| [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
+| [`LOOPIA`](loopia.md) | ✅ | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
@@ -318,7 +318,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
-| [`LOOPIA`](loopia.md) | ❌ | ❔ | ❌ |
+| [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ❔ | ❌ |

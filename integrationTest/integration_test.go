@@ -440,7 +440,7 @@ func makeTests() []*TestGroup {
 
 			// Some of these test cases are commented out because they test
 			// something that isn't widely used or supported.  For example
-			// many APIs don't support a backslack (`\`) in a TXT record;
+			// many APIs don't support a backslash (`\`) in a TXT record;
 			// luckily we've never seen a need for that "in the wild".  If
 			// you want to future-proof your provider, temporarily remove
 			// the comments and get those tests working, or reject it using

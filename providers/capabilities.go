@@ -147,7 +147,7 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 }
 
 // Can is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Can(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature: true,
@@ -157,7 +157,7 @@ func Can(comments ...string) *DocumentationNote {
 }
 
 // Cannot is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Cannot(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature: false,
@@ -167,7 +167,7 @@ func Cannot(comments ...string) *DocumentationNote {
 }
 
 // Unimplemented is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Unimplemented(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature:    false,
