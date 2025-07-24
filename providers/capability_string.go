@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[CanAutoDNSSEC-0]
 	_ = x[CanConcur-1]
-	_ = x[CanDiff2-2]
+	_ = x[CanDiff2Features-2]
 	_ = x[CanGetZones-3]
 	_ = x[CanUseAKAMAICDN-4]
 	_ = x[CanUseAlias-5]
@@ -36,9 +36,9 @@ func _() {
 	_ = x[DocOfficiallySupported-25]
 }
 
-const _Capability_name = "CanAutoDNSSECCanConcurCanDiff2CanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYDocCreateDomainsDocDualHostDocOfficiallySupported"
+const _Capability_name = "CanAutoDNSSECCanConcurCanDiff2FeaturesCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYDocCreateDomainsDocDualHostDocOfficiallySupported"
 
-var _Capability_index = [...]uint16{0, 13, 22, 30, 41, 56, 67, 83, 92, 103, 114, 122, 141, 152, 161, 172, 181, 199, 208, 217, 228, 238, 248, 260, 276, 287, 309}
+var _Capability_index = [...]uint16{0, 13, 22, 38, 49, 64, 75, 91, 100, 111, 122, 130, 149, 160, 169, 180, 189, 207, 216, 225, 236, 246, 256, 268, 284, 295, 317}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {

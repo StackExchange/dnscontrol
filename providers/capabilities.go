@@ -25,9 +25,15 @@ const (
 	// work when used concurrently.  The default is Cannot().
 	CanConcur
 
-	// CanDiff2 indicates the diff2 engine is used.  Without this capability,
-	// IGNORE() and other features simply do not work.
-	CanDiff2
+	// CanDiff2Features indicates the provider uses the "diff2" engine natively
+	// instead of the backwards compatibility mode.
+	// The diff2 engine is required to repliably provide IGNORE(), NO_PURGE, and
+	// other features.
+	// This capability is set automatically for the provider during the call to
+	// RegisterDomainServiceProviderType.  It is set to Cannot() if we detect
+	// compatibility mode is in use. All other values (Unimplemented and Can)
+	// are equivalent.
+	CanDiff2Features
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
