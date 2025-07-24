@@ -134,16 +134,23 @@ like [git-crypt](https://www.agwa.name/projects/git-crypt) or
 
 There are 2 types of providers:
 
-A "Registrar" is with whom you register the domain.  Start with
+* A "Registrar" is with whom you register the domain.  Start with
 `NONE`, which is a provider that never talks to or updates the
 registrar.  You can define your registrar later when you want to
 use advanced features.
 
-A "DnsProvider" is the service that actually provides DNS service
+* A "DnsProvider" is the service that actually provides DNS service
 (port 53) and may be the same or a different registrar. Even if both
 your Registrar and DnsProvider are the same company, two different
 definitions must be included in `dnsconfig.js`.
 
+{% hint style="warning" %}
+**WARNING:** Here's a point that confuses many new DNSControl users.  Even if a
+provider is both a "registrar" and a DNS Provider", it still needs to be
+defined twice.  For example, if you use NAMEDOTCOM as both your registrar and
+DNS provider, you'll define a `REG_NAMEDOTCOM` and `DNS_NAMEDOTCOM`. However it
+only needs to be defined in `creds.json` once.
+{% endhint %}
 
 ## 4. Create the initial `creds.json`
 
