@@ -197,6 +197,34 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 ```
 {% endcode %}
 
+## TXT message warning
+
+Users of DNSControl point out that the Cloudflare portal often pops up this warning:
+
+> The content field of TXT records must be in quotation marks. Cloudflare
+> may add quotation marks on your behalf, which will not affect how the record works.
+
+Ignore this message. It is invalid for users that update TXT records via the Cloudflare API (i.e. how DNSControl does updates).
+
+What the warning really means is that the Cloudflare web portal may add quotes when DISPLAYING the TXT record.
+
+If you take the message literally and add quotes to your TXT record in
+`dnsconfig.js`, the error will go away but then you actually have quotes in you
+TXT data. That's probably not what you want!
+
+    TXT("demo", "I see stupid warnings"),              // This is correct (but you'll get a warning)
+    TXT("demo", "\"I took the warning literally\""),   // This is wrong (but the warning will go away!)
+
+For example, when you are setting up (for example) a TXT-based verification record:
+
+    TXT("demo", "vendor-verification=d65a9994-9091-4ceb-b792-61f123404050"),
+        // The TXT data will be: vendor-verification=d65a9994-9091-4ceb-b792-61f123404050
+    TXT("demo", "\"vendor-verification=d65a9994-9091-4ceb-b792-61f123404050\""),
+        // The TXT data will be: "vendor-verification=d65a9994-9091-4ceb-b792-61f123404050"
+        // (yes, the data will include the quotation marks!)
+        // This is wrong, broken, and your vendor verification will fail.
+        // However you can be smug in your knowledge that you don't see a warning.
+
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
