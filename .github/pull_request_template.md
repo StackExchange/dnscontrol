@@ -3,7 +3,7 @@
 
 Please make sure you've run the following commands from the root directory.
 
-    bin/generate.sh
+    bin/generate-all.sh
 
 (this runs commands like "go generate", fixes formatting, and so on)
 
