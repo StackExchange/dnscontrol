@@ -3,10 +3,9 @@
 
 Please make sure you've run the following commands from the root directory.
 
-go vet ./...
-go fmt ./...
-go generate ./...
-go mod tidy
+    bin/generate.sh
+
+(this runs commands like "go generate", fixes formatting, and so on)
 
 ## Release changelog section
 
