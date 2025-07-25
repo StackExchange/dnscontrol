@@ -206,6 +206,9 @@ title: DNSControl
                 <li>
                     <a href="https://docs.dnscontrol.org/developer-info/ordering">DNS reordering</a>: How DNSControl determines the order of the changes
                 </li>
+                <li>
+                    <a href="https://docs.dnscontrol.org/developer-info/test-a-branch">Test a branch</a>: Instructions for testing DNSControl at a particular PR or branch
+                </li>
             </ul>
         </div>
     </div>
