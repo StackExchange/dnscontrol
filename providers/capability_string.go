@@ -11,33 +11,34 @@ func _() {
 	_ = x[CanAutoDNSSEC-0]
 	_ = x[CanConcur-1]
 	_ = x[CanGetZones-2]
-	_ = x[CanUseAKAMAICDN-3]
-	_ = x[CanUseAlias-4]
-	_ = x[CanUseAzureAlias-5]
-	_ = x[CanUseCAA-6]
-	_ = x[CanUseDHCID-7]
-	_ = x[CanUseDNAME-8]
-	_ = x[CanUseDS-9]
-	_ = x[CanUseDSForChildren-10]
-	_ = x[CanUseHTTPS-11]
-	_ = x[CanUseLOC-12]
-	_ = x[CanUseNAPTR-13]
-	_ = x[CanUsePTR-14]
-	_ = x[CanUseRoute53Alias-15]
-	_ = x[CanUseSOA-16]
-	_ = x[CanUseSRV-17]
-	_ = x[CanUseSSHFP-18]
-	_ = x[CanUseSVCB-19]
-	_ = x[CanUseTLSA-20]
-	_ = x[CanUseDNSKEY-21]
-	_ = x[DocCreateDomains-22]
-	_ = x[DocDualHost-23]
-	_ = x[DocOfficiallySupported-24]
+	_ = x[CanOnlyDiff1Features-3]
+	_ = x[CanUseAKAMAICDN-4]
+	_ = x[CanUseAlias-5]
+	_ = x[CanUseAzureAlias-6]
+	_ = x[CanUseCAA-7]
+	_ = x[CanUseDHCID-8]
+	_ = x[CanUseDNAME-9]
+	_ = x[CanUseDS-10]
+	_ = x[CanUseDSForChildren-11]
+	_ = x[CanUseHTTPS-12]
+	_ = x[CanUseLOC-13]
+	_ = x[CanUseNAPTR-14]
+	_ = x[CanUsePTR-15]
+	_ = x[CanUseRoute53Alias-16]
+	_ = x[CanUseSOA-17]
+	_ = x[CanUseSRV-18]
+	_ = x[CanUseSSHFP-19]
+	_ = x[CanUseSVCB-20]
+	_ = x[CanUseTLSA-21]
+	_ = x[CanUseDNSKEY-22]
+	_ = x[DocCreateDomains-23]
+	_ = x[DocDualHost-24]
+	_ = x[DocOfficiallySupported-25]
 }
 
-const _Capability_name = "CanAutoDNSSECCanConcurCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYDocCreateDomainsDocDualHostDocOfficiallySupported"
+const _Capability_name = "CanAutoDNSSECCanConcurCanGetZonesCanOnlyDiff1FeaturesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYDocCreateDomainsDocDualHostDocOfficiallySupported"
 
-var _Capability_index = [...]uint16{0, 13, 22, 33, 48, 59, 75, 84, 95, 106, 114, 133, 144, 153, 164, 173, 191, 200, 209, 220, 230, 240, 252, 268, 279, 301}
+var _Capability_index = [...]uint16{0, 13, 22, 33, 53, 68, 79, 95, 104, 115, 126, 134, 153, 164, 173, 184, 193, 211, 220, 229, 240, 250, 260, 272, 288, 299, 321}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {

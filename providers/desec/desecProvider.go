@@ -35,12 +35,13 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDNSKEY:           providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),

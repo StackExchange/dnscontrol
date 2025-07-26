@@ -50,8 +50,9 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
