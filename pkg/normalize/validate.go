@@ -36,7 +36,7 @@ func checkTarget(target string) error {
 		return nil
 	}
 	if target == "" {
-		return errors.New("empty target")
+		return errors.New("empty target (\"\"). Did you mean \"@\" instead?")
 	}
 	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
@@ -113,7 +113,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 		return nil
 	}
 	if label == "" {
-		return fmt.Errorf("empty %s label in %s", rType, domain)
+		return fmt.Errorf("empty %s label (\"\") in %s. Did you mean \"@\" instead?", rType, domain)
 	}
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
