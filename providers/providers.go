@@ -71,11 +71,7 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 	}
 	DNSProviderTypes[name] = fns
 
-	var features = DocumentationNotes{
-		CanDiff2Features: Cannot(),
-	}
-
-	unwrapProviderCapabilities(name, append(pm, features))
+	unwrapProviderCapabilities(name, pm)
 }
 
 var ProviderMaintainers = map[string]string{}

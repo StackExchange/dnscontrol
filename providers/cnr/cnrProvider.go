@@ -27,6 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Ask for this feature."),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),

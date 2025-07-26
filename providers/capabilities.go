@@ -25,18 +25,18 @@ const (
 	// work when used concurrently.  The default is Cannot().
 	CanConcur
 
-	// CanDiff2Features indicates the provider uses the "diff2" engine natively
-	// instead of the backwards compatibility mode.
-	// The diff2 engine is required to repliably provide IGNORE(), NO_PURGE, and
-	// other features.
-	// This capability is set automatically for the provider during the call to
-	// RegisterDomainServiceProviderType.  It is set to Cannot() if we detect
-	// compatibility mode is in use. All other values (Unimplemented and Can)
-	// are equivalent.
-	CanDiff2Features
-
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
+
+	// CanOnlyDiff1Features indicates the provider has not yet been upgraded to
+	// use the "diff2" differencing engine.  Instead, it uses the the backwards
+	// compatibility mode.  The diff2 engine is required to repliably provide
+	// IGNORE(), NO_PURGE, and other features.
+	// This capability is set automatically for the provider during the call to
+	// RegisterDomainServiceProviderType.  It is set to Can() if we detect
+	// compatibility mode is in use. All other values (Unimplemented and Cannot)
+	// are equivalent.
+	CanOnlyDiff1Features
 
 	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
 	CanUseAKAMAICDN
