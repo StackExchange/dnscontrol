@@ -104,7 +104,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "populate-on-preview",
 		Destination: &args.PopulateOnPreview,
-		Value:       true,
+		Value:       false,
 		Usage:       `Auto-create zones on preview`,
 	})
 	flags = append(flags, &cli.BoolFlag{
