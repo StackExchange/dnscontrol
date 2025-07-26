@@ -236,9 +236,9 @@ previously exist.
 +{% hint style="warn" %}
 +**Nervous?**  The first "push" can be nervous-making. How to migrate a zone
 safely?  It's best to loop through iterations of `preview` and editing
-`dnsconfig.js` until no "changes" are listed.  Once you see the preview is
-clean (or at least making the changes you desire), doing a `push` is relatively
-safe.  (Though, like any tool, backups are recommended.)
+`dnsconfig.js` until no changes are listed, or at least no unexpected changes.
+Once you see the preview is clean (or at least making the changes you desire),
+doing a `push` is safe.  (Though, as with any tool, backups are recommended.)
 +{% endhint %}
 
 ```shell
