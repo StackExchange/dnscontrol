@@ -75,7 +75,6 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
