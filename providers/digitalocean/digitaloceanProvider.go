@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/digitalocean/godo"
 	"github.com/miekg/dns/dnsutil"
@@ -180,65 +180,63 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]s
 func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	ctx := context.Background()
 
-	toReport, toCreate, toDelete, toModify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+
+	instructions, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
 
-	// Deletes first so changing type works etc.
-	for _, m := range toDelete {
-		id := m.Existing.Original.(*godo.DomainRecord).ID
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
-			F: func() error {
-			retry:
-				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
-				if err != nil {
-					if pauseAndRetry(resp) {
-						goto retry
+	addCorrection := func(msg string, f func() (*godo.Response, error)) {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+				retry:
+					resp, err := f()
+					if err != nil {
+						if pauseAndRetry(resp) {
+							goto retry
+						}
 					}
-				}
-				return err
-			},
-		}
-		corrections = append(corrections, corr)
+					return err
+				},
+			})
 	}
-	for _, m := range toCreate {
-		req := toReq(m.Desired)
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-			retry:
+
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.REPORT:
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: inst.MsgsJoined,
+				})
+			continue
+
+		case diff2.CREATE:
+			req := toReq(inst.New[0])
+			addCorrection(inst.MsgsJoined, func() (*godo.Response, error) {
 				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
-				if err != nil {
-					if pauseAndRetry(resp) {
-						goto retry
-					}
-				}
-				return err
-			},
-		}
-		corrections = append(corrections, corr)
-	}
-	for _, m := range toModify {
-		id := m.Existing.Original.(*godo.DomainRecord).ID
-		req := toReq(m.Desired)
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
-			F: func() error {
-			retry:
+				return resp, err
+			})
+
+		case diff2.CHANGE:
+			id := inst.Old[0].Original.(*godo.DomainRecord).ID
+			req := toReq(inst.New[0])
+			addCorrection(inst.MsgsJoined, func() (*godo.Response, error) {
 				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
-				if err != nil {
-					if pauseAndRetry(resp) {
-						goto retry
-					}
-				}
-				return err
-			},
+				return resp, err
+			})
+
+		case diff2.DELETE:
+			id := inst.Old[0].Original.(*godo.DomainRecord).ID
+			addCorrection(inst.MsgsJoined, func() (*godo.Response, error) {
+				return api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+			})
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
-		corrections = append(corrections, corr)
 	}
 
 	return corrections, actualChangeCount, nil
