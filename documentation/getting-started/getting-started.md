@@ -233,13 +233,13 @@ Next, run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
-+{% hint style="warn" %}
-+**Nervous?**  The first "push" can be nervous-making. How to migrate a zone
+{% hint style="warn" %}
+**Nervous?**  The first "push" can be nervous-making. How to migrate a zone
 safely?  It's best to loop through iterations of `preview` and editing
-`dnsconfig.js` until no changes are listed, or at least no unexpected changes.
+`dnsconfig.js` until no changes are listed.
 Once you see the preview is clean (or at least making the changes you desire),
-doing a `push` is safe.  (Though, as with any tool, backups are recommended.)
-+{% endhint %}
+doing a `push` is safe.  (Though, as with any tool, backups are recommended. Even a screenshot of your DNS provider's web portal is better than nothing!)
+{% endhint %}
 
 ```shell
 dnscontrol push
