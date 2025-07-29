@@ -47,10 +47,11 @@ D("otherexample.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 {% endcode %}
 
 {% hint style="info" %}
-**What is "@"** `@` is a special name that means the domain itself, otherwise
-known as the domain's apex, the bare domain, or the naked domain.  In the
-above example, `example.com` has an `A` record at the apex of the domain
-(`"1.2.3.4"`).
+**What is "@"?** The label `@` is a special name that means the domain itself,
+otherwise known as the domain's apex, the bare domain, or the naked domain.  In
+the above example, `example.com` has an `A` record with the value `"1.2.3.4"`
+at the apex of the domain. In other words, instead of the empty string `""`,
+use an `"@"` for the label.
 {% endhint %}
 
 # Split Horizon DNS
