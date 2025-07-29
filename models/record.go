@@ -147,6 +147,7 @@ type RecordConfig struct {
 	TlsaMatchingType   uint8             `json:"tlsamatchingtype,omitempty"`
 	R53Alias           map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias         map[string]string `json:"azure_alias,omitempty"`
+	AnswerType         string            `json:"answer_type,omitempty"`
 	UnknownTypeName    string            `json:"unknown_type_name,omitempty"`
 
 	// Cloudflare-specific fields:
@@ -252,6 +253,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TlsaMatchingType   uint8             `json:"tlsamatchingtype,omitempty"`
 		R53Alias           map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias         map[string]string `json:"azure_alias,omitempty"`
+		AnswerType         string            `json:"answer_type,omitempty"`
 		UnknownTypeName    string            `json:"unknown_type_name,omitempty"`
 
 		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
@@ -647,7 +649,7 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "AKAMAICDN", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "OPENPGPKEY", "SMIMEA", "PTR", "SRV", "TLSA", "AZURE_ALIAS":
+		case "AKAMAICDN", "AKAMAITLC", "ALIAS", "AAAA", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "OPENPGPKEY", "SMIMEA", "PTR", "SRV", "TLSA", "AZURE_ALIAS":
 			// Target is case insensitive. Downcase it.
 			r.target = strings.ToLower(r.target)
 			// BUGFIX(tlim): isn't ALIAS in the wrong case statement?
@@ -675,7 +677,7 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
 			r.target = dnsutil.AddOrigin(r.target, originFQDN)
-		case "A", "AKAMAICDN", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
+		case "A", "AKAMAICDN", "AKAMAITLC", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
