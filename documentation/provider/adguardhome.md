@@ -4,12 +4,12 @@ This is the provider for [AdGuardHome](https://github.com/AdguardTeam/AdGuardHom
 
 This provider only supports the following record types.
 
-* A
-* AAAA
-* CNAME
-* ALIAS
-* ADGUARDHOME_A_PASSTHROUGH
-* ADGUARDHOME_AAAA_PASSTHROUGH
+* [A](../language-reference/domain-modifiers/A.md)
+* [AAAA](../language-reference/domain-modifiers/AAAA.md)
+* [CNAME](../language-reference/domain-modifiers/CNAME.md)
+* [ALIAS](../language-reference/domain-modifiers/ALIAS.md)
+* [ADGUARDHOME_A_PASSTHROUGH](../language-reference/domain-modifiers/ADGUARDHOME_A_PASSTHROUGH.md)
+* [ADGUARDHOME_AAAA_PASSTHROUGH](../language-reference/domain-modifiers/ADGUARDHOME_AAAA_PASSTHROUGH.md)
 
 ## Configuration
 
