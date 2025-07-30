@@ -1,6 +1,6 @@
 This provider uses the native DNS protocols. It uses the AXFR (RFC5936,
-Zone Transfer Protocol) protocol to retrieve the existing records and uses DDNS
-(RFC2136, Dynamic Update) to make corrections. It can use TSIG (RFC2845) or
+Zone Transfer Protocol) protocol to retrieve existing records and uses DDNS
+(RFC2136, Dynamic Update) to make updates. It can use either TSIG (RFC2845) or
 IP-based authentication (ACLs).
 
 It can work with any standards-compliant
