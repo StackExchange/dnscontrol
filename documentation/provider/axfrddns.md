@@ -253,7 +253,7 @@ key update-key-id {
 When using `get-zones`, a custom master or a list of default
 nameservers should be configured in `creds.json`.
 
-Tne AXFR+DDNS provider does not display DNSSEC records. But, if any
+The AXFR+DDNS provider does not display DNSSEC records. But, if any
 DNSSEC records are found in the zone, it will replace all of them with
 a single placeholder record:
 
