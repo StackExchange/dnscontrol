@@ -36,6 +36,7 @@ Example:
 {% endcode %}
 
 ## Usage
+
 An example configuration:
 
 {% code title="dnsconfig.js" %}
@@ -53,4 +54,3 @@ D("example.com", REG_NONE, DnsProvider(DSP_ADGUARDHOME),
 );
 ```
 {% endcode %}
-
