@@ -43,7 +43,6 @@ An example configuration:
 var REG_NONE = NewRegistrar("none");
 var DSP_ADGUARDHOME = NewDnsProvider("adguard_home");
 
-// Example domain where the CF proxy abides by the default (off).
 D("example.com", REG_NONE, DnsProvider(DSP_ADGUARDHOME),
     A("foo", "1.2.3.4"),
     AAAA("another", "2003::1"),
