@@ -79,6 +79,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
