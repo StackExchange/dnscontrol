@@ -337,12 +337,11 @@ modification.
 
 Now you can make changes to the domain(s)  and run `dnscontrol preview`
 
-+{% hint style="warn" %}
-+**get-zones is not perfect** It is intended to be "a decent first draft", only
+{% hint style="warn" %}
+**get-zones is not perfect** It is intended to be "a decent first draft", only
 requiring minimal editing. Please submit a bug report if you have suggestions
 on how it can be improved.
-+{% endhint %}
-
+{% endhint %}
 
 ## 8. Production Advice
 
