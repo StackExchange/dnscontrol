@@ -99,8 +99,8 @@ Jump to a table:
 | [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ❔ | ❌ | ❌ | ✅ |
+| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
+| [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
@@ -228,7 +228,7 @@ Jump to a table:
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
-| [`LOOPIA`](loopia.md) | ❔ | ✅ | ✅ | ❔ |
+| [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
@@ -282,7 +282,7 @@ Jump to a table:
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ✅ | ❌ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
-| [`LOOPIA`](loopia.md) | ✅ | ❔ | ✅ | ✅ |
+| [`LOOPIA`](loopia.md) | ✅ | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
@@ -324,7 +324,7 @@ Jump to a table:
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
 | [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
-| [`LOOPIA`](loopia.md) | ❌ | ❔ | ❌ |
+| [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ❔ | ❌ |
@@ -378,6 +378,7 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
+|[`ADGUARDHOME`](adguardhome.md)|@ishanjain28|
 |[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
 |[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|

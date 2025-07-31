@@ -97,7 +97,7 @@ var REG_NONE = NewRegistrar("none");
 var DNS_BIND = NewDnsProvider("bind");
 
 D("example.com", REG_NONE, DnsProvider(DNS_BIND),
-    A("@", "1.2.3.4"),
+    A("@", "1.2.3.4"),    // "@" means the domain's apex.
 );
 ```
 {% endcode %}
@@ -233,6 +233,14 @@ Next, run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
+{% hint style="warn" %}
+**Nervous?**  The first "push" can be nervous-making. How to migrate a zone
+safely?  It's best to loop through iterations of `preview` and editing
+`dnsconfig.js` until no changes are listed.
+Once you see the preview is clean (or at least making the changes you desire),
+doing a `push` is safe.  (Though, as with any tool, backups are recommended. Even a screenshot of your DNS provider's web portal is better than nothing!)
+{% endhint %}
+
 ```shell
 dnscontrol push
 ```
@@ -329,6 +337,11 @@ modification.
 
 Now you can make changes to the domain(s)  and run `dnscontrol preview`
 
+{% hint style="warn" %}
+**get-zones is not perfect** It is intended to be "a decent first draft", only
+requiring minimal editing. Please submit a [bug report](https://github.com/StackExchange/dnscontrol/issues/new?template=bug_report.md) if you have suggestions
+on how it can be improved.
+{% endhint %}
 
 ## 8. Production Advice
 

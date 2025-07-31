@@ -670,7 +670,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * ```javascript
  * // simple domain
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   A("@","1.2.3.4"),
+ *   A("@","1.2.3.4"),           // "@" means the apex domain. In this case, "example.com" itself.
  *   CNAME("test", "foo.example2.com."),
  * );
  *
@@ -683,12 +683,17 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *     MX("@", 10, "alt4.aspmx.l.google.com."),
  * ]
  *
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ * D("other-example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),
  *   CNAME("test", "foo.example2.com."),
  *   GOOGLE_APPS_DOMAIN_MX,
  * );
  * ```
+ *
+ * **What is "@"?** The label `@` is a special name that means the domain itself,
+ * otherwise known as the domain's apex, the bare domain, or the naked domain.
+ * In other words, if you want to put a DNS record at the apex of a domain, use an `"@"` for the label, not an empty string (`""`).
+ * In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain.
  *
  * # Split Horizon DNS
  *
@@ -818,6 +823,74 @@ declare function DHCID(name: string, digest: string, ...modifiers: RecordModifie
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/disable_ignore_safety_check
  */
 declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
+
+/**
+ * DNSControl contains a `DKIM_BUILDER` which can be used to simply create
+ * DKIM policies for your domains.
+ *
+ * ## Example
+ *
+ * ### Simple example
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DKIM_BUILDER({
+ *     selector: "s1",
+ *     pubkey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L"
+ *   }),
+ * );
+ * ```
+ *
+ * This yield the following record:
+ *
+ * ```text
+ * s1._domainkey   IN  TXT "v=DKIM1; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L"
+ * ```
+ *
+ * ### Advanced example
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   DKIM_BUILDER({
+ *     label: "alerts",
+ *     selector: "k2",
+ *     pubkey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L",
+ *     flags: ['y'],
+ *     hashtypes: ['sha256'],
+ *     keytype: 'rsa',
+ *     servicetypes: ['email'],
+ *     ttl: 150
+ *   }),
+ * );
+ * ```
+ *
+ * This yields the following record:
+ *
+ * ```text
+ *
+ * k2._domainkey.alerts    IN  TXT "v=DKIM1; k=rsa; s=email; t=y; h=sha256; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L" ttl=150
+ *
+ * ```
+ *
+ * ### Parameters
+ *
+ * * `label:` The DNS label for the DKIM record (`[selector]._domainkey` prefix is added; default: `'@'`)
+ * * `selector:` Selector used for the label. e.g. `s1` or `mail`
+ * * `pubkey:` Public key `p` to be used for DKIM.
+ * * `keytype:` Key type `k`. Defaults to `'rsa'` if omitted (optional)
+ * * `flags:` Which types `t` of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
+ * * `hashtypes:` Acceptable hash algorithms `h` (optional)
+ * * `servicetypes:` Record-applicable service types (optional)
+ * * `note:` Note field `n` for admins. Avoid if possible to keep record length short. (optional)
+ * * `ttl:` Input for `TTL` method (optional)
+ *
+ * ### Caveats
+ *
+ * * DKIM (TXT) records are automatically split using `AUTOSPLIT`.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dkim_builder
+ */
+declare function DKIM_BUILDER(opts: { label?: string; selector: string; pubkey: string; flags?: string[]; hashtypes?: string[]; keytype?: string; servicetypes?: string[]; note?: string; ttl?: Duration }): DomainModifier;
 
 /**
  * DNSControl contains a `DMARC_BUILDER` which can be used to simply create

@@ -15,6 +15,7 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
 
+- AdGuard Home
 - Akamai Edge DNS
 - AutoDNS
 - AWS Route 53

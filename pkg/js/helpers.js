@@ -1747,6 +1747,75 @@ function CAA_BUILDER(value) {
     return r;
 }
 
+// DKIM_BUILDER takes an object:
+// label: The DNS label for the DKIM record ([selector]._domainkey prefix is added; default: '@')
+// selector: Selector used for the label. e.g. s1 or mail
+// pubkey: Public key (p) to be used for DKIM.
+// keytype: Key type (k). Defaults to 'rsa' if missing (optional)
+// flags: Which types (t) of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
+// hashtypes: Acceptable hash algorithma (h) (optional)
+// servicetypes: Record-applicable service types (optional)
+// note: Note field fo admins. Avoid if possible to keep record length short. (optional)
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+
+function DKIM_BUILDER(value) {
+    if (!value) {
+        value = {};
+    }
+    kvs = [];
+
+    if (!value.selector) {
+        throw 'DKIM_BUILDER selector cannot be empty';
+    }
+
+    if (!value.pubkey) {
+        throw 'DKIM_BUILDER pubkey cannot be empty';
+    }
+
+    // build the label
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    if (value.label !== '@') {
+        value.label = value.selector + '._domainkey' + '.' + value.label;
+    } else {
+        value.label = value.selector + '._domainkey';
+    }
+
+    kvs.push('v=DKIM1');
+    if (value.keytype) {
+        kvs.push('k=' + value.keytype);
+    }
+
+    if (value.servicetypes) {
+        kvs.push('s=' + value.servicetypes);
+    }
+
+    if (value.flags && value.flags.length > 0) {
+        kvs.push('t=' + value.flags.join(':'));
+    }
+
+    if (value.hashtypes && value.hashtypes.length > 0) {
+        kvs.push('h=' + value.hashtypes.join(':'));
+    }
+
+    if (value.note) {
+        kvs.push('n=' + value.note);
+    }
+
+    kvs.push('p=' + value.pubkey);
+
+    var DKIM_TTL = function () {};
+    if (value.ttl) {
+        DKIM_TTL = TTL(value.ttl);
+    }
+
+    r = []; // The list of records to return.
+    r.push(TXT(value.label, kvs.join('\; '), DKIM_TTL));
+    return r;
+}
+
 // DMARC_BUILDER takes an object:
 // label: The DNS label for the DMARC record (_dmarc prefix is added; default: '@')
 // version: The DMARC version, by default DMARC1 (optional)

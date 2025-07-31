@@ -403,10 +403,14 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
-				"DNSIMPLE", // Does not support NS records nor subdomains.
-				"EXOSCALE", // Not supported.
-				"JOKER",    // Not supported via the Zone API.
-				"NETCUP",   // NS records not currently supported.
+				"DNSIMPLE",    // Does not support NS records nor subdomains.
+				"EXOSCALE",    // Not supported.
+				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
+        "JOKER",    // Not supported via the Zone API.
+				"NAMEDOTCOM",  // "Ignores @ for NS records"
+				"NETCUP",      // NS records not currently supported.
+				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
+				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
@@ -441,7 +445,7 @@ func makeTests() []*TestGroup {
 
 			// Some of these test cases are commented out because they test
 			// something that isn't widely used or supported.  For example
-			// many APIs don't support a backslack (`\`) in a TXT record;
+			// many APIs don't support a backslash (`\`) in a TXT record;
 			// luckily we've never seen a need for that "in the wild".  If
 			// you want to future-proof your provider, temporarily remove
 			// the comments and get those tests working, or reject it using
@@ -1722,6 +1726,7 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
@@ -1873,6 +1878,7 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/3227
 		testgroup("IGNORE w/change b3227",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("testignore", "8.8.8.8"),
 				a("testdefined", "9.9.9.9"),

@@ -42,6 +42,7 @@
     * [DNAME](language-reference/domain-modifiers/DNAME.md)
     * [DNSKEY](language-reference/domain-modifiers/DNSKEY.md)
     * [DISABLE_IGNORE_SAFETY_CHECK](language-reference/domain-modifiers/DISABLE_IGNORE_SAFETY_CHECK.md)
+    * [DKIM_BUILDER](language-reference/domain-modifiers/DKIM_BUILDER.md)
     * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
     * [DS](language-reference/domain-modifiers/DS.md)
     * [DefaultTTL](language-reference/domain-modifiers/DefaultTTL.md)
@@ -105,6 +106,7 @@
 ## Provider
 
 * [Supported providers](provider/index.md)
+* [AdGuard Home](provider/adguardhome.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
