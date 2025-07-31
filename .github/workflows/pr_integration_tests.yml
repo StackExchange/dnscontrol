@@ -52,7 +52,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -89,6 +89,7 @@ jobs:
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
+      JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }} 
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
@@ -160,6 +161,9 @@ jobs:
       HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
       HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
       HUAWEICLOUD_KEY: ${{ secrets.HUAWEICLOUD_KEY }}
+      #
+      JOKER_USERNAME: ${{ secrets.JOKER_USERNAME }}
+      JOKER_PASSWORD: ${{ secrets.JOKER_PASSWORD }}
       #
       MYTHICBEASTS_KEYID: ${{ secrets.MYTHICBEASTS_KEYID }}
       MYTHICBEASTS_SECRET: ${{ secrets.MYTHICBEASTS_SECRET }}

@@ -27,6 +27,22 @@ func CaaTargetContainsWhitespace(rc *models.RecordConfig) error {
 	return nil
 }
 
+// CaaHasEmptyTag detects CAA records with empty tags.
+func CaaHasEmptyTag(rc *models.RecordConfig) error {
+	if rc.CaaTag == "" {
+		return errors.New("caa has empty tag")
+	}
+	return nil
+}
+
+// CaaHasEmptyTarget detects CAA records with empty targets.
+func CaaHasEmptyTarget(rc *models.RecordConfig) error {
+	if rc.GetTargetField() == "" {
+		return errors.New("caa has empty target")
+	}
+	return nil
+}
+
 // // CaaTargetHasSemicolon identifies CAA records that contain semicolons.
 // func CaaTargetHasSemicolon(rc *models.RecordConfig) error {
 // 	if strings.Contains(rc.GetTargetField(), ";") {

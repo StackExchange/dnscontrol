@@ -139,6 +139,7 @@
 * [Hurricane Electric DNS](provider/hedns.md)
 * [Internet.bs](provider/internetbs.md)
 * [INWX](provider/inwx.md)
+* [Joker](provider/joker.md)
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
