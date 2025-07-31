@@ -35,6 +35,9 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	// Joker has round-trip issues with TXT records containing backslashes
 	a.Add("TXT", rejectif.TxtHasBackslash)
 
+	// Joker has round-trip issues with TXT records containing backslashes
+	a.Add("TXT", rejectif.TxtHasTrailingSpace)
+
 	// SRV records must have valid port and target
 	a.Add("SRV", rejectif.SrvHasZeroPort)
 	a.Add("SRV", rejectif.SrvHasEmptyTarget)
