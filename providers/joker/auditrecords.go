@@ -46,8 +46,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	// NAPTR records must have a replacement
 	a.Add("NAPTR", rejectif.NaptrHasEmptyTarget)
 
-	errors := []error{}
-	errors = append(errors, a.Audit(records)...)
+	errors := a.Audit(records)
 
 	// Check for unsupported record types
 	for _, r := range records {
