@@ -13,8 +13,9 @@ import (
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:            providers.Cannot(),
 	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanGetZones:            providers.Cannot(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),

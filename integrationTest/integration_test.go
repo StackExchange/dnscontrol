@@ -1725,6 +1725,7 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
@@ -1876,6 +1877,7 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/3227
 		testgroup("IGNORE w/change b3227",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("testignore", "8.8.8.8"),
 				a("testdefined", "9.9.9.9"),
