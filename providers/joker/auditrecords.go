@@ -1,72 +1,36 @@
 package joker
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
 
 // AuditRecords returns a list of errors corresponding to the records
 // that aren't supported by this provider. If all records are
 // supported, an empty list is returned.
 func AuditRecords(records []*models.RecordConfig) []error {
-	var errs []error
+	a := rejectif.Auditor{}
 
-	// Supported record types
-	supported := map[string]bool{
-		"A":     true,
-		"AAAA":  true,
-		"CAA":   true,
-		"CNAME": true,
-		"MX":    true,
-		"NAPTR": true,
-		"NS":    true,
-		"SRV":   true,
-		"TXT":   true,
-	}
+	// Joker does not support custom NS records at apex (domain root)
+	// Joker automatically manages apex NS records
+	a.Add("NS", rejectif.NsAtApex) // Last verified 2025-01-31
 
-	for _, rc := range records {
-		// Check if record type is supported
-		if !supported[rc.Type] {
-			errs = append(errs, fmt.Errorf("joker does not support %s records", rc.Type))
-			continue
-		}
+	// Joker has round-trip issues with TXT records containing unbalanced quotes
+	a.Add("TXT", rejectif.TxtHasUnpairedDoubleQuotes) // Last verified 2025-01-31
 
+	// Joker has round-trip issues with TXT records containing backslashes
+	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2025-01-31
 
-		// Validate SRV records
-		if rc.Type == "SRV" {
-			if rc.SrvPort == 0 {
-				errs = append(errs, fmt.Errorf("SRV records must have a non-zero port"))
-			}
-			if rc.GetTargetField() == "" {
-				errs = append(errs, fmt.Errorf("SRV records must have a target"))
-			}
-		}
+	// SRV records must have valid port and target
+	a.Add("SRV", rejectif.SrvHasZeroPort) // Last verified 2025-01-31
+	a.Add("SRV", rejectif.SrvHasEmptyTarget) // Last verified 2025-01-31
 
-		// Validate CAA records
-		if rc.Type == "CAA" {
-			if rc.CaaTag == "" {
-				errs = append(errs, fmt.Errorf("CAA records must have a tag"))
-			}
-			if rc.GetTargetField() == "" {
-				errs = append(errs, fmt.Errorf("CAA records must have a value"))
-			}
-		}
+	// CAA records must have valid tag and target
+	a.Add("CAA", rejectif.CaaHasEmptyTag) // Last verified 2025-01-31
+	a.Add("CAA", rejectif.CaaHasEmptyTarget) // Last verified 2025-01-31
 
-		// Validate NAPTR records
-		if rc.Type == "NAPTR" {
-			if rc.GetTargetField() == "" {
-				errs = append(errs, fmt.Errorf("NAPTR records must have a replacement"))
-			}
-		}
+	// NAPTR records must have a replacement
+	a.Add("NAPTR", rejectif.NaptrHasEmptyTarget) // Last verified 2025-01-31
 
-		// Validate NS records - Joker does not allow custom NS records at apex
-		if rc.Type == "NS" && rc.Name == "" {
-			// This is an NS record at the apex domain
-			// Joker automatically manages apex NS records and does not allow custom ones
-			errs = append(errs, fmt.Errorf("joker does not support custom NS records at apex (domain root)"))
-		}
-	}
-
-	return errs
+	return a.Audit(records)
 }
