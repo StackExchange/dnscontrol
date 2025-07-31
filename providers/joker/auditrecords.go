@@ -1,9 +1,23 @@
 package joker
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
 )
+
+var supportedRTypes = map[string]struct{}{
+	"A":     {},
+	"AAAA":  {},
+	"CAA":   {},
+	"CNAME": {},
+	"MX":    {},
+	"NAPTR": {},
+	"NS":    {},
+	"SRV":   {},
+	"TXT":   {},
+}
 
 // AuditRecords returns a list of errors corresponding to the records
 // that aren't supported by this provider. If all records are
@@ -32,5 +46,15 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	// NAPTR records must have a replacement
 	a.Add("NAPTR", rejectif.NaptrHasEmptyTarget) // Last verified 2025-01-31
 
-	return a.Audit(records)
+	errors := []error{}
+	errors = append(errors, a.Audit(records)...)
+
+	// Check for unsupported record types
+	for _, r := range records {
+		if _, ok := supportedRTypes[r.Type]; !ok {
+			errors = append(errors, fmt.Errorf("joker does not support %s records", r.Type))
+		}
+	}
+
+	return errors
 }
