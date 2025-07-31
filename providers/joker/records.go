@@ -329,7 +329,7 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	correction := &models.Correction{
 		Msg: msg,
 		F: func() error {
-			return api.updateZoneRecords(dc.Name, dc.Records)
+			return api.updateZoneRecords(dc.Name, result.DesiredPlus)
 		},
 	}
 
