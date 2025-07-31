@@ -38,7 +38,7 @@ var GOOGLE_APPS_DOMAIN_MX = [
     MX("@", 10, "alt4.aspmx.l.google.com."),
 ]
 
-D("otherexample.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+D("other-example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX,
