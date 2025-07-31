@@ -100,24 +100,18 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 		var ttl uint32 = 300
 		
 		if recordType == "TXT" {
-			// Find the quoted content - everything from first quote to last quote
-			quoteStart := strings.Index(line, "\"")
-			quoteEnd := strings.LastIndex(line, "\"")
-			if quoteStart != -1 && quoteEnd != -1 && quoteEnd > quoteStart {
-				target = line[quoteStart+1 : quoteEnd]
-				// Properly handle escaped characters
+			// Use parseZoneLine to handle proper quoting
+			if len(parts) >= 4 {
+				// For TXT, the content is in parts[3] and may be quoted
+				target = parts[3]
+				// Remove surrounding quotes if present
+				if strings.HasPrefix(target, "\"") && strings.HasSuffix(target, "\"") && len(target) > 1 {
+					target = target[1 : len(target)-1]
+				}
+				// Properly handle escaped characters - reverse the generation order
 				target = strings.ReplaceAll(target, "\\\"", "\"")
 				target = strings.ReplaceAll(target, "\\\\", "\\")
-				// Parse TTL from the end if present
-				afterQuote := strings.TrimSpace(line[quoteEnd+1:])
-				if afterQuote != "" {
-					if ttlParsed, err := strconv.ParseUint(afterQuote, 10, 32); err == nil {
-						ttl = uint32(ttlParsed)
-					}
-				}
-			} else {
-				target = parts[3]
-				// Default TTL if not specified in zone record
+				// Parse TTL if present
 				if len(parts) >= 5 {
 					if ttlParsed, err := strconv.ParseUint(parts[4], 10, 32); err == nil {
 						ttl = uint32(ttlParsed)
@@ -221,12 +215,25 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			}
 		case "CAA":
 			rc.Type = recordType
-			// CAA format: flags tag "value"
-			if len(parts) >= 5 {
+			// CAA format: flags tag value [ttl]
+			if len(parts) >= 4 {
 				flags := priority // priority field contains flags for CAA
-				tag := parts[3]   // target field contains tag for CAA
-				value := strings.Join(parts[4:], " ")
-				value = strings.Trim(value, "\"")
+				tag := parts[3]   // tag field
+				// Value might be quoted
+				value := ""
+				if len(parts) >= 5 {
+					value = parts[4]
+					// Remove surrounding quotes if present
+					if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") && len(value) > 1 {
+						value = value[1 : len(value)-1]
+					}
+					// Parse TTL from the end if present (position 5)
+					if len(parts) >= 6 {
+						if ttlParsed, err := strconv.ParseUint(parts[5], 10, 32); err == nil {
+							ttl = uint32(ttlParsed)
+						}
+					}
+				}
 
 				if flagsInt, err := strconv.ParseUint(flags, 10, 8); err == nil {
 					rc.CaaFlag = uint8(flagsInt)
@@ -238,8 +245,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 			}
 		case "NAPTR":
 			rc.Type = recordType
-			// NAPTR format: order/preference flags service regex replacement
-			if len(parts) >= 8 {
+			// NAPTR format for Joker: order/preference replacement ttl 0 0 "flags" "service" "regex"
+			if len(parts) >= 9 {
+				// Parse order/preference from priority field (parts[2])
 				if strings.Contains(priority, "/") {
 					priorityParts := strings.Split(priority, "/")
 					if len(priorityParts) == 2 {
@@ -251,17 +259,26 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 						}
 					}
 				}
-				// Parse flags, service, and regex from correct positions
-				if len(parts) > 4 {
-					rc.NaptrFlags = strings.Trim(parts[4], "\"")
+				// Replacement is in position 3
+				if len(parts) > 3 {
+					target = parts[3]
 				}
-				if len(parts) > 5 {
-					rc.NaptrService = strings.Trim(parts[5], "\"")
+				// Parse TTL from position 4
+				if len(parts) >= 5 {
+					if ttlParsed, err := strconv.ParseUint(parts[4], 10, 32); err == nil {
+						ttl = uint32(ttlParsed)
+					}
 				}
-				if len(parts) > 6 {
-					rc.NaptrRegexp = strings.Trim(parts[6], "\"")
+				// Parse flags, service, and regex from positions 7, 8, 9
+				if len(parts) > 7 {
+					rc.NaptrFlags = strings.Trim(parts[7], "\"")
 				}
-				// Replacement is in the target field
+				if len(parts) > 8 {
+					rc.NaptrService = strings.Trim(parts[8], "\"")
+				}
+				if len(parts) > 9 {
+					rc.NaptrRegexp = strings.Trim(parts[9], "\"")
+				}
 				// Ensure NAPTR targets are fully qualified if they're not empty or "."
 				if target != "" && target != "." && !strings.HasSuffix(target, ".") {
 					target = target + "."
@@ -323,6 +340,14 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 func (api *jokerProvider) updateZoneRecords(domain string, records models.Records) error {
 	zoneData := api.recordsToZoneFormat(domain, records)
 	
+	// Joker API doesn't support empty zones (returns Status-Code: 2400)
+	// If the zone would be empty, we need to skip the update
+	if zoneData == "" {
+		// Return success for empty zone updates since Joker maintains minimal DNS infrastructure
+		// (SOA, NS records) automatically and doesn't allow completely empty zones
+		return nil
+	}
+	
 	params := url.Values{}
 	params.Set("domain", domain)
 	params.Set("zone", zoneData)
@@ -356,7 +381,7 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 			line := fmt.Sprintf("%s %s %d %s %d", label, rc.Type, rc.MxPreference, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "TXT":
-			// Properly escape content for TXT records
+			// Fix TXT record escaping - escape backslashes first, then quotes
 			content := rc.GetTargetField()
 			content = strings.ReplaceAll(content, "\\", "\\\\")
 			content = strings.ReplaceAll(content, "\"", "\\\"")
@@ -371,12 +396,19 @@ func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Reco
 			line := fmt.Sprintf("%s %s %d %s \"%s\" %d", label, rc.Type, rc.CaaFlag, rc.CaaTag, rc.GetTargetField(), rc.TTL)
 			lines = append(lines, line)
 		case "NAPTR":
+			// NAPTR format for Joker: order/preference replacement ttl 0 0 "flags" "service" "regex"
 			priority := fmt.Sprintf("%d/%d", rc.NaptrOrder, rc.NaptrPreference)
-			line := fmt.Sprintf("%s %s %s %s \"%s\" \"%s\" \"%s\" %d",
-				label, rc.Type, priority, rc.GetTargetField(),
-				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.TTL)
+			line := fmt.Sprintf("%s %s %s %s %d 0 0 \"%s\" \"%s\" \"%s\"",
+				label, rc.Type, priority, rc.GetTargetField(), rc.TTL,
+				rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 			lines = append(lines, line)
 		}
+	}
+
+	// If no records, return empty zone rather than completely empty string
+	// Some DNS providers require at least a minimal zone structure
+	if len(lines) == 0 {
+		return ""
 	}
 
 	return strings.Join(lines, "\n")

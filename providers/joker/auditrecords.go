@@ -60,11 +60,11 @@ func AuditRecords(records []*models.RecordConfig) []error {
 			}
 		}
 
-		// Validate NS records - Joker may not allow single NS records at apex
+		// Validate NS records - Joker does not allow custom NS records at apex
 		if rc.Type == "NS" && rc.Name == "" {
 			// This is an NS record at the apex domain
-			// Some providers don't allow modifying apex NS records
-			// But we'll allow it for now and let the API reject if needed
+			// Joker automatically manages apex NS records and does not allow custom ones
+			errs = append(errs, fmt.Errorf("joker does not support custom NS records at apex (domain root)"))
 		}
 	}
 
