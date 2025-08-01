@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -69,21 +70,25 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	master           string
-	updateMode       string
-	transferServer   string
-	transferMode     string
-	nameservers      []*models.Nameserver
-	transferKey      *Key
-	updateKey        *Key
-	hasDnssecRecords bool
+	master         string
+	updateMode     string
+	transferServer string
+	transferMode   string
+	nameservers    []*models.Nameserver
+	transferKey    *Key
+	updateKey      *Key
+
+	mu               sync.Mutex // protects hasDnssecRecords during concurrent collection.
+	hasDnssecRecords map[string]bool
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
-	api := &axfrddnsProvider{}
+	api := &axfrddnsProvider{
+		hasDnssecRecords: map[string]bool{},
+	}
 	param := &Param{}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, param)
@@ -344,14 +349,15 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 		foundRecords = append(foundRecords, foundDNSSecRecords)
 	}
 
-	c.hasDnssecRecords = false
 	if len(foundRecords) >= 1 {
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
 			last.Name == dnssecDummyLabel &&
 			last.GetTargetTXTSegmentCount() == 1 &&
 			last.GetTargetTXTSegmented()[0] == dnssecDummyTxt {
-			c.hasDnssecRecords = true
+			c.mu.Lock()
+			c.hasDnssecRecords[domain] = true
+			c.mu.Unlock()
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}
 	}
@@ -422,12 +428,14 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	}
 
 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
-	if dc.AutoDNSSEC == "on" && !c.hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+	c.mu.Lock()
+	if dc.AutoDNSSEC == "on" && !c.hasDnssecRecords[dc.Name] {
+		printer.Printf("Warning: AUTODNSSEC is enabled for %s, but no DNSKEY or RRSIG record was found in the AXFR answer!\n", dc.Name)
 	}
-	if dc.AutoDNSSEC == "off" && c.hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+	if dc.AutoDNSSEC == "off" && c.hasDnssecRecords[dc.Name] {
+		printer.Printf("Warning: AUTODNSSEC is disabled for %s, but DNSKEY or RRSIG records were found in the AXFR answer!\n", dc.Name)
 	}
+	c.mu.Unlock()
 
 	// An RFC2136-compliant server must silently ignore an
 	// update that inserts a non-CNAME RRset when a CNAME RR
