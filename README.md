@@ -44,6 +44,7 @@ Currently supported DNS providers:
 - Huawei Cloud DNS
 - Hurricane Electric DNS
 - INWX
+- Joker
 - Linode
 - Loopia
 - LuaDNS

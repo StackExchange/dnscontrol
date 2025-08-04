@@ -30,6 +30,7 @@ providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
 providers/internetbs @pragmaton
 providers/inwx @patschi
+providers/joker @atrull
 providers/linode @koesie10
 providers/loopia @systemcrash
 providers/luadns @riku22

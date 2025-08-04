@@ -204,6 +204,12 @@
     "sandbox": "1",
     "username": "$INWX_USER"
   },
+  "JOKER": {
+    "TYPE": "JOKER",
+    "domain": "$JOKER_DOMAIN",
+    "password": "$JOKER_PASSWORD",
+    "username": "$JOKER_USERNAME"
+  },
   "LINODE": {
     "TYPE": "LINODE",
     "domain": "$LINODE_DOMAIN",
