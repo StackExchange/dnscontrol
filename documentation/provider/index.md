@@ -98,7 +98,7 @@ Jump to a table:
 | [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ✅ | ✅ |
+| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
