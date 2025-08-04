@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v4/providers"
 	"net/http"
 	"time"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 /*
@@ -89,15 +89,3 @@ func newJoker(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 
 	return api, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-

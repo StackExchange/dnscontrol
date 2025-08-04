@@ -406,7 +406,7 @@ func makeTests() []*TestGroup {
 				"DNSIMPLE",    // Does not support NS records nor subdomains.
 				"EXOSCALE",    // Not supported.
 				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
-        "JOKER",    // Not supported via the Zone API.
+				"JOKER",       // Not supported via the Zone API.
 				"NAMEDOTCOM",  // "Ignores @ for NS records"
 				"NETCUP",      // NS records not currently supported.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.

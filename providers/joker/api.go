@@ -96,8 +96,8 @@ func (api *jokerProvider) makeRequest(endpoint string, params url.Values) (map[s
 	if headers["Status-Code"] != "" && headers["Status-Code"] != "0" {
 		statusText := headers["Status-Text"]
 		// Check for session expiration and attempt to renew
-		if strings.Contains(statusText, "Auth-Sid") || strings.Contains(statusText, "session") || 
-		   strings.Contains(statusText, "authorization") || strings.Contains(statusText, "authentication") {
+		if strings.Contains(statusText, "Auth-Sid") || strings.Contains(statusText, "session") ||
+			strings.Contains(statusText, "authorization") || strings.Contains(statusText, "authentication") {
 			// Try to re-authenticate
 			if authErr := api.authenticate(); authErr == nil {
 				// Retry the request with new session
@@ -107,12 +107,12 @@ func (api *jokerProvider) makeRequest(endpoint string, params url.Values) (map[s
 					return nil, "", err2
 				}
 				defer resp2.Body.Close()
-				
+
 				body2, err2 := io.ReadAll(resp2.Body)
 				if err2 != nil {
 					return nil, "", err2
 				}
-				
+
 				headers2, responseBody2 := api.parseResponse(string(body2))
 				if headers2["Status-Code"] != "" && headers2["Status-Code"] != "0" {
 					return nil, "", fmt.Errorf("API error after re-auth: %s (Status-Code: %s)", headers2["Status-Text"], headers2["Status-Code"])

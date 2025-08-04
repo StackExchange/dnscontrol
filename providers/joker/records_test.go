@@ -180,7 +180,7 @@ func TestParseZoneLineEdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := parseZoneLine(tt.input)
-			
+
 			if tt.expectEmpty {
 				if len(got) != 0 {
 					t.Errorf("parseZoneLine() = %v, expected empty slice", got)

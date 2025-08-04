@@ -94,11 +94,11 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 		label := parts[0]
 		recordType := parts[1]
 		priority := parts[2]
-		
+
 		// For TXT records, we need to handle quoted content specially
 		var target string
 		var ttl uint32 = 300
-		
+
 		if recordType == "TXT" {
 			// Use parseZoneLine to handle proper quoting
 			if len(parts) >= 4 {
@@ -314,7 +314,7 @@ func fixTTLs(records models.Records) {
 func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	// Apply TTL fixes to desired records before comparison
 	fixTTLs(dc.Records)
-	
+
 	result, err := diff2.ByZone(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
@@ -339,7 +339,7 @@ func (api *jokerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 // updateZoneRecords replaces the entire zone with new records.
 func (api *jokerProvider) updateZoneRecords(domain string, records models.Records) error {
 	zoneData := api.recordsToZoneFormat(domain, records)
-	
+
 	// Joker API doesn't support empty zones (returns Status-Code: 2400)
 	// If the zone would be empty, we need to skip the update
 	if zoneData == "" {
@@ -347,7 +347,7 @@ func (api *jokerProvider) updateZoneRecords(domain string, records models.Record
 		// (SOA, NS records) automatically and doesn't allow completely empty zones
 		return nil
 	}
-	
+
 	params := url.Values{}
 	params.Set("domain", domain)
 	params.Set("zone", zoneData)
