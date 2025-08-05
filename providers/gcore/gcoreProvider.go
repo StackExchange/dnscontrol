@@ -125,7 +125,9 @@ func (c *gcoreProvider) EnsureZoneExists(domain string) error {
 		}
 	}
 
-	_, err = c.provider.CreateZone(c.ctx, domain)
+	_, err = c.provider.CreateZone(c.ctx, dnssdk.AddZone{
+		Name: domain,
+	})
 	return err
 }
 
