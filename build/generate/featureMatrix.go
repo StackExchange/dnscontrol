@@ -99,29 +99,30 @@ func featureEmoji(
 
 func matrixData() *FeatureMatrix {
 	const (
-		OfficialSupport      = "Official Support" // vs. community supported
-		ProviderDNSProvider  = "DNS Provider"
-		ProviderRegistrar    = "Registrar"
-		ProviderThreadSafe   = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
-		DomainModifierAlias  = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
-		DomainModifierCaa    = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
-		DomainModifierDnssec = "[`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
-		DomainModifierHTTPS  = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
-		DomainModifierLoc    = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
-		DomainModifierNaptr  = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
-		DomainModifierPtr    = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
-		DomainModifierSoa    = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
-		DomainModifierSrv    = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
-		DomainModifierSshfp  = "[`SSHFP`](../language-reference/domain-modifiers/SSHFP.md)"
-		DomainModifierSvcb   = "[`SVCB`](../language-reference/domain-modifiers/SVCB.md)"
-		DomainModifierTlsa   = "[`TLSA`](../language-reference/domain-modifiers/TLSA.md)"
-		DomainModifierDs     = "[`DS`](../language-reference/domain-modifiers/DS.md)"
-		DomainModifierDhcid  = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
-		DomainModifierDname  = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
-		DomainModifierDnskey = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
-		DualHost             = "[dual host](../advanced-features/dual-host.md)"
-		CreateDomains        = "create-domains"
-		GetZones             = "get-zones"
+		OfficialSupport          = "Official Support" // vs. community supported
+		ProviderDNSProvider      = "DNS Provider"
+		ProviderRegistrar        = "Registrar"
+		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
+		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
+		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
+		DomainModifierDhcid      = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
+		DomainModifierDname      = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
+		DomainModifierDnskey     = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
+		DomainModifierDnssec     = "[`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
+		DomainModifierDs         = "[`DS`](../language-reference/domain-modifiers/DS.md)"
+		DomainModifierHTTPS      = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
+		DomainModifierLoc        = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
+		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
+		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
+		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
+		DomainModifierSoa        = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
+		DomainModifierSrv        = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
+		DomainModifierSshfp      = "[`SSHFP`](../language-reference/domain-modifiers/SSHFP.md)"
+		DomainModifierSvcb       = "[`SVCB`](../language-reference/domain-modifiers/SVCB.md)"
+		DomainModifierTlsa       = "[`TLSA`](../language-reference/domain-modifiers/TLSA.md)"
+		DualHost                 = "[dual host](../advanced-features/dual-host.md)"
+		CreateDomains            = "create-domains"
+		GetZones                 = "get-zones"
 	)
 
 	matrix := &FeatureMatrix{
@@ -268,6 +269,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierNaptr,
 			providers.CanUseNAPTR,
+		)
+		setCapability(
+			DomainModifierOpenpgpkey,
+			providers.CanUseOPENPGPKEY,
 		)
 		setCapability(
 			DomainModifierPtr,
