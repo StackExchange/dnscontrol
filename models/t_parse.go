@@ -90,6 +90,8 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return rc.SetTargetMXString(contents)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
+	case "OPENPGPKEY":
+		return rc.SetTarget(contents)
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
@@ -180,6 +182,8 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return rc.SetTargetMXString(contents)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
+	case "OPENPGPKEY":
+		return rc.SetTarget(contents)
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":

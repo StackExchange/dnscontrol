@@ -533,6 +533,9 @@ var NAPTR = recordBuilder('NAPTR', {
     },
 });
 
+// OPENPGPKEY(name,target, recordModifiers...)
+var OPENPGPKEY = recordBuilder('OPENPGPKEY');
+
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
     args: [
