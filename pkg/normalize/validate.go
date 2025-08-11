@@ -70,6 +70,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"MX":               true,
 		"NAPTR":            true,
 		"NS":               true,
+		"OPENPGPKEY":       true,
 		"PTR":              true,
 		"SOA":              true,
 		"SRV":              true,
@@ -223,7 +224,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "SSHFP", "SVCB", "TLSA", "TXT":
+	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SSHFP", "SVCB", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -724,6 +725,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("HTTPS", providers.CanUseHTTPS),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
+	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
 	capabilityCheck("SOA", providers.CanUseSOA),

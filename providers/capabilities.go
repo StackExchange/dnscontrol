@@ -97,6 +97,9 @@ const (
 	// CanUseDNSKEY indicates that the provider can handle DNSKEY records
 	CanUseDNSKEY
 
+	// CanUseOPENPGPKEY indicates that the provider can handle OPENPGPKEY records
+	CanUseOPENPGPKEY
+
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 
