@@ -462,6 +462,10 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func openpgpkey(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "OPENPGPKEY")
+}
+
 func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
