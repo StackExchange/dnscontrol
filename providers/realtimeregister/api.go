@@ -42,7 +42,7 @@ type Record struct {
 
 const (
 	endpoint        = "https://api.yoursrs.com/v2"
-	endpointSandbox = "https://api.yoursrs-ote.com/v2"
+	endpointSandbox = "http://localhost:8080/srs/services"
 )
 
 func (api *realtimeregisterAPI) request(method string, url string, body io.Reader) ([]byte, error) {
@@ -205,7 +205,7 @@ func (api *realtimeregisterAPI) createOrUpdateZone(body *Zone, url string) error
 		return err
 	}
 
-	// Ugly hack for MX records with null target
+	// Workaround for 0 prio and 'omitempty' restrictions on json marshalling
 	requestBody := strings.Replace(string(bodyBytes), "\"prio\":-1", "\"prio\":0", -1)
 
 	_, err = api.request("POST", url, strings.NewReader(requestBody))
