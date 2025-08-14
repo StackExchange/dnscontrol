@@ -14,8 +14,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`
 
 ### Connection modes
 
-Zone transfers default to TCP, DDNS updates default to UDP when
-using this provider.
+Zone transfers and DDNS updates default to TCP when using this provider.
 
 The following two parameters in `creds.json` allow switching
 to TCP or TCP over TLS.
