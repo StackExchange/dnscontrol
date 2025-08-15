@@ -375,6 +375,7 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	return &models.Correction{
 		Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
 		F: func() error {
+			update.Compress = true
 			client := new(dns.Client)
 			client.Net = c.updateMode
 			client.Timeout = dnsTimeout
