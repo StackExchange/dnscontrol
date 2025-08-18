@@ -157,7 +157,7 @@ homebrew_casks:
   -
     name: dnscontrol
     url:
-      template: "https://github.com/DNSControl/dnscontrol/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      template: "https://github.com/StackExchange/dnscontrol/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
@@ -169,7 +169,7 @@ homebrew_casks:
     conflicts:
       - formula: dnscontrol
     repository:
-      owner: dnscontrol
+      owner: StackExchange
       name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
@@ -205,7 +205,7 @@ release:
     ##### Install with [Homebrew](https://brew.sh) (recommended)
 
     ```shell
-    brew install dnscontrol/tap/dnscontrol
+    brew install StackExchange/tap/dnscontrol
     ```
 
     ##### Using with [Docker](https://www.docker.com)
@@ -233,7 +233,7 @@ release:
     #### Update with [Homebrew](https://brew.sh)
 
     ```shell
-    brew upgrade dnscontrol/tap/dnscontrol
+    brew upgrade StackExchange/tap/dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.
