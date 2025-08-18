@@ -15,7 +15,7 @@ Choose one of the following installation methods:
 On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
 
 ```shell
-brew install dnscontrol/tap/dnscontrol
+brew install StackExchange/tap/dnscontrol
 ```
 
 ### Docker
