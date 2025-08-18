@@ -162,7 +162,7 @@ homebrew_casks:
       name: goreleaserbot
       email: bot@goreleaser.com
     commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
-    directory: Formula
+    directory: Casks
     homepage: "https://docs.dnscontrol.org/"
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     license: "MIT"
