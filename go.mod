@@ -66,7 +66,7 @@ require (
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.161
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.163
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20

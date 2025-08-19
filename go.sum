@@ -230,8 +230,8 @@ github.com/hashicorp/go-hclog v1.6.3 h1:Qr2kF+eVWjTiYmU7Y31tYlP1h0q/X3Nl3tPGdaB1
 github.com/hashicorp/go-hclog v1.6.3/go.mod h1:W4Qnvbt70Wk/zYJryRzDRU/4r0kIg0PVHBcfoyhpF5M=
 github.com/hashicorp/go-retryablehttp v0.7.7 h1:C8hUCYzor8PIfXHa4UrZkU4VvK8o9ISHxT2Q8+VepXU=
 github.com/hashicorp/go-retryablehttp v0.7.7/go.mod h1:pkQpWZeYWskR+D1tR2O5OcBFOxfA7DoAO6xtkuQnHTk=
-github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.161 h1:1OLCB4r14cD3slEkoT4rjYM+rnQnq6v5We4jZ5YWEXw=
-github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.161/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
+github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.163 h1:2OAYy5J1sJXjVTqucSDqf4VSd8Pzf10ZuyzK2HTTqUU=
+github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.163/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
 github.com/jarcoal/httpmock v1.3.0 h1:2RJ8GP0IIaWwcC9Fp2BmVi8Kog3v2Hn7VXM3fTd+nuc=
 github.com/jarcoal/httpmock v1.3.0/go.mod h1:3yb8rc4BI7TCBhFY8ng0gjuLKJNquuDNiPaZjnENuYg=
 github.com/jinzhu/copier v0.4.0 h1:w3ciUoD19shMCRargcpm0cm91ytaBhDvuRpz1ODO/U8=

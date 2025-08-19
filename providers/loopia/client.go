@@ -368,10 +368,11 @@ func (c *APIClient) rpcCall(call *methodCall, resp response) error {
 
 	callBody = append([]byte(`<?xml version="1.0"?>`+"\n"), callBody...)
 
-	if c.Debug {
-		fmt.Print(string(callBody))
-		fmt.Printf("\n")
-	}
+	// This is insecure.  Removing it until a way to sanitize callBody can be found.  --tlim 2025-08-18
+	//if c.Debug {
+	//	fmt.Print(string(callBody))
+	//	fmt.Printf("\n")
+	//}
 
 	respBody, err := c.httpPost(c.BaseURL, "text/xml", bytes.NewReader(callBody))
 	if err != nil {
