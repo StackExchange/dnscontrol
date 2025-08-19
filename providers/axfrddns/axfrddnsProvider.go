@@ -366,8 +366,8 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string, meta map[string]string)
 }
 
 // BuildCorrection return a Correction for a given set of DDNS update and the corresponding message.
-func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []string, update *dns.Msg) *models.Correction {
-	if update == nil {
+func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []string, updates []*dns.Msg) *models.Correction {
+	if updates == nil {
 		return &models.Correction{
 			Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
 		}
@@ -375,26 +375,28 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	return &models.Correction{
 		Msg: fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, strings.Join(msgs, "\n")),
 		F: func() error {
-			update.Compress = true
-			client := new(dns.Client)
-			client.Net = c.updateMode
-			client.Timeout = dnsTimeout
-			if c.updateKey != nil {
-				client.TsigSecret = map[string]string{c.updateKey.id: c.updateKey.secret}
-				update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
-				if c.updateKey.algo == dns.HmacMD5 {
-					client.TsigProvider = md5Provider(c.updateKey.secret)
+			for _, update := range updates {
+				update.Compress = true
+				client := new(dns.Client)
+				client.Net = c.updateMode
+				client.Timeout = dnsTimeout
+				if c.updateKey != nil {
+					client.TsigSecret = map[string]string{c.updateKey.id: c.updateKey.secret}
+					update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
+					if c.updateKey.algo == dns.HmacMD5 {
+						client.TsigProvider = md5Provider(c.updateKey.secret)
+					}
 				}
-			}
 
-			msg, _, err := client.Exchange(update, c.master)
-			if err != nil {
-				return err
-			}
-			if msg.MsgHdr.Rcode != 0 {
-				return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
-					dns.RcodeToString[msg.MsgHdr.Rcode],
-					msg.MsgHdr.Rcode)
+				msg, _, err := client.Exchange(update, c.master)
+				if err != nil {
+					return err
+				}
+				if msg.MsgHdr.Rcode != 0 {
+					return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
+						dns.RcodeToString[msg.MsgHdr.Rcode],
+						msg.MsgHdr.Rcode)
+				}
 			}
 
 			return nil
@@ -453,8 +455,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 
 	var msgs []string
 	var reports []string
-	update := new(dns.Msg)
-	update.SetUpdate(dc.Name + ".")
+	updates := []*dns.Msg{}
 
 	dummyNs1, err := dns.NewRR(dc.Name + ". IN NS dnscontrol.invalid.")
 	if err != nil {
@@ -473,6 +474,9 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		return nil, 0, nil
 	}
 
+	update := new(dns.Msg)
+	update.SetUpdate(dc.Name + ".")
+
 	// A DNS server should silently ignore a DDNS update that removes
 	// the last NS record of a zone. Since modifying a record is
 	// implemented by successively a deletion of the old record and an
@@ -490,6 +494,9 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	if hasNSDeletion {
 		update.Insert([]dns.RR{dummyNs1})
 	}
+
+	i := 1
+	appendFinalUpdate := true
 
 	for _, change := range changes {
 		switch change.Type {
@@ -523,16 +530,35 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 		case diff2.REPORT:
 			reports = append(reports, change.Msgs...)
 		}
+
+		// Chunk packets that exceed 2^14 = 16 KiB.
+		// A single DNS RR can theoretically reach 64 KiB, the total packet limit.
+		// This is a compromise, succeeding whenever RRs are not bigger than about 64 KiB - 16 KiB = 48 KiB.
+		if update.Len() >= 2<<13 {
+			updates = append(updates, update)
+			update = new(dns.Msg)
+			update.SetUpdate(dc.Name + ".")
+			appendFinalUpdate = false
+			i = 1
+		} else {
+			appendFinalUpdate = true
+			i++
+		}
 	}
 
 	if hasNSDeletion {
 		update.Remove([]dns.RR{dummyNs2})
+		appendFinalUpdate = true
+	}
+
+	if appendFinalUpdate {
+		updates = append(updates, update)
 	}
 
 	returnValue := []*models.Correction{}
 
 	if len(msgs) > 0 {
-		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, update))
+		returnValue = append(returnValue, c.BuildCorrection(dc, msgs, updates))
 	}
 	if len(reports) > 0 {
 		returnValue = append(returnValue, c.BuildCorrection(dc, reports, nil))
