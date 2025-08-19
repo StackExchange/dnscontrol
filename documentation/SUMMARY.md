@@ -67,6 +67,7 @@
     * [NAPTR](language-reference/domain-modifiers/NAPTR.md)
     * [NO_PURGE](language-reference/domain-modifiers/NO_PURGE.md)
     * [NS](language-reference/domain-modifiers/NS.md)
+    * [OPENPGPKEY](language-reference/domain-modifiers/OPENPGPKEY.md)
     * [PTR](language-reference/domain-modifiers/PTR.md)
     * [PURGE](language-reference/domain-modifiers/PURGE.md)
     * [SOA](language-reference/domain-modifiers/SOA.md)

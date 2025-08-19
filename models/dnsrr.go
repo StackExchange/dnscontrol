@@ -62,6 +62,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTargetMX(v.Preference, v.Mx)
 	case *dns.NAPTR:
 		err = rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement)
+	case *dns.OPENPGPKEY:
+		err = rc.SetTarget(v.PublicKey)
 	case *dns.NS:
 		err = rc.SetTarget(v.Ns)
 	case *dns.PTR:

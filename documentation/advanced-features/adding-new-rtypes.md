@@ -58,14 +58,14 @@ a minimum.
 -   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
 
 ```shell
-pushd; cd providers/;
+pushd providers/
 go tool stringer -type=Capability
 popd
 ```
 alternatively
 
 ```shell
-pushd; cd providers/;
+pushd providers/
 go generate
 popd
 ```
@@ -178,8 +178,9 @@ See also `017-txt.js`.
 Run these tests via:
 
 ```shell
-cd pkg/js/
+pushd pkg/js/
 go test ./...
+popd
 ```
 
 If this works, then you know the `dnsconfig.js` and `helpers.js`
@@ -250,8 +251,9 @@ in the source code.
 To run the integration test with the BIND provider:
 
 ```shell
-cd integrationTest              # NOTE: Not needed if already in that subdirectory
+pushd integrationTest
 go test -v -verbose -profile BIND
+popd
 ```
 
 Once the code works for BIND, consider submitting a PR at this point.
@@ -273,8 +275,9 @@ For example, this will run the tests on Amazon AWS Route53:
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID=CHANGE_TO_THE_ID
 export R53_KEY='CHANGE_TO_THE_KEY'
-cd integrationTest              # NOTE: Not needed if already in that subdirectory
+pushd integrationTest
 go test -v -verbose -profile ROUTE53
+popd
 ```
 
 The test should reveal any bugs. Keep iterating between fixing the
