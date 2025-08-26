@@ -63,7 +63,7 @@ jobs:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
-      image: golang:1.24
+      image: golang:1.25
     needs:
     - integration-test-providers
     env:
@@ -89,7 +89,7 @@ jobs:
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
-      JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }} 
+      JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }}
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
