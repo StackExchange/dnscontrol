@@ -24,6 +24,9 @@ const (
 type porkbunProvider struct {
 	apiKey    string
 	secretKey string
+
+	maxAttempts int
+	maxDuration time.Duration
 }
 
 type requestParams map[string]any
@@ -74,17 +77,22 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 	}
 
 	retryPolicy := failsafehttp.RetryPolicyBuilder().
-		WithMaxRetries(5).
-		// Exponential backoff between 1 and 10 seconds
-		WithBackoff(time.Second, 10*time.Second).
+		WithMaxAttempts(c.maxAttempts).
+		// Exponential backoff between 1.2 and 10 seconds.
+		// We start at 1.2 to allow for 100ms of jitter. Porkbun doesn't like
+		// retries faster than 1s.
+		WithBackoff(1200*time.Millisecond, 10*time.Second).
 		WithJitter(100 * time.Millisecond).
 		OnRetryScheduled(func(f failsafe.ExecutionScheduledEvent[*http.Response]) {
 			printer.Debugf("Porkbun API response code %d, waiting for %s until next attempt\n", f.LastResult().StatusCode, f.Delay)
-		}).
-		Build()
+		})
+
+	if c.maxDuration > 0 {
+		retryPolicy = retryPolicy.WithMaxDuration(c.maxDuration)
+	}
 
 	client := &http.Client{
-		Transport: failsafehttp.NewRoundTripper(nil, retryPolicy),
+		Transport: failsafehttp.NewRoundTripper(nil, retryPolicy.Build()),
 	}
 	req, _ := http.NewRequest(http.MethodPost, baseURL+endpoint, bytes.NewBuffer(paramsJSON))
 
