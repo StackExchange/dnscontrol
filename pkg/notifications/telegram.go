@@ -31,8 +31,8 @@ type telegramNotifier struct {
 
 func (s *telegramNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload struct {
-		ChatID int64  `json:"chat_id"`
-		Text   string `json:"text"`
+		ChatID    int64  `json:"chat_id"`
+		Text      string `json:"text"`
 		ParseMode string `json:"parse_mode"`
 	}
 
