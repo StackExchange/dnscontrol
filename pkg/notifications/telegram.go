@@ -40,7 +40,7 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BotToken)
 
 	payload.ChatID, _ = strconv.ParseInt(s.ChatID, 10, 64)
-	payload.ParseMode = "HTML"
+	payload.ParseMode = "MarkdownV2"
 
 	if preview {
 		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s]:\n%s`, domain, provider, msg)
