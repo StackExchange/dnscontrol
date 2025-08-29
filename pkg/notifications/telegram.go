@@ -34,13 +34,11 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 	var payload struct {
 		ChatID    int64  `json:"chat_id"`
 		Text      string `json:"text"`
-		ParseMode string `json:"parse_mode"`
 	}
 
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BotToken)
 
 	payload.ChatID, _ = strconv.ParseInt(s.ChatID, 10, 64)
-	payload.ParseMode = "MarkdownV2"
 
 	if preview {
 		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s]:\n%s`, domain, provider, msg)
