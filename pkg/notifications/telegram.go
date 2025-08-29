@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"io"
 )
 
 func init() {
@@ -50,25 +49,10 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 		payload.Text = fmt.Sprintf("DNSControl successfully ran correction for %s[%s]:\n%s", domain, provider, msg)
 	}
 
-// Debugging version
-marshaledPayload, err := json.Marshal(payload)
-if err != nil {
-    return fmt.Errorf("failed to marshal telegram payload: %w", err)
-}
+	marshaledPayload, _ := json.Marshal(payload)
 
-resp, posterr := http.Post(url, "application/json", bytes.NewBuffer(marshaledPayload))
-if posterr != nil {
-    return posterr
-}
-defer resp.Body.Close()
-
-// Check if Telegram returned an error (anything other than a 200 OK)
-if resp.StatusCode != http.StatusOK {
-    body, _ := io.ReadAll(resp.Body) // You'll need to import "io"
-    return fmt.Errorf("telegram API error: %s", string(body))
-}
-
-return nil
+	_, posterr := http.Post(url, "application/json", bytes.NewBuffer(marshaledPayload))
+	return posterr
 }
 
 func (s *telegramNotifier) Done() {}
