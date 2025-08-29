@@ -43,11 +43,11 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 	payload.ParseMode = "MarkdownV2"
 
 	if preview {
-		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s]:\n%s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf("DNSControl preview: %s[%s]:\n%s", domain, provider, msg)
 	} else if err != nil {
-		payload.Text = fmt.Sprintf(`DNSControl ERROR running correction on %s[%s]:\n%s\nError: %s`, domain, provider, msg, err)
+		payload.Text = fmt.Sprintf("DNSControl ERROR running correction on %s[%s]:\n%s\nError: %s", domain, provider, msg, err)
 	} else {
-		payload.Text = fmt.Sprintf(`DNSControl successfully ran correction for %s[%s]:\n%s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf("DNSControl successfully ran correction for %s[%s]:\n%s", domain, provider, msg)
 	}
 
 // Debugging version
