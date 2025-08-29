@@ -40,11 +40,11 @@ func (s *telegramNotifier) Notify(domain, provider, msg string, err error, previ
 	payload.ChatID, _ = strconv.ParseInt(s.ChatID, 10, 64)
 
 	if preview {
-		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s]:%0A%s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s]:\n%s`, domain, provider, msg)
 	} else if err != nil {
-		payload.Text = fmt.Sprintf(`DNSControl ERROR running correction on %s[%s]:%0A%s%0AError: %s`, domain, provider, msg, err)
+		payload.Text = fmt.Sprintf(`DNSControl ERROR running correction on %s[%s]:\n%s\nError: %s`, domain, provider, msg, err)
 	} else {
-		payload.Text = fmt.Sprintf(`DNSControl successfully ran correction for %s[%s]:%0A%s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf(`DNSControl successfully ran correction for %s[%s]:\n%s`, domain, provider, msg)
 	}
 
 	marshaledPayload, _ := json.Marshal(payload)
