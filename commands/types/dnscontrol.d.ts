@@ -2081,7 +2081,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * control `.com`.  If the domain was `gmeet.io`, the registrar does
  * the right thing to talk to the people that control `.io`.
  *
- * (A better name might have been `PARENTNAMESERVER()` but we didn"t
+ * (A better name might have been `PARENTNAMESERVER()` but we didn't
  * think of that at the time.)
  *
  * Each registrar handles delegations differently.  Most use

@@ -94,7 +94,7 @@ D("example.com", REG_THIRDPARTY,
 ## Zone is elsewhere
 
 Purpose:
-This is a "Registar only" configuration.  Use it when you control the registar but want to delegate the zone to someone else.
+This is a "Registrar only" configuration.  Use it when you control the registrar but want to delegate the zone to someone else.
 
 Why?
 We are delegating the domain to someone else. In this example we're
@@ -243,7 +243,7 @@ D("example.com", REG_NAMECOM,
 Purpose:
 You don't control the registrar but want to detect if the delegation changes.
 You can specify the existing nameservers in `dnsconfig.js` and you will get
-a notified if the delegation diverges.
+a notification if the delegation diverges.
 
 Why?
 Sometimes you just want to know if something changes!

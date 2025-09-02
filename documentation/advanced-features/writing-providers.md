@@ -117,7 +117,7 @@ The main driver should be called `providers/name/nameProvider.go`.
 The API abstraction is usually in a separate file (often called
 `api.go`).
 
-Directory names should be consitent.  It should be all lowercase and match the ALLCAPS provider name. Avoid `_`s.
+Directory names should be consistent.  It should be all lowercase and match the ALLCAPS provider name. Avoid `_`s.
 
 ## Step 4: Activate the driver
 
@@ -276,7 +276,7 @@ Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel
 
 golint is deprecated and frozen but it is still useful as it does a few checks that haven't been
 re-implemented in staticcheck.
-However golink fails on any file that uses generics, so
+However golint fails on any file that uses generics, so
 be prepared to ignore errors about `expected '(', found '[' (and 1 more errors)`
 
 How to install and run [golint](https://github.com/golang/lint):

@@ -11,7 +11,7 @@ Want to jump right in? Follow our [quick start tutorial](getting-started/getting
 Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](provider/index.md).
 
 {% hint style="success" %}
-* Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.
+* Maintain your DNS data in a high-level DSL, with macros and variables for easier updates.
 * Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!
 * Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.
 * Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.

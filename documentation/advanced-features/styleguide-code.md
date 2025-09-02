@@ -83,9 +83,9 @@ Therefore, if your code looks like, "add dot, but not if one exists" or "remove 
 
 ### But isn't future-proofing good? What if the API changes?
 
-The protocol won't change.  That would break all their other users that didn't future-proof their code. Why would they make a random change like that?  A breaking change like that would (by semvar rules) require a new protocol version, which would trigger code changes in DNSControl.
+The protocol won't change.  That would break all their other users that didn't future-proof their code. Why would they make a random change like that?  A breaking change like that would (by semver rules) require a new protocol version, which would trigger code changes in DNSControl.
 
-### But what if it changes anway?
+### But what if it changes anyway?
 
 If the protocol does change, how do you know your future-proofed code is doing the right thing?
 

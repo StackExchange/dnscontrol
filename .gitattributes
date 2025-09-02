@@ -2,7 +2,7 @@
 
 # Git itself
 .gitattributes eol=lf
-.gitigore eol=lf
+.gitignore eol=lf
 OWNERS eol=lf
 
 # dnscontrol files are unix line-endings:
