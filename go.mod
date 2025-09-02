@@ -18,7 +18,7 @@ require (
 	github.com/TomOnTime/utfutil v1.0.0
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go-v2 v1.38.2
+	github.com/aws/aws-sdk-go-v2 v1.38.3
 	github.com/aws/aws-sdk-go-v2/config v1.31.4
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.8
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.57.1
