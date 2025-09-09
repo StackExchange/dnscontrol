@@ -204,7 +204,8 @@ This makes it possible to do `dnscontrol
 push` even if your or third-party DNS servers are down.
 
 To enable this feature, create an (empty) file called `spfcache.json` in the
-current directory.  If that file does not exist, the cache is disabled.
+current directory.  To disable this feature, delete the file. There are no
+command-line flags related to this feature.
 
 The `spfcache.json` stored the cached DNS lookups. If it needs
 to be updated, the wnew file contents will be written to a file called
