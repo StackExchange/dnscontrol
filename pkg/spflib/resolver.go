@@ -67,7 +67,7 @@ type cache struct {
 }
 
 // NewCache creates a new cache file named filename.
-func NewCache(filename string) (CachingResolver, error) {
+func NewCache(filename string) (CachingResolver, bool, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -75,19 +75,19 @@ func NewCache(filename string) (CachingResolver, error) {
 			return &cache{
 				records: map[string]*cacheEntry{},
 				inner:   LiveResolver{},
-			}, nil
+			}, false, nil
 		}
-		return nil, err
+		return nil, false, err
 	}
 	dec := json.NewDecoder(f)
 	recs := map[string]*cacheEntry{}
 	if err := dec.Decode(&recs); err != nil {
-		return nil, err
+		return nil, true, err
 	}
 	return &cache{
 		records: recs,
 		inner:   LiveResolver{},
-	}, nil
+	}, true, nil
 }
 
 func (c *cache) GetSPF(name string) (string, error) {

@@ -198,14 +198,16 @@ to get the entire record. (Sadly it caches heavily.)
 
 ## Notes about the `spfcache.json`
 
-DNSControl keeps a cache of the DNS lookups performed during
-optimization.  The cache is maintained so that the optimizer does
-not produce different results depending on the ups and downs of
-other people's DNS servers. This makes it possible to do `dnscontrol
+DNSControl will optionally keep a cache of the DNS lookups performed during
+optimization.  In the event that a DNS server is down, the cache will be used.
+This makes it possible to do `dnscontrol
 push` even if your or third-party DNS servers are down.
 
-The DNS cache is kept in a file called `spfcache.json`. If it needs
-to be updated, the proper data will be written to a file called
+To enable this feature, create an (empty) file called `spfcache.json` in the
+current directory.  If that file does not exist, the cache is disabled.
+
+The `spfcache.json` stored the cached DNS lookups. If it needs
+to be updated, the wnew file contents will be written to a file called
 `spfcache.updated.json` and instructions such as the ones below
 will be output telling you exactly what to do:
 
@@ -221,13 +223,9 @@ Wrote changes to spfcache.updated.json. Please rename and commit:
 In this case, you are being asked to replace `spfcache.json` with
 the newly generated data in `spfcache.updated.json`.
 
-Needing to do this kind of update is considered a validation error
-and will block `dnscontrol push` from running.
-
-Note: The instructions are hardcoded strings. The filenames will
+The instructions are hardcoded strings. The filenames will
 not change.
-
-Note: The instructions assume you use git. If you use something
+The instructions assume you use git. If you use something
 else, please do the appropriate equivalent command.
 
 ## Caveats

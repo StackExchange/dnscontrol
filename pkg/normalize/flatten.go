@@ -25,6 +25,7 @@ func sortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
 // hasSpfRecords returns true if this record requests SPF unrolling.
 func flattenSPFs(cfg *models.DNSConfig) []error {
 	var cache spflib.CachingResolver
+	var fileFound bool
 	var errs []error
 	var err error
 	for _, domain := range cfg.Domains {
@@ -35,7 +36,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			txtTarget := txt.GetTargetTXTJoined()
 			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {
 				if cache == nil {
-					cache, err = spflib.NewCache("spfcache.json")
+					cache, fileFound, err = spflib.NewCache("spfcache.json")
 					if err != nil {
 						return []error{err}
 					}
@@ -117,7 +118,8 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 		if len(changed) > 0 {
 			if err := cache.Save("spfcache.updated.json"); err != nil {
 				errs = append(errs, err)
-			} else {
+			} else if fileFound {
+				// Only warn if we loaded an existing cache file.
 				errs = append(errs, Warning{fmt.Errorf("%d spf record lookups are out of date with cache (%s).\nWrote changes to spfcache.updated.json. Please rename and commit:\n    $ mv spfcache.updated.json spfcache.json\n    $ git commit -m 'Update spfcache.json' spfcache.json", len(changed), strings.Join(changed, ","))})
 			}
 		}

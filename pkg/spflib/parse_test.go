@@ -48,7 +48,7 @@ func (s *SPFRecord) Print() string {
 }
 
 func TestParse(t *testing.T) {
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseWithDoubleSpaces(t *testing.T) {
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestParseWithDoubleSpaces(t *testing.T) {
 
 func TestParseRedirectNotLast(t *testing.T) {
 	// Make sure redirect=foo fails if it isn't the last item.
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestParseRedirectNotLast(t *testing.T) {
 
 func TestParseRedirectColon(t *testing.T) {
 	// Make sure redirect:foo fails.
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestParseRedirectColon(t *testing.T) {
 }
 
 func TestParseRedirectOnly(t *testing.T) {
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +132,7 @@ func TestParseRedirectOnly(t *testing.T) {
 }
 
 func TestParseRedirectLast(t *testing.T) {
-	dnsres, err := NewCache("testdata-dns1.json")
+	dnsres, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}

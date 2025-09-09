@@ -8,7 +8,7 @@ import (
 )
 
 func TestFlatten(t *testing.T) {
-	res, err := NewCache("testdata-dns1.json")
+	res, _, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
