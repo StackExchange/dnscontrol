@@ -51,7 +51,7 @@ type PPreviewArgs struct {
 	Notify            bool
 	WarnChanges       bool
 	ConcurMode        string
-	ConcurMax         int
+	ConcurMax         int // Maximum number of concurrent connections
 	NoPopulate        bool
 	DePopulate        bool
 	PopulateOnPreview bool
@@ -99,6 +99,13 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.ConcurMax,
 		Value:       999,
 		Usage:       `Maximum number of concurrent connections`,
+		Action: func(c *cli.Context, v int) error {
+			if v < 1 {
+				fmt.Printf("%d is not a valid value for --cmax.  Values must be 1 or greater\n", v)
+				os.Exit(1)
+			}
+			return nil
+		},
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
@@ -123,7 +130,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	})
 	flags = append(flags, &cli.IntFlag{
 		Name:   "reportmax",
-		Hidden: true,
+		Hidden: false,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
 		Action: func(ctx *cli.Context, maxreport int) error {
 			printer.MaxReport = maxreport
@@ -199,7 +206,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return err
 	}
 
-	out.PrintfIf(fullMode, "Reading creds.json or equiv.\n")
+	out.PrintfIf(fullMode, "Reading creds: %q\n", args.CredsFile)
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
@@ -222,6 +229,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
+	zonesConcurrent = optimizeOrder(zonesConcurrent)
 
 	var totalCorrections int
 	var reportItems []*ReportItem
@@ -232,8 +240,8 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	if !args.NoPopulate {
 		out.PrintfIf(fullMode, "PHASE 1: CHECKING for missing zones\n")
 		t := throttler.New(args.ConcurMax, len(zonesConcurrent))
-		out.PrintfIf(fullMode, "CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
-		for _, zone := range optimizeOrder(zonesConcurrent) {
+		out.Printf("CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
+		for i, zone := range zonesConcurrent {
 			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
 			go func(zone *models.DomainConfig) {
 				err := oneZonePopulate(zone, zcache)
@@ -242,19 +250,34 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				}
 				t.Done(err)
 			}(zone)
+			// Delay the last call to t.Throttle() until the serial processing is done.
+			if i != ultimate(zonesConcurrent) {
+				errorCount := t.Throttle()
+				if errorCount > 0 {
+					anyErrors = true
+				}
+			}
+		}
+
+		out.Printf("SERIALLY checking for %d zone(s)\n", len(zonesSerial))
+		for _, zone := range zonesSerial {
+			out.Printf("Serially checking for zone: %q\n", zone.Name)
+			if err := oneZonePopulate(zone, zcache); err != nil {
+				anyErrors = true
+			}
+		}
+
+		if len(zonesConcurrent) > 0 {
+			if printer.DefaultPrinter.Verbose {
+				out.PrintfIf(true, "Waiting for concurrent checking(s) to complete...\n")
+			} else {
+				out.PrintfIf(true, "Waiting for concurrent checking(s) to complete...")
+			}
 			errorCount := t.Throttle()
 			if errorCount > 0 {
 				anyErrors = true
 			}
-		}
-		//out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
-		//out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
-		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
-		for _, zone := range zonesSerial {
-			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
-			if err := oneZonePopulate(zone, zcache); err != nil {
-				anyErrors = true
-			}
+			out.PrintfIf(true, "DONE\n")
 		}
 
 		for _, zone := range zonesToProcess {
@@ -283,8 +306,8 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 	out.PrintfIf(fullMode, "PHASE 2: GATHERING data\n")
 	t := throttler.New(args.ConcurMax, len(zonesConcurrent))
-	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
-	for _, zone := range optimizeOrder(zonesConcurrent) {
+	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
+	for i, zone := range zonesConcurrent {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
 			err := oneZone(zone, args)
@@ -293,22 +316,35 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			}
 			t.Done(err)
 		}(zone, args, zcache)
-		errorCount := t.Throttle()
-		if errorCount > 0 {
-			anyErrors = true
+		// Delay the last call to t.Throttle() until the serial processing is done.
+		if i != ultimate(zonesConcurrent) {
+			errorCount := t.Throttle()
+			if errorCount > 0 {
+				anyErrors = true
+			}
 		}
 	}
-	// TODO(tlim): It would be nice if the concurrent gathering overlapped with the serial gathering.
-	// This could be achieved by delaying the final call to t.Throttle() until after the serial gathering.
-	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
+	out.Printf("SERIALLY gathering records of %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
 		out.Printf("Serially Gathering: %q\n", zone.Name)
 		if err := oneZone(zone, args); err != nil {
 			anyErrors = true
 		}
 	}
-	//out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
-	//out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
+
+	if len(zonesConcurrent) > 0 {
+		msg := "Waiting for concurrent gathering(s) to complete..."
+		if printer.DefaultPrinter.Verbose {
+			msg = "Waiting for concurrent gathering(s) to complete...\n"
+		}
+		out.PrintfIf(true, msg)
+		errorCount := t.Throttle()
+		if errorCount > 0 {
+			anyErrors = true
+		}
+		out.PrintfIf(true, "DONE\n")
+	}
+
 	anyErrors = cmp.Or(anyErrors, concurrentErrors.Load())
 
 	// Now we know what to do, print or do the tasks.
