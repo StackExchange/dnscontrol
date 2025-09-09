@@ -20,6 +20,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/nozzle/throttler"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
@@ -50,6 +51,7 @@ type PPreviewArgs struct {
 	Notify            bool
 	WarnChanges       bool
 	ConcurMode        string
+	ConcurMax         int
 	NoPopulate        bool
 	DePopulate        bool
 	PopulateOnPreview bool
@@ -91,6 +93,12 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 			}
 			return nil
 		},
+	})
+	flags = append(flags, &cli.IntFlag{
+		Name:        "cmax",
+		Destination: &args.ConcurMax,
+		Value:       999,
+		Usage:       `Maximum number of concurrent connections`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
@@ -223,18 +231,24 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Populate the zones (if desired/needed/able):
 	if !args.NoPopulate {
 		out.PrintfIf(fullMode, "PHASE 1: CHECKING for missing zones\n")
-		var wg sync.WaitGroup
-		wg.Add(len(zonesConcurrent))
+		t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 		out.PrintfIf(fullMode, "CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
 		for _, zone := range optimizeOrder(zonesConcurrent) {
 			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
 			go func(zone *models.DomainConfig) {
-				defer wg.Done()
-				if err := oneZonePopulate(zone, zcache); err != nil {
+				err := oneZonePopulate(zone, zcache)
+				if err != nil {
 					concurrentErrors.Store(true)
 				}
+				t.Done(err)
 			}(zone)
+			errorCount := t.Throttle()
+			if errorCount > 0 {
+				anyErrors = true
+			}
 		}
+		//out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
+		//out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
 		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
 		for _, zone := range zonesSerial {
 			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
@@ -242,9 +256,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				anyErrors = true
 			}
 		}
-		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
-		wg.Wait()
-		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
 
 		for _, zone := range zonesToProcess {
 			started := false // Do not emit noise when no provider has corrections.
@@ -271,18 +282,24 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 
 	out.PrintfIf(fullMode, "PHASE 2: GATHERING data\n")
-	var wg sync.WaitGroup
-	wg.Add(len(zonesConcurrent))
+	t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
 	for _, zone := range optimizeOrder(zonesConcurrent) {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
-			defer wg.Done()
-			if err := oneZone(zone, args); err != nil {
+			err := oneZone(zone, args)
+			if err != nil {
 				concurrentErrors.Store(true)
 			}
+			t.Done(err)
 		}(zone, args, zcache)
+		errorCount := t.Throttle()
+		if errorCount > 0 {
+			anyErrors = true
+		}
 	}
+	// TODO(tlim): It would be nice if the concurrent gathering overlapped with the serial gathering.
+	// This could be achieved by delaying the final call to t.Throttle() until after the serial gathering.
 	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
 		out.Printf("Serially Gathering: %q\n", zone.Name)
@@ -290,9 +307,8 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			anyErrors = true
 		}
 	}
-	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
-	wg.Wait()
-	out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
+	//out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
+	//out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
 	anyErrors = cmp.Or(anyErrors, concurrentErrors.Load())
 
 	// Now we know what to do, print or do the tasks.
@@ -382,7 +398,8 @@ func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*model
 func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*models.DomainConfig, concurrent []*models.DomainConfig) {
 	if filter == "none" {
 		return domains, nil
-	} else if filter == "all" {
+	}
+	if filter == "all" {
 		return nil, domains
 	}
 	for _, dc := range domains {
