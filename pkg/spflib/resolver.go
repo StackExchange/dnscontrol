@@ -50,7 +50,7 @@ type CachingResolver interface {
 	ChangedRecords() []string
 	ResolveErrors() []error
 	Save(filename string) error
-	IsCachePreserved() bool
+	IsCachePreserved() bool // Return true if cache preservation mode is enabled.
 }
 
 type cacheEntry struct {
@@ -65,7 +65,7 @@ type cache struct {
 	records map[string]*cacheEntry
 
 	inner          Resolver
-	cachePresenved bool
+	cachePreserved bool
 }
 
 // NewCache creates a new cache file named filename.
@@ -77,7 +77,7 @@ func NewCache(filename string) (CachingResolver, error) {
 			return &cache{
 				records:        map[string]*cacheEntry{},
 				inner:          LiveResolver{},
-				cachePresenved: false,
+				cachePreserved: false, // Disable cache preservation mode.
 			}, nil
 		}
 		return nil, err
@@ -90,12 +90,15 @@ func NewCache(filename string) (CachingResolver, error) {
 	return &cache{
 		records:        recs,
 		inner:          LiveResolver{},
-		cachePresenved: true,
+		cachePreserved: true, // Enable cache preservation mode.
 	}, nil
 }
 
+// IsCachePreserved returns true if cache preservation mode is enabled.
+// In this mode, warnings are issued if the cache is out of date.
+// This mode is enabled by the existance of the cache file "spfcache.json"
 func (c *cache) IsCachePreserved() bool {
-	return c.cachePresenved
+	return c.cachePreserved
 }
 
 func (c *cache) GetSPF(name string) (string, error) {
