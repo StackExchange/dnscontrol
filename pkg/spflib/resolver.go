@@ -50,6 +50,7 @@ type CachingResolver interface {
 	ChangedRecords() []string
 	ResolveErrors() []error
 	Save(filename string) error
+	IsCachePreserved() bool
 }
 
 type cacheEntry struct {
@@ -63,7 +64,8 @@ type cacheEntry struct {
 type cache struct {
 	records map[string]*cacheEntry
 
-	inner Resolver
+	inner          Resolver
+	cachePresenved bool
 }
 
 // NewCache creates a new cache file named filename.
@@ -73,21 +75,27 @@ func NewCache(filename string) (CachingResolver, error) {
 		if os.IsNotExist(err) {
 			// doesn't exist, just make a new one
 			return &cache{
-				records: map[string]*cacheEntry{},
-				inner:   LiveResolver{},
-			}, false, nil
+				records:        map[string]*cacheEntry{},
+				inner:          LiveResolver{},
+				cachePresenved: false,
+			}, nil
 		}
-		return nil, false, err
+		return nil, err
 	}
 	dec := json.NewDecoder(f)
 	recs := map[string]*cacheEntry{}
 	if err := dec.Decode(&recs); err != nil {
-		return nil, true, err
+		return nil, err
 	}
 	return &cache{
-		records: recs,
-		inner:   LiveResolver{},
-	}, true, nil
+		records:        recs,
+		inner:          LiveResolver{},
+		cachePresenved: true,
+	}, nil
+}
+
+func (c *cache) IsCachePreserved() bool {
+	return c.cachePresenved
 }
 
 func (c *cache) GetSPF(name string) (string, error) {
