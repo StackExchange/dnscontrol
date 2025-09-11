@@ -65,7 +65,7 @@ type cache struct {
 	records map[string]*cacheEntry
 
 	inner          Resolver
-	cachePreserved bool
+	cachePreserved bool // Set to true if cache preservation mode is enabled.
 }
 
 // NewCache creates a new cache file named filename.
