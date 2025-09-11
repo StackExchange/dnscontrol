@@ -67,7 +67,7 @@ type cache struct {
 }
 
 // NewCache creates a new cache file named filename.
-func NewCache(filename string) (CachingResolver, bool, error) {
+func NewCache(filename string) (CachingResolver, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
