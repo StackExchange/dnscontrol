@@ -159,3 +159,5 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )
+
+tool golang.org/x/tools/cmd/stringer
