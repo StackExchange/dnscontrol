@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -244,11 +245,12 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		for i, zone := range zonesConcurrent {
 			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
 			go func(zone *models.DomainConfig) {
+				start := time.Now()
 				err := oneZonePopulate(zone, zcache)
 				if err != nil {
 					concurrentErrors.Store(true)
 				}
-				out.Debugf("...DONE: %q\n", zone.Name)
+				out.Debugf("...DONE: %q (%.1fs)\n", zone.Name, time.Since(start).Seconds())
 				t.Done(err)
 			}(zone)
 			// Delay the last call to t.Throttle() until the serial processing is done.
@@ -311,11 +313,12 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	for i, zone := range zonesConcurrent {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
+			start := time.Now()
 			err := oneZone(zone, args)
 			if err != nil {
 				concurrentErrors.Store(true)
 			}
-			out.Debugf("...DONE: %q\n", zone.Name)
+			out.Debugf("...DONE: %q (%.1fs)\n", zone.Name, time.Since(start).Seconds())
 			t.Done(err)
 		}(zone, args, zcache)
 		// Delay the last call to t.Throttle() until the serial processing is done.
