@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"os"
 	"sort"
 	"strings"
@@ -85,16 +86,28 @@ func featureEmoji(
 	featureMap FeatureMap,
 	featureName string,
 ) string {
+	var emoji string
+	var tooltip string
+
 	if featureMap[featureName] == nil {
-		return "❔"
+		emoji = "❔"
+		tooltip = "Unknown"
+	} else if featureMap[featureName].HasFeature {
+		emoji = "✅"
+		tooltip = "Supported"
+	} else if featureMap[featureName].Unimplemented {
+		emoji = "❓"
+		tooltip = "Not implemented"
+	} else {
+		emoji = "❌"
+		tooltip = "Not supported"
 	}
 
-	if featureMap[featureName].HasFeature {
-		return "✅"
-	} else if featureMap[featureName].Unimplemented {
-		return "❔"
+	if featureMap[featureName] != nil && featureMap[featureName].Comment != "" {
+		tooltip += ": " + featureMap[featureName].Comment
 	}
-	return "❌"
+
+	return fmt.Sprintf("<span title=\"%s\">%s</span>", html.EscapeString(tooltip), emoji)
 }
 
 func matrixData() *FeatureMatrix {
