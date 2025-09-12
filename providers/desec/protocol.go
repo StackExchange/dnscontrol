@@ -261,7 +261,13 @@ func (c *desecProvider) createDomain(domain string) error {
 		return err
 	}
 	printer.Printf("To enable DNSSEC validation for your domain, make sure to convey the DS record(s) to your registrar:\n")
-	printer.Printf("%+q", dm.Keys)
+	for _, key := range dm.Keys {
+		printer.Printf("DNSKEY: %s\n", key.Dnskey)
+		printer.Printf("DS record(s):\n")
+		for _, d := range key.Ds {
+			printer.Printf("  %s\n", d)
+		}
+	}
 	return nil
 }
 
