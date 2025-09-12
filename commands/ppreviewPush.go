@@ -248,6 +248,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				if err != nil {
 					concurrentErrors.Store(true)
 				}
+				out.Debugf("...DONE: %q\n", zone.Name)
 				t.Done(err)
 			}(zone)
 			// Delay the last call to t.Throttle() until the serial processing is done.
@@ -314,6 +315,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			if err != nil {
 				concurrentErrors.Store(true)
 			}
+			out.Debugf("...DONE: %q\n", zone.Name)
 			t.Done(err)
 		}(zone, args, zcache)
 		// Delay the last call to t.Throttle() until the serial processing is done.
