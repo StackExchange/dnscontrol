@@ -104,10 +104,12 @@ func featureEmoji(
 	}
 
 	if featureMap[featureName] != nil && featureMap[featureName].Comment != "" {
+		emoji += " ⁱ"
 		tooltip += ": " + featureMap[featureName].Comment
 	}
 
-	return fmt.Sprintf("<span title=\"%s\">%s</span>", html.EscapeString(tooltip), emoji)
+	escapedTooltip := strings.ReplaceAll(html.EscapeString(tooltip), "|", "&#124;")
+	return fmt.Sprintf("<span title=\"%s\">%s</span>", escapedTooltip, emoji)
 }
 
 func matrixData() *FeatureMatrix {
