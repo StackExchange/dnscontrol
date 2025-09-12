@@ -208,7 +208,7 @@ current directory.  To disable this feature, delete the file. There are no
 command-line flags related to this feature.
 
 The `spfcache.json` stored the cached DNS lookups. If it needs
-to be updated, the wnew file contents will be written to a file called
+to be updated, the new file contents will be written to a file called
 `spfcache.updated.json` and instructions such as the ones below
 will be output telling you exactly what to do:
 
