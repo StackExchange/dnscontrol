@@ -70,21 +70,23 @@ type cache struct {
 
 // NewCache creates a new cache file named filename.
 func NewCache(filename string) (CachingResolver, error) {
-	f, err := os.Open(filename)
+	dat, err := os.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			// doesn't exist, just make a new one
 			return &cache{
 				records:        map[string]*cacheEntry{},
 				inner:          LiveResolver{},
 				cachePreserved: false, // Disable cache preservation mode.
 			}, nil
 		}
-		return nil, err
+		return nil, err // Otherwise, return the error.
 	}
-	dec := json.NewDecoder(f)
 	recs := map[string]*cacheEntry{}
-	if err := dec.Decode(&recs); err != nil {
+	if len(dat) == 0 {
+		// json.Unmarshal considers empty input invalid. Use empty object instead.
+		dat = []byte("{}")
+	}
+	if err := json.Unmarshal(dat, &recs); err != nil {
 		return nil, err
 	}
 	return &cache{
