@@ -50,6 +50,7 @@ type CachingResolver interface {
 	ChangedRecords() []string
 	ResolveErrors() []error
 	Save(filename string) error
+	IsCachePreserved() bool // Return true if cache preservation mode is enabled.
 }
 
 type cacheEntry struct {
@@ -63,31 +64,43 @@ type cacheEntry struct {
 type cache struct {
 	records map[string]*cacheEntry
 
-	inner Resolver
+	inner          Resolver
+	cachePreserved bool // Set to true if cache preservation mode is enabled.
 }
 
 // NewCache creates a new cache file named filename.
 func NewCache(filename string) (CachingResolver, error) {
-	f, err := os.Open(filename)
+	dat, err := os.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			// doesn't exist, just make a new one
 			return &cache{
-				records: map[string]*cacheEntry{},
-				inner:   LiveResolver{},
+				records:        map[string]*cacheEntry{},
+				inner:          LiveResolver{},
+				cachePreserved: false, // Disable cache preservation mode.
 			}, nil
 		}
-		return nil, err
+		return nil, err // Otherwise, return the error.
 	}
-	dec := json.NewDecoder(f)
 	recs := map[string]*cacheEntry{}
-	if err := dec.Decode(&recs); err != nil {
+	if len(dat) == 0 {
+		// json.Unmarshal considers empty input invalid. Use empty object instead.
+		dat = []byte("{}")
+	}
+	if err := json.Unmarshal(dat, &recs); err != nil {
 		return nil, err
 	}
 	return &cache{
-		records: recs,
-		inner:   LiveResolver{},
+		records:        recs,
+		inner:          LiveResolver{},
+		cachePreserved: true, // Enable cache preservation mode.
 	}, nil
+}
+
+// IsCachePreserved returns true if cache preservation mode is enabled.
+// In this mode, warnings are issued if the cache is out of date.
+// This mode is enabled by the existance of the cache file "spfcache.json"
+func (c *cache) IsCachePreserved() bool {
+	return c.cachePreserved
 }
 
 func (c *cache) GetSPF(name string) (string, error) {
