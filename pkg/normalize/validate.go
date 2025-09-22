@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -442,7 +443,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				}
 				rec.SetLabel(name, domain.Name)
 			} else if rec.Type == "CAA" {
-				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" && rec.CaaTag != "issuemail" {
+				// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
+				allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
+				if !slices.Contains(allowedTags, rec.CaaTag) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
 			} else if rec.Type == "TLSA" {
