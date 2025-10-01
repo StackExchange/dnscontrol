@@ -1710,7 +1710,10 @@ function CAA_BUILDER(value) {
     if (value.issuemail && value.issuemail == 'none') value.issuemail = [';'];
 
     if (
-        (!value.issue && !value.issuewild && !value.issuevmc && !value.issuemail) ||
+        (!value.issue &&
+            !value.issuewild &&
+            !value.issuevmc &&
+            !value.issuemail) ||
         (value.issue &&
             value.issue.length == 0 &&
             value.issuewild &&
