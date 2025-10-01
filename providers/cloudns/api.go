@@ -86,6 +86,12 @@ type domainRecord struct {
 	LocSize          string `json:"size,omitempty"`
 	LocHPrecision    string `json:"h_precision,omitempty"`
 	LocVPrecision    string `json:"v_precision,omitempty"`
+	NaptrOrder       string `json:"order,omitempty"`
+	NaptrPreference  string `json:"pref,omitempty"`
+	NaptrFlags       string `json:"flag,omitempty"`
+	NaptrService     string `json:"params,omitempty"`
+	NaptrRegexp      string `json:"regexp,omitempty"`
+	NaptrReplacement string `json:"replace,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
