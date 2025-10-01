@@ -205,7 +205,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			// NB(tlim): This is a stupid hack.  NS1 doesn't quote a missing
 			// parameter properly. Therefore we look for 2 spaces and assume there is
 			// a missing item.
-			ans = strings.ReplaceAll(ans, "  ", " . ")
+			ans = strings.ReplaceAll(ans, "  ", ` "" `)
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
 				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
 			}
