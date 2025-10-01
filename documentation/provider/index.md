@@ -5,11 +5,17 @@
 The table below shows various features supported, or not supported by DNSControl providers.
 This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
 
-An empty space may indicate the feature is not supported by a provider, or it may simply mean
+A question mark may indicate the feature is not supported by a provider, or it may simply mean
 the feature has not been investigated and implemented yet. If a feature you need is missing from
 a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
 
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
+
+Legend:
+- ✅ Supported
+- ❌ Not supported
+- ❓ Not implemented, needs investigation or development
+- ❔ Unknown
 
 <!-- provider-matrix-start -->
 Jump to a table:
@@ -25,314 +31,366 @@ Jump to a table:
 
 | Provider name | Official Support | DNS Provider | Registrar |
 | ------------- | ---------------- | ------------ | --------- |
-| [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
-| [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
-| [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ❌ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ✅ | ✅ | ❌ |
-| [`BIND`](bind.md) | ✅ | ✅ | ❌ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ✅ | ❌ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ |
-| [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ❌ |
-| [`CNR`](cnr.md) | ❌ | ✅ | ✅ |
-| [`CSCGLOBAL`](cscglobal.md) | ✅ | ✅ | ✅ |
-| [`DESEC`](desec.md) | ❌ | ✅ | ❌ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ✅ | ❌ |
-| [`DNSIMPLE`](dnsimple.md) | ❌ | ✅ | ✅ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ❌ | ✅ | ❌ |
-| [`DNSOVERHTTPS`](dnsoverhttps.md) | ❌ | ❌ | ✅ |
-| [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ✅ | ❌ |
-| [`DYNADOT`](dynadot.md) | ❌ | ❌ | ✅ |
-| [`EASYNAME`](easyname.md) | ❌ | ❌ | ✅ |
-| [`EXOSCALE`](exoscale.md) | ❌ | ✅ | ❌ |
-| [`FORTIGATE`](fortigate.md) | ❌ | ✅ | ❌ |
-| [`GANDI_V5`](gandi_v5.md) | ❌ | ✅ | ✅ |
-| [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
-| [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
-| [`HEDNS`](hedns.md) | ❌ | ✅ | ❌ |
-| [`HETZNER`](hetzner.md) | ❌ | ✅ | ❌ |
-| [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ |
-| [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
-| [`INTERNETBS`](internetbs.md) | ❌ | ❌ | ✅ |
-| [`INWX`](inwx.md) | ❌ | ✅ | ✅ |
-| [`JOKER`](joker.md) | ❌ | ✅ | ❌ |
-| [`LINODE`](linode.md) | ❌ | ✅ | ❌ |
-| [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
-| [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ✅ | ❌ |
-| [`NAMECHEAP`](namecheap.md) | ❌ | ✅ | ✅ |
-| [`NAMEDOTCOM`](namedotcom.md) | ❌ | ✅ | ✅ |
-| [`NETCUP`](netcup.md) | ❌ | ✅ | ❌ |
-| [`NETLIFY`](netlify.md) | ❌ | ✅ | ❌ |
-| [`NS1`](ns1.md) | ❌ | ✅ | ❌ |
-| [`OPENSRS`](opensrs.md) | ❌ | ❌ | ✅ |
-| [`ORACLE`](oracle.md) | ❌ | ✅ | ❌ |
-| [`OVH`](ovh.md) | ❌ | ✅ | ✅ |
-| [`PACKETFRAME`](packetframe.md) | ❌ | ✅ | ❌ |
-| [`PORKBUN`](porkbun.md) | ❌ | ✅ | ✅ |
-| [`POWERDNS`](powerdns.md) | ❌ | ✅ | ❌ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ❌ | ✅ | ✅ |
-| [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ |
-| [`RWTH`](rwth.md) | ❌ | ✅ | ❌ |
-| [`SAKURACLOUD`](sakuracloud.md) | ❌ | ✅ | ❌ |
-| [`SOFTLAYER`](softlayer.md) | ❌ | ✅ | ❌ |
-| [`TRANSIP`](transip.md) | ❌ | ✅ | ❌ |
-| [`VULTR`](vultr.md) | ❌ | ✅ | ❌ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AUTODNS`](autodns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`BIND`](bind.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`CNR`](cnr.md) | <span title="Not supported: Actively maintained provider module.">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DESEC`](desec.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`EASYNAME`](easyname.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`GCORE`](gcore.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`HEDNS`](hedns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`HETZNER`](hetzner.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`HEXONET`](hexonet.md) | <span title="Not supported: Actively maintained provider module.">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`INWX`](inwx.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`JOKER`](joker.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`LINODE`](linode.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`LOOPIA`](loopia.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`LUADNS`](luadns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`NETCUP`](netcup.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`NETLIFY`](netlify.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`NS1`](ns1.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`ORACLE`](oracle.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`OVH`](ovh.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`ROUTE53`](route53.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`RWTH`](rwth.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`TRANSIP`](transip.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`VULTR`](vultr.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
 
 
 ### Provider API <!--(table 2/6)-->
 
 | Provider name | [Concurrency Verified](../advanced-features/concurrency-verified.md) | [dual host](../advanced-features/dual-host.md) | create-domains | get-zones |
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
-| [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
-| [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❔ | ❌ | ✅ | ✅ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❌ | ✅ | ✅ |
-| [`CLOUDNS`](cloudns.md) | ✅ | ❔ | ✅ | ✅ |
-| [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ |
-| [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
-| [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
-| [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
-| [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
-| [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
-| [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
-| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ |
-| [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
-| [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
-| [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
-| [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
-| [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
-| [`INTERNETBS`](internetbs.md) | ❔ | ❔ | ❌ | ❔ |
-| [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
-| [`JOKER`](joker.md) | ❌ | ❌ | ✅ | ✅ |
-| [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
-| [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
-| [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
-| [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
-| [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
-| [`NETCUP`](netcup.md) | ❔ | ❌ | ❌ | ❌ |
-| [`NETLIFY`](netlify.md) | ✅ | ❌ | ❌ | ✅ |
-| [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
-| [`OPENSRS`](opensrs.md) | ❔ | ❔ | ❌ | ❔ |
-| [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ✅ |
-| [`OVH`](ovh.md) | ❔ | ✅ | ❌ | ✅ |
-| [`PACKETFRAME`](packetframe.md) | ❔ | ❌ | ❌ | ❔ |
-| [`PORKBUN`](porkbun.md) | ✅ | ❌ | ❌ | ✅ |
-| [`POWERDNS`](powerdns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ❔ | ❌ | ✅ | ✅ |
-| [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ | ✅ |
-| [`RWTH`](rwth.md) | ❔ | ❌ | ❌ | ✅ |
-| [`SAKURACLOUD`](sakuracloud.md) | ❔ | ❌ | ✅ | ✅ |
-| [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ |
-| [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ✅ |
-| [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ✅ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AUTODNS`](autodns.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Supported">✅</span> | <span title="Supported: Azure does not permit modifying the existing NS records, only adding/removing additional records.">✅ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Not implemented">❓</span> | <span title="Supported: Azure does not permit modifying the existing NS records, only adding/removing additional records.">✅ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`BIND`](bind.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported: Driver just maintains list of zone files. It should automatically add missing ones.">✅ ⁱ</span> | <span title="Supported">✅</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Supported">✅</span> | <span title="Not supported: Cloudflare will not work well in situations where it is not the only DNS server">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Supported">✅</span> | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CNR`](cnr.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`DESEC`](desec.md) | <span title="Supported">✅</span> | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Supported">✅</span> | <span title="Not supported: DNSimple does not allow sufficient control over the apex NS records">❌ ⁱ</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Not implemented">❓</span> | <span title="Supported: System NS records cannot be edited. Custom apex NS records can be added/changed/deleted.">✅ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Not implemented">❓</span> | <span title="Not implemented">❓</span> | <span title="Not implemented">❓</span> | <span title="Not implemented">❓</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`EASYNAME`](easyname.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Not implemented">❓</span> | <span title="Not supported: Exoscale does not allow sufficient control over the apex NS records">❌ ⁱ</span> | <span title="Not supported">❌</span> | <span title="Not implemented">❓</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported: Can only manage domains registered through their service">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GCORE`](gcore.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HEDNS`](hedns.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HETZNER`](hetzner.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HEXONET`](hexonet.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not implemented">❓</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`INWX`](inwx.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`JOKER`](joker.md) | <span title="Not supported: Joker API has session-based authentication">❌ ⁱ</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`LINODE`](linode.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`LOOPIA`](loopia.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Not supported: Can only manage domains registered through their service">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`LUADNS`](luadns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported: Requires domain registered through Web UI">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Supported">✅</span> | <span title="Not supported: Doesn&#39;t allow control of apex NS records">❌ ⁱ</span> | <span title="Not supported: Requires domain registered through their service">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Not supported: New domains require registration">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`NETCUP`](netcup.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`NETLIFY`](netlify.md) | <span title="Supported">✅</span> | <span title="Not supported: Netlify does not allow sufficient control over the apex NS records">❌ ⁱ</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`NS1`](ns1.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`ORACLE`](oracle.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`OVH`](ovh.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Not supported: New domains require registration">❌ ⁱ</span> | <span title="Supported">✅</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not implemented">❓</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`ROUTE53`](route53.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`RWTH`](rwth.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not implemented">❓</span> |
+| [`TRANSIP`](transip.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`VULTR`](vultr.md) | <span title="Not implemented">❓</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
 
 
 ### DNS extensions <!--(table 3/6)-->
 
 | Provider name | [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md) | [`DNAME`](../language-reference/domain-modifiers/DNAME.md) | [`LOC`](../language-reference/domain-modifiers/LOC.md) | [`PTR`](../language-reference/domain-modifiers/PTR.md) | [`SOA`](../language-reference/domain-modifiers/SOA.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
-| [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ❔ | ✅ | ✅ | ❌ |
-| [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
-| [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`BIND`](bind.md) | ❔ | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❌ | ✅ | ❌ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
-| [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
-| [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
-| [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
-| [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
-| [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`INWX`](inwx.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
-| [`JOKER`](joker.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
-| [`LOOPIA`](loopia.md) | ❌ | ❔ | ✅ | ❌ | ❌ |
-| [`LUADNS`](luadns.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
-| [`NAMEDOTCOM`](namedotcom.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
-| [`NETCUP`](netcup.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
-| [`NETLIFY`](netlify.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
-| [`NS1`](ns1.md) | ✅ | ✅ | ❌ | ✅ | ❔ |
-| [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
-| [`OVH`](ovh.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
-| [`PACKETFRAME`](packetframe.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`PORKBUN`](porkbun.md) | ✅ | ❔ | ❌ | ❌ | ❌ |
-| [`POWERDNS`](powerdns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ✅ | ❌ | ❌ |
-| [`ROUTE53`](route53.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`RWTH`](rwth.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`SAKURACLOUD`](sakuracloud.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
-| [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| [`VULTR`](vultr.md) | ❌ | ❔ | ❌ | ❌ | ❔ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AUTODNS`](autodns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Not supported: Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.">❌ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Not supported: Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.">❌ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`BIND`](bind.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Supported: Bunny flattens CNAME records into A/AAAA records dynamically">✅ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Supported: CF automatically flattens CNAME records into A records dynamically">✅ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`CNR`](cnr.md) | <span title="Supported">✅</span> | <span title="Not supported: Ask for this feature.">❌ ⁱ</span> | <span title="Not supported: Ask for this feature.">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Not supported: The SOA record is managed on the DNSZone directly. Data only accessible via StatusDNSZone Request, not via the resource records list. Hard to integrate this into DNSControl by that.">❌ ⁱ</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DESEC`](desec.md) | <span title="Not implemented: Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs.">❓ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Not implemented: Needs custom implementation">❓ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported: According to Domainnameshop this will probably never be supported">❌ ⁱ</span> | <span title="Not supported">❌</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EASYNAME`](easyname.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Supported: Only on the bare domain. Otherwise CNAME will be substituted">✅ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`GCORE`](gcore.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported: G-Core supports PTR records only in rDNS zones">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`HEDNS`](hedns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`HETZNER`](hetzner.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`HEXONET`](hexonet.md) | <span title="Not supported: Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us.">❌ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`INWX`](inwx.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> | <span title="Supported: PTR records with empty targets are not supported">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`JOKER`](joker.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`LINODE`](linode.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`LOOPIA`](loopia.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported: 💩">❌ ⁱ</span> |
+| [`LUADNS`](luadns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported: PTR records are not supported (See Link)">❌ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`NETCUP`](netcup.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`NETLIFY`](netlify.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`NS1`](ns1.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`ORACLE`](oracle.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`OVH`](ovh.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Supported: Needs to be enabled in PowerDNS first">✅ ⁱ</span> | <span title="Supported: Needs to be enabled in PowerDNS first">✅ ⁱ</span> | <span title="Not implemented: Normalization within the PowerDNS API seems to be buggy, so disabled">❓ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`ROUTE53`](route53.md) | <span title="Not supported: R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead.">❌ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`RWTH`](rwth.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported: PTR records with empty targets are not supported">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`TRANSIP`](transip.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`VULTR`](vultr.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> |
 
 
 ### Service discovery <!--(table 4/6)-->
 
 | Provider name | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ❔ |
-| [`AUTODNS`](autodns.md) | ❔ | ❔ | ✅ | ❔ |
-| [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_DNS`](azure_dns.md) | ❔ | ❌ | ✅ | ❔ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ❌ | ✅ | ❔ |
-| [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ❔ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ✅ | ✅ | ✅ |
-| [`CLOUDNS`](cloudns.md) | ❔ | ❔ | ✅ | ❔ |
-| [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
-| [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
-| [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ✅ | ❔ |
-| [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
-| [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
-| [`EXOSCALE`](exoscale.md) | ❔ | ❔ | ✅ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ❔ | ❔ | ✅ | ❔ |
-| [`GCLOUD`](gcloud.md) | ❔ | ❔ | ✅ | ✅ |
-| [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
-| [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
-| [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
-| [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
-| [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
-| [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
-| [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
-| [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
-| [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
-| [`NAMEDOTCOM`](namedotcom.md) | ❔ | ❔ | ✅ | ❔ |
-| [`NETCUP`](netcup.md) | ❔ | ❔ | ✅ | ❔ |
-| [`NETLIFY`](netlify.md) | ❔ | ❌ | ✅ | ❔ |
-| [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
-| [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ❔ |
-| [`OVH`](ovh.md) | ❔ | ❔ | ✅ | ❔ |
-| [`PACKETFRAME`](packetframe.md) | ❔ | ❔ | ✅ | ❔ |
-| [`PORKBUN`](porkbun.md) | ❔ | ❌ | ✅ | ✅ |
-| [`POWERDNS`](powerdns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ❌ | ✅ | ✅ | ❔ |
-| [`ROUTE53`](route53.md) | ❔ | ❔ | ✅ | ✅ |
-| [`RWTH`](rwth.md) | ❔ | ❌ | ✅ | ❔ |
-| [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ✅ | ✅ |
-| [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ✅ | ❔ |
-| [`TRANSIP`](transip.md) | ❌ | ✅ | ✅ | ❌ |
-| [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ❔ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`AUTODNS`](autodns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`BIND`](bind.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`CNR`](cnr.md) | <span title="Not supported: Ask for this feature.">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported: SRV records with empty targets are not supported">✅ ⁱ</span> | <span title="Not supported: Ask for this feature.">❌ ⁱ</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DESEC`](desec.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Unknown">❔</span> | <span title="Not supported: According to Domainnameshop this will probably never be supported">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EASYNAME`](easyname.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported: SRV records with empty targets are not supported">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GCORE`](gcore.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported: G-Core doesn&#39;t support SRV records with empty targets">✅ ⁱ</span> | <span title="Supported">✅</span> |
+| [`HEDNS`](hedns.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HETZNER`](hetzner.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`HEXONET`](hexonet.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported: SRV records with empty targets are not supported">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`INWX`](inwx.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`JOKER`](joker.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`LINODE`](linode.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`LOOPIA`](loopia.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`LUADNS`](luadns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported: The namecheap web console allows you to make SRV records, but their api does not let you read or set them">❌ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported: SRV records with empty targets are not supported">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`NETCUP`](netcup.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`NETLIFY`](netlify.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`NS1`](ns1.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`ORACLE`](oracle.md) | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`OVH`](ovh.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`ROUTE53`](route53.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`RWTH`](rwth.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported: SRV records with empty targets are not supported.">✅ ⁱ</span> | <span title="Unknown">❔</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
+| [`TRANSIP`](transip.md) | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`VULTR`](vultr.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> |
 
 
 ### Security <!--(table 5/6)-->
 
 | Provider name | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) |
 | ------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ✅ | ✅ |
-| [`AUTODNS`](autodns.md) | ✅ | ❔ | ❌ | ❌ |
-| [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ❔ | ❌ | ❌ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❌ | ❌ |
-| [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❌ | ❌ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ✅ | ✅ |
-| [`CLOUDNS`](cloudns.md) | ✅ | ❔ | ✅ | ✅ |
-| [`CNR`](cnr.md) | ✅ | ❌ | ✅ | ✅ |
-| [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❔ | ❔ |
-| [`DESEC`](desec.md) | ✅ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ❔ | ❔ |
-| [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ✅ | ❌ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ❌ |
-| [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❌ | ❔ |
-| [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❔ | ❌ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ✅ | ✅ |
-| [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
-| [`GCORE`](gcore.md) | ✅ | ✅ | ❌ | ❌ |
-| [`HEDNS`](hedns.md) | ✅ | ✅ | ✅ | ❌ |
-| [`HETZNER`](hetzner.md) | ✅ | ❔ | ❌ | ✅ |
-| [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ✅ |
-| [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❌ | ❌ |
-| [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
-| [`JOKER`](joker.md) | ✅ | ❌ | ❌ | ❌ |
-| [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ |
-| [`LOOPIA`](loopia.md) | ✅ | ❌ | ✅ | ✅ |
-| [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ✅ | ✅ |
-| [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❌ |
-| [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ |
-| [`NETLIFY`](netlify.md) | ✅ | ❔ | ❌ | ❌ |
-| [`NS1`](ns1.md) | ✅ | ✅ | ❔ | ✅ |
-| [`ORACLE`](oracle.md) | ✅ | ❔ | ✅ | ✅ |
-| [`OVH`](ovh.md) | ✅ | ❔ | ✅ | ✅ |
-| [`PORKBUN`](porkbun.md) | ✅ | ✅ | ❌ | ✅ |
-| [`POWERDNS`](powerdns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ✅ | ✅ |
-| [`ROUTE53`](route53.md) | ✅ | ✅ | ✅ | ✅ |
-| [`RWTH`](rwth.md) | ✅ | ❔ | ✅ | ❌ |
-| [`SAKURACLOUD`](sakuracloud.md) | ✅ | ✅ | ❌ | ❌ |
-| [`TRANSIP`](transip.md) | ✅ | ❌ | ✅ | ✅ |
-| [`VULTR`](vultr.md) | ✅ | ❔ | ✅ | ❌ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AUTODNS`](autodns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Not supported: Azure Private DNS does not support CAA records">❌ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`BIND`](bind.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CNR`](cnr.md) | <span title="Supported">✅</span> | <span title="Not supported: Managed via (Query&#124;Add&#124;Modify&#124;Delete)WebFwd API call. Data not accessible via the resource records list. Hard to integrate this into DNSControl by that.">❌ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DESEC`](desec.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported: Might be supported in the future">❌ ⁱ</span> | <span title="Not implemented: Has support but no documentation. Needs to be investigated.">❓ ⁱ</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EASYNAME`](easyname.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`GCORE`](gcore.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`HEDNS`](hedns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`HETZNER`](hetzner.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`HEXONET`](hexonet.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`INWX`](inwx.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`JOKER`](joker.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`LINODE`](linode.md) | <span title="Supported: Linode doesn&#39;t support changing the CAA flag">✅ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`LOOPIA`](loopia.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`LUADNS`](luadns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NETCUP`](netcup.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NETLIFY`](netlify.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`NS1`](ns1.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`ORACLE`](oracle.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`OVH`](ovh.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`ROUTE53`](route53.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`RWTH`](rwth.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`TRANSIP`](transip.md) | <span title="Supported">✅</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`VULTR`](vultr.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> | <span title="Not supported">❌</span> |
 
 
 ### DNSSEC <!--(table 6/6)-->
 
 | Provider name | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | [`DS`](../language-reference/domain-modifiers/DS.md) |
 | ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
-| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❌ |
-| [`AUTODNS`](autodns.md) | ❔ | ❔ | ❌ |
-| [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ✅ |
-| [`BIND`](bind.md) | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❌ |
-| [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ❌ | ✅ |
-| [`CLOUDNS`](cloudns.md) | ✅ | ❔ | ❔ |
-| [`DESEC`](desec.md) | ✅ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ |
-| [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ❌ |
-| [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ❔ | ❔ | ❌ |
-| [`GCORE`](gcore.md) | ✅ | ❔ | ❌ |
-| [`HEDNS`](hedns.md) | ❌ | ❔ | ❌ |
-| [`HETZNER`](hetzner.md) | ❌ | ❔ | ✅ |
-| [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
-| [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
-| [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
-| [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
-| [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
-| [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
-| [`ORACLE`](oracle.md) | ❔ | ❔ | ❌ |
-| [`PORKBUN`](porkbun.md) | ❌ | ❔ | ❌ |
-| [`POWERDNS`](powerdns.md) | ✅ | ✅ | ✅ |
-| [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ❌ |
-| [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ❌ |
-| [`TRANSIP`](transip.md) | ❌ | ❌ | ❌ |
+| [`ADGUARDHOME`](adguardhome.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`AKAMAIEDGEDNS`](akamaiedgedns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`AUTODNS`](autodns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`AXFRDDNS`](axfrddns.md) | <span title="Supported: Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR.">✅ ⁱ</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`AZURE_DNS`](azure_dns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`BIND`](bind.md) | <span title="Supported: Just writes out a comment indicating DNSSEC was requested">✅ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`BUNNY_DNS`](bunny_dns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`CLOUDFLAREAPI`](cloudflareapi.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Supported">✅</span> |
+| [`CLOUDNS`](cloudns.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`CNR`](cnr.md) | <span title="Not implemented: Ask for this feature.">❓ ⁱ</span> | <span title="Not implemented: Ask for this feature.">❓ ⁱ</span> | <span title="Not implemented: Ask for this feature.">❓ ⁱ</span> |
+| [`CSCGLOBAL`](cscglobal.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DESEC`](desec.md) | <span title="Supported: deSEC always signs all records. When trying to disable, a notice is printed.">✅ ⁱ</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`DIGITALOCEAN`](digitalocean.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DNSIMPLE`](dnsimple.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`DNSMADEEASY`](dnsmadeeasy.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`DNSOVERHTTPS`](dnsoverhttps.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`DOMAINNAMESHOP`](domainnameshop.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not implemented">❓</span> |
+| [`DYNADOT`](dynadot.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EASYNAME`](easyname.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`EXOSCALE`](exoscale.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`FORTIGATE`](fortigate.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`GANDI_V5`](gandi_v5.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported: Only supports DS records at the apex">❌ ⁱ</span> |
+| [`GCLOUD`](gcloud.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`GCORE`](gcore.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`HEDNS`](hedns.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`HETZNER`](hetzner.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> |
+| [`HEXONET`](hexonet.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`HOSTINGDE`](hostingde.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> |
+| [`HUAWEICLOUD`](huaweicloud.md) | <span title="Not implemented: No public api provided, but can be turned on manually in the console.">❓ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`INTERNETBS`](internetbs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`INWX`](inwx.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not implemented: DS records are only supported at the apex and require a different API call that hasn&#39;t been implemented yet.">❓ ⁱ</span> |
+| [`JOKER`](joker.md) | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`LINODE`](linode.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`LOOPIA`](loopia.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported: Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end.">❌ ⁱ</span> |
+| [`LUADNS`](luadns.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`MYTHICBEASTS`](mythicbeasts.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NAMECHEAP`](namecheap.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NAMEDOTCOM`](namedotcom.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NETCUP`](netcup.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`NETLIFY`](netlify.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`NS1`](ns1.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Supported">✅</span> |
+| [`OPENSRS`](opensrs.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`ORACLE`](oracle.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`OVH`](ovh.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`PACKETFRAME`](packetframe.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`PORKBUN`](porkbun.md) | <span title="Not supported">❌</span> | <span title="Unknown">❔</span> | <span title="Not supported">❌</span> |
+| [`POWERDNS`](powerdns.md) | <span title="Supported">✅</span> | <span title="Supported">✅</span> | <span title="Supported">✅</span> |
+| [`REALTIMEREGISTER`](realtimeregister.md) | <span title="Supported">✅</span> | <span title="Unknown">❔</span> | <span title="Not supported: Only for subdomains">❌ ⁱ</span> |
+| [`ROUTE53`](route53.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`RWTH`](rwth.md) | <span title="Not implemented: Supported by RWTH but not implemented yet.">❓ ⁱ</span> | <span title="Unknown">❔</span> | <span title="Not implemented: DS records are only supported at the apex and require a different API call that hasn&#39;t been implemented yet.">❓ ⁱ</span> |
+| [`SAKURACLOUD`](sakuracloud.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`SOFTLAYER`](softlayer.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
+| [`TRANSIP`](transip.md) | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> | <span title="Not supported">❌</span> |
+| [`VULTR`](vultr.md) | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> | <span title="Unknown">❔</span> |
 
 <!-- provider-matrix-end -->
 
