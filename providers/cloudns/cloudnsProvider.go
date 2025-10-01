@@ -52,7 +52,14 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Unimplemented(),
+	providers.DocDualHost:            providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseSOA:              providers.Unimplemented("Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet"),
+	providers.CanUseDS:               providers.Cannot("Not supported for root, only for children"),
+	providers.CanUseDHCID:            providers.Cannot(),
+	providers.CanUseSVCB:             providers.Cannot(),
+	providers.CanUseHTTPS:            providers.Cannot(),
+	providers.CanUseDNSKEY:           providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
@@ -349,6 +356,11 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 			r.LocLongDeg, r.LocLongMin, r.LocLongSec, r.LocLongDir,
 			r.LocAltitude, r.LocSize, r.LocHPrecision, r.LocVPrecision)
 		err = rc.SetTargetLOCString(r.Target, loc)
+	case "NAPTR":
+		naptrOrder, _ := strconv.ParseUint(r.NaptrOrder, 10, 16)
+		naptrPreference, _ := strconv.ParseUint(r.NaptrPreference, 10, 16)
+		target := dnsutil.AddOrigin(r.NaptrReplacement+".", domain)
+		err = rc.SetTargetNAPTR(uint16(naptrOrder), uint16(naptrPreference), r.NaptrFlags, r.NaptrService, r.NaptrRegexp, target)
 	default:
 		err = rc.SetTarget(r.Target)
 	}
@@ -420,6 +432,13 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["size"] = formatLocParam(parts[9])
 		req["h-precision"] = formatLocParam(parts[10])
 		req["v-precision"] = formatLocParam(parts[11])
+	case "NAPTR":
+		req["order"] = strconv.Itoa(int(rc.NaptrOrder))
+		req["pref"] = strconv.Itoa(int(rc.NaptrPreference))
+		req["flag"] = rc.NaptrFlags
+		req["params"] = rc.NaptrService
+		req["regexp"] = rc.NaptrRegexp
+		req["replace"] = rc.GetTargetField()
 	default:
 		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}
