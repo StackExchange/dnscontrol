@@ -201,6 +201,14 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
+		case "NAPTR":
+			// NB(tlim): This is a stupid hack.  NS1 doesn't quote a missing
+			// parameter properly. Therefore we look for 2 spaces and assume there is
+			// a missing item.
+			ans = strings.ReplaceAll(ans, "  ", " . ")
+			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
+				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
+			}
 		case "REDIRECT":
 			// NS1 returns REDIRECTs as records, but there is only one and dummy answer:
 			// "NS1 MANAGED RECORD"
