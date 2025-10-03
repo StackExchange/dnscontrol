@@ -124,6 +124,8 @@ func (rc *RecordConfig) GetTargetDebug() string {
 		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "R53_ALIAS":
 		content += fmt.Sprintf(" type=%s zone_id=%s evaluate_target_health=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"], rc.R53Alias["evaluate_target_health"])
+	case "SMIMEA":
+		content += fmt.Sprintf(" smimeausage=%d smimeaselector=%d smimeamatchingtype=%d", rc.SmimeaUsage, rc.SmimeaSelector, rc.SmimeaMatchingType)
 	case "SOA":
 		content = fmt.Sprintf("%s ns=%v mbox=%v serial=%v refresh=%v retry=%v expire=%v minttl=%v", rc.Type, rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	case "SRV":
