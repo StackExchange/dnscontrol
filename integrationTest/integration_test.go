@@ -2021,6 +2021,15 @@ func makeTests() []*TestGroup {
 			tc("final", txt("final", `TestDNSProviders was successful!`)),
 		),
 
+		testgroup("SMIMEA",
+			requires(providers.CanUseSMIMEA),
+			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("SMIMEA change usage", smimea("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
 		// Narrative: Congrats! You're done!  If you've made it this far
 		// you're very close to being able to submit your PR.  Here's
 		// some tips:

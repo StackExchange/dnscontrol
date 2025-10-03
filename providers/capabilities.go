@@ -79,6 +79,9 @@ const (
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
 
+	// CanUseSMIMEA indicates the provider can handle SMIMEA records
+	CanUseSMIMEA
+
 	// CanUseSOA indicates the provider supports full management of a zone's SOA record
 	CanUseSOA
 

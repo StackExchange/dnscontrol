@@ -68,6 +68,8 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (RecordConfig, error) {
 		err = rc.SetTarget(v.Ns)
 	case *dns.PTR:
 		err = rc.SetTarget(v.Ptr)
+	case *dns.SMIMEA:
+		err = rc.SetTargetSMIMEA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.SOA:
 		err = rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
 	case *dns.SRV:
