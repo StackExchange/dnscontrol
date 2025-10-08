@@ -10,6 +10,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[file:2:5]",
           "meta": {
             "orig_custom_type": "CF_WORKER_ROUTE"
           },

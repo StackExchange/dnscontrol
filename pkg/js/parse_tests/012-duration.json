@@ -10,30 +10,35 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[file:2:5]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:3:5]",
           "name": "a",
           "target": "1.2.3.5",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:4:5]",
           "name": "b",
           "target": "1.2.3.6",
           "ttl": 180,
           "type": "A"
         },
         {
+          "filepos": "[file:5:5]",
           "name": "c",
           "target": "1.2.3.7",
           "ttl": 10800,
           "type": "A"
         },
         {
+          "filepos": "[file:6:5]",
           "name": "d",
           "target": "1.2.3.8",
           "ttl": 259200,

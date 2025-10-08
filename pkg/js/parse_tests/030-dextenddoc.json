@@ -17,30 +17,35 @@
       "name": "domain.tld",
       "records": [
         {
+          "filepos": "[file:7:5]",
           "name": "@",
           "target": "127.0.0.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:9:5]",
           "name": "a",
           "target": "b.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "filepos": "[file:12:5]",
           "name": "aaa",
           "target": "127.0.0.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:13:5]",
           "name": "c",
           "target": "d.domain.tld.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "filepos": "[file:25:5]",
           "name": "sub",
           "subdomain": "sub",
           "target": "127.0.0.7",
@@ -48,6 +53,7 @@
           "type": "A"
         },
         {
+          "filepos": "[file:16:5]",
           "name": "bbb.sub",
           "subdomain": "sub",
           "target": "127.0.0.4",
@@ -55,6 +61,7 @@
           "type": "A"
         },
         {
+          "filepos": "[file:17:5]",
           "name": "ccc.sub",
           "subdomain": "sub",
           "target": "127.0.0.5",
@@ -62,6 +69,7 @@
           "type": "A"
         },
         {
+          "filepos": "[file:18:5]",
           "name": "e.sub",
           "subdomain": "sub",
           "target": "f.sub.domain.tld.",
@@ -69,6 +77,7 @@
           "type": "CNAME"
         },
         {
+          "filepos": "[file:26:5]",
           "name": "i.sub",
           "subdomain": "sub",
           "target": "j.sub.domain.tld.",
@@ -76,6 +85,7 @@
           "type": "CNAME"
         },
         {
+          "filepos": "[file:21:5]",
           "name": "ddd.sub.sub",
           "subdomain": "sub.sub",
           "target": "127.0.0.6",
@@ -83,6 +93,7 @@
           "type": "A"
         },
         {
+          "filepos": "[file:22:5]",
           "name": "g.sub.sub",
           "subdomain": "sub.sub",
           "target": "h.sub.sub.domain.tld.",
@@ -90,6 +101,7 @@
           "type": "CNAME"
         },
         {
+          "filepos": "[file:8:5]",
           "name": "www",
           "target": "127.0.0.2",
           "ttl": 300,

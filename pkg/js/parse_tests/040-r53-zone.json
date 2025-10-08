@@ -22,6 +22,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[file:6:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },

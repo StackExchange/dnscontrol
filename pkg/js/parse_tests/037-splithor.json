@@ -25,12 +25,14 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[file:7:5]",
           "name": "main",
           "target": "3.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:19:5]",
           "name": "www",
           "target": "33.33.33.33",
           "ttl": 300,
@@ -50,12 +52,14 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[file:11:5]",
           "name": "main",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:23:5]",
           "name": "main",
           "target": "11.11.11.11",
           "ttl": 300,
@@ -75,6 +79,7 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[file:15:5]",
           "name": "main",
           "target": "8.8.8.8",
           "ttl": 300,
@@ -94,12 +99,14 @@
       "name": "example.net",
       "records": [
         {
+          "filepos": "[file:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
@@ -119,18 +126,21 @@
       "name": "example.net",
       "records": [
         {
+          "filepos": "[file:36:5]",
           "name": "main",
           "target": "192.0.2.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
@@ -150,18 +160,21 @@
       "name": "example.net",
       "records": [
         {
+          "filepos": "[file:41:5]",
           "name": "main",
           "target": "203.0.113.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
@@ -181,12 +194,14 @@
       "name": "empty.example.net",
       "records": [
         {
+          "filepos": "[file:49:5]",
           "name": "main",
           "target": "203.0.113.22",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:45:5]",
           "name": "www",
           "target": "203.0.113.2",
           "ttl": 300,
@@ -206,12 +221,14 @@
       "name": "example-b.net",
       "records": [
         {
+          "filepos": "[file:57:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[file:53:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,

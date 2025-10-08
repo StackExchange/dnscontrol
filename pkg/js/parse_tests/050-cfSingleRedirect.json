@@ -66,6 +66,7 @@
       ],
       "records": [
         {
+          "filepos": "[file:2:5]",
           "meta": {
             "meta": "value"
           },

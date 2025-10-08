@@ -10,6 +10,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[file:3:5]",
           "localtitude": 9997600,
           "loclatitude": 2299997648,
           "loclongitude": 1891505648,
@@ -20,6 +21,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:4:5]",
           "localtitude": 9997599,
           "lochorizpre": 36,
           "loclatitude": 2299987600,
@@ -32,6 +34,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:5:5]",
           "localtitude": 10001033,
           "loclatitude": 2335528648,
           "loclongitude": 2148013648,
@@ -41,6 +44,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:23:5]",
           "localtitude": 10000600,
           "loclatitude": 2332886681,
           "loclongitude": 2147034997,
@@ -50,6 +54,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:6:5]",
           "localtitude": 10001000,
           "loclatitude": 2031844648,
           "loclongitude": 2565228648,
@@ -59,6 +64,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:7:5]",
           "localtitude": 9995600,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -69,6 +75,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:8:5]",
           "localtitude": 4294967295,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -79,6 +86,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:9:5]",
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
           "locsize": 37,
@@ -88,6 +96,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:10:5]",
           "localtitude": 4294967295,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -98,6 +107,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:11:5]",
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
           "locsize": 37,
@@ -107,6 +117,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:12:5]",
           "localtitude": 10000000,
           "lochorizpre": 153,
           "loclatitude": 2299972412,
@@ -118,6 +129,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:13:5]",
           "localtitude": 10000000,
           "lochorizpre": 153,
           "loclatitude": 2299972412,
@@ -129,6 +141,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:14:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -139,6 +152,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:17:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -149,6 +163,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:15:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -159,6 +174,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:16:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -168,6 +184,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:18:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -179,6 +196,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:19:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -190,6 +208,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:20:5]",
           "localtitude": 10000000,
           "loclatitude": 2299972412,
           "loclongitude": 1891832031,
@@ -200,6 +219,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:60:5]",
           "localtitude": 10000300,
           "loclatitude": 2056619648,
           "loclongitude": 2698823648,
@@ -209,6 +229,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:85:5]",
           "localtitude": 10030000,
           "loclatitude": 2339523648,
           "loclongitude": 2124843648,
@@ -218,6 +239,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:70:5]",
           "localtitude": 10092000,
           "loclatitude": 2224883648,
           "loclongitude": 1578683648,
@@ -227,6 +249,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:75:5]",
           "localtitude": 10224000,
           "loclatitude": 2307541648,
           "loclongitude": 1748502648,
@@ -236,6 +259,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:36:5]",
           "localtitude": 10000400,
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
@@ -245,6 +269,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:42:5]",
           "localtitude": 10000400,
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
@@ -254,6 +279,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:48:5]",
           "localtitude": 10000400,
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
@@ -263,6 +289,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:54:5]",
           "localtitude": 10000400,
           "loclatitude": 2025592648,
           "loclongitude": 2691854648,
@@ -272,6 +299,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:80:5]",
           "localtitude": 10030000,
           "loclatitude": 2342641648,
           "loclongitude": 2138950648,
@@ -281,6 +309,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:65:5]",
           "localtitude": 10000300,
           "loclatitude": 1996283648,
           "loclongitude": 2676683648,
@@ -290,6 +319,7 @@
           "type": "LOC"
         },
         {
+          "filepos": "[file:29:5]",
           "localtitude": 10001900,
           "loclatitude": 2287515583,
           "loclongitude": 1870152064,
