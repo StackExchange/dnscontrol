@@ -351,6 +351,8 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 			jsonQuoted(rec.NaptrRegexp),      // regex
 			jsonQuoted(rec.GetTargetField()), // .
 		)
+	case "SMIMEA":
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.SmimeaUsage, rec.SmimeaSelector, rec.SmimeaMatchingType, rec.GetTargetField())
 	case "SSHFP":
 		target = fmt.Sprintf(`%d, %d, "%s"`, rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":

@@ -73,6 +73,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"NS":               true,
 		"OPENPGPKEY":       true,
 		"PTR":              true,
+		"SMIMEA":           true,
 		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
@@ -225,7 +226,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SSHFP", "SVCB", "TLSA", "TXT":
+	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -460,6 +461,19 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
+				}
+			} else if rec.Type == "SMIMEA" {
+				if rec.SmimeaUsage > 3 {
+					errs = append(errs, fmt.Errorf("SMIMEA Usage %d is invalid in record %s (domain %s)",
+						rec.SmimeaUsage, rec.GetLabel(), domain.Name))
+				}
+				if rec.SmimeaSelector > 1 {
+					errs = append(errs, fmt.Errorf("SMIMEA Selector %d is invalid in record %s (domain %s)",
+						rec.SmimeaSelector, rec.GetLabel(), domain.Name))
+				}
+				if rec.SmimeaMatchingType > 2 {
+					errs = append(errs, fmt.Errorf("SMIMEA MatchingType %d is invalid in record %s (domain %s)",
+						rec.SmimeaMatchingType, rec.GetLabel(), domain.Name))
 				}
 			}
 
@@ -731,6 +745,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),
