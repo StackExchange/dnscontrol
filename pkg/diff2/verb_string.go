@@ -19,9 +19,9 @@ const _Verb_name = "CREATECHANGEDELETEREPORT"
 var _Verb_index = [...]uint8{0, 6, 12, 18, 24}
 
 func (i Verb) String() string {
-	i -= 1
-	if i < 0 || i >= Verb(len(_Verb_index)-1) {
-		return "Verb(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_Verb_index)-1 {
+		return "Verb(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Verb_name[_Verb_index[i]:_Verb_index[i+1]]
+	return _Verb_name[_Verb_index[idx]:_Verb_index[idx+1]]
 }
