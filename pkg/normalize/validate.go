@@ -178,7 +178,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	target := rec.GetTargetField()
 	check := func(e error) {
 		if e != nil {
-			err := fmt.Errorf("in %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
+			err := fmt.Errorf("%s: %s %s.%s: %s", rec.FilePos, rec.Type, rec.GetLabel(), domain, e.Error())
 			if _, ok := e.(Warning); ok {
 				err = Warning{err}
 			}
@@ -612,14 +612,14 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
-				errs = append(errs, fmt.Errorf("cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
+				errs = append(errs, fmt.Errorf("%s: cannot have multiple CNAMEs with same name: %s", r.FilePos, r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
-			errs = append(errs, fmt.Errorf("cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
+			errs = append(errs, fmt.Errorf("%s: cannot have CNAME and %s record with same name: %s", r.FilePos, r.Type, r.GetLabelFQDN()))
 		}
 	}
 	return

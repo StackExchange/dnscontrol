@@ -98,6 +98,7 @@ type RecordConfig struct {
 	target    string            // If a name, must end with "."
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
+	FilePos   string            `json:"filepos"`
 	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
@@ -201,7 +202,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		target    string            // If a name, must end with "."
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
-		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+		FilePos   string            `json:"filepos"` // Where in the file this record was defined.
+		Original  interface{}       `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
 		MxPreference       uint16            `json:"mxpreference,omitempty"`
@@ -259,6 +261,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
+	recj.FilePos = FixPosition(recj.FilePos)
+
 	// Copy the exported fields.
 	if err := copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		return err
@@ -280,6 +284,16 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+func FixPosition(str string) string {
+	if str == "" {
+		return ""
+	}
+	str = strings.TrimSpace(str)
+	str = strings.ReplaceAll(str, "\n", " ")
+	str = strings.TrimPrefix(str, "at <anonymous>:")
+	return fmt.Sprintf("[line:%s]", str)
 }
 
 // Copy returns a deep copy of a RecordConfig.

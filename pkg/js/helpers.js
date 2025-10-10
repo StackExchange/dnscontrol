@@ -827,15 +827,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-              ? 42849672.95
-              : args.alt.toString()) + 'm';
+                ? 42849672.95
+                : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-              ? 0
-              : args.siz.toString()) +
+                ? 0
+                : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -875,8 +875,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-              ? 0
-              : record.localtitude;
+                ? 0
+                : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -1266,11 +1266,21 @@ function recordBuilder(type, opts) {
             modifiers.push(arguments[i]);
         }
 
+        // Record which line called this record type.
+        // NB(tlim): Hopefully we can find a better way to do this in the
+        // future. Right now we're faking that there was an error just to parse
+        // out the line number. That's inefficient but I can't find anything better.
+        // This will certainly break if we change to a different Javascript interpreter.
+        // Hopefully any other interpreter will have a better way to do this.
+        var positionLines = new Error().stack.split('\n');
+        var position = positionLines[positionLines.length - 2];
+
         return function (d) {
             var record = {
                 type: type,
                 meta: {},
                 ttl: d.defaultTTL,
+                filepos: position,
             };
 
             opts.applyModifier(record, modifiers);
@@ -1744,7 +1754,7 @@ function CAA_BUILDER(value) {
         throw 'CAA_BUILDER requires at least one entry at issue, issuewild, issuevmc or issuemail';
     }
 
-    var CAA_TTL = function () {};
+    var CAA_TTL = function () { };
     if (value.ttl) {
         CAA_TTL = TTL(value.ttl);
     }
@@ -1761,7 +1771,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issue_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1770,7 +1780,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuewild) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuewild_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1781,7 +1791,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuevmc) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuevmc_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1792,7 +1802,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuemail) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuemail_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1864,7 +1874,7 @@ function DKIM_BUILDER(value) {
 
     kvs.push('p=' + value.pubkey);
 
-    var DKIM_TTL = function () {};
+    var DKIM_TTL = function () { };
     if (value.ttl) {
         DKIM_TTL = TTL(value.ttl);
     }
@@ -2101,20 +2111,20 @@ function M365_BUILDER(name, value) {
             CNAME(
                 'selector1._domainkey',
                 'selector1-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
         r.push(
             CNAME(
                 'selector2._domainkey',
                 'selector2-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
     }
