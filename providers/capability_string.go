@@ -43,8 +43,9 @@ const _Capability_name = "CanAutoDNSSECCanConcurCanGetZonesCanOnlyDiff1FeaturesC
 var _Capability_index = [...]uint16{0, 13, 22, 33, 53, 68, 79, 95, 104, 115, 126, 134, 153, 164, 173, 184, 193, 211, 223, 232, 241, 252, 262, 272, 284, 300, 316, 327, 349}
 
 func (i Capability) String() string {
-	if i >= Capability(len(_Capability_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Capability_index)-1 {
 		return "Capability(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Capability_name[_Capability_index[i]:_Capability_index[i+1]]
+	return _Capability_name[_Capability_index[idx]:_Capability_index[idx+1]]
 }

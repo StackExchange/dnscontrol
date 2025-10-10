@@ -4,12 +4,12 @@ go 1.25
 
 retract v4.8.0
 
-require google.golang.org/protobuf v1.36.9 // indirect
+require google.golang.org/protobuf v1.36.10 // indirect
 
-require golang.org/x/net v0.44.0
+require golang.org/x/net v0.46.0
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.12.0
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.3.0
 	github.com/Azure/go-autorest/autorest/to v0.4.1
@@ -50,9 +50,9 @@ require (
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
-	golang.org/x/crypto v0.42.0 // indirect
-	golang.org/x/oauth2 v0.31.0
-	google.golang.org/api v0.251.0
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/oauth2 v0.32.0
+	google.golang.org/api v0.252.0
 	gopkg.in/ns1/ns1-go.v2 v2.15.0
 )
 
@@ -61,26 +61,26 @@ require (
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.18
 	github.com/containrrr/shoutrrr v0.8.0
-	github.com/failsafe-go/failsafe-go v0.8.5
+	github.com/failsafe-go/failsafe-go v0.9.0
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.170
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.171
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.101.1
+	github.com/oracle/oci-go-sdk/v65 v65.102.0
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20250911091902-df9299821621
-	golang.org/x/text v0.29.0
-	golang.org/x/time v0.13.0
+	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b
+	golang.org/x/text v0.30.0
+	golang.org/x/time v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	cloud.google.com/go/auth v0.16.5 // indirect
+	cloud.google.com/go/auth v0.17.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
@@ -97,7 +97,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.6 // indirect
 	github.com/aws/smithy-go v1.23.0 // indirect
-	github.com/bits-and-blooms/bitset v1.20.0 // indirect
+	github.com/bits-and-blooms/bitset v1.24.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -148,12 +148,12 @@ require (
 	go.opentelemetry.io/otel v1.37.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
-	golang.org/x/mod v0.28.0 // indirect
+	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/tools v0.37.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250929231259-57b25ae835d4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797 // indirect
 	google.golang.org/grpc v1.75.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
