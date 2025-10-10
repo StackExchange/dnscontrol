@@ -2,9 +2,10 @@ package fortigate
 
 import (
 	"fmt"
-	"golang.org/x/net/idna"
 	"net"
 	"strings"
+
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
