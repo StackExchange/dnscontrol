@@ -2238,6 +2238,16 @@ var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: 'true' };
 // Go.
 
 function rawrecordBuilder(type) {
+
+        // Record which line called this record type.
+        // NB(tlim): Hopefully we can find a better way to do this in the
+        // future. Right now we're faking that there was an error just to parse
+        // out the line number. That's inefficient but I can't find anything better.
+        // This will certainly break if we change to a different Javascript interpreter.
+        // Hopefully any other interpreter will have a better way to do this.
+        var positionLines = new Error().stack.split('\n');
+        var position = positionLines[positionLines.length - 2];
+
     return function () {
         // Copy the raw args:
         var rawArgs = [];
@@ -2248,6 +2258,7 @@ function rawrecordBuilder(type) {
         return function (d) {
             var record = {
                 type: type,
+                filepos: position,
             };
 
             // Process the args: Functions are executed, objects are assumed to
