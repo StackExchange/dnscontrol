@@ -17,7 +17,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:9:5]",
+          "filepos": "[line:9:5]",
           "meta": {
             "orig_custom_type": "CF_REDIRECT"
           },
@@ -27,7 +27,7 @@
           "type": "CF_REDIRECT"
         },
         {
-          "filepos": "[file:10:5]",
+          "filepos": "[line:10:5]",
           "meta": {
             "orig_custom_type": "CF_TEMP_REDIRECT"
           },
@@ -37,7 +37,7 @@
           "type": "CF_TEMP_REDIRECT"
         },
         {
-          "filepos": "[file:11:5]",
+          "filepos": "[line:11:5]",
           "meta": {
             "orig_custom_type": "CF_WORKER_ROUTE"
           },
@@ -47,7 +47,7 @@
           "type": "CF_WORKER_ROUTE"
         },
         {
-          "filepos": "[file:6:5]",
+          "filepos": "[line:6:5]",
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.1",
@@ -55,7 +55,7 @@
           "type": "A"
         },
         {
-          "filepos": "[file:7:5]",
+          "filepos": "[line:7:5]",
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.2",
@@ -63,7 +63,7 @@
           "type": "A"
         },
         {
-          "filepos": "[file:8:5]",
+          "filepos": "[line:8:5]",
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.3",

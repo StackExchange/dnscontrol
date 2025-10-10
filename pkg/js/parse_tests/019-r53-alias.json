@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:6:5]",
+          "filepos": "[line:6:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -24,7 +24,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:7:5]",
+          "filepos": "[line:7:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -39,7 +39,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:5:5]",
+          "filepos": "[line:5:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -53,7 +53,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:3:5]",
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -67,7 +67,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:4:5]",
+          "filepos": "[line:4:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -82,7 +82,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:13:5]",
+          "filepos": "[line:13:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -96,7 +96,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:8:5]",
+          "filepos": "[line:8:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -110,7 +110,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -124,7 +124,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:14:5]",
+          "filepos": "[line:14:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -138,7 +138,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:9:5]",
+          "filepos": "[line:9:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -152,7 +152,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:12:5]",
+          "filepos": "[line:12:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -166,7 +166,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:11:5]",
+          "filepos": "[line:11:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -180,7 +180,7 @@
           "type": "R53_ALIAS"
         },
         {
-          "filepos": "[file:10:5]",
+          "filepos": "[line:10:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },

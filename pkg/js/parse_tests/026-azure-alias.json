@@ -13,7 +13,7 @@
           "azure_alias": {
             "type": "AAAA"
           },
-          "filepos": "[file:3:5]",
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "AZURE_ALIAS"
           },
@@ -26,7 +26,7 @@
           "azure_alias": {
             "type": "A"
           },
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "meta": {
             "orig_custom_type": "AZURE_ALIAS"
           },
@@ -39,7 +39,7 @@
           "azure_alias": {
             "type": "CNAME"
           },
-          "filepos": "[file:4:5]",
+          "filepos": "[line:4:5]",
           "meta": {
             "orig_custom_type": "AZURE_ALIAS"
           },

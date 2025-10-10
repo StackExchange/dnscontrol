@@ -29,8 +29,6 @@ func FromRaw(rc *models.RecordConfig, items []any) error {
 	code = items[1].(uint16)
 	if code != 301 && code != 302 && code != 303 && code != 307 && code != 308 {
 		return fmt.Errorf("%s: code (%03d) is not 301,302,303,307,308", rc.FilePos, code)
-		error: this is failing.  
-		`( dnsc && go install ) && dns && time dnscontrol check`
 	}
 	when = items[2].(string)
 	then = items[3].(string)

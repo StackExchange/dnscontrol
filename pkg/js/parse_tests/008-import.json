@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:1:1]",
+          "filepos": "[line:1:1]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,

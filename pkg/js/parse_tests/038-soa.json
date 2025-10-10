@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "name": "@",
           "soaexpire": 604800,
           "soambox": "admin.foo.com",

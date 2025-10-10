@@ -16,6 +16,7 @@
             "when1",
             "then1"
           ],
+          "filepos": "    at <anonymous>:2298:26",
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
@@ -25,6 +26,7 @@
             "when2",
             "then2"
           ],
+          "filepos": "    at <anonymous>:2298:26",
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
@@ -34,6 +36,7 @@
             "when3",
             "then3"
           ],
+          "filepos": "    at <anonymous>:2298:26",
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
         {
@@ -43,6 +46,7 @@
             "whenttl",
             "thenttl"
           ],
+          "filepos": "    at <anonymous>:2298:26",
           "ttl": 999,
           "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
         },
@@ -53,6 +57,7 @@
             "whenmeta",
             "thenmeta"
           ],
+          "filepos": "    at <anonymous>:2298:26",
           "metas": [
             {
               "metastr": "stringy"
@@ -66,7 +71,7 @@
       ],
       "records": [
         {
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "meta": {
             "meta": "value"
           },

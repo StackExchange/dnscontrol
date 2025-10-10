@@ -243,7 +243,7 @@ func TestFixPosition(t *testing.T) {
 		{
 			name: "anonymous position",
 			pos:  "at <anonymous>:2904:5",
-			want: "[file:2904:5]",
+			want: "[line:2904:5]",
 		},
 		{
 			name: "random string",
@@ -253,7 +253,7 @@ func TestFixPosition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := fixPosition(tt.pos.(string))
+			got := FixPosition(tt.pos.(string))
 			if got != tt.want {
 				t.Errorf("fixPosition() = %v, want %v", got, tt.want)
 			}

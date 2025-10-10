@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "meta": {
             "orig_custom_type": "CF_REDIRECT"
           },
@@ -20,7 +20,7 @@
           "type": "CF_REDIRECT"
         },
         {
-          "filepos": "[file:3:5]",
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "CF_TEMP_REDIRECT"
           },

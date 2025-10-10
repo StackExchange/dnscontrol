@@ -106,6 +106,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 		return nil, err
 	}
 
+	vm.Context()
 	// export conf as string and unmarshal
 	value, err := vm.Run(`JSON.stringify(conf)`)
 	if err != nil {

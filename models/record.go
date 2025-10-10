@@ -254,9 +254,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	//fmt.Printf("DEBUG: position: %v\n", recj.Position)
-	recj.FilePos = fixPosition(recj.FilePos)
-	//fmt.Printf("DEBUG: position: %v\n", recj.Position)
+	recj.FilePos = FixPosition(recj.FilePos)
 
 	// Copy the exported fields.
 	if err := copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
@@ -281,11 +279,11 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func fixPosition(str string) string {
-	prefix := "at <anonymous>:"
+func FixPosition(str string) string {
 	str = strings.TrimSpace(str)
+	prefix := "at <anonymous>:"
 	if strings.HasPrefix(str, prefix) {
-		return "[file:" + strings.TrimPrefix(str, prefix) + "]"
+		return "[line:" + strings.TrimPrefix(str, prefix) + "]"
 	}
 	return str
 }

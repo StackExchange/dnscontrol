@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:2:5]",
+          "filepos": "[line:2:5]",
           "name": "@",
           "sshfpalgorithm": 1,
           "sshfpfingerprint": 1,
@@ -19,7 +19,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:3:5]",
+          "filepos": "[line:3:5]",
           "name": "@",
           "sshfpalgorithm": 1,
           "sshfpfingerprint": 2,
@@ -28,7 +28,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:4:5]",
+          "filepos": "[line:4:5]",
           "name": "@",
           "sshfpalgorithm": 2,
           "sshfpfingerprint": 1,
@@ -37,7 +37,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:5:5]",
+          "filepos": "[line:5:5]",
           "name": "@",
           "sshfpalgorithm": 2,
           "sshfpfingerprint": 2,
@@ -46,7 +46,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:6:5]",
+          "filepos": "[line:6:5]",
           "name": "@",
           "sshfpalgorithm": 3,
           "sshfpfingerprint": 1,
@@ -55,7 +55,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:7:5]",
+          "filepos": "[line:7:5]",
           "name": "@",
           "sshfpalgorithm": 3,
           "sshfpfingerprint": 2,
@@ -64,7 +64,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:8:5]",
+          "filepos": "[line:8:5]",
           "name": "@",
           "sshfpalgorithm": 4,
           "sshfpfingerprint": 1,
@@ -73,7 +73,7 @@
           "type": "SSHFP"
         },
         {
-          "filepos": "[file:9:5]",
+          "filepos": "[line:9:5]",
           "name": "@",
           "sshfpalgorithm": 4,
           "sshfpfingerprint": 2,

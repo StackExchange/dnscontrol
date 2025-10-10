@@ -10,7 +10,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[file:4:5]",
+          "filepos": "[line:4:5]",
           "meta": {
             "cloudflare_proxy": "ON"
           },

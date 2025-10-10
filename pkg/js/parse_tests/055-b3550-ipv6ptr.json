@@ -17,14 +17,14 @@
       "name": "d.c.b.a.1.1.0.2.ip6.arpa",
       "records": [
         {
-          "filepos": "[file:5:5]",
+          "filepos": "[line:5:5]",
           "name": "1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "target": "host11.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[file:6:5]",
+          "filepos": "[line:6:5]",
           "name": "2.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "target": "host22.example.com.",
           "ttl": 300,
@@ -44,21 +44,21 @@
       "name": "8.b.d.0.1.0.0.2.ip6.arpa",
       "records": [
         {
-          "filepos": "[file:10:5]",
+          "filepos": "[line:10:5]",
           "name": "1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "target": "server11.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[file:11:5]",
+          "filepos": "[line:11:5]",
           "name": "2.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "target": "server22.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[file:15:5]",
+          "filepos": "[line:15:5]",
           "name": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "subdomain": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "target": "abcd.example.com.",
