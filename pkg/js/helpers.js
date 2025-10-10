@@ -536,6 +536,24 @@ var NAPTR = recordBuilder('NAPTR', {
 // OPENPGPKEY(name,target, recordModifiers...)
 var OPENPGPKEY = recordBuilder('OPENPGPKEY');
 
+// name, usage, selector, matchingtype, certificate
+var SMIMEA = recordBuilder('SMIMEA', {
+    args: [
+        ['name', _.isString],
+        ['usage', _.isNumber],
+        ['selector', _.isNumber],
+        ['matchingtype', _.isNumber],
+        ['target', _.isString], // recordBuilder needs a "target" argument
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name + '._smimecert';
+        record.smimeausage = args.usage;
+        record.smimeaselector = args.selector;
+        record.smimeamatchingtype = args.matchingtype;
+        record.target = args.target;
+    },
+});
+
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
     args: [
