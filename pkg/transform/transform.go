@@ -51,7 +51,7 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 		}
 		parseList := func(s string) ([]net.IP, error) {
 			ips := []net.IP{}
-			for _, ip := range strings.Split(s, ",") {
+			for ip := range strings.SplitSeq(s, ",") {
 				if ip == "" {
 					continue
 				}

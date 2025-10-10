@@ -42,7 +42,7 @@ func (n *Client) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 func (n *Client) getNameserversRaw(domain string) ([]string, error) {
-	r := n.client.Request(map[string]interface{}{
+	r := n.client.Request(map[string]any{
 		"COMMAND": "StatusDomain",
 		"DOMAIN":  domain,
 	})
@@ -94,7 +94,7 @@ func (n *Client) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Cor
 
 func (n *Client) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
-		cmd := map[string]interface{}{
+		cmd := map[string]any{
 			"COMMAND": "ModifyDomain",
 			"DOMAIN":  domain,
 		}

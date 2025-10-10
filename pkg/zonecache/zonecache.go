@@ -2,6 +2,7 @@ package zonecache
 
 import (
 	"errors"
+	"maps"
 	"sync"
 )
 
@@ -29,9 +30,7 @@ func (c *ZoneCache[Zone]) ensureCached() error {
 	if c.cache == nil {
 		c.cache = make(map[string]Zone, len(zones))
 	}
-	for name, z := range zones {
-		c.cache[name] = z
-	}
+	maps.Copy(c.cache, zones)
 	c.cached = true
 	return nil
 }

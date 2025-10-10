@@ -188,10 +188,9 @@ func getENotationInt(x float32) (uint8, error) {
 	}
 
 	// Truncate the mantissa (integer value) and ensure it's within 4 bits
-	mantissaInt := int(math.Floor(mantissa))
-	if mantissaInt > 9 {
-		mantissaInt = 9 // Cap mantissa at 9
-	}
+	mantissaInt := min(int(math.Floor(mantissa)),
+		// Cap mantissa at 9
+		9)
 
 	// Ensure exponent is within 4 bits
 	if exp < 0 {

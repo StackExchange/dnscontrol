@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -173,10 +174,8 @@ func (c *hednsProvider) EnsureZoneExists(domain string) error {
 		return err
 	}
 
-	for _, d := range domains {
-		if d == domain {
-			return nil
-		}
+	if slices.Contains(domains, domain) {
+		return nil
 	}
 
 	return c.createDomain(domain)

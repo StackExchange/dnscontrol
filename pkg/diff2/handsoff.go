@@ -233,7 +233,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 
 		c.RTypeMap = make(map[string]struct{})
 		if c.RTypePattern != "*" && c.RTypePattern != "" {
-			for _, part := range strings.Split(c.RTypePattern, ",") {
+			for part := range strings.SplitSeq(c.RTypePattern, ",") {
 				part = strings.TrimSpace(part)
 				c.RTypeMap[part] = struct{}{}
 			}

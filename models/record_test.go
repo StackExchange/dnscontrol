@@ -90,7 +90,7 @@ func TestRecordConfig_Copy(t *testing.T) {
 		TlsaMatchingType uint8
 		R53Alias         map[string]string
 		AzureAlias       map[string]string
-		Original         interface{}
+		Original         any
 	}
 	tests := []struct {
 		name    string

@@ -135,7 +135,7 @@ type DocumentationNote struct {
 type DocumentationNotes map[Capability]*DocumentationNote
 
 // ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangeably
-type ProviderMetadata interface{}
+type ProviderMetadata any
 
 // Notes is a collection of all documentation notes, keyed by provider type
 var Notes = map[string]DocumentationNotes{}

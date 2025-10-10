@@ -2,6 +2,7 @@ package spflib
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -33,11 +34,12 @@ func Chunks(s string, chunkSize int) []string {
 
 // TXT outputs s as a TXT record.
 func (s *SPFRecord) TXT() string {
-	text := "v=spf1"
+	var text strings.Builder
+	text.WriteString("v=spf1")
 	for _, p := range s.Parts {
-		text += " " + p.Text
+		text.WriteString(" " + p.Text)
 	}
-	return text
+	return text.String()
 }
 
 // Maximum length of a single TXT string. Anything
@@ -128,10 +130,5 @@ func matchesFlatSpec(spec, fqdn string) bool {
 	if spec == "*" {
 		return true
 	}
-	for _, p := range strings.Split(spec, ",") {
-		if p == fqdn {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(strings.Split(spec, ","), fqdn)
 }

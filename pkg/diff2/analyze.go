@@ -143,12 +143,10 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	// Build maps required by filterBy
 	eKeys := map[string]*targetConfig{}
 	for _, v := range existing {
-		v := v
 		eKeys[v.comparableFull] = &v
 	}
 	dKeys := map[string]*targetConfig{}
 	for _, v := range desired {
-		v := v
 		dKeys[v.comparableFull] = &v
 	}
 

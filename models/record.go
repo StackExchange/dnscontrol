@@ -99,7 +99,7 @@ type RecordConfig struct {
 	TTL       uint32            `json:"ttl,omitempty"`
 	Metadata  map[string]string `json:"meta,omitempty"`
 	FilePos   string            `json:"filepos"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Original  any               `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
 	MxPreference       uint16            `json:"mxpreference,omitempty"`
@@ -203,7 +203,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		FilePos   string            `json:"filepos"` // Where in the file this record was defined.
-		Original  interface{}       `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
+		Original  any               `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
 		MxPreference       uint16            `json:"mxpreference,omitempty"`

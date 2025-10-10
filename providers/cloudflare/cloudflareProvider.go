@@ -740,7 +740,7 @@ type cfTarget string
 // represented by a false boolean or a dot. Domain names are FQDNs without a
 // trailing period (as of 2019-11-05).
 func (c *cfTarget) UnmarshalJSON(data []byte) error {
-	var obj interface{}
+	var obj any
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return err
 	}
@@ -785,7 +785,7 @@ type cfNaptrRecData struct {
 }
 
 // uint16Zero converts value to uint16 or returns 0.
-func uint16Zero(value interface{}) uint16 {
+func uint16Zero(value any) uint16 {
 	switch v := value.(type) {
 	case float64:
 		return uint16(v)
@@ -797,7 +797,7 @@ func uint16Zero(value interface{}) uint16 {
 }
 
 // intZero converts value to uint16 or returns 0.
-func intZero(value interface{}) uint16 {
+func intZero(value any) uint16 {
 	switch v := value.(type) {
 	case float64:
 		return uint16(v)
@@ -809,7 +809,7 @@ func intZero(value interface{}) uint16 {
 }
 
 // stringDefault returns the value as a string or returns the default value if nil.
-func stringDefault(value interface{}, def string) string {
+func stringDefault(value any, def string) string {
 	switch v := value.(type) {
 	case string:
 		return v
@@ -860,7 +860,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := cr.Data.(map[string]interface{})
+		data := cr.Data.(map[string]any)
 
 		target := stringDefault(data["target"], "MISSING.TARGET")
 		if target != "." {

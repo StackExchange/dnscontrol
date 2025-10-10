@@ -27,21 +27,21 @@ type CLI interface {
 
 // Printer is a simple abstraction for printing data. Can be passed to providers to give simple output capabilities.
 type Printer interface {
-	Debugf(fmt string, args ...interface{})
-	Printf(fmt string, args ...interface{})
+	Debugf(fmt string, args ...any)
+	Printf(fmt string, args ...any)
 	Println(lines ...string)
-	Warnf(fmt string, args ...interface{})
-	Errorf(fmt string, args ...interface{})
-	PrintfIf(prnt bool, fmt string, args ...interface{})
+	Warnf(fmt string, args ...any)
+	Errorf(fmt string, args ...any)
+	PrintfIf(prnt bool, fmt string, args ...any)
 }
 
 // Debugf is called to print/format debug information.
-func Debugf(fmt string, args ...interface{}) {
+func Debugf(fmt string, args ...any) {
 	DefaultPrinter.Debugf(fmt, args...)
 }
 
 // Printf is called to print/format information.
-func Printf(fmt string, args ...interface{}) {
+func Printf(fmt string, args ...any) {
 	DefaultPrinter.Printf(fmt, args...)
 }
 
@@ -51,7 +51,7 @@ func Println(lines ...string) {
 }
 
 // Warnf is called to print/format a warning.
-func Warnf(fmt string, args ...interface{}) {
+func Warnf(fmt string, args ...any) {
 	DefaultPrinter.Warnf(fmt, args...)
 }
 
@@ -61,7 +61,7 @@ func Warnf(fmt string, args ...interface{}) {
 // }
 
 // PrintfIf is called to optionally print something.
-func PrintfIf(prnt bool, fmt string, args ...interface{}) {
+func PrintfIf(prnt bool, fmt string, args ...any) {
 	DefaultPrinter.PrintfIf(prnt, fmt, args...)
 }
 
@@ -182,14 +182,14 @@ func (c ConsolePrinter) EndProvider2(name string, numCorrections int) {
 }
 
 // Debugf is called to print/format debug information.
-func (c ConsolePrinter) Debugf(format string, args ...interface{}) {
+func (c ConsolePrinter) Debugf(format string, args ...any) {
 	if c.Verbose {
 		fmt.Fprintf(c.Writer, format, args...)
 	}
 }
 
 // Printf is called to print/format information.
-func (c ConsolePrinter) Printf(format string, args ...interface{}) {
+func (c ConsolePrinter) Printf(format string, args ...any) {
 	fmt.Fprintf(c.Writer, format, args...)
 }
 
@@ -199,17 +199,17 @@ func (c ConsolePrinter) Println(lines ...string) {
 }
 
 // Warnf is called to print/format a warning.
-func (c ConsolePrinter) Warnf(format string, args ...interface{}) {
+func (c ConsolePrinter) Warnf(format string, args ...any) {
 	fmt.Fprintf(c.Writer, "WARNING: "+format, args...)
 }
 
 // Errorf is called to print/format an error.
-func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
+func (c ConsolePrinter) Errorf(format string, args ...any) {
 	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
 }
 
 // PrintfIf is called to optionally print/format a message.
-func (c ConsolePrinter) PrintfIf(prnt bool, format string, args ...interface{}) {
+func (c ConsolePrinter) PrintfIf(prnt bool, format string, args ...any) {
 	if prnt {
 		fmt.Fprintf(c.Writer, format, args...)
 	}

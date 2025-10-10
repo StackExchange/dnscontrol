@@ -416,7 +416,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 		if pr.Actions[0].ID != "forwarding_url" {
 			continue
 		}
-		value := pr.Actions[0].Value.(map[string]interface{})
+		value := pr.Actions[0].Value.(map[string]any)
 		thisPr := pr
 		r := &models.RecordConfig{
 			Original: thisPr,

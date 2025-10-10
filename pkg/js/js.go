@@ -69,7 +69,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	}
 
 	// add functions to otto
-	functions := map[string]interface{}{
+	functions := map[string]any{
 		"require":   require,
 		"REV":       reverse,
 		"REVCOMPAT": reverseCompat,

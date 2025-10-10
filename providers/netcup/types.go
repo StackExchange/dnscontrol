@@ -11,8 +11,8 @@ import (
 )
 
 type request struct {
-	Action string      `json:"action"`
-	Param  interface{} `json:"param"`
+	Action string `json:"action"`
+	Param  any    `json:"param"`
 }
 
 type paramLogin struct {

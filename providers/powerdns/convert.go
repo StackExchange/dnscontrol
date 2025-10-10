@@ -33,7 +33,7 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 }
 
 func parseTxt(content string) (result []string) {
-	for _, r := range strings.Split(content, "\" ") {
+	for r := range strings.SplitSeq(content, "\" ") {
 		result = append(result, strings.Trim(r, "\""))
 	}
 	return

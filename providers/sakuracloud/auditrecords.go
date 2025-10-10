@@ -3,6 +3,7 @@ package sakuracloud
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -66,10 +67,8 @@ func rejectifNsPointsToOrigin(rc *models.RecordConfig) error {
 var labelExampleRe = regexp.MustCompile(`^example[0-9]?$`)
 
 func hasLabelExample(domain string) error {
-	for _, l := range dns.SplitDomainName(domain) {
-		if labelExampleRe.MatchString(l) {
-			return fmt.Errorf("label contains `example`: %s", domain)
-		}
+	if slices.ContainsFunc(dns.SplitDomainName(domain), labelExampleRe.MatchString) {
+		return fmt.Errorf("label contains `example`: %s", domain)
 	}
 	return nil
 }

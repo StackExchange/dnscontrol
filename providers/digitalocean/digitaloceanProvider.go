@@ -368,9 +368,6 @@ func pauseAndRetry(resp *godo.Response) bool {
 	// a simple exponential back-off with a 3-minute max.
 	log.Printf("Delaying %v due to ratelimit\n", backoff)
 	time.Sleep(backoff)
-	backoff = backoff + (backoff / 2)
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
+	backoff = min(backoff+(backoff/2), maxBackoff)
 	return true
 }

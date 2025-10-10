@@ -26,11 +26,11 @@ type desecProvider struct {
 }
 
 type domainObject struct {
-	Created    time.Time   `json:"created,omitempty"`
+	Created    time.Time   `json:"created"`
 	Keys       []dnssecKey `json:"keys,omitempty"`
 	MinimumTTL uint32      `json:"minimum_ttl,omitempty"`
 	Name       string      `json:"name,omitempty"`
-	Published  time.Time   `json:"published,omitempty"`
+	Published  time.Time   `json:"published"`
 }
 
 type resourceRecord struct {
@@ -163,7 +163,7 @@ func appendDomainIndexFromResponse(domainIndex map[string]uint32, bodyString []b
 func convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
 	printer.Debugf("Header: %s\n", links)
-	for _, link := range strings.Split(links, ", ") {
+	for link := range strings.SplitSeq(links, ", ") {
 		tmpurl := strings.Split(link, "; ")
 		if len(tmpurl) != 2 {
 			printer.Printf("unexpected link header %s", link)
