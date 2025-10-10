@@ -287,12 +287,13 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 }
 
 func FixPosition(str string) string {
-	str = strings.TrimSpace(str)
-	prefix := "at <anonymous>:"
-	if strings.HasPrefix(str, prefix) {
-		return "[line:" + strings.TrimPrefix(str, prefix) + "]"
+	if str == "" {
+		return ""
 	}
-	return str
+	str = strings.TrimSpace(str)
+	str = strings.ReplaceAll(str, "\n", " ")
+	str = strings.TrimPrefix(str, "at <anonymous>:")
+	return fmt.Sprintf("[line:%s]", str)
 }
 
 // Copy returns a deep copy of a RecordConfig.

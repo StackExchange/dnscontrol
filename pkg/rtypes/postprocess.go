@@ -19,8 +19,6 @@ func PostProcess(domains []*models.DomainConfig) error {
 				Metadata: map[string]string{},
 			}
 
-			rec.FilePos = models.FixPosition(rawRec.FilePos)
-
 			// Copy the metadata (convert everything to string)
 			for _, m := range rawRec.Metas {
 				for mk, mv := range m {
