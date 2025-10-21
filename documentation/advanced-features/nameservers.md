@@ -223,7 +223,7 @@ auditing purposes. Some sites do backups of these zonefiles to create a history
 of changes. This is different than keeping a history of `dnsconfig.js` because
 this is the output of DNSControl, not the input.
 
-{% hint style="info" %}
+{% hint style="danger" %}
 **NOTE**: This won't work if you use pseudo rtypes that BIND doesn't support.
 {% endhint %}
 
