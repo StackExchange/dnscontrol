@@ -1818,7 +1818,7 @@ function CAA_BUILDER(value) {
 // DKIM_BUILDER takes an object:
 // label: The DNS label for the DKIM record ([selector]._domainkey prefix is added; default: '@')
 // selector: Selector used for the label. e.g. s1 or mail
-// pubkey: Public key (p) to be used for DKIM.
+// pubkey: Public key (p) to be used for DKIM (optional)
 // keytype: Key type (k). Defaults to 'rsa' if missing (optional)
 // flags: Which types (t) of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
 // hashtypes: Acceptable hash algorithma (h) (optional)
@@ -1834,10 +1834,6 @@ function DKIM_BUILDER(value) {
 
     if (!value.selector) {
         throw 'DKIM_BUILDER selector cannot be empty';
-    }
-
-    if (!value.pubkey) {
-        throw 'DKIM_BUILDER pubkey cannot be empty';
     }
 
     // build the label
