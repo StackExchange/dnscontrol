@@ -292,6 +292,8 @@
     "TYPE": "PORKBUN",
     "api_key": "$PORKBUN_API_KEY",
     "domain": "$PORKBUN_DOMAIN",
+    "max_attempts": "$PORKBUN_MAX_ATTEMPTS",
+    "max_duration": "$PORKBUN_MAX_DURATION",
     "secret_key": "$PORKBUN_SECRET_KEY"
   },
   "POWERDNS": {

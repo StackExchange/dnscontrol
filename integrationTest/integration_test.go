@@ -744,15 +744,19 @@ func makeTests() []*TestGroup {
 
 		testgroup("NAPTR",
 			requires(providers.CanUseNAPTR),
-			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
-			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
+			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR second record",
+				naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "."),
+				naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
+			),
+			tc("NAPTR delete second record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR remove regexp and add target", naptr("test", 103, 20, "A", "E2U+sip", "", "example.foo.com.")),
+			tc("NAPTR change target", naptr("test", 103, 20, "A", "E2U+sip", "", "example2.foo.com.")),
 		),
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
@@ -2015,6 +2019,15 @@ func makeTests() []*TestGroup {
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
+
+		testgroup("SMIMEA",
+			requires(providers.CanUseSMIMEA),
+			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("SMIMEA change usage", smimea("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
 		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far

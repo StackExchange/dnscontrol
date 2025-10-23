@@ -10,6 +10,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "@",
           "naptrflags": "U",
           "naptrorder": 100,
@@ -21,6 +22,7 @@
           "type": "NAPTR"
         },
         {
+          "filepos": "[line:3:5]",
           "name": "@",
           "naptrflags": "U",
           "naptrorder": 102,
@@ -32,6 +34,7 @@
           "type": "NAPTR"
         },
         {
+          "filepos": "[line:4:5]",
           "name": "@",
           "naptrflags": "U",
           "naptrorder": 103,
@@ -43,6 +46,7 @@
           "type": "NAPTR"
         },
         {
+          "filepos": "[line:5:5]",
           "name": "@",
           "naptrflags": "U",
           "naptrorder": 104,

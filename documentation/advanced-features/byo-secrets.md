@@ -162,7 +162,7 @@ Some rules:
 
 * The account/credentials should only access the test domain. Don't send your company's actual credentials and trust us to only touch the test domain. (this hasn't happened yet, thankfully!)
 * Renew the domain in a timely manner. This may be monitoring an email inbox you don't normally monitor.
-* Don't do anything that will get you in trouble with your employer, like charging it to your employer without permission. (this hasn't happend yet either, thankfully!)
+* Don't do anything that will get you in trouble with your employer, like charging it to your employer without permission. (this hasn't happened yet either, thankfully!)
 {% endhint %}
 
 Now that we've covered all that...

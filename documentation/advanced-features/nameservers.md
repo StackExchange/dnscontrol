@@ -94,7 +94,7 @@ D("example.com", REG_THIRDPARTY,
 ## Zone is elsewhere
 
 Purpose:
-This is a "Registar only" configuration.  Use it when you control the registar but want to delegate the zone to someone else.
+This is a "Registrar only" configuration.  Use it when you control the registrar but want to delegate the zone to someone else.
 
 Why?
 We are delegating the domain to someone else. In this example we're
@@ -223,7 +223,7 @@ auditing purposes. Some sites do backups of these zonefiles to create a history
 of changes. This is different than keeping a history of `dnsconfig.js` because
 this is the output of DNSControl, not the input.
 
-{% hint style="info" %}
+{% hint style="danger" %}
 **NOTE**: This won't work if you use pseudo rtypes that BIND doesn't support.
 {% endhint %}
 
@@ -243,7 +243,7 @@ D("example.com", REG_NAMECOM,
 Purpose:
 You don't control the registrar but want to detect if the delegation changes.
 You can specify the existing nameservers in `dnsconfig.js` and you will get
-a notified if the delegation diverges.
+a notification if the delegation diverges.
 
 Why?
 Sometimes you just want to know if something changes!

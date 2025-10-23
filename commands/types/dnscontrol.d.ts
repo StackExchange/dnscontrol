@@ -384,6 +384,10 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
  * 1. `"issue"`
  * 2. `"issuewild"`
  * 3. `"iodef"`
+ * 4. `"contactemail"`
+ * 5. `"contactphone"`
+ * 6. `"issuemail"`
+ * 7. `"issuevmc"`
  *
  * Value is a string. The format of the contents is different depending on the tag. DNSControl will handle any escaping or quoting required, similar to TXT records. For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
  *
@@ -406,7 +410,7 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa
  */
-declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "contactemail" | "contactphone" | "issuemail" | "issuevmc", value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * DNSControl contains a `CAA_BUILDER` which can be used to simply create
@@ -503,11 +507,15 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * * `issue_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
  * * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
  * * `issuewild_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ * * `issuevmc:` An array of CAs which are allowed to issue VMC certificates. (Use `"none"` to refuse all CAs)
+ * * `issuevmc_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+ * * `issuemail:` An array of CAs which are allowed to issue email certificates. (Use `"none"` to refuse all CAs)
+ * * `issuemail_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
  * * `ttl:` Input for `TTL` method (optional)
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/caa_builder
  */
-declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; ttl?: Duration }): DomainModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; issuevmc: string[]|string; issuevmc_critical?: boolean; issuemail: string[]|string; issuemail_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
  * WARNING: Cloudflare is removing this feature and replacing it with a new
@@ -2081,7 +2089,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * control `.com`.  If the domain was `gmeet.io`, the registrar does
  * the right thing to talk to the people that control `.io`.
  *
- * (A better name might have been `PARENTNAMESERVER()` but we didn"t
+ * (A better name might have been `PARENTNAMESERVER()` but we didn't
  * think of that at the time.)
  *
  * Each registrar handles delegations differently.  Most use
@@ -2863,6 +2871,38 @@ declare function REV(address: string): string;
 declare function REVCOMPAT(rfc: string): string;
 
 /**
+ * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.
+ *
+ * To create the name, you can the following command:
+ *
+ * ```bash
+ * # For the e-mail bosun@bosun.org run:
+ * echo -n "bosun" | sha256sum | awk '{print $1}' | cut -c1-56
+ * # f10e7de079689f55c0cdd6782e4dd1448c84006962a4bd832e8eff73
+ * ```
+ *
+ * Usage, selector, and type are ints.
+ *
+ * Certificate is a hex string.
+ *
+ * To create the string for the type 0, you can run this command with your S/MIME certificate:
+ *
+ * ```bash
+ * openssl x509 -in smime-cert.pem -outform DER | xxd -p -c 10000
+ * ```
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   // Create SMIMEA record for certificate for the name bosun
+ *   SMIMEA("f10e7de079689f55c0cdd6782e4dd1448c84006962a4bd832e8eff73", 3, 0, 0, "30820353308202f8a003020102..."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/smimea
+ */
+declare function SMIMEA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
  *
  * ```javascript
@@ -3050,14 +3090,17 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ## Notes about the `spfcache.json`
  *
- * DNSControl keeps a cache of the DNS lookups performed during
- * optimization.  The cache is maintained so that the optimizer does
- * not produce different results depending on the ups and downs of
- * other people's DNS servers. This makes it possible to do `dnscontrol
+ * DNSControl will optionally keep a cache of the DNS lookups performed during
+ * optimization.  In the event that a DNS server is down, the cache will be used.
+ * This makes it possible to do `dnscontrol
  * push` even if your or third-party DNS servers are down.
  *
- * The DNS cache is kept in a file called `spfcache.json`. If it needs
- * to be updated, the proper data will be written to a file called
+ * To enable this feature, create an (empty) file called `spfcache.json` in the
+ * current directory.  To disable this feature, delete the file. There are no
+ * command-line flags related to this feature.
+ *
+ * The `spfcache.json` stored the cached DNS lookups. If it needs
+ * to be updated, the new file contents will be written to a file called
  * `spfcache.updated.json` and instructions such as the ones below
  * will be output telling you exactly what to do:
  *
@@ -3073,13 +3116,9 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * In this case, you are being asked to replace `spfcache.json` with
  * the newly generated data in `spfcache.updated.json`.
  *
- * Needing to do this kind of update is considered a validation error
- * and will block `dnscontrol push` from running.
- *
- * Note: The instructions are hardcoded strings. The filenames will
+ * The instructions are hardcoded strings. The filenames will
  * not change.
- *
- * Note: The instructions assume you use git. If you use something
+ * The instructions assume you use git. If you use something
  * else, please do the appropriate equivalent command.
  *
  * ## Caveats

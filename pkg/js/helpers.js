@@ -536,6 +536,24 @@ var NAPTR = recordBuilder('NAPTR', {
 // OPENPGPKEY(name,target, recordModifiers...)
 var OPENPGPKEY = recordBuilder('OPENPGPKEY');
 
+// name, usage, selector, matchingtype, certificate
+var SMIMEA = recordBuilder('SMIMEA', {
+    args: [
+        ['name', _.isString],
+        ['usage', _.isNumber],
+        ['selector', _.isNumber],
+        ['matchingtype', _.isNumber],
+        ['target', _.isString], // recordBuilder needs a "target" argument
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name + '._smimecert';
+        record.smimeausage = args.usage;
+        record.smimeaselector = args.selector;
+        record.smimeamatchingtype = args.matchingtype;
+        record.target = args.target;
+    },
+});
+
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
     args: [
@@ -1248,11 +1266,21 @@ function recordBuilder(type, opts) {
             modifiers.push(arguments[i]);
         }
 
+        // Record which line called this record type.
+        // NB(tlim): Hopefully we can find a better way to do this in the
+        // future. Right now we're faking that there was an error just to parse
+        // out the line number. That's inefficient but I can't find anything better.
+        // This will certainly break if we change to a different Javascript interpreter.
+        // Hopefully any other interpreter will have a better way to do this.
+        var positionLines = new Error().stack.split('\n');
+        var position = positionLines[positionLines.length - 2];
+
         return function (d) {
             var record = {
                 type: type,
                 meta: {},
                 ttl: d.defaultTTL,
+                filepos: position,
             };
 
             opts.applyModifier(record, modifiers);
@@ -1691,6 +1719,12 @@ function SPF_BUILDER(value) {
 // iodef_critical: Boolean if sending report is required/critical. If not supported, certificate should be refused. (optional)
 // issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each), or the string 'none'.
 // issuewild: List of allowed CAs which can issue wildcard certificates for this domain, or the string 'none'. (creates one record for each)
+// issuevmc: List of allowed CAs which can issue VMC certificates for this domain, or the string 'none'. (creates one record for each)
+// issuemail: List of allowed CAs which can issue email certificates for this domain, or the string 'none'. (creates one record for each)
+// issue_critical: Boolean if issue entries are critical. If not supported, certificate should be refused. (optional)
+// issuewild_critical: Boolean if issuewild entries are critical. If not supported, certificate should be refused. (optional)
+// issuevmc_critical: Boolean if issuevmc entries are critical. If not supported, certificate should be refused. (optional)
+// issuemail_critical: Boolean if issuemail entries are critical. If not supported, certificate should be refused. (optional)
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
 function CAA_BUILDER(value) {
@@ -1700,15 +1734,24 @@ function CAA_BUILDER(value) {
 
     if (value.issue && value.issue == 'none') value.issue = [';'];
     if (value.issuewild && value.issuewild == 'none') value.issuewild = [';'];
+    if (value.issuevmc && value.issuevmc == 'none') value.issuevmc = [';'];
+    if (value.issuemail && value.issuemail == 'none') value.issuemail = [';'];
 
     if (
-        (!value.issue && !value.issuewild) ||
+        (!value.issue &&
+            !value.issuewild &&
+            !value.issuevmc &&
+            !value.issuemail) ||
         (value.issue &&
             value.issue.length == 0 &&
             value.issuewild &&
-            value.issuewild.length == 0)
+            value.issuewild.length == 0 &&
+            value.issuevmc &&
+            value.issuevmc.length == 0 &&
+            value.issuemail &&
+            value.issuemail.length == 0)
     ) {
-        throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
+        throw 'CAA_BUILDER requires at least one entry at issue, issuewild, issuevmc or issuemail';
     }
 
     var CAA_TTL = function () {};
@@ -1747,13 +1790,35 @@ function CAA_BUILDER(value) {
             );
     }
 
+    if (value.issuevmc) {
+        var flag = function () {};
+        if (value.issuevmc_critical) {
+            flag = CAA_CRITICAL;
+        }
+        for (var i = 0, len = value.issuevmc.length; i < len; i++)
+            r.push(
+                CAA(value.label, 'issuevmc', value.issuevmc[i], flag, CAA_TTL)
+            );
+    }
+
+    if (value.issuemail) {
+        var flag = function () {};
+        if (value.issuemail_critical) {
+            flag = CAA_CRITICAL;
+        }
+        for (var i = 0, len = value.issuemail.length; i < len; i++)
+            r.push(
+                CAA(value.label, 'issuemail', value.issuemail[i], flag, CAA_TTL)
+            );
+    }
+
     return r;
 }
 
 // DKIM_BUILDER takes an object:
 // label: The DNS label for the DKIM record ([selector]._domainkey prefix is added; default: '@')
 // selector: Selector used for the label. e.g. s1 or mail
-// pubkey: Public key (p) to be used for DKIM.
+// pubkey: Public key (p) to be used for DKIM (optional)
 // keytype: Key type (k). Defaults to 'rsa' if missing (optional)
 // flags: Which types (t) of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
 // hashtypes: Acceptable hash algorithma (h) (optional)
@@ -1769,10 +1834,6 @@ function DKIM_BUILDER(value) {
 
     if (!value.selector) {
         throw 'DKIM_BUILDER selector cannot be empty';
-    }
-
-    if (!value.pubkey) {
-        throw 'DKIM_BUILDER pubkey cannot be empty';
     }
 
     // build the label

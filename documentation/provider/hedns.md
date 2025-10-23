@@ -82,7 +82,7 @@ This option is disabled by default when this key is not present,
 
 **Security Warning**:
 * Anyone with access to this `.hedns-session` file will be able to use the existing session (until it expires) and have
-  *full* access to your Hurrican Electric account and will be able to modify and delete your DNS entries.
+  *full* access to your Hurricane Electric account and will be able to modify and delete your DNS entries.
 * It should be stored in a location only trusted users can access.
 
 {% code title="creds.json" %}

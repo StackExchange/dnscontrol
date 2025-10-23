@@ -10,6 +10,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:6:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -23,6 +24,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:7:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -37,6 +39,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:5:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -50,6 +53,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -63,6 +67,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:4:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -77,6 +82,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:13:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -90,6 +96,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:8:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -103,6 +110,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:2:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -116,6 +124,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:14:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -129,6 +138,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:9:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -142,6 +152,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:12:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -155,6 +166,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:11:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },
@@ -168,6 +180,7 @@
           "type": "R53_ALIAS"
         },
         {
+          "filepos": "[line:10:5]",
           "meta": {
             "orig_custom_type": "R53_ALIAS"
           },

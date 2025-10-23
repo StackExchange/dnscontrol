@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -119,6 +120,7 @@ func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 		SharingID:           client.sharingid,
 		Debug:               client.debug,
 		APIURL:              client.apiurl,
+		Timeout:             10 * time.Minute, // A ludicrously long timeout
 	})
 	return g
 }

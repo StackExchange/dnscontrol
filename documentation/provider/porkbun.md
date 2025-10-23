@@ -11,11 +11,31 @@ Example:
   "porkbun": {
     "TYPE": "PORKBUN",
     "api_key": "your-porkbun-api-key",
-    "secret_key": "your-porkbun-secret-key",
+    "secret_key": "your-porkbun-secret-key"
   }
 }
 ```
 {% endcode %}
+
+Porkbun has quite strict API limits. If you experience errors with this provider (common when you have many domains), you can set one or both of `max_attempts` and `max_duration` in the credentials configuration.
+
+Example:
+
+{% code title="creds.json" %}
+```json
+{
+  "porkbun": {
+    "TYPE": "PORKBUN",
+    "api_key": "your-porkbun-api-key",
+    "secret_key": "your-porkbun-secret-key",
+    "max_attempts": "10",
+    "max_duration": "5m"
+  }
+}
+```
+{% endcode %}
+
+The default for `max_attempts` is 5. There is no maximum duration by default, instead the provider will perform exponential backoff between 1 and 10 seconds, until `max_attempts` is reached. To retry indefinitely until `max_duration` is reached, set `max_attempts` to any value below 1.
 
 ## Metadata
 

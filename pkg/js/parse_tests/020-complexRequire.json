@@ -10,30 +10,35 @@
       "name": "sortfoo.com",
       "records": [
         {
+          "filepos": "[line:1:1]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:1:1]",
           "name": "a",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "filepos": "[line:1:1]",
           "name": "b",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "filepos": "[line:1:1]",
           "name": "c",
           "target": "foo.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
+          "filepos": "[line:1:1]",
           "name": "d",
           "target": "foo.com.",
           "ttl": 300,

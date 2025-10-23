@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -19,8 +20,10 @@ func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) erro
 		panic("assertion failed: SetTargetCAA called when .Type is not CAA")
 	}
 
-	if tag != "issue" && tag != "issuewild" && tag != "iodef" {
-		return fmt.Errorf("CAA tag (%v) is not one of issue/issuewild/iodef", tag)
+	// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
+	allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
+	if !slices.Contains(allowedTags, tag) {
+		return fmt.Errorf("CAA tag (%v) is not one of the valid types.", tag)
 	}
 
 	return nil

@@ -10,6 +10,7 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "_443._tcp",
           "target": "mdfiytq3mtljodbinmzlotexyja5mwe3yza1mti0yjy0zwvly2u5njrlmdljmdu4zwy4zjk4mdvkywnhntq2yiaglqo=",
           "tlsamatchingtype": 1,

@@ -479,6 +479,12 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 	return r
 }
 
+func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "SMIMEA")
+	panicOnErr(r.SetTargetSMIMEA(usage, selector, matchingtype, target))
+	return r
+}
+
 func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
 	r := makeRec(name, "", "SOA")
 	panicOnErr(r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl))

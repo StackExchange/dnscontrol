@@ -31,20 +31,22 @@ type telegramNotifier struct {
 
 func (s *telegramNotifier) Notify(domain, provider, msg string, err error, preview bool) error {
 	var payload struct {
-		ChatID int64  `json:"chat_id"`
-		Text   string `json:"text"`
+		ChatID    int64  `json:"chat_id"`
+		Text      string `json:"text"`
+		ParseMode string `json:"parse_mode"`
 	}
 
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.BotToken)
 
 	payload.ChatID, _ = strconv.ParseInt(s.ChatID, 10, 64)
+	payload.ParseMode = "HTML"
 
 	if preview {
-		payload.Text = fmt.Sprintf(`DNSControl preview: %s[%s] -** %s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf("DNSControl preview: %s[%s]:\n%s", domain, provider, msg)
 	} else if err != nil {
-		payload.Text = fmt.Sprintf(`DNSControl ERROR running correction on %s[%s] -** (%s) Error: %s`, domain, provider, msg, err)
+		payload.Text = fmt.Sprintf("DNSControl ERROR running correction on %s[%s]:\n%s\nError: %s", domain, provider, msg, err)
 	} else {
-		payload.Text = fmt.Sprintf(`DNSControl successfully ran correction for **%s[%s]** - %s`, domain, provider, msg)
+		payload.Text = fmt.Sprintf("DNSControl successfully ran correction for %s[%s]:\n%s", domain, provider, msg)
 	}
 
 	marshaledPayload, _ := json.Marshal(payload)

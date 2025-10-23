@@ -356,6 +356,20 @@ func (n *namecheapProvider) GetNameservers(domainName string) ([]*models.Nameser
 	return models.ToNameservers(NamecheapDefaultNs)
 }
 
+func (n *namecheapProvider) ListZones() ([]string, error) {
+	zones, err := n.client.DomainsGetList()
+	if err != nil {
+		return nil, err
+	}
+
+	var zoneList []string
+	for _, zone := range zones {
+		zoneList = append(zoneList, zone.Name)
+	}
+
+	return zoneList, nil
+}
+
 // GetRegistrarCorrections returns corrections to update nameservers.
 func (n *namecheapProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var info *nc.DomainInfo

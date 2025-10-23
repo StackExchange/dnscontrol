@@ -64,7 +64,7 @@ If a domain does not exist in your Bunny account, DNSControl will automatically 
 ## Custom record types
 
 Any custom record types like Script, Flatten or Pull Zone are currently not supported by this provider, except
-those explicitely listed below. Such records will be completely ignored by DNSControl and left as-is.
+those explicitly listed below. Such records will be completely ignored by DNSControl and left as-is.
 
 ### Redirect
 

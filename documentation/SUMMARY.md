@@ -70,6 +70,7 @@
     * [OPENPGPKEY](language-reference/domain-modifiers/OPENPGPKEY.md)
     * [PTR](language-reference/domain-modifiers/PTR.md)
     * [PURGE](language-reference/domain-modifiers/PURGE.md)
+    * [SMIMEA](language-reference/domain-modifiers/SMIMEA.md)
     * [SOA](language-reference/domain-modifiers/SOA.md)
     * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
     * [SRV](language-reference/domain-modifiers/SRV.md)

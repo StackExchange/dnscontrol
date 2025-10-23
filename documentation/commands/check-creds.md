@@ -2,7 +2,7 @@
 
 This is a stand-alone utility to help verify entries in `creds.json`.
 
-The command does a trivia operation to verify credentials.  If
+The command does a trivial operation to verify credentials.  If
 successful, a list of zones will be output (which may be an empty list). If the credentials or other problems prevent this operation from executing, the exit code will be non-zero and hopefully verbose error messages will be output.
 
 ```text
