@@ -286,7 +286,7 @@ Jump to a table:
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❔ | ❌ |
-| [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
+| [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`NETLIFY`](netlify.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ❔ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
