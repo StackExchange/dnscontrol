@@ -63,6 +63,11 @@ D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
 ## Activation
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
 
+## Tags and Variants
+If you use a dnscontrol *tag* (like `example.com!internal`) it will be mapped to a powerdns *variant* (like `example.com..internal`).
+
+See [PowerDNS documentation on Views](https://doc.powerdns.com/authoritative/views.html) for details on how to setup networks and views for these variants.
+
 ## Caveats
 
 ### SOA Records
