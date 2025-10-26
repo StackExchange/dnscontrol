@@ -275,6 +275,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 	// we have to delete then create.  Corrections are compiled separately for
 	// deletes, changes and creates and then assembled in that order.
 	corrections := []*models.Correction{}
+	deletes := []*models.Correction{}
 	creates := []*models.Correction{}
 	deferred := []*models.Correction{}
 
@@ -297,7 +298,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 			newRec := change.New[0]
 			if isNullMX(newRec) || isNullMX(oldRec) {
 				// changing to or from a Null MX has to be delete then create
-				corrections = append(corrections, &models.Correction{
+				deletes = append(deletes, &models.Correction{
 					Msg: color.RedString("- DELETE %s %s %s ttl=%d", oldRec.GetLabelFQDN(), oldRec.Type, oldRec.ToComparableNoTTL(), oldRec.TTL),
 					F: func() error {
 						return api.deleteRecord(oldRec.Original.(goinwx.NameserverRecord).ID)
@@ -328,7 +329,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 			})
 		case diff2.DELETE:
 			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
-			corrections = append(corrections, &models.Correction{
+			deletes = append(deletes, &models.Correction{
 				Msg: changeMsgs,
 				F:   func() error { return api.deleteRecord(recID) },
 			})
@@ -336,6 +337,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
+	corrections = append(deletes, corrections...)
 	corrections = append(corrections, creates...)
 	corrections = append(corrections, deferred...)
 	return corrections, actualChangeCount, nil
