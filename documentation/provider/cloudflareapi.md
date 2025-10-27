@@ -409,11 +409,26 @@ DS records to fail.
 
 ## Invalid warnings about TXT records
 
+The way that DNSControl updates TXT records results in Cloudflare displaying this warning:
+
 ![Warning Example](../assets/providers/cloudflareapi/invalid-warning.png)
+
+These warnings can be ignored.  The warning just means that Cloudflare is
+asking you to enter the TXT record data in RFC 1035 format. Since this hasn't
+been done, they print this warning and do the RFC 1035 encoding for you.
+
+The DNSControl creator thinks that it is ridiculous for Cloudflare to require
+humans to encode data. Why don't they just require all input to be in 1's and 0's?
+
+If Cloudflare is going to produce warnings like even when the update arrived
+via their API, there is a simple solution: Their SDK should include a function
+that takes a raw ASCII string and produces the encoded/quoted string they
+desire. (By the way... that encoded string is then JSON encoded... because
+double-encoding totally makes sense.)
 
 ## Cloudflare special TTLs
 
-Cloudflare plays tricks with TTLs.  Cloudflare uses "1" to mean "auto-ttl";
+Cloudflare plays tricks with TTLs.  Cloudflare uses "1" to mean "auto-ttl
 which as far as we can tell means 300 seconds (5 minutes) with the option that
 CloudFlare may dynamically adjust the actual TTL.
 
