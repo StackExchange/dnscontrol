@@ -84,6 +84,8 @@ func TestTxtEncode(t *testing.T) {
 		data     []string
 		expected string
 	}{
+		{[]string{"simple"}, `"simple"`},
+		{[]string{`"quoted"`}, `"\"quoted\""`},
 		{[]string{}, `""`},
 		{[]string{``}, `""`},
 		{[]string{`foo`}, `"foo"`},
