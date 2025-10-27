@@ -97,7 +97,7 @@ This method is enabled by setting the `apikey` and `apiuser` values in `creds.js
 * `apiuser` is the email address associated with the account.
 * `apikey` is found on [My Profile / API Tokens](https://dash.cloudflare.com/profile/api-tokens).
 
-## Meta configuration
+# Meta configuration
 
 This provider accepts some optional metadata:
 
@@ -197,12 +197,12 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 ```
 {% endcode %}
 
-## New domains
+# New domains
 If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
 
 
-## Old-style vs new-style redirects
+# Old-style vs new-style redirects
 
 Old-style redirects uses the [Page Rules](https://developers.cloudflare.com/rules/page-rules/) product feature, which is [going away](https://developers.cloudflare.com/rules/reference/page-rules-migration/).  In this mode,
 `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions generate Page Rules.
@@ -232,7 +232,7 @@ New-style redirects ("Single Redirect Rules") are a new feature of DNSControl
 as of v4.12.0 and may have bugs.  Please test carefully.
 {% endhint %}
 
-### Conversion mode:
+## Conversion mode:
 
 DNSControl can convert from old-style redirects (Page Rules) to new-style
 redirect (Single Redirects). To enable this mode, set both `manage_redirects`
@@ -279,7 +279,7 @@ than DNSControl's.  However there's no way for DNSControl to manage them since t
 If you have suggestions on how to handle this better please file a bug.
 {% endhint %}
 
-### Converting to CF_SINGLE_REDIRECT permanently
+## Converting to CF_SINGLE_REDIRECT permanently
 
 DNSControl will help convert `CF_REDIRECT`/`CF_TEMP_REDIRECT` statements into
 `CF_SINGLE_REDIRECT` statements. You might choose to do this if you do not want
@@ -362,7 +362,7 @@ Notice a few details:
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
 4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL" will be left alone. In other words, `dnscontrol` will delete any Forwarding URL it doesn't recognize. Be careful!
 
-## Worker routes
+# Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
 {% code title="dnsconfig.js" %}
@@ -385,10 +385,6 @@ Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol`
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
 were created outside of DNSControl.
 
-## DS records
-
-Cloudflare has restrictions that may result in DNSControl's attempt to insert
-DS records to fail.
 
 ## Integration testing
 
@@ -403,6 +399,17 @@ go test -v -verbose -profile CLOUDFLAREAPI -cfworkers=false
 ```
 
 When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.
+
+# Caveats
+
+## DS records
+
+Cloudflare has restrictions that may result in DNSControl's attempt to insert
+DS records to fail.
+
+## Invalid warnings about TXT records
+
+![Warning Example](../assets/providers/cloudflareapi/invalid-warning.png)
 
 ## Cloudflare special TTLs
 
