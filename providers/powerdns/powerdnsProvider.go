@@ -46,6 +46,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCustomRecordType("LUA", providerName, "")
 }
 
 // powerdnsProvider represents the powerdnsProvider DNSServiceProvider.

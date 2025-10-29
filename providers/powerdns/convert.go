@@ -27,6 +27,14 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 		// So we need to strip away " and split into multiple string
 		// We can't use SetTargetRFC1035Quoted, it would split the long strings into multiple parts
 		return rc, rc.SetTargetTXTs(parseTxt(r.Content))
+	case "LUA":
+		luaType, payload := models.ParseLuaContent(r.Content)
+		rc.LuaRType = luaType
+		value, err := models.DecodeLuaPayload(payload)
+		if err != nil {
+			return nil, err
+		}
+		return rc, rc.SetTargetTXT(value)
 	default:
 		return rc, rc.PopulateFromString(rtype, r.Content, domain)
 	}
