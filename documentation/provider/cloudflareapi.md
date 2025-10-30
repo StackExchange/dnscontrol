@@ -428,7 +428,7 @@ double-encoding totally makes sense.)
 
 ## Cloudflare special TTLs
 
-Cloudflare plays tricks with TTLs.  Cloudflare uses "1" to mean "auto-ttl
+Cloudflare plays tricks with TTLs.  Cloudflare uses "1" to mean "auto-ttl"
 which as far as we can tell means 300 seconds (5 minutes) with the option that
 CloudFlare may dynamically adjust the actual TTL.
 
