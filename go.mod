@@ -53,7 +53,7 @@ require (
 	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/oauth2 v0.32.0
 	google.golang.org/api v0.252.0
-	gopkg.in/ns1/ns1-go.v2 v2.15.0
+	gopkg.in/ns1/ns1-go.v2 v2.15.1
 )
 
 require (
