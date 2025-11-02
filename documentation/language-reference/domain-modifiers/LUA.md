@@ -10,6 +10,7 @@ parameter_types:
   rtype: string
   contents: string | string[]
   "modifiers...": RecordModifier[]
+provider: POWERDNS
 ---
 
 
@@ -78,13 +79,13 @@ LUA("edge", "A", "pickclosest({'192.0.2.1','192.0.2.2','198.51.100.1'})", TTL(60
 
 {% code title="dnsconfig.js" %}
 ```javascript
-LUA("api", "A", `
-  ; if continent('EU') then
-      return {'198.51.100.1'}
-    else
-      return {'192.0.2.10','192.0.2.20'}
-    end
-`, TTL(60));
+LUA("api", "A", [
+  "; if continent('EU') then ",
+  "    return {'198.51.100.1'} ",
+  "  else ",
+  "    return {'192.0.2.10','192.0.2.20'} ",
+  "  end"
+], TTL(60));
 
 // Dynamic TXT, showing the queried name (string building example)
 LUA("_diag", "TXT", "; return 'Got a TXT query for ' .. qname:toString()", TTL(30));
