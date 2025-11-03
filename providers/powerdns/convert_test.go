@@ -33,6 +33,19 @@ func TestToRecordConfig(t *testing.T) {
 		recordConfig.String())
 	assert.Equal(t, uint32(5), recordConfig.TTL)
 	assert.Equal(t, "TXT", recordConfig.Type)
+
+	luaRecord := zones.Record{
+		Content: "TXT \"return 'Hello, world!'\"",
+	}
+	recordConfig, err = toRecordConfig("example.com", luaRecord, 3600, "script", "LUA")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "script.example.com", recordConfig.NameFQDN)
+	assert.Equal(t, "LUA", recordConfig.Type)
+	assert.Equal(t, "TXT", recordConfig.LuaRType)
+	assert.Equal(t, "return 'Hello, world!'", recordConfig.GetTargetTXTJoined())
+	assert.Equal(t, "TXT \"return 'Hello, world!'\"", recordConfig.GetTargetCombined())
+	assert.Equal(t, uint32(3600), recordConfig.TTL)
 }
 
 func TestParseText(t *testing.T) {

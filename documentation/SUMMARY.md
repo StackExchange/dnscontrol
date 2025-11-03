@@ -97,6 +97,8 @@
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
+        * PowerDNS
+            * [LUA](language-reference/domain-modifiers/LUA.md)     
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific

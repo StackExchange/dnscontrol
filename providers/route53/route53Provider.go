@@ -20,10 +20,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	r53 "github.com/aws/aws-sdk-go-v2/service/route53"
 	r53Types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	r53d "github.com/aws/aws-sdk-go-v2/service/route53domains"
 	r53dTypes "github.com/aws/aws-sdk-go-v2/service/route53domains/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 type route53Provider struct {
@@ -50,7 +52,7 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		config.WithRegion("us-east-1"),
 	}
 
-	keyID, secretKey, tokenID := m["KeyId"], m["SecretKey"], m["Token"]
+	keyID, secretKey, tokenID, roleArn, externalId := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
 	// Token is optional and left empty unless required
 	if keyID != "" || secretKey != "" {
 		optFns = append(optFns, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(keyID, secretKey, tokenID)))
@@ -59,6 +61,20 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 	config, err := config.LoadDefaultConfig(context.Background(), optFns...)
 	if err != nil {
 		return nil, err
+	}
+
+	if roleArn != "" {
+		stsClient := sts.NewFromConfig(config)
+		sessionName := fmt.Sprintf("dnscontrol-route53-%d", time.Now().Unix())
+
+		var assumeOpts []func(*stscreds.AssumeRoleOptions)
+		if externalId != "" {
+			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalId) })
+		}
+		assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.RoleSessionName = sessionName })
+
+		stsCredsProvider := stscreds.NewAssumeRoleProvider(stsClient, roleArn, assumeOpts...)
+		config.Credentials = aws.NewCredentialsCache(stsCredsProvider)
 	}
 
 	var dls *string
