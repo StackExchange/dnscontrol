@@ -1,33 +1,33 @@
 ---
 name: DKIM_BUILDER
 parameters:
-  - label
   - selector
   - pubkey
-  - flags
+  - label
+  - version
   - hashtypes
   - keytype
-  - servicetypes
   - note
+  - servicetypes
+  - flags
   - ttl
 parameters_object: true
 parameter_types:
-  label: string?
   selector: string
-  pubkey: string
-  flags: string[]?
-  hashtypes: string[]?
+  pubkey: string?
+  label: string?
+  version: string?
+  hashtypes: string|string[]?
   keytype: string?
-  servicetypes: string[]?
   note: string?
+  servicetypes: string|string[]?
+  flags: string|string[]?
   ttl: Duration?
 ---
 
-DNSControl contains a `DKIM_BUILDER` which can be used to simply create
-DKIM policies for your domains.
+DNSControl contains a `DKIM_BUILDER` helper function that generates DKIM DNS TXT records according to RFC 6376 (DomainKeys Identified Mail) and its updates.
 
-
-## Example
+## Examples
 
 ### Simple example
 
@@ -54,13 +54,15 @@ s1._domainkey   IN  TXT "v=DKIM1; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   DKIM_BUILDER({
-    label: "alerts",
     selector: "k2",
     pubkey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L",
-    flags: ['y'],
-    hashtypes: ['sha256'],
-    keytype: 'rsa',
+    label: "subdomain",
+    version: "DKIM1",
+    hashtypes: ['sha1', 'sha256'],
+    keytype: "rsa",
+    note: "some human-readable notes",
     servicetypes: ['email'],
+    flags: ['y', 's'],
     ttl: 150
   }),
 );
@@ -70,23 +72,35 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 This yields the following record:
 
 ```text
-
-k2._domainkey.alerts    IN  TXT "v=DKIM1; k=rsa; s=email; t=y; h=sha256; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L" ttl=150
-
+k2._domainkey.subdomain   IN  TXT "v=DKIM1; h=sha1:sha256; k=rsa; n=some=20human-readable=20notes; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L; s=email; t=y:s" ttl=150
 ```
 
-### Parameters
+## Parameters
 
-* `label:` The DNS label for the DKIM record (`[selector]._domainkey` prefix is added; default: `'@'`)
-* `selector:` Selector used for the label. e.g. `s1` or `mail`
-* `pubkey:` Public key `p` to be used for DKIM.
-* `keytype:` Key type `k`. Defaults to `'rsa'` if omitted (optional)
-* `flags:` Which types `t` of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
-* `hashtypes:` Acceptable hash algorithms `h` (optional)
-* `servicetypes:` Record-applicable service types (optional)
-* `note:` Note field `n` for admins. Avoid if possible to keep record length short. (optional)
-* `ttl:` Input for `TTL` method (optional)
+* `selector` (string, required): The selector subdividing the namespace for the domain.
+* `pubkey` (string, optional): The base64-encoded public key (RSA or Ed25519). Default: empty (key revocation or non-sending domain).
+* `label` (string, optional): The DNS label for the DKIM record. Default: `@`.
+* `version` (string, optional): DKIM version. Maps to the `v=` tag. Default: `DKIM1` (currently the only supported value).
+* `hashtypes` (array, optional): Acceptable hash algorithms for signing. Maps to the `h=` tag.
+  * Supported values for RSA key:
+    * `sha1`
+    * `sha256`
+  * Supported values for Ed25519 key:
+    * `sha256`
+* `keytype` (string, optional): Key algorithm type. Maps to the `k=` tag. Default: `rsa`. Supported values:
+   * `rsa`
+   * `ed25519`
+* `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
+* `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
+  * `*`: explicity allows all service types
+  * `email`: restricts key to email service only
+* `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
+  * `y`: Testing mode.
+  * `s`: Subdomain restriction.
+* `ttl` (number, optional): DNS TTL value in seconds
 
-### Caveats
+## Related RFCs
 
-* DKIM (TXT) records are automatically split using `AUTOSPLIT`.
+* RFC 6376: DomainKeys Identified Mail (DKIM) Signatures
+* RFC 8301: Cryptographic Algorithm and Key Usage Update to DKIM
+* RFC 8463: A New Cryptographic Signature Method for DKIM (Ed25519)
