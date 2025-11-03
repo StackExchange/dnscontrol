@@ -1832,69 +1832,215 @@ function CAA_BUILDER(value) {
     return r;
 }
 
-// DKIM_BUILDER takes an object:
-// label: The DNS label for the DKIM record ([selector]._domainkey prefix is added; default: '@')
-// selector: Selector used for the label. e.g. s1 or mail
-// pubkey: Public key (p) to be used for DKIM (optional)
-// keytype: Key type (k). Defaults to 'rsa' if missing (optional)
-// flags: Which types (t) of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
-// hashtypes: Acceptable hash algorithma (h) (optional)
-// servicetypes: Record-applicable service types (optional)
-// note: Note field fo admins. Avoid if possible to keep record length short. (optional)
-// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
+/**
+ * Encodes a string into DKIM-specific quoted-printable format.
+ *
+ * This function converts characters that are outside the range of printable ASCII
+ * characters, semicolons, DEL, or above ASCII 127 into their quoted-printable
+ * hex representation, prefixed by '='. This encoding is used in DKIM signatures
+ * to handle characters safely.
+ *
+ * @param {string} str - The input string to encode.
+ * @returns {string} The DKIM quoted-printable encoded string.
+ */
+function _encodeDKIMQuotedPrintable(str) {
+    var hexChars = '0123456789ABCDEF'.split('');
+    var result = '';
+
+    for (var i = 0; i < str.length; i++) {
+        var charCode = str.charCodeAt(i);
+        if (
+            charCode < 0x21 ||
+            charCode === 0x3b ||
+            charCode === 0x3d ||
+            charCode === 0x7f ||
+            charCode > 0x7f
+        ) {
+            result +=
+                '=' + hexChars[(charCode >>> 4) & 15] + hexChars[charCode & 15];
+        } else {
+            result += str.charAt(i);
+        }
+    }
+    return result;
+}
+
+/**
+ * Builds a DKIM DNS TXT record according to RFC 6376 its updates
+ * @param {Object} value - Configuration object for the DKIM record.
+ * @param {string} value.selector - The selector subdividing the namespace for the domain. **(Required)**
+ * @param {string} [value.pubkey] - The base64-encoded public key (RSA or Ed25519).
+ *   May be empty for key revocation or non-sending domains.
+ * @param {string} [value.label='@'] - The DNS label for the DKIM record (`[selector]._domainkey` prefix is added).
+ * @param {string} [value.version='DKIM1'] - The DKIM version (`v=` tag). Currently, only `"DKIM1"` is supported.
+ * @param {string|string[]} [value.hashtypes] - Acceptable hash algorithms for signing (`h=` tag).
+ *   - Supported values for RSA: `'sha1'`, `'sha256'`
+ *   - Supported values for Ed25519: `'sha256'`
+ * @param {string} [value.keytype='rsa'] - Key algorithm type (`k=` tag).
+ *   - Supported values: `'rsa'`, `'ed25519'`
+ * @param {string|string[]} [value.servicetypes] - Service types using this key (`s=` tag).
+ *   - Supported values: `'*'`, `'email'`
+ *   - `'*'` allows all services; `'email'` restricts usage to email only.
+ * @param {string|string[]} [value.flags] - Flags modifying selector interpretation (`t=` tag).
+ *   - Supported values: `'y'` (testing mode), `'s'` (subdomain restriction)
+ * @param {string} [value.note] - Human-readable note for the record (`n=` tag).
+ * @param {number} [value.ttl] - DNS TTL value in seconds.
+ *
+ * @throws {Error} If a required field is missing or a value is invalid.
+ * @returns {Object} DNS TXT record entries for DKIM
+ */
 
 function DKIM_BUILDER(value) {
-    if (!value) {
-        value = {};
-    }
-    kvs = [];
+    value = value || {};
 
-    if (!value.selector) {
+    // ========================================
+    // PHASE 1: NORMALIZATION
+    // ========================================
+
+    // Apply defaults using _.defaults()
+    value = _.defaults(value, {
+        version: 'DKIM1',
+        pubkey: '',
+        label: '@',
+    });
+
+    // Normalize string|array fields to always be arrays
+    if (!_.isEmpty(value.hashtypes)) {
+        value.hashtypes = _.isString(value.hashtypes)
+            ? [value.hashtypes]
+            : value.hashtypes;
+    }
+
+    if (!_.isEmpty(value.servicetypes)) {
+        value.servicetypes = _.isString(value.servicetypes)
+            ? [value.servicetypes]
+            : value.servicetypes;
+    }
+
+    if (!_.isEmpty(value.flags)) {
+        value.flags = _.isString(value.flags) ? [value.flags] : value.flags;
+    }
+
+    // ========================================
+    // PHASE 2: VALIDATION (Fail Fast)
+    // ========================================
+
+    // Static allowed values
+    var ALLOWED_VERSIONS = ['DKIM1'];
+    var ALLOWED_KEYTYPES = ['rsa', 'ed25519'];
+    var ALLOWED_HASHTYPES = {
+        rsa: ['sha1', 'sha256'],
+        ed25519: ['sha256'],
+    };
+    var ALLOWED_SERVICETYPES = ['*', 'email'];
+    var ALLOWED_FLAGS = ['y', 's'];
+
+    // Required fields
+    if (_.isEmpty(value.selector)) {
         throw 'DKIM_BUILDER selector cannot be empty';
     }
 
-    // build the label
-    if (!value.label) {
-        value.label = '@';
+    // Version validation
+    if (!_.contains(ALLOWED_VERSIONS, value.version)) {
+        throw (
+            'DKIM_BUILDER version must be one of: ' +
+            ALLOWED_VERSIONS.join(', ')
+        );
     }
 
-    if (value.label !== '@') {
-        value.label = value.selector + '._domainkey' + '.' + value.label;
-    } else {
-        value.label = value.selector + '._domainkey';
+    // Keytype validation
+    if (
+        !_.isEmpty(value.keytype) &&
+        !_.contains(ALLOWED_KEYTYPES, value.keytype)
+    ) {
+        throw (
+            'DKIM_BUILDER keytype must be one of: ' +
+            ALLOWED_KEYTYPES.join(', ') +
+            ', ' +
+            value.keytype +
+            ' given'
+        );
     }
 
-    kvs.push('v=DKIM1');
+    // Hashtypes validation (now always an array after normalization)
+    if (!_.isEmpty(value.hashtypes)) {
+        var allowedHashtypes = ALLOWED_HASHTYPES[value.keytype || 'rsa'];
+        var invalidHashtypes = _.difference(value.hashtypes, allowedHashtypes);
+        if (invalidHashtypes.length > 0) {
+            throw (
+                'DKIM_BUILDER hashtypes for ' +
+                value.keytype +
+                ' must be one of: ' +
+                allowedHashtypes.join(', ')
+            );
+        }
+    }
+
+    // Servicetypes validation (now always an array after normalization)
+    if (!_.isEmpty(value.servicetypes)) {
+        var invalidServicetypes = _.difference(
+            value.servicetypes,
+            ALLOWED_SERVICETYPES
+        );
+        if (invalidServicetypes.length > 0) {
+            throw (
+                'DKIM_BUILDER servicetypes must be one of: ' +
+                ALLOWED_SERVICETYPES.join(', ')
+            );
+        }
+    }
+
+    // Flags validation (now always an array after normalization)
+    if (!_.isEmpty(value.flags)) {
+        var invalidFlags = _.difference(value.flags, ALLOWED_FLAGS);
+        if (invalidFlags.length > 0) {
+            throw (
+                'DKIM_BUILDER flags must be one of: ' + ALLOWED_FLAGS.join(', ')
+            );
+        }
+    }
+
+    // ========================================
+    // PHASE 3: BUILD OUTPUT
+    // ========================================
+
+    // Build record RFC 6376 order: v=, h=, k=, n=, p=, s=, t=
+    var record = [];
+
+    record.push('v=' + value.version);
+
+    if (value.hashtypes) {
+        record.push('h=' + value.hashtypes.join(':'));
+    }
+
     if (value.keytype) {
-        kvs.push('k=' + value.keytype);
+        record.push('k=' + value.keytype);
     }
+
+    if (!_.isEmpty(value.note)) {
+        record.push('n=' + _encodeDKIMQuotedPrintable(value.note));
+    }
+
+    record.push('p=' + value.pubkey);
 
     if (value.servicetypes) {
-        kvs.push('s=' + value.servicetypes);
+        record.push('s=' + value.servicetypes.join(':'));
     }
 
-    if (value.flags && value.flags.length > 0) {
-        kvs.push('t=' + value.flags.join(':'));
+    if (value.flags) {
+        record.push('t=' + value.flags.join(':'));
     }
 
-    if (value.hashtypes && value.hashtypes.length > 0) {
-        kvs.push('h=' + value.hashtypes.join(':'));
+    // Build label
+    var fullLabel = value.selector + '._domainkey';
+    if (value.label !== '@') {
+        fullLabel += '.' + value.label;
     }
 
-    if (value.note) {
-        kvs.push('n=' + value.note);
-    }
+    // Handle TTL
+    var DKIM_TTL = value.ttl ? TTL(value.ttl) : function () {};
 
-    kvs.push('p=' + value.pubkey);
-
-    var DKIM_TTL = function () {};
-    if (value.ttl) {
-        DKIM_TTL = TTL(value.ttl);
-    }
-
-    r = []; // The list of records to return.
-    r.push(TXT(value.label, kvs.join('\; '), DKIM_TTL));
-    return r;
+    return TXT(fullLabel, record.join('; '), DKIM_TTL);
 }
 
 // DMARC_BUILDER takes an object:
