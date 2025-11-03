@@ -59,7 +59,7 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.19.1
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
-	github.com/aws/aws-sdk-go-v2/service/sts v1.38.6
+	github.com/aws/aws-sdk-go-v2/service/sts v1.39.0
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.18
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/failsafe-go/failsafe-go v0.9.1
@@ -96,7 +96,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.12 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.39.0 // indirect
 	github.com/aws/smithy-go v1.23.1 // indirect
 	github.com/bits-and-blooms/bitset v1.24.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
