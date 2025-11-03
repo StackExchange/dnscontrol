@@ -208,7 +208,7 @@ func zoneRrtypeLess(a, b string) bool {
 
 	for _, t := range []string{
 		"SOA", "NS", "CNAME",
-		"A", "AAAA", "MX", "SRV", "TXT",
+		"A", "AAAA", "MX", "SRV", "TXT", "LUA",
 	} {
 		if a == t {
 			return true

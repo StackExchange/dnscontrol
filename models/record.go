@@ -123,6 +123,7 @@ type RecordConfig struct {
 	LocLatitude        uint32            `json:"loclatitude,omitempty"`
 	LocLongitude       uint32            `json:"loclongitude,omitempty"`
 	LocAltitude        uint32            `json:"localtitude,omitempty"`
+	LuaRType           string            `json:"luartype,omitempty"`
 	NaptrOrder         uint16            `json:"naptrorder,omitempty"`
 	NaptrPreference    uint16            `json:"naptrpreference,omitempty"`
 	NaptrFlags         string            `json:"naptrflags,omitempty"`
@@ -227,6 +228,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		LocLatitude        int               `json:"loclatitude,omitempty"`
 		LocLongitude       int               `json:"loclongitude,omitempty"`
 		LocAltitude        uint32            `json:"localtitude,omitempty"`
+		LuaRType           string            `json:"luartype,omitempty"`
 		NaptrOrder         uint16            `json:"naptrorder,omitempty"`
 		NaptrPreference    uint16            `json:"naptrpreference,omitempty"`
 		NaptrFlags         string            `json:"naptrflags,omitempty"`
@@ -387,6 +389,8 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		r := txtutil.EncodeQuoted(rc.target)
 		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
+	case "LUA":
+		return rc.luaCombined()
 	case "UNKNOWN":
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	}
