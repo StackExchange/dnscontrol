@@ -668,6 +668,23 @@ var TXT = recordBuilder('TXT', {
     },
 });
 
+var LUA = recordBuilder('LUA', {
+  args: [
+    ['name', _.isString],
+    ['rtype', _.isString],
+    ['target', isStringOrArray],
+  ],
+  transform: function (record, args, modifiers) {
+    record.name = args.name;
+    record.luartype = args.rtype.toUpperCase();
+    if (_.isString(args.target)) {
+      record.target = args.target;
+    } else {
+      record.target = args.target.join('');
+    }
+  },
+});
+
 // Parses coordinates of the form 41°24'12.2"N 2°10'26.5"E
 function parseDMSCoordinatesString(inputString) {
     var lat = inputString.match(/(-?\d+).(\d+).([\d\.]+).?\ ?([NS])/);
