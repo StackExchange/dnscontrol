@@ -59,6 +59,22 @@ Example:
 ```
 {% endcode %}
 
+Alternatively, this provider also supports `RoleArn` with an optional `ExternalId`
+
+Example:
+
+{% code title="creds.json" %}
+```json
+{
+  "r53_main": {
+    "TYPE": "ROUTE53",
+    "RoleArn": "arn:aws:iam::123456789012:role/ExampleRole",
+    "ExternalId": "123456789012"
+  }
+}
+```
+{% endcode %}
+
 You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).
 
 ## Metadata

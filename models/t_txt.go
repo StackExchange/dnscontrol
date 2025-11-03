@@ -2,6 +2,9 @@ package models
 
 import (
 	"strings"
+	"unicode"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
 
 /*
@@ -36,7 +39,7 @@ There are 2 ways to get the value (target) of a TXT record:
 // identical to TXT, such as SPF. For more details, read
 // https://tools.ietf.org/html/rfc4408#section-3.1.1
 func (rc *RecordConfig) HasFormatIdenticalToTXT() bool {
-	return rc.Type == "TXT" || rc.Type == "SPF"
+	return rc.Type == "TXT" || rc.Type == "SPF" || rc.Type == "LUA"
 }
 
 // SetTargetTXT sets the TXT fields when there is 1 string.
@@ -90,4 +93,33 @@ func splitChunks(buf string, lim int) []string {
 		chunks = append(chunks, buf)
 	}
 	return chunks
+}
+
+// ParseLuaContent splits a PowerDNS LUA record content string into its emitted rtype and payload.
+func ParseLuaContent(content string) (rtype string, payload string) {
+	trimmed := strings.TrimSpace(content)
+	if trimmed == "" {
+		return "", ""
+	}
+	splitIndex := -1
+	for i, r := range trimmed {
+		if unicode.IsSpace(r) {
+			splitIndex = i
+			break
+		}
+	}
+	if splitIndex == -1 {
+		return strings.ToUpper(trimmed), ""
+	}
+	rtype = strings.ToUpper(trimmed[:splitIndex])
+	payload = strings.TrimSpace(trimmed[splitIndex:])
+	return rtype, payload
+}
+
+// DecodeLuaPayload normalizes the LUA payload for storage in RecordConfig.target.
+func DecodeLuaPayload(payload string) (string, error) {
+	if payload == "" {
+		return "", nil
+	}
+	return txtutil.ParseQuoted(payload)
 }
