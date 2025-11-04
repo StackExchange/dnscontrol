@@ -45,6 +45,8 @@ Following metadata are available:
   <br> Can be one of `DEFAULT`, `INCREASE`, `EPOCH`, `SOA-EDIT` or `SOA-EDIT-INCREASE`, default format is YYYYMMDD01.
   <br>Please see [PowerDNS SOA-EDIT-DNSUPDATE documentation](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-edit-dnsupdate-settings) for explanation of the kinds.
   <br>**Note that these tokens are case-sensitive!**
+- `use_views` enables mapping dnscontrol tags to PowerDNS views.
+  <br>Set to `true` to enable, defaults to `false`.
 
 ## Usage
 An example configuration:
@@ -64,7 +66,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
 
 ## Tags and Variants
-If you use a dnscontrol *tag* (like `example.com!internal`) it will be mapped to a powerdns *variant* (like `example.com..internal`).
+If you use a dnscontrol *tag* (like `example.com!internal`) it will be mapped to a powerdns *variant* (like `example.com..internal`) when `use_views` is enabled in the provider metadata.
 
 See [PowerDNS documentation on Views](https://doc.powerdns.com/authoritative/views.html) for details on how to setup networks and views for these variants.
 

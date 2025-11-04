@@ -58,7 +58,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		}
 	}
 
-	domainVariant := GetVariantName(dc.Name, dc.Metadata[models.DomainTag])
+	domainVariant := dsp.zoneName(dc.Name, dc.Metadata[models.DomainTag])
 
 	// only append a Correction if there are any, otherwise causes an error when sending an empty rrset
 	if len(rrDeleteSets) > 0 {
@@ -99,15 +99,4 @@ func buildRecordList(change diff2.Change) (records []zones.Record) {
 
 func canonical(fqdn string) string {
 	return fqdn + "."
-}
-
-// Build the variant name for powerdns. this is the domain + "." + the tag
-// so dnscontrol "example.com!internal" becomes powerdns "example.com..internal"
-// See https://doc.powerdns.com/authoritative/views.html
-func GetVariantName(domain string, tag string) string {
-	if tag != "" {
-		return canonical(domain) + "." + tag
-	} else {
-		return canonical(domain)
-	}
 }

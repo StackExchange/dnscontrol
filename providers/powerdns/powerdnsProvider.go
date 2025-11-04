@@ -59,8 +59,19 @@ type powerdnsProvider struct {
 	DNSSecOnCreate bool                 `json:"dnssec_on_create"`
 	ZoneKind       zones.ZoneKind       `json:"zone_kind"`
 	SOAEditAPI     zones.ZoneSOAEditAPI `json:"soa_edit_api,omitempty"`
+	UseViews       bool                 `json:"use_views,omitempty"`
 
 	nameservers []*models.Nameserver
+}
+
+// Build the variant name for powerdns. this is the domain + "." + the tag
+// so dnscontrol "example.com!internal" becomes powerdns "example.com..internal"
+// See https://doc.powerdns.com/authoritative/views.html
+func (dsp *powerdnsProvider) zoneName(domain string, tag string) string {
+	if dsp.UseViews && tag == "" {
+		return canonical(domain) + "." + tag
+	}
+	return canonical(domain)
 }
 
 // newDSP initializes a PowerDNS DNSServiceProvider.
