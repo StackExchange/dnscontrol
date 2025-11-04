@@ -167,7 +167,7 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *hednsProvider) EnsureZoneExists(domain string) error {
+func (c *hednsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err

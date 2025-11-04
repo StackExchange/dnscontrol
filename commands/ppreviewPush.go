@@ -493,7 +493,7 @@ func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) error {
 	var errs []error
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
-		populateCorrections, err := generatePopulateCorrections(provider, zone.Name, zc)
+		populateCorrections, err := generatePopulateCorrections(provider, zone, zc)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -645,7 +645,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *cmdZoneCache) ([]*models.Correction, error) {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *cmdZoneCache) ([]*models.Correction, error) {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil, nil // We can't generate a list. No corrections are possible.
@@ -658,7 +658,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 	}
 	zones := *z
 
-	aceZoneName, _ := idna.ToASCII(zoneName)
+	aceZoneName, _ := idna.ToASCII(zone.Name)
 	if slices.Contains(zones, aceZoneName) {
 		return nil, nil // zone exists. Nothing to do.
 	}
@@ -671,7 +671,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 
 	return []*models.Correction{{
 		Msg: fmt.Sprintf("Ensuring zone %q exists in %q", aceZoneName, provider.Name),
-		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
+		F:   func() error { return creator.EnsureZoneExists(aceZoneName, zone.Metadata) },
 	}}, nil
 }
 

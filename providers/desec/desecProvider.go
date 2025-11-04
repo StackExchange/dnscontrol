@@ -123,7 +123,7 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *desecProvider) EnsureZoneExists(domain string) error {
+func (c *desecProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, ok, err := c.searchDomainIndex(domain)
 	if err != nil {
 		return err

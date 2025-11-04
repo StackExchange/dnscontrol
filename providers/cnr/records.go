@@ -196,7 +196,7 @@ func (n *Client) getRecords(domain string) ([]*Record, error) {
 		if r.GetCode() == 545 {
 			// If dns zone does not exist create a new one automatically
 			if !isNoPopulate() {
-				err := n.EnsureZoneExists(domain)
+				err := n.EnsureZoneExists(domain, nil)
 				if err != nil {
 					return nil, err
 				}

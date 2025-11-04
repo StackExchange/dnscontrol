@@ -157,7 +157,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 				Msg: msg,
 				F: func() error {
 
-					if err := p.EnsureZoneExists(dc.Name); err != nil {
+					if err := p.EnsureZoneExists(dc.Name, dc.Metadata); err != nil {
 						return err
 					}
 
@@ -170,7 +170,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 }
 
 // Zone Existence Check & Creation
-func (p *fortigateProvider) EnsureZoneExists(domain string) error {
+func (p *fortigateProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	var probe struct{ Results []any }
 
 	err := p.client.do("GET", "system/dns-database/"+domain, nil, nil, &probe)

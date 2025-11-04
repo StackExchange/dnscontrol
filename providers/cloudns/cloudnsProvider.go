@@ -284,7 +284,7 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
+func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if _, ok, err := c.fetchDomainIndex(domain); err != nil {
 		return err
 	} else if ok { // zone already exists

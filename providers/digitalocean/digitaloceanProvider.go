@@ -95,7 +95,7 @@ func init() {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *digitaloceanProvider) EnsureZoneExists(domain string) error {
+func (api *digitaloceanProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
