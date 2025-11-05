@@ -40,7 +40,7 @@ func (dsp *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*m
 			{
 				Msg: "Disable DNSSEC",
 				F: func() error {
-					return dsp.client.Cryptokeys().DeleteCryptokey(context.Background(), dsp.ServerName, dc.Name, keyID)
+					return dsp.client.Cryptokeys().DeleteCryptokey(context.Background(), dsp.ServerName, domainVariant, keyID)
 				},
 			},
 		}, nil
@@ -52,7 +52,7 @@ func (dsp *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*m
 			{
 				Msg: "Enable DNSSEC",
 				F: func() (err error) {
-					_, err = dsp.client.Cryptokeys().CreateCryptokey(context.Background(), dsp.ServerName, dc.Name, cryptokeys.Cryptokey{
+					_, err = dsp.client.Cryptokeys().CreateCryptokey(context.Background(), dsp.ServerName, domainVariant, cryptokeys.Cryptokey{
 						KeyType:   "csk",
 						Active:    true,
 						Published: true,

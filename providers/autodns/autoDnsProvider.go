@@ -250,7 +250,7 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
-func (api *autoDNSProvider) EnsureZoneExists(domain string) error {
+func (api *autoDNSProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	// try to get zone
 	_, err := api.getZone(domain)
 

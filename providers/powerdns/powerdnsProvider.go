@@ -68,10 +68,11 @@ type powerdnsProvider struct {
 // so dnscontrol "example.com!internal" becomes powerdns "example.com..internal"
 // See https://doc.powerdns.com/authoritative/views.html
 func (dsp *powerdnsProvider) zoneName(domain string, tag string) string {
-	if dsp.UseViews && tag == "" {
-		return canonical(domain) + "." + tag
+	base := canonical(domain)
+	if dsp.UseViews && tag != "" {
+		return base + "." + tag
 	}
-	return canonical(domain)
+	return base
 }
 
 // newDSP initializes a PowerDNS DNSServiceProvider.

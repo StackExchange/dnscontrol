@@ -81,7 +81,7 @@ func init() {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *exoscaleProvider) EnsureZoneExists(domain string) error {
+func (c *exoscaleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := c.findDomainByName(domain)
 
 	return err

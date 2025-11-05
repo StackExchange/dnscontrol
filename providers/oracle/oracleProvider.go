@@ -114,7 +114,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (o *oracleProvider) EnsureZoneExists(domain string) error {
+func (o *oracleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
