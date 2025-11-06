@@ -12,10 +12,11 @@ import (
 
 // ReportItem is a record of corrections for a particular domain/provider/registrar.
 type ReportItem struct {
-	Domain      string `json:"domain"`
-	Corrections int    `json:"corrections"`
-	Provider    string `json:"provider,omitempty"`
-	Registrar   string `json:"registrar,omitempty"`
+	Domain            string   `json:"domain"`
+	Corrections       int      `json:"corrections"`
+	CorrectionDetails []string `json:"correction_details,omitempty"`
+	Provider          string   `json:"provider,omitempty"`
+	Registrar         string   `json:"registrar,omitempty"`
 }
 
 // InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
