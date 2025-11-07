@@ -368,8 +368,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				numActions := zone.GetChangeCount(provider.Name)
 				totalCorrections += numActions
 				out.EndProvider2(provider.Name, numActions)
-				numCorrections := len(corrections)
-				out.Printf("numActions: %d \nnumCorrections: %d\n", totalCorrections, numCorrections)
 				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
 			}
