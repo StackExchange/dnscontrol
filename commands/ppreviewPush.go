@@ -566,10 +566,11 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 }
 
 func parseCorrectionMsg(s string) []string {
+	// Regex to remove the terminal styled formatting
 	ansiRe := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 	s = ansiRe.ReplaceAllString(s, "")
+	// Create a slice(array) of correction/actions/changes from Msg
 	corrections := strings.Split(s, "\n")
-
 	// Clean up the slice, precaution remove any empty entries.
 	clean := make([]string, 0, len(corrections))
 	for _, l := range corrections {
@@ -582,13 +583,19 @@ func parseCorrectionMsg(s string) []string {
 }
 
 func genReportItem(zoneName string, corrections []*models.Correction, providerName string, registrarName string) *ReportItem {
-	// Only count the actions, not the messages.
-	// From my testing corrections is always just contains 1 connection, and Msg is concat of all the changes
-	cnt := 0
 	correctionDetails := make([]string, 0)
 	for _, cor := range corrections {
 		if cor.F != nil {
-			cnt++ // This seems to always be 1, so we will get the number of corrections from len(correctionDetails)
+			// `corrections` is a list that contains "informational" messages
+			// (where `.F = nil`) and "actions" to be taken (where `.F != nil`).
+			// When `.F = nil`, the contents of `.Msg` can either be a concatenation of all
+			// actions(all changes done in a single API call) or a single
+			// action(one API call per change), depending on the provider's implementation.
+			//
+			// We are parsing `cor.Msg` to remove terminal styled formatting and create
+			// a comprehensive list of actions (changes), as well as get an accurate
+			// number of corrections (`len(correctionDetails)`).
+
 			correctionDetails = append(correctionDetails, parseCorrectionMsg(cor.Msg)...)
 		}
 	}
