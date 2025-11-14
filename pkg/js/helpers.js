@@ -331,6 +331,20 @@ var AAAA = recordBuilder('AAAA');
 // AKAMAICDN(name, target, recordModifiers...)
 var AKAMAICDN = recordBuilder('AKAMAICDN');
 
+// AKAMAITLC(name, answer_type, target, recordModifiers...)
+var AKAMAITLC = recordBuilder('AKAMAITLC', {
+  args: [
+    ['name', _.isString],
+    ['answer_type', function(value) { return _.isString(value) && ['DUAL', 'A', 'AAAA'].indexOf(value) !== -1; }],
+    ['target', _.isString],
+  ],
+  transform: function (record, args, modifier) {
+    record.name = args.name;
+    record.answer_type = args.answer_type;
+    record.target = args.target;
+  },
+});
+
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
 

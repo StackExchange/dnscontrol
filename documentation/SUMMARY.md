@@ -86,6 +86,7 @@
             * [ADGUARDHOME_AAAA_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_AAAA_PASSTHROUGH.md)
         * Akamai Edge Dns
             * [AKAMAICDN](language-reference/domain-modifiers/AKAMAICDN.md)
+            * [AKAMAITLC](language-reference/domain-modifiers/AKAMAITLC.md)
         * Amazon Route 53
             * [R53_ALIAS](language-reference/domain-modifiers/R53_ALIAS.md)
         * Azure DNS

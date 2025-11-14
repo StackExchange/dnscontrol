@@ -57,6 +57,8 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		case "AZURE_ALIAS":
 			// Differentiate between multiple AZURE_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s", rc.target, rc.AzureAlias["type"])
+		case "AKAMAITLC":
+			return fmt.Sprintf("%s %s", rc.AnswerType, rc.target)
 		default:
 			// Just return the target.
 			return rc.target
