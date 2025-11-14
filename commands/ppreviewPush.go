@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -300,7 +301,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				if !skip {
 					totalCorrections += len(corrections)
 					out.EndProvider2(provider.Name, len(corrections))
-					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push || args.PopulateOnPreview, interactive, notifier, report))
 				}
 			}
@@ -367,7 +368,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				numActions := zone.GetChangeCount(provider.Name)
 				totalCorrections += numActions
 				out.EndProvider2(provider.Name, numActions)
-				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
 			}
 		}
@@ -380,7 +381,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			numActions := zone.GetChangeCount(zone.RegistrarInstance.Name)
 			out.EndProvider2(zone.RegistrarName, numActions)
 			totalCorrections += numActions
-			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
+			reportItems = append(reportItems, genReportItem(zone.Name, corrections, "", zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 		}
 	}
@@ -564,19 +565,51 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 	})
 }
 
-func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
-	// Only count the actions, not the messages.
-	cnt := 0
+func parseCorrectionMsg(s string) []string {
+	// Regex to remove the terminal styled formatting
+	ansiRe := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+	s = ansiRe.ReplaceAllString(s, "")
+	// Create a slice(array) of correction/actions/changes from Msg
+	corrections := strings.Split(s, "\n")
+	// Clean up the slice, precaution remove any empty entries.
+	clean := make([]string, 0, len(corrections))
+	for _, l := range corrections {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			clean = append(clean, l)
+		}
+	}
+	return clean
+}
+
+func genReportItem(zoneName string, corrections []*models.Correction, providerName string, registrarName string) *ReportItem {
+	correctionDetails := make([]string, 0)
 	for _, cor := range corrections {
 		if cor.F != nil {
-			cnt++
+			// `corrections` is a list that contains "informational" messages
+			// (where `.F = nil`) and "actions" to be taken (where `.F != nil`).
+			// When `.F = nil`, the contents of `.Msg` can either be a concatenation of all
+			// actions(all changes done in a single API call) or a single
+			// action(one API call per change), depending on the provider's implementation.
+			//
+			// We are parsing `cor.Msg` to remove terminal styled formatting and create
+			// a comprehensive list of actions (changes), as well as get an accurate
+			// number of corrections (`len(correctionDetails)`).
+
+			correctionDetails = append(correctionDetails, parseCorrectionMsg(cor.Msg)...)
 		}
 	}
 
 	r := ReportItem{
-		Domain:      zname,
-		Corrections: cnt,
-		Provider:    pname,
+		Domain:            zoneName,
+		Corrections:       len(correctionDetails),
+		CorrectionDetails: correctionDetails,
+	}
+	if providerName != "" {
+		r.Provider = providerName
+	}
+	if registrarName != "" {
+		r.Registrar = registrarName
 	}
 	return &r
 }
@@ -635,11 +668,13 @@ func writeReport(report string, reportItems []*ReportItem) error {
 		return err
 	}
 	defer f.Close()
-	b, err := json.MarshalIndent(reportItems, "", "  ")
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(b); err != nil {
+
+	// Disabling HTML encoding
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+
+	if err := enc.Encode(reportItems); err != nil {
 		return err
 	}
 	return nil
