@@ -1,6 +1,6 @@
 # Notifications
 
-DNSControl's "notifications" feature will log `push` changes to other services in real time. Typically this is used to automatically announce DNS changes in a team chatroom.  The functionality is implemented using the open source [Shoutrrr](https://github.com/containrrr/shoutrrr) library, which knows how to communicate to many different systems.  Some additional services are provided natively, see the [notifications package](https://github.com/StackExchange/dnscontrol/tree/main/pkg/notifications).
+DNSControl's "notifications" feature will log `push` changes to other services in real time. Typically this is used to automatically announce DNS changes in a team chatroom.  The functionality is implemented using the open source [Shoutrrr](https://github.com/nicholas-fedor/shoutrrr) library, which knows how to communicate to many different systems.  Some additional services are provided natively, see the [notifications package](https://github.com/StackExchange/dnscontrol/tree/main/pkg/notifications).
 
 ## Configuration
 
@@ -68,26 +68,35 @@ Successfully ran correction for **example.com[my_provider]** - CREATE foo.exampl
 
 DNSControl supports various notification methods via Shoutrrr, including email (SMTP), Discord, Pushover, and many others. For detailed setup instructions, click on the desired service:
 
-* [Bark](https://containrrr.dev/shoutrrr/latest/services/bark/)
-* [Discord](https://containrrr.dev/shoutrrr/latest/services/discord/)
-* [Email](https://containrrr.dev/shoutrrr/latest/services/email/)
-* [Google Chat](https://containrrr.dev/shoutrrr/latest/services/googlechat/)
-* [Gotify](https://containrrr.dev/shoutrrr/latest/services/gotify/)
-* [IFTTT](https://containrrr.dev/shoutrrr/latest/services/ifttt/)
-* [Join](https://containrrr.dev/shoutrrr/latest/services/join/)
-* [Matrix](https://containrrr.dev/shoutrrr/latest/services/matrix/)
-* [Mattermost](https://containrrr.dev/shoutrrr/latest/services/mattermost/)
-* [Ntfy](https://containrrr.dev/shoutrrr/latest/services/ntfy/)
-* [OpsGenie](https://containrrr.dev/shoutrrr/latest/services/opsgenie/)
-* [Pushbullet](https://containrrr.dev/shoutrrr/latest/services/pushbullet/)
-* [Pushover](https://containrrr.dev/shoutrrr/latest/services/pushover/)
-* [Rocketchat](https://containrrr.dev/shoutrrr/latest/services/rocketchat/)
-* [Slack](https://containrrr.dev/shoutrrr/latest/services/slack/)
-* [Teams](https://containrrr.dev/shoutrrr/latest/services/teams/)
-* [Telegram](https://containrrr.dev/shoutrrr/latest/services/telegram/)
-* [Zulip Chat](https://containrrr.dev/shoutrrr/latest/services/zulip/)
-
-The above list is accurate as of 2024-Dec. The compete list and all configuration details are in the [Shoutrrr documentation](https://containrrr.dev/shoutrrr/latest/services/overview/).
+#### Chat and Messaging Platforms
+ * [Discord](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/discord/)
+ * [Google Chat](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/googlechat/) (formerly Hangouts)
+ * [Lark](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/lark/)
+ * [Matrix](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/matrix/)
+ * [Mattermost](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/mattermost/)
+ * [Rocket.Chat](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/rocketchat/)
+ * [Signal](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/signal/)
+ * [Slack](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/slack/)
+ * [Teams](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/teams/)
+ * [Telegram](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/telegram/)
+ * [WeCom](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/wecom/)
+ * [Zulip](https://shoutrrr.nickfedor.com/v0.12.0/services/chat/zulip/)
+#### Push Notification Services
+ * [Bark](https://shoutrrr.nickfedor.com/v0.12.0/services/push/bark/)
+ * [Gotify](https://shoutrrr.nickfedor.com/v0.12.0/services/push/gotify/)
+ * [IFTTT](https://shoutrrr.nickfedor.com/v0.12.0/services/push/ifttt/)
+ * [Join](https://shoutrrr.nickfedor.com/v0.12.0/services/push/join/)
+ * [Ntfy](https://shoutrrr.nickfedor.com/v0.12.0/services/push/ntfy/)
+ * [Pushbullet](https://shoutrrr.nickfedor.com/v0.12.0/services/push/pushbullet/)
+ * [Pushover](https://shoutrrr.nickfedor.com/v0.12.0/services/push/pushover/)
+#### Incident and Alert Management
+ * [OpsGenie](https://shoutrrr.nickfedor.com/v0.12.0/services/incident/opsgenie/)
+ * [PagerDuty](https://shoutrrr.nickfedor.com/v0.12.0/services/incident/pagerduty/)
+#### Email Services
+ * [SMTP](https://shoutrrr.nickfedor.com/v0.12.0/services/email/smtp/)
+#### Specialized Services
+ * [Generic](https://shoutrrr.nickfedor.com/v0.12.0/services/specialized/generic/)
+ * [Notifiarr](https://shoutrrr.nickfedor.com/v0.12.0/services/specialized/notifiarr/)
 
 Configure `shoutrrr_url` with the Shoutrrr URL to be notified.
 
