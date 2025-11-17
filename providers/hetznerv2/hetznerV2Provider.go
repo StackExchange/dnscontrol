@@ -236,7 +236,9 @@ func (h *hetznerV2Provider) GetZoneRecords(domain string, _ map[string]string) (
 	if err != nil {
 		return nil, err
 	}
-	records, err := h.client.Zone.AllRRSets(context.Background(), z)
+	opts := hcloud.ZoneRRSetListOpts{}
+	opts.PerPage = 100
+	records, err := h.client.Zone.AllRRSetsWithOpts(context.Background(), z, opts)
 	if err != nil {
 		return nil, err
 	}
