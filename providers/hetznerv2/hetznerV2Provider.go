@@ -156,11 +156,8 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 			}
 			reports = append(reports, &models.Correction{
 				F: func() error {
-					result, _, err2 := h.client.Zone.CreateRRSet(context.Background(), z, opts)
-					if err2 != nil {
-						return err2
-					}
-					return h.client.Action.WaitFor(context.Background(), result.Action)
+					_, _, err2 := h.client.Zone.CreateRRSet(context.Background(), z, opts)
+					return err2
 				},
 				Msg: instruction.MsgsJoined,
 			})
@@ -171,11 +168,7 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 					if instruction.New[0].TTL != instruction.Old[0].TTL {
 						ttl := int(instruction.New[0].TTL)
 						opts := hcloud.ZoneRRSetChangeTTLOpts{TTL: &ttl}
-						action, _, err2 := h.client.Zone.ChangeRRSetTTL(context.Background(), rrSet, opts)
-						if err2 != nil {
-							return err2
-						}
-						err2 = h.client.Action.WaitFor(context.Background(), action)
+						_, _, err2 := h.client.Zone.ChangeRRSetTTL(context.Background(), rrSet, opts)
 						if err2 != nil {
 							return err2
 						}
@@ -187,11 +180,8 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 							Value: r.GetTargetCombinedFunc(txtutil.EncodeQuoted),
 						})
 					}
-					action, _, err2 := h.client.Zone.SetRRSetRecords(context.Background(), rrSet, opts)
-					if err2 != nil {
-						return err2
-					}
-					return h.client.Action.WaitFor(context.Background(), action)
+					_, _, err2 := h.client.Zone.SetRRSetRecords(context.Background(), rrSet, opts)
+					return err2
 				},
 				Msg: instruction.MsgsJoined,
 			})
@@ -199,11 +189,8 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 			reports = append(reports, &models.Correction{
 				F: func() error {
 					rc := instruction.Old[0].Original.(*hcloud.ZoneRRSet)
-					result, _, err2 := h.client.Zone.DeleteRRSet(context.Background(), rc)
-					if err2 != nil {
-						return err2
-					}
-					return h.client.Action.WaitFor(context.Background(), result.Action)
+					_, _, err2 := h.client.Zone.DeleteRRSet(context.Background(), rc)
+					return err2
 				},
 				Msg: instruction.MsgsJoined,
 			})
