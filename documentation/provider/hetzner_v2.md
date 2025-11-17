@@ -38,7 +38,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_HETZNER),
 ## Activation
 
 Create a new API Key in the
-[Hetzner Cloud Console](https://docs.hetzner.cloud/reference/cloud#getting-started).
+[Hetzner Console](https://docs.hetzner.cloud/reference/cloud#getting-started).
 
 ## Caveats
 
