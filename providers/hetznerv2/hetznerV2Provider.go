@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -87,11 +88,15 @@ func (h *hetznerV2Provider) fetchAllZones() (map[string]*hcloud.Zone, error) {
 
 // EnsureZoneExists creates a zone if it does not exist
 func (h *hetznerV2Provider) EnsureZoneExists(domain string, _ map[string]string) error {
-	if ok, err := h.zoneCache.HasZone(domain); err != nil || ok {
+	encoded, err := idna.ToASCII(domain)
+	if err != nil {
 		return err
 	}
+	if ok, err2 := h.zoneCache.HasZone(encoded); err2 != nil || ok {
+		return err2
+	}
 	result, _, err := h.client.Zone.Create(context.Background(), hcloud.ZoneCreateOpts{
-		Name: domain,
+		Name: encoded,
 		Mode: hcloud.ZoneModePrimary,
 	})
 	if err != nil {
@@ -105,15 +110,18 @@ func (h *hetznerV2Provider) EnsureZoneExists(domain string, _ map[string]string)
 	if err != nil {
 		return err
 	}
-	h.zoneCache.SetZone(domain, z)
+	h.zoneCache.SetZone(encoded, z)
 	return nil
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	domain := dc.Name
+	encoded, err := idna.ToASCII(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	z, err := h.zoneCache.GetZone(domain)
+	z, err := h.zoneCache.GetZone(encoded)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -207,7 +215,11 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 
 // GetNameservers returns the nameservers for a domain.
 func (h *hetznerV2Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	z, err := h.zoneCache.GetZone(domain)
+	encoded, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+	z, err := h.zoneCache.GetZone(encoded)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +228,11 @@ func (h *hetznerV2Provider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (h *hetznerV2Provider) GetZoneRecords(domain string, _ map[string]string) (models.Records, error) {
-	z, err := h.zoneCache.GetZone(domain)
+	encoded, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+	z, err := h.zoneCache.GetZone(encoded)
 	if err != nil {
 		return nil, err
 	}
