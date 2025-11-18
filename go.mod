@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v4
 
-go 1.25
+go 1.25.3
 
 retract v4.8.0
 
@@ -61,7 +61,6 @@ require (
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aws/aws-sdk-go-v2/service/sts v1.39.1
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.18
-	github.com/containrrr/shoutrrr v0.8.0
 	github.com/failsafe-go/failsafe-go v0.9.1
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
@@ -72,6 +71,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
+	github.com/nicholas-fedor/shoutrrr v0.12.0
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
 	github.com/oracle/oci-go-sdk/v65 v65.104.0
 	github.com/vultr/govultr/v2 v2.17.2
@@ -125,7 +125,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/json-iterator/go v1.1.13-0.20220915233716-71ac16282d12 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -159,6 +159,7 @@ require (
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
