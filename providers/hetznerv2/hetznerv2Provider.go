@@ -57,7 +57,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, errors.New("missing HETZNER_V2 api_token")
 	}
 
-	h := &hetznerV2Provider{
+	h := &hetznerv2Provider{
 		client: hcloud.NewClient(
 			hcloud.WithToken(apiKey),
 			hcloud.WithApplication("dnscontrol", version.Version()),
@@ -67,14 +67,14 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return h, nil
 }
 
-type hetznerV2Provider struct {
+type hetznerv2Provider struct {
 	apiKey    string
 	zoneCache zonecache.ZoneCache[*hcloud.Zone]
 	client    *hcloud.Client
 }
 
 // fetchAllZones is used by the zonecache.ZoneCache.
-func (h *hetznerV2Provider) fetchAllZones() (map[string]*hcloud.Zone, error) {
+func (h *hetznerv2Provider) fetchAllZones() (map[string]*hcloud.Zone, error) {
 	flat, err := h.client.Zone.All(context.Background())
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (h *hetznerV2Provider) fetchAllZones() (map[string]*hcloud.Zone, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (h *hetznerV2Provider) EnsureZoneExists(domain string, _ map[string]string) error {
+func (h *hetznerv2Provider) EnsureZoneExists(domain string, _ map[string]string) error {
 	encoded, err := idna.ToASCII(domain)
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func (h *hetznerV2Provider) EnsureZoneExists(domain string, _ map[string]string)
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
-func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+func (h *hetznerv2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	encoded, err := idna.ToASCII(dc.Name)
 	if err != nil {
 		return nil, 0, err
@@ -201,7 +201,7 @@ func (h *hetznerV2Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (h *hetznerV2Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (h *hetznerv2Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	encoded, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
@@ -214,7 +214,7 @@ func (h *hetznerV2Provider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (h *hetznerV2Provider) GetZoneRecords(domain string, _ map[string]string) (models.Records, error) {
+func (h *hetznerv2Provider) GetZoneRecords(domain string, _ map[string]string) (models.Records, error) {
 	encoded, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
@@ -258,6 +258,6 @@ func (h *hetznerV2Provider) GetZoneRecords(domain string, _ map[string]string) (
 }
 
 // ListZones lists the zones on this account.
-func (h *hetznerV2Provider) ListZones() ([]string, error) {
+func (h *hetznerv2Provider) ListZones() ([]string, error) {
 	return h.zoneCache.GetZoneNames()
 }
