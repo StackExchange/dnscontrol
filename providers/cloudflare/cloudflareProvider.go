@@ -42,8 +42,6 @@ Domain level metadata available:
    - ip_conversions
 */
 
-var features = providers.DocumentationNotes{}
-
 func init() {
 	providers.Register(
 		providers.RegisterOpts{
@@ -54,39 +52,45 @@ func init() {
 			Initializer:        initializer,
 			RecordAuditor:      AuditRecords,
 			BrokeConcurrency:   false,
-			DSSupport:          "apex", // "apex", "children", "both" (Default: "both")
 			DualHostSupport:    "Cloudflare will not work well in situations where it is not the only DNS server",
+			// Fields in the creds.json file:
+			CredsFields: []string{
+				"apitoken",
+				"apikey", "apiuser",
+				"accountid",
+			},
+			// Fields in the REGISTRAR("credkey", { metafield: "foo" })
+			MetaFields: []string{
+				"ip_conversions:string",
+				"ignored_labels:string",
+				"transcode_log:string",
+				"manage_redirects:bool",
+				"manage_workers:bool",
+				"manage_single_redirects:bool",
+			},
+			// DNS RecordTypes supported:
 			RecordTypes: []any{
 				"A",
 				"AAAA",
-				provider.CanWithNote("ALIAS", "CF automatically flattens CNAME records into A records dynamically"),
+				"ALIAS:note:CF automatically flattens CNAME records into A records dynamically",
 				"CAA",
-				"CAA",
-				"DHCID",
-				"DNAME",
-				"DS",
-				"DSForChildren",
-				"HTTPA",
+				"DHCID:unimplemented", // Indicates provider supports it, but DNSControl doesn't have code to support it
+				"DNAME:unimplemented:note:This note appears in documentation", // Anything after "note:" is for documentation.
+				"DS:both", // "apex" (DS only supported at the apex), "children" (supports DS on children), "both" (default)
 				"HTTPS",
 				"MX",
-				"NAPTR",
 				"NAPTR",
 				"OPENPGPKEY",
 				"PTR",
 				"SMIMEA",
 				"SRV",
-				"SRV",
-				"SSHFP",
 				"SSHFP",
 				"SVCB",
-				"SVCB",
-				"TLSA",
 				"TLSA",
 				"TXT",
 				// Custom Types
-				"CF_REDIRECT",
-				"CF_REDIRECT",
 				"CF_SINGLE_REDIRECT",
+				"CF_REDIRECT",
 				"CF_TEMP_REDIRECT",
 				"CF_WORKER_ROUTE",
 			},
@@ -95,15 +99,17 @@ func init() {
 }
 
 /*
-
     client := providers.NewClient("credKey") // Get an API handle
-	_, ok := client.(providers.Registrar) // Is this a registrar?
-	_, ok := client.(providers.DNSServiceProvider) // Is this a DNS Service Provider?
-	lister, ok := client.(providers.ZoneLister) // Does "get-zones" work?
-	creator, ok := client.(providers.ZoneCreator) // Does "create-zone" work?
-	supportedRTypes := providers.GetSupportedRecordTypes("CLOUDFLARE") // List supported record types []string
-	b := providers.IsRTypeSupported("CLOUDFLARE", "TXT") // Is TXT supported?
-	b := providers.IsFeatureSupported("CLOUDFLARE", "feature_name") // Is feature_name supported?
+  _, ok := client.(providers.Registrar) // Is this a registrar?
+  _, ok := client.(providers.DNSServiceProvider) // Is this a DNS Service Provider?
+  _, ok := client.(providers.ZoneLister) // Does "get-zones" work?
+  _, ok := client.(providers.ZoneCreator) // Does "create-zone" work?
+  rtypeMap := providers.GetSupportedRecordTypes("CLOUDFLARE") // List supported record types
+  b := providers.IsRTypeSupported("CLOUDFLARE", "TXT") // Is TXT supported?
+  b := providers.IsFeatureSupported("CLOUDFLARE", "feature_name") // Is feature_name supported?
+
+Signature for the initializer (called any time an API client handle is needed):
+  func clientFactory(m map[string]string, metadata map[string]string) (providers.DNSServiceProvider, error) {}
 
 */
 
