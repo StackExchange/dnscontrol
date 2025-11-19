@@ -52,14 +52,14 @@ func init() {
 
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	apiKey := settings["api_token"]
-	if apiKey == "" {
+	apiToken := settings["api_token"]
+	if apiToken == "" {
 		return nil, errors.New("missing HETZNER_V2 api_token")
 	}
 
 	h := &hetznerv2Provider{
 		client: hcloud.NewClient(
-			hcloud.WithToken(apiKey),
+			hcloud.WithToken(apiToken),
 			hcloud.WithApplication("dnscontrol", version.Version()),
 		),
 	}
@@ -68,7 +68,6 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 type hetznerv2Provider struct {
-	apiKey    string
 	zoneCache zonecache.ZoneCache[*hcloud.Zone]
 	client    *hcloud.Client
 }
