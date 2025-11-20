@@ -340,6 +340,12 @@
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
   },
+  "VERCEL": {
+    "TYPE": "VERCEL",
+    "domain": "$VERCEL_DOMAIN",
+    "team_id": "$VERCEL_TEAM_ID",
+    "api_token": "$VERCEL_API_TOKEN"
+  },
   "VULTR": {
     "TYPE": "VULTR",
     "domain": "$VULTR_DOMAIN",
