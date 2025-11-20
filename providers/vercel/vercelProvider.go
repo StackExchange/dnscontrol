@@ -177,6 +177,12 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 
 func (c *vercelProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	// Vercel is a "ByRecord" API.
+
+	// Vercel enforces a minimum TTL of 60 seconds
+	for _, record := range dc.Records {
+		record.TTL = max(record.TTL, 60)
+	}
+
 	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
 		return nil, 0, err
@@ -270,15 +276,12 @@ func (c *vercelProvider) mkDeleteCorrection(domain string, oldRec *models.Record
 
 // toVercelCreateRequest converts a RecordConfig to a Vercel CreateDNSRecordRequest.
 func toVercelCreateRequest(domain string, rc *models.RecordConfig) vercelClient.CreateDNSRecordRequest {
-	// Vercel doesn't allow TTLs less than 60 seconds
-	ttl := max(int64(rc.TTL), 60)
-
 	req := vercelClient.CreateDNSRecordRequest{
 		Domain: domain,
 		Name:   rc.Name,
 		Type:   rc.Type,
 		Value:  rc.GetTargetField(),
-		TTL:    ttl,
+		TTL:    int64(rc.TTL),
 	}
 
 	switch rc.Type {
@@ -301,16 +304,12 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) vercelClient.
 
 // toVercelUpdateRequest converts a RecordConfig to a Vercel UpdateDNSRecordRequest.
 func toVercelUpdateRequest(rc *models.RecordConfig) vercelClient.UpdateDNSRecordRequest {
-	name := rc.Name
 	value := rc.GetTargetField()
 
-	// Vercel doesn't allow TTLs less than 60 seconds
-	ttl := max(int64(rc.TTL), 60)
-
 	req := vercelClient.UpdateDNSRecordRequest{
-		Name:    &name,
+		Name:    &rc.Name,
 		Value:   &value,
-		TTL:     &ttl,
+		TTL:     ptrInt64(int64(rc.TTL)),
 		Comment: "",
 	}
 
