@@ -15,6 +15,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
@@ -103,7 +104,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 }
 
 // GetNameservers returns the default Vercel nameservers.
-// Though Vercel RESTful API supports getting "intendedNameServers", but it is not implemented in the Go SDK
+// Though Vercel RESTful API supports getting "intendedNameServers", but it is not implemented in their Go SDK
 // Let's hard-coded this for now
 func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
@@ -174,5 +175,164 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 }
 
 func (c *vercelProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
-	return nil, 0, nil
+	// Vercel is a "ByRecord" API.
+	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var corrections []*models.Correction
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.MsgsJoined,
+			})
+		case diff2.CREATE:
+			corrections = append(corrections, c.mkCreateCorrection(dc.Name, inst.New[0], inst.Msgs[0]))
+		case diff2.CHANGE:
+			corrections = append(corrections, c.mkChangeCorrection(dc.Name, inst.Old[0], inst.New[0], inst.Msgs[0]))
+		case diff2.DELETE:
+			corrections = append(corrections, c.mkDeleteCorrection(dc.Name, inst.Old[0], inst.Msgs[0]))
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+		}
+	}
+
+	return corrections, actualChangeCount, nil
+}
+
+func (c *vercelProvider) createNewRecord(domain string, newRec *models.RecordConfig) error {
+	ctx := context.Background()
+
+	// Handle HTTPS records specially
+	if newRec.Type == "HTTPS" {
+		return c.createHTTPSRecord(ctx, domain, newRec)
+	}
+
+	// Use official SDK for other record types
+	req := toVercelCreateRequest(domain, newRec)
+	_, err := c.client.CreateDNSRecord(ctx, c.teamID, req)
+	return err
+}
+
+func (c *vercelProvider) mkCreateCorrection(domain string, newRec *models.RecordConfig, msg string) *models.Correction {
+	return &models.Correction{
+		Msg: msg,
+		F: func() error {
+			return c.createNewRecord(domain, newRec)
+		},
+	}
+}
+
+func (c *vercelProvider) mkChangeCorrection(domain string, oldRec, newRec *models.RecordConfig, msg string) *models.Correction {
+	return &models.Correction{
+		Msg: msg,
+		F: func() error {
+			ctx := context.Background()
+			existingID := oldRec.Original.(domainRecord).ID
+
+			// UpdateDNSRecord doesn't support type changes
+			// If record type changed, delete and re-create
+			if oldRec.Type != newRec.Type {
+				// Delete old record
+				if err := c.client.DeleteDNSRecord(ctx, domain, existingID, c.teamID); err != nil {
+					return err
+				}
+
+				return c.createNewRecord(domain, newRec)
+			}
+
+			// Handle HTTPS records specially
+			if newRec.Type == "HTTPS" {
+				return c.updateHTTPSRecord(ctx, existingID, newRec)
+			}
+
+			// Use official SDK for other record types
+			req := toVercelUpdateRequest(newRec)
+			_, err := c.client.UpdateDNSRecord(ctx, c.teamID, existingID, req)
+			return err
+		},
+	}
+}
+
+func (c *vercelProvider) mkDeleteCorrection(domain string, oldRec *models.RecordConfig, msg string) *models.Correction {
+	return &models.Correction{
+		Msg: msg,
+		F: func() error {
+			ctx := context.Background()
+			existingID := oldRec.Original.(domainRecord).ID
+			return c.client.DeleteDNSRecord(ctx, domain, existingID, c.teamID)
+		},
+	}
+}
+
+// toVercelCreateRequest converts a RecordConfig to a Vercel CreateDNSRecordRequest.
+func toVercelCreateRequest(domain string, rc *models.RecordConfig) vercelClient.CreateDNSRecordRequest {
+	// Vercel doesn't allow TTLs less than 60 seconds
+	ttl := max(int64(rc.TTL), 60)
+
+	req := vercelClient.CreateDNSRecordRequest{
+		Domain: domain,
+		Name:   rc.Name,
+		Type:   rc.Type,
+		Value:  rc.GetTargetField(),
+		TTL:    ttl,
+	}
+
+	switch rc.Type {
+	case "MX":
+		req.MXPriority = int64(rc.MxPreference)
+	case "SRV":
+		req.SRV = &vercelClient.SRV{
+			Priority: int64(rc.SrvPriority),
+			Weight:   int64(rc.SrvWeight),
+			Port:     int64(rc.SrvPort),
+			Target:   rc.GetTargetField(),
+		}
+		req.Value = "" // SRV uses the SRV struct, not Value
+	case "TXT":
+		req.Value = rc.GetTargetTXTJoined()
+	}
+
+	return req
+}
+
+// toVercelUpdateRequest converts a RecordConfig to a Vercel UpdateDNSRecordRequest.
+func toVercelUpdateRequest(rc *models.RecordConfig) vercelClient.UpdateDNSRecordRequest {
+	name := rc.Name
+	value := rc.GetTargetField()
+
+	// Vercel doesn't allow TTLs less than 60 seconds
+	ttl := max(int64(rc.TTL), 60)
+
+	req := vercelClient.UpdateDNSRecordRequest{
+		Name:    &name,
+		Value:   &value,
+		TTL:     &ttl,
+		Comment: "",
+	}
+
+	switch rc.Type {
+	case "MX":
+		req.MXPriority = ptrInt64(int64(rc.MxPreference))
+	case "SRV":
+		req.SRV = &vercelClient.SRVUpdate{
+			Priority: ptrInt64(int64(rc.SrvPriority)),
+			Weight:   ptrInt64(int64(rc.SrvWeight)),
+			Port:     ptrInt64(int64(rc.SrvPort)),
+			Target:   &value,
+		}
+		req.Value = nil // SRV uses the SRV struct, not Value
+	case "TXT":
+		txtValue := rc.GetTargetTXTJoined()
+		req.Value = &txtValue
+	}
+
+	return req
+}
+
+// ptrInt64 returns a pointer to an int64
+func ptrInt64(v int64) *int64 {
+	return &v
 }
