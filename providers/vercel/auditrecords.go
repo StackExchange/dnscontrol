@@ -11,7 +11,9 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtIsEmpty)
+	// vercel does not support custom NS records at apex (domain root)
+	// vercel automatically manages apex NS records
+	// attempted to set one will result in "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 	a.Add("NS", rejectif.NsAtApex)
 
 	return a.Audit(records)
