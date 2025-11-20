@@ -69,10 +69,11 @@ func uint16Zero(value interface{}) uint16 {
 }
 
 func init() {
-	const providerName = "Vercel"
+	const providerName = "VERCEL"
 	const providerMaintainer = "@SukkaW"
 	fns := providers.DspFuncs{
-		Initializer: newProvider,
+		Initializer:   newProvider,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, providers.CanUseSRV, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
