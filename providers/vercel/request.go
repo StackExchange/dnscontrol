@@ -40,16 +40,7 @@ func (cr *clientRequest) toHTTPRequest() (*http.Request, error) {
 }
 
 // doRequest is a helper function for consistently requesting data from vercel.
-// Adapted from github.com/vercel/terraform-provider-vercel/client/request.go
-//
-// This manages:
-// - Setting the default Content-Type for requests with a body
-// - Setting the User-Agent
-// - Authorization via the Bearer token
-// - Converting error responses into an inspectable type
-// - Unmarshaling responses
-// - Parsing a Retry-After header in the case of rate limits being hit
-// - In the case of a rate-limit being hit, trying again aftera period of time
+// copied from github.com/vercel/terraform-provider-vercel/client/request.go
 func (c *vercelProvider) doRequest(req clientRequest, v interface{}) error {
 	r, err := req.toHTTPRequest()
 	if err != nil {
