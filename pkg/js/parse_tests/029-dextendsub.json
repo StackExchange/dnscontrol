@@ -343,9 +343,9 @@
       },
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "d\u00fcsseldorf.example.net"
+        "dnscontrol_uniquename": "xn--dsseldorf-q9a.example.net"
       },
-      "name": "d\u00fcsseldorf.example.net",
+      "name": "xn--dsseldorf-q9a.example.net",
       "records": [
         {
           "filepos": "[line:94:5]",
@@ -418,9 +418,9 @@
       },
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "\u00fc.example.net"
+        "dnscontrol_uniquename": "xn--tda.example.net"
       },
-      "name": "\u00fc.example.net",
+      "name": "xn--tda.example.net",
       "records": [
         {
           "filepos": "[line:116:5]",
