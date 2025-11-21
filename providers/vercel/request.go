@@ -67,19 +67,8 @@ func (c *vercelProvider) doRequest(req clientRequest, v interface{}, rl *rateLim
 			return fmt.Errorf("error doing http request: %w", err)
 		}
 
-		// Handle rate limiting and retries
+		// Handle rate limiting and retries, 429 is handled here
 		retry, err := rl.handleResponse(resp)
-
-		// Basic 429 handling if no limiter provided (e.g. for List)
-		if resp.StatusCode == http.StatusTooManyRequests {
-			printer.Printf("Rate-Limited (Basic). URL: %q\n", resp.Request.URL)
-			retryAfter, err := parseHeaderAsSeconds(resp.Header, "Retry-After", 5*time.Second)
-			if err != nil {
-				retryAfter = 5 * time.Second
-			}
-			time.Sleep(retryAfter)
-			retry = true
-		}
 
 		if err != nil {
 			resp.Body.Close()
