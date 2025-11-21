@@ -621,6 +621,7 @@ func makeTests() []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
+			//  - VERCEL: up to 100 per pages
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
@@ -637,6 +638,7 @@ func makeTests() []*TestGroup {
 				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",       // Test beaks limits.
 				"FORTIGATE", // No paging
+				"VERCEL",    // Rate limit 100 creation per hour, 101 needs an hour, too much
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),

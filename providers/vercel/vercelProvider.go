@@ -45,7 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// hednsProvider stores login credentials and represents and API connection
+// vercelProvider stores login credentials and represents and API connection
 type vercelProvider struct {
 	client   vercelClient.Client
 	apiToken string
@@ -291,15 +291,14 @@ func (c *vercelProvider) mkDeleteCorrection(domain string, oldRec *models.Record
 
 // toVercelCreateRequest converts a RecordConfig to a Vercel CreateDNSRecordRequest.
 func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRecordRequest, error) {
-	req := createDNSRecordRequest{
-		CreateDNSRecordRequest: vercelClient.CreateDNSRecordRequest{
-			Domain: domain,
-			Name:   rc.Name,
-			Type:   rc.Type,
-			Value:  rc.GetTargetField(),
-			TTL:    int64(rc.TTL),
-		},
-	}
+	req := createDNSRecordRequest{}
+
+	req.Domain = domain
+	req.Name = rc.Name
+	req.Type = rc.Type
+	req.Value = rc.GetTargetField()
+	req.TTL = int64(rc.TTL)
+	req.Comment = ""
 
 	switch rc.Type {
 	case "MX":
@@ -327,16 +326,18 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 
 // toVercelUpdateRequest converts a RecordConfig to a Vercel UpdateDNSRecordRequest.
 func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, error) {
+	name := rc.Name
+	if name == "@" {
+		name = ""
+	}
 	value := rc.GetTargetField()
 
-	req := updateDNSRecordRequest{
-		UpdateDNSRecordRequest: vercelClient.UpdateDNSRecordRequest{
-			Name:    &rc.Name,
-			Value:   &value,
-			TTL:     ptrInt64(int64(rc.TTL)),
-			Comment: "",
-		},
-	}
+	req := updateDNSRecordRequest{}
+
+	req.Name = &name
+	req.Value = &value
+	req.TTL = ptrInt64(int64(rc.TTL))
+	req.Comment = ""
 
 	switch rc.Type {
 	case "MX":
