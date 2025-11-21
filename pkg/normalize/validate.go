@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/net/idna"
 )
 
 // Returns false if target does not validate.
@@ -353,6 +354,18 @@ type Warning struct {
 
 // ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
+
+	// This is a horrible hack. We need to redo IDN processing someday.
+	// For now, we just convert everything to punycode at the earliest point, which is here.
+	for _, domain := range config.Domains {
+		// Convert domain name to punycode.
+		var err error
+		domain.Name, err = idna.ToASCII(domain.Name)
+		if err != nil {
+			return []error{fmt.Errorf("Can not convert domain %q to IDN: %w", domain.Name, err)}
+		}
+	}
+
 	err := processSplitHorizonDomains(config)
 	if err != nil {
 		return []error{err}
