@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/net/idna"
 )
 
 // Returns false if target does not validate.
@@ -359,6 +360,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	}
 
 	for _, domain := range config.Domains {
+
+		// Convert domain name to punycode.
+		// In the future, we should do something more sophisticated like having a .Name/.NameUnicode/.NameIDN so that users can see.
+		var err error
+		domain.Name, err = idna.ToASCII(domain.Name)
+		if err != nil {
+			return []error{fmt.Errorf("Can not convert domain %q to IDN: %w", domain.Name, err)}
+		}
+
 		pTypes := []string{}
 		for _, provider := range domain.DNSProviderInstances {
 			pType := provider.ProviderType
