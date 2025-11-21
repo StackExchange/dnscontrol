@@ -21,11 +21,6 @@ import (
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
-var defaultNameservers = []string{
-	"ns1.vercel-dns.com",
-	"ns2.vercel-dns.com",
-}
-
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
@@ -104,11 +99,12 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	}, nil
 }
 
-// GetNameservers returns the default Vercel nameservers.
-// Though Vercel RESTful API supports getting "intendedNameServers", but it is not implemented in their Go SDK
-// Let's hard-coded this for now
+// GetNameservers returns empty array.
+// Vercel doesn't permit apex NS records. Vercel's API doesn't even include apex NS records in their API response
+// To prevent DNSControl from trying to create default NS records, let' return an empty array here, just like
+// exoscale provider and gandi v5 provider
 func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
-	return models.ToNameservers(defaultNameservers)
+	return []*models.Nameserver{}, nil
 }
 
 func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
