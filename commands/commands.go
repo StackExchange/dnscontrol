@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/net/idna"
 )
 
 // categories of commands
@@ -308,7 +309,7 @@ func (args *FilterArgs) flags() []cli.Flag {
 // domain is in the list, accounting for wildcards and tags.
 func domainInList(domain string, list []string) bool {
 	for _, item := range list {
-		if item == domain {
+		if downgradeIDNA(item) == downgradeIDNA(domain) {
 			return true
 		}
 		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
@@ -316,6 +317,11 @@ func domainInList(domain string, list []string) bool {
 		}
 		filterDom, filterTag, isFilterTagged := strings.Cut(item, "!")
 		splitDom, domainTag, isDomainTagged := strings.Cut(domain, "!")
+
+		splitDom = downgradeIDNA(splitDom)
+		filterDom = downgradeIDNA(filterDom)
+		//fmt.Printf("###DEBUG: does %q == %q? %v\n", splitDom, filterDom, splitDom == filterDom)
+
 		if splitDom == filterDom {
 			if isDomainTagged {
 				if filterTag == "*" {
@@ -338,4 +344,12 @@ func domainInList(domain string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func downgradeIDNA(s string) string {
+	u, err := idna.ToASCII(s)
+	if err != nil {
+		return s // There was a problem. Abort and return the original.
+	}
+	return u
 }
