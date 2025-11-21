@@ -85,7 +85,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	const providerName = "DIGITALOCEAN"
-	const providerMaintainer = "@Deraen"
+	const providerMaintainer = "@chicks-net"
 	fns := providers.DspFuncs{
 		Initializer:   NewDo,
 		RecordAuditor: AuditRecords,
