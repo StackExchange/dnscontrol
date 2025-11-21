@@ -80,8 +80,8 @@ func init() {
 }
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
-	if creds["team_id"] == "" || creds["api_token"] == "" {
-		return nil, errors.New("api_token required for ns1")
+	if creds["api_token"] == "" {
+		return nil, errors.New("api_token required for VERCEL")
 	}
 
 	c := vercelClient.New(
