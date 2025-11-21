@@ -16,8 +16,9 @@ type httpsRecord struct {
 	Params   string `json:"params,omitempty"`
 }
 
-type CreateHTTPSDNSRecordRequest struct {
-	Name    string       `json:"name"`
+type CreateOrUpdateHTTPSDNSRecordRequest struct {
+	Name string `json:"name"`
+	// Normally TTL would be uint32 type, but since vercelClient.DNSRecord uses int64, we'd better be consistent here
 	TTL     int64        `json:"ttl,omitempty"`
 	Type    string       `json:"type"`
 	Value   string       `json:"value,omitempty"`
@@ -40,7 +41,7 @@ func (c *vercelProvider) createHTTPSRecord(ctx context.Context, domain string, r
 		Params:   rc.SvcParams,
 	}
 
-	payload := CreateHTTPSDNSRecordRequest{
+	payload := CreateOrUpdateHTTPSDNSRecordRequest{
 		Name:    rc.Name,
 		TTL:     int64(rc.TTL),
 		Type:    "HTTPS",
@@ -52,11 +53,16 @@ func (c *vercelProvider) createHTTPSRecord(ctx context.Context, domain string, r
 		RecordID string `json:"uid"`
 	}
 
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
 	return c.doRequest(clientRequest{
 		ctx:    ctx,
 		method: "POST",
 		url:    url,
-		body:   mustMarshal(payload),
+		body:   string(payloadJSON),
 	}, &response)
 }
 
@@ -74,7 +80,7 @@ func (c *vercelProvider) updateHTTPSRecord(ctx context.Context, recordID string,
 		Params:   rc.SvcParams,
 	}
 
-	payload := CreateHTTPSDNSRecordRequest{
+	payload := CreateOrUpdateHTTPSDNSRecordRequest{
 		Name:    rc.Name,
 		TTL:     int64(rc.TTL),
 		Type:    "HTTPS",
@@ -83,19 +89,14 @@ func (c *vercelProvider) updateHTTPSRecord(ctx context.Context, recordID string,
 	}
 
 	var result vercelClient.DNSRecord
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 	return c.doRequest(clientRequest{
 		ctx:    ctx,
 		method: "PATCH",
 		url:    url,
-		body:   mustMarshal(payload),
+		body:   string(payloadJSON),
 	}, &result)
-}
-
-// mustMarshal is a helper to marshal JSON or panic
-func mustMarshal(v interface{}) string {
-	data, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return string(data)
 }
