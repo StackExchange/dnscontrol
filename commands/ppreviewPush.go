@@ -12,6 +12,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/nozzle/throttler"
+	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
@@ -22,10 +27,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/nozzle/throttler"
-	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
-	"golang.org/x/net/idna"
 )
 
 type cmdZoneCache struct {
@@ -55,7 +56,6 @@ type PPreviewArgs struct {
 	ConcurMode        string
 	ConcurMax         int // Maximum number of concurrent connections
 	NoPopulate        bool
-	DePopulate        bool
 	PopulateOnPreview bool
 	Report            string
 	Full              bool
@@ -113,11 +113,6 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
 		Usage:       `Do not auto-create zones at the provider`,
-	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "depopulate",
-		Destination: &args.NoPopulate,
-		Usage:       `Delete unknown zones at provider (dangerous!)`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "populate-on-preview",
