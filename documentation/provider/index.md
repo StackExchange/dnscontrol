@@ -171,7 +171,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
+| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
 | [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
@@ -226,7 +226,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❔ | ❌ | ✅ | ❔ |
+| [`HETZNER_V2`](hetzner_v2.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
@@ -280,7 +280,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ✅ | ❔ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
+| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
