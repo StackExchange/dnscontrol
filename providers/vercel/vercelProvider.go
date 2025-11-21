@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -49,6 +50,11 @@ type vercelProvider struct {
 	client   vercelClient.Client
 	apiToken string
 	teamID   string
+
+	createLimiter *rateLimiter
+	updateLimiter *rateLimiter
+	deleteLimiter *rateLimiter
+	listLimiter   *rateLimiter
 }
 
 // uint16Zero converts value to uint16 or returns 0.
@@ -94,8 +100,12 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	return &vercelProvider{
 		client:   *c,
 		apiToken: creds["api_token"],
-		// store this information so that we can access this anywhere we want
-		teamID: creds["team_id"],
+		teamID:   creds["team_id"],
+		// rate limiters
+		createLimiter: newRateLimiter(100, time.Hour),
+		updateLimiter: newRateLimiter(50, time.Minute),
+		deleteLimiter: newRateLimiter(50, time.Minute),
+		listLimiter:   newRateLimiter(50, time.Minute),
 	}, nil
 }
 
@@ -110,7 +120,7 @@ func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) 
 func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 
-	records, err := c.listDNSRecords(domain)
+	records, err := c.ListDNSRecords(context.Background(), domain)
 	if err != nil {
 		return nil, err
 	}
@@ -218,25 +228,17 @@ func (c *vercelProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, reco
 	return corrections, actualChangeCount, nil
 }
 
-func (c *vercelProvider) createNewRecord(domain string, newRec *models.RecordConfig) error {
-	ctx := context.Background()
-
-	// Handle HTTPS records specially
-	if newRec.Type == "HTTPS" {
-		return c.createHTTPSRecord(ctx, domain, newRec)
-	}
-
-	// Use official SDK for other record types
-	req := toVercelCreateRequest(domain, newRec)
-	_, err := c.client.CreateDNSRecord(ctx, c.teamID, req)
-	return err
-}
-
 func (c *vercelProvider) mkCreateCorrection(domain string, newRec *models.RecordConfig, msg string) *models.Correction {
 	return &models.Correction{
 		Msg: msg,
 		F: func() error {
-			return c.createNewRecord(domain, newRec)
+			ctx := context.Background()
+			req, err := toVercelCreateRequest(domain, newRec)
+			if err != nil {
+				return err
+			}
+			_, err = c.CreateDNSRecord(ctx, req)
+			return err
 		},
 	}
 }
@@ -246,27 +248,31 @@ func (c *vercelProvider) mkChangeCorrection(domain string, oldRec, newRec *model
 		Msg: msg,
 		F: func() error {
 			ctx := context.Background()
-			existingID := oldRec.Original.(domainRecord).ID
+			existingID := oldRec.Original.(DnsRecord).ID
 
 			// UpdateDNSRecord doesn't support type changes
 			// If record type changed, delete and re-create
 			if oldRec.Type != newRec.Type {
 				// Delete old record
-				if err := c.client.DeleteDNSRecord(ctx, domain, existingID, c.teamID); err != nil {
+				if err := c.DeleteDNSRecord(ctx, domain, existingID); err != nil {
 					return err
 				}
-
-				return c.createNewRecord(domain, newRec)
+				// re-create new record.
+				// luckily, delete and create use different rate limit timers
+				// thus we are most likely can go through both.
+				req, err := toVercelCreateRequest(domain, newRec)
+				if err != nil {
+					return err
+				}
+				_, err = c.CreateDNSRecord(ctx, req)
+				return err
 			}
 
-			// Handle HTTPS records specially
-			if newRec.Type == "HTTPS" {
-				return c.updateHTTPSRecord(ctx, existingID, newRec)
+			req, err := toVercelUpdateRequest(newRec)
+			if err != nil {
+				return err
 			}
-
-			// Use official SDK for other record types
-			req := toVercelUpdateRequest(newRec)
-			_, err := c.client.UpdateDNSRecord(ctx, c.teamID, existingID, req)
+			_, err = c.UpdateDNSRecord(ctx, existingID, req)
 			return err
 		},
 	}
@@ -277,20 +283,22 @@ func (c *vercelProvider) mkDeleteCorrection(domain string, oldRec *models.Record
 		Msg: msg,
 		F: func() error {
 			ctx := context.Background()
-			existingID := oldRec.Original.(domainRecord).ID
-			return c.client.DeleteDNSRecord(ctx, domain, existingID, c.teamID)
+			existingID := oldRec.Original.(DnsRecord).ID
+			return c.DeleteDNSRecord(ctx, domain, existingID)
 		},
 	}
 }
 
 // toVercelCreateRequest converts a RecordConfig to a Vercel CreateDNSRecordRequest.
-func toVercelCreateRequest(domain string, rc *models.RecordConfig) vercelClient.CreateDNSRecordRequest {
-	req := vercelClient.CreateDNSRecordRequest{
-		Domain: domain,
-		Name:   rc.Name,
-		Type:   rc.Type,
-		Value:  rc.GetTargetField(),
-		TTL:    int64(rc.TTL),
+func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRecordRequest, error) {
+	req := createDNSRecordRequest{
+		CreateDNSRecordRequest: vercelClient.CreateDNSRecordRequest{
+			Domain: domain,
+			Name:   rc.Name,
+			Type:   rc.Type,
+			Value:  rc.GetTargetField(),
+			TTL:    int64(rc.TTL),
+		},
 	}
 
 	switch rc.Type {
@@ -306,20 +314,28 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) vercelClient.
 		req.Value = "" // SRV uses the SRV struct, not Value
 	case "TXT":
 		req.Value = rc.GetTargetTXTJoined()
+	case "HTTPS":
+		req.HTTPS = &httpsRecord{
+			Priority: int64(rc.SvcPriority),
+			Target:   rc.GetTargetField(),
+			Params:   rc.SvcParams,
+		}
 	}
 
-	return req
+	return req, nil
 }
 
 // toVercelUpdateRequest converts a RecordConfig to a Vercel UpdateDNSRecordRequest.
-func toVercelUpdateRequest(rc *models.RecordConfig) vercelClient.UpdateDNSRecordRequest {
+func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, error) {
 	value := rc.GetTargetField()
 
-	req := vercelClient.UpdateDNSRecordRequest{
-		Name:    &rc.Name,
-		Value:   &value,
-		TTL:     ptrInt64(int64(rc.TTL)),
-		Comment: "",
+	req := updateDNSRecordRequest{
+		UpdateDNSRecordRequest: vercelClient.UpdateDNSRecordRequest{
+			Name:    &rc.Name,
+			Value:   &value,
+			TTL:     ptrInt64(int64(rc.TTL)),
+			Comment: "",
+		},
 	}
 
 	switch rc.Type {
@@ -336,9 +352,15 @@ func toVercelUpdateRequest(rc *models.RecordConfig) vercelClient.UpdateDNSRecord
 	case "TXT":
 		txtValue := rc.GetTargetTXTJoined()
 		req.Value = &txtValue
+	case "HTTPS":
+		req.HTTPS = &httpsRecord{
+			Priority: int64(rc.SvcPriority),
+			Target:   rc.GetTargetField(),
+			Params:   rc.SvcParams,
+		}
 	}
 
-	return req
+	return req, nil
 }
 
 // ptrInt64 returns a pointer to an int64
