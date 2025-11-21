@@ -87,6 +87,7 @@ jobs:
       GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
       GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+      HETZNER_V2_DOMAIN: ${{ vars.HETZNER_V2_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }}
@@ -153,6 +154,8 @@ jobs:
       HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
       HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
       HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+      #
+      HETZNER_V2_API_TOKEN: ${{ secrets.HETZNER_V2_API_TOKEN }}
       #
       HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
       HEXONET_PW: ${{ secrets.HEXONET_PW }}
