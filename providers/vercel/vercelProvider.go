@@ -120,6 +120,19 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 	}
 
 	for _, r := range records {
+		// Vercel has some system-created records that can't be deleted/modified. They can be overridden
+		// by creating new records (where the DNS will prefer your record), but those system records are
+		// still included in the API response.
+		//
+		// Those records will have their "creator" being "system", some of them even has a comment field
+		// "Vercel automatically manages this record. It may change without notice".
+		//
+		// Per https://github.com/StackExchange/dnscontrol/pull/3542#issuecomment-3560041419, let's
+		// pretend those records don't exist, and diff2.ByRecord() will not affect these existing records.
+		if r.Creator == "system" {
+			continue
+		}
+
 		rc := &models.RecordConfig{
 			TTL:      uint32(r.TTL),
 			Original: r,
