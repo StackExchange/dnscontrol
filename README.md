@@ -168,10 +168,10 @@ DNSControl can be installed via packages for macOS, Linux and Windows, or from s
 
 See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/install-dnscontrol](https://github.com/gacts/install-dnscontrol).
 
-## Deprecation warnings (updated 2024-03-25)
+## Deprecation warnings (updated 2025-11-21)
 
 - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-- **NAMEDOTCOM and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
+- ** NAMEDOTCOM, OPENSRS, and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes. Interested in being a hero and adopting them?  Contact tlimoncelli at stack overflow dot com.
 
 ## More info at our website
 
