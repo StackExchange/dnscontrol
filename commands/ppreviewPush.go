@@ -414,7 +414,6 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 // filter. The filter string is a comma-separated list of domain names. If the
 // filter string is empty or "all", all domains are returned.
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
-	fmt.Printf("###DEBUG: whichZonesToProcess filter=%q\n", filter)
 	if filter == "" || filter == "all" {
 		return domains
 	}
