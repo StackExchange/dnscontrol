@@ -8,10 +8,10 @@ import (
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
-// DnsRecord is a helper struct to unmarshal the JSON response.
+// DNSRecord is a helper struct to unmarshal the JSON response.
 // It embeds vercelClient.DNSRecord to reuse the upstream type,
 // but adds fields to handle API inconsistencies (type vs recordType, mxPriority).
-type DnsRecord struct {
+type DNSRecord struct {
 	vercelClient.DNSRecord
 	Type string `json:"type"`
 	// Normally MXPriority would be uint16 type, but since vercelClient.DNSRecord uses int64, we'd better be consistent here
@@ -28,20 +28,20 @@ type pagination struct {
 
 // listResponse represents the response from the Vercel List DNS Records API.
 type listResponse struct {
-	Records    []DnsRecord `json:"records"`
+	Records    []DNSRecord `json:"records"`
 	Pagination pagination  `json:"pagination"`
 }
 
 // Vercel API limit is max 100
-const vercelApiPaginationLimit = 100
+const vercelAPIPaginationLimit = 100
 
 // ListDNSRecords retrieves all DNS records for a domain, handling pagination.
-func (c *vercelProvider) ListDNSRecords(ctx context.Context, domain string) ([]DnsRecord, error) {
-	var allRecords []DnsRecord
+func (c *vercelProvider) ListDNSRecords(ctx context.Context, domain string) ([]DNSRecord, error) {
+	var allRecords []DNSRecord
 	var nextTimestamp int64
 
 	for {
-		url := fmt.Sprintf("https://api.vercel.com/v4/domains/%s/records?limit=%d", domain, vercelApiPaginationLimit)
+		url := fmt.Sprintf("https://api.vercel.com/v4/domains/%s/records?limit=%d", domain, vercelAPIPaginationLimit)
 		if c.teamID != "" {
 			url += fmt.Sprintf("&teamId=%s", c.teamID)
 		}

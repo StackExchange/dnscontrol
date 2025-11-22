@@ -260,7 +260,7 @@ func (c *vercelProvider) mkChangeCorrection(domain string, oldRec, newRec *model
 		Msg: msg,
 		F: func() error {
 			ctx := context.Background()
-			existingID := oldRec.Original.(DnsRecord).ID
+			existingID := oldRec.Original.(DNSRecord).ID
 
 			// UpdateDNSRecord doesn't support type changes
 			// If record type changed, delete and re-create
@@ -295,7 +295,7 @@ func (c *vercelProvider) mkDeleteCorrection(domain string, oldRec *models.Record
 		Msg: msg,
 		F: func() error {
 			ctx := context.Background()
-			existingID := oldRec.Original.(DnsRecord).ID
+			existingID := oldRec.Original.(DNSRecord).ID
 			return c.DeleteDNSRecord(ctx, domain, existingID)
 		},
 	}
