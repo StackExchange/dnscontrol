@@ -18,6 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
@@ -871,7 +872,11 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	case "TXT":
-		err := rc.SetTargetTXT(cr.Content)
+		s, err := txtutil.ParseQuoted(cr.Content)
+		if err != nil {
+			return rc, err
+		}
+		err = rc.SetTargetTXT(s)
 		return rc, err
 	default:
 		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
