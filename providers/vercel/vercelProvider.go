@@ -40,6 +40,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseDNSKEY:           providers.Cannot(),
 	providers.DocCreateDomains:       providers.Unimplemented(),
 	providers.DocDualHost:            providers.Cannot("Vercel does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
