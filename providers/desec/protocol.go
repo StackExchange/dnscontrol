@@ -268,6 +268,11 @@ func (c *desecProvider) createDomain(domain string) error {
 			printer.Printf("  %s\n", d)
 		}
 	}
+	c.domainIndexLock.Lock()
+	defer c.domainIndexLock.Unlock()
+	if c.domainIndex != nil {
+		c.domainIndex[domain] = dm.MinimumTTL
+	}
 	return nil
 }
 
