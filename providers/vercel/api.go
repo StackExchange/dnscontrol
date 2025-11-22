@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
@@ -52,7 +53,7 @@ func (c *vercelProvider) ListDNSRecords(ctx context.Context, domain string) ([]D
 		var result listResponse
 		err := c.doRequest(clientRequest{
 			ctx:    ctx,
-			method: "GET",
+			method: http.MethodGet,
 			url:    url,
 		}, &result, c.listLimiter)
 
@@ -101,7 +102,7 @@ type createDNSRecordRequest struct {
 func (c *vercelProvider) CreateDNSRecord(ctx context.Context, req createDNSRecordRequest) (*vercelClient.DNSRecord, error) {
 	url := fmt.Sprintf("https://api.vercel.com/v4/domains/%s/records", req.Domain)
 	if c.teamID != "" {
-		url += fmt.Sprintf("?teamId=%s", c.teamID)
+		url += "?teamId=" + c.teamID
 	}
 
 	var response struct {
@@ -115,7 +116,7 @@ func (c *vercelProvider) CreateDNSRecord(ctx context.Context, req createDNSRecor
 
 	err = c.doRequest(clientRequest{
 		ctx:    ctx,
-		method: "POST",
+		method: http.MethodPost,
 		url:    url,
 		body:   string(payloadJSON),
 	}, &response, c.createLimiter)
@@ -136,18 +137,18 @@ type updateDNSRecordRequest struct {
 func (c *vercelProvider) UpdateDNSRecord(ctx context.Context, recordID string, req updateDNSRecordRequest) (*vercelClient.DNSRecord, error) {
 	url := fmt.Sprintf("https://api.vercel.com/v4/domains/records/%s", recordID)
 	if c.teamID != "" {
-		url += fmt.Sprintf("?teamId=%s", c.teamID)
+		url += "?teamId=" + c.teamID
 	}
 
-	var result vercelClient.DNSRecord
 	payloadJSON, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
+	var result vercelClient.DNSRecord
 	err = c.doRequest(clientRequest{
 		ctx:    ctx,
-		method: "PATCH",
+		method: http.MethodPatch,
 		url:    url,
 		body:   string(payloadJSON),
 	}, &result, c.updateLimiter)
@@ -159,12 +160,12 @@ func (c *vercelProvider) UpdateDNSRecord(ctx context.Context, recordID string, r
 func (c *vercelProvider) DeleteDNSRecord(ctx context.Context, domain string, recordID string) error {
 	url := fmt.Sprintf("https://api.vercel.com/v2/domains/%s/records/%s", domain, recordID)
 	if c.teamID != "" {
-		url += fmt.Sprintf("?teamId=%s", c.teamID)
+		url += "?teamId=" + c.teamID
 	}
 
 	return c.doRequest(clientRequest{
 		ctx:    ctx,
-		method: "DELETE",
+		method: http.MethodDelete,
 		url:    url,
 	}, nil, c.deleteLimiter)
 }

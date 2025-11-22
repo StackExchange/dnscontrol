@@ -49,16 +49,16 @@ func (c *vercelProvider) doRequest(req clientRequest, v interface{}, rl *rateLim
 		Timeout: 5 * 60 * time.Second,
 	}
 
+	if rl == nil {
+		panic("doRequest is expecting a rate limiter but got nil, please fire an issue and ping @SukkaW")
+	}
+
 	for {
 		r, err := req.toHTTPRequest()
 		if err != nil {
 			return err
 		}
-		r.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.apiToken))
-
-		if rl == nil {
-			panic("doRequest is expecting a rate limiter but got nil, please fire an issue")
-		}
+		r.Header.Add("Authorization", "Bearer "+c.apiToken)
 
 		rl.delayRequest()
 
@@ -71,17 +71,17 @@ func (c *vercelProvider) doRequest(req clientRequest, v interface{}, rl *rateLim
 		retry, err := rl.handleResponse(resp)
 
 		if err != nil {
-			resp.Body.Close()
+			defer resp.Body.Close()
 			return err
 		}
 		if retry {
-			resp.Body.Close()
+			defer resp.Body.Close()
 			continue
 		}
 
 		// Process response
 		err = c.processResponse(resp, v, req.errorOnNoContent)
-		resp.Body.Close()
+		defer resp.Body.Close()
 		return err
 	}
 }

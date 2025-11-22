@@ -1,6 +1,7 @@
 package vercel
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -54,7 +55,7 @@ func rejectifCaaTargetContainsUnsupportedFields(rc *models.RecordConfig) error {
 	parts := strings.Split(target, ";")
 	// The first part is the domain, which we only check length for now
 	if len(parts[0]) < 1 {
-		return fmt.Errorf("caa target domain is empty")
+		return errors.New("caa target domain is empty")
 	}
 	for _, part := range parts[1:] {
 		part = strings.TrimSpace(part)
