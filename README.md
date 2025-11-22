@@ -65,6 +65,7 @@ Currently supported DNS providers:
 - Sakura Cloud
 - SoftLayer
 - TransIP
+- Vercel
 - Vultr
 
 Currently supported Domain Registrars:
