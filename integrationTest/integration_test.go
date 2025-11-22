@@ -411,6 +411,7 @@ func makeTests() []*TestGroup {
 				"NETCUP",      // NS records not currently supported.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
+				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
