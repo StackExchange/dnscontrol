@@ -150,7 +150,12 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 			TTL:      uint32(r.TTL),
 			Original: r,
 		}
-		rc.SetLabel(r.Name, domain)
+
+		name := r.Name
+		if name == "@" {
+			name = ""
+		}
+		rc.SetLabel(name, domain)
 
 		if r.Type == "CNAME" || r.Type == "MX" {
 			r.Value = dns.CanonicalName(r.Value)
@@ -301,7 +306,12 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 	req := createDNSRecordRequest{}
 
 	req.Domain = domain
-	req.Name = rc.Name
+
+	name := rc.GetLabel()
+	if name == "@" {
+		name = ""
+	}
+	req.Name = name
 	req.Type = rc.Type
 	req.Value = rc.GetTargetField()
 	req.TTL = int64(rc.TTL)
@@ -326,6 +336,8 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 			Target:   rc.GetTargetField(),
 			Params:   rc.SvcParams,
 		}
+	case "CAA":
+		req.Value = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	}
 
 	return req, nil
@@ -333,16 +345,17 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 
 // toVercelUpdateRequest converts a RecordConfig to a Vercel UpdateDNSRecordRequest.
 func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, error) {
-	name := rc.Name
+	req := updateDNSRecordRequest{}
+
+	name := rc.GetLabel()
 	if name == "@" {
 		name = ""
 	}
-	value := rc.GetTargetField()
-
-	req := updateDNSRecordRequest{}
-
 	req.Name = &name
+
+	value := rc.GetTargetField()
 	req.Value = &value
+
 	req.TTL = ptrInt64(int64(rc.TTL))
 	req.Comment = ""
 
@@ -366,6 +379,9 @@ func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, err
 			Target:   rc.GetTargetField(),
 			Params:   rc.SvcParams,
 		}
+	case "CAA":
+		value := fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
+		req.Value = &value
 	}
 
 	return req, nil
