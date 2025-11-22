@@ -142,7 +142,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ❔ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ✅ |
-| [`VERCEL`](vercel.md) | ❔ | ❌ | ❔ | ❌ |
+| [`VERCEL`](vercel.md) | ❔ | ❌ | ❌ | ❌ |
 | [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ✅ |
 
 
@@ -199,7 +199,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| [`VERCEL`](vercel.md) | ✅ | ❔ | ❌ | ❌ | ❌ |
+| [`VERCEL`](vercel.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`VULTR`](vultr.md) | ❌ | ❔ | ❌ | ❌ | ❔ |
 
 
@@ -254,7 +254,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ✅ | ❔ |
 | [`TRANSIP`](transip.md) | ❌ | ✅ | ✅ | ❌ |
-| [`VERCEL`](vercel.md) | ❌ | ❌ | ✅ | ❔ |
+| [`VERCEL`](vercel.md) | ❌ | ❌ | ✅ | ❌ |
 | [`VULTR`](vultr.md) | ❔ | ❔ | ✅ | ❔ |
 
 
@@ -307,7 +307,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
-| [`VERCEL`](vercel.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
+| [`VERCEL`](vercel.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`VULTR`](vultr.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 
 
