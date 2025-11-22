@@ -1347,6 +1347,20 @@ func makeTests() []*TestGroup {
 			tc("simple", aghAAAAPassthrough("foo", "")),
 		),
 
+		// VERCEL features(?)
+
+		// Turns out that Vercel does support whitespace in the CAA record,
+		// but it only supports `cansignhttpexchanges` field, all other fields,
+		// `validationmethods`, `accounturi` are not supported
+		//
+		// In order to test the `CAA whitespace` capabilities and quirks, let's go!
+		testgroup("VERCEL CAA whitespace - cansignhttpexchanges",
+			only(
+				"VERCEL",
+			),
+			tc("CAA whitespace - cansignhttpexchanges", caa("@", 128, "issue", "digicert.com; cansignhttpexchanges=yes")),
+		),
+
 		//// IGNORE* features
 
 		// Narrative: You're basically done now. These remaining tests
