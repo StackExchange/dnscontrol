@@ -428,6 +428,7 @@ Providers in this category and their maintainers are:
 |[`SAKURACLOUD`](sakuracloud.md)|@ttkzw|
 |[`SOFTLAYER`](softlayer.md)|@jamielennox|
 |[`TRANSIP`](transip.md)|@blackshadev|
+|[`VERCEL`](vercel.md)|@SukkaW|
 |[`VULTR`](vultr.md)|@pgaskin|
 
 ### Requested providers
@@ -458,7 +459,6 @@ code to support this provider, we'd be glad to help in any way.
 * [Spaceship](https://github.com/StackExchange/dnscontrol/issues/3452) (#3452)
 * [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
 * [UltraDNS by Neustar / CSCGlobal](https://github.com/StackExchange/dnscontrol/issues/1533) (#1533)
-* [Vercel](https://github.com/StackExchange/dnscontrol/issues/3379) (#3379)
 * [Yandex Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/3737) (#3737)
 
 #### Q: Why are the above GitHub issues marked "closed"?
