@@ -165,6 +165,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
+* [Vercel](provider/vercel.md)
 * [Vultr](provider/vultr.md)
 
 ## Commands
