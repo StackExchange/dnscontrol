@@ -338,7 +338,7 @@ Jump to a table:
 | [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ❌ |
 | [`TRANSIP`](transip.md) | ❌ | ❌ | ❌ |
-| [`VERCEL`](vercel.md) | ❌ | ❔ | ❌ |
+| [`VERCEL`](vercel.md) | ❌ | ❌ | ❌ |
 
 <!-- provider-matrix-end -->
 
