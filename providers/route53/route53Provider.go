@@ -20,10 +20,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	r53 "github.com/aws/aws-sdk-go-v2/service/route53"
 	r53Types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	r53d "github.com/aws/aws-sdk-go-v2/service/route53domains"
 	r53dTypes "github.com/aws/aws-sdk-go-v2/service/route53domains/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 type route53Provider struct {
@@ -50,7 +52,7 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		config.WithRegion("us-east-1"),
 	}
 
-	keyID, secretKey, tokenID := m["KeyId"], m["SecretKey"], m["Token"]
+	keyID, secretKey, tokenID, roleArn, externalId := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
 	// Token is optional and left empty unless required
 	if keyID != "" || secretKey != "" {
 		optFns = append(optFns, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(keyID, secretKey, tokenID)))
@@ -59,6 +61,20 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 	config, err := config.LoadDefaultConfig(context.Background(), optFns...)
 	if err != nil {
 		return nil, err
+	}
+
+	if roleArn != "" {
+		stsClient := sts.NewFromConfig(config)
+		sessionName := fmt.Sprintf("dnscontrol-route53-%d", time.Now().Unix())
+
+		var assumeOpts []func(*stscreds.AssumeRoleOptions)
+		if externalId != "" {
+			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalId) })
+		}
+		assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.RoleSessionName = sessionName })
+
+		stsCredsProvider := stscreds.NewAssumeRoleProvider(stsClient, roleArn, assumeOpts...)
+		config.Credentials = aws.NewCredentialsCache(stsCredsProvider)
 	}
 
 	var dls *string
@@ -307,7 +323,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	if err != nil {
 		return nil, 0, err
 	}
-	instructions = reorderInstructions(instructions)
 	var reports []*models.Correction
 
 	// wasReport := false
@@ -407,27 +422,6 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return append(reports, corrections...), actualChangeCount, nil
-}
-
-// reorderInstructions returns changes reordered to comply with AWS's requirements:
-//   - The R43_ALIAS updates must come after records they refer to.  To handle
-//     this, we simply move all R53_ALIAS instructions to the end of the list, thus
-//     guaranteeing they will happen after the records they refer to have been
-//     reated.
-func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
-	var main, tail diff2.ChangeList
-	for _, change := range changes {
-		// Reports should be early in the list.
-		// R53_ALIAS_ records should go to the tail.
-		if change.Type != diff2.REPORT && strings.HasPrefix(change.Key.Type, "R53_ALIAS_") {
-			tail = append(tail, change)
-		} else {
-			main = append(main, change)
-		}
-	}
-	return append(main, tail...)
-	// NB(tlim): This algorithm is O(n*2) but it is simple and usually only
-	// operates on very small lists.
 }
 
 func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {
@@ -652,7 +646,7 @@ func unescape(s *string) string {
 	return name
 }
 
-func (r *route53Provider) EnsureZoneExists(domain string) error {
+func (r *route53Provider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if err := r.getZones(); err != nil {
 		return err
 	}

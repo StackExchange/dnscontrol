@@ -10,6 +10,7 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "normal",
           "target": "1.1.1.1",
           "ttl": 300,
@@ -18,6 +19,7 @@
       ],
       "recordsabsent": [
         {
+          "filepos": "[line:3:5]",
           "name": "helper",
           "target": "2.2.2.2",
           "type": "A"

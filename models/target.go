@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/miekg/dns"
 )
 
@@ -31,7 +32,7 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 // string. How TXT records are encoded is defined by encodeFn.  If encodeFn is
 // nil the TXT data is returned unaltered.
 func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) string {
-	if rc.Type == "TXT" {
+	if rc.Type == "TXT" || rc.Type == "LUA" {
 		if encodeFn == nil {
 			return rc.target
 		}
@@ -48,12 +49,16 @@ func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
+		case "LUA":
+			return rc.luaCombined()
 		case "R53_ALIAS":
 			// Differentiate between multiple R53_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s zone_id=%s evaluate_target_health=%s", rc.target, rc.R53Alias["type"], rc.R53Alias["zone_id"], rc.R53Alias["evaluate_target_health"])
 		case "AZURE_ALIAS":
 			// Differentiate between multiple AZURE_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s", rc.target, rc.AzureAlias["type"])
+		case "AKAMAITLC":
+			return fmt.Sprintf("%s %s", rc.AnswerType, rc.target)
 		default:
 			// Just return the target.
 			return rc.target
@@ -92,6 +97,26 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	return full[len(header):]
 }
 
+func (rc *RecordConfig) luaCombined() string {
+	rtype := rc.luaTypeUpper()
+	payload := rc.target
+	if rtype == "" {
+		return payload
+	}
+	payload = txtutil.EncodeQuoted(payload)
+	if payload == "" {
+		return rtype
+	}
+	return fmt.Sprintf("%s %s", rtype, payload)
+}
+
+func (rc *RecordConfig) luaTypeUpper() string {
+	if rc.LuaRType == "" {
+		return ""
+	}
+	return strings.ToUpper(rc.LuaRType)
+}
+
 // GetTargetRFC1035Quoted returns the target as it would be in an
 // RFC1035-style zonefile.
 // Do not use this function if RecordConfig might be a pseudo-rtype
@@ -103,13 +128,16 @@ func (rc *RecordConfig) GetTargetRFC1035Quoted() string {
 // GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
 	target := rc.target
-	if rc.Type == "TXT" {
+	//if rc.Type == "TXT" {
+	if rc.HasFormatIdenticalToTXT() {
 		target = fmt.Sprintf("%q", target)
 	}
 	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, target, rc.TTL)
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "PTR", "TXT":
+	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "OPENPGPKEY", "PTR", "TXT":
 		// Nothing special.
+	case "LUA":
+		content += " luartype=" + rc.luaTypeUpper()
 	case "AZURE_ALIAS":
 		content += " type=" + rc.AzureAlias["type"]
 	case "CAA":
@@ -124,6 +152,8 @@ func (rc *RecordConfig) GetTargetDebug() string {
 		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "R53_ALIAS":
 		content += fmt.Sprintf(" type=%s zone_id=%s evaluate_target_health=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"], rc.R53Alias["evaluate_target_health"])
+	case "SMIMEA":
+		content += fmt.Sprintf(" smimeausage=%d smimeaselector=%d smimeamatchingtype=%d", rc.SmimeaUsage, rc.SmimeaSelector, rc.SmimeaMatchingType)
 	case "SOA":
 		content = fmt.Sprintf("%s ns=%v mbox=%v serial=%v refresh=%v retry=%v expire=%v minttl=%v", rc.Type, rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	case "SRV":

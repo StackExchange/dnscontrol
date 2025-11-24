@@ -359,6 +359,16 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func aghAPassthrough(pattern, target string) *models.RecordConfig {
+	r := makeRec(pattern, target, "ADGUARDHOME_A_PASSTHROUGH")
+	return r
+}
+
+func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
+	r := makeRec(pattern, target, "ADGUARDHOME_AAAA_PASSTHROUGH")
+	return r
+}
+
 func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
@@ -452,6 +462,10 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func openpgpkey(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "OPENPGPKEY")
+}
+
 func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
@@ -462,6 +476,12 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 		"type":                   aliasType,
 		"evaluate_target_health": evalTargetHealth,
 	}
+	return r
+}
+
+func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "SMIMEA")
+	panicOnErr(r.SetTargetSMIMEA(usage, selector, matchingtype, target))
 	return r
 }
 
@@ -598,6 +618,18 @@ func porkbunUrlfwd(name, target, t, includePath, wildcard string) *models.Record
 	r.Metadata["includePath"] = includePath
 	r.Metadata["wildcard"] = wildcard
 	return r
+}
+
+func url(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URL")
+}
+
+func url301(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URL301")
+}
+
+func frame(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "FRAME")
 }
 
 func tcEmptyZone() *TestCase {

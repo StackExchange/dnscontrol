@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/net/idna"
 )
 
 /*
@@ -34,16 +35,18 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDNSKEY:           providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSMIMEA:           providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
@@ -99,7 +102,12 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
-	records, err := c.getRecords(domain)
+	punycodeDomain, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := c.getRecords(punycodeDomain)
 	if err != nil {
 		return nil, err
 	}
@@ -108,14 +116,14 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 	existingRecords := []*models.RecordConfig{}
 	// spew.Dump(records)
 	for _, rr := range records {
-		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
+		existingRecords = append(existingRecords, nativeToRecords(rr, punycodeDomain)...)
 	}
 
 	return existingRecords, nil
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *desecProvider) EnsureZoneExists(domain string) error {
+func (c *desecProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, ok, err := c.searchDomainIndex(domain)
 	if err != nil {
 		return err
@@ -156,7 +164,12 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-	minTTL, ok, err := c.searchDomainIndex(dc.Name)
+	punycodeName, err := idna.ToASCII(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	minTTL, ok, err := c.searchDomainIndex(punycodeName)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -191,7 +204,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					rc.Type = label.Type
 					rc.Records = make([]string, 0) // empty array of records should delete this rrset
 					rc.TTL = 3600
-					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
+					shortname := dnsutil.TrimDomainName(label.NameFQDN, punycodeName)
 					if shortname == "@" {
 						shortname = ""
 					}
@@ -205,7 +218,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 			}
 		} else {
 			// it must be an update or create, both can be done with the same api call.
-			ns := recordsToNative(desiredRecords[label])
+			ns := recordsToNative(desiredRecords[label], punycodeName)
 			if len(ns) > 1 {
 				panic("we got more than one resource record to create / modify")
 			}
@@ -229,7 +242,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 				Msg: msg,
 				F: func() error {
 					rc := rrs
-					err := c.upsertRR(rc, dc.Name)
+					err := c.upsertRR(rc, punycodeName)
 					if err != nil {
 						return err
 					}

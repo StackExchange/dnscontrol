@@ -1,0 +1,25 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_tag": "",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
+      "records": [
+        {
+          "filepos": "[line:2:5]",
+          "name": "f10e7de079689f55c0cdd6782e4dd1448c84006962a4bd832e8eff73._smimecert",
+          "smimeausage": 3,
+          "target": "mdfiytq3mtljodbinmzlotexyja5mwe3yza1mti0yjy0zwvly2u5njrlmdljmdu4zwy4zjk4mdvkywnhntq2yiaglqo=",
+          "ttl": 300,
+          "type": "SMIMEA"
+        }
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": []
+}

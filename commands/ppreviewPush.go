@@ -6,8 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/nozzle/throttler"
+	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -19,12 +27,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
-	"golang.org/x/net/idna"
 )
 
-type zoneCache struct {
+type cmdZoneCache struct {
 	cache map[string]*[]string
 	sync.Mutex
 }
@@ -49,8 +54,8 @@ type PPreviewArgs struct {
 	Notify            bool
 	WarnChanges       bool
 	ConcurMode        string
+	ConcurMax         int // Maximum number of concurrent connections
 	NoPopulate        bool
-	DePopulate        bool
 	PopulateOnPreview bool
 	Report            string
 	Full              bool
@@ -91,20 +96,28 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 			return nil
 		},
 	})
+	flags = append(flags, &cli.IntFlag{
+		Name:        "cmax",
+		Destination: &args.ConcurMax,
+		Value:       999,
+		Usage:       `Maximum number of concurrent connections`,
+		Action: func(c *cli.Context, v int) error {
+			if v < 1 {
+				fmt.Printf("%d is not a valid value for --cmax.  Values must be 1 or greater\n", v)
+				os.Exit(1)
+			}
+			return nil
+		},
+	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
 		Usage:       `Do not auto-create zones at the provider`,
 	})
 	flags = append(flags, &cli.BoolFlag{
-		Name:        "depopulate",
-		Destination: &args.NoPopulate,
-		Usage:       `Delete unknown zones at provider (dangerous!)`,
-	})
-	flags = append(flags, &cli.BoolFlag{
 		Name:        "populate-on-preview",
 		Destination: &args.PopulateOnPreview,
-		Value:       true,
+		Value:       false,
 		Usage:       `Auto-create zones on preview`,
 	})
 	flags = append(flags, &cli.BoolFlag{
@@ -114,7 +127,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	})
 	flags = append(flags, &cli.IntFlag{
 		Name:   "reportmax",
-		Hidden: true,
+		Hidden: false,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
 		Action: func(ctx *cli.Context, maxreport int) error {
 			printer.MaxReport = maxreport
@@ -190,7 +203,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return err
 	}
 
-	out.PrintfIf(fullMode, "Reading creds.json or equiv.\n")
+	out.PrintfIf(fullMode, "Reading creds: %q\n", args.CredsFile)
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
@@ -208,37 +221,63 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return errors.New("exiting due to validation errors")
 	}
 
-	zcache := NewZoneCache()
+	zcache := NewCmdZoneCache()
 
 	// Loop over all (or some) zones:
 	zonesToProcess := whichZonesToProcess(cfg.Domains, args.Domains)
 	zonesSerial, zonesConcurrent := splitConcurrent(zonesToProcess, args.ConcurMode)
+	zonesConcurrent = optimizeOrder(zonesConcurrent)
 
 	var totalCorrections int
 	var reportItems []*ReportItem
 	var anyErrors bool
+	var concurrentErrors atomic.Bool
 
 	// Populate the zones (if desired/needed/able):
 	if !args.NoPopulate {
 		out.PrintfIf(fullMode, "PHASE 1: CHECKING for missing zones\n")
-		var wg sync.WaitGroup
-		wg.Add(len(zonesConcurrent))
-		out.PrintfIf(fullMode, "CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
-		for _, zone := range optimizeOrder(zonesConcurrent) {
+		t := throttler.New(args.ConcurMax, len(zonesConcurrent))
+		out.Printf("CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
+		for i, zone := range zonesConcurrent {
 			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
 			go func(zone *models.DomainConfig) {
-				defer wg.Done()
-				oneZonePopulate(zone, zcache)
+				start := time.Now()
+				err := oneZonePopulate(zone, zcache)
+				if err != nil {
+					concurrentErrors.Store(true)
+				}
+				out.Debugf("...DONE: %q (%.1fs)\n", zone.Name, time.Since(start).Seconds())
+				t.Done(err)
 			}(zone)
+			// Delay the last call to t.Throttle() until the serial processing is done.
+			if i != ultimate(zonesConcurrent) {
+				errorCount := t.Throttle()
+				if errorCount > 0 {
+					anyErrors = true
+				}
+			}
 		}
-		out.PrintfIf(fullMode, "SERIALLY checking for %d zone(s)\n", len(zonesSerial))
+
+		out.Printf("SERIALLY checking for %d zone(s)\n", len(zonesSerial))
 		for _, zone := range zonesSerial {
-			out.PrintfIf(fullMode, "Serially checking for zone: %q\n", zone.Name)
-			oneZonePopulate(zone, zcache)
+			out.Printf("Serially checking for zone: %q\n", zone.Name)
+			if err := oneZonePopulate(zone, zcache); err != nil {
+				anyErrors = true
+			}
 		}
-		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "Waiting for concurrent checking(s) to complete...")
-		wg.Wait()
-		out.PrintfIf(fullMode && len(zonesConcurrent) > 0, "DONE\n")
+
+		if len(zonesConcurrent) > 0 {
+			if printer.DefaultPrinter.Verbose {
+				out.PrintfIf(true, "Waiting for concurrent checking(s) to complete...\n")
+			} else {
+				out.PrintfIf(true, "Waiting for concurrent checking(s) to complete...")
+			}
+			errorCount := t.Throttle()
+			if errorCount > 0 {
+				anyErrors = true
+			}
+			out.PrintfIf(true, "DONE\n")
+		}
 
 		for _, zone := range zonesToProcess {
 			started := false // Do not emit noise when no provider has corrections.
@@ -257,7 +296,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				if !skip {
 					totalCorrections += len(corrections)
 					out.EndProvider2(provider.Name, len(corrections))
-					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push || args.PopulateOnPreview, interactive, notifier, report))
 				}
 			}
@@ -265,24 +304,49 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 
 	out.PrintfIf(fullMode, "PHASE 2: GATHERING data\n")
-	var wg sync.WaitGroup
-	wg.Add(len(zonesConcurrent))
-	out.Printf("CONCURRENTLY gathering %d zone(s)\n", len(zonesConcurrent))
-	for _, zone := range optimizeOrder(zonesConcurrent) {
+	t := throttler.New(args.ConcurMax, len(zonesConcurrent))
+	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
+	for i, zone := range zonesConcurrent {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
-		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *zoneCache) {
-			defer wg.Done()
-			oneZone(zone, args)
+		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
+			start := time.Now()
+			err := oneZone(zone, args)
+			if err != nil {
+				concurrentErrors.Store(true)
+			}
+			out.Debugf("...DONE: %q (%.1fs)\n", zone.Name, time.Since(start).Seconds())
+			t.Done(err)
 		}(zone, args, zcache)
+		// Delay the last call to t.Throttle() until the serial processing is done.
+		if i != ultimate(zonesConcurrent) {
+			errorCount := t.Throttle()
+			if errorCount > 0 {
+				anyErrors = true
+			}
+		}
 	}
-	out.Printf("SERIALLY gathering %d zone(s)\n", len(zonesSerial))
+	out.Printf("SERIALLY gathering records of %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
 		out.Printf("Serially Gathering: %q\n", zone.Name)
-		oneZone(zone, args)
+		if err := oneZone(zone, args); err != nil {
+			anyErrors = true
+		}
 	}
-	out.PrintfIf(len(zonesConcurrent) > 0, "Waiting for concurrent gathering(s) to complete...")
-	wg.Wait()
-	out.PrintfIf(len(zonesConcurrent) > 0, "DONE\n")
+
+	if len(zonesConcurrent) > 0 {
+		msg := "Waiting for concurrent gathering(s) to complete..."
+		if printer.DefaultPrinter.Verbose {
+			msg = "Waiting for concurrent gathering(s) to complete...\n"
+		}
+		out.PrintfIf(true, msg)
+		errorCount := t.Throttle()
+		if errorCount > 0 {
+			anyErrors = true
+		}
+		out.PrintfIf(true, "DONE\n")
+	}
+
+	anyErrors = cmp.Or(anyErrors, concurrentErrors.Load())
 
 	// Now we know what to do, print or do the tasks.
 	out.PrintfIf(fullMode, "PHASE 3: CORRECTIONS\n")
@@ -299,7 +363,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				numActions := zone.GetChangeCount(provider.Name)
 				totalCorrections += numActions
 				out.EndProvider2(provider.Name, numActions)
-				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
 			}
 		}
@@ -312,7 +376,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			numActions := zone.GetChangeCount(zone.RegistrarInstance.Name)
 			out.EndProvider2(zone.RegistrarName, numActions)
 			totalCorrections += numActions
-			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
+			reportItems = append(reportItems, genReportItem(zone.Name, corrections, "", zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 		}
 	}
@@ -371,7 +435,8 @@ func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*model
 func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*models.DomainConfig, concurrent []*models.DomainConfig) {
 	if filter == "none" {
 		return domains, nil
-	} else if filter == "all" {
+	}
+	if filter == "all" {
 		return nil, domains
 	}
 	for _, dc := range domains {
@@ -420,31 +485,44 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, zc *zoneCache) {
+func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) error {
+	var errs []error
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
-		populateCorrections := generatePopulateCorrections(provider, zone.Name, zc)
+		populateCorrections, err := generatePopulateCorrections(provider, zone, zc)
+		if err != nil {
+			errs = append(errs, err)
+		}
 		zone.StorePopulateCorrections(provider.Name, populateCorrections)
 	}
+	return errors.Join(errs...)
 }
 
-func oneZone(zone *models.DomainConfig, args PPreviewArgs) {
+func oneZone(zone *models.DomainConfig, args PPreviewArgs) error {
+	var errs []error
 	// Fix the parent zone's delegation: (if able/needed)
-	delegationCorrections, dcCount := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
+	delegationCorrections, dcCount, err := generateDelegationCorrections(zone, zone.DNSProviderInstances, zone.RegistrarInstance)
+	if err != nil {
+		errs = append(errs, err)
+	}
 
 	// Loop over the (selected) providers configured for that zone:
 	providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
 	for _, provider := range providersToProcess {
 		// Update the zone's records at the provider:
-		zoneCor, rep, actualChangeCount := generateZoneCorrections(zone, provider)
+		zoneCor, rep, actualChangeCount, err := generateZoneCorrections(zone, provider)
 		zone.StoreCorrections(provider.Name, rep)
 		zone.StoreCorrections(provider.Name, zoneCor)
 		zone.IncrementChangeCount(provider.Name, actualChangeCount)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	// Do the delegation corrections after the zones are updated.
 	zone.StoreCorrections(zone.RegistrarInstance.Name, delegationCorrections)
 	zone.IncrementChangeCount(zone.RegistrarInstance.Name, dcCount)
+	return errors.Join(errs...)
 }
 
 func whichProvidersToProcess(providers []*models.DNSProviderInstance, filter string) []*models.DNSProviderInstance {
@@ -482,19 +560,51 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 	})
 }
 
-func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
-	// Only count the actions, not the messages.
-	cnt := 0
+func parseCorrectionMsg(s string) []string {
+	// Regex to remove the terminal styled formatting
+	ansiRe := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+	s = ansiRe.ReplaceAllString(s, "")
+	// Create a slice(array) of correction/actions/changes from Msg
+	corrections := strings.Split(s, "\n")
+	// Clean up the slice, precaution remove any empty entries.
+	clean := make([]string, 0, len(corrections))
+	for _, l := range corrections {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			clean = append(clean, l)
+		}
+	}
+	return clean
+}
+
+func genReportItem(zoneName string, corrections []*models.Correction, providerName string, registrarName string) *ReportItem {
+	correctionDetails := make([]string, 0)
 	for _, cor := range corrections {
 		if cor.F != nil {
-			cnt++
+			// `corrections` is a list that contains "informational" messages
+			// (where `.F = nil`) and "actions" to be taken (where `.F != nil`).
+			// When `.F = nil`, the contents of `.Msg` can either be a concatenation of all
+			// actions(all changes done in a single API call) or a single
+			// action(one API call per change), depending on the provider's implementation.
+			//
+			// We are parsing `cor.Msg` to remove terminal styled formatting and create
+			// a comprehensive list of actions (changes), as well as get an accurate
+			// number of corrections (`len(correctionDetails)`).
+
+			correctionDetails = append(correctionDetails, parseCorrectionMsg(cor.Msg)...)
 		}
 	}
 
 	r := ReportItem{
-		Domain:      zname,
-		Corrections: cnt,
-		Provider:    pname,
+		Domain:            zoneName,
+		Corrections:       len(correctionDetails),
+		CorrectionDetails: correctionDetails,
+	}
+	if providerName != "" {
+		r.Provider = providerName
+	}
+	if registrarName != "" {
+		r.Registrar = registrarName
 	}
 	return &r
 }
@@ -516,21 +626,24 @@ func pprintOrRunCorrections(zoneName string, providerName string, corrections []
 			cc++
 		}
 
-		var err error
-		if push {
-			// If interactive, ask "are you sure?" and skip if not.
-			if interactive && !out.PromptToRun() {
-				continue
-			}
+		// If interactive, ask "are you sure?" and skip if not.
+		if push && interactive && !out.PromptToRun() {
+			continue
+		}
 
-			// If it is an action (not an informational message), notify and execute.
-			if correction.F != nil {
-				notifier.Notify(zoneName, providerName, correction.Msg, err, false)
+		// If it is an action (not an informational message), notify and execute.
+		if correction.F != nil {
+			var err error
+			if push {
 				err = correction.F()
 				out.EndCorrection(err)
 				if err != nil {
 					anyErrors = true
 				}
+			}
+			notifyErr := notifier.Notify(zoneName, providerName, correction.Msg, err, !push)
+			if notifyErr != nil {
+				out.Warnf("Error sending notification: %s\n", notifyErr)
 			}
 		}
 	}
@@ -550,57 +663,61 @@ func writeReport(report string, reportItems []*ReportItem) error {
 		return err
 	}
 	defer f.Close()
-	b, err := json.MarshalIndent(reportItems, "", "  ")
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(b); err != nil {
+
+	// Disabling HTML encoding
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+
+	if err := enc.Encode(reportItems); err != nil {
 		return err
 	}
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *zoneCache) []*models.Correction {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *cmdZoneCache) ([]*models.Correction, error) {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
-		return nil // We can't generate a list. No corrections are possible.
+		return nil, nil // We can't generate a list. No corrections are possible.
 	}
 
 	z, err := zcache.zoneList(provider.Name, lister)
 	if err != nil {
-		return []*models.Correction{{Msg: fmt.Sprintf("zoneList failed for %q: %s", provider.Name, err)}}
+		errMsg := fmt.Sprintf("zoneList failed for %q: %s", provider.Name, err)
+		return []*models.Correction{{Msg: errMsg}}, errors.New(errMsg)
 	}
 	zones := *z
 
-	aceZoneName, _ := idna.ToASCII(zoneName)
+	aceZoneName, _ := idna.ToASCII(zone.Name)
 	if slices.Contains(zones, aceZoneName) {
-		return nil // zone exists. Nothing to do.
+		return nil, nil // zone exists. Nothing to do.
 	}
 
 	creator, ok := provider.Driver.(providers.ZoneCreator)
 	if !ok {
-		return []*models.Correction{{Msg: fmt.Sprintf("Zone %q does not exist. Can not create because %q does not implement ZoneCreator", aceZoneName, provider.Name)}}
+		errMsg := fmt.Sprintf("Zone %q does not exist. Can not create because %q does not implement ZoneCreator", aceZoneName, provider.Name)
+		return []*models.Correction{{Msg: errMsg}}, errors.New(errMsg)
 	}
 
 	return []*models.Correction{{
 		Msg: fmt.Sprintf("Ensuring zone %q exists in %q", aceZoneName, provider.Name),
-		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
-	}}
+		F:   func() error { return creator.EnsureZoneExists(aceZoneName, zone.Metadata) },
+	}}, nil
 }
 
-func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction, int) {
+func generateZoneCorrections(zone *models.DomainConfig, provider *models.DNSProviderInstance) ([]*models.Correction, []*models.Correction, int, error) {
 	reports, zoneCorrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(provider.Driver, zone)
 	if err != nil {
-		return []*models.Correction{{Msg: fmt.Sprintf("Domain %q provider %s Error: %s", zone.Name, provider.Name, err)}}, nil, 0
+		return []*models.Correction{{Msg: fmt.Sprintf("Domain %q provider %s Error: %s", zone.Name, provider.Name, err)}}, nil, 0, err
 	}
-	return zoneCorrections, reports, actualChangeCount
+	return zoneCorrections, reports, actualChangeCount, nil
 }
 
-func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) ([]*models.Correction, int) {
+func generateDelegationCorrections(zone *models.DomainConfig, providers []*models.DNSProviderInstance, _ *models.RegistrarInstance) ([]*models.Correction, int, error) {
 	// fmt.Printf("DEBUG: generateDelegationCorrections start zone=%q nsList = %v\n", zone.Name, zone.Nameservers)
 	nsList, err := nameservers.DetermineNameserversForProviders(zone, providers, true)
 	if err != nil {
-		return msg(fmt.Sprintf("DetermineNS: zone %q; Error: %s", zone.Name, err)), 0
+		return msg(fmt.Sprintf("DetermineNS: zone %q; Error: %s", zone.Name, err)), 0, err
 	}
 	zone.Nameservers = nsList
 	nameservers.AddNSRecords(zone)
@@ -609,14 +726,14 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns:'true'} to force",
 			zone.RegistrarName,
 			zone.Name,
-		)}}, 0
+		)}}, 0, nil
 	}
 
 	corrections, err := zone.RegistrarInstance.Driver.GetRegistrarCorrections(zone)
 	if err != nil {
-		return msg(fmt.Sprintf("zone %q; Rprovider %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err)), 0
+		return msg(fmt.Sprintf("zone %q; Rprovider %q; Error: %s", zone.Name, zone.RegistrarInstance.Name, err)), 0, err
 	}
-	return corrections, len(corrections)
+	return corrections, len(corrections), nil
 }
 
 func msg(s string) []*models.Correction {

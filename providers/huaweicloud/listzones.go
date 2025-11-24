@@ -8,7 +8,7 @@ import (
 )
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *huaweicloudProvider) EnsureZoneExists(domain string) error {
+func (c *huaweicloudProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if err := c.getZones(); err != nil {
 		return err
 	}

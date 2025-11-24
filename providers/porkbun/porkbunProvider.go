@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -23,6 +24,10 @@ const (
 	metaType        = "type"
 	metaIncludePath = "includePath"
 	metaWildcard    = "wildcard"
+)
+
+const (
+	defaultMaxAttempts = 5
 )
 
 // https://kb.porkbun.com/article/63-how-to-switch-to-porkbuns-nameservers
@@ -43,12 +48,29 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 // newPorkbun creates the provider.
 func newPorkbun(m map[string]string, _ json.RawMessage) (*porkbunProvider, error) {
-	c := &porkbunProvider{}
+	c := &porkbunProvider{
+		maxAttempts: defaultMaxAttempts,
+	}
 
 	c.apiKey, c.secretKey = m["api_key"], m["secret_key"]
 
 	if c.apiKey == "" || c.secretKey == "" {
 		return nil, errors.New("missing porkbun api_key or secret_key")
+	}
+
+	if maxAttempts, ok := m["max_attempts"]; ok && maxAttempts != "" {
+		i, err := strconv.Atoi(maxAttempts)
+		if err != nil {
+			return nil, fmt.Errorf("porkbun: invalid max_attempts %q: must be a whole number", maxAttempts)
+		}
+		c.maxAttempts = i
+	}
+	if maxDuration, ok := m["max_duration"]; ok && maxDuration != "" {
+		d, err := time.ParseDuration(maxDuration)
+		if err != nil {
+			return nil, fmt.Errorf("porkbun: invalid max_duration %q: valid units are ns, us, ms, s, m, h", maxDuration)
+		}
+		c.maxDuration = d
 	}
 
 	return c, nil
@@ -59,7 +81,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -312,7 +334,9 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 
 		svcPriority, _ := strconv.ParseUint(c[0], 10, 16)
 		rc.SvcPriority = uint16(svcPriority)
-		rc.SvcParams = c[2]
+		if len(c) > 2 {
+			rc.SvcParams = strings.Join(c[2:], " ")
+		}
 		err = rc.SetTarget(c[1])
 	default:
 		err = rc.SetTarget(r.Content)

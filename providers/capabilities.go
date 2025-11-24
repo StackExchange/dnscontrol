@@ -1,4 +1,4 @@
-//go:generate stringer -type=Capability
+//go:generate go tool stringer -type=Capability
 
 package providers
 
@@ -19,14 +19,24 @@ const (
 	// so folks can ask for that.
 	CanAutoDNSSEC Capability = iota
 
-	// CanConcur indicates the provider can be used concurrently.  Can()
-	// indicates that it has been tested and shown to work concurrently.
+	// CanConcur indicates the provider can be used concurrently to gather zone data.
+	// Can() indicates that it has been tested and shown to work concurrently.
 	// Cannot() indicates it has not been tested OR it has been shown to not
 	// work when used concurrently.  The default is Cannot().
 	CanConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
+
+	// CanOnlyDiff1Features indicates the provider has not yet been upgraded to
+	// use the "diff2" differencing engine.  Instead, it uses the the backwards
+	// compatibility mode.  The diff2 engine is required to repliably provide
+	// IGNORE(), NO_PURGE, and other features.
+	// This capability is set automatically for the provider during the call to
+	// RegisterDomainServiceProviderType.  It is set to Can() if we detect
+	// compatibility mode is in use. All other values (Unimplemented and Cannot)
+	// are equivalent.
+	CanOnlyDiff1Features
 
 	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
 	CanUseAKAMAICDN
@@ -69,6 +79,9 @@ const (
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
 
+	// CanUseSMIMEA indicates the provider can handle SMIMEA records
+	CanUseSMIMEA
+
 	// CanUseSOA indicates the provider supports full management of a zone's SOA record
 	CanUseSOA
 
@@ -87,6 +100,9 @@ const (
 	// CanUseDNSKEY indicates that the provider can handle DNSKEY records
 	CanUseDNSKEY
 
+	// CanUseOPENPGPKEY indicates that the provider can handle OPENPGPKEY records
+	CanUseOPENPGPKEY
+
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 
@@ -95,6 +111,9 @@ const (
 
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange
 	DocOfficiallySupported
+
+	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports
+	CanUseAKAMAITLC
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
@@ -147,7 +166,7 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 }
 
 // Can is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Can(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature: true,
@@ -157,7 +176,7 @@ func Can(comments ...string) *DocumentationNote {
 }
 
 // Cannot is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Cannot(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature: false,
@@ -167,7 +186,7 @@ func Cannot(comments ...string) *DocumentationNote {
 }
 
 // Unimplemented is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+// comments are variadic for easy omission. First is comment, second is link, the rest are ignored.
 func Unimplemented(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature:    false,

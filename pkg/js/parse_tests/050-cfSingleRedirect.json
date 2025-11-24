@@ -66,6 +66,7 @@
       ],
       "records": [
         {
+          "filepos": "[line:2:5]",
           "meta": {
             "meta": "value"
           },

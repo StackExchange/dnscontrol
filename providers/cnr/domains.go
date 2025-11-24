@@ -3,7 +3,7 @@ package cnr
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
-func (n *Client) EnsureZoneExists(domain string) error {
+func (n *Client) EnsureZoneExists(domain string, metadata map[string]string) error {
 	command := map[string]interface{}{
 		"COMMAND": "AddDNSZone",
 		"DNSZONE": domain,

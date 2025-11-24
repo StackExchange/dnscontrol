@@ -22,7 +22,7 @@ builds:
         goarch: "386"
     ldflags:
       - -linkmode=internal -s -w
-      - -X main.version={{ .Version }}
+      - -X github.com/StackExchange/dnscontrol/v4/pkg/version.version={{ .Version }}
 before:
   hooks:
     - go fmt ./...
@@ -39,7 +39,7 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)((akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cnr|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|gandi|gcloud|gcore|hedns|hetzner|hexonet|hostingde|huaweicloud|inwx|linode|loopia|luadns|msdns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|vultr).*:)+.*"
+      regexp: "(?i)((adguardhome|akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cnr|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|fortigate|gandi|gcloud|gcore|hedns|hetzner|hexonet|hostingde|huaweicloud|inwx|joker|linode|loopia|luadns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|vultr).*:)+.*"
       order: 2
     - title: 'Documentation:'
       regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
@@ -48,7 +48,7 @@ changelog:
       regexp: "(?i)^.*(build|ci|cicd)[(\\w)]*:+.*$"
       order: 4
     - title: 'Dependencies:'
-      regexp: "(?i)^.*Build\\(deps\\)*:+.*$|(?i)^.*update deps+.*$"
+      regexp: "(?i)^.*\\b(deps|dependencies)\\b.*$"
       order: 5
     - title: 'Other changes and improvements:'
       order: 9
@@ -162,9 +162,7 @@ release:
 
     > [!WARNING]
     > - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-    > - **MSDNS maintainer needed!** Without a new volunteer, this DNS provider will lose support after April 2025. See https://github.com/StackExchange/dnscontrol/issues/2878
     > - **NAMEDOTCOM and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
-    > - **get-certs/ACME support is frozen and will be removed without notice between now and July 2025.** It has been unsupported since December 2022.  If you don't use this feature, do not start. If you do use this feature, migrate ASAP.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 
     ## Install
 

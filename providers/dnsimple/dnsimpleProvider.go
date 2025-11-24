@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
@@ -23,8 +24,9 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -73,7 +75,15 @@ var nameServerSuffixes = []string{
 type dnsimpleProvider struct {
 	AccountToken string // The account access token
 	BaseURL      string // An alternate base URI
-	accountID    string // Account id cache
+
+	// We can have multiple _distinct_ versions of this struct, authenticated to
+	// different accounts, so _each_ version needs to be initialized just once.
+	// Note that sync.Once contains a reference to sync.noCopy so this will cause
+	// `go vet` to catch attempts to copy this outer provider struct.
+	onceFetchAccountId sync.Once
+
+	// This is protected under onceFetchAccountId so that this is fully safe concurrently.
+	accountID string // Account id cache
 }
 
 // GetNameservers returns the name servers for a domain.
@@ -299,16 +309,22 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 }
 
 func (c *dnsimpleProvider) getAccountID() (string, error) {
-	if c.accountID == "" {
+	var onceErr error
+	c.onceFetchAccountId.Do(func() {
 		client := c.getClient()
 		whoamiResponse, err := client.Identity.Whoami(context.Background())
 		if err != nil {
-			return "", err
+			onceErr = err
+			return
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", errors.New("DNSimple token appears to be a user token. Please supply an account token")
+			onceErr = errors.New("DNSimple token appears to be a user token. Please supply an account token")
+			return
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
+	})
+	if onceErr != nil {
+		return "", onceErr
 	}
 	return c.accountID, nil
 }

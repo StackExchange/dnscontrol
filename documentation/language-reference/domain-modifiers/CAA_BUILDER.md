@@ -8,16 +8,24 @@ parameters:
   - issue_critical
   - issuewild
   - issuewild_critical
+  - issuevmc
+  - issuevmc_critical
+  - issuemail
+  - issuemail_critical
   - ttl
 parameters_object: true
 parameter_types:
   label: string?
   iodef: string
   iodef_critical: boolean?
-  issue: string[]
+  issue: string[]|string
   issue_critical: boolean?
-  issuewild: string[]
+  issuewild: string[]|string
   issuewild_critical: boolean?
+  issuevmc: string[]|string
+  issuevmc_critical: boolean?
+  issuemail: string[]|string
+  issuemail_critical: boolean?
   ttl: Duration?
 ---
 
@@ -123,4 +131,8 @@ which in turns yield the following records:
 * `issue_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
 * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
 * `issuewild_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+* `issuevmc:` An array of CAs which are allowed to issue VMC certificates. (Use `"none"` to refuse all CAs)
+* `issuevmc_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
+* `issuemail:` An array of CAs which are allowed to issue email certificates. (Use `"none"` to refuse all CAs)
+* `issuemail_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
 * `ttl:` Input for `TTL` method (optional)

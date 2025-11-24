@@ -3,6 +3,7 @@ package all
 
 import (
 	// Define all known providers here. They should each register themselves with the providers package via init function.
+	_ "github.com/StackExchange/dnscontrol/v4/providers/adguardhome"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/akamaiedgedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/axfrddns"
@@ -23,6 +24,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/dynadot"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/easyname"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/exoscale"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/fortigate"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcore"
@@ -33,10 +35,10 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/huaweicloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/inwx"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/joker"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/loopia"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/luadns"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/msdns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/mythicbeasts"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/namedotcom"

@@ -446,7 +446,7 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, e
 	return sets, nil
 }
 
-func (g *gcloudProvider) EnsureZoneExists(domain string) error {
+func (g *gcloudProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	z, err := g.getZone(domain)
 	if err != nil {
 		if _, ok := err.(errNoExist); !ok {

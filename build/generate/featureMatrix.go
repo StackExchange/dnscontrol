@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -11,26 +12,44 @@ import (
 )
 
 func generateFeatureMatrix() error {
+	var replacementContent = "Jump to a table:\n\n"
 	matrix := matrixData()
-	markdownTable, err := markdownTable(matrix)
-	if err != nil {
-		return err
+
+	for _, tableTitle := range matrix.FeatureTablesTitles {
+		var jumptotableContent = ""
+
+		var anchor = strings.ToLower(tableTitle)
+		anchor = strings.Replace(anchor, " ", "-", -1)
+
+		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
+		replacementContent += jumptotableContent
+	}
+
+	for i, tableTitle := range matrix.FeatureTablesTitles {
+		replacementContent += fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
+			tableTitle, i+1, len(matrix.FeatureTablesTitles))
+		markdownTable, err := markdownTable(matrix, int32(i))
+		if err != nil {
+			return err
+		}
+		replacementContent += markdownTable
+		replacementContent += "\n"
 	}
 
 	replaceInlineContent(
 		"documentation/provider/index.md",
 		"<!-- provider-matrix-start -->",
 		"<!-- provider-matrix-end -->",
-		markdownTable,
+		replacementContent,
 	)
 
 	return nil
 }
 
-func markdownTable(matrix *FeatureMatrix) (string, error) {
+func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	var tableHeaders []string
 	tableHeaders = append(tableHeaders, "Provider name")
-	tableHeaders = append(tableHeaders, matrix.Features...)
+	tableHeaders = append(tableHeaders, matrix.FeatureTables[tableNumber]...)
 
 	var tableData [][]string
 	for _, providerName := range allProviderNames() {
@@ -38,10 +57,18 @@ func markdownTable(matrix *FeatureMatrix) (string, error) {
 
 		var tableDataRow []string
 		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
-		for _, featureName := range matrix.Features {
+		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
-		tableData = append(tableData, tableDataRow)
+		skipThisRow := true
+		for status := range tableDataRow[1:] {
+			if tableDataRow[status+1] != "❔" {
+				skipThisRow = false
+			}
+		}
+		if !skipThisRow {
+			tableData = append(tableData, tableDataRow)
+		}
 	}
 
 	markdownTable, err := markdown.NewTableFormatterBuilder().
@@ -72,58 +99,81 @@ func featureEmoji(
 
 func matrixData() *FeatureMatrix {
 	const (
-		OfficialSupport      = "Official Support" // vs. community supported
-		ProviderDNSProvider  = "DNS Provider"
-		ProviderRegistrar    = "Registrar"
-		ProviderThreadSafe   = "[Concurrency Verified](../concurrency-verified.md)"
-		DomainModifierAlias  = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
-		DomainModifierCaa    = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
-		DomainModifierDnssec = "[`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
-		DomainModifierHTTPS  = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
-		DomainModifierLoc    = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
-		DomainModifierNaptr  = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
-		DomainModifierPtr    = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
-		DomainModifierSoa    = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
-		DomainModifierSrv    = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
-		DomainModifierSshfp  = "[`SSHFP`](../language-reference/domain-modifiers/SSHFP.md)"
-		DomainModifierSvcb   = "[`SVCB`](../language-reference/domain-modifiers/SVCB.md)"
-		DomainModifierTlsa   = "[`TLSA`](../language-reference/domain-modifiers/TLSA.md)"
-		DomainModifierDs     = "[`DS`](../language-reference/domain-modifiers/DS.md)"
-		DomainModifierDhcid  = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
-		DomainModifierDname  = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
-		DomainModifierDnskey = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
-		DualHost             = "dual host"
-		CreateDomains        = "create-domains"
-		GetZones             = "get-zones"
+		OfficialSupport          = "Official Support" // vs. community supported
+		ProviderDNSProvider      = "DNS Provider"
+		ProviderRegistrar        = "Registrar"
+		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
+		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
+		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
+		DomainModifierDhcid      = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
+		DomainModifierDname      = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
+		DomainModifierDnskey     = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
+		DomainModifierDnssec     = "[`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md)"
+		DomainModifierDs         = "[`DS`](../language-reference/domain-modifiers/DS.md)"
+		DomainModifierHTTPS      = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
+		DomainModifierLoc        = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
+		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
+		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
+		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
+		DomainModifierSMIMEA     = "[`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md)"
+		DomainModifierSoa        = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
+		DomainModifierSrv        = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
+		DomainModifierSshfp      = "[`SSHFP`](../language-reference/domain-modifiers/SSHFP.md)"
+		DomainModifierSvcb       = "[`SVCB`](../language-reference/domain-modifiers/SVCB.md)"
+		DomainModifierTlsa       = "[`TLSA`](../language-reference/domain-modifiers/TLSA.md)"
+		DualHost                 = "[dual host](../advanced-features/dual-host.md)"
+		CreateDomains            = "create-domains"
+		GetZones                 = "get-zones"
 	)
 
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
-		Features: []string{
-			OfficialSupport,
-			ProviderDNSProvider,
-			ProviderRegistrar,
-			ProviderThreadSafe,
-			DomainModifierAlias,
-			DomainModifierCaa,
-			DomainModifierDnssec,
-			DomainModifierHTTPS,
-			DomainModifierLoc,
-			DomainModifierNaptr,
-			DomainModifierPtr,
-			DomainModifierSoa,
-			DomainModifierSrv,
-			DomainModifierSshfp,
-			DomainModifierSvcb,
-			DomainModifierTlsa,
-			DomainModifierDs,
-			DomainModifierDhcid,
-			DomainModifierDname,
-			DomainModifierDnskey,
-			DualHost,
-			CreateDomains,
-			// NoPurge,
-			GetZones,
+		FeatureTablesTitles: []string{
+			"Provider Type",
+			"Provider API",
+			"DNS extensions",
+			"Service discovery",
+			"Security",
+			"DNSSEC",
+		},
+		FeatureTables: [][]string{
+			[]string{ // provider type
+				OfficialSupport,
+				ProviderDNSProvider,
+				ProviderRegistrar,
+			},
+			[]string{ // provider API
+				ProviderThreadSafe,
+				DualHost,
+				CreateDomains,
+				// NoPurge,
+				GetZones,
+			},
+			[]string{ // DNS extensions
+				DomainModifierAlias,
+				DomainModifierDname,
+				DomainModifierLoc,
+				DomainModifierPtr,
+				DomainModifierSoa,
+			},
+			[]string{ // service discovery
+				DomainModifierDhcid,
+				DomainModifierNaptr,
+				DomainModifierSrv,
+				DomainModifierSvcb,
+			},
+			[]string{ // security
+				DomainModifierCaa,
+				DomainModifierHTTPS,
+				DomainModifierSMIMEA,
+				DomainModifierSshfp,
+				DomainModifierTlsa,
+			},
+			[]string{ // dnssec
+				DomainModifierDnssec,
+				DomainModifierDnskey,
+				DomainModifierDs,
+			},
 		},
 	}
 
@@ -223,8 +273,16 @@ func matrixData() *FeatureMatrix {
 			providers.CanUseNAPTR,
 		)
 		setCapability(
+			DomainModifierOpenpgpkey,
+			providers.CanUseOPENPGPKEY,
+		)
+		setCapability(
 			DomainModifierPtr,
 			providers.CanUsePTR,
+		)
+		setCapability(
+			DomainModifierSMIMEA,
+			providers.CanUseSMIMEA,
 		)
 		setCapability(
 			DomainModifierSoa,
@@ -321,8 +379,9 @@ func (featureMap FeatureMap) SetSimple(
 
 // FeatureMatrix describes features and which providers support it.
 type FeatureMatrix struct {
-	Features  []string
-	Providers map[string]FeatureMap
+	Providers           map[string]FeatureMap
+	FeatureTables       [][]string
+	FeatureTablesTitles []string
 }
 
 func replaceInlineContent(

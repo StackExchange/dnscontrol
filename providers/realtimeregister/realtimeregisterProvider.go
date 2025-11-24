@@ -267,7 +267,7 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 		if record.Content == "" {
 			record.Content = "."
 		}
-		record.Priority = int(recordConfig.SrvPriority)
+		record.Priority = parsePriority(int(recordConfig.SrvPriority))
 		record.Content = fmt.Sprintf("%d %d %s", recordConfig.SrvWeight, recordConfig.SrvPort, record.Content)
 	case "NAPTR", "SSHFP", "TLSA", "CAA":
 		record.Content = recordConfig.GetTargetCombined()
@@ -279,9 +279,13 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 	case "MX":
 		if record.Content == "" {
 			record.Content = "."
-			record.Priority = -1
+			record.Priority = 0
 		} else {
-			record.Priority = int(recordConfig.MxPreference)
+			record.Priority = parsePriority(int(recordConfig.MxPreference))
+		}
+		// Workaround for 0 prio and 'omitempty' restrictions on json marshalling
+		if record.Priority == 0 {
+			record.Priority = -1
 		}
 	case "LOC":
 		parts := strings.Fields(recordConfig.GetTargetCombined())
@@ -302,7 +306,15 @@ func toRecord(recordConfig *models.RecordConfig) Record {
 	return *record
 }
 
-func (api *realtimeregisterAPI) EnsureZoneExists(domain string) error {
+func parsePriority(priority int) int {
+	// Workaround for 0 prio and 'omitempty' restrictions on json marshalling
+	if priority == 0 {
+		return -1
+	}
+	return priority
+}
+
+func (api *realtimeregisterAPI) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.zoneExists(domain)
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@
 package mythicbeasts
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 // mythicBeastsDefaultNS lists the default nameservers, per https://www.mythic-beasts.com/support/domains/nameservers.
@@ -25,8 +28,6 @@ var mythicBeastsDefaultNS = []string{
 
 // mythicBeastsProvider is the handle for this provider.
 type mythicBeastsProvider struct {
-	secret string
-	keyID  string
 	client *http.Client
 }
 
@@ -34,7 +35,7 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -65,10 +66,16 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	if conf["secret"] == "" {
 		return nil, errors.New("missing Mythic Beasts auth secret")
 	}
+	// Use https://www.mythic-beasts.com/support/api/auth
+	cfg := clientcredentials.Config{
+		ClientID:     conf["keyID"],
+		ClientSecret: conf["secret"],
+		TokenURL:     "https://auth.mythic-beasts.com/login",
+		Scopes:       []string{"client_credentials"},
+		AuthStyle:    oauth2.AuthStyleInHeader,
+	}
 	return &mythicBeastsProvider{
-		keyID:  conf["keyID"],
-		secret: conf["secret"],
-		client: &http.Client{},
+		client: cfg.Client(context.Background()),
 	}, nil
 }
 
@@ -77,8 +84,6 @@ func (n *mythicBeastsProvider) httpRequest(method, url string, body io.Reader) (
 	if err != nil {
 		return nil, err
 	}
-	// https://www.mythic-beasts.com/support/api/auth
-	req.SetBasicAuth(n.keyID, n.secret)
 	req.Header.Add("Content-Type", "text/dns")
 	req.Header.Add("Accept", "text/dns")
 	return n.client.Do(req)

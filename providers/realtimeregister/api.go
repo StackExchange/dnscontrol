@@ -205,7 +205,7 @@ func (api *realtimeregisterAPI) createOrUpdateZone(body *Zone, url string) error
 		return err
 	}
 
-	// Ugly hack for MX records with null target
+	// Workaround for 0 prio and 'omitempty' restrictions on json marshalling
 	requestBody := strings.Replace(string(bodyBytes), "\"prio\":-1", "\"prio\":0", -1)
 
 	_, err = api.request("POST", url, strings.NewReader(requestBody))

@@ -129,7 +129,7 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "CLOUDNS_WR", "PORKBUN_URLFWD", "BUNNY_DNS_RDR":
+		case "ALIAS", "MX", "NS", "CNAME", "DNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "AKAMAICDN", "AKAMAITLC", "CLOUDNS_WR", "PORKBUN_URLFWD", "BUNNY_DNS_RDR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {
@@ -138,11 +138,11 @@ func (dc *DomainConfig) Punycode() error {
 			if err := rec.SetTarget(t); err != nil {
 				return err
 			}
-		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
 			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
 				return err
 			}
-		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "NAPTR", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
+		case "A", "AAAA", "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "LOC", "LUA", "NAPTR", "OPENPGPKEY", "SMIMEA", "SOA", "SSHFP", "SVCB", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
 			return fmt.Errorf("Punycode rtype %v unimplemented", rec.Type)

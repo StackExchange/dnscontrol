@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -36,7 +38,7 @@ func checkTarget(target string) error {
 		return nil
 	}
 	if target == "" {
-		return errors.New("empty target")
+		return errors.New("empty target (\"\"). Did you mean \"@\" instead?")
 	}
 	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
@@ -70,7 +72,9 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"MX":               true,
 		"NAPTR":            true,
 		"NS":               true,
+		"OPENPGPKEY":       true,
 		"PTR":              true,
+		"SMIMEA":           true,
 		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
@@ -113,7 +117,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 		return nil
 	}
 	if label == "" {
-		return fmt.Errorf("empty %s label in %s", rType, domain)
+		return fmt.Errorf("empty %s label (\"\") in %s. Did you mean \"@\" instead?", rType, domain)
 	}
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
@@ -128,7 +132,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
-	for _, ex := range []string{"SRV", "TLSA", "TXT"} {
+	for _, ex := range []string{"SRV", "TLSA", "TXT", "LUA"} {
 		if rType == ex {
 			return nil
 		}
@@ -175,7 +179,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	target := rec.GetTargetField()
 	check := func(e error) {
 		if e != nil {
-			err := fmt.Errorf("in %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
+			err := fmt.Errorf("%s: %s %s.%s: %s", rec.FilePos, rec.Type, rec.GetLabel(), domain, e.Error())
 			if _, ok := e.(Warning); ok {
 				err = Warning{err}
 			}
@@ -223,7 +227,17 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
-	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "SSHFP", "SVCB", "TLSA", "TXT":
+	case "LUA":
+		upper := strings.ToUpper(rec.LuaRType)
+		if upper == "" {
+			check(errors.New("LUA records must specify an emitted rtype"))
+			break
+		}
+		if _, ok := dns.StringToType[upper]; !ok {
+			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", rec.LuaRType))
+		}
+		rec.LuaRType = upper
+	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -441,7 +455,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				}
 				rec.SetLabel(name, domain.Name)
 			} else if rec.Type == "CAA" {
-				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
+				// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
+				allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
+				if !slices.Contains(allowedTags, rec.CaaTag) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
 			} else if rec.Type == "TLSA" {
@@ -456,6 +472,19 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
+				}
+			} else if rec.Type == "SMIMEA" {
+				if rec.SmimeaUsage > 3 {
+					errs = append(errs, fmt.Errorf("SMIMEA Usage %d is invalid in record %s (domain %s)",
+						rec.SmimeaUsage, rec.GetLabel(), domain.Name))
+				}
+				if rec.SmimeaSelector > 1 {
+					errs = append(errs, fmt.Errorf("SMIMEA Selector %d is invalid in record %s (domain %s)",
+						rec.SmimeaSelector, rec.GetLabel(), domain.Name))
+				}
+				if rec.SmimeaMatchingType > 2 {
+					errs = append(errs, fmt.Errorf("SMIMEA MatchingType %d is invalid in record %s (domain %s)",
+						rec.SmimeaMatchingType, rec.GetLabel(), domain.Name))
 				}
 			}
 
@@ -594,14 +623,14 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
-				errs = append(errs, fmt.Errorf("cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
+				errs = append(errs, fmt.Errorf("%s: cannot have multiple CNAMEs with same name: %s", r.FilePos, r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
-			errs = append(errs, fmt.Errorf("cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
+			errs = append(errs, fmt.Errorf("%s: cannot have CNAME and %s record with same name: %s", r.FilePos, r.Type, r.GetLabelFQDN()))
 		}
 	}
 	return
@@ -714,6 +743,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	// If a zone uses rType X, the provider must support capability Y.
 	// {"X", providers.Y},
 	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
+	capabilityCheck("AKAMAITLC", providers.CanUseAKAMAITLC),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
@@ -724,8 +754,10 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("HTTPS", providers.CanUseHTTPS),
 	capabilityCheck("LOC", providers.CanUseLOC),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
+	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),

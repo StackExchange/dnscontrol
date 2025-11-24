@@ -165,6 +165,8 @@ func makeTests() []*TestGroup {
 		// correctly!
 
 		testgroup("MX",
+			tc("Create MX apex", mx("@", 5, "foo.com.")),
+			tc("Change MX apex", mx("@", 5, "bar.com.")),
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
@@ -288,6 +290,18 @@ func makeTests() []*TestGroup {
 			tc("Change HTTPS all", https("@", 3, "example.com.", "port=100")),
 		),
 
+		testgroup("Ech",
+			requires(providers.CanUseHTTPS),
+			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
+			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),
+			tc("Ignore the ECH key while changing other values", https("@", 1, "example.net.", "port=80 ech=IGNORE")),
+			// tc("Should be a no-op", https("@", 1, "example.net.", "port=80 ech=some+base64+encoded+value///")),
+			tc("Change the ECH key and other values", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=another+base64+encoded+value")),
+			// tc("Ignore the ECH key while not changing anything", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=IGNORE")),
+			// tc("Should be a no-op", https("@", 1, "example.org.", "port=80 ipv4hint=127.0.0.1 ech=another+base64+encoded+value")),
+			tc("Another domain with a different ECH value", https("ech", 1, "example.com.", "ech=some+base64+encoded+value///")),
+		),
+
 		testgroup("SVCB",
 			requires(providers.CanUseSVCB),
 			tc("Create a SVCB record", svcb("@", 1, "test.com.", "port=80")),
@@ -377,13 +391,29 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS",
 			not(
-				"DNSIMPLE", // Does not support NS records nor subdomains.
-				"EXOSCALE", // Not supported.
-				"NETCUP",   // NS records not currently supported.
+				"DNSIMPLE",  // Does not support NS records nor subdomains.
+				"EXOSCALE",  // Not supported.
+				"NETCUP",    // NS records not currently supported.
+				"FORTIGATE", // Not supported
 			),
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**.")),
+		),
+
+		testgroup("NS only APEX",
+			not(
+				"DNSIMPLE",    // Does not support NS records nor subdomains.
+				"EXOSCALE",    // Not supported.
+				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
+				"JOKER",       // Not supported via the Zone API.
+				"NAMEDOTCOM",  // "Ignores @ for NS records"
+				"NETCUP",      // NS records not currently supported.
+				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
+				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
+			),
+			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
+			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
 		),
 
 		//// TXT tests
@@ -415,7 +445,7 @@ func makeTests() []*TestGroup {
 
 			// Some of these test cases are commented out because they test
 			// something that isn't widely used or supported.  For example
-			// many APIs don't support a backslack (`\`) in a TXT record;
+			// many APIs don't support a backslash (`\`) in a TXT record;
 			// luckily we've never seen a need for that "in the wild".  If
 			// you want to future-proof your provider, temporarily remove
 			// the comments and get those tests working, or reject it using
@@ -601,12 +631,12 @@ func makeTests() []*TestGroup {
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
-				"MSDNS",      // No paging done. No need to test.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
 				// "ROUTE53",       // Batches up changes in pages.
-				"TRANSIP", // Doesn't page. Works fine.  Due to the slow API we skip.
-				"CNR",     // Test beaks limits.
+				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
+				"CNR",       // Test beaks limits.
+				"FORTIGATE", // No paging
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
@@ -620,7 +650,6 @@ func makeTests() []*TestGroup {
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
-				//"MSDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
@@ -638,7 +667,6 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
-				//"MSDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
@@ -716,21 +744,27 @@ func makeTests() []*TestGroup {
 
 		testgroup("NAPTR",
 			requires(providers.CanUseNAPTR),
-			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
-			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
+			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR second record",
+				naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "."),
+				naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "."),
+			),
+			tc("NAPTR delete second record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", ".")),
+			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
+			tc("NAPTR remove regexp and add target", naptr("test", 103, 20, "A", "E2U+sip", "", "example.foo.com.")),
+			tc("NAPTR change target", naptr("test", 103, 20, "A", "E2U+sip", "", "example2.foo.com.")),
 		),
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
 		testgroup("PTR",
 			requires(providers.CanUsePTR),
-			not("CLOUDNS"),
+			not("CLOUDNS",
+				"FORTIGATE", // FortiGate does not really support ARPA Zones and handles PTR records really weired
+			),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
@@ -795,6 +829,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
+			not("CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
@@ -1073,6 +1108,36 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		// Bug https://github.com/StackExchange/dnscontrol/issues/3493
+		// Summary: R53_ALIAS -> CNAME conversion doesn't work.
+		testgroup("R53_B3493",
+			requires(providers.CanUseRoute53Alias),
+			// Create the R53_ALIAS:
+			tc("b3493 create alias+cname in one step",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert R53_ALIAS -> CNAME.
+			tc("convert r53alias to cname",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+		// Verify CNAME -> R53_ALIAS works too. (not part of the bug, but worth verifying)
+		testgroup("R53_B3493_REV",
+			requires(providers.CanUseRoute53Alias),
+			// Create the CNAME
+			tc("b3493 create cnames",
+				cname("dev-system", "dev-system18.**current-domain**."),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			// Convert CNAME -> R53_ALIAS.
+			tc("convert cname to r53_alias",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
+
 		// CLOUDFLAREAPI features
 
 		// CLOUDFLAREAPI: Redirects:
@@ -1267,6 +1332,16 @@ func makeTests() []*TestGroup {
 				cfWorkerRoute("msn.**current-domain**/*", "dnscontrol_integrationtest_msnbc"),
 				cfWorkerRoute("api.**current-domain**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
+		),
+
+		testgroup("ADGUARDHOME_A_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAPassthrough("foo", "")),
+		),
+
+		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
+			only("ADGUARDHOME"),
+			tc("simple", aghAAAAPassthrough("foo", "")),
 		),
 
 		//// IGNORE* features
@@ -1655,6 +1730,7 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
@@ -1806,6 +1882,7 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/3227
 		testgroup("IGNORE w/change b3227",
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("testignore", "8.8.8.8"),
 				a("testdefined", "9.9.9.9"),
@@ -1913,9 +1990,44 @@ func makeTests() []*TestGroup {
 			tc("Delete metadata from record", a("@", "1.2.3.4")),
 		),
 
+		// NAMECHEAP features
+
+		testgroup("NAMECHEAP url redirect records",
+			only("NAMECHEAP"),
+			tc("Create the three types",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			),
+			tc("VERIFY PREVIOUS",
+				url("unmasked", "https://example.com"),
+				url301("permanent", "https://example.com"),
+				frame("masked", "https://example.com"),
+			).ExpectNoChanges(),
+		),
+
+		testgroup("OPENPGPKEY",
+			requires(providers.CanUseOPENPGPKEY),
+			tc("OPENPGPKEY record",
+				openpgpkey("9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15._openpgpkey", "9901a204447450b7110400d9bef554b145128ccc90d9f52df14bb878626e3db32112d47fbc5ee9cc5ffcbbd06bee487a580481674d9d31e368a85ccf4d4ef3bfa3e23fdde238bc32d8c40d39204b912f8cb1c47a7f34ba64bf3598dafe0f080e17facb678b6e700b0163d677960471d265a197e5ee9d53d71e1911f47f518a0e303abaf3c01b188e37d7bf00a0b90d4f43af944202fc49356a35a367955633cd4503ff7dfa21fb70a201ffb4aa7a755fc560ffd5a4b1d7b7015e7b4bdc0a1e45c1c28fd2f628f4d21f07a091da0d29c98b070566e178c5974554e509a5153a16b271df835e8c8a97715cc4beb5383d05fdf7a0d9412a1fb9f572c195d8c0c696a5ec179bab29d3d8701446e7aca79565ecdd6ec3ceef4937cb248564a75ddb4115adc10400a8f820174b32c99c5ac6ee483c0184fed24fa44d2fd4c9dc00af9ed048b51cfdb95747ab1e35df933382b08f8223da934bfcba59cb356b0d2f4158d647ab76d09c444fadf5e92b95d65f4aae667f33835226170c6625db872a6b72cb13638cf4754941730f5117a4f7c262044bea453839f95b806a0bd98a668073ba2d0fce1ab4326f70656e53555345204275696c642053657276696365203c6275696c6473657276696365406f70656e737573652e6f72673e8864041311020024021b03060b09080703020315020303160201021e01021780050253674e3b050921bf0084000a09103b3011b76b9d65234a5b00a095c38bcfaa29f80adefc0cf9ba2abf3a3e9b516b009e367296e1a96af211f8cded2493f7f6ac09de41"),
+			),
+			tc("OPENPGPKEY record change",
+				openpgpkey("2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db._openpgpkey", "99010d045ae3116a010800c426db68c752d5a5c3f6608b0b20ee6a2a6c1f321ca3490f8be044f3b671512ca1489629f8d7d4e273f96517dca642bd8cc652a5460773159f52707d6b839d9b996771cbed9367c248b125785f27d24d926f33e9d7606c4440126b6257117c2e617b4b411931301be869ea45c7e7adc5f97538bb31949a1d6b0616af0ec5a378ca3db2369fb2a9fae890099f126b40e72a8cdbdacd88e9a448c5cf27bf1daaaedabe5c9c3fdb3e732f40466da4dd63ce75a42216b60dd6a9559ab66ff4a6753315ef31d1a90be1111536b92e1214b368a72b7f730ba38f75d35aa080aef4204536a21c088be07637954a43587f699b14fecaee5fec520d73ea6b466be74356290011010001b43d6f70656e5355534520436f6e7461696e6572205369676e696e67204b6579203c6275696c642d636f6e7461696e6572406f70656e737573652e6f72673e89013e04130102002805025ae3116a021b03050912cc0300060b090807030206150802090a0b0416020301021e01021780000a0910d754694f9ab48ce976dd07fc0e63f41edf7aa4d12b8f53588b2029310b1bee9a73858bfaebd9b381e650f80e31ef5f910be626d3cc1904f76b00927a3107bafabbb0cb0e3805c9de5a150cd90958eb64a2147225febefa5bf32f6e2f0296f348b7f16b58a7b6c732a09d20f00d95f8dcc6e36f1c300ccbe519dfd5c9229839303a08c50530eac2ad673c50d0fb4d7001e9c33cb76e2c04bae7ebab98c10e221a010773a97397ea3ca594fb0f2a6aff187d85236907007c67acc2dfba9b9e155d893ca6b982b927c51eaf588bc4f6f9531c2047474183a7e27561ccd63d993cc9e0208661d2e16a9e3f3fcff11ee894b95ac0447782a1389049cd45c234f5417694fb2624d522c58b42da3e04"),
+			),
+		),
+
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
+
+		testgroup("SMIMEA",
+			requires(providers.CanUseSMIMEA),
+			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("SMIMEA change usage", smimea("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
 		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far

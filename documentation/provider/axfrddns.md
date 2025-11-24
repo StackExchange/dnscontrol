@@ -1,12 +1,12 @@
 This provider uses the native DNS protocols. It uses the AXFR (RFC5936,
-Zone Transfer Protocol) to retrieve the existing records and DDNS
-(RFC2136, Dynamic Update) to make corrections. It can use TSIG (RFC2845) or
+Zone Transfer Protocol) protocol to retrieve existing records and uses DDNS
+(RFC2136, Dynamic Update) to make updates. It can use both TSIG (RFC2845) and
 IP-based authentication (ACLs).
 
-It is able to work with any standards-compliant
+It can work with any standards-compliant
 authoritative DNS server. It has been tested with
 [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
-and [Yadifa](https://www.yadifa.eu/home).
+and [Yadifa](https://yadifa.eu/home.html).
 
 ## Configuration
 
@@ -14,8 +14,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`
 
 ### Connection modes
 
-Zone transfers default to TCP, DDNS updates default to UDP when
-using this provider.
+Zone transfers and DDNS updates default to TCP when using this provider.
 
 The following two parameters in `creds.json` allow switching
 to TCP or TCP over TLS.
@@ -31,7 +30,7 @@ the provider:
 * `transfer-key`: If this exists, the value is used to authenticate AXFR transfers.
 * `update-key`: If this exists, the value is used to authenticate DDNS updates.
 
-For instance, your `creds.json` might looks like:
+For instance, your `creds.json` might look like:
 
 {% code title="creds.json" %}
 ```json
@@ -147,8 +146,8 @@ Please consider adding default `nameservers` or an explicit `master` in `creds.j
 ### Transfer/AXFR server
 
 As mentioned above, the AXFR+DDNS provider will send AXFR requests to the
-primary master for the zone. On some networks, the AXFR requests are handled
-by a separate server to DDNS requests. Use the `transfer-server` option in
+primary master for the zone. On some networks, AXFR requests are handled
+by a different server than DDNS requests. Use the `transfer-server` option in
 `creds.json`. If not specified, it falls back to the primary master.
 
 {% code title="creds.json" %}
@@ -198,7 +197,7 @@ D("example.com", REG_NONE, DnsProvider(DNS),
 
 ### Bind9
 
-Here is a sample `named.conf` example for an authauritative server on
+This is a sample `named.conf` example for an authoritative server hosting the
 zone `example.com`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
@@ -253,8 +252,8 @@ key update-key-id {
 When using `get-zones`, a custom master or a list of default
 nameservers should be configured in `creds.json`.
 
-THe AXFR+DDNS provider does not display DNSSec records. But, if any
-DNSSec records is found in the zone, it will replace all of them with
+The AXFR+DDNS provider does not display DNSSEC records. But, if any
+DNSSEC records are found in the zone, it will replace all of them with
 a single placeholder record:
 
 ```text
@@ -277,4 +276,4 @@ When AutoDNSSEC is not enabled or disabled, no checking is done.
 
 ## FYI: MD5 Support
 
-By default the used DNS Go package by miekg has deprecated supporting the (insecure) MD5 algorithm [https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5](https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5). Some providers like the Leibniz Supercomputing Centre (LRZ) located in Munich still use this algorithm to authenticate internal dynamic DNS updates. To compensate the lack of MD5 a custom MD5 TSIG Provider was added into DNSControl.
+By default the used DNS Go package by miekg has deprecated support for the (insecure) MD5 algorithm [https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5](https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5). Some providers like the Leibniz Supercomputing Centre (LRZ) located in Munich still use this algorithm to authenticate internal dynamic DNS updates. To compensate for the lack of MD5, a custom MD5 TSIG Provider was added into DNSControl.

@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zoneCache"
+	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
@@ -50,6 +50,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNSKEY:           providers.Cannot(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
@@ -94,7 +95,7 @@ type cloudflareProvider struct {
 	tcLogFh       *os.File // Transcode Log file handle
 	tcZone        string   // Transcode Current zone
 
-	zoneCache zoneCache.ZoneCache[cloudflare.Zone]
+	zoneCache zonecache.ZoneCache[cloudflare.Zone]
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -636,7 +637,7 @@ func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.Cloudfla
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
-	api.zoneCache = zoneCache.New(api.fetchAllZones)
+	api.zoneCache = zonecache.New(api.fetchAllZones)
 	// check api keys from creds json file
 	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
 		return nil, errors.New("if cloudflare apitoken is not set, apikey and apiuser must be provided")
@@ -906,7 +907,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
+func (c *cloudflareProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := c.zoneCache.HasZone(domain); err != nil || ok {
 		return err
 	}
