@@ -320,7 +320,6 @@ func domainInList(domain string, list []string) bool {
 
 		splitDom = downgradeIDNA(splitDom)
 		filterDom = downgradeIDNA(filterDom)
-		//fmt.Printf("###DEBUG: does %q == %q? %v\n", splitDom, filterDom, splitDom == filterDom)
 
 		if splitDom == filterDom {
 			if isDomainTagged {
