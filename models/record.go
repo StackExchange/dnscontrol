@@ -107,9 +107,13 @@ type RecordConfig struct {
 	FieldsAsRaw     []string // Fields as received from the dnsconfig.js file.
 	FieldsAsUnicode []string // fields with IDN fields converted to Unicode.
 
+	// Legacy fields we hope to remove someday
+
+	SubDomain string `json:"subdomain,omitempty"`
+
 	// Cloudflare-specific fields:
 	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	//CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
 
 	Metadata map[string]string `json:"meta,omitempty"` // Metadata added to record via dnsconfig.js
 	FilePos  string            `json:"filepos"`        // filename:line:char source
@@ -166,7 +170,14 @@ type RecordConfig struct {
 	UnknownTypeName    string            `json:"unknown_type_name,omitempty"`
 }
 
-// func NewRecordConfig(argsRaw):
+func NewRecordConfig(rtype string, ttl uint32, argsRaw []string) *RecordConfig {
+	rc := &RecordConfig{
+		Type: rtype,
+		TTL:  ttl,
+	}
+	return rc
+}
+
 //    .Type = type
 //    .TTL = ttl
 
