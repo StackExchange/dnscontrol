@@ -18,7 +18,10 @@ const (
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
-	Name             string         `json:"name"` // NO trailing "."
+	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
+	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
+	NameUnicode string `json:"-"`    // name in Unicode format
+
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 

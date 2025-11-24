@@ -89,8 +89,12 @@ type ConsolePrinter struct {
 }
 
 // StartDomain is called at the start of each domain.
-func (c ConsolePrinter) StartDomain(domain string) {
-	fmt.Fprintf(c.Writer, "******************** Domain: %s\n", domain)
+func (c ConsolePrinter) StartDomain(domainIDN, domainUnicode string) {
+	if domainIDN == domainUnicode {
+		fmt.Fprintf(c.Writer, "******************** Domain: %s\n", domainIDN)
+	} else {
+		fmt.Fprintf(c.Writer, "******************** Domain: %s (%s)\n", domainIDN, domainUnicode)
+	}
 }
 
 // PrintCorrection is called to print/format each correction.
