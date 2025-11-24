@@ -818,6 +818,14 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+	// Check for read_only metadata
+	if cr.Meta != nil {
+		if metaMap, ok := cr.Meta.(map[string]interface{}); ok {
+			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
+				return nil, nil
+			}
+		}
+	}
 
 	// ALIAS in Cloudflare works like CNAME.
 	if cr.Type == "ALIAS" {
