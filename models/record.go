@@ -91,17 +91,32 @@ import (
 //
 //	rec.Label() == "@"   // Is this record at the apex?
 type RecordConfig struct {
-	Type      string            `json:"type"` // All caps rtype name.
-	Name      string            `json:"name"` // The short name. See above.
-	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
-	SubDomain string            `json:"subdomain,omitempty"`
-	target    string            // If a name, must end with "."
-	TTL       uint32            `json:"ttl,omitempty"`
-	Metadata  map[string]string `json:"meta,omitempty"`
-	FilePos   string            `json:"filepos"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	Type string `json:"type"` // All caps rtype name.
+	TTL  uint32 `json:"ttl,omitempty"`
+
+	Name        string `json:"name"`         // The short name, PunyCode. See above.
+	NameRaw     string `json:"name_raw"`     // as the user entered it
+	NameUnicode string `json:"name_unicode"` // as Unicode
+
+	NameFQDN        string `json:"-"` // Must end with ".$origin". See above.
+	NameFQDNRaw     string `json:"-"`
+	NameFQDNUnicode string `json:"-"`
+
+	//
+	F               any      `json:"fields"` // Usually the dns.UPPERCASE struct. Always Punycode.
+	FieldsAsRaw     []string // Fields as received from the dnsconfig.js file.
+	FieldsAsUnicode []string // fields with IDN fields converted to Unicode.
+
+	// Cloudflare-specific fields:
+	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
+	//CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
+
+	Metadata map[string]string `json:"meta,omitempty"` // Metadata added to record via dnsconfig.js
+	FilePos  string            `json:"filepos"`        // filename:line:char source
+	Original interface{}       `json:"-"`              // Provider-specific record object
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
+	target             string            // If a name, must end with "."
 	MxPreference       uint16            `json:"mxpreference,omitempty"`
 	SrvPriority        uint16            `json:"srvpriority,omitempty"`
 	SrvWeight          uint16            `json:"srvweight,omitempty"`
@@ -149,11 +164,44 @@ type RecordConfig struct {
 	AzureAlias         map[string]string `json:"azure_alias,omitempty"`
 	AnswerType         string            `json:"answer_type,omitempty"`
 	UnknownTypeName    string            `json:"unknown_type_name,omitempty"`
-
-	// Cloudflare-specific fields:
-	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
 }
+
+// func NewRecordConfig(argsRaw):
+//    .Type = type
+//    .TTL = ttl
+
+//    .FilePos = FixFilePos()
+
+//    // Is this an _EXTEND?
+//    {
+//         Add .SubDomain to argRaw[0]
+//         Add subDomainIDN to argIDN[0]
+//         Add subDomainUnicode to argUnicode[0]
+//    }
+
+//    rec := rtypecontrol.Iface["MX"]New(argsRaw):
+//    {
+//         //argsIDN, argsUnicode := rtypes.IDNFields("MX", argsRaw)
+//         argsIDN, argsUnicode := rtypecontrol.Iface["MX"]IDNFields(argsRaw)
+//         .Name = argsIDN[0]            // Or "@" for things like CLOUDFLAREAPI_SINGLE_REDIRECT
+//         .NameRaw = argsRaw[0]         // or "@" for things like CLOUDFLAREAPI_SINGLE_REDIRECT
+//         .NameUnicode = argsUnicode[0] // or "@" for things like CLOUDFLAREAPI_SINGLE_REDIRECT
+//         .F = (binary) a miekg struct (dns.A, dns.MX, etc) using argsIDN
+//              or a custom struct
+//         .FieldsAsRaw ([]string) = argsRaw OR unpack the fields of .F
+//         .FieldsAsUnicode ([]string) = argsUnicode OR unpack the fields of .F
+//    }
+
+//    // FQDN without trailingdot.
+//    .NameFQDN = .Name + dc.Name
+//    .NameFQDNRaw = .NameRaw + dc.NameRaw
+//    .NameFQDNUnicode = .NameUnicode + dc.NameUnicode
+
+//    .AsZoneFileLine = rtypecontrol.Iface["MX"]AsRFC1038String(rec)
+//    .AsCompareBlob = .AsZoneFileLine
+
+//    rtypecontrol.Iface["MX"]CopyToLegacyFields(rec)  // Copy .F fields to legacy RecordConfig fields
+//    rtypecontrol.Iface["MX"]CopyFromLegacyFields(rec)  // Copy .F fields from legacy RecordConfig fields
 
 // CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
 //
