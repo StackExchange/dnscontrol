@@ -819,6 +819,7 @@ func stringDefault(value interface{}, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 	// Check for read_only metadata
+	// https://github.com/StackExchange/dnscontrol/issues/3850
 	if cr.Meta != nil {
 		if metaMap, ok := cr.Meta.(map[string]interface{}); ok {
 			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
