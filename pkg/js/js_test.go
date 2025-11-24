@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	testDir  = "pkg/js/parse_tests"
-	errorDir = "pkg/js/error_tests"
+	testDir = "pkg/js/parse_tests"
+	//errorDir = "pkg/js/error_tests"
 )
 
 func init() {
@@ -49,9 +49,9 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, dc := range conf.Domains {
-				dc.UpdateSplitHorizonNames()
-			}
+			// for _, dc := range conf.Domains {
+			// 	dc.UpdateSplitHorizonNames()
+			// }
 
 			errs := normalize.ValidateAndNormalizeConfig(conf)
 			if len(errs) != 0 {
@@ -115,8 +115,8 @@ func TestParsedFiles(t *testing.T) {
 			var dCount int
 			for _, dc := range conf.Domains {
 				var zoneFile string
-				dc.UpdateSplitHorizonNames()
-				if dc.Metadata[models.DomainTag] != "" {
+				// dc.UpdateSplitHorizonNames()
+				if dc.Tag != "" {
 					zoneFile = filepath.Join(testDir, testName, dc.GetUniqueName()+".zone")
 				} else {
 					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")

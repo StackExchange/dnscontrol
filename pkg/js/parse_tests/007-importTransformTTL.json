@@ -4,8 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo1.com"
+        "dnscontrol_tag": ""
       },
       "name": "foo1.com",
       "records": [
@@ -29,8 +28,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "inny"
+        "dnscontrol_tag": ""
       },
       "name": "inny",
       "records": [
@@ -54,8 +52,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "com.inny"
+        "dnscontrol_tag": ""
       },
       "name": "com.inny",
       "records": [

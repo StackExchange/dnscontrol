@@ -40,7 +40,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
-	dc.UpdateSplitHorizonNames()
+	//dc.UpdateSplitHorizonNames()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)

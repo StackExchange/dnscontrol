@@ -4,8 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "2.1.in-addr.arpa"
+        "dnscontrol_tag": ""
       },
       "name": "2.1.in-addr.arpa",
       "records": [],

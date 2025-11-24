@@ -4,8 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "unsafe.com"
+        "dnscontrol_tag": ""
       },
       "name": "unsafe.com",
       "records": [],
@@ -15,8 +14,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "safe.com"
+        "dnscontrol_tag": ""
       },
       "name": "safe.com",
       "records": [],

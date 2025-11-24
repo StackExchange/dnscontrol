@@ -167,20 +167,20 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
 	}
-	_, okTag := meta[models.DomainTag]
-	_, okUnique := meta[models.DomainUniqueName]
-	if !okTag && !okUnique {
-		// This layering violation is needed for tests only.
-		// Otherwise, this is set already.
-		// Note: In this situation there is no "uniquename" or "tag".
-		zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat, domain, domain, ""))
-	} else {
-		zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat,
-				meta[models.DomainUniqueName], domain, meta[models.DomainTag]),
-		)
-	}
+	// _, okTag := meta[models.DomainTag]
+	// _, okUnique := meta[models.DomainUniqueName]
+	// if !okTag && !okUnique {
+	// 	// This layering violation is needed for tests only.
+	// 	// Otherwise, this is set already.
+	// 	// Note: In this situation there is no "uniquename" or "tag".
+	// 	zonefile = filepath.Join(c.directory,
+	// 		makeFileName(c.filenameformat, domain, domain, ""))
+	// } else {
+	// 	zonefile = filepath.Join(c.directory,
+	// 		makeFileName(c.filenameformat,
+	// 			meta[models.DomainUniqueName], domain, meta[models.DomainTag]),
+	// 	)
+	// }
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
@@ -273,8 +273,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	}
 
 	zonefile = filepath.Join(c.directory,
-		makeFileName(c.filenameformat,
-			dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
+		makeFileName(c.filenameformat, dc.UniqueName, dc.NameRaw, dc.Tag),
 	)
 
 	// We only change the serial number if there is a change.

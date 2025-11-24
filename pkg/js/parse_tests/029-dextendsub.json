@@ -11,8 +11,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.net"
+        "dnscontrol_tag": ""
       },
       "name": "foo.net",
       "records": [
@@ -70,8 +69,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.tld"
+        "dnscontrol_tag": ""
       },
       "name": "foo.tld",
       "records": [
@@ -104,8 +102,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "bar.foo.tld"
+        "dnscontrol_tag": ""
       },
       "name": "bar.foo.tld",
       "records": [
@@ -138,8 +135,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.help"
+        "dnscontrol_tag": ""
       },
       "name": "foo.help",
       "records": [
@@ -181,8 +177,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "bar.foo.help"
+        "dnscontrol_tag": ""
       },
       "name": "bar.foo.help",
       "records": [
@@ -224,8 +219,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.here"
+        "dnscontrol_tag": ""
       },
       "name": "foo.here",
       "records": [
@@ -283,8 +277,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example.com"
+        "dnscontrol_tag": ""
       },
       "name": "example.com",
       "records": [
@@ -342,8 +335,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "xn--dsseldorf-q9a.example.net"
+        "dnscontrol_tag": ""
       },
       "name": "xn--dsseldorf-q9a.example.net",
       "records": [
@@ -417,8 +409,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "xn--tda.example.net"
+        "dnscontrol_tag": ""
       },
       "name": "xn--tda.example.net",
       "records": [
@@ -492,8 +483,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example.tld"
+        "dnscontrol_tag": ""
       },
       "name": "example.tld",
       "records": [

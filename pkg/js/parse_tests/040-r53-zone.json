@@ -5,7 +5,6 @@
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.com",
         "zone_id": "Z2FTEDLFRTZ"
       },
       "name": "foo.com",
@@ -16,7 +15,6 @@
       "dnsProviders": {},
       "meta": {
         "dnscontrol_tag": "internal",
-        "dnscontrol_uniquename": "foo.com!internal",
         "zone_id": "Z2FTEDLFRTF"
       },
       "name": "foo.com",
@@ -37,7 +35,8 @@
           "type": "R53_ALIAS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "tag": "internal"
     }
   ],
   "registrars": []

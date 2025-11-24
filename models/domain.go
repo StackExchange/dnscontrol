@@ -2,16 +2,14 @@ package models
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
 const (
-	// DomainUniqueName is the full `example.com!tag` name`
-	DomainUniqueName = "dnscontrol_uniquename"
 	// DomainTag is the tag part of `example.com!tag` name
 	DomainTag = "dnscontrol_tag"
 )
@@ -21,6 +19,9 @@ type DomainConfig struct {
 	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
 	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
 	NameUnicode string `json:"-"`    // name in Unicode format
+
+	Tag        string `json:"tag,omitempty"` // Split horizon tag.
+	UniqueName string `json:"-"`             // .Name + "!" + .Tag
 
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
@@ -59,44 +60,86 @@ type DomainConfig struct {
 	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
+// PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
+// It is called by dns.go's PostProcess() function.
+func (dc *DomainConfig) PostProcess() {
+	// Ensure the metadata map is initialized.
+	if dc.Metadata == nil {
+		dc.Metadata = map[string]string{}
+	}
+
+	// Turn the user-supplied name into the fixed forms.
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = domaintags.MakeDomainFixForms(dc.Name)
+
+	// Store the split horizon info in metadata for backward compatibility.
+	dc.Metadata[DomainTag] = dc.Tag
+}
+
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.
+// Deprecated: use .Name, .Uniquename, and .Tag directly instead.
 func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
-	return dc.Name, dc.Metadata[DomainUniqueName], dc.Metadata[DomainTag]
+	return dc.Name, dc.UniqueName, dc.Tag
 }
 
 // GetUniqueName returns the domain's uniquename.
 func (dc *DomainConfig) GetUniqueName() (uniquename string) {
-	return dc.Metadata[DomainUniqueName]
+	return dc.UniqueName
 }
 
-// UpdateSplitHorizonNames updates the split horizon fields
-// (uniquename and tag) based on name.
-func (dc *DomainConfig) UpdateSplitHorizonNames() {
-	name, unique, tag := dc.GetSplitHorizonNames()
+// // UpdateSplitHorizonNames updates the split horizon fields
+// // (uniquename and tag) based on name.
+// func (dc *DomainConfig) UpdateSplitHorizonNames() {
 
-	if unique == "" {
-		unique = name
-	}
+// 	// This should probably be done elsewhere (maybe where we first ingest a domain).
+// 	// Convert all domain names to punycode.
+// 	for _, domain := range config.Domains {
 
-	if tag == "" {
-		l := strings.SplitN(name, "!", 2)
-		if len(l) == 2 {
-			name = l[0]
-			tag = l[1]
-		}
-		if tag == "" {
-			// ensure empty tagged domain is treated as untagged
-			unique = name
-		}
-	}
+// 		// Create the .NameRaw field.
+// 		domain.NameRaw = domain.Name
+// 		idn, err := idna.ToASCII(domain.Name)
+// 		if err != nil {
+// 			return fmt.Errorf("can not convert domain %q to IDN: %w", domain.Name, err)
+// 		}
+// 		if idn != domain.NameRaw {
+// 			domain.Name = idn
+// 		}
 
-	dc.Name = name
-	if dc.Metadata == nil {
-		dc.Metadata = map[string]string{}
-	}
-	dc.Metadata[DomainUniqueName] = unique
-	dc.Metadata[DomainTag] = tag
-}
+// 		// Create the .NameUnicode field.
+// 		domain.NameUnicode = domain.Name
+// 		uni, err := idna.ToUnicode(domain.Name)
+// 		if err != nil {
+// 			return fmt.Errorf("can not convert domain %q to Unicode: %w", domain.Name, err)
+// 		}
+// 		if uni != domain.NameUnicode {
+// 			domain.NameUnicode = idn
+// 		}
+// 	}
+
+// 	name, unique, tag := dc.GetSplitHorizonNames()
+
+// 	if unique == "" {
+// 		unique = name
+// 	}
+
+// 	if tag == "" {
+// 		l := strings.SplitN(name, "!", 2)
+// 		if len(l) == 2 {
+// 			name = l[0]
+// 			tag = l[1]
+// 		}
+// 		if tag == "" {
+// 			// ensure empty tagged domain is treated as untagged
+// 			unique = name
+// 		}
+// 	}
+
+// 	dc.Name = name
+// 	if dc.Metadata == nil {
+// 		dc.Metadata = map[string]string{}
+// 	}
+// 	dc.Metadata[DomainUniqueName] = unique
+// 	dc.Metadata[DomainTag] = tag
+// }
 
 // Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

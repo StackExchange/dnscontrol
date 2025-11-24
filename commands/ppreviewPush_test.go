@@ -22,9 +22,9 @@ func Test_whichZonesToProcess(t *testing.T) {
 		dcTaggedEmpty,
 	}
 
-	for _, dc := range allDC {
-		dc.UpdateSplitHorizonNames()
-	}
+	// for _, dc := range allDC {
+	// 	dc.UpdateSplitHorizonNames()
+	// }
 
 	type args struct {
 		dc     []*models.DomainConfig

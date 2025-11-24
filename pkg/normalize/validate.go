@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"golang.org/x/net/idna"
 )
 
 // Returns false if target does not validate.
@@ -355,31 +354,6 @@ type Warning struct {
 // ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
-	// This should probably be done elsewhere (maybe where we first ingest a domain).
-	// Convert all domain names to punycode.
-	for _, domain := range config.Domains {
-
-		// Create the .NameRaw field.
-		domain.NameRaw = domain.Name
-		idn, err := idna.ToASCII(domain.Name)
-		if err != nil {
-			return []error{fmt.Errorf("Can not convert domain %q to IDN: %w", domain.Name, err)}
-		}
-		if idn != domain.NameRaw {
-			domain.Name = idn
-		}
-
-		// Create the .NameUnicode field.
-		domain.NameUnicode = domain.Name
-		uni, err := idna.ToUnicode(domain.Name)
-		if err != nil {
-			return []error{fmt.Errorf("Can not convert domain %q to Unicode: %w", domain.Name, err)}
-		}
-		if uni != domain.NameUnicode {
-			domain.NameUnicode = idn
-		}
-	}
-
 	err := processSplitHorizonDomains(config)
 	if err != nil {
 		return []error{err}
@@ -611,10 +585,11 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
-	// Parse out names and tags.
-	for _, d := range config.Domains {
-		d.UpdateSplitHorizonNames()
-	}
+
+	// // Parse out names and tags.
+	// for _, d := range config.Domains {
+	// 	d.UpdateSplitHorizonNames()
+	// }
 
 	// Verify uniquenames are unique
 	seen := map[string]bool{}

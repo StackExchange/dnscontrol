@@ -19,8 +19,7 @@
         "otherconfig": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example.com"
+        "dnscontrol_tag": ""
       },
       "name": "example.com",
       "records": [
@@ -46,8 +45,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "inside",
-        "dnscontrol_uniquename": "example.com!inside"
+        "dnscontrol_tag": "inside"
       },
       "name": "example.com",
       "records": [
@@ -66,15 +64,15 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "outside",
-        "dnscontrol_uniquename": "example.com!outside"
+        "dnscontrol_tag": "outside"
       },
       "name": "example.com",
       "records": [
@@ -86,15 +84,15 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example.net"
+        "dnscontrol_tag": ""
       },
       "name": "example.net",
       "records": [
@@ -120,8 +118,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "inside",
-        "dnscontrol_uniquename": "example.net!inside"
+        "dnscontrol_tag": "inside"
       },
       "name": "example.net",
       "records": [
@@ -147,15 +144,15 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "outside",
-        "dnscontrol_uniquename": "example.net!outside"
+        "dnscontrol_tag": "outside"
       },
       "name": "example.net",
       "records": [
@@ -181,15 +178,15 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "empty.example.net"
+        "dnscontrol_tag": ""
       },
       "name": "empty.example.net",
       "records": [
@@ -215,8 +212,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example-b.net"
+        "dnscontrol_tag": ""
       },
       "name": "example-b.net",
       "records": [

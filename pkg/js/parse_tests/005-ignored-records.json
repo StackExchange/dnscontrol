@@ -4,8 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.com"
+        "dnscontrol_tag": ""
       },
       "name": "foo.com",
       "records": [],
@@ -56,8 +55,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "diff2.com"
+        "dnscontrol_tag": ""
       },
       "name": "diff2.com",
       "records": [],

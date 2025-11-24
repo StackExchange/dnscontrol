@@ -11,8 +11,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.com"
+        "dnscontrol_tag": ""
       },
       "name": "foo.com",
       "records": [
@@ -38,8 +37,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "bar.foo.com"
+        "dnscontrol_tag": ""
       },
       "name": "bar.foo.com",
       "records": [
@@ -65,8 +63,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "foo.edu"
+        "dnscontrol_tag": ""
       },
       "name": "foo.edu",
       "records": [
