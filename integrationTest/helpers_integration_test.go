@@ -40,6 +40,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
+	dc.PostProcess()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -146,6 +147,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
 			return
 		}
+
+		fmt.Printf("DEBUG: Running test %q: Names %q %q %q\n", desc, dom.Name, dom.NameRaw, dom.NameUnicode)
 
 		// get and run corrections for first time
 		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
