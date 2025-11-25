@@ -4,7 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.com",
         "zone_id": "Z2FTEDLFRTZ"
       },
       "name": "foo.com",
@@ -14,6 +14,7 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
         "dnscontrol_tag": "internal",
         "zone_id": "Z2FTEDLFRTF"
       },

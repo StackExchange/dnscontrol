@@ -89,10 +89,13 @@ file name is the name as specified in the `D()` function plus ".zone".
 
 The filenameformat is a string with a few printf-like `%` verbs:
 
-  * `%U`  the domain name as specified in `D()`
-  * `%D`  the domain name without any split horizon tag (the "example.com" part of "example.com!tag")
-  * `%T`  the split horizon tag, or "" (the "tag" part of "example.com!tag")
-  * `%?x` this returns `x` if the split horizon tag is non-null, otherwise nothing. `x` can be any printable.
+  * The domain name without tag (the `example.com` part of `example.com!tag`):
+    * `%D`  as specified in `D()` (no IDN conversion, but downcased)
+    * `%I`  converted to IDN/Punycode (`xn--...`) and downcased.
+    * `%N`  converted to Unicode (downcased first)
+  * `%T`  the split horizon tag, or "" (the `tag` part of `example.com!tag`)
+  * `%?x` this returns `x` if the split horizon tag is non-null, otherwise nothing. `x` can be any printable but is usually `!`.
+  * `%U`  short for "%I%?!%T". This is the universal, canonical, name for the domain used for comparisons within DNSControl. This is best for filenames which is why it is used in the default.
   * `%%`  `%`
   * ordinary characters (not `%`) are copied unchanged to the output stream
   * FYI: format strings must not end with an incomplete `%` or `%?`
@@ -108,12 +111,11 @@ Typical values:
   * `db_%D`
     * `db_example.com`
 
-The last example will generate the same name for both
-`D("example.com!inside")` and `D("example.com!outside")`.  This
-assumes two BIND providers are configured in `creds.json`, each with
-a different `directory` setting. Otherwise `dnscontrol` will write
-both domains to the same file, flapping between the two back and
-forth.
+The last example is not recommended as it will generate the same filename for both
+`D("example.com!inside")` and `D("example.com!outside")`.   The content would end up
+flapping back and forth between the two.  (That said, it would work
+if you had two BIND providers in `creds.json`, each with
+a different `directory` setting.)
 
 (new in v4.2.0) `dnscontrol push` will create subdirectories along the path to
 the filename. This includes both the portion of the path created by the

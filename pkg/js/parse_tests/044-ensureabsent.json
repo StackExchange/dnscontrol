@@ -4,7 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example.com"
       },
       "name": "example.com",
       "records": [

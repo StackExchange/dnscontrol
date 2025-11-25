@@ -10,7 +10,7 @@ import (
 type DomainFixedForms struct {
 	NameRaw     string // "originalinput.com" (name as input by the user, lowercased (no tag))
 	NameIDN     string // "punycode.com"
-	NameUnicode string // "unicode.com"
+	NameUnicode string // "unicode.com" (converted to downcase BEFORE unicode conversion)
 	UniqueName  string // "punycode.com!tag"
 
 	Tag     string // The tag portion of `example.com!tag`

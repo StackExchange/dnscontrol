@@ -3,12 +3,25 @@ package bind
 import (
 	"reflect"
 	"testing"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 )
 
 func Test_makeFileName(t *testing.T) {
-	uu := "uni"
-	dd := "domy"
-	tt := "tagy"
+	ff := domaintags.DomainFixedForms{
+		NameRaw:     "raw",
+		NameIDN:     "idn",
+		NameUnicode: "unicode",
+		UniqueName:  "unique!taga",
+		Tag:         "tagb",
+	}
+	tagless := domaintags.DomainFixedForms{
+		NameRaw:     "raw",
+		NameIDN:     "idn",
+		NameUnicode: "unicode",
+		UniqueName:  "unique",
+		Tag:         "",
+	}
 	fmtDefault := "%U.zone"
 	fmtBasic := "%U - %T - %D"
 	fmtBk1 := "db_%U"          // Something I've seen in books on DNS
@@ -19,35 +32,42 @@ func Test_makeFileName(t *testing.T) {
 	fmtErrorUnk := "literal%o" // Unknown % verb
 
 	type args struct {
-		format     string
-		uniquename string
-		domain     string
-		tag        string
+		format string
+		ff     domaintags.DomainFixedForms
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"literal", args{"literal", uu, dd, tt}, "literal"},
-		{"basic", args{fmtBasic, uu, dd, tt}, "uni - tagy - domy"},
-		{"solo", args{"%D", uu, dd, tt}, "domy"},
-		{"front", args{"%Daaa", uu, dd, tt}, "domyaaa"},
-		{"tail", args{"bbb%D", uu, dd, tt}, "bbbdomy"},
-		{"def", args{fmtDefault, uu, dd, tt}, "uni.zone"},
-		{"bk1", args{fmtBk1, uu, dd, tt}, "db_uni"},
-		{"bk2", args{fmtBk2, uu, dd, tt}, "db_tagy_domy"},
-		{"fanWI", args{fmtFancy, uu, dd, tt}, "tagy_domy.zone"},
-		{"fanWO", args{fmtFancy, uu, dd, ""}, "domy.zone"},
-		{"errP", args{fmtErrorPct, uu, dd, tt}, "literal%(format may not end in %)"},
-		{"errQ", args{fmtErrorOpt, uu, dd, tt}, "literal%(format may not end in %?)"},
-		{"errU", args{fmtErrorUnk, uu, dd, tt}, "literal%(unknown %verb %o)"},
+		{"literal", args{"literal", ff}, "literal"},
+		{"middle", args{"mid%Dle", ff}, "midrawle"},
+		{"D", args{"%D", ff}, "raw"},
+		{"I", args{"%I", ff}, "idn"},
+		{"N", args{"%N", ff}, "unicode"},
+		{"T", args{"%T", ff}, "tagb"},
+		{"x1", args{"XX%?xYY", ff}, "XXxYY"},
+		{"x2", args{"AA%?xBB", tagless}, "AABB"},
+		{"U", args{"%U", ff}, "unique!taga"},
+		{"percent", args{"%%", ff}, "%"},
+		//
+		{"default", args{fmtDefault, ff}, "unique!taga.zone"},
+		{"basic", args{fmtBasic, ff}, "unique!taga - tagb - raw"},
+		{"front", args{"%Daaa", ff}, "rawaaa"},
+		{"tail", args{"bbb%D", ff}, "bbbraw"},
+		{"bk1", args{fmtBk1, ff}, "db_unique!taga"},
+		{"bk2", args{fmtBk2, ff}, "db_tagb_raw"},
+		{"fanWI", args{fmtFancy, ff}, "tagb_raw.zone"},
+		{"fanWO", args{fmtFancy, tagless}, "raw.zone"},
+		{"errP", args{fmtErrorPct, ff}, "literal%(format may not end in %)"},
+		{"errQ", args{fmtErrorOpt, ff}, "literal%(format may not end in %?)"},
+		{"errU", args{fmtErrorUnk, ff}, "literal%(unknown %verb %o)"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := makeFileName(tt.args.format, tt.args.uniquename, tt.args.domain, tt.args.tag); got != tt.want {
-				t.Errorf("makeFileName() = %v, want %v", got, tt.want)
+			if got := makeFileName(tt.args.format, tt.args.ff); got != tt.want {
+				t.Errorf("makeFileName(%q) = %q, want %q", tt.args.format, got, tt.want)
 			}
 		})
 	}

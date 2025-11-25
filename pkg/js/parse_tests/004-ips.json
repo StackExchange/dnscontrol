@@ -11,7 +11,7 @@
         "Cloudflare": 0
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "foo.com"
       },
       "name": "foo.com",
       "records": [

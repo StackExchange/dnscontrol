@@ -11,7 +11,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "d.c.b.a.1.1.0.2.ip6.arpa"
       },
       "name": "d.c.b.a.1.1.0.2.ip6.arpa",
       "records": [
@@ -37,7 +37,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "8.b.d.0.1.0.0.2.ip6.arpa"
       },
       "name": "8.b.d.0.1.0.0.2.ip6.arpa",
       "records": [

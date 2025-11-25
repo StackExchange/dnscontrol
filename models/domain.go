@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	// DomainTag is the tag part of `example.com!tag` name
-	DomainTag = "dnscontrol_tag"
+	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
+	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
+	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
+	DomainNameIDN     = "dnscontrol_nameidn"     // A copy of DomainConfig.NameIDN
+	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
@@ -26,8 +29,6 @@ type DomainConfig struct {
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
-	// Metadata[DomainUniqueName] // .Name + "!" + .Tag
-	// Metadata[DomainTag] // split horizon tag
 	Metadata         map[string]string `json:"meta,omitempty"`
 	Records          Records           `json:"records"`
 	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
@@ -72,8 +73,15 @@ func (dc *DomainConfig) PostProcess() {
 	ff := domaintags.MakeDomainFixForms(dc.Name)
 	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameIDN, ff.NameUnicode, ff.UniqueName
 
-	// Store the split horizon info in metadata for backward compatibility.
-	dc.Metadata[DomainTag] = dc.Tag
+	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
+	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
+	if dc.Tag != "" {
+		dc.Metadata[DomainTag] = dc.Tag
+	}
+	//dc.Metadata[DomainNameRaw] = dc.NameRaw
+	//dc.Metadata[DomainNameIDN] = dc.Name
+	//dc.Metadata[DomainNameUnicode] = dc.NameUnicode
+	dc.Metadata[DomainUniqueName] = dc.UniqueName
 }
 
 // GetSplitHorizonNames returns the domain's name, uniquename, and tag.

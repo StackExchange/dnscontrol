@@ -11,7 +11,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "foo.net"
       },
       "name": "foo.net",
       "records": [
@@ -69,7 +69,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "foo.tld"
       },
       "name": "foo.tld",
       "records": [
@@ -102,7 +102,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "bar.foo.tld"
       },
       "name": "bar.foo.tld",
       "records": [
@@ -135,7 +135,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "foo.help"
       },
       "name": "foo.help",
       "records": [
@@ -177,7 +177,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "bar.foo.help"
       },
       "name": "bar.foo.help",
       "records": [
@@ -219,7 +219,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "foo.here"
       },
       "name": "foo.here",
       "records": [
@@ -277,7 +277,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example.com"
       },
       "name": "example.com",
       "records": [
@@ -335,7 +335,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "d\u00fcsseldorf.example.net"
       },
       "name": "xn--dsseldorf-q9a.example.net",
       "records": [
@@ -409,7 +409,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "\u00fc.example.net"
       },
       "name": "xn--tda.example.net",
       "records": [
@@ -483,7 +483,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example.tld"
       },
       "name": "example.tld",
       "records": [

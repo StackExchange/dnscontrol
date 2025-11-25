@@ -19,7 +19,7 @@
         "otherconfig": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example.com"
       },
       "name": "example.com",
       "records": [
@@ -45,6 +45,7 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
         "dnscontrol_tag": "inside"
       },
       "name": "example.com",
@@ -72,6 +73,7 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
         "dnscontrol_tag": "outside"
       },
       "name": "example.com",
@@ -92,7 +94,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example.net"
       },
       "name": "example.net",
       "records": [
@@ -118,6 +120,7 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
         "dnscontrol_tag": "inside"
       },
       "name": "example.net",
@@ -152,6 +155,7 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
         "dnscontrol_tag": "outside"
       },
       "name": "example.net",
@@ -186,7 +190,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "empty.example.net"
       },
       "name": "empty.example.net",
       "records": [
@@ -212,7 +216,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "example-b.net"
       },
       "name": "example-b.net",
       "records": [

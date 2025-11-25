@@ -4,7 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.com",
         "ns_ttl": "86400"
       },
       "name": "foo.com",
@@ -14,7 +14,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "bar.com",
         "ns_ttl": "300"
       },
       "name": "bar.com",

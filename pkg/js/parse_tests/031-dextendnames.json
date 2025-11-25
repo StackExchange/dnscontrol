@@ -11,7 +11,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "domain.tld"
       },
       "name": "domain.tld",
       "records": [
@@ -113,7 +113,7 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": ""
+        "dnscontrol_nameraw": "sub.domain.tld"
       },
       "name": "sub.domain.tld",
       "records": [

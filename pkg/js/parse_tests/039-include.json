@@ -11,6 +11,7 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
         "dnscontrol_tag": "external"
       },
       "name": "foo.com",
@@ -31,6 +32,7 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
         "dnscontrol_tag": "internal"
       },
       "name": "foo.com",
