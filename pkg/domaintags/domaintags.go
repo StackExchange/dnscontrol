@@ -2,8 +2,6 @@ package domaintags
 
 import (
 	"strings"
-
-	"golang.org/x/net/idna"
 )
 
 // DomainFixedForms stores the various fixed forms of a domain name and tag.
@@ -23,8 +21,7 @@ type DomainFixedForms struct {
 // * .Name: punycode version, downcased.
 // * .NameUnicode: unicode version of the name, downcased.
 // * .UniqueName: "example.com!tag" unique across the entire config.
-func MakeDomainFixForms(n string) DomainFixedForms {
-	var err error
+func MakeDomainNameVarieties(n string) DomainFixedForms {
 	var tag, nameRaw, nameIDN, nameUnicode, uniqueName string
 	var hasBang bool
 
@@ -44,25 +41,8 @@ func MakeDomainFixForms(n string) DomainFixedForms {
 		nameRaw = n[0:len(nameRaw)]
 	}
 
-	nameIDN, err = idna.ToASCII(nameRaw)
-	if err != nil {
-		nameIDN = nameRaw // Fallback to raw name on error.
-	} else {
-		// Avoid pointless duplication.
-		if nameIDN == nameRaw {
-			nameIDN = nameRaw
-		}
-	}
-
-	nameUnicode, err = idna.ToUnicode(nameRaw)
-	if err != nil {
-		nameUnicode = nameRaw // Fallback to raw name on error.
-	} else {
-		// Avoid pointless duplication.
-		if nameUnicode == nameRaw {
-			nameUnicode = nameRaw
-		}
-	}
+	nameIDN = EfficientToASCII(nameRaw)
+	nameUnicode = EfficientToUnicode(nameRaw)
 
 	if hasBang {
 		uniqueName = nameIDN + "!" + tag

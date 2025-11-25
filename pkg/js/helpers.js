@@ -1461,27 +1461,27 @@ function _validateCloudflareRedirect(value) {
     return value.indexOf(',') === -1;
 }
 
-var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
-    args: [
-        ['source', _validateCloudflareRedirect],
-        ['destination', _validateCloudflareRedirect],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = '@';
-        record.target = args.source + ',' + args.destination;
-    },
-});
+//var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
+//    args: [
+//        ['source', _validateCloudflareRedirect],
+//        ['destination', _validateCloudflareRedirect],
+//    ],
+//    transform: function (record, args, modifiers) {
+//        record.name = '@';
+//        record.target = args.source + ',' + args.destination;
+//    },
+//});
 
-var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
-    args: [
-        ['source', _validateCloudflareRedirect],
-        ['destination', _validateCloudflareRedirect],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = '@';
-        record.target = args.source + ',' + args.destination;
-    },
-});
+//var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
+//    args: [
+//        ['source', _validateCloudflareRedirect],
+//        ['destination', _validateCloudflareRedirect],
+//    ],
+//    transform: function (record, args, modifiers) {
+//        record.name = '@';
+//        record.target = args.source + ',' + args.destination;
+//    },
+//});
 
 var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
     args: [
@@ -2477,4 +2477,6 @@ function rawrecordBuilder(type) {
 
 // CLOUDFLAREAPI:
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
+var CF_TEMP_REDIRECT = rawrecordBuilder('CF_TEMP_REDIRECT');
+var CF_REDIRECT = rawrecordBuilder('CF_REDIRECT');
 var RP = rawrecordBuilder('RP');

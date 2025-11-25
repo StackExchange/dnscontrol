@@ -305,7 +305,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		r.SetLabel("@", domain)
 
 		// Store the IDs
-		sr := r.CloudflareRedirect
+		sr := r.F.(*cfsingleredirect.SingleRedirectConfig)
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
 
@@ -315,7 +315,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr cfsingleredirect.SingleRedirectConfig) error {
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
@@ -358,7 +358,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr cfsingleredirect.SingleRedirectConfig) error {
 	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
 	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
 	// updatedRulesetRules := []cloudflare.RulesetRule{}
@@ -400,82 +400,82 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newrec *models.RecordConfig) error {
-	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
+	if err := c.deleteSingleRedirects(domainID, *oldrec.F.(*cfsingleredirect.SingleRedirectConfig)); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
+	return c.createSingleRedirect(domainID, *newrec.F.(*cfsingleredirect.SingleRedirectConfig))
 }
 
-func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
-	rules, err := c.cfClient.ListPageRules(context.Background(), id)
-	if err != nil {
-		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %w", err)
-	}
-	recs := []*models.RecordConfig{}
-	for _, pr := range rules {
-		// only interested in forwarding rules. Lets be very specific, and skip anything else
-		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
-			continue
-		}
-		if pr.Actions[0].ID != "forwarding_url" {
-			continue
-		}
-		value := pr.Actions[0].Value.(map[string]interface{})
-		thisPr := pr
-		r := &models.RecordConfig{
-			Original: thisPr,
-		}
+// func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
+// 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %w", err)
+// 	}
+// 	recs := []*models.RecordConfig{}
+// 	for _, pr := range rules {
+// 		// only interested in forwarding rules. Lets be very specific, and skip anything else
+// 		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
+// 			continue
+// 		}
+// 		if pr.Actions[0].ID != "forwarding_url" {
+// 			continue
+// 		}
+// 		value := pr.Actions[0].Value.(map[string]interface{})
+// 		thisPr := pr
+// 		r := &models.RecordConfig{
+// 			Original: thisPr,
+// 		}
 
-		code := intZero(value["status_code"])
+// 		code := intZero(value["status_code"])
 
-		when := pr.Targets[0].Constraint.Value
-		then := value["url"].(string)
-		currentPrPrio := pr.Priority
+// 		when := pr.Targets[0].Constraint.Value
+// 		then := value["url"].(string)
+// 		currentPrPrio := pr.Priority
 
-		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
-			return nil, err
-		}
-		r.SetLabel("@", domain)
+// 		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
+// 			return nil, err
+// 		}
+// 		r.SetLabel("@", domain)
 
-		recs = append(recs, r)
-	}
-	return recs, nil
-}
+// 		recs = append(recs, r)
+// 	}
+// 	return recs, nil
+// }
 
-func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
-	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
-}
+// func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
+// 	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
+// }
 
-func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	// maybe someday?
-	// c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
-	if err := c.deletePageRule(recordID, domainID); err != nil {
-		return err
-	}
-	return c.createPageRule(domainID, cfr)
-}
+// func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+// 	// maybe someday?
+// 	// c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
+// 	if err := c.deletePageRule(recordID, domainID); err != nil {
+// 		return err
+// 	}
+// 	return c.createPageRule(domainID, cfr)
+// }
 
-func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	priority := cfr.PRPriority
-	code := cfr.Code
-	prWhen := cfr.PRWhen
-	prThen := cfr.PRThen
-	pr := cloudflare.PageRule{
-		Status:   "active",
-		Priority: priority,
-		Targets: []cloudflare.PageRuleTarget{
-			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: prWhen}},
-		},
-		Actions: []cloudflare.PageRuleAction{
-			{ID: "forwarding_url", Value: &pageRuleFwdInfo{
-				StatusCode: code,
-				URL:        prThen,
-			}},
-		},
-	}
-	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
-	return err
-}
+// func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+// 	priority := cfr.PRPriority
+// 	code := cfr.Code
+// 	prWhen := cfr.PRWhen
+// 	prThen := cfr.PRThen
+// 	pr := cloudflare.PageRule{
+// 		Status:   "active",
+// 		Priority: priority,
+// 		Targets: []cloudflare.PageRuleTarget{
+// 			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: prWhen}},
+// 		},
+// 		Actions: []cloudflare.PageRuleAction{
+// 			{ID: "forwarding_url", Value: &pageRuleFwdInfo{
+// 				StatusCode: code,
+// 				URL:        prThen,
+// 			}},
+// 		},
+// 	}
+// 	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
+// 	return err
+// }
 
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
 	res, err := c.cfClient.ListWorkerRoutes(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListWorkerRoutesParams{})

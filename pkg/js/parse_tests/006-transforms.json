@@ -16,31 +16,40 @@
       "name": "foo.com",
       "records": [
         {
+          "fields": null,
           "filepos": "[line:18:5]",
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
           "name": "@",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "3.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "fields": null,
           "filepos": "[line:18:5]",
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
           "name": "@",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "4.4.4.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "fields": null,
           "filepos": "[line:18:5]",
           "meta": {
             "transform": "0.0.0.0 ~ 1.1.1.0 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
           },
           "name": "@",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "5.5.5.5",
           "ttl": 300,
           "type": "A"

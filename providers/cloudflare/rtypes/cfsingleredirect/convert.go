@@ -7,32 +7,89 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
-// TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
-func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+func init() {
+	rtypecontrol.Register(&CfRedirect{})
+}
 
-	// Extract the fields we're reading from:
-	sr := rec.CloudflareRedirect
-	code := sr.Code
-	prWhen := sr.PRWhen
-	prThen := sr.PRThen
-	srName := sr.PRDisplay
+type CfRedirect struct{}
+
+// Name returns the text (all caps) name of the rtype.
+func (handle *CfRedirect) Name() string {
+	return "CF_REDIRECT"
+}
+
+func (handle *CfRedirect) FromArgs(rec *models.RecordConfig, args []any) error {
+	// Pave the args to be the expected types.
+	if err := rtypecontrol.PaveArgs(args, "ss"); err != nil {
+		return err
+	}
 
 	// Convert old-style patterns to new-style rules:
+	prWhen := args[0].(string)
+	prThen := args[1].(string)
 	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
 	if err != nil {
 		return err
 	}
 
-	// Fix the RecordConfig
-	return makeSingleRedirectFromConvert(rec,
-		sr.PRPriority,
-		prWhen, prThen,
-		code,
-		srName, srWhen, srThen)
+	sr := SingleRedirectConfig{}
+	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	return sr.FromArgs(rec, []any{"@", 301, srWhen, srThen})
 }
+
+type CfTempRedirect struct{}
+
+// Name returns the text (all caps) name of the rtype.
+func (handle *CfTempRedirect) Name() string {
+	return "CF_TEMP_REDIRECT"
+}
+
+func (handle *CfTempRedirect) FromArgs(rec *models.RecordConfig, args []any) error {
+	// Pave the args to be the expected types.
+	if err := rtypecontrol.PaveArgs(args, "ss"); err != nil {
+		return err
+	}
+
+	// Convert old-style patterns to new-style rules:
+	prWhen := args[0].(string)
+	prThen := args[1].(string)
+	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
+	if err != nil {
+		return err
+	}
+
+	sr := SingleRedirectConfig{}
+	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+	return sr.FromArgs(rec, []any{"@", 301, srWhen, srThen})
+}
+
+// // TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
+// func TranscodePRtoSR(rec *models.RecordConfig) error {
+// 	//rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
+
+// 	// Extract the fields we're reading from:
+// 	sr := rec.CloudflareRedirect
+// 	code := sr.Code
+// 	prWhen := sr.PRWhen
+// 	prThen := sr.PRThen
+// 	srName := sr.PRDisplay
+
+// 	// Convert old-style patterns to new-style rules:
+// 	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	// Fix the RecordConfig
+// 	return makeSingleRedirectFromConvert(rec,
+// 		sr.PRPriority,
+// 		prWhen, prThen,
+// 		code,
+// 		srName, srWhen, srThen)
+// }
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
 func makeRuleFromPattern(pattern, replacement string) (string, string, error) {

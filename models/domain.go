@@ -70,7 +70,7 @@ func (dc *DomainConfig) PostProcess() {
 	}
 
 	// Turn the user-supplied name into the fixed forms.
-	ff := domaintags.MakeDomainFixForms(dc.Name)
+	ff := domaintags.MakeDomainNameVarieties(dc.Name)
 	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameIDN, ff.NameUnicode, ff.UniqueName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.

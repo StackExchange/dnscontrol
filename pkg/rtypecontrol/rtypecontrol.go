@@ -15,29 +15,28 @@ type RType interface {
 	Name() string
 
 	// RecordConfig factory. Updates a RecordConfig's fields based on args.
-	FromArgs(*models.RecordConfig, args []any) (*models.RecordConfig, error) //
+	FromArgs(*models.RecordConfig, []any) error
 
 	// Returns a string representation of the record in RFC1038 format.
 	// AsRFC1038String([]string) (string, error)
 }
 
 // Map of registered rtypes.
-var Iface map[string]RType = map[string]RType{}
+var Func map[string]RType = map[string]RType{}
 
-func Register(typeName string, t RType) {
+func Register(t RType) {
 	name := t.Name()
-	if _, ok := Iface[name]; ok {
+	if _, ok := Func[name]; ok {
 		panic(fmt.Sprintf("rtype %q already registered. Can't register it a second time!", name))
 	}
 	// Store the interface
-	Iface[name] = t
+	Func[name] = t
 
 	// For compatibility with legacy systems:
 	providers.RegisterCustomRecordType(name, "", "")
-
 }
 
 func IsValid(name string) bool {
-	_, ok := Iface[name]
+	_, ok := Func[name]
 	return ok
 }

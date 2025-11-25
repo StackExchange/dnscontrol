@@ -9,15 +9,21 @@
       "name": "foo1.com",
       "records": [
         {
+          "fields": null,
           "filepos": "[line:2:5]",
           "name": "bar",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "fields": null,
           "filepos": "[line:3:5]",
           "name": "foo",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "5.5.5.5",
           "ttl": 300,
           "type": "A"
@@ -33,15 +39,21 @@
       "name": "inny",
       "records": [
         {
+          "fields": null,
           "filepos": "[line:2:5]",
           "name": "bar.foo1.com",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "4.4.4.101",
           "ttl": 60,
           "type": "A"
         },
         {
+          "fields": null,
           "filepos": "[line:3:5]",
           "name": "foo.foo1.com",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "6.6.6.3",
           "ttl": 60,
           "type": "A"
@@ -57,15 +69,21 @@
       "name": "com.inny",
       "records": [
         {
+          "fields": null,
           "filepos": "[line:2:5]",
           "name": "bar.foo1",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "1.1.1.1",
           "ttl": 99,
           "type": "A"
         },
         {
+          "fields": null,
           "filepos": "[line:3:5]",
           "name": "foo.foo1",
+          "name_raw": "",
+          "name_unicode": "",
           "target": "7.7.7.7",
           "ttl": 99,
           "type": "A"

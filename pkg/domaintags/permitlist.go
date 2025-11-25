@@ -23,7 +23,7 @@ func CompilePermitList(s string) PermitList {
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
 		}
-		ff := MakeDomainFixForms(l)
+		ff := MakeDomainNameVarieties(l)
 		if ff.HasBang && ff.NameIDN == "" { // Treat empty name as wildcard.
 			ff.NameIDN = "*"
 		}
@@ -40,7 +40,7 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		return true
 	}
 
-	domToCheckFF := MakeDomainFixForms(domToCheck)
+	domToCheckFF := MakeDomainNameVarieties(domToCheck)
 
 	for _, filterItem := range pl.items {
 
