@@ -22,7 +22,8 @@ Example:
 {
   "bind": {
     "TYPE": "BIND",
-    "directory": "myzones"
+    "directory": "myzones",
+    "filenameformat": "%U.zone"
   }
 }
 ```
@@ -104,18 +105,17 @@ Typical values:
 
   * `%U.zone` (The default)
     * `example.com.zone` or `example.com!tag.zone`
-  * `%T%*U%D.zone`  (optional tag and `_` + domain + `.zone`)
+  * `%T%?_%I.zone`  (optional tag and `_` + domain + `.zone`)
     * `tag_example.com.zone` or `example.com.zone`
   * `db_%T%?_%D`
     * `db_inside_example.com` or `db_example.com`
-  * `db_%D`
-    * `db_example.com`
 
-The last example is not recommended as it will generate the same filename for both
-`D("example.com!inside")` and `D("example.com!outside")`.   The content would end up
-flapping back and forth between the two.  (That said, it would work
-if you had two BIND providers in `creds.json`, each with
-a different `directory` setting.)
+{% hint style="warning" %}
+**Warning** DNSControl will not warn you if two zones generate the same
+filename. Instead, each will write to the same place.  The content would end up
+flapping back and forth between the two.  The best way to prevent this is to
+always include the tag (`%T`) or use `%U` which includes the tag.
+{% endhint %}
 
 (new in v4.2.0) `dnscontrol push` will create subdirectories along the path to
 the filename. This includes both the portion of the path created by the
