@@ -13,6 +13,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 		wantNameIDN     string
 		wantNameUnicode string
 		wantUniqueName  string
+		wantHasBang     bool
 	}{
 		{
 			name:            "simple domain",
@@ -21,7 +22,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameRaw:     "example.com",
 			wantNameIDN:     "example.com",
 			wantNameUnicode: "example.com",
-			wantUniqueName:  "example.com!",
+			wantUniqueName:  "example.com",
+			wantHasBang:     false,
 		},
 		{
 			name:            "domain with tag",
@@ -31,6 +33,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameIDN:     "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!mytag",
+			wantHasBang:     true,
 		},
 		{
 			name:            "domain with empty tag",
@@ -40,6 +43,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameIDN:     "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!",
+			wantHasBang:     true,
 		},
 		{
 			name:            "unicode domain",
@@ -48,7 +52,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameRaw:     "उदाहरण.com",
 			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
-			wantUniqueName:  "xn--p1b6ci4b4b3a.com!",
+			wantUniqueName:  "xn--p1b6ci4b4b3a.com",
+			wantHasBang:     false,
 		},
 		{
 			name:            "unicode domain with tag",
@@ -58,6 +63,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com!mytag",
+			wantHasBang:     true,
 		},
 		{
 			name:            "punycode domain",
@@ -66,7 +72,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameRaw:     "xn--p1b6ci4b4b3a.com",
 			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
-			wantUniqueName:  "xn--p1b6ci4b4b3a.com!",
+			wantUniqueName:  "xn--p1b6ci4b4b3a.com",
+			wantHasBang:     false,
 		},
 		{
 			name:            "punycode domain with tag",
@@ -76,6 +83,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com!mytag",
+			wantHasBang:     true,
 		},
 		{
 			name:            "mixed case domain",
@@ -84,7 +92,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameRaw:     "example.com",
 			wantNameIDN:     "example.com",
 			wantNameUnicode: "example.com",
-			wantUniqueName:  "example.com!",
+			wantUniqueName:  "example.com",
+			wantHasBang:     false,
 		},
 		{
 			name:            "mixed case domain with tag",
@@ -94,26 +103,30 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			wantNameIDN:     "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!MyTag",
+			wantHasBang:     true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotTag, gotNameRaw, gotNameIDN, gotNameUnicode, gotUniqueName := MakeDomainFixForms(tt.input)
-			if gotTag != tt.wantTag {
-				t.Errorf("MakeDomainFixForms() gotTag = %v, want %v", gotTag, tt.wantTag)
+			got := MakeDomainFixForms(tt.input)
+			if got.Tag != tt.wantTag {
+				t.Errorf("MakeDomainFixForms() gotTag = %v, want %v", got.Tag, tt.wantTag)
 			}
-			if gotNameRaw != tt.wantNameRaw {
-				t.Errorf("MakeDomainFixForms() gotNameRaw = %v, want %v", gotNameRaw, tt.wantNameRaw)
+			if got.NameRaw != tt.wantNameRaw {
+				t.Errorf("MakeDomainFixForms() gotNameRaw = %v, want %v", got.NameRaw, tt.wantNameRaw)
 			}
-			if gotNameIDN != tt.wantNameIDN {
-				t.Errorf("MakeDomainFixForms() gotNameIDN = %v, want %v", gotNameIDN, tt.wantNameIDN)
+			if got.NameIDN != tt.wantNameIDN {
+				t.Errorf("MakeDomainFixForms() gotNameIDN = %v, want %v", got.NameIDN, tt.wantNameIDN)
 			}
-			if gotNameUnicode != tt.wantNameUnicode {
-				t.Errorf("MakeDomainFixForms() gotNameUnicode = %v, want %v", gotNameUnicode, tt.wantNameUnicode)
+			if got.NameUnicode != tt.wantNameUnicode {
+				t.Errorf("MakeDomainFixForms() gotNameUnicode = %v, want %v", got.NameUnicode, tt.wantNameUnicode)
 			}
-			if gotUniqueName != tt.wantUniqueName {
-				t.Errorf("MakeDomainFixForms() gotUniqueName = %v, want %v", gotUniqueName, tt.wantUniqueName)
+			if got.UniqueName != tt.wantUniqueName {
+				t.Errorf("MakeDomainFixForms() gotUniqueName = %v, want %v", got.UniqueName, tt.wantUniqueName)
+			}
+			if got.HasBang != tt.wantHasBang {
+				t.Errorf("MakeDomainFixForms() gotHasTag = %v, want %v", got.HasBang, tt.wantHasBang)
 			}
 		})
 	}

@@ -69,7 +69,8 @@ func (dc *DomainConfig) PostProcess() {
 	}
 
 	// Turn the user-supplied name into the fixed forms.
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = domaintags.MakeDomainFixForms(dc.Name)
+	ff := domaintags.MakeDomainFixForms(dc.Name)
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameIDN, ff.NameUnicode, ff.UniqueName
 
 	// Store the split horizon info in metadata for backward compatibility.
 	dc.Metadata[DomainTag] = dc.Tag
@@ -90,7 +91,6 @@ func (dc *DomainConfig) GetUniqueName() (uniquename string) {
 // // (uniquename and tag) based on name.
 // func (dc *DomainConfig) UpdateSplitHorizonNames() {
 
-// 	// This should probably be done elsewhere (maybe where we first ingest a domain).
 // 	// Convert all domain names to punycode.
 // 	for _, domain := range config.Domains {
 

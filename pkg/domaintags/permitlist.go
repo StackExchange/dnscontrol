@@ -1,20 +1,22 @@
 package domaintags
 
-import "strings"
+import (
+	"strings"
+)
 
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
-	items []permitListItem
-}
-type permitListItem struct {
-	tag, nameRaw, nameIDN, nameUnicode, uniqueName string
+	items []DomainFixedForms
 }
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The
 func CompilePermitList(s string) PermitList {
+	//fmt.Printf("DEBUG: CompilePermitList(%q)\n", s)
+
 	s = strings.TrimSpace(s)
-	if s == "" || strings.ToLower(s) == "all" {
+	if s == "" || s == "*" || strings.ToLower(s) == "all" {
+		//fmt.Printf("DEBUG: CompilePermitList: ALL\n")
 		return PermitList{all: true}
 	}
 
@@ -24,58 +26,72 @@ func CompilePermitList(s string) PermitList {
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
 		}
-		tag, nameRaw, nameIDN, nameUnicode, uniqueName := MakeDomainFixForms(l)
-		if tag == "" { // Treat empty tag as wildcard.
-			tag = "*"
+		ff := MakeDomainFixForms(l)
+		if ff.HasBang && ff.NameIDN == "" { // Treat empty name as wildcard.
+			ff.NameIDN = "*"
 		}
-		if nameIDN == "" { // Treat empty name as wildcard.
-			nameIDN = "*"
-		}
-		sl.items = append(sl.items, permitListItem{
-			tag:         tag,
-			nameRaw:     nameRaw,
-			nameIDN:     nameIDN,
-			nameUnicode: nameUnicode,
-			uniqueName:  uniqueName,
-		})
+		sl.items = append(sl.items, ff)
 	}
 
+	//fmt.Printf("DEBUG: CompilePermitList: RETURN %+v\n", sl)
 	return sl
 }
 
-func (pl *PermitList) Permitted(u string) bool {
+func (pl *PermitList) Permitted(domToCheck string) bool {
+	//fmt.Printf("DEBUG: Permitted(%q)\n", domToCheck)
+
 	// If the permit list is "all", everything is permitted.
 	if pl.all {
+		//fmt.Printf("DEBUG: Permitted RETURN true\n")
 		return true
 	}
 
-	tag, _, nameIDN, nameUnicode, _ := MakeDomainFixForms(u)
+	domToCheckFF := MakeDomainFixForms(domToCheck)
+	// fmt.Printf("DEBUG: input: %+v\n", domToCheckFF)
 
-	for _, item := range pl.items {
+	for _, filterItem := range pl.items {
+		// fmt.Printf("DEBUG: Checking item %+v\n", filterItem)
+
+		// Special case: filter=example.com!* does not match example.com (no tag)
+		if filterItem.Tag == "*" && !domToCheckFF.HasBang {
+			// fmt.Printf("DEBUG: Skipping due to no tag present\n")
+			continue
+		}
+		// Special case: filter=example.com!* does not match example.com! (empty tag)
+		if filterItem.Tag == "*" && domToCheckFF.HasBang && domToCheckFF.Tag == "" {
+			// fmt.Printf("DEBUG: Skipping due to empty tag present\n")
+			continue
+		}
+		// Special case: filter=example.com! does not match example.com!tag
+		if filterItem.HasBang && filterItem.Tag == "" && domToCheckFF.HasBang && domToCheckFF.Tag != "" {
+			// fmt.Printf("DEBUG: Skipping due to non-empty tag present\n")
+			continue
+		}
+
 		// Skip if the tag doesn't match
-		if item.tag != "*" && tag != item.tag {
+		if (filterItem.Tag != "*") && (domToCheckFF.Tag != filterItem.Tag) {
 			continue
 		}
 		// Now that we know the tag matches, we can focus on the name.
 
-		if item.nameIDN == "*" {
+		if filterItem.NameIDN == "*" {
 			// `*!tag` or `*` matches everything.
 			return true
 		}
 		// If the name starts with "*." then match the suffix.
-		if strings.HasPrefix(item.nameIDN, "*.") {
+		if strings.HasPrefix(filterItem.NameIDN, "*.") {
 			// example.com matches *.example.com
-			if nameIDN == item.nameIDN[2:] || nameUnicode == item.nameUnicode[2:] {
+			if domToCheckFF.NameIDN == filterItem.NameIDN[2:] || domToCheckFF.NameUnicode == filterItem.NameUnicode[2:] {
 				return true
 			}
 			// foo.example.com matches *.example.com
-			if strings.HasSuffix(nameIDN, item.nameIDN[1:]) || strings.HasSuffix(nameUnicode, item.nameUnicode[1:]) {
+			if strings.HasSuffix(domToCheckFF.NameIDN, filterItem.NameIDN[1:]) || strings.HasSuffix(domToCheckFF.NameUnicode, filterItem.NameUnicode[1:]) {
 				return true
 			}
 		}
 
 		// No wildcards? Exact match.
-		if item.nameIDN == nameIDN || item.nameUnicode == nameUnicode {
+		if filterItem.NameIDN == domToCheckFF.NameIDN || filterItem.NameUnicode == domToCheckFF.NameUnicode {
 			return true
 		}
 	}

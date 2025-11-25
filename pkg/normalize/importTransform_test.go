@@ -32,6 +32,10 @@ func TestImportTransform(t *testing.T) {
 	cfg := &models.DNSConfig{
 		Domains: []*models.DomainConfig{src, dst},
 	}
+	err := cfg.PostProcess()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if errs := ValidateAndNormalizeConfig(cfg); len(errs) != 0 {
 		for _, err := range errs {
 			t.Error(err)

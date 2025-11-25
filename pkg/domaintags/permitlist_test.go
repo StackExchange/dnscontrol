@@ -39,7 +39,7 @@ func TestPermitList_Permitted(t *testing.T) {
 
 		// Wildcard tag
 		{"wildcard tag matches", "example.com!*", "example.com!tag1", true},
-		{"wildcard tag matches no tag", "example.com!*", "example.com", true},
+		{"wildcard tag matches no tag", "example.com!*", "example.com", false},
 		{"wildcard tag mismatch domain", "example.com!*", "google.com!tag1", false},
 
 		// Suffix matching
@@ -66,12 +66,12 @@ func TestPermitList_Permitted(t *testing.T) {
 		// IDN/Unicode cases (assuming MakeDomainFixForms works)
 		{"IDN exact match punycode", "xn--e1a4c.com", "xn--e1a4c.com", true}, // д.com
 		{"IDN exact match unicode", "д.com", "д.com", true},
-		{"IDN mixed match", "xn--e1a4c.com", "д.com", true},
-		{"IDN mixed match reversed", "д.com", "xn--e1a4c.com", true},
+		{"IDN mixed match", "xn--d1a.com", "д.com", true},
+		{"IDN mixed match reversed", "д.com", "xn--d1a.com", true},
 		{"IDN suffix match punycode", "*.xn--e1a4c.com", "sub.xn--e1a4c.com", true},
 		{"IDN suffix match unicode", "*.д.com", "sub.д.com", true},
-		{"IDN suffix match mixed", "*.xn--e1a4c.com", "sub.д.com", true},
-		{"IDN suffix match mixed reversed", "*.д.com", "sub.xn--e1a4c.com", true},
+		{"IDN suffix match mixed", "*.xn--d1a.com", "sub.д.com", true},
+		{"IDN suffix match mixed reversed", "*.д.com", "sub.xn--d1a.com", true},
 		{"IDN suffix match base", "*.д.com", "д.com", true},
 
 		// Edge cases
@@ -80,6 +80,22 @@ func TestPermitList_Permitted(t *testing.T) {
 		{"list with empty items 2", "one.com,,two.com", "two.com", true},
 		{"list with empty items no match", "one.com,,two.com", "three.com", false},
 		{"no match on empty list", "nonexistent", "example.com", false},
+
+		// Weird backwards compatibility with no tag being different than empty tag
+		{"empty tag vs no tag mismatch", "example.com", "example.com!foo", false},
+
+		// testMultiFilterTaggedWildcard
+		{"testMultiFilterTaggedWildcard_0", "example.com!*", "example.com!", false},
+		{"testMultiFilterTaggedWildcard_1", "example.com!*", "example.com", false},
+		{"testMultiFilterTaggedWildcard_2", "example.com!*", "example.net", false},
+		{"testMultiFilterTaggedWildcard_3", "example.com!*", "example.com!george", true},
+		{"testMultiFilterTaggedWildcard_4", "example.com!*", "example.com!john", true},
+
+		// testFilterEmptyTagAndNoTag
+		{"testFilterEmptyTagAndNoTag_0", "example.com!,example.com", "example.com!", true},
+		{"testFilterEmptyTagAndNoTag_1", "example.com!,example.com", "example.com", true},
+		{"testFilterEmptyTagAndNoTag_2", "example.com!,example.com", "example.net", false},
+		{"testFilterEmptyTagAndNoTag_3", "example.com!,example.com", "example.com!tag", false},
 	}
 
 	for _, tc := range testCases {
