@@ -83,63 +83,10 @@ func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
 }
 
 // GetUniqueName returns the domain's uniquename.
+// Deprecated: dc.UniqueName directly instead.
 func (dc *DomainConfig) GetUniqueName() (uniquename string) {
 	return dc.UniqueName
 }
-
-// // UpdateSplitHorizonNames updates the split horizon fields
-// // (uniquename and tag) based on name.
-// func (dc *DomainConfig) UpdateSplitHorizonNames() {
-
-// 	// Convert all domain names to punycode.
-// 	for _, domain := range config.Domains {
-
-// 		// Create the .NameRaw field.
-// 		domain.NameRaw = domain.Name
-// 		idn, err := idna.ToASCII(domain.Name)
-// 		if err != nil {
-// 			return fmt.Errorf("can not convert domain %q to IDN: %w", domain.Name, err)
-// 		}
-// 		if idn != domain.NameRaw {
-// 			domain.Name = idn
-// 		}
-
-// 		// Create the .NameUnicode field.
-// 		domain.NameUnicode = domain.Name
-// 		uni, err := idna.ToUnicode(domain.Name)
-// 		if err != nil {
-// 			return fmt.Errorf("can not convert domain %q to Unicode: %w", domain.Name, err)
-// 		}
-// 		if uni != domain.NameUnicode {
-// 			domain.NameUnicode = idn
-// 		}
-// 	}
-
-// 	name, unique, tag := dc.GetSplitHorizonNames()
-
-// 	if unique == "" {
-// 		unique = name
-// 	}
-
-// 	if tag == "" {
-// 		l := strings.SplitN(name, "!", 2)
-// 		if len(l) == 2 {
-// 			name = l[0]
-// 			tag = l[1]
-// 		}
-// 		if tag == "" {
-// 			// ensure empty tagged domain is treated as untagged
-// 			unique = name
-// 		}
-// 	}
-
-// 	dc.Name = name
-// 	if dc.Metadata == nil {
-// 		dc.Metadata = map[string]string{}
-// 	}
-// 	dc.Metadata[DomainUniqueName] = unique
-// 	dc.Metadata[DomainTag] = tag
-// }
 
 // Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

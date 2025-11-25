@@ -23,7 +23,6 @@ func Test_whichZonesToProcess(t *testing.T) {
 	}
 
 	for _, dc := range allDC {
-		//dc.UpdateSplitHorizonNames()
 		dc.PostProcess()
 	}
 
@@ -159,7 +158,6 @@ func Test_whichZonesToProcess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Logf("whichZonesToProcess() %s filter=%v", tt.name, tt.args.filter)
 			got := whichZonesToProcess(tt.args.dc, tt.args.filter)
 			if len(got) != len(tt.want) {
 				t.Errorf("whichZonesToProcess() %s: %s", tt.name, tt.why)

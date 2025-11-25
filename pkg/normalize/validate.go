@@ -353,7 +353,6 @@ type Warning struct {
 
 // ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
-
 	err := processSplitHorizonDomains(config)
 	if err != nil {
 		return []error{err}
@@ -585,11 +584,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
-
-	// // Parse out names and tags.
-	// for _, d := range config.Domains {
-	// 	d.UpdateSplitHorizonNames()
-	// }
 
 	// Verify uniquenames are unique
 	seen := map[string]bool{}

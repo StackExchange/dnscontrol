@@ -12,11 +12,8 @@ type PermitList struct {
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The
 func CompilePermitList(s string) PermitList {
-	//fmt.Printf("DEBUG: CompilePermitList(%q)\n", s)
-
 	s = strings.TrimSpace(s)
 	if s == "" || s == "*" || strings.ToLower(s) == "all" {
-		//fmt.Printf("DEBUG: CompilePermitList: ALL\n")
 		return PermitList{all: true}
 	}
 
@@ -33,51 +30,45 @@ func CompilePermitList(s string) PermitList {
 		sl.items = append(sl.items, ff)
 	}
 
-	//fmt.Printf("DEBUG: CompilePermitList: RETURN %+v\n", sl)
 	return sl
 }
 
 func (pl *PermitList) Permitted(domToCheck string) bool {
-	//fmt.Printf("DEBUG: Permitted(%q)\n", domToCheck)
 
 	// If the permit list is "all", everything is permitted.
 	if pl.all {
-		//fmt.Printf("DEBUG: Permitted RETURN true\n")
 		return true
 	}
 
 	domToCheckFF := MakeDomainFixForms(domToCheck)
-	// fmt.Printf("DEBUG: input: %+v\n", domToCheckFF)
 
 	for _, filterItem := range pl.items {
-		// fmt.Printf("DEBUG: Checking item %+v\n", filterItem)
 
 		// Special case: filter=example.com!* does not match example.com (no tag)
 		if filterItem.Tag == "*" && !domToCheckFF.HasBang {
-			// fmt.Printf("DEBUG: Skipping due to no tag present\n")
 			continue
 		}
 		// Special case: filter=example.com!* does not match example.com! (empty tag)
 		if filterItem.Tag == "*" && domToCheckFF.HasBang && domToCheckFF.Tag == "" {
-			// fmt.Printf("DEBUG: Skipping due to empty tag present\n")
 			continue
 		}
 		// Special case: filter=example.com! does not match example.com!tag
 		if filterItem.HasBang && filterItem.Tag == "" && domToCheckFF.HasBang && domToCheckFF.Tag != "" {
-			// fmt.Printf("DEBUG: Skipping due to non-empty tag present\n")
 			continue
 		}
 
-		// Skip if the tag doesn't match
+		// Skip if tags don't match
 		if (filterItem.Tag != "*") && (domToCheckFF.Tag != filterItem.Tag) {
 			continue
 		}
+
 		// Now that we know the tag matches, we can focus on the name.
 
+		// `*!tag` or `*` matches everything.
 		if filterItem.NameIDN == "*" {
-			// `*!tag` or `*` matches everything.
 			return true
 		}
+
 		// If the name starts with "*." then match the suffix.
 		if strings.HasPrefix(filterItem.NameIDN, "*.") {
 			// example.com matches *.example.com
