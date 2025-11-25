@@ -201,6 +201,7 @@ func GetZone(args GetZoneArgs) error {
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone, nil)
+		fmt.Printf("DEBUG: 1 len(recs)=%d\n", len(recs))
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
@@ -283,6 +284,7 @@ func GetZone(args GetZoneArgs) error {
 			}
 
 		case "tsv":
+			fmt.Printf("DEBUG: len(recs)=%d\n", len(recs))
 			for _, rec := range recs {
 				cfproxy := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
