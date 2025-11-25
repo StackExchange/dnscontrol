@@ -119,6 +119,12 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	if err = json.Unmarshal([]byte(str), conf); err != nil {
 		return nil, err
 	}
+
+	err = conf.PostProcess()
+	if err != nil {
+		return nil, err
+	}
+
 	return conf, nil
 }
 

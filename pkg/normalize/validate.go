@@ -584,10 +584,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
-	// Parse out names and tags.
-	for _, d := range config.Domains {
-		d.UpdateSplitHorizonNames()
-	}
 
 	// Verify uniquenames are unique
 	seen := map[string]bool{}
