@@ -194,7 +194,7 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
       uses: actions/cache@v4.3.0

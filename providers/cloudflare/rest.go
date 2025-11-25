@@ -47,7 +47,11 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 		if err != nil {
 			return nil, err
 		}
-		records = append(records, rt)
+		// nativeToRecord may return nil if the record is supposed to be skipped
+		// i.e. read only, cloudflare-managed, etc.
+		if rt != nil {
+			records = append(records, rt)
+		}
 	}
 	return records, nil
 }
