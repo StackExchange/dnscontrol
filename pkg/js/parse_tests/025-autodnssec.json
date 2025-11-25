@@ -4,7 +4,7 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_nameraw": "nothing.com"
+        "dnscontrol_uniquename": "nothing.com"
       },
       "name": "nothing.com",
       "records": [],
@@ -14,7 +14,7 @@
       "auto_dnssec": "on",
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_nameraw": "with.com"
+        "dnscontrol_uniquename": "with.com"
       },
       "name": "with.com",
       "records": [],
@@ -24,7 +24,7 @@
       "auto_dnssec": "off",
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_nameraw": "without.com"
+        "dnscontrol_uniquename": "without.com"
       },
       "name": "without.com",
       "records": [],

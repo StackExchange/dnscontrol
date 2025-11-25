@@ -11,7 +11,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_nameraw": "6.10.in-addr.arpa"
+        "dnscontrol_uniquename": "6.10.in-addr.arpa"
       },
       "name": "6.10.in-addr.arpa",
       "records": [
