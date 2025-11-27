@@ -221,14 +221,14 @@ func (api *inwxAPI) createRecord(domain string, rec *models.RecordConfig) error 
 }
 
 // updateRecord is used by GetDomainCorrections to update an existing record.
-func (api *inwxAPI) updateRecord(RecordID int, rec *models.RecordConfig) error {
+func (api *inwxAPI) updateRecord(RecordID string, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest("", rec)
 	err := api.client.Nameservers.UpdateRecord(RecordID, req)
 	return err
 }
 
 // deleteRecord is used by GetDomainCorrections to delete a record.
-func (api *inwxAPI) deleteRecord(RecordID int) error {
+func (api *inwxAPI) deleteRecord(RecordID string) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
