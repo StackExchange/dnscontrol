@@ -22,6 +22,9 @@ import (
 /*
 INWX Registrar and DNS provider
 
+Based on this great INWX API implementation:
+https://github.com/nrdcg/goinwx
+
 Info required in `creds.json`:
 	- username
 	- password
@@ -34,7 +37,6 @@ Either of the following settings is required when two factor authentication is e
 
 Additional settings available in `creds.json`:
 	- sandbox (set to 1 to use the sandbox API from INWX)
-
 */
 
 // InwxProductionDefaultNs contains the default INWX nameservers.
@@ -182,10 +184,10 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 
 	switch rType := rec.Type; rType {
 	/*
-	   INWX is a little bit special for CNAME,NS,MX and SRV records:
+	   INWX is a little bit special for CNAME, NS, MX and SRV records:
 	   The API will not accept any target with a final dot but will
 	   instead always add this final dot internally.
-	   Records with empty targets (i.e. records with target ".")
+	   Records with empty targets (i.e., records with target ".")
 	   are allowed.
 	*/
 	case "CNAME", "NS", "ALIAS":
@@ -244,7 +246,8 @@ func (api *inwxAPI) AutoDnssecToggle(dc *models.DomainConfig, corrections []*mod
 	}
 
 	if dnssecStatus == ManualDNSSECStatus && dc.AutoDNSSEC != "" {
-		return corrections, fmt.Errorf("INWX: Domain %s has manual DNSSEC enabled. Disable it before using AUTODNSSEC_ON/AUTODNSSEC_OFF", dc.Name)
+		return corrections, fmt.Errorf("INWX: Domain %s has manual DNSSEC enabled. Disable it before using "+
+			"AUTODNSSEC_ON/AUTODNSSEC_OFF", dc.Name)
 	}
 
 	if dnssecStatus != AutoDNSSECStatus && dc.AutoDNSSEC == "on" {
@@ -289,23 +292,25 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 		return nil, 0, err
 	}
 	for _, change := range changes {
-		changeMsgs := change.MsgsJoined
+		changeMessage := change.MsgsJoined
 		switch change.Type {
 		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: changeMsgs})
+			corrections = append(corrections, &models.Correction{Msg: changeMessage})
 		case diff2.CHANGE:
 			oldRec := change.Old[0]
 			newRec := change.New[0]
 			if isNullMX(newRec) || isNullMX(oldRec) {
-				// changing to or from a Null MX has to be delete then create
+				// changing to or from a Null MX has to be deleted then create
 				deletes = append(deletes, &models.Correction{
-					Msg: color.RedString("- DELETE %s %s %s ttl=%d", oldRec.GetLabelFQDN(), oldRec.Type, oldRec.ToComparableNoTTL(), oldRec.TTL),
+					Msg: color.RedString("- DELETE %s %s %s ttl=%d", oldRec.GetLabelFQDN(), oldRec.Type,
+						oldRec.ToComparableNoTTL(), oldRec.TTL),
 					F: func() error {
 						return api.deleteRecord(oldRec.Original.(goinwx.NameserverRecord).ID)
 					},
 				})
 				deferred = append(deferred, &models.Correction{
-					Msg: color.GreenString("+ CREATE %s %s %s ttl=%d", newRec.GetLabelFQDN(), newRec.Type, newRec.ToComparableNoTTL(), newRec.TTL),
+					Msg: color.GreenString("+ CREATE %s %s %s ttl=%d", newRec.GetLabelFQDN(), newRec.Type,
+						newRec.ToComparableNoTTL(), newRec.TTL),
 					F: func() error {
 						return api.createRecord(dc.Name, newRec)
 					},
@@ -313,7 +318,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 			} else {
 				recID := oldRec.Original.(goinwx.NameserverRecord).ID
 				corrections = append(corrections, &models.Correction{
-					Msg: changeMsgs,
+					Msg: changeMessage,
 					F: func() error {
 						return api.updateRecord(recID, newRec)
 					},
@@ -322,7 +327,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 			}
 		case diff2.CREATE:
 			creates = append(creates, &models.Correction{
-				Msg: changeMsgs,
+				Msg: changeMessage,
 				F: func() error {
 					return api.createRecord(dc.Name, change.New[0])
 				},
@@ -330,7 +335,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 		case diff2.DELETE:
 			recID := change.Old[0].Original.(goinwx.NameserverRecord).ID
 			deletes = append(deletes, &models.Correction{
-				Msg: changeMsgs,
+				Msg: changeMessage,
 				F:   func() error { return api.deleteRecord(recID) },
 			})
 		default:
@@ -343,7 +348,7 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 	return corrections, actualChangeCount, nil
 }
 
-// getDefaultNameservers returns string map with default nameservers based on e.g. sandbox mode.
+// getDefaultNameservers returns a string map with default nameservers based on e.g. sandbox mode.
 func (api *inwxAPI) getDefaultNameservers() []string {
 	if api.sandbox {
 		return InwxSandboxDefaultNs
