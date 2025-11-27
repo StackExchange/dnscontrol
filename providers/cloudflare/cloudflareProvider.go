@@ -364,8 +364,6 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
-		//fmt.Printf("DEBUG: %q rec=%+v origRec.Original type is %T\n", recType, *origRec, origRec.Original)
-		fmt.Printf("SHOULD NOT HAPPEN: %q origRec.Original type is %T\n", recType, origRec.Original)
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.RedString(" id=%v", idTxt)
@@ -567,7 +565,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
-				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
+				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CLOUDFLAREAPI_SINGLE_REDIRECT records")
 			}
 		} else if rec.Type == "CF_WORKER_ROUTE" {
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT

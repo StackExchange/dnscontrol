@@ -13,9 +13,9 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -25,6 +25,9 @@ var (
 	verbose      = flag.Bool("verbose", false, "Print corrections as you run them")
 	printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 )
+
+// Global variable to hold the current DomainConfig	for use in FromRaw calls.
+var globalDC *models.DomainConfig
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
@@ -200,6 +203,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
+	globalDC = dc
+
 	testGroups := makeTests()
 
 	firstGroup := *startIdx
@@ -334,13 +339,13 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 }
 
 func cfSingleRedirectEnabled() bool {
-	return ((*enableCFRedirectMode) != "")
+	return ((*enableCFRedirectMode) != true)
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	panicOnErr(cfsingleredirect.FromRaw(r, []any{name, code, when, then})) // Should not happen
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", []any{name, code, when, then}, globalDC)
+	panicOnErr(err)
+	return rec
 }
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
@@ -350,15 +355,15 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_REDIRECT")
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", []any{pattern, target}, globalDC)
+	panicOnErr(err)
+	return rec
 }
 
 func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_TEMP_REDIRECT")
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", []any{pattern, target}, globalDC)
+	panicOnErr(err)
+	return rec
 }
 
 func aghAPassthrough(pattern, target string) *models.RecordConfig {
