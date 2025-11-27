@@ -307,8 +307,6 @@ github.com/nicholas-fedor/shoutrrr v0.12.0 h1:8mwJdfU+uBEybSymwQJMGl/grG7lvVUKbV
 github.com/nicholas-fedor/shoutrrr v0.12.0/go.mod h1:WYiRalR4C43Qmd2zhPWGIFIxu633NB1hDM6Ap/DQcsA=
 github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481 h1:Up6+btDp321ZG5/zdSLo48H9Iaq0UQGthrhWC6pCxzE=
 github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481/go.mod h1:yKZQO8QE2bHlgozqWDiRVqTFlLQSj30K/6SAK8EeYFw=
-github.com/nrdcg/goinwx v0.11.0 h1:GER0SE3POub7rxARt3Y3jRy1OON1hwF1LRxHz5xsFBw=
-github.com/nrdcg/goinwx v0.11.0/go.mod h1:0BXSC0FxVtU4aTjX0Zw3x0DK32tjugLzeNIAGtwXvPQ=
 github.com/nrdcg/goinwx v0.12.0 h1:ujdUqDBnaRSFwzVnImvPHYw3w3m9XgmGImNUw1GyMb4=
 github.com/nrdcg/goinwx v0.12.0/go.mod h1:IrVKd3ZDbFiMjdPgML4CSxZAY9wOoqLvH44zv3NodJ0=
 github.com/onsi/ginkgo/v2 v2.27.2 h1:LzwLj0b89qtIy6SSASkzlNvX6WktqurSHwkk2ipF/Ns=
