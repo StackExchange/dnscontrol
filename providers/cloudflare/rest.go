@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
@@ -289,9 +290,6 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
 		thisPr := pr
-		r := &models.RecordConfig{
-			Original: thisPr,
-		}
 
 		// Extract the valuables from the rule, use it to make the sr:
 		srName := pr.Description
@@ -299,17 +297,25 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
+		// if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
+		// 	return nil, err
+		// }
+		// r.SetLabel("@", domain)
+		rec, err := rtypecontrol.NewRecordConfigFromRaw(
+			"CLOUDFLAREAPI_SINGLE_REDIRECT",
+			[]any{srName, code, srWhen, srThen},
+			models.MakeFakeDomainConfig(domain))
+		if err != nil {
 			return nil, err
 		}
-		r.SetLabel("@", domain)
+		rec.Original = thisPr
 
 		// Store the IDs
-		sr := r.F.(*cfsingleredirect.SingleRedirectConfig)
+		sr := rec.F.(*cfsingleredirect.SingleRedirectConfig)
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
 
-		recs = append(recs, r)
+		recs = append(recs, rec)
 	}
 
 	return recs, nil

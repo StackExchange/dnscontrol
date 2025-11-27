@@ -35,7 +35,8 @@ func (handle *SingleRedirectConfig) Name() string {
 	return "CLOUDFLAREAPI_SINGLE_REDIRECT"
 }
 
-func (handle *SingleRedirectConfig) FromArgs(rec *models.RecordConfig, args []any) error {
+func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
+	fmt.Printf("DEBUG: CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs called with args=%+v\n", args)
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
 		return err
@@ -52,7 +53,9 @@ func (handle *SingleRedirectConfig) FromArgs(rec *models.RecordConfig, args []an
 	}
 	when = args[2].(string)
 	then = args[3].(string)
+	//fmt.Printf("\n\nDEBUG: targetFromRaw(name=%q code=%03d when=%q then=%q)\n", name, code, when, then)
 	display := targetFromRaw(name, code, when, then)
+	//fmt.Printf("DEBUG: targetFromRaw(name=%q code=%03d when=%q then=%q) display=%q\n\n\n", name, code, when, then, display)
 
 	rec.F = &SingleRedirectConfig{
 		Code: code,
@@ -68,15 +71,24 @@ func (handle *SingleRedirectConfig) FromArgs(rec *models.RecordConfig, args []an
 		SRDisplay: display,
 	}
 
+	//rec.Name = name
+	rec.Name = "@"
+	rec.NameRaw = "@"
+	rec.NameUnicode = "@"
+	rec.NameFQDN = dc.Name
+	rec.NameFQDNRaw = dc.NameRaw
+	rec.NameFQDNUnicode = dc.NameUnicode
+	rec.TTL = 1
 	rec.Comparable = display
 	rec.ZonefilePartial = display
 
+	_ = rec.SetTarget(display)
 	return nil
 }
 
 // targetFromRaw create the display text used for a normal Redirect.
 func targetFromRaw(name string, code uint16, when, then string) string {
-	return fmt.Sprintf("%s code=(%03d) when=(%s) then=(%s)",
+	return fmt.Sprintf("name=(%s) code=(%03d) when=(%s) then=(%s)",
 		name,
 		code,
 		when,

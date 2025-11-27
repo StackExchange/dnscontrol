@@ -14,20 +14,11 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
-			// Create as much of the RecordConfig as we can now. Allow New() to fill in the reset.
-			rec := &models.RecordConfig{
-				Type:     rawRec.Type,
-				TTL:      rawRec.TTL,
-				Metadata: stringifyMetas(rawRec.Metas),
-				//FilePos:  models.FixPosition(rawRec.FilePos),
-			}
-
-			setRecordNames(rec, dc, rawRec.Args[0].(string))
-
-			// Fill in the .F/.Fields* fields.
-			err := Func[rawRec.Type].FromArgs(rec, rawRec.Args)
+			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.Args, dc)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s: %w", nil, err)
+				// TODO(tlim): Fix FilePos
+				//return fmt.Errorf("%s: %w", rawRec.FilePos, err)
 			}
 
 			// Free memeory:
@@ -40,6 +31,35 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	}
 
 	return nil
+}
+
+func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*models.RecordConfig, error) {
+	fmt.Printf("DEBUG: NewRecordConfigFromRaw t=%q args=%+v\n", t, args)
+	if _, ok := Func[t]; !ok {
+		return nil, fmt.Errorf("record type %q is not supported", t)
+	}
+
+	// Create as much of the RecordConfig as we can now. Allow New() to fill in the reset.
+	rec := &models.RecordConfig{
+		Type:     t,
+		Name:     args[0].(string), // May be fixed later.
+		Metadata: map[string]string{},
+		//FilePos:  models.FixPosition(filePos),
+	}
+
+	setRecordNames(rec, dc, args[0].(string))
+
+	if rec.Type == "" {
+		panic("rtypecontrol: NewRecordConfigFromRaw: empty record type")
+	}
+
+	// Fill in the .F/.Fields* fields.
+	err := Func[t].FromArgs(dc, rec, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return rec, nil
 }
 
 func stringifyMetas(metas []map[string]any) map[string]string {
@@ -60,13 +80,14 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 
 	if rec.SubDomain == "" {
 		// Not _EXTEND() mode:
-		if rec.Name == "@" {
-			rec.NameRaw = rec.Name
-			rec.Name = rec.Name
+		if n == "@" {
+			rec.Name = "@"
+			rec.NameRaw = "@"
+			rec.NameUnicode = "@"
 		} else {
 			rec.Name = domaintags.EfficientToASCII(n)
 			rec.NameRaw = n
-			rec.Name = domaintags.EfficientToUnicode(n)
+			rec.NameUnicode = domaintags.EfficientToUnicode(n)
 		}
 		rec.NameFQDN = dnsutil.AddOrigin(rec.Name, dc.Name)
 		rec.NameFQDNRaw = dnsutil.AddOrigin(rec.NameRaw, dc.NameRaw)
@@ -74,13 +95,17 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 	} else {
 		// _EXTEND() mode:
 		// FIXME(tlim): Not implemented.
-		if rec.Name == "@" {
-			rec.NameRaw = rec.Name
-			rec.Name = rec.Name
+		sdRaw := rec.SubDomain
+		sdIDN := domaintags.EfficientToASCII(rec.SubDomain)
+		sdUnicode := domaintags.EfficientToUnicode(rec.SubDomain)
+		if n == "@" {
+			rec.Name = sdIDN
+			rec.NameRaw = sdRaw
+			rec.NameUnicode = sdUnicode
 		} else {
-			rec.Name = domaintags.EfficientToASCII(n)
-			rec.NameRaw = n
-			rec.Name = domaintags.EfficientToUnicode(n)
+			rec.Name = domaintags.EfficientToASCII(n + "." + sdIDN)
+			rec.NameRaw = n + "." + sdRaw
+			rec.NameUnicode = domaintags.EfficientToUnicode(n + "." + sdUnicode)
 		}
 		rec.NameFQDN = dnsutil.AddOrigin(rec.Name, dc.Name)
 		rec.NameFQDNRaw = dnsutil.AddOrigin(rec.NameRaw, dc.NameRaw)

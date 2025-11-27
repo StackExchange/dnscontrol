@@ -137,13 +137,15 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 	}
 
-	// if c.manageRedirects { // if old
-	// 	prs, err := c.getPageRules(domainID, domain)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	records = append(records, prs...)
-	// }
+	if c.manageRedirects { // if old-style "page rules" are still being managed.
+		fmt.Printf("DEBUG: Getting old-style page rules for %s???\n", domain)
+		panic("stop")
+		// prs, err := c.getPageRules(domainID, domain)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// records = append(records, prs...)
+	}
 
 	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
@@ -356,14 +358,19 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.RecordConfig, domainID string, msg string) []*models.Correction {
 	var idTxt string
 	switch recType {
-	// case "PAGE_RULE":
-	// 	idTxt = origRec.Original.(cloudflare.PageRule).ID
+	case "PAGE_RULE":
+		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
+	case "":
+		fmt.Printf("DEBUG: %q origRec.Original type is %T\nrec=%+v\n\n", recType, origRec.Original, *origRec)
+		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
-		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
+		//fmt.Printf("DEBUG: %q rec=%+v origRec.Original type is %T\n", recType, *origRec, origRec.Original)
+		fmt.Printf("DEBUG: %q origRec.Original type is %T\n", recType, origRec.Original)
+		//idTxt = origRec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.RedString(" id=%v", idTxt)
 

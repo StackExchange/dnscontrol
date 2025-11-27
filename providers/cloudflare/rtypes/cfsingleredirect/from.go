@@ -1,10 +1,5 @@
 package cfsingleredirect
 
-import (
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-)
-
 // // MakePageRule updates a RecordConfig to be a PAGE_RULE using PAGE_RULE data.
 // func MakePageRule(rc *models.RecordConfig, priority int, code uint16, when, then string) error {
 // 	if rc == nil {
@@ -34,9 +29,9 @@ import (
 // 	return fmt.Sprintf("%03d,%03d,%s,%s", priority, code, when, then)
 // }
 
-func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) error {
-	return rtypecontrol.Func["SINGLEREDIRECT"].FromArgs(rc, []any{name, code, when, then})
-}
+// func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) error {
+// 	return rtypecontrol.Func["CLOUDFLAREAPI_SINGLE_REDIRECT"].FromArgs(rc, []any{name, code, when, then})
+// }
 
 // // MakeSingleRedirectFromAPI updatese a RecordConfig to be a SINGLEREDIRECT using data downloaded via the API.
 // func MakeSingleRedirectFromAPI(rc *models.RecordConfig, code uint16, name, when, then string) error {

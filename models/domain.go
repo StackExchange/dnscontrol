@@ -225,3 +225,12 @@ func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correctio
 	defer dc.pendingCorrectionsMutex.Unlock()
 	return dc.pendingPopulateCorrections[providerName]
 }
+
+func MakeFakeDomainConfig(domain string) *DomainConfig {
+	v := domaintags.MakeDomainNameVarieties(domain)
+	return &DomainConfig{
+		Name:        v.NameIDN,
+		NameRaw:     v.NameRaw,
+		NameUnicode: v.NameUnicode,
+	}
+}

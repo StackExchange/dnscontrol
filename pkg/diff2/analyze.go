@@ -245,7 +245,9 @@ func humanDiff(a, b targetConfig) string {
 	}
 
 	// Just the TTLs are different:
-	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
+	return fmt.Sprintf("ttl=(%d->%d) %s",
+		a.rec.TTL, b.rec.TTL,
+		a.comparableNoTTL)
 }
 
 var echRe = regexp.MustCompile(`ech="?([\w+/=]+)"?`)

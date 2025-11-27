@@ -527,6 +527,15 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	return nil
 }
 
+func (rc *RecordConfig) IsModernType() bool {
+	//fmt.Printf("DEBUG: IsModernType rtype=%s\n", rc.Type)
+	if rc.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
+		return true
+	}
+
+	return false
+}
+
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
@@ -593,6 +602,10 @@ func PostProcessRecords(recs []*RecordConfig) {
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
 func Downcase(recs []*RecordConfig) {
 	for _, r := range recs {
+		if r.IsModernType() {
+			continue
+		}
+
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
@@ -620,6 +633,11 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 	originFQDN := origin + "."
 
 	for _, r := range recs {
+
+		if r.IsModernType() {
+			continue
+		}
+
 		switch r.Type { // #rtype_variations
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.

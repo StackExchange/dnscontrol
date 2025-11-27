@@ -15,7 +15,7 @@ type RType interface {
 	Name() string
 
 	// RecordConfig factory. Updates a RecordConfig's fields based on args.
-	FromArgs(*models.RecordConfig, []any) error
+	FromArgs(*models.DomainConfig, *models.RecordConfig, []any) error
 
 	// Returns a string representation of the record in RFC1038 format.
 	// AsRFC1038String([]string) (string, error)
