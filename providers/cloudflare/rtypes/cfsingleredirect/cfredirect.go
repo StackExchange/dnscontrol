@@ -21,7 +21,7 @@ func (handle *CfRedirect) Name() string {
 }
 
 func (handle *CfRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	fmt.Printf("DEBUG: CF_REDIRECT FromArgs called with args=%+v\n", args)
+	//fmt.Printf("DEBUG: CF_REDIRECT FromArgs called with args=%+v\n", args)
 	return FromArgs_helper(dc, rec, args, 301)
 }
 
@@ -49,7 +49,7 @@ func get(name string) int {
 }
 
 func (handle *CfTempRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	fmt.Printf("DEBUG: CF_TEMP_REDIRECT FromArgs called with args=%+v\n", args)
+	//fmt.Printf("DEBUG: CF_TEMP_REDIRECT FromArgs called with args=%+v\n", args)
 	return FromArgs_helper(dc, rec, args, 302)
 }
 

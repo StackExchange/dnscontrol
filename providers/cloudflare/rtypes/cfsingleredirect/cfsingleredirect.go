@@ -36,7 +36,7 @@ func (handle *SingleRedirectConfig) Name() string {
 }
 
 func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	fmt.Printf("DEBUG: CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs called with args=%+v\n", args)
+	//fmt.Printf("DEBUG: CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs called with args=%+v\n", args)
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
 		return err

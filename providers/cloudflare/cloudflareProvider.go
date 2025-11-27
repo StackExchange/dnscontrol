@@ -81,12 +81,12 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	ipConversions   []transform.IPConversion
-	ignoredLabels   []string
-	manageRedirects bool // Old "Page Rule"-style redirects.
-	manageWorkers   bool
-	accountID       string
-	cfClient        *cloudflare.API
+	ipConversions []transform.IPConversion
+	ignoredLabels []string
+	//manageRedirects bool // Old "Page Rule"-style redirects.
+	manageWorkers bool
+	accountID     string
+	cfClient      *cloudflare.API
 	//
 	manageSingleRedirects bool // New "Single Redirects"-style redirects.
 	//
@@ -137,15 +137,14 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 	}
 
-	if c.manageRedirects { // if old-style "page rules" are still being managed.
-		fmt.Printf("DEBUG: Getting old-style page rules for %s???\n", domain)
-		panic("stop")
-		// prs, err := c.getPageRules(domainID, domain)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		// records = append(records, prs...)
-	}
+	// if c.manageRedirects { // if old-style "page rules" are still being managed.
+	// 	fmt.Printf("DEBUG: Getting old-style page rules for %s???\n", domain)
+	// 	// prs, err := c.getPageRules(domainID, domain)
+	// 	// if err != nil {
+	// 	// 	return nil, err
+	// 	// }
+	// 	// records = append(records, prs...)
+	// }
 
 	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
@@ -364,13 +363,13 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
-	case "":
-		fmt.Printf("DEBUG: %q origRec.Original type is %T\nrec=%+v\n\n", recType, origRec.Original, *origRec)
-		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
+	// case "":
+	// 	fmt.Printf("DEBUG: %q origRec.Original type is %T\nrec=%+v\n\n", recType, origRec.Original, *origRec)
+	// 	idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		//fmt.Printf("DEBUG: %q rec=%+v origRec.Original type is %T\n", recType, *origRec, origRec.Original)
-		fmt.Printf("DEBUG: %q origRec.Original type is %T\n", recType, origRec.Original)
-		//idTxt = origRec.Original.(cloudflare.DNSRecord).ID
+		fmt.Printf("SHOULD NOT HAPPEN: %q origRec.Original type is %T\n", recType, origRec.Original)
+		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.RedString(" id=%v", idTxt)
 
@@ -682,10 +681,10 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions   string   `json:"ip_conversions"`
-			IgnoredLabels   []string `json:"ignored_labels"`
-			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
-			ManageWorkers   bool     `json:"manage_workers"`
+			IPConversions string   `json:"ip_conversions"`
+			IgnoredLabels []string `json:"ignored_labels"`
+			//ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
+			ManageWorkers bool `json:"manage_workers"`
 			//
 			ManageSingleRedirects bool   `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
 			TranscodeLogFilename  string `json:"transcode_log"`           // Log the PAGE_RULE conversions.
@@ -695,7 +694,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			return nil, err
 		}
 		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
-		api.manageRedirects = parsedMeta.ManageRedirects
+		//api.manageRedirects = parsedMeta.ManageRedirects
 		api.tcLogFilename = parsedMeta.TranscodeLogFilename
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:

@@ -34,7 +34,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 }
 
 func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*models.RecordConfig, error) {
-	fmt.Printf("DEBUG: NewRecordConfigFromRaw t=%q args=%+v\n", t, args)
+	//fmt.Printf("DEBUG: NewRecordConfigFromRaw t=%q args=%+v\n", t, args)
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
