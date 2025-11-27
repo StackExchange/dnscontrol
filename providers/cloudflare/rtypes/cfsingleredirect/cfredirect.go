@@ -32,20 +32,20 @@ func (handle *CfTempRedirect) Name() string {
 	return "CF_TEMP_REDIRECT"
 }
 
-var services = map[string]int{}
-var serviceMutex = sync.RWMutex{}
+var redirCount = map[string]int{}
+var redirCountMutex = sync.RWMutex{}
 
-func inc(name string) {
-	serviceMutex.Lock()
-	defer serviceMutex.Unlock()
+func incRedirCount(name string) {
+	redirCountMutex.Lock()
+	defer redirCountMutex.Unlock()
 
-	services[name]++
+	redirCount[name]++
 }
 
-func get(name string) int {
-	serviceMutex.Lock()
-	defer serviceMutex.Unlock()
-	return services[name]
+func getRedirCount(name string) int {
+	redirCountMutex.Lock()
+	defer redirCountMutex.Unlock()
+	return redirCount[name]
 }
 
 func (handle *CfTempRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
@@ -68,10 +68,16 @@ func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []a
 		return err
 	}
 
-	inc(dc.UniqueName)
-	name := fmt.Sprintf("%03d,%03d,%s,%s", get(dc.UniqueName), code, prWhen, prThen)
+	incRedirCount(dc.UniqueName)
+	name := fmt.Sprintf("%03d,%03d,%s,%s", getRedirCount(dc.UniqueName), code, prWhen, prThen)
+	target := fmt.Sprintf("%s,%s", prWhen, prThen)
 
 	sr := SingleRedirectConfig{}
 	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
-	return sr.FromArgs(dc, rec, []any{name, code, srWhen, srThen})
+	err = sr.FromArgs(dc, rec, []any{name, code, srWhen, srThen})
+	if err != nil {
+		return err
+	}
+	rec.SetTarget(target) // Overwrite target to old-style for compatibility
+	return nil
 }

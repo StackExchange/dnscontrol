@@ -15,10 +15,9 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 		for _, rawRec := range dc.RawRecords {
 
 			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.Args, dc)
+			rec.FilePos = models.FixPosition(rawRec.FilePos)
 			if err != nil {
-				return fmt.Errorf("%s: %w", nil, err)
-				// TODO(tlim): Fix FilePos
-				//return fmt.Errorf("%s: %w", rawRec.FilePos, err)
+				return fmt.Errorf("%s: %w", rec.FilePos, err)
 			}
 
 			// Free memeory:
@@ -44,7 +43,6 @@ func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*mod
 		Type:     t,
 		Name:     args[0].(string), // May be fixed later.
 		Metadata: map[string]string{},
-		//FilePos:  models.FixPosition(filePos),
 	}
 
 	setRecordNames(rec, dc, args[0].(string))

@@ -24,9 +24,9 @@ type RecordConfig struct {
 
 	// Name is the shortname i.e. the FQDN without the parent directory's suffix.
 	// It should never be "".  Record at the apex (naked domain) are represented by "@".
-	Name        string `json:"name"`         // The short name, PunyCode. See above.
-	NameRaw     string `json:"name_raw"`     // .Name as the user entered it in dnsconfig.js (downcased).
-	NameUnicode string `json:"name_unicode"` // .Name as Unicode (downcased, then convertedot Unicode).
+	Name        string `json:"name"`                   // The short name, PunyCode. See above.
+	NameRaw     string `json:"name_raw,omitempty"`     // .Name as the user entered it in dnsconfig.js (downcased).
+	NameUnicode string `json:"name_unicode,omitempty"` // .Name as Unicode (downcased, then convertedot Unicode).
 
 	// This is the FQDN version of .Name. It should never have a trailing ".".
 	NameFQDN        string `json:"-"` // Must end with ".$origin".
@@ -35,7 +35,7 @@ type RecordConfig struct {
 
 	// F is the binary representation of the record's data usually a dns.XYZ struct.
 	// Always stored in Punycode, not Unicode. Downcased where applicable.
-	F any `json:"fields"`
+	F any `json:"fields,omitempty"`
 	//FieldsAsRaw     []string // Fields as received from the dnsconfig.js file, converted to strings.
 	//FieldsAsUnicode []string // fields with IDN fields converted to Unicode for display purposes.
 

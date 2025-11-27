@@ -621,7 +621,7 @@ func Test_diffTargets(t *testing.T) {
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
 					New:  models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
 					Msgs: []string{
-						"± MODIFY-TTL laba.f.com A 5.6.7.8 ttl=(300->700)",
+						"± MODIFY-TTL laba.f.com A ttl=(300->700) 5.6.7.8",
 						"+ CREATE laba.f.com A 1.2.3.4 ttl=700",
 					},
 				},
@@ -836,7 +836,7 @@ func Test_splitTTLOnly(t *testing.T) {
 			},
 			wantExistDiff:  nil,
 			wantDesireDiff: nil,
-			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    Hints=OnlyTTL\n{laba.f.com A}    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
+			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    Hints=OnlyTTL\n{laba.f.com A}    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"± MODIFY-TTL laba.f.com A ttl=(300->700) 1.2.3.4\"]\n",
 		},
 
 		{

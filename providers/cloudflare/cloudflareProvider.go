@@ -363,9 +363,6 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
-	// case "":
-	// 	fmt.Printf("DEBUG: %q origRec.Original type is %T\nrec=%+v\n\n", recType, origRec.Original, *origRec)
-	// 	idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		//fmt.Printf("DEBUG: %q rec=%+v origRec.Original type is %T\n", recType, *origRec, origRec.Original)
 		fmt.Printf("SHOULD NOT HAPPEN: %q origRec.Original type is %T\n", recType, origRec.Original)

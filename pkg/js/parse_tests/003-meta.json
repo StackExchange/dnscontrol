@@ -9,14 +9,11 @@
       "name": "foo.com",
       "records": [
         {
-          "fields": null,
           "filepos": "[line:4:5]",
           "meta": {
             "cloudflare_proxy": "ON"
           },
           "name": "@",
-          "name_raw": "",
-          "name_unicode": "",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"

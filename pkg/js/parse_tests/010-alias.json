@@ -9,11 +9,8 @@
       "name": "foo.com",
       "records": [
         {
-          "fields": null,
           "filepos": "[line:2:5]",
           "name": "@",
-          "name_raw": "",
-          "name_unicode": "",
           "target": "foo.com.",
           "ttl": 300,
           "type": "ALIAS"

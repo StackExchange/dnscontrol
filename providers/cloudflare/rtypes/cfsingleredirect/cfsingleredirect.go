@@ -15,11 +15,6 @@ func init() {
 type SingleRedirectConfig struct {
 	//
 	Code uint16 `json:"code,omitempty"` // 301 or 302
-	// PR == PageRule
-	PRWhen     string `json:"pr_when,omitempty"`
-	PRThen     string `json:"pr_then,omitempty"`
-	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
-	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
 	//
 	// SR == SingleRedirect
 	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
@@ -53,17 +48,10 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	}
 	when = args[2].(string)
 	then = args[3].(string)
-	//fmt.Printf("\n\nDEBUG: targetFromRaw(name=%q code=%03d when=%q then=%q)\n", name, code, when, then)
 	display := targetFromRaw(name, code, when, then)
-	//fmt.Printf("DEBUG: targetFromRaw(name=%q code=%03d when=%q then=%q) display=%q\n\n\n", name, code, when, then, display)
 
 	rec.F = &SingleRedirectConfig{
 		Code: code,
-		//
-		PRWhen:     "UNKNOWABLE",
-		PRThen:     "UNKNOWABLE",
-		PRPriority: 0,
-		PRDisplay:  "UNKNOWABLE",
 		//
 		SRName:    name,
 		SRWhen:    when,
@@ -82,7 +70,7 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	rec.Comparable = display
 	rec.ZonefilePartial = display
 
-	_ = rec.SetTarget(display)
+	_ = rec.SetTarget(name)
 	return nil
 }
 

@@ -16,31 +16,22 @@
       "name": "foo.com",
       "records": [
         {
-          "fields": null,
           "filepos": "[line:7:5]",
           "name": "@",
-          "name_raw": "",
-          "name_unicode": "",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
-          "fields": null,
           "filepos": "[line:8:5]",
           "name": "p1",
-          "name_raw": "",
-          "name_unicode": "",
           "target": "1.2.3.5",
           "ttl": 300,
           "type": "A"
         },
         {
-          "fields": null,
           "filepos": "[line:9:5]",
           "name": "p255",
-          "name_raw": "",
-          "name_unicode": "",
           "target": "1.2.4.3",
           "ttl": 300,
           "type": "A"
