@@ -11,7 +11,7 @@ providers/cloudns @pragmaton
 providers/cnr @KaiSchwarz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
-providers/digitalocean @Deraen
+providers/digitalocean @chicks-net
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
@@ -41,7 +41,7 @@ providers/namecheap @willpower232
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat
 providers/ns1 @costasd
-providers/opensrs @philhug
+# providers/opensrs NEEDS VOLUNTEER
 providers/oracle @kallsyms
 providers/ovh @masterzen
 providers/packetframe @hamptonmoore

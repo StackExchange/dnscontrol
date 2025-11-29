@@ -10,7 +10,7 @@ import (
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
 func (dsp *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	domainVariant := dsp.zoneName(dc.Name, dc.Metadata[models.DomainTag])
+	domainVariant := dsp.zoneName(dc.Name, dc.Tag)
 	zoneCryptokeys, getErr := dsp.client.Cryptokeys().ListCryptokeys(context.Background(), dsp.ServerName, domainVariant)
 	if getErr != nil {
 		if _, ok := getErr.(pdnshttp.ErrNotFound); ok {

@@ -24,6 +24,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
@@ -167,20 +168,23 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
 	}
-	_, okTag := meta[models.DomainTag]
-	_, okUnique := meta[models.DomainUniqueName]
-	if !okTag && !okUnique {
-		// This layering violation is needed for tests only.
-		// Otherwise, this is set already.
-		// Note: In this situation there is no "uniquename" or "tag".
-		zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat, domain, domain, ""))
-	} else {
-		zonefile = filepath.Join(c.directory,
-			makeFileName(c.filenameformat,
-				meta[models.DomainUniqueName], domain, meta[models.DomainTag]),
-		)
+	ff := domaintags.DomainFixedForms{
+		Tag:         meta[models.DomainTag],
+		NameRaw:     meta[models.DomainNameRaw],
+		NameIDN:     domain,
+		NameUnicode: meta[models.DomainNameUnicode],
+		UniqueName:  meta[models.DomainUniqueName],
 	}
+	zonefile = filepath.Join(c.directory,
+		makeFileName(
+			c.filenameformat,
+			ff,
+		),
+	)
+	//fmt.Printf("DEBUG: Reading zonefile %q\n", zonefile)
+	//fmt.Printf("DEBUG: Meta %+v\n", meta)
+	//fmt.Printf("DEBUG: Domain Names %+v\n", ff)
+
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
@@ -273,8 +277,16 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	}
 
 	zonefile = filepath.Join(c.directory,
-		makeFileName(c.filenameformat,
-			dc.Metadata[models.DomainUniqueName], dc.Name, dc.Metadata[models.DomainTag]),
+		makeFileName(
+			c.filenameformat,
+			domaintags.DomainFixedForms{
+				Tag:         dc.Tag,
+				NameRaw:     dc.NameRaw,
+				NameIDN:     dc.Name,
+				NameUnicode: dc.NameUnicode,
+				UniqueName:  dc.UniqueName,
+			},
+		),
 	)
 
 	// We only change the serial number if there is a change.

@@ -4,7 +4,6 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo1.com"
       },
       "name": "foo1.com",
@@ -29,7 +28,6 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "inny"
       },
       "name": "inny",
@@ -54,7 +52,6 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "com.inny"
       },
       "name": "com.inny",

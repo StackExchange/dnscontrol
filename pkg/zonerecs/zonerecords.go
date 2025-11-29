@@ -19,7 +19,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	models.CanonicalizeTargets(existingRecords, dc.Name)
 	models.CanonicalizeTargets(dc.Records, dc.Name)
 
-	// Copy dc so that any corrections code that wants to
+	// Copy dc so that any correction code that wants to
 	// modify the records may. For example, if the provider only
 	// supports certain TTL values, it will adjust the ones in
 	// dc.Records.
