@@ -11,7 +11,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.net"
       },
       "name": "foo.net",
@@ -70,7 +69,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.tld"
       },
       "name": "foo.tld",
@@ -104,7 +102,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "bar.foo.tld"
       },
       "name": "bar.foo.tld",
@@ -138,7 +135,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.help"
       },
       "name": "foo.help",
@@ -181,7 +177,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "bar.foo.help"
       },
       "name": "bar.foo.help",
@@ -224,7 +219,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.here"
       },
       "name": "foo.here",
@@ -283,7 +277,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -342,10 +335,9 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "d\u00fcsseldorf.example.net"
+        "dnscontrol_uniquename": "xn--dsseldorf-q9a.example.net"
       },
-      "name": "d\u00fcsseldorf.example.net",
+      "name": "xn--dsseldorf-q9a.example.net",
       "records": [
         {
           "filepos": "[line:94:5]",
@@ -417,10 +409,9 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "\u00fc.example.net"
+        "dnscontrol_uniquename": "xn--tda.example.net"
       },
-      "name": "\u00fc.example.net",
+      "name": "xn--tda.example.net",
       "records": [
         {
           "filepos": "[line:116:5]",
@@ -492,7 +483,6 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.tld"
       },
       "name": "example.tld",

@@ -20,6 +20,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
@@ -288,7 +289,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 					continue // Do not emit noise when zone exists
 				}
 				if !started {
-					out.StartDomain(zone.GetUniqueName())
+					out.StartDomain(zone)
 					started = true
 				}
 				skip := skipProvider(provider.Name, providersToProcess)
@@ -351,7 +352,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Now we know what to do, print or do the tasks.
 	out.PrintfIf(fullMode, "PHASE 3: CORRECTIONS\n")
 	for _, zone := range zonesToProcess {
-		out.StartDomain(zone.GetUniqueName())
+		out.StartDomain(zone)
 
 		// Process DNS provider changes:
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -400,29 +401,16 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
-// func countActions(corrections []*models.Correction) int {
-//	r := 0
-//	for _, c := range corrections {
-//		if c.F != nil {
-//			r++
-//		}
-//	}
-//	return r
-//}
-
 // whichZonesToProcess takes a list of DomainConfigs and a filter string and
-// returns a list of DomainConfigs whose metadata[DomainUniqueName] matched the
+// returns a list of DomainConfigs whose Domain.UniqueName matched the
 // filter. The filter string is a comma-separated list of domain names. If the
 // filter string is empty or "all", all domains are returned.
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
-	if filter == "" || filter == "all" {
-		return domains
-	}
+	fh := domaintags.CompilePermitList(filter)
 
-	permitList := strings.Split(filter, ",")
 	var picked []*models.DomainConfig
 	for _, domain := range domains {
-		if domainInList(domain.GetUniqueName(), permitList) {
+		if fh.Permitted(domain.GetUniqueName()) {
 			picked = append(picked, domain)
 		}
 	}
