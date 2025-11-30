@@ -78,6 +78,6 @@ func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []a
 	if err != nil {
 		return err
 	}
-	rec.SetTarget(target) // Overwrite target to old-style for compatibility
+	_ = rec.SetTarget(target) // Overwrite target to old-style for compatibility
 	return nil
 }

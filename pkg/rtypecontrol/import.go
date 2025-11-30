@@ -60,19 +60,19 @@ func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*mod
 	return rec, nil
 }
 
-func stringifyMetas(metas []map[string]any) map[string]string {
-	result := make(map[string]string)
-	for _, m := range metas {
-		for mk, mv := range m {
-			if v, ok := mv.(string); ok {
-				result[mk] = v // Already a string. No new malloc.
-			} else {
-				result[mk] = fmt.Sprintf("%v", mv)
-			}
-		}
-	}
-	return result
-}
+// func stringifyMetas(metas []map[string]any) map[string]string {
+// 	result := make(map[string]string)
+// 	for _, m := range metas {
+// 		for mk, mv := range m {
+// 			if v, ok := mv.(string); ok {
+// 				result[mk] = v // Already a string. No new malloc.
+// 			} else {
+// 				result[mk] = fmt.Sprintf("%v", mv)
+// 			}
+// 		}
+// 	}
+// 	return result
+// }
 
 func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string) {
 
