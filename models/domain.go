@@ -121,6 +121,10 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
+		if rec.IsModernType() {
+			continue // Modern types handle punycode themselves.
+		}
+
 		// Update the label:
 		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {

@@ -486,6 +486,12 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 	return r
 }
 
+func rp(name string, m, t string) *models.RecordConfig {
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", []any{name, m, t}, globalDC)
+	panicOnErr(err)
+	return rec
+}
+
 func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SMIMEA")
 	panicOnErr(r.SetTargetSMIMEA(usage, selector, matchingtype, target))

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
@@ -170,6 +171,12 @@ func makeTests() []*TestGroup {
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("RP",
+			tc("Create RP", rp("foo", "usr@example.com", "bar.com")),
+			tc("Create RP", rp("foo", "other@example.com", "bar.com")),
+			tc("Create RP", rp("foo", "other@example.com", "example.com")),
 		),
 
 		// TXT

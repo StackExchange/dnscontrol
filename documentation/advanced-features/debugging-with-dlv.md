@@ -11,5 +11,5 @@ dlv test github.com/StackExchange/dnscontrol/v4/pkg/diff2 -- -test.run Test_anal
 Debug the integration tests:
 
 ```shell
-dlv test github.com/StackExchange/dnscontrol/v4/integrationTest -- -test.v -test.run ^TestDNSProviders -verbose -profile NAMEDOTCOM -start 1 -end 1 -diff2
+dlv test github.com/StackExchange/dnscontrol/v4/integrationTest -- -test.v -test.run ^TestDNSProviders -verbose -profile NAMEDOTCOM -start 1 -end 1
 ```

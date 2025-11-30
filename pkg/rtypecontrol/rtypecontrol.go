@@ -35,7 +35,7 @@ func Register(t RType) {
 	providers.RegisterCustomRecordType(name, "", "")
 }
 
-func IsValid(name string) bool {
+func IsModernType(name string) bool {
 	_, ok := Func[name]
 	return ok
 }

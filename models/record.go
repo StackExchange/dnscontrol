@@ -352,6 +352,11 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
+	// IsModernType types store standard types as dns.RR directly in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		return rr
+	}
+
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
@@ -533,11 +538,14 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 
 func (rc *RecordConfig) IsModernType() bool {
 	//fmt.Printf("DEBUG: IsModernType rtype=%s\n", rc.Type)
-	if rc.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
-		return true
-	}
+	return rc.F != nil
 
-	return false
+	// switch rc.Type {
+	// case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP":
+	// 	return true
+	// }
+
+	// return false
 }
 
 // Records is a list of *RecordConfig.
