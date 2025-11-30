@@ -343,7 +343,7 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", []any{name, code, when, then}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", 1, []any{name, code, when, then}, globalDC)
 	panicOnErr(err)
 	return rec
 }
@@ -355,13 +355,13 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", []any{pattern, target}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", 1, []any{pattern, target}, globalDC)
 	panicOnErr(err)
 	return rec
 }
 
 func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", []any{pattern, target}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", 1, []any{pattern, target}, globalDC)
 	panicOnErr(err)
 	return rec
 }
@@ -487,7 +487,7 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 }
 
 func rp(name string, m, t string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", []any{name, m, t}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", 300, []any{name, m, t}, globalDC)
 	panicOnErr(err)
 	return rec
 }

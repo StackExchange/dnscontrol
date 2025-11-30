@@ -509,58 +509,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 		}
 
-		// // CF_REDIRECT record types:
-		// if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
-		// 	if !c.manageRedirects && !c.manageSingleRedirects {
-		// 		return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
-		// 	}
-		// 	code := uint16(301)
-		// 	if rec.Type == "CF_TEMP_REDIRECT" {
-		// 		code = 302
-		// 	}
-
-		// 	part := strings.SplitN(rec.GetTargetField(), ",", 2)
-		// 	prWhen, prThen := part[0], part[1]
-		// 	prPriority++
-
-		// 	// Convert this record to a PAGE_RULE.
-		// 	if err := cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen); err != nil {
-		// 		return err
-		// 	}
-		// 	rec.SetLabel("@", dc.Name)
-
-		// 	if c.manageRedirects && !c.manageSingleRedirects {
-		// 		// Old-Style only.  No additional work needed.
-		// 	} else if !c.manageRedirects && c.manageSingleRedirects {
-		// 		// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
-		// 		if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-		// 			return err
-		// 		}
-		// 		if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-		// 			return err
-		// 		}
-		// 	} else {
-		// 		// Both old-style and new-style enabled!
-		// 		// Retain the PAGE_RULE and append an additional SINGLEREDIRECT.
-
-		// 		// make a copy:
-		// 		newRec, err := rec.Copy()
-		// 		if err != nil {
-		// 			return err
-		// 		}
-		// 		// The copy becomes the CF SingleRedirect
-		// 		if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-		// 			return err
-		// 		}
-		// 		if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-		// 			return err
-		// 		}
-		// 		// Append the copy to the end of the list.
-		// 		dc.Records = append(dc.Records, newRec)
-
-		// 		// The original PAGE_RULE remains untouched.
-		// 	}
-		// } else
 		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
@@ -796,18 +744,6 @@ func uint16Zero(value interface{}) uint16 {
 	}
 	return 0
 }
-
-// // intZero converts value to uint16 or returns 0.
-// func intZero(value interface{}) uint16 {
-// 	switch v := value.(type) {
-// 	case float64:
-// 		return uint16(v)
-// 	case int:
-// 		return uint16(v)
-// 	case nil:
-// 	}
-// 	return 0
-// }
 
 // stringDefault returns the value as a string or returns the default value if nil.
 func stringDefault(value interface{}, def string) string {

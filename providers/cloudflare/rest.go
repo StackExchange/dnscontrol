@@ -299,6 +299,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 
 		rec, err := rtypecontrol.NewRecordConfigFromRaw(
 			"CLOUDFLAREAPI_SINGLE_REDIRECT",
+			1,
 			[]any{srName, code, srWhen, srThen},
 			models.MakeFakeDomainConfig(domain))
 		if err != nil {
@@ -434,17 +435,3 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 	_, err := c.cfClient.CreateWorkerRoute(context.Background(), cloudflare.ZoneIdentifier(domainID), wr)
 	return err
 }
-
-// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
-// https://github.com/dominikh/go-tools/issues/810
-//
-//lint:ignore U1000 false positive due to
-// type pageRuleConstraint struct {
-// 	Operator string `json:"operator"`
-// 	Value    string `json:"value"`
-// }
-
-// type pageRuleFwdInfo struct {
-// 	URL        string `json:"url"`
-// 	StatusCode uint16 `json:"status_code"`
-// }

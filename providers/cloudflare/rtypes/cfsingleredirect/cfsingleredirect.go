@@ -17,12 +17,12 @@ type SingleRedirectConfig struct {
 	Code uint16 `json:"code,omitempty"` // 301 or 302
 	//
 	// SR == SingleRedirect
-	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
+	SRName           string `json:"sr_name,omitempty"`          // How is this displayed to the user
+	SRWhen           string `json:"sr_when,omitempty"`          // Condition for redirect
+	SRThen           string `json:"sr_then,omitempty"`          // Formula for redirect
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`     // ID of the ruleset containing this rule (populated by API)
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"` // ID of this rule within the ruleset (populated by API)
+	SRDisplay        string `json:"sr_display,omitempty"`       // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // Name returns the text (all caps) name of the rtype.
@@ -75,6 +75,10 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	handle.CopyToLegacyFields(rec)
 	return nil
 }
+
+// func (handle *SingleRedirectConfig) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, fields any) error {
+// 	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
+// }
 
 // targetFromRaw create the display text used for a normal Redirect.
 func targetFromRaw(name string, code uint16, when, then string) string {

@@ -174,9 +174,9 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("RP",
-			tc("Create RP", rp("foo", "usr@example.com", "bar.com")),
-			tc("Create RP", rp("foo", "other@example.com", "bar.com")),
-			tc("Create RP", rp("foo", "other@example.com", "example.com")),
+			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
 		),
 
 		// TXT

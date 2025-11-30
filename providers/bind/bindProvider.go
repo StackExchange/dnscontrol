@@ -27,6 +27,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -204,10 +205,31 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRCTxtBug(rr, zoneName)
-		if err != nil {
-			return nil, err
+		var rec models.RecordConfig
+		var prec *models.RecordConfig
+		var err error
+
+		// Modern types:
+		rtype := rr.Header().Rrtype
+		switch rtype {
+		case dns.TypeRP:
+			name := rr.Header().Name
+			name = strings.TrimSuffix(name, ".")
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, models.MakeFakeDomainConfig(zoneName))
+			if err != nil {
+				return nil, err
+			}
+			rec = *prec
+			rec.TTL = rr.Header().Ttl
+			fmt.Printf("DEBUG: RP record parsed as %+v\n", rec)
+		default:
+			// Legacy types:
+			rec, err = models.RRtoRCTxtBug(rr, zoneName)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 		foundRecords = append(foundRecords, &rec)
 	}
 
