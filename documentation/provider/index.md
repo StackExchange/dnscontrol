@@ -116,7 +116,7 @@ Jump to a table:
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
 | [`INTERNETBS`](internetbs.md) | ❔ | ❔ | ❌ | ❔ |
-| [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
+| [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❌ | ❌ | ✅ | ✅ |
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
