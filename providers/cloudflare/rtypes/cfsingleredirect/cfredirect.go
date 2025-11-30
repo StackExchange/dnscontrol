@@ -21,8 +21,11 @@ func (handle *CfRedirect) Name() string {
 }
 
 func (handle *CfRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	//fmt.Printf("DEBUG: CF_REDIRECT FromArgs called with args=%+v\n", args)
 	return FromArgs_helper(dc, rec, args, 301)
+}
+
+func (handle *CfRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
 type CfTempRedirect struct{}
@@ -32,25 +35,12 @@ func (handle *CfTempRedirect) Name() string {
 	return "CF_TEMP_REDIRECT"
 }
 
-var redirCount = map[string]int{}
-var redirCountMutex = sync.RWMutex{}
-
-func incRedirCount(name string) {
-	redirCountMutex.Lock()
-	defer redirCountMutex.Unlock()
-
-	redirCount[name]++
-}
-
-func getRedirCount(name string) int {
-	redirCountMutex.Lock()
-	defer redirCountMutex.Unlock()
-	return redirCount[name]
-}
-
 func (handle *CfTempRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	//fmt.Printf("DEBUG: CF_TEMP_REDIRECT FromArgs called with args=%+v\n", args)
 	return FromArgs_helper(dc, rec, args, 302)
+}
+
+func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
 func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []any, code int) error {
@@ -68,9 +58,9 @@ func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []a
 		return err
 	}
 
+	// Create the old-school name with a count prefix.
 	incRedirCount(dc.UniqueName)
 	name := fmt.Sprintf("%03d,%03d,%s,%s", getRedirCount(dc.UniqueName), code, prWhen, prThen)
-	target := fmt.Sprintf("%s,%s", prWhen, prThen)
 
 	sr := SingleRedirectConfig{}
 	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
@@ -78,6 +68,24 @@ func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []a
 	if err != nil {
 		return err
 	}
-	_ = rec.SetTarget(target) // Overwrite target to old-style for compatibility
+
 	return nil
+}
+
+// The legacy system prepended a count to the name to coordinate ordering.
+
+var redirCount = map[string]int{}
+var redirCountMutex = sync.RWMutex{}
+
+func incRedirCount(name string) {
+	redirCountMutex.Lock()
+	defer redirCountMutex.Unlock()
+
+	redirCount[name]++
+}
+
+func getRedirCount(name string) int {
+	redirCountMutex.Lock()
+	defer redirCountMutex.Unlock()
+	return redirCount[name]
 }

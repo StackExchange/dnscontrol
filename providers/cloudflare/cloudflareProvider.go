@@ -429,11 +429,10 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 }
 
 const (
-	metaProxy         = "cloudflare_proxy"
-	metaProxyDefault  = metaProxy + "_default"
-	metaOriginalIP    = "original_ip" // TODO(tlim): Unclear what this means.
-	metaUniversalSSL  = "cloudflare_universalssl"
-	metaIPConversions = "ip_conversions" // TODO(tlim): Rename to obscure_rules.
+	metaProxy        = "cloudflare_proxy"
+	metaProxyDefault = metaProxy + "_default"
+	metaOriginalIP   = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL = "cloudflare_universalssl"
 )
 
 func checkProxyVal(v string) (string, error) {
@@ -798,17 +797,17 @@ func uint16Zero(value interface{}) uint16 {
 	return 0
 }
 
-// intZero converts value to uint16 or returns 0.
-func intZero(value interface{}) uint16 {
-	switch v := value.(type) {
-	case float64:
-		return uint16(v)
-	case int:
-		return uint16(v)
-	case nil:
-	}
-	return 0
-}
+// // intZero converts value to uint16 or returns 0.
+// func intZero(value interface{}) uint16 {
+// 	switch v := value.(type) {
+// 	case float64:
+// 		return uint16(v)
+// 	case int:
+// 		return uint16(v)
+// 	case nil:
+// 	}
+// 	return 0
+// }
 
 // stringDefault returns the value as a string or returns the default value if nil.
 func stringDefault(value interface{}, def string) string {

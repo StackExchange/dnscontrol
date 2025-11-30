@@ -9,6 +9,7 @@
       "name": "foo.com",
       "records": [
         {
+          "comparable": "name=(001,301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
           "fields": {
             "code": 301,
             "sr_display": "name=(001,301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
@@ -20,11 +21,13 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "test1.foo.com,https://goo.com/$1",
+          "target": "name=(001,301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(001,301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))"
         },
         {
+          "comparable": "name=(002,302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
           "fields": {
             "code": 302,
             "sr_display": "name=(002,302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
@@ -36,9 +39,10 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "test2.foo.com,https://goo.com/$1",
+          "target": "name=(002,302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(002,302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))"
         }
       ],
       "registrar": "none"

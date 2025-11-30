@@ -31,8 +31,6 @@ func (handle *SingleRedirectConfig) Name() string {
 }
 
 func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	//fmt.Printf("DEBUG: CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs called with args=%+v\n", args)
-
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
 		return err
@@ -89,9 +87,5 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 }
 
 func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig) {
-	//rec.SetTarget(handle.SRDisplay)
-	_ = rec.SetTarget(handle.SRName)
+	_ = rec.SetTarget(rec.F.(*SingleRedirectConfig).SRDisplay)
 }
-
-//func (handle *SingleRedirectConfig) IDNFields(argsRaw) (argsIDN, argsUnicode, error) {}
-//func (handle *SingleRedirectConfig) CopyFromLegacyFields(*models.RecordConfig)       {}

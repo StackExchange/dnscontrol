@@ -9,6 +9,7 @@
       "name": "foo.com",
       "records": [
         {
+          "comparable": "name=(name1) code=(301) when=(when1) then=(then1)",
           "fields": {
             "code": 301,
             "sr_display": "name=(name1) code=(301) when=(when1) then=(then1)",
@@ -20,11 +21,13 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "name1",
+          "target": "name=(name1) code=(301) when=(when1) then=(then1)",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(name1) code=(301) when=(when1) then=(then1)"
         },
         {
+          "comparable": "name=(name2) code=(302) when=(when2) then=(then2)",
           "fields": {
             "code": 302,
             "sr_display": "name=(name2) code=(302) when=(when2) then=(then2)",
@@ -36,11 +39,13 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "name2",
+          "target": "name=(name2) code=(302) when=(when2) then=(then2)",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(name2) code=(302) when=(when2) then=(then2)"
         },
         {
+          "comparable": "name=(name3) code=(301) when=(when3) then=(then3)",
           "fields": {
             "code": 301,
             "sr_display": "name=(name3) code=(301) when=(when3) then=(then3)",
@@ -52,11 +57,13 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "name3",
+          "target": "name=(name3) code=(301) when=(when3) then=(then3)",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(name3) code=(301) when=(when3) then=(then3)"
         },
         {
+          "comparable": "name=(namemeta) code=(302) when=(whenmeta) then=(thenmeta)",
           "fields": {
             "code": 302,
             "sr_display": "name=(namemeta) code=(302) when=(whenmeta) then=(thenmeta)",
@@ -68,11 +75,13 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "namemeta",
+          "target": "name=(namemeta) code=(302) when=(whenmeta) then=(thenmeta)",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(namemeta) code=(302) when=(whenmeta) then=(thenmeta)"
         },
         {
+          "comparable": "name=(namettl) code=(302) when=(whenttl) then=(thenttl)",
           "fields": {
             "code": 302,
             "sr_display": "name=(namettl) code=(302) when=(whenttl) then=(thenttl)",
@@ -84,9 +93,10 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
-          "target": "namettl",
+          "target": "name=(namettl) code=(302) when=(whenttl) then=(thenttl)",
           "ttl": 1,
-          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT"
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(namettl) code=(302) when=(whenttl) then=(thenttl)"
         },
         {
           "filepos": "[line:2:5]",
