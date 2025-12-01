@@ -394,7 +394,7 @@ Providers in this category and their maintainers are:
 |[`CNR`](cnr.md)|@KaiSchwarz-cnic|
 |[`CSCGLOBAL`](cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](desec.md)|@D3luxee|
-|[`DIGITALOCEAN`](digitalocean.md)|@Deraen|
+|[`DIGITALOCEAN`](digitalocean.md)|@chicks-net|
 |[`DNSIMPLE`](dnsimple.md)|@onlyhavecans|
 |[`DNSMADEEASY`](dnsmadeeasy.md)|@vojtad|
 |[`DNSOVERHTTPS`](dnsoverhttps.md)|@mikenz|
