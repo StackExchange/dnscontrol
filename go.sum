@@ -234,13 +234,10 @@ github.com/hashicorp/go-hclog v1.6.3 h1:Qr2kF+eVWjTiYmU7Y31tYlP1h0q/X3Nl3tPGdaB1
 github.com/hashicorp/go-hclog v1.6.3/go.mod h1:W4Qnvbt70Wk/zYJryRzDRU/4r0kIg0PVHBcfoyhpF5M=
 github.com/hashicorp/go-retryablehttp v0.7.7 h1:C8hUCYzor8PIfXHa4UrZkU4VvK8o9ISHxT2Q8+VepXU=
 github.com/hashicorp/go-retryablehttp v0.7.7/go.mod h1:pkQpWZeYWskR+D1tR2O5OcBFOxfA7DoAO6xtkuQnHTk=
-<<<<<<< HEAD
-github.com/hetznercloud/hcloud-go/v2 v2.30.0 h1:fgAUtCCw4PbJNSs9XPLHVu0//dTNMbPq8P/48ovmdG8=
-github.com/hetznercloud/hcloud-go/v2 v2.30.0/go.mod h1:zv7x2kM7xyJ5mW/+y4HbfxQYhk8TE57ypTa1hofsYdw=
-=======
 github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9TFvymaRGZED3FCV0=
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
->>>>>>> 7c66b7c2 (VERCEL: init)
+github.com/hetznercloud/hcloud-go/v2 v2.30.0 h1:fgAUtCCw4PbJNSs9XPLHVu0//dTNMbPq8P/48ovmdG8=
+github.com/hetznercloud/hcloud-go/v2 v2.30.0/go.mod h1:zv7x2kM7xyJ5mW/+y4HbfxQYhk8TE57ypTa1hofsYdw=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.174 h1:FBlx7E5rl8doUTbizt+DXR0zU05Mu2oEYvc/2GMB7pc=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.174/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
 github.com/influxdata/tdigest v0.0.1 h1:XpFptwYmnEKUqmkcDjrzffswZ3nvNeevbUSLPP/ZzIY=
