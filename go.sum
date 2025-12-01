@@ -238,8 +238,8 @@ github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9T
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
 github.com/hetznercloud/hcloud-go/v2 v2.30.0 h1:fgAUtCCw4PbJNSs9XPLHVu0//dTNMbPq8P/48ovmdG8=
 github.com/hetznercloud/hcloud-go/v2 v2.30.0/go.mod h1:zv7x2kM7xyJ5mW/+y4HbfxQYhk8TE57ypTa1hofsYdw=
-github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.174 h1:FBlx7E5rl8doUTbizt+DXR0zU05Mu2oEYvc/2GMB7pc=
-github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.174/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
+github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.178 h1:eNVkjzdPMgM2qih9aECiFUI8S9zgpOwXxeBPAwQqtvU=
+github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.178/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
 github.com/influxdata/tdigest v0.0.1 h1:XpFptwYmnEKUqmkcDjrzffswZ3nvNeevbUSLPP/ZzIY=
 github.com/influxdata/tdigest v0.0.1/go.mod h1:Z0kXnxzbTC2qrx4NaIzYkE1k66+6oEDQTvL95hQFh5Y=
 github.com/jarcoal/httpmock v1.4.1 h1:0Ju+VCFuARfFlhVXFc2HxlcQkfB+Xq12/EotHko+x2A=
