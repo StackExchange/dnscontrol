@@ -22,7 +22,7 @@ type DNSServiceProvider interface {
 // ZoneCreator should be implemented by providers that have the ability to create zones
 // (used for automatically creating zones if they don't exist)
 type ZoneCreator interface {
-	EnsureZoneExists(domain string) error
+	EnsureZoneExists(domain string, metadata map[string]string) error
 }
 
 // ZoneLister should be implemented by providers that have the
@@ -70,6 +70,7 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
 	DNSProviderTypes[name] = fns
+
 	unwrapProviderCapabilities(name, pm)
 }
 

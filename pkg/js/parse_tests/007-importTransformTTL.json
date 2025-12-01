@@ -4,18 +4,19 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo1.com"
       },
       "name": "foo1.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "bar",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:3:5]",
           "name": "foo",
           "target": "5.5.5.5",
           "ttl": 300,
@@ -27,18 +28,19 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "inny"
       },
       "name": "inny",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "bar.foo1.com",
           "target": "4.4.4.101",
           "ttl": 60,
           "type": "A"
         },
         {
+          "filepos": "[line:3:5]",
           "name": "foo.foo1.com",
           "target": "6.6.6.3",
           "ttl": 60,
@@ -50,18 +52,19 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "com.inny"
       },
       "name": "com.inny",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "bar.foo1",
           "target": "1.1.1.1",
           "ttl": 99,
           "type": "A"
         },
         {
+          "filepos": "[line:3:5]",
           "name": "foo.foo1",
           "target": "7.7.7.7",
           "ttl": 99,

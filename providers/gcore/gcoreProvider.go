@@ -113,7 +113,7 @@ func (c *gcoreProvider) GetZoneRecords(domain string, meta map[string]string) (m
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *gcoreProvider) EnsureZoneExists(domain string) error {
+func (c *gcoreProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {
 		return err
@@ -125,7 +125,9 @@ func (c *gcoreProvider) EnsureZoneExists(domain string) error {
 		}
 	}
 
-	_, err = c.provider.CreateZone(c.ctx, domain)
+	_, err = c.provider.CreateZone(c.ctx, dnssdk.AddZone{
+		Name: domain,
+	})
 	return err
 }
 

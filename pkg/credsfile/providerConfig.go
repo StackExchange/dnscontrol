@@ -39,6 +39,10 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		// Empty file? Add an empty json object.
+		if len(strings.TrimSpace(string(dat))) == 0 {
+			dat = []byte(`{}`)
+		}
 	}
 
 	s := string(dat)
@@ -76,7 +80,7 @@ func isExecutable(filename string) bool {
 func readCredsFile(filename string) ([]byte, error) {
 	dat, err := utfutil.ReadFile(filename, utfutil.POSIX)
 	if err != nil {
-		// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
+		// no creds file is ok. `bind` requires nothing for example. Individual providers will error if things not found.
 		if os.IsNotExist(err) {
 			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", filename)
 			return []byte{}, nil

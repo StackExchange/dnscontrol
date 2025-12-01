@@ -20,7 +20,7 @@ jobs:
       uses: docker/setup-qemu-action@v3
 
     - name: Checkout repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 # Why "fetch-depth: 0"?  To generate the release notes, we need the
@@ -41,9 +41,9 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
-        go-version: ^1.23
+        go-version: ^1.25
 
 # Stringer is needed because .goreleaser includes "go generate ./..."
     - name: Install stringer

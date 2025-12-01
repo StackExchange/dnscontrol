@@ -19,18 +19,19 @@
         "otherconfig": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
       "records": [
         {
+          "filepos": "[line:7:5]",
           "name": "main",
           "target": "3.3.3.3",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:19:5]",
           "name": "www",
           "target": "33.33.33.33",
           "ttl": 300,
@@ -50,19 +51,22 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[line:11:5]",
           "name": "main",
           "target": "1.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:23:5]",
           "name": "main",
           "target": "11.11.11.11",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
@@ -75,31 +79,34 @@
       "name": "example.com",
       "records": [
         {
+          "filepos": "[line:15:5]",
           "name": "main",
           "target": "8.8.8.8",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.net"
       },
       "name": "example.net",
       "records": [
         {
+          "filepos": "[line:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
@@ -119,25 +126,29 @@
       "name": "example.net",
       "records": [
         {
+          "filepos": "[line:36:5]",
           "name": "main",
           "target": "192.0.2.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
@@ -150,43 +161,48 @@
       "name": "example.net",
       "records": [
         {
+          "filepos": "[line:41:5]",
           "name": "main",
           "target": "203.0.113.1",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:31:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:27:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "empty.example.net"
       },
       "name": "empty.example.net",
       "records": [
         {
+          "filepos": "[line:49:5]",
           "name": "main",
           "target": "203.0.113.22",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:45:5]",
           "name": "www",
           "target": "203.0.113.2",
           "ttl": 300,
@@ -200,18 +216,19 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example-b.net"
+        "dnscontrol_uniquename": "example-b.net!"
       },
       "name": "example-b.net",
       "records": [
         {
+          "filepos": "[line:57:5]",
           "name": "main",
           "target": "203.0.113.12",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:53:5]",
           "name": "www",
           "target": "203.0.113.1",
           "ttl": 300,

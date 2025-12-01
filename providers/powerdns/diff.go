@@ -58,12 +58,14 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		}
 	}
 
+	domainVariant := dsp.zoneName(dc.Name, dc.Tag)
+
 	// only append a Correction if there are any, otherwise causes an error when sending an empty rrset
 	if len(rrDeleteSets) > 0 {
 		corrections = append(corrections, &models.Correction{
 			Msg: strings.Join(deleteMsgs, "\n"),
 			F: func() error {
-				return dsp.client.Zones().RemoveRecordSetsFromZone(context.Background(), dsp.ServerName, canonical(dc.Name), rrDeleteSets)
+				return dsp.client.Zones().RemoveRecordSetsFromZone(context.Background(), dsp.ServerName, domainVariant, rrDeleteSets)
 			},
 		})
 	}
@@ -71,7 +73,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, &models.Correction{
 			Msg: strings.Join(changeMsgs, "\n"),
 			F: func() error {
-				return dsp.client.Zones().AddRecordSetsToZone(context.Background(), dsp.ServerName, canonical(dc.Name), rrChangeSets)
+				return dsp.client.Zones().AddRecordSetsToZone(context.Background(), dsp.ServerName, domainVariant, rrChangeSets)
 			},
 		})
 	}

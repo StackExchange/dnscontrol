@@ -73,7 +73,7 @@ D("example.com", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
 ## Activation
 1. Go to your app-engine console and select the appropriate project.
 2. Go to "API Manager > Credentials", and create a new "Service Account Key"
-   ![Create new Service Accoun](../assets/gcloud/create-credentials-service-account-key.png)
+   ![Create new Service Account](../assets/gcloud/create-credentials-service-account-key.png)
 3. Choose an existing user, or create a new one. The user requires the "DNS Administrator" role.
 4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
 
@@ -113,7 +113,7 @@ D("example.tld", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
 ```
 {% endcode %}
 
-> `visiblity` and `networks` only applies on `create-domains` at the moment. Neither setting is enforced by the provider after a zone is created.  Additional work is required to support modifications to `networks` visibility during `push`, however the API will not permit `visibility` to be modified on an existing zone.
+> `visibility` and `networks` only applies on `create-domains` at the moment. Neither setting is enforced by the provider after a zone is created.  Additional work is required to support modifications to `networks` visibility during `push`, however the API will not permit `visibility` to be modified on an existing zone.
 
 > `networks` may be specified using the network name if the VPC network exists in `project_id`
 

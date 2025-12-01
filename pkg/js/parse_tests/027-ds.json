@@ -4,7 +4,6 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
@@ -14,6 +13,7 @@
           "dsdigest": "FFFF",
           "dsdigesttype": 1,
           "dskeytag": 1,
+          "filepos": "[line:3:5]",
           "name": "@",
           "target": "",
           "ttl": 300,
@@ -24,6 +24,7 @@
           "dsdigest": "AABBCCDDEEFF",
           "dsdigesttype": 2,
           "dskeytag": 1000,
+          "filepos": "[line:2:5]",
           "name": "@",
           "target": "",
           "ttl": 300,

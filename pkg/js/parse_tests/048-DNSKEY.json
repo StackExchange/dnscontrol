@@ -4,7 +4,6 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
@@ -14,6 +13,7 @@
           "dnskeyflags": 257,
           "dnskeyprotocol": 3,
           "dnskeypublickey": "AABBCCDD",
+          "filepos": "[line:2:5]",
           "name": "@",
           "target": "",
           "ttl": 300,

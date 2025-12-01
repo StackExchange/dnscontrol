@@ -11,11 +11,11 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 import (
 	"errors"
 	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"strings"
 )
 
 // initialize initializes the "Akamai OPEN EdgeGrid" library
@@ -293,6 +293,14 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 				TTL:  uint32(akattl),
 			}
 			rc.SetLabelFromFQDN(akaname, zonename)
+			if akatype == "AKAMAITLC" {
+				part := strings.Fields(r)
+				if len(part) != 2 {
+					return nil, fmt.Errorf("AKAMAITLC value does not contain 2 fields: (%#v)", r)
+				}
+				rc.AnswerType = part[0]
+				r = part[1]
+			}
 			err = rc.PopulateFromString(akatype, r, zonename)
 			if err != nil {
 				return nil, err

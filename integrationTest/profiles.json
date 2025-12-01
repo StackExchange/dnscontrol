@@ -1,4 +1,11 @@
 {
+  "ADGUARDHOME": {
+    "TYPE": "ADGUARDHOME",
+    "domain": "$ADGUARDHOME_DOMAIN",
+    "host": "$ADGUARDHOME_HOST",
+    "password": "$ADGUARDHOME_PASSWORD",
+    "username": "$ADGUARDHOME_USERNAME"
+  },
   "AKAMAIEDGEDNS": {
     "TYPE": "AKAMAIEDGEDNS",
     "access_token": "$AED_ACCESS_TOKEN",
@@ -128,6 +135,15 @@
     "domain": "$EXOSCALE_DOMAIN",
     "secretkey": "$EXOSCALE_SECRET_KEY"
   },
+  "FORTIGATE": {
+    "TYPE": "FORTIGATE",
+    "apiKey": "$FORTIGATE_API_KEY",
+    "debug_http": "$FORTIGATE_DEBUG_HTTP",
+    "domain": "$FORTIGATE_DOMAIN",
+    "host": "$FORTIGATE_HOST",
+    "insecure_tls": "$FORTIGATE_NO_SSL_VERIFY",
+    "vdom": "$FORTIGATE_VDOM"
+  },
   "GANDI_V5": {
     "TYPE": "GANDI_V5",
     "apikey": "$GANDI_V5_APIKEY",
@@ -159,6 +175,11 @@
     "TYPE": "HETZNER",
     "api_key": "$HETZNER_API_KEY",
     "domain": "$HETZNER_DOMAIN"
+  },
+  "HETZNER_V2": {
+    "TYPE": "HETZNER_V2",
+    "api_token": "$HETZNER_V2_API_TOKEN",
+    "domain": "$HETZNER_V2_DOMAIN"
   },
   "HEXONET": {
     "TYPE": "HEXONET",
@@ -193,6 +214,12 @@
     "sandbox": "1",
     "username": "$INWX_USER"
   },
+  "JOKER": {
+    "TYPE": "JOKER",
+    "domain": "$JOKER_DOMAIN",
+    "password": "$JOKER_PASSWORD",
+    "username": "$JOKER_USERNAME"
+  },
   "LINODE": {
     "TYPE": "LINODE",
     "domain": "$LINODE_DOMAIN",
@@ -209,12 +236,6 @@
     "apikey": "$LUADNS_APIKEY",
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
-  },
-  "MSDNS": {
-    "TYPE": "MSDNS",
-    "dnsserver": "$MSDNS_DNSSERVER",
-    "domain": "$MSDNS_DOMAIN",
-    "pssession": "$MSDNS_PSSESSION"
   },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
@@ -281,6 +302,8 @@
     "TYPE": "PORKBUN",
     "api_key": "$PORKBUN_API_KEY",
     "domain": "$PORKBUN_DOMAIN",
+    "max_attempts": "$PORKBUN_MAX_ATTEMPTS",
+    "max_duration": "$PORKBUN_MAX_DURATION",
     "secret_key": "$PORKBUN_SECRET_KEY"
   },
   "POWERDNS": {
@@ -321,6 +344,12 @@
     "PrivateKey": "$TRANSIP_PRIVATE_KEY",
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "VERCEL": {
+    "TYPE": "VERCEL",
+    "api_token": "$VERCEL_API_TOKEN",
+    "domain": "$VERCEL_DOMAIN",
+    "team_id": "$VERCEL_TEAM_ID"
   },
   "VULTR": {
     "TYPE": "VULTR",

@@ -17,13 +17,15 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:5:5]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "external"
     },
     {
       "dnsProviders": {
@@ -36,19 +38,22 @@
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:5:5]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,
           "type": "A"
         },
         {
+          "filepos": "[line:10:5]",
           "name": "local",
           "target": "127.0.0.1",
           "ttl": 300,
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "internal"
     }
   ],
   "registrars": [

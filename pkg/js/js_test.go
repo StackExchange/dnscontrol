@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	testDir  = "pkg/js/parse_tests"
-	errorDir = "pkg/js/error_tests"
+	testDir = "pkg/js/parse_tests"
 )
 
 func init() {
@@ -48,9 +47,6 @@ func TestParsedFiles(t *testing.T) {
 			conf, err := ExecuteJavaScript(string(filepath.Join(testDir, name)), true, nil)
 			if err != nil {
 				t.Fatal(err)
-			}
-			for _, dc := range conf.Domains {
-				dc.UpdateSplitHorizonNames()
 			}
 
 			errs := normalize.ValidateAndNormalizeConfig(conf)
@@ -115,13 +111,12 @@ func TestParsedFiles(t *testing.T) {
 			var dCount int
 			for _, dc := range conf.Domains {
 				var zoneFile string
-				dc.UpdateSplitHorizonNames()
-				if dc.Metadata[models.DomainTag] != "" {
+				if dc.Tag != "" {
 					zoneFile = filepath.Join(testDir, testName, dc.GetUniqueName()+".zone")
 				} else {
 					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")
 				}
-				//fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
+				// fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
 				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue
@@ -161,6 +156,8 @@ func TestErrors(t *testing.T) {
 		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
 		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
 		{"CF_WORKER_ROUTE With comma", `D("foo.com","reg",CF_WORKER_ROUTE("foo.com","baa,a"))`},
+		{"ADGUARDHOME_A_PASSTHROUGH With non-empty value", `D("foo.com","reg",ADGUARDHOME_A_PASSTHROUGH("foo","baaa"))`},
+		{"ADGUARDHOME_AAAA_PASSTHROUGH With non-empty value", `D("foo.com","reg",ADGUARDHOME_AAAA_PASSTHROUGH("foo,","baaa"))`},
 		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
 		{"Dup domains", `D("example.org", "reg"); D("example.org", "reg")`},
 		{"Bad NAMESERVER", `D("example.com","reg", NAMESERVER("@","ns1.foo.com."))`},

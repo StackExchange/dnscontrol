@@ -11,12 +11,12 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:9:5]",
           "meta": {
             "orig_custom_type": "CF_REDIRECT"
           },
@@ -26,6 +26,7 @@
           "type": "CF_REDIRECT"
         },
         {
+          "filepos": "[line:10:5]",
           "meta": {
             "orig_custom_type": "CF_TEMP_REDIRECT"
           },
@@ -35,6 +36,7 @@
           "type": "CF_TEMP_REDIRECT"
         },
         {
+          "filepos": "[line:11:5]",
           "meta": {
             "orig_custom_type": "CF_WORKER_ROUTE"
           },
@@ -44,6 +46,7 @@
           "type": "CF_WORKER_ROUTE"
         },
         {
+          "filepos": "[line:6:5]",
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.1",
@@ -51,6 +54,7 @@
           "type": "A"
         },
         {
+          "filepos": "[line:7:5]",
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.2",
@@ -58,6 +62,7 @@
           "type": "A"
         },
         {
+          "filepos": "[line:8:5]",
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.3",

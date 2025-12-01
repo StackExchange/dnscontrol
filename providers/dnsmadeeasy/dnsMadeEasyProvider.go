@@ -14,8 +14,9 @@ import (
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -105,7 +106,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 
 func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domainName := dc.Name
-	domainId, err := api.findDomainId(domainName)
+	domainID, err := api.findDomainID(domainName)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -139,7 +140,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(deleteDescription, "\n\t"),
 			F: func() error {
-				return api.deleteRecords(domainId, deleteRecordIds)
+				return api.deleteRecords(domainID, deleteRecordIds)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -157,7 +158,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(createDescription, "\n\t"),
 			F: func() error {
-				return api.createRecords(domainId, createRecords)
+				return api.createRecords(domainID, createRecords)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -180,7 +181,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 		corr := &models.Correction{
 			Msg: strings.Join(modifyDescription, "\n\t"),
 			F: func() error {
-				return api.updateRecords(domainId, modifyRecords)
+				return api.updateRecords(domainID, modifyRecords)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -190,7 +191,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string) error {
+func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.domainExists(domain)
 	if err != nil {
 		return err

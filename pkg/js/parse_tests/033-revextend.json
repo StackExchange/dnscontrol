@@ -11,18 +11,19 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "8.9.in-addr.arpa"
       },
       "name": "8.9.in-addr.arpa",
       "records": [
         {
+          "filepos": "[line:8:5]",
           "name": "1.2",
           "target": "ns1.example.com.",
           "ttl": 300,
           "type": "NS"
         },
         {
+          "filepos": "[line:11:5]",
           "name": "6.7",
           "subdomain": "7",
           "target": "ns2.example.org.",
@@ -37,18 +38,19 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
       "records": [
         {
+          "filepos": "[line:17:5]",
           "name": "foo",
           "target": "ns1.fooexample.com.",
           "ttl": 300,
           "type": "NS"
         },
         {
+          "filepos": "[line:20:5]",
           "name": "more.lego",
           "subdomain": "lego",
           "target": "ns1.example.com.",
@@ -56,6 +58,7 @@
           "type": "NS"
         },
         {
+          "filepos": "[line:21:5]",
           "name": "short.lego",
           "subdomain": "lego",
           "target": "ns1.lego.example.com.",

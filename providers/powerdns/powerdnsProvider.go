@@ -22,6 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseLOC:              providers.Unimplemented("Normalization within the PowerDNS API seems to be buggy, so disabled", "https://github.com/PowerDNS/pdns/issues/10558"),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseOPENPGPKEY:       providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -45,6 +46,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCustomRecordType("LUA", providerName, "")
 }
 
 // powerdnsProvider represents the powerdnsProvider DNSServiceProvider.
@@ -53,12 +55,24 @@ type powerdnsProvider struct {
 	APIKey         string
 	APIUrl         string
 	ServerName     string
-	DefaultNS      []string       `json:"default_ns"`
-	DNSSecOnCreate bool           `json:"dnssec_on_create"`
-	ZoneKind       zones.ZoneKind `json:"zone_kind"`
-	SOAEditAPI     string         `json:"soa_edit_api,omitempty"`
+	DefaultNS      []string             `json:"default_ns"`
+	DNSSecOnCreate bool                 `json:"dnssec_on_create"`
+	ZoneKind       zones.ZoneKind       `json:"zone_kind"`
+	SOAEditAPI     zones.ZoneSOAEditAPI `json:"soa_edit_api,omitempty"`
+	UseViews       bool                 `json:"use_views,omitempty"`
 
 	nameservers []*models.Nameserver
+}
+
+// Build the variant name for powerdns. this is the domain + "." + the tag
+// so dnscontrol "example.com!internal" becomes powerdns "example.com..internal"
+// See https://doc.powerdns.com/authoritative/views.html
+func (dsp *powerdnsProvider) zoneName(domain string, tag string) string {
+	base := canonical(domain)
+	if dsp.UseViews && tag != "" {
+		return base + "." + tag
+	}
+	return base
 }
 
 // newDSP initializes a PowerDNS DNSServiceProvider.

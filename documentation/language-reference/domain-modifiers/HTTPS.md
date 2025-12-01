@@ -22,6 +22,8 @@ The params may be configured to specify the `alpn`, `ipv4hint`, `ipv6hint`, `ech
 
 Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
+If you set the parameter `ech` to the special value `IGNORE`, DNSControl will ignore the contents of that parameter when updating a zone.
+
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),

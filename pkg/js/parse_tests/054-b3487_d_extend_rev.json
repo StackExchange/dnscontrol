@@ -11,24 +11,26 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "6.10.in-addr.arpa"
       },
       "name": "6.10.in-addr.arpa",
       "records": [
         {
+          "filepos": "[line:5:5]",
           "name": "31.104",
           "target": "example.site.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "filepos": "[line:6:5]",
           "name": "206.104",
           "target": "example2.site.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
+          "filepos": "[line:17:5]",
           "name": "0.119",
           "subdomain": "119",
           "target": "ip-10-6-119-0.example.com.",
@@ -36,6 +38,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:18:5]",
           "name": "1.119",
           "subdomain": "119",
           "target": "ip-10-6-119-1.example.com.",
@@ -43,6 +46,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:19:5]",
           "name": "2.119",
           "subdomain": "119",
           "target": "ip-10-6-119-2.example.com.",
@@ -50,6 +54,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:20:5]",
           "name": "3.119",
           "subdomain": "119",
           "target": "ip-10-6-119-3.example.com.",
@@ -57,6 +62,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:10:5]",
           "name": "50.200",
           "subdomain": "200",
           "target": "ip-10-6-200-50.example.com.",
@@ -64,6 +70,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:11:5]",
           "name": "51.200",
           "subdomain": "200",
           "target": "ip-10-6-200-51.example.com.",
@@ -71,6 +78,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:12:5]",
           "name": "52.200",
           "subdomain": "200",
           "target": "ip-10-6-200-52.example.com.",
@@ -78,6 +86,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:13:5]",
           "name": "53.200",
           "subdomain": "200",
           "target": "ip-10-6-200-53.example.com.",
@@ -85,6 +94,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:24:5]",
           "name": "20.220",
           "subdomain": "220",
           "target": "ip-10-6-220-20.example.com.",
@@ -92,6 +102,7 @@
           "type": "PTR"
         },
         {
+          "filepos": "[line:28:5]",
           "name": "30.230",
           "subdomain": "230",
           "target": "ip-10-6-230-30.example.com.",

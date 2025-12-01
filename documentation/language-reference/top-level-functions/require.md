@@ -104,7 +104,7 @@ for (var domain in domains) {
 ```javascript
 {
     "example.com": "1.1.1.1",
-    "other-example.com``": "5.5.5.5"
+    "other-example.com": "5.5.5.5"
 }
 ```
 {% endcode %}

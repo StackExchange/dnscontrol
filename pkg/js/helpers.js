@@ -331,6 +331,20 @@ var AAAA = recordBuilder('AAAA');
 // AKAMAICDN(name, target, recordModifiers...)
 var AKAMAICDN = recordBuilder('AKAMAICDN');
 
+// AKAMAITLC(name, answer_type, target, recordModifiers...)
+var AKAMAITLC = recordBuilder('AKAMAITLC', {
+  args: [
+    ['name', _.isString],
+    ['answer_type', function(value) { return _.isString(value) && ['DUAL', 'A', 'AAAA'].indexOf(value) !== -1; }],
+    ['target', _.isString],
+  ],
+  transform: function (record, args, modifier) {
+    record.name = args.name;
+    record.answer_type = args.answer_type;
+    record.target = args.target;
+  },
+});
+
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
 
@@ -533,6 +547,27 @@ var NAPTR = recordBuilder('NAPTR', {
     },
 });
 
+// OPENPGPKEY(name,target, recordModifiers...)
+var OPENPGPKEY = recordBuilder('OPENPGPKEY');
+
+// name, usage, selector, matchingtype, certificate
+var SMIMEA = recordBuilder('SMIMEA', {
+    args: [
+        ['name', _.isString],
+        ['usage', _.isNumber],
+        ['selector', _.isNumber],
+        ['matchingtype', _.isNumber],
+        ['target', _.isString], // recordBuilder needs a "target" argument
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name + '._smimecert';
+        record.smimeausage = args.usage;
+        record.smimeaselector = args.selector;
+        record.smimeamatchingtype = args.matchingtype;
+        record.target = args.target;
+    },
+});
+
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
     args: [
@@ -645,6 +680,23 @@ var TXT = recordBuilder('TXT', {
             record.target = args.target.join('');
         }
     },
+});
+
+var LUA = recordBuilder('LUA', {
+  args: [
+    ['name', _.isString],
+    ['rtype', _.isString],
+    ['target', isStringOrArray],
+  ],
+  transform: function (record, args, modifiers) {
+    record.name = args.name;
+    record.luartype = args.rtype.toUpperCase();
+    if (_.isString(args.target)) {
+      record.target = args.target;
+    } else {
+      record.target = args.target.join('');
+    }
+  },
 });
 
 // Parses coordinates of the form 41°24'12.2"N 2°10'26.5"E
@@ -1245,11 +1297,21 @@ function recordBuilder(type, opts) {
             modifiers.push(arguments[i]);
         }
 
+        // Record which line called this record type.
+        // NB(tlim): Hopefully we can find a better way to do this in the
+        // future. Right now we're faking that there was an error just to parse
+        // out the line number. That's inefficient but I can't find anything better.
+        // This will certainly break if we change to a different Javascript interpreter.
+        // Hopefully any other interpreter will have a better way to do this.
+        var positionLines = new Error().stack.split('\n');
+        var position = positionLines[positionLines.length - 2];
+
         return function (d) {
             var record = {
                 type: type,
                 meta: {},
                 ttl: d.defaultTTL,
+                filepos: position,
             };
 
             opts.applyModifier(record, modifiers);
@@ -1262,7 +1324,9 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_REDIRECT' &&
                 record.type != 'CF_TEMP_REDIRECT' &&
-                record.type != 'CF_WORKER_ROUTE'
+                record.type != 'CF_WORKER_ROUTE' &&
+                record.type != 'ADGUARDHOME_A_PASSTHROUGH' &&
+                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH'
             ) {
                 record.subdomain = d.subdomain;
 
@@ -1429,6 +1493,12 @@ var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
         record.target = args.pattern + ',' + args.script;
     },
 });
+
+var ADGUARDHOME_A_PASSTHROUGH = recordBuilder('ADGUARDHOME_A_PASSTHROUGH');
+
+var ADGUARDHOME_AAAA_PASSTHROUGH = recordBuilder(
+    'ADGUARDHOME_AAAA_PASSTHROUGH'
+);
 
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
@@ -1680,6 +1750,12 @@ function SPF_BUILDER(value) {
 // iodef_critical: Boolean if sending report is required/critical. If not supported, certificate should be refused. (optional)
 // issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each), or the string 'none'.
 // issuewild: List of allowed CAs which can issue wildcard certificates for this domain, or the string 'none'. (creates one record for each)
+// issuevmc: List of allowed CAs which can issue VMC certificates for this domain, or the string 'none'. (creates one record for each)
+// issuemail: List of allowed CAs which can issue email certificates for this domain, or the string 'none'. (creates one record for each)
+// issue_critical: Boolean if issue entries are critical. If not supported, certificate should be refused. (optional)
+// issuewild_critical: Boolean if issuewild entries are critical. If not supported, certificate should be refused. (optional)
+// issuevmc_critical: Boolean if issuevmc entries are critical. If not supported, certificate should be refused. (optional)
+// issuemail_critical: Boolean if issuemail entries are critical. If not supported, certificate should be refused. (optional)
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
 function CAA_BUILDER(value) {
@@ -1689,15 +1765,24 @@ function CAA_BUILDER(value) {
 
     if (value.issue && value.issue == 'none') value.issue = [';'];
     if (value.issuewild && value.issuewild == 'none') value.issuewild = [';'];
+    if (value.issuevmc && value.issuevmc == 'none') value.issuevmc = [';'];
+    if (value.issuemail && value.issuemail == 'none') value.issuemail = [';'];
 
     if (
-        (!value.issue && !value.issuewild) ||
+        (!value.issue &&
+            !value.issuewild &&
+            !value.issuevmc &&
+            !value.issuemail) ||
         (value.issue &&
             value.issue.length == 0 &&
             value.issuewild &&
-            value.issuewild.length == 0)
+            value.issuewild.length == 0 &&
+            value.issuevmc &&
+            value.issuevmc.length == 0 &&
+            value.issuemail &&
+            value.issuemail.length == 0)
     ) {
-        throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
+        throw 'CAA_BUILDER requires at least one entry at issue, issuewild, issuevmc or issuemail';
     }
 
     var CAA_TTL = function () {};
@@ -1736,7 +1821,240 @@ function CAA_BUILDER(value) {
             );
     }
 
+    if (value.issuevmc) {
+        var flag = function () {};
+        if (value.issuevmc_critical) {
+            flag = CAA_CRITICAL;
+        }
+        for (var i = 0, len = value.issuevmc.length; i < len; i++)
+            r.push(
+                CAA(value.label, 'issuevmc', value.issuevmc[i], flag, CAA_TTL)
+            );
+    }
+
+    if (value.issuemail) {
+        var flag = function () {};
+        if (value.issuemail_critical) {
+            flag = CAA_CRITICAL;
+        }
+        for (var i = 0, len = value.issuemail.length; i < len; i++)
+            r.push(
+                CAA(value.label, 'issuemail', value.issuemail[i], flag, CAA_TTL)
+            );
+    }
+
     return r;
+}
+
+/**
+ * Encodes a string into DKIM-specific quoted-printable format.
+ *
+ * This function converts characters that are outside the range of printable ASCII
+ * characters, semicolons, DEL, or above ASCII 127 into their quoted-printable
+ * hex representation, prefixed by '='. This encoding is used in DKIM signatures
+ * to handle characters safely.
+ *
+ * @param {string} str - The input string to encode.
+ * @returns {string} The DKIM quoted-printable encoded string.
+ */
+function _encodeDKIMQuotedPrintable(str) {
+    var hexChars = '0123456789ABCDEF'.split('');
+    var result = '';
+
+    for (var i = 0; i < str.length; i++) {
+        var charCode = str.charCodeAt(i);
+        if (
+            charCode < 0x21 ||
+            charCode === 0x3b ||
+            charCode === 0x3d ||
+            charCode === 0x7f ||
+            charCode > 0x7f
+        ) {
+            result +=
+                '=' + hexChars[(charCode >>> 4) & 15] + hexChars[charCode & 15];
+        } else {
+            result += str.charAt(i);
+        }
+    }
+    return result;
+}
+
+/**
+ * Builds a DKIM DNS TXT record according to RFC 6376 its updates
+ * @param {Object} value - Configuration object for the DKIM record.
+ * @param {string} value.selector - The selector subdividing the namespace for the domain. **(Required)**
+ * @param {string} [value.pubkey] - The base64-encoded public key (RSA or Ed25519).
+ *   May be empty for key revocation or non-sending domains.
+ * @param {string} [value.label='@'] - The DNS label for the DKIM record (`[selector]._domainkey` prefix is added).
+ * @param {string} [value.version='DKIM1'] - The DKIM version (`v=` tag). Currently, only `"DKIM1"` is supported.
+ * @param {string|string[]} [value.hashtypes] - Acceptable hash algorithms for signing (`h=` tag).
+ *   - Supported values for RSA: `'sha1'`, `'sha256'`
+ *   - Supported values for Ed25519: `'sha256'`
+ * @param {string} [value.keytype='rsa'] - Key algorithm type (`k=` tag).
+ *   - Supported values: `'rsa'`, `'ed25519'`
+ * @param {string|string[]} [value.servicetypes] - Service types using this key (`s=` tag).
+ *   - Supported values: `'*'`, `'email'`
+ *   - `'*'` allows all services; `'email'` restricts usage to email only.
+ * @param {string|string[]} [value.flags] - Flags modifying selector interpretation (`t=` tag).
+ *   - Supported values: `'y'` (testing mode), `'s'` (subdomain restriction)
+ * @param {string} [value.note] - Human-readable note for the record (`n=` tag).
+ * @param {number} [value.ttl] - DNS TTL value in seconds.
+ *
+ * @throws {Error} If a required field is missing or a value is invalid.
+ * @returns {Object} DNS TXT record entries for DKIM
+ */
+
+function DKIM_BUILDER(value) {
+    value = value || {};
+
+    // ========================================
+    // PHASE 1: NORMALIZATION
+    // ========================================
+
+    // Apply defaults using _.defaults()
+    value = _.defaults(value, {
+        version: 'DKIM1',
+        pubkey: '',
+        label: '@',
+    });
+
+    // Normalize string|array fields to always be arrays
+    if (!_.isEmpty(value.hashtypes)) {
+        value.hashtypes = _.isString(value.hashtypes)
+            ? [value.hashtypes]
+            : value.hashtypes;
+    }
+
+    if (!_.isEmpty(value.servicetypes)) {
+        value.servicetypes = _.isString(value.servicetypes)
+            ? [value.servicetypes]
+            : value.servicetypes;
+    }
+
+    if (!_.isEmpty(value.flags)) {
+        value.flags = _.isString(value.flags) ? [value.flags] : value.flags;
+    }
+
+    // ========================================
+    // PHASE 2: VALIDATION (Fail Fast)
+    // ========================================
+
+    // Static allowed values
+    var ALLOWED_VERSIONS = ['DKIM1'];
+    var ALLOWED_KEYTYPES = ['rsa', 'ed25519'];
+    var ALLOWED_HASHTYPES = {
+        rsa: ['sha1', 'sha256'],
+        ed25519: ['sha256'],
+    };
+    var ALLOWED_SERVICETYPES = ['*', 'email'];
+    var ALLOWED_FLAGS = ['y', 's'];
+
+    // Required fields
+    if (_.isEmpty(value.selector)) {
+        throw 'DKIM_BUILDER selector cannot be empty';
+    }
+
+    // Version validation
+    if (!_.contains(ALLOWED_VERSIONS, value.version)) {
+        throw (
+            'DKIM_BUILDER version must be one of: ' +
+            ALLOWED_VERSIONS.join(', ')
+        );
+    }
+
+    // Keytype validation
+    if (
+        !_.isEmpty(value.keytype) &&
+        !_.contains(ALLOWED_KEYTYPES, value.keytype)
+    ) {
+        throw (
+            'DKIM_BUILDER keytype must be one of: ' +
+            ALLOWED_KEYTYPES.join(', ') +
+            ', ' +
+            value.keytype +
+            ' given'
+        );
+    }
+
+    // Hashtypes validation (now always an array after normalization)
+    if (!_.isEmpty(value.hashtypes)) {
+        var allowedHashtypes = ALLOWED_HASHTYPES[value.keytype || 'rsa'];
+        var invalidHashtypes = _.difference(value.hashtypes, allowedHashtypes);
+        if (invalidHashtypes.length > 0) {
+            throw (
+                'DKIM_BUILDER hashtypes for ' +
+                value.keytype +
+                ' must be one of: ' +
+                allowedHashtypes.join(', ')
+            );
+        }
+    }
+
+    // Servicetypes validation (now always an array after normalization)
+    if (!_.isEmpty(value.servicetypes)) {
+        var invalidServicetypes = _.difference(
+            value.servicetypes,
+            ALLOWED_SERVICETYPES
+        );
+        if (invalidServicetypes.length > 0) {
+            throw (
+                'DKIM_BUILDER servicetypes must be one of: ' +
+                ALLOWED_SERVICETYPES.join(', ')
+            );
+        }
+    }
+
+    // Flags validation (now always an array after normalization)
+    if (!_.isEmpty(value.flags)) {
+        var invalidFlags = _.difference(value.flags, ALLOWED_FLAGS);
+        if (invalidFlags.length > 0) {
+            throw (
+                'DKIM_BUILDER flags must be one of: ' + ALLOWED_FLAGS.join(', ')
+            );
+        }
+    }
+
+    // ========================================
+    // PHASE 3: BUILD OUTPUT
+    // ========================================
+
+    // Build record RFC 6376 order: v=, h=, k=, n=, p=, s=, t=
+    var record = [];
+
+    record.push('v=' + value.version);
+
+    if (value.hashtypes) {
+        record.push('h=' + value.hashtypes.join(':'));
+    }
+
+    if (value.keytype) {
+        record.push('k=' + value.keytype);
+    }
+
+    if (!_.isEmpty(value.note)) {
+        record.push('n=' + _encodeDKIMQuotedPrintable(value.note));
+    }
+
+    record.push('p=' + value.pubkey);
+
+    if (value.servicetypes) {
+        record.push('s=' + value.servicetypes.join(':'));
+    }
+
+    if (value.flags) {
+        record.push('t=' + value.flags.join(':'));
+    }
+
+    // Build label
+    var fullLabel = value.selector + '._domainkey';
+    if (value.label !== '@') {
+        fullLabel += '.' + value.label;
+    }
+
+    // Handle TTL
+    var DKIM_TTL = value.ttl ? TTL(value.ttl) : function () {};
+
+    return TXT(fullLabel, record.join('; '), DKIM_TTL);
 }
 
 // DMARC_BUILDER takes an object:

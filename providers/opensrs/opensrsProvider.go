@@ -20,7 +20,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	const providerName = "OPENSRS"
-	const providerMaintainer = "@philhug"
+	const providerMaintainer = "NEEDS VOLUNTEER"
 	providers.RegisterRegistrarType(providerName, newReg, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }

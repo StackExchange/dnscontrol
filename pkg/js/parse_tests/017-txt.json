@@ -4,36 +4,40 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "name": "a",
           "target": "simple",
           "ttl": 300,
           "type": "TXT"
         },
         {
+          "filepos": "[line:3:5]",
           "name": "b",
           "target": "ws at end ",
           "ttl": 300,
           "type": "TXT"
         },
         {
+          "filepos": "[line:4:5]",
           "name": "c",
           "target": "one",
           "ttl": 300,
           "type": "TXT"
         },
         {
+          "filepos": "[line:5:5]",
           "name": "d",
           "target": "bonieclyde",
           "ttl": 300,
           "type": "TXT"
         },
         {
+          "filepos": "[line:6:5]",
           "name": "e",
           "target": "strawwoodbrick",
           "ttl": 300,

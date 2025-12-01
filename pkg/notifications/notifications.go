@@ -8,7 +8,7 @@ type Notifier interface {
 	// It will be given the correction's message, the result of executing it,
 	// and a flag for whether this is a preview or if it actually ran.
 	// If preview is true, err will always be nil.
-	Notify(domain, provider string, message string, err error, preview bool)
+	Notify(domain, provider string, message string, err error, preview bool) error
 	// Done will be called exactly once after all notifications are done. This will allow "batched" notifiers to flush and send
 	Done()
 }
@@ -39,15 +39,23 @@ func stripAnsiColors(colored string) string {
 	return ansiColorRegex.ReplaceAllString(colored, "")
 }
 
-func (m multiNotifier) Notify(domain, provider string, message string, err error, preview bool) {
+func (m multiNotifier) Notify(domain, provider string, message string, err error, preview bool) error {
 	// force-remove ansi colors that might come with the message from dnscontrol.
 	// These usually don't render well in notifiers, outputting escape codes.
 	// If a notifier wants to output colors, they should probably implement
 	// them natively.
 	nMsg := stripAnsiColors(message)
+	errs := make([]error, 0)
 	for _, n := range m {
-		n.Notify(domain, provider, nMsg, err, preview)
+		err := n.Notify(domain, provider, nMsg, err, preview)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
 }
 
 func (m multiNotifier) Done() {

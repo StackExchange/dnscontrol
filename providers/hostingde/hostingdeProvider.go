@@ -20,8 +20,9 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
@@ -356,7 +357,7 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 	return nil, nil
 }
 
-func (hp *hostingdeProvider) EnsureZoneExists(domain string) error {
+func (hp *hostingdeProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := hp.getZoneConfig(domain)
 	if errors.Is(err, errZoneNotFound) {
 		if err := hp.createZone(domain); err != nil {

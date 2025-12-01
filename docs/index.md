@@ -54,7 +54,7 @@ title: DNSControl
 <hr class="feature">
 
 <div class="row">
-    {% include feature.html text="Maintain your DNS data as a high-level DS, with macros, and variables for easier updates." img="biology.svg" %}
+    {% include feature.html text="Maintain your DNS data in a high-level DSL, with macros and variables for easier updates." img="biology.svg" %}
     {% include feature.html text="Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!" img="light-bulb.svg" %}
     {% include feature.html text="Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity." img="group.svg" %}
     {% include feature.html text="Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down." img="layers.svg" %}
@@ -114,9 +114,6 @@ title: DNSControl
                 </li>
                 <li>
                      <a href="https://docs.dnscontrol.org/commands/get-zones">get-zones</a>: Query a provider for zone info
-                </li>
-                <li>
-                    <a href="https://docs.dnscontrol.org/commands/get-certs">get-certs</a>: Renew SSL/TLS certs (DEPRECATED)
                 </li>
             </ul>
 
@@ -208,6 +205,9 @@ title: DNSControl
                 </li>
                 <li>
                     <a href="https://docs.dnscontrol.org/developer-info/ordering">DNS reordering</a>: How DNSControl determines the order of the changes
+                </li>
+                <li>
+                    <a href="https://docs.dnscontrol.org/developer-info/test-a-branch">Test a branch</a>: Instructions for testing DNSControl at a particular PR or branch
                 </li>
             </ul>
         </div>

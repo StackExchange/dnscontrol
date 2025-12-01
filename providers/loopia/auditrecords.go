@@ -11,12 +11,15 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2023-03-10: Loopia returns 404
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2025-07-24: Loopia returns 404
 
-	// Loopias TXT length limit appears to be 450 octets
-	a.Add("TXT", rejectif.TxtLongerThan(450)) // Last verified 2023-03-10
+	a.Add("MX", rejectif.MxNull) // Last verified 2025-07-24: Loopia returns 404
 
-	a.Add("MX", rejectif.MxNull) // Last verified 2023-03-23
+	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2025-07-24: Loopia returns 404
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2025-07-24: Loopia returns 404
+
+	a.Add("TXT", rejectif.TxtLongerThan(450)) // Last verified 2025-07-24: Loopia returns 404
 
 	return a.Audit(records)
 }

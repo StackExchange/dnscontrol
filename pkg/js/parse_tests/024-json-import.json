@@ -4,12 +4,12 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:7:5]",
           "name": "@",
           "target": "1.1.1.1",
           "ttl": 300,

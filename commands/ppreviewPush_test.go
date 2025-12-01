@@ -23,7 +23,7 @@ func Test_whichZonesToProcess(t *testing.T) {
 	}
 
 	for _, dc := range allDC {
-		dc.UpdateSplitHorizonNames()
+		dc.PostProcess()
 	}
 
 	type args struct {

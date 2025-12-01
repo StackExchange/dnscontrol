@@ -200,7 +200,10 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone, nil)
+		recs, err := provider.GetZoneRecords(zone,
+			map[string]string{
+				models.DomainUniqueName: zone,
+			})
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
@@ -351,6 +354,8 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 			jsonQuoted(rec.NaptrRegexp),      // regex
 			jsonQuoted(rec.GetTargetField()), // .
 		)
+	case "SMIMEA":
+		target = fmt.Sprintf(`%d, %d, %d, "%s"`, rec.SmimeaUsage, rec.SmimeaSelector, rec.SmimeaMatchingType, rec.GetTargetField())
 	case "SSHFP":
 		target = fmt.Sprintf(`%d, %d, "%s"`, rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":
@@ -365,6 +370,8 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	case "TXT":
 		target = jsonQuoted(rec.GetTargetTXTJoined())
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
+	case "LUA":
+		target = fmt.Sprintf("%q, %s", rec.LuaRType, jsonQuoted(rec.GetTargetTXTJoined()))
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		// DnsControl uses the API to get this info. NAMESERVER() is just

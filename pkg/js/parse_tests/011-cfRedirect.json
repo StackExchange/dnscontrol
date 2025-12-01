@@ -4,12 +4,12 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
       "records": [
         {
+          "filepos": "[line:2:5]",
           "meta": {
             "orig_custom_type": "CF_REDIRECT"
           },
@@ -19,6 +19,7 @@
           "type": "CF_REDIRECT"
         },
         {
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "CF_TEMP_REDIRECT"
           },

@@ -108,7 +108,8 @@ func generateFunctionTypes() (string, error) {
 	}
 	for _, t := range types {
 		if !t.IsDir() {
-			return "", errors.New("not a directory: " + join(srcRoot, t.Name()))
+			// Skip non-directories like js.md or why-the-dot.md
+			continue
 		}
 		tPath := join(srcRoot, t.Name())
 		funcNames, err := os.ReadDir(tPath)

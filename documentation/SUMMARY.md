@@ -4,14 +4,14 @@
 
 ## Getting Started
 
-* [Overview](getting-started.md)
-* [Examples](examples.md)
-* [Migrating zones to DNSControl](migrating.md)
-* [TypeScript autocomplete and type checking](typescript.md)
+* [Overview](getting-started/getting-started.md)
+* [Examples](getting-started/examples.md)
+* [Migrating zones to DNSControl](getting-started/migrating.md)
+* [TypeScript autocomplete and type checking](getting-started/typescript.md)
 
 ## Language Reference
 
-* [JavaScript DSL](js.md)
+* [JavaScript DSL](language-reference/js.md)
 * Top Level Functions
   * [D](language-reference/top-level-functions/D.md)
   * [DEFAULTS](language-reference/top-level-functions/DEFAULTS.md)
@@ -42,6 +42,7 @@
     * [DNAME](language-reference/domain-modifiers/DNAME.md)
     * [DNSKEY](language-reference/domain-modifiers/DNSKEY.md)
     * [DISABLE_IGNORE_SAFETY_CHECK](language-reference/domain-modifiers/DISABLE_IGNORE_SAFETY_CHECK.md)
+    * [DKIM_BUILDER](language-reference/domain-modifiers/DKIM_BUILDER.md)
     * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
     * [DS](language-reference/domain-modifiers/DS.md)
     * [DefaultTTL](language-reference/domain-modifiers/DefaultTTL.md)
@@ -66,8 +67,10 @@
     * [NAPTR](language-reference/domain-modifiers/NAPTR.md)
     * [NO_PURGE](language-reference/domain-modifiers/NO_PURGE.md)
     * [NS](language-reference/domain-modifiers/NS.md)
+    * [OPENPGPKEY](language-reference/domain-modifiers/OPENPGPKEY.md)
     * [PTR](language-reference/domain-modifiers/PTR.md)
     * [PURGE](language-reference/domain-modifiers/PURGE.md)
+    * [SMIMEA](language-reference/domain-modifiers/SMIMEA.md)
     * [SOA](language-reference/domain-modifiers/SOA.md)
     * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
     * [SRV](language-reference/domain-modifiers/SRV.md)
@@ -78,8 +81,12 @@
     * [URL](language-reference/domain-modifiers/URL.md)
     * [URL301](language-reference/domain-modifiers/URL301.md)
     * Service Provider specific
+        * AdGuard Home
+            * [ADGUARDHOME_A_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_A_PASSTHROUGH.md)
+            * [ADGUARDHOME_AAAA_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_AAAA_PASSTHROUGH.md)
         * Akamai Edge Dns
             * [AKAMAICDN](language-reference/domain-modifiers/AKAMAICDN.md)
+            * [AKAMAITLC](language-reference/domain-modifiers/AKAMAITLC.md)
         * Amazon Route 53
             * [R53_ALIAS](language-reference/domain-modifiers/R53_ALIAS.md)
         * Azure DNS
@@ -91,17 +98,20 @@
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
+        * PowerDNS
+            * [LUA](language-reference/domain-modifiers/LUA.md)     
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
             * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md)
-* [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
+* [Why CNAME/MX/NS targets require a "dot"](language-reference/why-the-dot.md)
 
 ## Provider
 
 * [Supported providers](provider/index.md)
+* [AdGuard Home](provider/adguardhome.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
@@ -123,10 +133,12 @@
 * [Dynadot](provider/dynadot.md)
 * [easyname](provider/easyname.md)
 * [Exoscale](provider/exoscale.md)
+* [Fortigate](provider/fortigate.md)
 * [Gandi_v5](provider/gandi_v5.md)
 * [Gcore](provider/gcore.md)
 * [Google Cloud DNS](provider/gcloud.md)
-* [Hetzner DNS Console](provider/hetzner.md)
+* [Hetzner DNS API](provider/hetzner_v2.md)
+* [Hetzner DNS Console (legacy)](provider/hetzner.md)
 * [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
 * [Huawei Cloud DNS](provider/huaweicloud.md)
@@ -134,10 +146,10 @@
 * [Infomaniak](provider/infomaniak.md)
 * [Internet.bs](provider/internetbs.md)
 * [INWX](provider/inwx.md)
+* [Joker](provider/joker.md)
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
-* [Microsoft DNS Server on Microsoft Windows Server](provider/msdns.md)
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)
@@ -155,47 +167,50 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
+* [Vercel](provider/vercel.md)
 * [Vultr](provider/vultr.md)
 
 ## Commands
 
-* [preview/push](preview-push.md)
-* [check-creds](check-creds.md)
-* [get-zones](get-zones.md)
-* [get-certs](get-certs.md)
-* [fmt](fmt.md)
-* [creds.json](creds-json.md)
-* [Global Flag](globalflags.md)
-* [Disabling Colors](colors.md)
+* [preview/push](commands/preview-push.md)
+* [check-creds](commands/check-creds.md)
+* [get-zones](commands/get-zones.md)
+* [fmt](commands/fmt.md)
+* [creds.json](commands/creds-json.md)
+* [Global Flag](commands/globalflags.md)
+* [Disabling Colors](commands/colors.md)
 
 ## Advanced features
 
-* [CI/CD example for GitLab](ci-cd-gitlab.md)
-* [CLI variables](cli-variables.md)
-* [Nameservers and Delegations](nameservers.md)
-* [Notifications](notifications.md)
-* [Useful code tricks](code-tricks.md)
-* [JSON Reports](json-reports.md)
+* [Concurrency Verified](advanced-features/concurrency-verified.md)
+* [CI/CD example for GitLab](advanced-features/ci-cd-gitlab.md)
+* [CLI variables](advanced-features/cli-variables.md)
+* [Nameservers and Delegations](advanced-features/nameservers.md)
+* [Notifications](advanced-features/notifications.md)
+* [Useful code tricks](advanced-features/code-tricks.md)
+* [JSON Reports](advanced-features/json-reports.md)
+* [Dual Host](advanced-features/dual-host.md)
 
 ## Developer info
 
-* [Code Style Guide](styleguide-code.md)
-* [Documentation Style Guide](styleguide-doc.md)
-* [DNSControl is an opinionated system](opinions.md)
-* [Writing new DNS providers](writing-providers.md)
-* [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
-* [Integration Tests](integration-tests.md)
-* [Test a branch](test-a-branch.md)
-* [Unit Testing DNS Data](unittests.md)
-* [Bug Triage Process](bug-triage.md)
-* [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
-* [Debugging with dlv](debugging-with-dlv.md)
-* [ALIAS Records](alias.md)
-* [TXT record testing](testing-txt-records.md)
-* [DNS records ordering](ordering.md)
+* [Code Style Guide](advanced-features/styleguide-code.md)
+* [Documentation Style Guide](advanced-features/styleguide-doc.md)
+* [DNSControl is an opinionated system](advanced-features/opinions.md)
+* [Writing new DNS providers](advanced-features/writing-providers.md)
+* [Creating new DNS Resource Types (rtypes)](advanced-features/adding-new-rtypes.md)
+* [Integration Tests](advanced-features/integration-tests.md)
+* [Test a branch](advanced-features/test-a-branch.md)
+* [Unit Testing DNS Data](advanced-features/unittests.md)
+* [Bug Triage Process](advanced-features/bug-triage.md)
+* [Bring-Your-Own-Secrets for automated testing](advanced-features/byo-secrets.md)
+* [Debugging with dlv](advanced-features/debugging-with-dlv.md)
+* [ALIAS Records](advanced-features/alias.md)
+* [TXT record testing](advanced-features/testing-txt-records.md)
+* [DNS records ordering](advanced-features/ordering.md)
+* [How to add a requested provider](developer-info/provider-request.md)
 
 ## Release
 
-* [How to build and ship a release](release-engineering.md)
-* [Changelog v3.16.0](v316.md)
+* [How to build and ship a release](release/release-engineering.md)
+* [Changelog v3.16.0](release/v316.md)
 * [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)

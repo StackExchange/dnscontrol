@@ -40,7 +40,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
-	dc.UpdateSplitHorizonNames()
+	dc.PostProcess()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -147,6 +147,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
 			return
 		}
+
+		//fmt.Printf("DEBUG: Running test %q: Names %q %q %q\n", desc, dom.Name, dom.NameRaw, dom.NameUnicode)
 
 		// get and run corrections for first time
 		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
@@ -359,6 +361,16 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func aghAPassthrough(pattern, target string) *models.RecordConfig {
+	r := makeRec(pattern, target, "ADGUARDHOME_A_PASSTHROUGH")
+	return r
+}
+
+func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
+	r := makeRec(pattern, target, "ADGUARDHOME_AAAA_PASSTHROUGH")
+	return r
+}
+
 func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
@@ -452,6 +464,10 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func openpgpkey(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "OPENPGPKEY")
+}
+
 func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
@@ -462,6 +478,12 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 		"type":                   aliasType,
 		"evaluate_target_health": evalTargetHealth,
 	}
+	return r
+}
+
+func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
+	r := makeRec(name, target, "SMIMEA")
+	panicOnErr(r.SetTargetSMIMEA(usage, selector, matchingtype, target))
 	return r
 }
 
