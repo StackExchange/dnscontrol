@@ -418,6 +418,7 @@ func makeTests() []*TestGroup {
 				"NETCUP",      // NS records not currently supported.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
+				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
@@ -628,6 +629,7 @@ func makeTests() []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
+			//  - VERCEL: up to 100 per pages
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
@@ -644,6 +646,7 @@ func makeTests() []*TestGroup {
 				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",       // Test beaks limits.
 				"FORTIGATE", // No paging
+				"VERCEL",    // Rate limit 100 creation per hour, 101 needs an hour, too much
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
@@ -1349,6 +1352,20 @@ func makeTests() []*TestGroup {
 		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAAAAPassthrough("foo", "")),
+		),
+
+		// VERCEL features(?)
+
+		// Turns out that Vercel does support whitespace in the CAA record,
+		// but it only supports `cansignhttpexchanges` field, all other fields,
+		// `validationmethods`, `accounturi` are not supported
+		//
+		// In order to test the `CAA whitespace` capabilities and quirks, let's go!
+		testgroup("VERCEL CAA whitespace - cansignhttpexchanges",
+			only(
+				"VERCEL",
+			),
+			tc("CAA whitespace - cansignhttpexchanges", caa("@", 128, "issue", "digicert.com; cansignhttpexchanges=yes")),
 		),
 
 		//// IGNORE* features

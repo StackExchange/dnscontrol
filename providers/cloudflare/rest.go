@@ -138,6 +138,26 @@ func cfSvcbData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfLocData(rec *models.RecordConfig) *cfRecData {
+	latDir, latDeg, latMin, latSec := models.ReverseLatitude(rec.LocLatitude)
+	longDir, longDeg, longMin, longSec := models.ReverseLongitude(rec.LocLongitude)
+
+	return &cfRecData{
+		Altitude:      models.ReverseAltitude(rec.LocAltitude),
+		LatDegrees:    latDeg,
+		LatDirection:  latDir,
+		LatMinutes:    latMin,
+		LatSeconds:    latSec,
+		LongDegrees:   longDeg,
+		LongDirection: longDir,
+		LongMinutes:   longMin,
+		LongSeconds:   longSec,
+		PrecisionHorz: models.ReverseENotationInt(rec.LocHorizPre),
+		PrecisionVert: models.ReverseENotationInt(rec.LocVertPre),
+		Size:          models.ReverseENotationInt(rec.LocSize),
+	}
+}
+
 func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
 	return &cfNaptrRecData{
 		Flags:       rec.NaptrFlags,
@@ -155,13 +175,12 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 		content = rec.Metadata[metaOriginalIP]
 	}
 	prio := ""
-	if rec.Type == "MX" {
+	switch rec.Type {
+	case "MX":
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
-	}
-	if rec.Type == "TXT" {
+	case "TXT":
 		content = rec.GetTargetTXTJoined()
-	}
-	if rec.Type == "DS" {
+	case "DS":
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
 	if msg == "" {
@@ -180,28 +199,31 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				Content:  content,
 				Priority: &rec.MxPreference,
 			}
-			if rec.Type == "SRV" {
+			switch rec.Type {
+			case "SRV":
 				cf.Data = cfSrvData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "CAA" {
+			case "CAA":
 				cf.Data = cfCaaData(rec)
 				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
-			} else if rec.Type == "TLSA" {
+			case "TLSA":
 				cf.Data = cfTlsaData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "SSHFP" {
+			case "SSHFP":
 				cf.Data = cfSshfpData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "DNSKEY" {
+			case "DNSKEY":
 				cf.Data = cfDnskeyData(rec)
-			} else if rec.Type == "DS" {
+			case "DS":
 				cf.Data = cfDSData(rec)
-			} else if rec.Type == "NAPTR" {
+			case "NAPTR":
 				cf.Data = cfNaptrData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+			case "HTTPS", "SVCB":
 				cf.Data = cfSvcbData(rec)
+			case "LOC":
+				cf.Data = cfLocData(rec)
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -233,33 +255,35 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Priority: &rec.MxPreference,
 		TTL:      int(rec.TTL),
 	}
-	if rec.Type == "TXT" {
+	switch rec.Type {
+	case "TXT":
 		r.Content = rec.GetTargetTXTJoined()
-	}
-	if rec.Type == "SRV" {
+	case "SRV":
 		r.Data = cfSrvData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "CAA" {
+	case "CAA":
 		r.Data = cfCaaData(rec)
 		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
-	} else if rec.Type == "TLSA" {
+	case "TLSA":
 		r.Data = cfTlsaData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "SSHFP" {
+	case "SSHFP":
 		r.Data = cfSshfpData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "DNSKEY" {
+	case "DNSKEY":
 		r.Data = cfDnskeyData(rec)
 		r.Content = ""
-	} else if rec.Type == "DS" {
+	case "DS":
 		r.Data = cfDSData(rec)
 		r.Content = ""
-	} else if rec.Type == "NAPTR" {
+	case "NAPTR":
 		r.Data = cfNaptrData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+	case "HTTPS", "SVCB":
 		r.Data = cfSvcbData(rec)
+	case "LOC":
+		r.Data = cfLocData(rec)
 	}
 	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 	return err
