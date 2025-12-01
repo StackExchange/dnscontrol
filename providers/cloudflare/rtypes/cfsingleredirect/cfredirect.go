@@ -24,9 +24,9 @@ func (handle *CfRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordCo
 	return FromArgs_helper(dc, rec, args, 301)
 }
 
-// func (handle *CfRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, fields any) error {
-// 	panic("CF_REDIRECT: FromStruct not implemented")
-// }
+func (handle *CfRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+	panic("CF_REDIRECT: FromStruct not implemented")
+}
 
 func (handle *CfRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
@@ -43,9 +43,9 @@ func (handle *CfTempRedirect) FromArgs(dc *models.DomainConfig, rec *models.Reco
 	return FromArgs_helper(dc, rec, args, 302)
 }
 
-// func (handle *CfTempRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, fields any) error {
-// 	panic("CF_TEMP_REDIRECT: FromStruct not implemented")
-// }
+func (handle *CfTempRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+	panic("CF_TEMP_REDIRECT: FromStruct not implemented")
+}
 
 func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.

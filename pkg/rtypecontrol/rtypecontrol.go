@@ -16,6 +16,7 @@ type RType interface {
 
 	// RecordConfig factory. Updates a RecordConfig's fields based on args.
 	FromArgs(*models.DomainConfig, *models.RecordConfig, []any) error
+	FromStruct(*models.DomainConfig, *models.RecordConfig, string, any) error
 
 	CopyToLegacyFields(*models.RecordConfig)
 }

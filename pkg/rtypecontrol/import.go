@@ -5,7 +5,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -74,8 +73,12 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 	}
 	setRecordNames(rec, dc, name)
 
-	// Fill in the .F/.Fields* fields.
-	err := Func[t].FromArgs(dc, rec, []any{name, fields.(*dns.RP).Mbox, fields.(*dns.RP).Txt})
+	// // Fill in the .F/.Fields* fields.
+	// err := Func[t].FromArgs(dc, rec, []any{name, fields.(*dns.RP).Mbox, fields.(*dns.RP).Txt})
+	// if err != nil {
+	// 	return nil, err
+	// }
+	err := Func[t].FromStruct(dc, rec, name, fields)
 	if err != nil {
 		return nil, err
 	}

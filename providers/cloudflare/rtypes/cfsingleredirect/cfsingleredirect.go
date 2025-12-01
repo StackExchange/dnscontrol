@@ -76,9 +76,9 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	return nil
 }
 
-// func (handle *SingleRedirectConfig) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, fields any) error {
-// 	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
-// }
+func (handle *SingleRedirectConfig) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
+}
 
 // targetFromRaw create the display text used for a normal Redirect.
 func targetFromRaw(name string, code uint16, when, then string) string {
