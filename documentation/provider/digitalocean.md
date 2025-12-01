@@ -64,7 +64,7 @@ The [API reference](https://docs.digitalocean.com/reference/api/digitalocean/#ta
 
 This means that `ALIAS`, `DHCID`, `DNAME`, `DS`, `FRAME`, `HTTPS`, `LOC`, `OPENPGPKEY`, `PTR`, `SMIMEA`, `SSHFP`, `SVCB`, `TLSA`, `URL`, or `URL301` presumably **do not work** with Digital Ocean.
 
-In 2025, the provider maintainer hase confirmed that `ALIAS` and `LOC` records are rejected.  The other ones that do not work are expected in this circumstance.   `SPF` records are not a problem since they are turned into `TXT` record types.
+In 2025, the provider maintainer has confirmed that `ALIAS` and `LOC` records are rejected. The other ones that do not work are expected in this circumstance. `SPF` records are not a problem since they are turned into `TXT` record types.
 
 ## Limitations
 
