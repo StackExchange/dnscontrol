@@ -78,7 +78,7 @@ func init() {
 }
 ```
 
-STep 2b: Create the struct
+Step 2b: Create the struct
 
 Create a struct that will store the fields of this rtype.
 
@@ -171,6 +171,108 @@ TODO:
 * `js/parse_test`
 * Run the integration tests for BIND
 * Write documentation
+
+## Add a capability for the record type
+
+You'll need to mark which providers support this record type. The
+initial PR should implement this record for the `BIND` provider at
+a minimum.  `BIND` outputs non-standard rtypes as a comment.
+
+-   Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
+    it to the end of the list.)
+-   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
+
+```shell
+pushd providers/
+go tool stringer -type=Capability
+popd
+```
+alternatively
+
+```shell
+pushd providers/
+go generate
+popd
+```
+
+-   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
+
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    func matrixData() *FeatureMatrix {
+        const (
+            ...
+            DomainModifierCaa    = "[`CAA`](language-reference/domain-modifiers/CAA.md)"
+    +       DomainModifierFoo    = "[`FOO`](language-reference/domain-modifiers/FOO.md)"
+            DomainModifierLoc    = "[`LOC`](language-reference/domain-modifiers/LOC.md)"
+            ...
+        )
+        matrix := &FeatureMatrix{
+            Providers: map[string]FeatureMap{},
+            Features: []string{
+                ...
+                DomainModifierCaa,
+    +           DomainModifierFoo,
+                DomainModifierLoc,
+                ...
+            },
+        }
+    ```
+    {% endcode %}
+
+    then add it later in the file with a `setCapability()` statement, which should look like this:
+
+    {% code title="dnscontrol/build/generate/featureMatrix.go" %}
+    ```diff
+    ...
+    +       setCapability(
+    +           DomainModifierFoo,
+    +           providers.CanUseFOO,
+    +       )
+    ...
+    ```
+    {% endcode %}
+
+-   Add the capability to the list of features that zones are validated
+    against (i.e. if you want DNSControl to report an error if this
+    feature is used with a DNS provider that doesn't support it). That's
+    in the `checkProviderCapabilities` function in
+    `pkg/normalize/validate.go`. It should look like this:
+
+    {% code title="pkg/normalize/validate.go" %}
+    ```diff
+    var providerCapabilityChecks = []pairTypeCapability{
+    ...
+    +   capabilityCheck("FOO", providers.CanUseFOO),
+    ...
+    ```
+    {% endcode %}
+
+-   Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
+
+DNSControl will warn/error if this new record is used with a
+provider that does not support the capability.
+
+-   Add the capability to the validations in `pkg/normalize/validate.go`
+    by adding it to `providerCapabilityChecks`
+-   Some capabilities can't be tested for. If
+    such testing can't be done, add it to the whitelist in function
+    `TestCapabilitiesAreFiltered` in
+    `pkg/normalize/capabilities_test.go`
+
+If the capabilities testing is not configured correctly, `go test ./...`
+will report something like the `MISSING` message below. In this
+example we removed `providers.CanUseCAA` from the
+`providerCapabilityChecks` list.
+
+```text
+--- FAIL: TestCapabilitiesAreFiltered (0.00s)
+    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
+    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
+    capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
+```
+
+
 
 # Update providers
 

@@ -77,13 +77,16 @@ func init() {
 	//providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", providerName, "")
 	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+
+	// providers.SupportedRecordTypes(provderName,
+	// 	"CLOUDFLAREAPI_SINGLE_REDIRECT",
+	// )
 }
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
 	ipConversions []transform.IPConversion
 	ignoredLabels []string
-	//manageRedirects bool // Old "Page Rule"-style redirects.
 	manageWorkers bool
 	accountID     string
 	cfClient      *cloudflare.API
@@ -136,15 +139,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 			rec.Metadata["cloudflare_proxy"] = p
 		}
 	}
-
-	// if c.manageRedirects { // if old-style "page rules" are still being managed.
-	// 	fmt.Printf("DEBUG: Getting old-style page rules for %s???\n", domain)
-	// 	// prs, err := c.getPageRules(domainID, domain)
-	// 	// if err != nil {
-	// 	// 	return nil, err
-	// 	// }
-	// 	// records = append(records, prs...)
-	// }
 
 	if c.manageSingleRedirects { // if new xor old
 		// Download the list of Single Redirects.
@@ -285,11 +279,6 @@ func genComparable(rec *models.RecordConfig) string {
 
 func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
 	switch newrec.Type {
-	// case "PAGE_RULE":
-	// 	return []*models.Correction{{
-	// 		Msg: msg,
-	// 		F:   func() error { return c.createPageRule(domainID, *newrec.CloudflareRedirect) },
-	// 	}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
@@ -310,8 +299,6 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
 	var idTxt string
 	switch oldrec.Type {
-	// case "PAGE_RULE":
-	// 	idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
@@ -322,13 +309,6 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 	msg = msg + color.YellowString(" id=%v", idTxt)
 
 	switch newrec.Type {
-	// case "PAGE_RULE":
-	// 	return []*models.Correction{{
-	// 		Msg: msg,
-	// 		F: func() error {
-	// 			return c.updatePageRule(idTxt, domainID, *newrec.CloudflareRedirect)
-	// 		},
-	// 	}}
 	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		return []*models.Correction{{
 			Msg: msg,

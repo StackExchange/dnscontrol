@@ -48,3 +48,19 @@ func (handle *RP) CopyToLegacyFields(rec *models.RecordConfig) {
 	rp := rec.F.(*RP)
 	_ = rec.SetTarget(rp.Mbox + " " + rp.Txt)
 }
+
+// func (handle *RP) TestData() {
+// 	return []itest.TestGroup[
+// 		itest.Testgroup("RP",
+//                         itest.tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
+//                         itest.tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
+//                         itest.tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
+//                 ),
+// 		itest.Testgroup("RP-apex",
+//                         itest.tc("Create RP", rp("@", "user.example.com.", "bar.com.")),
+//                         itest.tc("Create RP", rp("@", "other.example.com.", "bar.com.")),
+//                         itest.tc("Create RP", rp("@", "other.example.com.", "example.com.")),
+//                 ),
+// 	]
+
+// }

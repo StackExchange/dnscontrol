@@ -174,6 +174,7 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("RP",
+			requires(providers.CanUseRP),
 			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
 			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
 			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),

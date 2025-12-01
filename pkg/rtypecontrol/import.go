@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -57,6 +58,22 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dc *models.DomainC
 	return rec, nil
 }
 
+func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dc *models.DomainConfig) (*models.RecordConfig, error) {
+	if _, ok := Func[t]; !ok {
+		return nil, fmt.Errorf("record type %q is not supported", t)
+	}
+	if t == "" {
+		panic("rtypecontrol: NewRecordConfigFromStruct: empty record type")
+	}
+
+	rec, err := dns.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
+	if err != nil {
+		return nil, err
+	}
+	return NewRecordConfigFromStruct(name, ttl, t, rec, dc)
+
+}
+
 func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc *models.DomainConfig) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
@@ -73,11 +90,6 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 	}
 	setRecordNames(rec, dc, name)
 
-	// // Fill in the .F/.Fields* fields.
-	// err := Func[t].FromArgs(dc, rec, []any{name, fields.(*dns.RP).Mbox, fields.(*dns.RP).Txt})
-	// if err != nil {
-	// 	return nil, err
-	// }
 	err := Func[t].FromStruct(dc, rec, name, fields)
 	if err != nil {
 		return nil, err
