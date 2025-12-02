@@ -64,6 +64,11 @@ type dnsRecordCreate struct {
 	Target string `json:"target,omitempty"`
 }
 
+type dnsRecordUpdate struct {
+	Target string `json:"target,omitempty"`
+	TTL    int64  `json:"ttl,omitempty"`
+}
+
 // Get zone information
 // See https://developer.infomaniak.com/docs/api/get/2/zones/%7Bzone%7D
 func (p *infomaniakProvider) getDNSZone(zone string) (*dnsZone, error) {
@@ -180,6 +185,42 @@ func (p *infomaniakProvider) createDNSRecord(zone string, rec *dnsRecordCreate) 
 
 	if response.Result == "error" {
 		return nil, fmt.Errorf("failed to create %s record in zone %s: %s", rec.Type, zone, response.Error.Description)
+	}
+
+	return &response.Data, nil
+}
+
+// Update a dns record in a given zone
+// See https://developer.infomaniak.com/docs/api/put/2/zones/%7Bzone%7D/records/%7Brecord%7D
+func (p *infomaniakProvider) updateDNSRecord(zone string, recordID string, rec *dnsRecordUpdate) (*dnsRecord, error) {
+	reqURL := fmt.Sprintf("%s/zones/%s/records/%s", baseURL, zone, recordID)
+
+	data, err := json.Marshal(rec)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, reqURL, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+p.apiToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	response := &dnsRecordResponse{}
+	err = json.NewDecoder(res.Body).Decode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Result == "error" {
+		return nil, fmt.Errorf("failed to update record %s in zone %s: %s", recordID, zone, response.Error.Description)
 	}
 
 	return &response.Data, nil
