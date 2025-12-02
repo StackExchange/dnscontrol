@@ -119,6 +119,7 @@ jobs:
       SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
       UNIFI_DOMAIN: ${{ vars.UNIFI_DOMAIN }}
+      VERCEL_DOMAIN: ${{ vars.VERCEL_DOMAIN }}
 
       # PROVIDER SECRET LIST
       # The above providers have additional env variables they
@@ -223,6 +224,9 @@ jobs:
       UNIFI_HOST: ${{ secrets.UNIFI_HOST }}
       UNIFI_SITE: ${{ secrets.UNIFI_SITE }}
       UNIFI_SKIP_TLS_VERIFY: ${{ secrets.UNIFI_SKIP_TLS_VERIFY }}
+      #
+      VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+      VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.provider }}
