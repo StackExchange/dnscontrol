@@ -83,13 +83,52 @@ With `IGNORE_EXTERNAL_DNS` enabled, DNSControl will:
 
 ## Caveats
 
-- This feature only works with external-dns's default TXT record naming convention
-  (type prefix like `a-`, `cname-`, etc.). Custom prefixes or suffixes configured
-  via `--txt-prefix` or `--txt-suffix` may not be detected correctly.
-- Legacy external-dns TXT record formats (without type prefix) are also supported
-  but may match more records than intended.
-- External-dns must be using the TXT registry (the default). Other registries
-  like DynamoDB or AWS-SD are not supported.
+### TXT Registry Format
+
+This feature relies on external-dns's [TXT registry](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md),
+which is the default registry type. The TXT record content format is well-documented:
+
+```
+"heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+```
+
+This feature detects the `heritage=external-dns` marker in TXT records to identify
+external-dns managed records.
+
+### Default Prefix Required
+
+This feature works with external-dns's **default** TXT record naming convention,
+which uses the `--txt-prefix="%{record_type}-"` format (the default since v0.16+).
+This creates TXT records like:
+
+- `a-myapp.example.com` for A records
+- `cname-api.example.com` for CNAME records
+
+If you've configured external-dns with a **custom** `--txt-prefix` or `--txt-suffix`,
+those records may not be detected correctly. For example:
+
+- `--txt-prefix="extdns-"` would create `extdns-myapp.example.com` (not detected)
+- `--txt-suffix="-.extdns"` would create `myapp-.extdns.example.com` (not detected)
+
+If you need support for custom prefixes/suffixes, please open an issue.
+
+### Unsupported Registries
+
+External-dns supports multiple registry types. This feature **only** supports:
+
+- ✅ **TXT registry** (default) - Stores metadata in TXT records
+
+The following registries are **not supported**:
+
+- ❌ **DynamoDB registry** - Stores metadata in AWS DynamoDB
+- ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery  
+- ❌ **noop registry** - No metadata persistence
+
+### Legacy TXT Format
+
+External-dns versions prior to v0.16 created TXT records without the record type
+prefix (e.g., `myapp.example.com` instead of `a-myapp.example.com`). This legacy
+format is partially supported but may match more records than intended.
 
 ## See also
 
