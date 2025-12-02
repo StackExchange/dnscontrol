@@ -95,7 +95,7 @@ func TestIsExternalDNSTxtRecord(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotIsExtDNS, gotInfo := isExternalDNSTxtRecord(tt.record, domain)
+			gotIsExtDNS, gotInfo := isExternalDNSTxtRecord(tt.record, domain, "")
 
 			if gotIsExtDNS != tt.wantIsExtDNS {
 				t.Errorf("isExternalDNSTxtRecord() isExtDNS = %v, want %v", gotIsExtDNS, tt.wantIsExtDNS)
@@ -182,7 +182,7 @@ func TestParseExternalDNSTxtLabel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parseExternalDNSTxtLabel(tt.label)
+			got := parseExternalDNSTxtLabel(tt.label, "")
 
 			if got.Label != tt.wantLabel {
 				t.Errorf("parseExternalDNSTxtLabel() Label = %q, want %q", got.Label, tt.wantLabel)
@@ -209,7 +209,7 @@ func TestFindExternalDNSManagedRecords(t *testing.T) {
 		makeTestRecord("@", "MX", "mail.example.com.", domain),
 	}
 
-	managed := findExternalDNSManagedRecords(existing, domain)
+	managed := findExternalDNSManagedRecords(existing, domain, "")
 
 	// Check that expected keys are present
 	expectedKeys := []string{
@@ -251,7 +251,7 @@ func TestGetExternalDNSIgnoredRecords(t *testing.T) {
 		makeTestRecord("@", "TXT", "v=spf1 -all", domain),
 	}
 
-	ignored := GetExternalDNSIgnoredRecords(existing, domain)
+	ignored := GetExternalDNSIgnoredRecords(existing, domain, "")
 
 	if len(ignored) != 2 {
 		t.Errorf("Expected 2 ignored records, got %d", len(ignored))
@@ -286,7 +286,7 @@ func TestGetExternalDNSIgnoredRecords_NoExternalDNS(t *testing.T) {
 		makeTestRecord("www", "CNAME", "static.example.com.", domain),
 	}
 
-	ignored := GetExternalDNSIgnoredRecords(existing, domain)
+	ignored := GetExternalDNSIgnoredRecords(existing, domain, "")
 
 	if len(ignored) != 0 {
 		t.Errorf("Expected 0 ignored records when no external-dns records exist, got %d", len(ignored))
@@ -303,10 +303,94 @@ func TestGetExternalDNSIgnoredRecords_LegacyFormat(t *testing.T) {
 		makeTestRecord("legacyapp", "AAAA", "::1", domain),
 	}
 
-	ignored := GetExternalDNSIgnoredRecords(existing, domain)
+	ignored := GetExternalDNSIgnoredRecords(existing, domain, "")
 
 	// Legacy format should match the TXT and common record types
 	if len(ignored) < 3 {
 		t.Errorf("Expected at least 3 ignored records for legacy format, got %d", len(ignored))
+	}
+}
+
+func TestGetExternalDNSIgnoredRecords_CustomPrefix(t *testing.T) {
+	domain := "example.com"
+
+	// Custom prefix format: e.g., "extdns-www" for "www" record
+	existing := models.Records{
+		makeTestRecord("extdns-www", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("www", "A", "10.0.0.1", domain),
+		makeTestRecord("extdns-api", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("api", "CNAME", "app.example.com.", domain),
+		// Non-external-dns records
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+	}
+
+	// Without custom prefix, only the TXT records themselves should be detected
+	// (but the A/CNAME won't be linked because "extdns-" isn't a known type prefix)
+	ignoredDefault := GetExternalDNSIgnoredRecords(existing, domain, "")
+
+	// With custom prefix, both TXT and their managed records should be detected
+	ignoredCustom := GetExternalDNSIgnoredRecords(existing, domain, "extdns-")
+
+	// Custom prefix should find more records
+	if len(ignoredCustom) <= len(ignoredDefault) {
+		t.Errorf("Expected custom prefix to find more records: default=%d, custom=%d",
+			len(ignoredDefault), len(ignoredCustom))
+	}
+
+	// Should find: extdns-www:TXT, www:A/AAAA/CNAME/etc, extdns-api:TXT, api:A/AAAA/CNAME/etc
+	if len(ignoredCustom) < 4 {
+		t.Errorf("Expected at least 4 ignored records with custom prefix, got %d", len(ignoredCustom))
+	}
+}
+
+func TestParseExternalDNSTxtLabel_CustomPrefix(t *testing.T) {
+	tests := []struct {
+		name           string
+		label          string
+		customPrefix   string
+		wantLabel      string
+		wantRecordType string
+	}{
+		{
+			name:           "custom prefix with record type",
+			label:          "extdns-a-myapp",
+			customPrefix:   "extdns-",
+			wantLabel:      "myapp",
+			wantRecordType: "A",
+		},
+		{
+			name:           "custom prefix without record type",
+			label:          "extdns-www",
+			customPrefix:   "extdns-",
+			wantLabel:      "www",
+			wantRecordType: "", // No record type in this format
+		},
+		{
+			name:           "custom prefix apex domain",
+			label:          "extdns-",
+			customPrefix:   "extdns-",
+			wantLabel:      "@",
+			wantRecordType: "",
+		},
+		{
+			name:           "prefix not found - fallback to legacy",
+			label:          "other-www",
+			customPrefix:   "extdns-",
+			wantLabel:      "other-www",
+			wantRecordType: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseExternalDNSTxtLabel(tt.label, tt.customPrefix)
+
+			if got.Label != tt.wantLabel {
+				t.Errorf("parseExternalDNSTxtLabel() Label = %q, want %q", got.Label, tt.wantLabel)
+			}
+			if got.RecordType != tt.wantRecordType {
+				t.Errorf("parseExternalDNSTxtLabel() RecordType = %q, want %q", got.RecordType, tt.wantRecordType)
+			}
+		})
 	}
 }

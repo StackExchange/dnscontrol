@@ -1715,16 +1715,30 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
  * ## Usage
  *
  * ```javascript
+ * // Default: detect standard external-dns prefixes (a-, cname-, etc.)
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   IGNORE_EXTERNAL_DNS,
- *   // Your static DNS records managed by DNSControl
+ *   IGNORE_EXTERNAL_DNS(),
  *   A("www", "1.2.3.4"),
- *   A("mail", "1.2.3.5"),
- *   MX("@", 10, "mail"),
- *   // Records created by external-dns (from Kubernetes Ingresses/Services)
- *   // will be automatically detected and ignored
+ * );
+ *
+ * // With custom prefix: if external-dns is configured with --txt-prefix="extdns-"
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS("extdns-"),
+ *   A("www", "1.2.3.4"),
  * );
  * ```
+ *
+ * ## Custom Prefix Support
+ *
+ * If your external-dns is configured with a custom `--txt-prefix` (e.g., `"extdns-"`),
+ * pass that prefix to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * IGNORE_EXTERNAL_DNS("extdns-")  // Matches TXT records like "extdns-www", "extdns-api"
+ * ```
+ *
+ * Without a prefix argument, it detects the default format (`%{record_type}-` prefixes
+ * like `a-`, `cname-`, etc.) and legacy format (same name as managed record).
  *
  * ## Example scenario
  *
@@ -1736,7 +1750,7 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
  * 1. An A record: `myapp.example.com` → `10.0.0.1`
  * 2. A TXT record: `a-myapp.example.com` → `"heritage=external-dns,external-dns/owner=my-cluster,external-dns/resource=ingress/default/myapp"`
  *
- * With `IGNORE_EXTERNAL_DNS` enabled, DNSControl will:
+ * With `IGNORE_EXTERNAL_DNS()` enabled, DNSControl will:
  * - Detect the TXT record at `a-myapp.example.com` as an external-dns ownership record
  * - Ignore both the TXT record and the A record at `myapp.example.com`
  * - Only manage the records you explicitly define in your `dnsconfig.js`
@@ -1745,15 +1759,14 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
  *
  * | Feature | Use case |
  * |---------|----------|
- * | `IGNORE_EXTERNAL_DNS` | Automatically ignore all external-dns managed records |
+ * | `IGNORE_EXTERNAL_DNS()` | Automatically ignore all external-dns managed records |
  * | `IGNORE("*.k8s", "A,AAAA,CNAME,TXT")` | Ignore records under a specific subdomain pattern |
  * | `NO_PURGE` | Don't delete any records (less precise, records may accumulate) |
  *
  * ## Caveats
  *
- * - This feature only works with external-dns's default TXT record naming convention
- *   (type prefix like `a-`, `cname-`, etc.). Custom prefixes or suffixes configured
- *   via `--txt-prefix` or `--txt-suffix` may not be detected correctly.
+ * - Custom prefixes/suffixes: Use the optional prefix parameter if your external-dns
+ *   is configured with `--txt-prefix` or similar.
  * - Legacy external-dns TXT record formats (without type prefix) are also supported
  *   but may match more records than intended.
  * - External-dns must be using the TXT registry (the default). Other registries
@@ -1765,9 +1778,10 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
  * * [`NO_PURGE`](NO_PURGE.md) for preventing deletion of all unmanaged records
  * * [External-dns documentation](https://github.com/kubernetes-sigs/external-dns)
  *
+ * @param prefix - Optional custom prefix used by external-dns (e.g., "extdns-")
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_external_dns
  */
-declare const IGNORE_EXTERNAL_DNS: DomainModifier;
+declare function IGNORE_EXTERNAL_DNS(prefix?: string): DomainModifier;
 
 /**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.

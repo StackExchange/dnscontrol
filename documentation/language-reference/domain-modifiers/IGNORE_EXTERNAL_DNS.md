@@ -1,5 +1,9 @@
 ---
 name: IGNORE_EXTERNAL_DNS
+parameters:
+  - name: prefix
+    description: Optional custom prefix used by external-dns (e.g., "extdns-")
+    required: false
 ---
 
 `IGNORE_EXTERNAL_DNS` makes DNSControl automatically detect and ignore DNS records
@@ -46,8 +50,9 @@ also create a TXT record at `a-myapp.example.com` containing the heritage inform
 
 {% code title="dnsconfig.js" %}
 ```javascript
+// Default: detect standard external-dns prefixes (a-, cname-, etc.)
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  IGNORE_EXTERNAL_DNS,
+  IGNORE_EXTERNAL_DNS(),
   // Your static DNS records managed by DNSControl
   A("www", "1.2.3.4"),
   A("mail", "1.2.3.5"),
@@ -57,6 +62,28 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 );
 ```
 {% endcode %}
+
+## Custom Prefix Support
+
+If your external-dns is configured with a custom `--txt-prefix` (as documented in the
+[external-dns TXT registry docs](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md#prefixes-and-suffixes)),
+pass that prefix to `IGNORE_EXTERNAL_DNS()`:
+
+{% code title="dnsconfig.js" %}
+```javascript
+// If external-dns is configured with --txt-prefix="extdns-"
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+  IGNORE_EXTERNAL_DNS("extdns-"),
+  A("www", "1.2.3.4"),
+);
+```
+{% endcode %}
+
+This will match TXT records like `extdns-www`, `extdns-api`, etc.
+
+Without a prefix argument, it detects:
+- The default `%{record_type}-` format (prefixes like `a-`, `cname-`, etc.)
+- Legacy format (TXT record with same name as managed record)
 
 ## Example scenario
 
@@ -95,22 +122,24 @@ which is the default registry type. The TXT record content format is well-docume
 This feature detects the `heritage=external-dns` marker in TXT records to identify
 external-dns managed records.
 
-### Default Prefix Required
+### Custom Prefix Support
 
-This feature works with external-dns's **default** TXT record naming convention,
-which uses the `--txt-prefix="%{record_type}-"` format (the default since v0.16+).
-This creates TXT records like:
+This feature supports custom prefixes configured via external-dns's `--txt-prefix` flag.
+If you're using a custom prefix, pass it to `IGNORE_EXTERNAL_DNS()`:
 
-- `a-myapp.example.com` for A records
-- `cname-api.example.com` for CNAME records
+```javascript
+// If external-dns uses --txt-prefix="extdns-"
+IGNORE_EXTERNAL_DNS("extdns-")
 
-If you've configured external-dns with a **custom** `--txt-prefix` or `--txt-suffix`,
-those records may not be detected correctly. For example:
+// If external-dns uses --txt-prefix="myprefix-%{record_type}-"  
+IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
+```
 
-- `--txt-prefix="extdns-"` would create `extdns-myapp.example.com` (not detected)
-- `--txt-suffix="-.extdns"` would create `myapp-.extdns.example.com` (not detected)
+Without a prefix argument, it detects:
+- Default format: `%{record_type}-` prefix (e.g., `a-`, `cname-`)
+- Legacy format: Same name as managed record (no prefix)
 
-If you need support for custom prefixes/suffixes, please open an issue.
+**Note:** Suffix-based naming (`--txt-suffix`) is not currently supported.
 
 ### Unsupported Registries
 
@@ -128,7 +157,8 @@ The following registries are **not supported**:
 
 External-dns versions prior to v0.16 created TXT records without the record type
 prefix (e.g., `myapp.example.com` instead of `a-myapp.example.com`). This legacy
-format is partially supported but may match more records than intended.
+format is supported but may match more records than intended since the record type
+cannot be determined.
 
 ## See also
 

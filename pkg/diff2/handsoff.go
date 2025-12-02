@@ -107,6 +107,7 @@ func handsoff(
 	unmanagedSafely bool,
 	noPurge bool,
 	ignoreExternalDNS bool,
+	externalDNSPrefix string,
 ) (models.Records, []string, error) {
 	var msgs []string
 
@@ -124,7 +125,7 @@ func handsoff(
 	// Process IGNORE_EXTERNAL_DNS feature:
 	var externalDNSIgnored models.Records
 	if ignoreExternalDNS {
-		externalDNSIgnored = GetExternalDNSIgnoredRecords(existing, domain)
+		externalDNSIgnored = GetExternalDNSIgnoredRecords(existing, domain, externalDNSPrefix)
 		if len(externalDNSIgnored) != 0 {
 			msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE_EXTERNAL_DNS%s", len(externalDNSIgnored), punct))
 			msgs = append(msgs, reportSkips(externalDNSIgnored, !printer.SkinnyReport)...)

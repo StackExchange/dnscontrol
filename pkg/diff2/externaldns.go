@@ -32,7 +32,8 @@ type externalDNSManagedRecord struct {
 
 // isExternalDNSTxtRecord checks if a TXT record is an external-dns ownership record.
 // It returns true and the managed record info if it is, false otherwise.
-func isExternalDNSTxtRecord(rec *models.RecordConfig, domain string) (bool, *externalDNSManagedRecord) {
+// customPrefix is an optional prefix that external-dns was configured with (e.g., "extdns-").
+func isExternalDNSTxtRecord(rec *models.RecordConfig, domain string, customPrefix string) (bool, *externalDNSManagedRecord) {
 	if rec.Type != "TXT" {
 		return false, nil
 	}
@@ -53,7 +54,7 @@ func isExternalDNSTxtRecord(rec *models.RecordConfig, domain string) (bool, *ext
 	// - With custom suffix: e.g., "myapp-externaldns.example.com"
 
 	label := rec.GetLabel()
-	managed := parseExternalDNSTxtLabel(label)
+	managed := parseExternalDNSTxtLabel(label, customPrefix)
 
 	return true, managed
 }
@@ -70,7 +71,22 @@ func isExternalDNSTxtRecord(rec *models.RecordConfig, domain string) (bool, *ext
 //
 // Without %{record_type}, it just uses the prefix directly, and the record type
 // is encoded as "a-", "cname-", etc. at the start of the label.
-func parseExternalDNSTxtLabel(label string) *externalDNSManagedRecord {
+//
+// If customPrefix is non-empty, it will be stripped first before looking for
+// record type prefixes.
+func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSManagedRecord {
+	workingLabel := label
+
+	// If a custom prefix is specified, strip it first
+	if customPrefix != "" {
+		if strings.HasPrefix(strings.ToLower(workingLabel), strings.ToLower(customPrefix)) {
+			workingLabel = workingLabel[len(customPrefix):]
+		} else {
+			// Custom prefix specified but not found - this might be a legacy record
+			// Continue with original label
+		}
+	}
+
 	// Standard prefixes used by external-dns
 	prefixes := []struct {
 		prefix     string
@@ -86,8 +102,8 @@ func parseExternalDNSTxtLabel(label string) *externalDNSManagedRecord {
 	}
 
 	for _, p := range prefixes {
-		if strings.HasPrefix(strings.ToLower(label), p.prefix) {
-			managedLabel := strings.TrimPrefix(strings.ToLower(label), p.prefix)
+		if strings.HasPrefix(strings.ToLower(workingLabel), p.prefix) {
+			managedLabel := strings.TrimPrefix(strings.ToLower(workingLabel), p.prefix)
 			// Handle the case where the managed label is empty (apex domain)
 			if managedLabel == "" {
 				managedLabel = "@"
@@ -96,6 +112,21 @@ func parseExternalDNSTxtLabel(label string) *externalDNSManagedRecord {
 				Label:      managedLabel,
 				RecordType: p.recordType,
 			}
+		}
+	}
+
+	// If custom prefix was specified and stripped, the remaining label is the managed record
+	// (for prefixes without %{record_type})
+	if customPrefix != "" && workingLabel != label {
+		// The prefix was stripped but no record type found
+		// This means it's a simple prefix like "extdns-" without record type
+		// We can't determine the record type, so match all types
+		if workingLabel == "" {
+			workingLabel = "@"
+		}
+		return &externalDNSManagedRecord{
+			Label:      workingLabel,
+			RecordType: "", // Empty means match any type
 		}
 	}
 
@@ -111,13 +142,14 @@ func parseExternalDNSTxtLabel(label string) *externalDNSManagedRecord {
 // findExternalDNSManagedRecords scans the existing records for external-dns TXT records
 // and builds a map of records that are managed by external-dns.
 // Returns a map keyed by "label:type" -> true for managed records
-func findExternalDNSManagedRecords(existing models.Records, domain string) map[string]bool {
+// customPrefix is an optional prefix that external-dns was configured with (e.g., "extdns-").
+func findExternalDNSManagedRecords(existing models.Records, domain string, customPrefix string) map[string]bool {
 	managed := make(map[string]bool)
 	txtRecords := make([]*models.RecordConfig, 0)
 
 	// First pass: find all external-dns TXT records
 	for _, rec := range existing {
-		isExtDNS, info := isExternalDNSTxtRecord(rec, domain)
+		isExtDNS, info := isExternalDNSTxtRecord(rec, domain, customPrefix)
 		if isExtDNS && info != nil {
 			// Mark the TXT record itself as managed
 			txtKey := rec.GetLabel() + ":TXT"
@@ -147,8 +179,9 @@ func findExternalDNSManagedRecords(existing models.Records, domain string) map[s
 
 // filterExternalDNSRecords takes a list of existing records and returns those
 // that should be ignored because they are managed by external-dns.
-func filterExternalDNSRecords(existing models.Records, domain string) models.Records {
-	managedMap := findExternalDNSManagedRecords(existing, domain)
+// customPrefix is an optional prefix that external-dns was configured with (e.g., "extdns-").
+func filterExternalDNSRecords(existing models.Records, domain string, customPrefix string) models.Records {
+	managedMap := findExternalDNSManagedRecords(existing, domain, customPrefix)
 	if len(managedMap) == 0 {
 		return nil
 	}
@@ -167,6 +200,7 @@ func filterExternalDNSRecords(existing models.Records, domain string) models.Rec
 // GetExternalDNSIgnoredRecords returns the records that should be ignored
 // because they are managed by external-dns. This is called from handsoff()
 // when IgnoreExternalDNS is enabled for a domain.
-func GetExternalDNSIgnoredRecords(existing models.Records, domain string) models.Records {
-	return filterExternalDNSRecords(existing, domain)
+// customPrefix is an optional prefix that external-dns was configured with (e.g., "extdns-").
+func GetExternalDNSIgnoredRecords(existing models.Records, domain string, customPrefix string) models.Records {
+	return filterExternalDNSRecords(existing, domain, customPrefix)
 }
