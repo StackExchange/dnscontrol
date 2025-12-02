@@ -55,5 +55,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	a.Add("TXT", rejectif.TxtHasUnpairedBackslash) // Last verified at 2025-12-03: Alibaba mishandles odd backslashes
 	a.Add("*", labelConstraint)                    // Last verified at 2025-12-03: Alibaba only allows ASCII + Chinese, rejects other Unicode
 	a.Add("CNAME", targetConstraint)               // Last verified at 2025-12-03: CNAME target must be ASCII or Chinese
+	a.Add("SRV", rejectif.SrvHasNullTarget)        // Last verified at 2025-12-03: SRV target must not be null
+	a.Add("SRV", rejectif.SrvHasEmptyTarget)       // Last verified at 2025-12-03: SRV target must not be empty
 	return a.Audit(records)
 }
