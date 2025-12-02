@@ -134,11 +134,32 @@ IGNORE_EXTERNAL_DNS("extdns-")
 
 // If external-dns uses --txt-prefix="myprefix-%{record_type}-"  
 IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
+
+// If external-dns uses --txt-prefix="extdns-%{record_type}." (period format)
+// This is recommended for apex domain support per external-dns docs
+IGNORE_EXTERNAL_DNS("extdns-")  // Works with both hyphen and period format
 ```
 
 Without a prefix argument, it detects:
 - Default format: `%{record_type}-` prefix (e.g., `a-`, `cname-`)
 - Legacy format: Same name as managed record (no prefix)
+
+#### Period Format for Apex Domains
+
+If you need external-dns to manage apex (root) domain records, the external-dns
+documentation recommends using a prefix with `%{record_type}` followed by a period:
+
+```yaml
+# external-dns deployment args
+args:
+  - --txt-prefix=extdns-%{record_type}.
+```
+
+This creates TXT records like `extdns-a.www` for the `www` A record, and `extdns-a`
+for the apex A record. DNSControl's `IGNORE_EXTERNAL_DNS` supports both formats:
+
+- Hyphen format: `extdns-a-www` (from `--txt-prefix=extdns-` with default `%{record_type}-`)
+- Period format: `extdns-a.www` (from `--txt-prefix=extdns-%{record_type}.`)
 
 **Note:** Suffix-based naming (`--txt-suffix`) is not currently supported.
 

@@ -125,9 +125,27 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 		}
 	}
 
-	// If custom prefix was specified and stripped, the remaining label is the managed record
-	// (for prefixes without %{record_type})
+	// If custom prefix was specified and stripped, check if the remaining label
+	// is a record type indicator (for period format apex domains: extdns-a. at apex becomes extdns-a)
 	if customPrefix != "" && workingLabel != label {
+		// Check if remaining label is just a record type (apex domain with period format)
+		// e.g., prefix "extdns-" with label "extdns-a" → workingLabel "a" → apex A record
+		apexRecordTypes := map[string]string{
+			"a":     "A",
+			"aaaa":  "AAAA",
+			"cname": "CNAME",
+			"ns":    "NS",
+			"mx":    "MX",
+			"srv":   "SRV",
+			"txt":   "TXT",
+		}
+		if recType, ok := apexRecordTypes[strings.ToLower(workingLabel)]; ok {
+			return &externalDNSManagedRecord{
+				Label:      "@",
+				RecordType: recType,
+			}
+		}
+
 		// The prefix was stripped but no record type found
 		// This means it's a simple prefix like "extdns-" without record type
 		// We can't determine the record type, so match all types

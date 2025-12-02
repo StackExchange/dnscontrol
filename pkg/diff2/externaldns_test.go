@@ -379,6 +379,49 @@ func TestParseExternalDNSTxtLabel_CustomPrefix(t *testing.T) {
 			wantLabel:      "other-www",
 			wantRecordType: "",
 		},
+		// Period format tests (--txt-prefix=extdns-%{record_type}.)
+		{
+			name:           "period format A record",
+			label:          "extdns-a.myapp",
+			customPrefix:   "extdns-",
+			wantLabel:      "myapp",
+			wantRecordType: "A",
+		},
+		{
+			name:           "period format AAAA record",
+			label:          "extdns-aaaa.myapp",
+			customPrefix:   "extdns-",
+			wantLabel:      "myapp",
+			wantRecordType: "AAAA",
+		},
+		{
+			name:           "period format CNAME record",
+			label:          "extdns-cname.www",
+			customPrefix:   "extdns-",
+			wantLabel:      "www",
+			wantRecordType: "CNAME",
+		},
+		{
+			name:           "period format apex A record",
+			label:          "extdns-a",
+			customPrefix:   "extdns-",
+			wantLabel:      "@",
+			wantRecordType: "A",
+		},
+		{
+			name:           "period format apex AAAA record",
+			label:          "extdns-aaaa",
+			customPrefix:   "extdns-",
+			wantLabel:      "@",
+			wantRecordType: "AAAA",
+		},
+		{
+			name:           "period format apex CNAME record",
+			label:          "extdns-cname",
+			customPrefix:   "extdns-",
+			wantLabel:      "@",
+			wantRecordType: "CNAME",
+		},
 	}
 
 	for _, tt := range tests {
@@ -392,5 +435,94 @@ func TestParseExternalDNSTxtLabel_CustomPrefix(t *testing.T) {
 				t.Errorf("parseExternalDNSTxtLabel() RecordType = %q, want %q", got.RecordType, tt.wantRecordType)
 			}
 		})
+	}
+}
+
+// TestGetExternalDNSIgnoredRecords_PeriodFormat tests the period format used when
+// external-dns is configured with --txt-prefix=prefix-%{record_type}.
+// This creates TXT records like "extdns-a.www" for "www" A record.
+func TestGetExternalDNSIgnoredRecords_PeriodFormat(t *testing.T) {
+	domain := "example.com"
+
+	existing := models.Records{
+		// Period format TXT records (from --txt-prefix=extdns-%{record_type}.)
+		makeTestRecord("extdns-a.www", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("www", "A", "10.0.0.1", domain),
+		makeTestRecord("extdns-cname.api", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("api", "CNAME", "app.example.com.", domain),
+		// Non-external-dns records
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+	}
+
+	ignored := GetExternalDNSIgnoredRecords(existing, domain, "extdns-")
+
+	// Should find: extdns-a.www:TXT, www:A, extdns-cname.api:TXT, api:CNAME
+	if len(ignored) < 4 {
+		t.Errorf("Expected at least 4 ignored records with period format, got %d", len(ignored))
+	}
+
+	// Verify specific records are ignored
+	found := make(map[string]bool)
+	for _, rec := range ignored {
+		key := rec.GetLabel() + ":" + rec.Type
+		found[key] = true
+	}
+
+	expectedKeys := []string{"extdns-a.www:TXT", "www:A", "extdns-cname.api:TXT", "api:CNAME"}
+	for _, key := range expectedKeys {
+		if !found[key] {
+			t.Errorf("Expected record %q to be ignored", key)
+		}
+	}
+}
+
+// TestGetExternalDNSIgnoredRecords_PeriodFormatApex tests apex domain detection
+// with the period format (--txt-prefix=prefix-%{record_type}.).
+// For apex domains, the TXT label becomes "extdns-a" (just prefix + record type).
+func TestGetExternalDNSIgnoredRecords_PeriodFormatApex(t *testing.T) {
+	domain := "example.com"
+
+	existing := models.Records{
+		// Period format apex A record: TXT at "extdns-a" manages "@" A record
+		makeTestRecord("extdns-a", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("@", "A", "10.0.0.1", domain),
+		// Period format apex AAAA record
+		makeTestRecord("extdns-aaaa", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		makeTestRecord("@", "AAAA", "::1", domain),
+		// Non-external-dns apex records (should not be ignored)
+		makeTestRecord("@", "MX", "mail.example.com.", domain),
+		makeTestRecord("@", "TXT", "v=spf1 -all", domain),
+	}
+
+	ignored := GetExternalDNSIgnoredRecords(existing, domain, "extdns-")
+
+	// Should find: extdns-a:TXT, @:A, extdns-aaaa:TXT, @:AAAA
+	if len(ignored) != 4 {
+		t.Errorf("Expected 4 ignored records for apex with period format, got %d", len(ignored))
+		for _, rec := range ignored {
+			t.Logf("  ignored: %s:%s", rec.GetLabel(), rec.Type)
+		}
+	}
+
+	// Verify specific records are ignored
+	found := make(map[string]bool)
+	for _, rec := range ignored {
+		key := rec.GetLabel() + ":" + rec.Type
+		found[key] = true
+	}
+
+	expectedKeys := []string{"extdns-a:TXT", "@:A", "extdns-aaaa:TXT", "@:AAAA"}
+	for _, key := range expectedKeys {
+		if !found[key] {
+			t.Errorf("Expected record %q to be ignored", key)
+		}
+	}
+
+	// Verify MX and SPF TXT are NOT ignored
+	notExpectedKeys := []string{"@:MX", "@:TXT"}
+	for _, key := range notExpectedKeys {
+		if found[key] {
+			t.Errorf("Record %q should NOT be ignored", key)
+		}
 	}
 }
