@@ -88,16 +88,25 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 	}
 
 	// Standard prefixes used by external-dns
+	// Supports both hyphen format (a-www) and period format (a.www)
+	// Period format is used when --txt-prefix includes %{record_type}. 
 	prefixes := []struct {
 		prefix     string
 		recordType string
 	}{
-		{"aaaa-", "AAAA"}, // Must check before "a-" since "aaaa-" contains "a"
-		{"a-", "A"},
+		{"aaaa.", "AAAA"}, // Period format - must check before "a." 
+		{"aaaa-", "AAAA"}, // Hyphen format - must check before "a-"
+		{"a.", "A"},       // Period format
+		{"a-", "A"},       // Hyphen format
+		{"cname.", "CNAME"},
 		{"cname-", "CNAME"},
+		{"ns.", "NS"},
 		{"ns-", "NS"},
+		{"mx.", "MX"},
 		{"mx-", "MX"},
+		{"srv.", "SRV"},
 		{"srv-", "SRV"},
+		{"txt.", "TXT"},
 		{"txt-", "TXT"},
 	}
 
