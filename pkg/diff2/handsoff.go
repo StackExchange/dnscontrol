@@ -106,6 +106,7 @@ func handsoff(
 	unmanagedConfigs []*models.UnmanagedConfig,
 	unmanagedSafely bool,
 	noPurge bool,
+	ignoreExternalDNS bool,
 ) (models.Records, []string, error) {
 	var msgs []string
 
@@ -118,6 +119,16 @@ func handsoff(
 	punct := ":"
 	if printer.MaxReport == 0 {
 		punct = "."
+	}
+
+	// Process IGNORE_EXTERNAL_DNS feature:
+	var externalDNSIgnored models.Records
+	if ignoreExternalDNS {
+		externalDNSIgnored = GetExternalDNSIgnoredRecords(existing, domain)
+		if len(externalDNSIgnored) != 0 {
+			msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE_EXTERNAL_DNS%s", len(externalDNSIgnored), punct))
+			msgs = append(msgs, reportSkips(externalDNSIgnored, !printer.SkinnyReport)...)
+		}
 	}
 
 	// Process IGNORE*() and NO_PURGE features:
@@ -150,6 +161,7 @@ func handsoff(
 	// Add the ignored/foreign items to the desired list so they are not deleted:
 	desired = append(desired, ignorable...)
 	desired = append(desired, foreign...)
+	desired = append(desired, externalDNSIgnored...)
 	return desired, msgs, nil
 }
 

@@ -1,0 +1,172 @@
+package diff2
+
+// This file implements the IGNORE_EXTERNAL_DNS feature that automatically
+// detects and ignores DNS records managed by Kubernetes external-dns.
+//
+// External-dns uses TXT records to track ownership of DNS records it manages.
+// The TXT record format is:
+//   "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+//
+// External-dns TXT record naming conventions:
+// - For A records: prefix + original name (e.g., "a-myapp.example.com" for "myapp.example.com")
+// - For CNAME records: prefix + original name (e.g., "cname-myapp.example.com")
+// - Default prefixes: "a-", "aaaa-", "cname-", "ns-", "mx-"
+// - Can also use --txt-prefix or --txt-suffix flags in external-dns
+
+import (
+	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+)
+
+const (
+	// externalDNSHeritage is the heritage value that external-dns uses in its TXT records
+	externalDNSHeritage = "heritage=external-dns"
+)
+
+// externalDNSManagedRecord represents a record managed by external-dns
+type externalDNSManagedRecord struct {
+	Label      string // The label of the managed record (without domain suffix)
+	RecordType string // The type of the managed record (A, AAAA, CNAME, etc.)
+}
+
+// isExternalDNSTxtRecord checks if a TXT record is an external-dns ownership record.
+// It returns true and the managed record info if it is, false otherwise.
+func isExternalDNSTxtRecord(rec *models.RecordConfig, domain string) (bool, *externalDNSManagedRecord) {
+	if rec.Type != "TXT" {
+		return false, nil
+	}
+
+	// Get the TXT record content
+	target := rec.GetTargetTXTJoined()
+
+	// Check if it contains the external-dns heritage marker
+	if !strings.Contains(target, externalDNSHeritage) {
+		return false, nil
+	}
+
+	// This is an external-dns TXT record. Now we need to figure out what record it manages.
+	// External-dns TXT record naming:
+	// - New format with record type prefix: "a-myapp.example.com" manages "myapp.example.com" A record
+	// - Old format without type: "myapp.example.com" (legacy, manages the record with same name)
+	// - With custom prefix: e.g., "externaldns-a-myapp.example.com"
+	// - With custom suffix: e.g., "myapp-externaldns.example.com"
+
+	label := rec.GetLabel()
+	managed := parseExternalDNSTxtLabel(label)
+
+	return true, managed
+}
+
+// parseExternalDNSTxtLabel parses an external-dns TXT record label to extract
+// the managed record information.
+//
+// External-dns uses these prefixes by default (when using %{record_type} in prefix):
+// - "a-" for A records
+// - "aaaa-" for AAAA records
+// - "cname-" for CNAME records
+// - "ns-" for NS records
+// - "mx-" for MX records
+//
+// Without %{record_type}, it just uses the prefix directly, and the record type
+// is encoded as "a-", "cname-", etc. at the start of the label.
+func parseExternalDNSTxtLabel(label string) *externalDNSManagedRecord {
+	// Standard prefixes used by external-dns
+	prefixes := []struct {
+		prefix     string
+		recordType string
+	}{
+		{"aaaa-", "AAAA"}, // Must check before "a-" since "aaaa-" contains "a"
+		{"a-", "A"},
+		{"cname-", "CNAME"},
+		{"ns-", "NS"},
+		{"mx-", "MX"},
+		{"srv-", "SRV"},
+		{"txt-", "TXT"},
+	}
+
+	for _, p := range prefixes {
+		if strings.HasPrefix(strings.ToLower(label), p.prefix) {
+			managedLabel := strings.TrimPrefix(strings.ToLower(label), p.prefix)
+			// Handle the case where the managed label is empty (apex domain)
+			if managedLabel == "" {
+				managedLabel = "@"
+			}
+			return &externalDNSManagedRecord{
+				Label:      managedLabel,
+				RecordType: p.recordType,
+			}
+		}
+	}
+
+	// No recognized prefix - this might be a legacy format or custom prefix
+	// In legacy format, the TXT record has the same name as the managed record
+	// We can't determine the record type in this case, so we'll match all types
+	return &externalDNSManagedRecord{
+		Label:      label,
+		RecordType: "", // Empty means match any type
+	}
+}
+
+// findExternalDNSManagedRecords scans the existing records for external-dns TXT records
+// and builds a map of records that are managed by external-dns.
+// Returns a map keyed by "label:type" -> true for managed records
+func findExternalDNSManagedRecords(existing models.Records, domain string) map[string]bool {
+	managed := make(map[string]bool)
+	txtRecords := make([]*models.RecordConfig, 0)
+
+	// First pass: find all external-dns TXT records
+	for _, rec := range existing {
+		isExtDNS, info := isExternalDNSTxtRecord(rec, domain)
+		if isExtDNS && info != nil {
+			// Mark the TXT record itself as managed
+			txtKey := rec.GetLabel() + ":TXT"
+			managed[txtKey] = true
+
+			// Also remember this for the second pass
+			txtRecords = append(txtRecords, rec)
+
+			// Mark the record that this TXT record manages
+			if info.RecordType != "" {
+				// Specific record type
+				key := info.Label + ":" + info.RecordType
+				managed[key] = true
+			} else {
+				// Legacy format - we need to find matching records
+				// We'll mark this label as managed for common record types
+				for _, rtype := range []string{"A", "AAAA", "CNAME", "NS", "MX", "SRV"} {
+					key := info.Label + ":" + rtype
+					managed[key] = true
+				}
+			}
+		}
+	}
+
+	return managed
+}
+
+// filterExternalDNSRecords takes a list of existing records and returns those
+// that should be ignored because they are managed by external-dns.
+func filterExternalDNSRecords(existing models.Records, domain string) models.Records {
+	managedMap := findExternalDNSManagedRecords(existing, domain)
+	if len(managedMap) == 0 {
+		return nil
+	}
+
+	var ignored models.Records
+	for _, rec := range existing {
+		key := rec.GetLabel() + ":" + rec.Type
+		if managedMap[key] {
+			ignored = append(ignored, rec)
+		}
+	}
+
+	return ignored
+}
+
+// GetExternalDNSIgnoredRecords returns the records that should be ignored
+// because they are managed by external-dns. This is called from handsoff()
+// when IgnoreExternalDNS is enabled for a domain.
+func GetExternalDNSIgnoredRecords(existing models.Records, domain string) models.Records {
+	return filterExternalDNSRecords(existing, domain)
+}

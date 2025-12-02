@@ -1163,6 +1163,16 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// IGNORE_EXTERNAL_DNS()
+// When enabled, DNSControl will automatically detect TXT records created by
+// Kubernetes external-dns and ignore both the TXT records and the corresponding
+// DNS records they manage. External-dns creates TXT records with content like:
+// "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+// This allows DNSControl to coexist with external-dns in the same zone.
+function IGNORE_EXTERNAL_DNS(d) {
+    d.ignore_external_dns = true;
+}
+
 // ENSURE_ABSENT_REC()
 // Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_REC())
 function ENSURE_ABSENT_REC() {

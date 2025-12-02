@@ -241,6 +241,7 @@ func byHelperStruct(fn func(cc *CompareConfig) (ChangeList, int), existing model
 		dc.Unmanaged,
 		dc.UnmanagedUnsafe,
 		dc.KeepUnknown,
+		dc.IgnoreExternalDNS,
 	)
 	if err != nil {
 		return ByResults{}, err
