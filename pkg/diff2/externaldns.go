@@ -103,7 +103,8 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 
 	for _, p := range prefixes {
 		if strings.HasPrefix(strings.ToLower(workingLabel), p.prefix) {
-			managedLabel := strings.TrimPrefix(strings.ToLower(workingLabel), p.prefix)
+			managedLabel := workingLabel[len(p.prefix):]
+			managedLabel = strings.ToLower(managedLabel)
 			// Handle the case where the managed label is empty (apex domain)
 			if managedLabel == "" {
 				managedLabel = "@"
