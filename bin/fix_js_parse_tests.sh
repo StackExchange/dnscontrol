@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# fix_js_parse_tests.sh -- Fix up the pkg/js/parse_tests "want" files.
+#
+# DO NOT use this without carefully checking the output. You could
+# accidentally codify bad test data and commit it to the repo.
+#
+# Useful bash/zsh alias:
+# alias fixjsparse='"$(git rev-parse --show-toplevel)/bin/fix_js_parse_tests.sh"'
+
 set -e
 
 cd $(git rev-parse --show-toplevel)
