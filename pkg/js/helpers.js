@@ -1183,7 +1183,7 @@ function NO_PURGE(d) {
 // Without a prefix, it detects the default format ("%{record_type}-" prefixes like "a-", "cname-").
 //
 // Usage:
-//   IGNORE_EXTERNAL_DNS           // Use default detection (a-, cname-, etc.)
+//   IGNORE_EXTERNAL_DNS()           // Use default detection (a-, cname-, etc.)
 //   IGNORE_EXTERNAL_DNS("extdns-") // Custom prefix
 function IGNORE_EXTERNAL_DNS(prefix) {
     return function (d) {

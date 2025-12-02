@@ -132,7 +132,7 @@ If you're using a custom prefix, pass it to `IGNORE_EXTERNAL_DNS()`:
 // If external-dns uses --txt-prefix="extdns-"
 IGNORE_EXTERNAL_DNS("extdns-")
 
-// If external-dns uses --txt-prefix="myprefix-%{record_type}-"  
+// If external-dns uses --txt-prefix="myprefix-%{record_type}-"
 IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
 
 // If external-dns uses --txt-prefix="extdns-%{record_type}." (period format)
@@ -172,7 +172,7 @@ External-dns supports multiple registry types. This feature **only** supports:
 The following registries are **not supported**:
 
 - ❌ **DynamoDB registry** - Stores metadata in AWS DynamoDB
-- ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery  
+- ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery
 - ❌ **noop registry** - No metadata persistence
 
 ### Legacy TXT Format

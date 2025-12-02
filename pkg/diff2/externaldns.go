@@ -89,12 +89,12 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 
 	// Standard prefixes used by external-dns
 	// Supports both hyphen format (a-www) and period format (a.www)
-	// Period format is used when --txt-prefix includes %{record_type}. 
+	// Period format is used when --txt-prefix includes %{record_type}.
 	prefixes := []struct {
 		prefix     string
 		recordType string
 	}{
-		{"aaaa.", "AAAA"}, // Period format - must check before "a." 
+		{"aaaa.", "AAAA"}, // Period format - must check before "a."
 		{"aaaa-", "AAAA"}, // Hyphen format - must check before "a-"
 		{"a.", "A"},       // Period format
 		{"a-", "A"},       // Hyphen format
@@ -113,7 +113,7 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 	for _, p := range prefixes {
 		if strings.HasPrefix(strings.ToLower(workingLabel), p.prefix) {
 			managedLabel := workingLabel[len(p.prefix):]
-			managedLabel = strings.ToLower(managedLabel)
+			// managedLabel is already lowercase from the prefix match
 			// Handle the case where the managed label is empty (apex domain)
 			if managedLabel == "" {
 				managedLabel = "@"
