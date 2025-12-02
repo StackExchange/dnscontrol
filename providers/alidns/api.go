@@ -51,15 +51,10 @@ func (a *aliDnsDsp) createRecordset(records []*models.RecordConfig, domainName s
 			req.Priority = requests.Integer(fmt.Sprintf("%d", recordToNativePriority(r)))
 		}
 
-		fmt.Printf("DEBUG createRecordset: domain=%s, RR=%s, Type=%s, Value=%s, TTL=%s\n",
-			req.DomainName, req.RR, req.Type, req.Value, req.TTL)
-
-		resp, err := a.client.AddDomainRecord(req)
+		_, err := a.client.AddDomainRecord(req)
 		if err != nil {
-			fmt.Printf("DEBUG createRecordset error: %v\n", err)
 			return err
 		}
-		fmt.Printf("DEBUG createRecordset success: RecordId=%s\n", resp.RecordId)
 	}
 	return nil
 }
