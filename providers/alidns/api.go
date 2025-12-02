@@ -1,0 +1,112 @@
+package alidns
+
+import (
+	"fmt"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+)
+
+func (a *aliDnsDsp) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	req := alidns.CreateDescribeDomainInfoRequest()
+	req.DomainName = domain
+
+	resp, err := a.client.DescribeDomainInfo(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToNameservers(resp.DnsServers.DnsServer)
+}
+
+func (a *aliDnsDsp) deleteRecordset(records []*models.RecordConfig, domainName string) error {
+	for _, r := range records {
+		req := alidns.CreateDeleteDomainRecordRequest()
+		original, ok := r.Original.(*alidns.Record)
+		if !ok {
+			return fmt.Errorf("deleteRecordset: record original is not of type *alidns.Record")
+		}
+		req.RecordId = original.RecordId
+
+		_, err := a.client.DeleteDomainRecord(req)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *aliDnsDsp) createRecordset(records []*models.RecordConfig, domainName string) error {
+	for _, r := range records {
+		req := alidns.CreateAddDomainRecordRequest()
+		req.DomainName = domainName
+		req.RR = r.Name
+		req.Type = r.Type
+		req.TTL = requests.Integer(fmt.Sprintf("%d", r.TTL))
+		req.Value = recordToNativeContent(r)
+
+		// Set priority for MX and SRV records
+		if r.Type == "MX" || r.Type == "SRV" {
+			req.Priority = requests.Integer(fmt.Sprintf("%d", recordToNativePriority(r)))
+		}
+
+		fmt.Printf("DEBUG createRecordset: domain=%s, RR=%s, Type=%s, Value=%s, TTL=%s\n",
+			req.DomainName, req.RR, req.Type, req.Value, req.TTL)
+
+		resp, err := a.client.AddDomainRecord(req)
+		if err != nil {
+			fmt.Printf("DEBUG createRecordset error: %v\n", err)
+			return err
+		}
+		fmt.Printf("DEBUG createRecordset success: RecordId=%s\n", resp.RecordId)
+	}
+	return nil
+}
+
+func (a *aliDnsDsp) updateRecordset(existing, desired []*models.RecordConfig, domainName string) error {
+	// Strategy: Delete all existing records, then create all desired records.
+	// This is the simplest and most reliable approach because:
+	// 1. The number of records in a recordset may change
+	// 2. There's no guaranteed 1:1 mapping between existing and desired records
+	// 3. Alibaba Cloud API requires RecordId for updates, which desired records don't have
+
+	// Delete all existing records first
+	if err := a.deleteRecordset(existing, domainName); err != nil {
+		return err
+	}
+
+	// Then create all desired records
+	return a.createRecordset(desired, domainName)
+}
+
+// describeDomainRecordsAll fetches all domain records for 'domain', handling
+// pagination transparently. It returns the slice of *alidns.Record or an error.
+func (a *aliDnsDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, error) {
+	// The SDK returns a slice of value Records (not pointers). We fetch pages
+	// as values and then convert to pointers before returning.
+	fetch := func(pageNumber, pageSize int) ([]alidns.Record, int, error) {
+		req := alidns.CreateDescribeDomainRecordsRequest()
+		req.DomainName = domain
+		req.PageNumber = requests.NewInteger(pageNumber)
+		req.PageSize = requests.NewInteger(pageSize)
+
+		resp, err := a.client.DescribeDomainRecords(req)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		total := int(resp.TotalCount)
+		return resp.DomainRecords.Record, total, nil
+	}
+
+	vals, err := paginateAll(fetch)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*alidns.Record, 0, len(vals))
+	for i := range vals {
+		out = append(out, &vals[i])
+	}
+	return out, nil
+}
