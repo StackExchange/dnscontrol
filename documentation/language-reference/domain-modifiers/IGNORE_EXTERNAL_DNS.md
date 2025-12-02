@@ -42,6 +42,7 @@ External-dns creates TXT records with prefixes based on record type:
 - `ns-<name>` for NS records
 - `mx-<name>` for MX records
 - `srv-<name>` for SRV records
+- `txt-<name>` for TXT records (when external-dns manages TXT records)
 
 For example, if external-dns creates an A record at `myapp.example.com`, it will
 also create a TXT record at `a-myapp.example.com` containing the heritage information.

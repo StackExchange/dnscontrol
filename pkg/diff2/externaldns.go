@@ -145,18 +145,14 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 // customPrefix is an optional prefix that external-dns was configured with (e.g., "extdns-").
 func findExternalDNSManagedRecords(existing models.Records, domain string, customPrefix string) map[string]bool {
 	managed := make(map[string]bool)
-	txtRecords := make([]*models.RecordConfig, 0)
 
-	// First pass: find all external-dns TXT records
+	// Scan all external-dns TXT records
 	for _, rec := range existing {
 		isExtDNS, info := isExternalDNSTxtRecord(rec, domain, customPrefix)
 		if isExtDNS && info != nil {
 			// Mark the TXT record itself as managed
 			txtKey := rec.GetLabel() + ":TXT"
 			managed[txtKey] = true
-
-			// Also remember this for the second pass
-			txtRecords = append(txtRecords, rec)
 
 			// Mark the record that this TXT record manages
 			if info.RecordType != "" {
