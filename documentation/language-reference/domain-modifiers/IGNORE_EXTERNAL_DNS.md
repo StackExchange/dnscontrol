@@ -1,9 +1,9 @@
 ---
 name: IGNORE_EXTERNAL_DNS
 parameters:
-  - name: prefix
-    description: Optional custom prefix used by external-dns (e.g., "extdns-")
-    required: false
+    - prefix
+parameter_types:
+    prefix: string?
 ---
 
 `IGNORE_EXTERNAL_DNS` makes DNSControl automatically detect and ignore DNS records

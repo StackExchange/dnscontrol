@@ -333,16 +333,24 @@ var AKAMAICDN = recordBuilder('AKAMAICDN');
 
 // AKAMAITLC(name, answer_type, target, recordModifiers...)
 var AKAMAITLC = recordBuilder('AKAMAITLC', {
-  args: [
-    ['name', _.isString],
-    ['answer_type', function(value) { return _.isString(value) && ['DUAL', 'A', 'AAAA'].indexOf(value) !== -1; }],
-    ['target', _.isString],
-  ],
-  transform: function (record, args, modifier) {
-    record.name = args.name;
-    record.answer_type = args.answer_type;
-    record.target = args.target;
-  },
+    args: [
+        ['name', _.isString],
+        [
+            'answer_type',
+            function (value) {
+                return (
+                    _.isString(value) &&
+                    ['DUAL', 'A', 'AAAA'].indexOf(value) !== -1
+                );
+            },
+        ],
+        ['target', _.isString],
+    ],
+    transform: function (record, args, modifier) {
+        record.name = args.name;
+        record.answer_type = args.answer_type;
+        record.target = args.target;
+    },
 });
 
 // ALIAS(name,target, recordModifiers...)
@@ -683,20 +691,20 @@ var TXT = recordBuilder('TXT', {
 });
 
 var LUA = recordBuilder('LUA', {
-  args: [
-    ['name', _.isString],
-    ['rtype', _.isString],
-    ['target', isStringOrArray],
-  ],
-  transform: function (record, args, modifiers) {
-    record.name = args.name;
-    record.luartype = args.rtype.toUpperCase();
-    if (_.isString(args.target)) {
-      record.target = args.target;
-    } else {
-      record.target = args.target.join('');
-    }
-  },
+    args: [
+        ['name', _.isString],
+        ['rtype', _.isString],
+        ['target', isStringOrArray],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.luartype = args.rtype.toUpperCase();
+        if (_.isString(args.target)) {
+            record.target = args.target;
+        } else {
+            record.target = args.target.join('');
+        }
+    },
 });
 
 // Parses coordinates of the form 41°24'12.2"N 2°10'26.5"E
@@ -858,15 +866,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-              ? 42849672.95
-              : args.alt.toString()) + 'm';
+            ? 42849672.95
+            : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-              ? 0
-              : args.siz.toString()) +
+            ? 0
+            : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -906,8 +914,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-              ? 0
-              : record.localtitude;
+            ? 0
+            : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -1178,7 +1186,7 @@ function NO_PURGE(d) {
 //   IGNORE_EXTERNAL_DNS           // Use default detection (a-, cname-, etc.)
 //   IGNORE_EXTERNAL_DNS("extdns-") // Custom prefix
 function IGNORE_EXTERNAL_DNS(prefix) {
-    return function(d) {
+    return function (d) {
         d.ignore_external_dns = true;
         if (prefix) {
             d.external_dns_prefix = prefix;
