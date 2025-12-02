@@ -24,8 +24,8 @@ var features = providers.DocumentationNotes{
 	providers.CanConcur:     providers.Cannot(),
 
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Can(),
-	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot(),
 
 	providers.CanUseRoute53Alias: providers.Cannot(),
 }
