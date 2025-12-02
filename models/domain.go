@@ -13,7 +13,7 @@ const (
 	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
 	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
 	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
-	DomainNameIDN     = "dnscontrol_nameidn"     // A copy of DomainConfig.NameIDN
+	DomainNameASCII   = "dnscontrol_nameascii"   // A copy of DomainConfig.NameASCII
 	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
 )
 
@@ -71,7 +71,7 @@ func (dc *DomainConfig) PostProcess() {
 
 	// Turn the user-supplied name into the fixed forms.
 	ff := domaintags.MakeDomainFixForms(dc.Name)
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameIDN, ff.NameUnicode, ff.UniqueName
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
 	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
@@ -79,7 +79,7 @@ func (dc *DomainConfig) PostProcess() {
 		dc.Metadata[DomainTag] = dc.Tag
 	}
 	//dc.Metadata[DomainNameRaw] = dc.NameRaw
-	//dc.Metadata[DomainNameIDN] = dc.Name
+	//dc.Metadata[DomainNameASCII] = dc.Name
 	//dc.Metadata[DomainNameUnicode] = dc.NameUnicode
 	dc.Metadata[DomainUniqueName] = dc.UniqueName
 }
