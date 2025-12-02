@@ -6,6 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+	"golang.org/x/net/idna"
 )
 
 // nativeToRecord converts an Alibaba Cloud DNS record to a RecordConfig.
@@ -14,7 +15,11 @@ func nativeToRecord(r *alidns.Record, domain string) (*models.RecordConfig, erro
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
-	rc.SetLabel(r.RR, domain)
+	label, err := idna.ToASCII(r.RR)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert label to ASCII: %w", err)
+	}
+	rc.SetLabel(label, domain)
 
 	// Normalize CNAME, MX, NS records with trailing dot to be consistent with FQDN format.
 	value := r.Value
