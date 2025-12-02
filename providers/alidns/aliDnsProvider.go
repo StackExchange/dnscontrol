@@ -110,17 +110,6 @@ func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (model
 }
 
 func (a *aliDnsDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	// Alibaba Cloud DNS requires TTL to be in the range of 600 to 86400 seconds.
-	// Adjust TTL values to fit within this range.
-	for _, r := range dc.Records {
-		if r.TTL < 600 {
-			r.TTL = 600
-		}
-		if r.TTL > 86400 {
-			r.TTL = 86400
-		}
-	}
-
 	keysToUpdate, toReport, actualChangeCount, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, 0, err

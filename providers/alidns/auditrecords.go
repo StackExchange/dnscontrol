@@ -41,6 +41,17 @@ func targetConstraint(rc *models.RecordConfig) error {
 	return nil
 }
 
+// ttlConstraint checks that TTL is within Alibaba Cloud's allowed range (600-86400 seconds).
+func ttlConstraint(rc *models.RecordConfig) error {
+	if rc.TTL < 600 {
+		return errors.New("TTL must be at least 600 seconds")
+	}
+	if rc.TTL > 86400 {
+		return errors.New("TTL must not exceed 86400 seconds (24 hours)")
+	}
+	return nil
+}
+
 // AuditRecords returns a list of errors corresponding to the records
 // that aren't supported by this provider.  If all records are
 // supported, an empty list is returned.
@@ -54,6 +65,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	a.Add("TXT", rejectif.TxtHasTrailingSpace)     // Last verified at 2025-12-03: Alibaba strips trailing spaces
 	a.Add("TXT", rejectif.TxtHasUnpairedBackslash) // Last verified at 2025-12-03: Alibaba mishandles odd backslashes
 	a.Add("*", labelConstraint)                    // Last verified at 2025-12-03: Alibaba only allows ASCII + Chinese, rejects other Unicode
+	a.Add("*", ttlConstraint)                      // Last verified at 2025-12-03: Alibaba requires TTL 600-86400
 	a.Add("CNAME", targetConstraint)               // Last verified at 2025-12-03: CNAME target must be ASCII or Chinese
 	a.Add("SRV", rejectif.SrvHasNullTarget)        // Last verified at 2025-12-03: SRV target must not be null
 	a.Add("SRV", rejectif.SrvHasEmptyTarget)       // Last verified at 2025-12-03: SRV target must not be empty
