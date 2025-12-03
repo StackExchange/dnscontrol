@@ -38,13 +38,6 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	// https://www.alibabacloud.com/help/en/dns/pubz-add-parsing-record#45347620b7mi9
-	// Explicit URL forwarding uses 301 (permanent redirect) or 302 (temporary redirect)
-	// redirection technology. The browser's address bar displays the target address, and the content displayed is from the target website.
-	providers.RegisterCustomRecordType("EXPLICIT_URL_FORWARDING", providerName, "")
-	// Implicit URL forwarding: Implicit URL Forwarding forwarding uses iframe technology.
-	// The domain name in the browser's address bar does not change, but the content displayed is from the target website.
-	providers.RegisterCustomRecordType("IMPLICIT_URL_FORWARDING", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 	// Register default TTL of 600 seconds (10 minutes) for Alibaba Cloud DNS
 	// This is the minimum TTL for free/personal edition domains
