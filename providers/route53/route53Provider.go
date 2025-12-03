@@ -442,7 +442,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 	if set.AliasTarget != nil {
 		rc := &models.RecordConfig{
 			Type: "R53_ALIAS",
-			TTL:  300,
+			TTL:  models.DefaultTTL,
 			R53Alias: map[string]string{
 				"type":                   string(set.Type),
 				"zone_id":                aws.ToString(set.AliasTarget.HostedZoneId),

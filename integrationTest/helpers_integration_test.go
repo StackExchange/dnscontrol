@@ -433,7 +433,7 @@ func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
 func makeRec(name, target, typ string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: typ,
-		TTL:  600,
+		TTL:  models.DefaultTTL,
 	}
 	SetLabel(r, name, "**current-domain**.")
 	r.MustSetTarget(target)
@@ -570,6 +570,7 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 }
 
 func tc(desc string, recs ...*models.RecordConfig) *TestCase {
+	desc = strings.TrimSpace(desc)
 	var records []*models.RecordConfig
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
