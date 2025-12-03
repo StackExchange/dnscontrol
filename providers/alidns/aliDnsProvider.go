@@ -15,6 +15,7 @@ import (
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
@@ -117,6 +118,10 @@ func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (model
 	}
 
 	return out, nil
+}
+
+func (a *aliDnsDsp) ListZones() ([]string, error) {
+	return a.describeDomainsAll()
 }
 
 func removeTrailingDot(record string) string {

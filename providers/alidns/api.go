@@ -149,3 +149,27 @@ func (a *aliDnsDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, e
 	}
 	return out, nil
 }
+
+func (a *aliDnsDsp) describeDomainsAll() ([]string, error) {
+	// describeDomainsAll fetches all domains in the account, handling pagination.
+	fetch := func(pageNumber, pageSize int) ([]string, int, error) {
+		req := alidns.CreateDescribeDomainsRequest()
+		req.PageNumber = requests.NewInteger(pageNumber)
+		req.PageSize = requests.NewInteger(pageSize)
+
+		resp, err := a.client.DescribeDomains(req)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		domains := make([]string, 0, len(resp.Domains.Domain))
+		for _, d := range resp.Domains.Domain {
+			domains = append(domains, d.DomainName)
+		}
+
+		total := int(resp.TotalCount)
+		return domains, total, nil
+	}
+
+	return paginateAll(fetch)
+}
