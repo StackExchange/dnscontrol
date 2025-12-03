@@ -131,13 +131,13 @@ func Test_MakeDomainFixForms(t *testing.T) {
 		},
 		{
 			name:            "BIND example 2",
-			input:           "рф.com!myTag",
-			wantTag:         "myTag",
+			input:           "рф.com",
+			wantTag:         "",
 			wantNameRaw:     "рф.com",
 			wantNameASCII:   "xn--p1ai.com",
 			wantNameUnicode: "рф.com",
-			wantUniqueName:  "xn--p1ai.com!myTag",
-			wantHasBang:     true,
+			wantUniqueName:  "xn--p1ai.com",
+			wantHasBang:     false,
 		},
 	}
 
