@@ -117,6 +117,12 @@ func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (model
 			return nil, err
 		}
 
+		// Skip apex NS records since Alibaba Cloud manages them automatically
+		// and we cannot modify them (DocDualHost: Cannot)
+		if rc.Type == "NS" && rc.GetLabel() == "@" {
+			continue
+		}
+
 		out = append(out, rc)
 	}
 
