@@ -1,0 +1,52 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "extdns-default.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_uniquename": "extdns-default.com"
+      },
+      "records": [],
+      "ignore_external_dns": true
+    },
+    {
+      "name": "extdns-custom.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_uniquename": "extdns-custom.com"
+      },
+      "records": [],
+      "ignore_external_dns": true,
+      "external_dns_prefix": "extdns-"
+    },
+    {
+      "name": "extdns-combined.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_uniquename": "extdns-combined.com"
+      },
+      "records": [
+        {
+          "type": "CNAME",
+          "name": "api",
+          "ttl": 300,
+          "filepos": "[line:12:5]",
+          "target": "www.extdns-combined.com."
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "filepos": "[line:11:5]",
+          "target": "1.2.3.4"
+        }
+      ],
+      "ignore_external_dns": true
+    }
+  ]
+}
