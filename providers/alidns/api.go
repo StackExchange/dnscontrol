@@ -8,7 +8,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 )
 
-func (a *aliDnsDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, error) {
+func (a *aliDNSDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, error) {
 	// Check cache first
 	a.cacheMu.Lock()
 	info, ok := a.domainVersionCache[domain]
@@ -52,7 +52,8 @@ func (a *aliDnsDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, err
 	return info, nil
 }
 
-func (a *aliDnsDsp) GetNameservers(domain string) ([]*models.Nameserver, error) {
+// GetNameservers returns the nameservers for a domain.
+func (a *aliDNSDsp) getNameservers(domain string) ([]string, error) {
 	req := alidns.CreateDescribeDomainInfoRequest()
 	req.DomainName = domain
 
@@ -61,10 +62,20 @@ func (a *aliDnsDsp) GetNameservers(domain string) ([]*models.Nameserver, error) 
 		return nil, err
 	}
 
-	return models.ToNameservers(resp.DnsServers.DnsServer)
+	// Add trailing dot to each nameserver to make them FQDNs
+	nameservers := make([]string, len(resp.DnsServers.DnsServer))
+	for i, ns := range resp.DnsServers.DnsServer {
+		if ns != "" && ns[len(ns)-1] != '.' {
+			nameservers[i] = ns + "."
+		} else {
+			nameservers[i] = ns
+		}
+	}
+
+	return nameservers, nil
 }
 
-func (a *aliDnsDsp) deleteRecordset(records []*models.RecordConfig, domainName string) error {
+func (a *aliDNSDsp) deleteRecordset(records []*models.RecordConfig, domainName string) error {
 	for _, r := range records {
 		req := alidns.CreateDeleteDomainRecordRequest()
 		original, ok := r.Original.(*alidns.Record)
@@ -81,7 +92,7 @@ func (a *aliDnsDsp) deleteRecordset(records []*models.RecordConfig, domainName s
 	return nil
 }
 
-func (a *aliDnsDsp) createRecordset(records []*models.RecordConfig, domainName string) error {
+func (a *aliDNSDsp) createRecordset(records []*models.RecordConfig, domainName string) error {
 	for _, r := range records {
 		req := alidns.CreateAddDomainRecordRequest()
 		req.DomainName = domainName
@@ -103,7 +114,7 @@ func (a *aliDnsDsp) createRecordset(records []*models.RecordConfig, domainName s
 	return nil
 }
 
-func (a *aliDnsDsp) updateRecordset(existing, desired []*models.RecordConfig, domainName string) error {
+func (a *aliDNSDsp) updateRecordset(existing, desired []*models.RecordConfig, domainName string) error {
 	// Strategy: Delete all existing records, then create all desired records.
 	// This is the simplest and most reliable approach because:
 	// 1. The number of records in a recordset may change
@@ -121,11 +132,12 @@ func (a *aliDnsDsp) updateRecordset(existing, desired []*models.RecordConfig, do
 
 // describeDomainRecordsAll fetches all domain records for 'domain', handling
 // pagination transparently. It returns the slice of *alidns.Record or an error.
-func (a *aliDnsDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, error) {
+func (a *aliDNSDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, error) {
 	// The SDK returns a slice of value Records (not pointers). We fetch pages
 	// as values and then convert to pointers before returning.
 	fetch := func(pageNumber, pageSize int) ([]alidns.Record, int, error) {
 		req := alidns.CreateDescribeDomainRecordsRequest()
+		req.Status = "Enable"
 		req.DomainName = domain
 		req.PageNumber = requests.NewInteger(pageNumber)
 		req.PageSize = requests.NewInteger(pageSize)
@@ -150,7 +162,7 @@ func (a *aliDnsDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, e
 	return out, nil
 }
 
-func (a *aliDnsDsp) describeDomainsAll() ([]string, error) {
+func (a *aliDNSDsp) describeDomainsAll() ([]string, error) {
 	// describeDomainsAll fetches all domains in the account, handling pagination.
 	fetch := func(pageNumber, pageSize int) ([]string, int, error) {
 		req := alidns.CreateDescribeDomainsRequest()

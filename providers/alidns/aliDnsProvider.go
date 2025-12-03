@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.CanConcur:              providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.CanUseRoute53Alias:     providers.Cannot(),
 }
@@ -34,7 +34,7 @@ func init() {
 	const providerName = "ALIDNS"
 	const providerMaintainer = "@bytemain"
 	fns := providers.DspFuncs{
-		Initializer:   newAliDnsDsp,
+		Initializer:   newAliDNSDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
@@ -52,7 +52,7 @@ func init() {
 
 }
 
-type aliDnsDsp struct {
+type aliDNSDsp struct {
 	client             *alidns.Client
 	domainVersionCache map[string]*domainVersionInfo
 	cacheMu            sync.Mutex
@@ -64,7 +64,7 @@ type domainVersionInfo struct {
 	maxTTL      uint32
 }
 
-func newAliDnsDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newAliDNSDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	accessKeyID := config["access_key_id"]
 	if accessKeyID == "" {
 		return nil, fmt.Errorf("creds.json: access_key_id must not be empty")
@@ -92,14 +92,22 @@ func newAliDnsDsp(config map[string]string, metadata json.RawMessage) (providers
 	if err != nil {
 		return nil, err
 	}
-	return &aliDnsDsp{
+	return &aliDNSDsp{
 		client:             client,
 		domainVersionCache: make(map[string]*domainVersionInfo),
 	}, nil
 }
 
+func (a *aliDNSDsp) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	nsStrings, err := a.getNameservers(domain)
+	if err != nil {
+		return nil, err
+	}
+	return models.ToNameserversStripTD(nsStrings)
+}
+
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
-func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (a *aliDNSDsp) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	// Fetch all pages of domain records.
 	records, err := a.describeDomainRecordsAll(domain)
 	if err != nil {
@@ -117,19 +125,25 @@ func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (model
 			return nil, err
 		}
 
-		// Skip apex NS records since Alibaba Cloud manages them automatically
-		// and we cannot modify them (DocDualHost: Cannot)
-		if rc.Type == "NS" && rc.GetLabel() == "@" {
-			continue
-		}
+		out = append(out, rc)
+	}
 
+	// Alibaba Cloud's DescribeDomainRecords API doesn't return NS records at the apex.
+	// We need to fetch them separately using getNameservers and add them to the records.
+	nameservers, err := a.getNameservers(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ns := range nameservers {
+		rc := nativeToRecordNS(ns, domain)
 		out = append(out, rc)
 	}
 
 	return out, nil
 }
 
-func (a *aliDnsDsp) ListZones() ([]string, error) {
+func (a *aliDNSDsp) ListZones() ([]string, error) {
 	return a.describeDomainsAll()
 }
 
@@ -150,7 +164,7 @@ func deduplicateNameServerTargets(newRecs models.Records) models.Records {
 }
 
 // PrepDesiredRecords munges any records to best suit this provider.
-func (a *aliDnsDsp) PrepDesiredRecords(dc *models.DomainConfig) {
+func (a *aliDNSDsp) PrepDesiredRecords(dc *models.DomainConfig) {
 	versionInfo, err := a.getDomainVersionInfo(dc.Name)
 	if err != nil {
 		return
@@ -180,12 +194,13 @@ func (a *aliDnsDsp) PrepDesiredRecords(dc *models.DomainConfig) {
 	dc.Records = recordsToKeep
 }
 
-func (a *aliDnsDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+func (a *aliDNSDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	// Prepare desired records first to normalize TTLs and avoid warnings
 	a.PrepDesiredRecords(dc)
 
 	var corrections []*models.Correction
 
-	// Azure is a "ByRecordSet" API.
+	// Alibaba Cloud DNS is a "ByRecord" API.
 	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err

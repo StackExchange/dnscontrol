@@ -97,3 +97,14 @@ func recordToNativePriority(r *models.RecordConfig) int64 {
 		return 0
 	}
 }
+
+// nativeToRecordNS takes a NS record from DNS and returns a native RecordConfig struct.
+func nativeToRecordNS(ns string, origin string) *models.RecordConfig {
+	rc := &models.RecordConfig{
+		Type: "NS",
+		TTL:  600,
+	}
+	rc.SetLabel("@", origin)
+	rc.MustSetTarget(ns)
+	return rc
+}
