@@ -8,7 +8,7 @@ import (
 )
 
 // DefaultTTL is applied to any DNS record without an explicit TTL.
-const DefaultTTL = uint32(300)
+var DefaultTTL = uint32(300)
 
 // DNSConfig describes the desired DNS configuration, usually loaded from dnsconfig.js.
 type DNSConfig struct {

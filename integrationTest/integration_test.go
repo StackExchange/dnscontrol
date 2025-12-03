@@ -6,11 +6,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
 
 func TestDNSProviders(t *testing.T) {
+	models.DefaultTTL = 600 // Avoid problems due to minimum TTLs
+
 	provider, domain, cfg := getProvider(t)
 	if provider == nil {
 		return
@@ -223,10 +226,11 @@ func makeTests() []*TestGroup {
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
 			not("LINODE"), // Linode does not support arbitrary TTLs: 666 and 1000 are both rounded up to 3600.
-			tc("Start", ttl(a("@", "8.8.8.8"), 900), ttl(a("www", "1.2.3.4"), 800), ttl(a("www", "5.6.7.8"), 700)),
-			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 911), ttl(a("www", "1.2.3.4"), 800), ttl(a("www", "5.6.7.8"), 700)),
-			tc("Change single ttl in set", ttl(a("@", "8.8.8.8"), 911), ttl(a("www", "1.2.3.4"), 822), ttl(a("www", "5.6.7.8"), 700)),
-			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 933), ttl(a("www", "2.2.2.2"), 933), ttl(a("www", "5.6.7.8"), 933)),
+			// NOTE: Many providers require all records in a recordset have the same TTL. Don't add tests that break that rule.
+			tc("Start          ", ttl(a("@", "8.8.8.8"), 600), ttl(a("www", "1.2.3.4"), 600), ttl(a("www", "5.6.7.8"), 600)),
+			tc("Change a ttl   ", ttl(a("@", "8.8.8.8"), 700), ttl(a("www", "1.2.3.4"), 600), ttl(a("www", "5.6.7.8"), 600)),
+			tc("Change others  ", ttl(a("@", "8.8.8.8"), 700), ttl(a("www", "2.2.2.2"), 800), ttl(a("www", "5.6.7.8"), 800)),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 900), ttl(a("www", "2.2.2.2"), 900), ttl(a("www", "5.6.7.8"), 900)),
 		),
 
 		// Narrative: Did you see that `not("NETCUP")` code?  NETCUP just
