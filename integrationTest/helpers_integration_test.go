@@ -570,6 +570,7 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 }
 
 func tc(desc string, recs ...*models.RecordConfig) *TestCase {
+	desc = strings.TrimSpace(desc)
 	var records []*models.RecordConfig
 	var unmanagedItems []*models.UnmanagedConfig
 	for _, r := range recs {
