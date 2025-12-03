@@ -19,7 +19,6 @@
         "otherconfig": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -66,7 +65,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
@@ -86,14 +86,14 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.net"
       },
       "name": "example.net",
@@ -147,7 +147,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "inside"
     },
     {
       "dnsProviders": {
@@ -181,14 +182,14 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "empty.example.net"
       },
       "name": "empty.example.net",
@@ -215,8 +216,7 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "example-b.net"
+        "dnscontrol_uniquename": "example-b.net!"
       },
       "name": "example-b.net",
       "records": [

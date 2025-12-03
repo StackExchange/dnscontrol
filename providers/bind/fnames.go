@@ -3,18 +3,23 @@ package bind
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 )
 
 // makeFileName uses format to generate a zone's filename.  See the
-func makeFileName(format, uniquename, domain, tag string) string {
-	// fmt.Printf("DEBUG: makeFileName(%q, %q, %q, %q)\n", format, uniquename, domain, tag)
+func makeFileName(format string, ff domaintags.DomainFixedForms) string {
+	//fmt.Printf("DEBUG: makeFileName(%q, %+v)\n", format, ff)
+	nameRaw := ff.NameRaw
+	nameIDN := ff.NameIDN
+	nameUnicode := ff.NameUnicode
+	uniquename := ff.UniqueName
+	tag := ff.Tag
 	if format == "" {
-		fmt.Fprintf(os.Stderr, "BUG: makeFileName called with null format\n")
-		return uniquename
+		panic("BUG: makeFileName called with null format")
 	}
 
 	var b bytes.Buffer
@@ -36,11 +41,17 @@ func makeFileName(format, uniquename, domain, tag string) string {
 		tok = tokens[pos]
 		switch tok {
 		case "D":
-			b.WriteString(domain)
+			b.WriteString(nameRaw)
 		case "T":
 			b.WriteString(tag)
 		case "U":
 			b.WriteString(uniquename)
+		case "I":
+			b.WriteString(nameIDN)
+		case "N":
+			b.WriteString(nameUnicode)
+		case "%":
+			b.WriteString("%")
 		case "?":
 			if pos == lastpos {
 				b.WriteString("%(format may not end in %?)")
