@@ -866,15 +866,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-            ? 42849672.95
-            : args.alt.toString()) + 'm';
+              ? 42849672.95
+              : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-            ? 0
-            : args.siz.toString()) +
+              ? 0
+              : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -914,8 +914,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-            ? 0
-            : record.localtitude;
+              ? 0
+              : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision

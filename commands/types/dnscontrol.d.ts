@@ -1773,6 +1773,13 @@ declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: strin
  *
  * ## Caveats
  *
+ * ### One per domain
+ *
+ * Only one `IGNORE_EXTERNAL_DNS()` should be used per domain. If you call it multiple
+ * times, the last prefix wins. If you have multiple external-dns instances with
+ * different prefixes managing the same zone, use `IGNORE()` patterns for additional
+ * prefixes.
+ *
  * ### TXT Registry Format
  *
  * This feature relies on external-dns's [TXT registry](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md),
