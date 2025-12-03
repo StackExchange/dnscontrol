@@ -8,6 +8,45 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 )
 
+func (a *aliDnsDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, error) {
+	// Check cache first
+	if info, ok := a.domainVersionCache[domain]; ok {
+		return info, nil
+	}
+
+	req := alidns.CreateDescribeDomainInfoRequest()
+	req.DomainName = domain
+
+	resp, err := a.client.DescribeDomainInfo(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine minTTL based on VersionCode
+	var minTTL uint32
+	switch resp.VersionCode {
+	case "version_enterprise_advanced":
+		minTTL = 1 // Enterprise Ultimate Edition
+	case "version_personal", "mianfei":
+		minTTL = 600 // Personal Edition and Free Edition
+	default:
+		// Use MinTtl from API if available, otherwise default to 600
+		if resp.MinTtl > 0 {
+			minTTL = uint32(resp.MinTtl)
+		} else {
+			minTTL = 600
+		}
+	}
+
+	info := &domainVersionInfo{
+		versionCode: resp.VersionCode,
+		minTTL:      minTTL,
+		maxTTL:      86400,
+	}
+	a.domainVersionCache[domain] = info
+	return info, nil
+}
+
 func (a *aliDnsDsp) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	req := alidns.CreateDescribeDomainInfoRequest()
 	req.DomainName = domain

@@ -49,7 +49,14 @@ func init() {
 }
 
 type aliDnsDsp struct {
-	client *alidns.Client
+	client             *alidns.Client
+	domainVersionCache map[string]*domainVersionInfo
+}
+
+type domainVersionInfo struct {
+	versionCode string
+	minTTL      uint32
+	maxTTL      uint32
 }
 
 func newAliDnsDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -80,7 +87,10 @@ func newAliDnsDsp(config map[string]string, metadata json.RawMessage) (providers
 	if err != nil {
 		return nil, err
 	}
-	return &aliDnsDsp{client}, nil
+	return &aliDnsDsp{
+		client:             client,
+		domainVersionCache: make(map[string]*domainVersionInfo),
+	}, nil
 }
 
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
@@ -124,7 +134,33 @@ func deduplicateNameServerTargets(newRecs models.Records) models.Records {
 	return deduped
 }
 
+// validateRecordTTLs checks that all records in the domain config have valid TTL values
+// according to the Alibaba Cloud DNS version constraints.
+func (a *aliDnsDsp) validateRecordTTLs(dc *models.DomainConfig) error {
+	versionInfo, err := a.getDomainVersionInfo(dc.Name)
+	if err != nil {
+		return fmt.Errorf("failed to get domain version info: %w", err)
+	}
+
+	for _, rec := range dc.Records {
+		if rec.TTL < versionInfo.minTTL {
+			return fmt.Errorf("record %s has TTL %d which is below the minimum %d for this domain version (%s)",
+				rec.GetLabelFQDN(), rec.TTL, versionInfo.minTTL, versionInfo.versionCode)
+		}
+		if rec.TTL > versionInfo.maxTTL {
+			return fmt.Errorf("record %s has TTL %d which exceeds the maximum %d (24 hours)",
+				rec.GetLabelFQDN(), rec.TTL, versionInfo.maxTTL)
+		}
+	}
+	return nil
+}
+
 func (a *aliDnsDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	// Validate TTL constraints for all records
+	if err := a.validateRecordTTLs(dc); err != nil {
+		return nil, 0, err
+	}
+
 	var corrections []*models.Correction
 
 	// Azure is a "ByRecordSet" API.
