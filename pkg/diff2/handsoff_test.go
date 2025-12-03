@@ -266,8 +266,8 @@ func Test_ignore_external_dns(t *testing.T) {
 		domain,
 		existing,
 		desired,
-		nil, // absences
-		nil, // unmanagedConfigs
+		nil,   // absences
+		nil,   // unmanagedConfigs
 		false, // unmanagedSafely
 		false, // noPurge
 		true,  // ignoreExternalDNS
@@ -352,11 +352,11 @@ func Test_ignore_external_dns_custom_prefix(t *testing.T) {
 		domain,
 		existing,
 		desired,
-		nil,   // absences
-		nil,   // unmanagedConfigs
-		false, // unmanagedSafely
-		false, // noPurge
-		true,  // ignoreExternalDNS
+		nil,       // absences
+		nil,       // unmanagedConfigs
+		false,     // unmanagedSafely
+		false,     // noPurge
+		true,      // ignoreExternalDNS
 		"extdns-", // externalDNSPrefix
 	)
 	if err != nil {
