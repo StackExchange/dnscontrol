@@ -181,9 +181,9 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 			ff,
 		),
 	)
-	// fmt.Printf("DEBUG: Reading zonefile %q\n", zonefile)
-	// fmt.Printf("DEBUG: Meta %+v\n", meta)
-	// fmt.Printf("DEBUG: Domain Names %+v\n", ff)
+	//fmt.Printf("DEBUG: Reading zonefile %q\n", zonefile)
+	//fmt.Printf("DEBUG: Meta %+v\n", meta)
+	//fmt.Printf("DEBUG: Domain Names %+v\n", ff)
 
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {

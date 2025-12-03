@@ -1,7 +1,6 @@
 package bind
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -74,7 +73,7 @@ func Test_makeFileName_2(t *testing.T) {
 		want1  string
 		want2  string
 		want3  string
-		descr  string
+		descr  string // Not used in test, just for documentation generation
 	}{
 		// NOTE: "Domain" in these descriptions means the domain name without any split horizon tag. Technically the "Zone".
 		{`T`, `%T`, ``, `myTag`, `myTag`, `the tag`},
@@ -115,10 +114,10 @@ func Test_makeFileName_2(t *testing.T) {
 			if got3 != tt.want3 {
 				t.Errorf("makeFileName(%q) = ff3 %q, want %q", tt.format, got3, tt.want3)
 			}
-			// Uncomment to regenerate the table in the docs:
-			fmt.Printf("MD | `%s` | %s | `%s` | `%s` | `%s` |\n", tt.format, tt.descr, got1, got2, got3)
-			// Uncomment to regenerate the above test cases:
-			//fmt.Printf("{`%s`, `%s`, `%s`, `%s`, `%s`, %q},\n", tt.name, tt.format, got1, got2, got3, tt.descr)
+			//Uncomment to regenerate lines used in documentation/provider/bind.md 's table:
+			// fmt.Print(strings.ReplaceAll(fmt.Sprintf("| `%s` | %s | `%s` | `%s` | `%s` |\n", tt.format, tt.descr, got1, got2, got3), "``", "`\"\"` (null)"))
+			//Uncomment to regenerate the above test cases:
+			// fmt.Printf("{`%s`, `%s`, `%s`, `%s`, `%s`, %q},\n", tt.name, tt.format, got1, got2, got3, tt.descr)
 		})
 	}
 }

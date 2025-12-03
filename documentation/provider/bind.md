@@ -28,6 +28,12 @@ Example:
 ```
 {% endcode %}
 
+As of v4.2.0 `dnscontrol push` will create subdirectories along the path to
+the filename. This includes both the portion of the path created by the
+`directory` setting and the `filenameformat` setting. For security reasons, the
+automatic creation of subdirectories is disabled if `dnscontrol` is running as
+root. (Running DNSControl as root is not recommended in general.)
+
 ## Meta configuration
 
 This provider accepts some optional metadata in the `NewDnsProvider()` call.
@@ -91,14 +97,14 @@ The filenameformat is a string with a few printf-like `%` verbs:
 
 | Verb    | Description                                       | `EXAMple.com` | `EXAMple.com!MyTag` | `рф.com!myTag`       |
 | ------- | ------------------------------------------------- | ------------- | ------------------- | -------------------- |
-| `%T`    | the tag                                           | ``            | `myTag`             | `myTag`              |
+| `%T`    | the tag                                           | "" (null)     | `myTag`             | `myTag`              |
 | `%c`    | canonical name, globally unique and comparable    | `example.com` | `example.com!myTag` | `xn--p1ai.com!myTag` |
 | `%a`    | ASCII domain (Punycode, downcased)                | `example.com` | `example.com`       | `xn--p1ai.com`       |
 | `%u`    | Unicode domain (non-Unicode parts downcased)      | `example.com` | `example.com`       | `рф.com`             |
 | `%r`    | Raw (unmodified) Domain from `D()` (risky!)       | `EXAMple.com` | `EXAMple.com`       | `рф.com`             |
 | `%f`    | like `%c` but better for filenames (`%a%?_%T`)    | `example.com` | `example.com_myTag` | `xn--p1ai.com_myTag` |
 | `%F`    | like `%f` but reversed order (`%T%?_%a`)          | `example.com` | `myTag_example.com` | `myTag_xn--p1ai.com` |
-| `%?x`   | returns `x` if tag exists, otherwise ""           | ``            | `x`                 | `x`                  |
+| `%?x`   | returns `x` if tag exists, otherwise ""           | "" (null)     | `x`                 | `x`                  |
 | `%%`    | a literal percent sign                            | `%`           | `%`                 | `%`                  |
 | `a-Z./` | other printable characters are copied exactly     | `a-Z./`       | `a-Z./`             | `a-Z./`              |
 | `%U`    | (deprecated, use `%c`) Same as `%D%?!%T` (risky!) | `example.com` | `example.com!myTag` | `рф.com!myTag`       |
@@ -114,17 +120,6 @@ The filenameformat is a string with a few printf-like `%` verbs:
    DNSControl will write both zone files to the same file, flapping between the
    two. No error or warning will be output.
 
-Compatibility notes:
-
-* `%D` should not be used. It downcases the string in a way that is probably
-    incompatible with Unicode characters.  It is retained for compatibility with
-    pre-v4.28 releases. If your domain has capital Unicode characters, backwards
-    compatibility is not guaranteed.
-* `%U` relies on `%D` which is deprecated. Use `%c` instead.
-* As of v4.28 the default format string changed from `%U.zone` to `%c.zone`. This
-    should only matter if your `D()` statements included non-ASCII (Unicode)
-    runes that were capitalized.
-
 Useful examples:
 
 | Verb         | Description                         | `EXAMple.com`      | `EXAMple.com!MyTag`      | `рф.com!myTag`            |
@@ -134,10 +129,20 @@ Useful examples:
 | `db_%f`      | Recommended in a popular DNS book   | `db_example.com`   | `db_example.com_myTag`   | `db_xn--p1ai.com_myTag`   |
 | `db_%a%?_%T` | same as above but using `%?_`       | `db_example.com`   | `db_example.com_myTag`   | `db_xn--p1ai.com_myTag`   |
 
-(new in v4.2.0) `dnscontrol push` will create subdirectories along the path to
-the filename. This includes both the portion of the path created by the
-`directory` setting and the `filenameformat` setting. For security reasons, the automatic creation of
-subdirectories is disabled if `dnscontrol` is running as root.
+Compatibility notes:
+
+* `%D` should not be used. It downcases the string in a way that is probably
+    incompatible with Unicode characters.  It is retained for compatibility with
+    pre-v4.28 releases. If your domain has capital Unicode characters, backwards
+    compatibility is not guaranteed. Use `%r` instead.
+* `%U` relies on `%D` which is deprecated. Use `%c` instead.
+* As of v4.28 the default format string changed from `%U.zone` to `%c.zone`. This
+    should only matter if your `D()` statements included non-ASCII (Unicode)
+    runes that were capitalized.
+* If you are using pre-v4.28 releases the above table is slightly misleading
+    because uppercase ASCII letters do not always work. If you are using
+    pre-v4.28 releases, assume the above table lists `example.com` instead
+    of `EXAMpl.com`.
 
 # FYI: get-zones
 
@@ -148,7 +153,8 @@ any files named `*.zone` and assumes they are zone files.
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 
-If `filenameformat` is defined, `dnscontrol` makes a guess at which
-filenames are zones but doesn't try to hard to get it right, which is
-mathematically impossible to do correctly in all chase.  Feel free to file an issue if
-your format string doesn't work. I love a challenge!
+If `filenameformat` is defined, `dnscontrol` makes a guess at which filenames
+are zones by reversing the logic of the format string. It doesn't try very hard
+to get this right, as getting it right in all situations is mathematically
+impossible.  Feel free to file an issue if find a situation where it doesn't
+work. I love a challenge!
