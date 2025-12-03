@@ -179,8 +179,10 @@ func (a *aliDNSDsp) PrepDesiredRecords(dc *models.DomainConfig) {
 		}
 
 		if rec.TTL < versionInfo.minTTL {
-			printer.Warnf("record %s has TTL %d which is below the minimum %d for this domain version (%s)\n",
-				rec.GetLabelFQDN(), rec.TTL, versionInfo.minTTL, versionInfo.versionCode)
+			if rec.Type != "NS" {
+				printer.Warnf("record %s has TTL %d which is below the minimum %d for this domain version (%s)\n",
+					rec.GetLabelFQDN(), rec.TTL, versionInfo.minTTL, versionInfo.versionCode)
+			}
 			rec.TTL = versionInfo.minTTL
 		}
 		if rec.TTL > versionInfo.maxTTL {
