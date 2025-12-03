@@ -13,21 +13,19 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:   providers.Cannot(),
-	providers.CanUseCAA:     providers.Can(),
-	providers.CanUsePTR:     providers.Cannot(),
-	providers.CanUseNAPTR:   providers.Cannot(),
-	providers.CanUseSRV:     providers.Can(),
-	providers.CanUseSSHFP:   providers.Cannot(),
-	providers.CanUseTLSA:    providers.Cannot(),
-	providers.CanAutoDNSSEC: providers.Can(),
-	providers.CanConcur:     providers.Cannot(),
-
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanConcur:              providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
-
-	providers.CanUseRoute53Alias: providers.Cannot(),
+	providers.CanUseRoute53Alias:     providers.Cannot(),
 }
 
 func init() {

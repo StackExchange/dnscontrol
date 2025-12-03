@@ -27,6 +27,7 @@ Jump to a table:
 | ------------- | ---------------- | ------------ | --------- |
 | [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ❌ |
@@ -90,6 +91,7 @@ Jump to a table:
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
 | [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`ALIDNS`](alidns.md) | ❌ | ❌ | ❌ | ❔ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ✅ | ✅ |
@@ -152,6 +154,7 @@ Jump to a table:
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
 | [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
@@ -208,6 +211,7 @@ Jump to a table:
 | Provider name | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ❔ |
+| [`ALIDNS`](alidns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`AZURE_DNS`](azure_dns.md) | ❔ | ❌ | ✅ | ❔ |
@@ -263,6 +267,7 @@ Jump to a table:
 | Provider name | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) |
 | ------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
+| [`ALIDNS`](alidns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
@@ -316,6 +321,7 @@ Jump to a table:
 | Provider name | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | [`DS`](../language-reference/domain-modifiers/DS.md) |
 | ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ❔ | ❔ |
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ |
