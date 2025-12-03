@@ -36,6 +36,8 @@ Back-port the ACTUAL results to the expected results:
 (This is dangerous. You may be committing buggy results to the "expected" files. Carefully inspect the resulting PR.)
 
 ```
+find . -type f -name \*.ACTUAL -print -delete
+go test -count=1 ./...
 cd parse_tests
 fmtjson *.json *.json.ACTUAL
 for i in *.ACTUAL ; do f=$(basename $i .ACTUAL) ; cp $i $f ; done

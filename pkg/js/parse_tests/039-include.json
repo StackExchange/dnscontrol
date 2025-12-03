@@ -24,7 +24,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "external"
     },
     {
       "dnsProviders": {
@@ -51,7 +52,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "internal"
     }
   ],
   "registrars": [

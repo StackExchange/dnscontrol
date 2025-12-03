@@ -11,7 +11,6 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "3.2.1.in-addr.arpa"
       },
       "name": "3.2.1.in-addr.arpa",

@@ -176,6 +176,11 @@
     "api_key": "$HETZNER_API_KEY",
     "domain": "$HETZNER_DOMAIN"
   },
+  "HETZNER_V2": {
+    "TYPE": "HETZNER_V2",
+    "api_token": "$HETZNER_V2_API_TOKEN",
+    "domain": "$HETZNER_V2_DOMAIN"
+  },
   "HEXONET": {
     "TYPE": "HEXONET",
     "apientity": "$HEXONET_ENTITY",
@@ -334,6 +339,12 @@
     "PrivateKey": "$TRANSIP_PRIVATE_KEY",
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "VERCEL": {
+    "TYPE": "VERCEL",
+    "api_token": "$VERCEL_API_TOKEN",
+    "domain": "$VERCEL_DOMAIN",
+    "team_id": "$VERCEL_TEAM_ID"
   },
   "VULTR": {
     "TYPE": "VULTR",
