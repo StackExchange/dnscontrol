@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 )
@@ -134,32 +135,34 @@ func deduplicateNameServerTargets(newRecs models.Records) models.Records {
 	return deduped
 }
 
-// validateRecordTTLs checks that all records in the domain config have valid TTL values
-// according to the Alibaba Cloud DNS version constraints.
-func (a *aliDnsDsp) validateRecordTTLs(dc *models.DomainConfig) error {
+// PrepDesiredRecords munges any records to best suit this provider.
+func (a *aliDnsDsp) PrepDesiredRecords(dc *models.DomainConfig) {
 	versionInfo, err := a.getDomainVersionInfo(dc.Name)
 	if err != nil {
-		return fmt.Errorf("failed to get domain version info: %w", err)
+		return
 	}
+
+	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 
 	for _, rec := range dc.Records {
 		if rec.TTL < versionInfo.minTTL {
-			return fmt.Errorf("record %s has TTL %d which is below the minimum %d for this domain version (%s)",
+			printer.Warnf("record %s has TTL %d which is below the minimum %d for this domain version (%s)\n",
 				rec.GetLabelFQDN(), rec.TTL, versionInfo.minTTL, versionInfo.versionCode)
+			rec.TTL = versionInfo.minTTL
 		}
 		if rec.TTL > versionInfo.maxTTL {
-			return fmt.Errorf("record %s has TTL %d which exceeds the maximum %d (24 hours)",
+			printer.Warnf("record %s has TTL %d which exceeds the maximum %d\n",
 				rec.GetLabelFQDN(), rec.TTL, versionInfo.maxTTL)
+			rec.TTL = versionInfo.maxTTL
 		}
+		recordsToKeep = append(recordsToKeep, rec)
 	}
-	return nil
+
+	dc.Records = recordsToKeep
 }
 
 func (a *aliDnsDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	// Validate TTL constraints for all records
-	if err := a.validateRecordTTLs(dc); err != nil {
-		return nil, 0, err
-	}
+	a.PrepDesiredRecords(dc)
 
 	var corrections []*models.Correction
 
