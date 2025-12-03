@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
@@ -115,6 +116,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		case "o":
 		}
 		metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
+	}
+
+	if profileType == "ALIDNS" {
+		models.DefaultTTL = 600
 	}
 
 	provider, err := providers.CreateDNSProvider(profileType, cfg, metadata)

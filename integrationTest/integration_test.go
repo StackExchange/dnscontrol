@@ -6,14 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
 
 func TestDNSProviders(t *testing.T) {
-	models.DefaultTTL = 600 // Avoid problems due to minimum TTLs
-
 	provider, domain, cfg := getProvider(t)
 	if provider == nil {
 		return
