@@ -10,7 +10,10 @@ import (
 
 func (a *aliDnsDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, error) {
 	// Check cache first
-	if info, ok := a.domainVersionCache[domain]; ok {
+	a.cacheMu.Lock()
+	info, ok := a.domainVersionCache[domain]
+	a.cacheMu.Unlock()
+	if ok {
 		return info, nil
 	}
 
@@ -38,12 +41,14 @@ func (a *aliDnsDsp) getDomainVersionInfo(domain string) (*domainVersionInfo, err
 		}
 	}
 
-	info := &domainVersionInfo{
+	info = &domainVersionInfo{
 		versionCode: resp.VersionCode,
 		minTTL:      minTTL,
 		maxTTL:      86400,
 	}
+	a.cacheMu.Lock()
 	a.domainVersionCache[domain] = info
+	a.cacheMu.Unlock()
 	return info, nil
 }
 

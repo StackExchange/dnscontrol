@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -21,7 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(),
+	providers.CanConcur:              providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
@@ -50,6 +51,7 @@ func init() {
 type aliDnsDsp struct {
 	client             *alidns.Client
 	domainVersionCache map[string]*domainVersionInfo
+	cacheMu            sync.Mutex
 }
 
 type domainVersionInfo struct {

@@ -91,7 +91,7 @@ Jump to a table:
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
 | [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
-| [`ALIDNS`](alidns.md) | ❌ | ❌ | ❌ | ❔ |
+| [`ALIDNS`](alidns.md) | ✅ | ❌ | ❌ | ❔ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ✅ | ✅ |
