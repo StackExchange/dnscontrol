@@ -139,7 +139,7 @@ func (a *aliDnsDsp) describeDomainRecordsAll(domain string) ([]*alidns.Record, e
 		return resp.DomainRecords.Record, total, nil
 	}
 
-	vals, err := paginateAll(fetch)
+	vals, err := paginateAll(fetch, 500)
 	if err != nil {
 		return nil, err
 	}
@@ -171,5 +171,5 @@ func (a *aliDnsDsp) describeDomainsAll() ([]string, error) {
 		return domains, total, nil
 	}
 
-	return paginateAll(fetch)
+	return paginateAll(fetch, 100)
 }

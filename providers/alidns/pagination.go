@@ -5,8 +5,7 @@ package alidns
 // returns the items for that page, the total number of items available,
 // and an error if any. paginateAll will iterate pages until it has
 // collected all items or an error occurs.
-func paginateAll[T any](fetch func(pageNumber, pageSize int) ([]T, int, error)) ([]T, error) {
-	const maxPageSize = 500 // Alibaba API max for many endpoints
+func paginateAll[T any](fetch func(pageNumber, pageSize int) ([]T, int, error), maxPageSize int) ([]T, error) {
 	page := 1
 	pageSize := maxPageSize
 	var out []T
