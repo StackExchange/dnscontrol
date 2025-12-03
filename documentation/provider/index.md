@@ -391,6 +391,7 @@ Providers in this category and their maintainers are:
 |Name|Maintainer|
 |---|---|
 |[`ADGUARDHOME`](adguardhome.md)|@ishanjain28|
+|[`ALIDNS`](alidns.md)|@bytemain|
 |[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
 |[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|
@@ -445,7 +446,6 @@ code to support this provider, we'd be glad to help in any way.
 *(The list below is sorted alphabetically.)*
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
-* [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
 * [BookMyName](https://github.com/StackExchange/dnscontrol/issues/3451) (#3451)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)

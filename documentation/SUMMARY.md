@@ -114,6 +114,7 @@
 * [Supported providers](provider/index.md)
 * [AdGuard Home](provider/adguardhome.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
+* [Alibaba Cloud DNS (ALIDNS)](provider/alidns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
 * [AXFR+DDNS](provider/axfrddns.md)
