@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 )
@@ -109,76 +108,74 @@ func (a *aliDnsDsp) GetZoneRecords(domain string, meta map[string]string) (model
 	return out, nil
 }
 
+func removeTrailingDot(record string) string {
+	return strings.TrimSuffix(record, ".")
+}
+
+func deduplicateNameServerTargets(newRecs models.Records) models.Records {
+	dedupedMap := make(map[string]bool)
+	var deduped models.Records
+	for _, rec := range newRecs {
+		if !dedupedMap[rec.GetTargetField()] {
+			dedupedMap[rec.GetTargetField()] = true
+			deduped = append(deduped, rec)
+		}
+	}
+	return deduped
+}
+
 func (a *aliDnsDsp) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	keysToUpdate, toReport, actualChangeCount, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
+	var corrections []*models.Correction
+
+	// Azure is a "ByRecordSet" API.
+	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
 
-	existingRecordsMap := make(map[models.RecordKey][]*models.RecordConfig)
-	for _, r := range existingRecords {
-		key := models.RecordKey{NameFQDN: r.NameFQDN, Type: r.Type}
-		existingRecordsMap[key] = append(existingRecordsMap[key], r)
-	}
+	for _, change := range changes {
+		// Copy all param values to local variables to avoid overwrites
+		msgs := change.MsgsJoined
+		dcn := dc.Name
+		chaKey := change.Key
 
-	desiredRecordsMap := dc.Records.GroupedByKey()
+		if change.Type == diff2.CHANGE || change.Type == diff2.CREATE {
+			if chaKey.Type == "NS" && dcn == removeTrailingDot(change.Key.NameFQDN) {
+				change.New = deduplicateNameServerTargets(change.New)
+			}
+		}
 
-	// Deletes must occur first. For example, if replacing a existing CNAME with an A of the same name:
-	//    DELETE CNAME foo.example.net
-	// must occur before
-	//    CREATE A foo.example.net
-	// because both an A and a CNAME for the same name is not allowed.
-
-	lastCorrections := []*models.Correction{} // creates and replaces last
-
-	for key, msg := range keysToUpdate {
-		existing, okExisting := existingRecordsMap[key]
-		desired, okDesired := desiredRecordsMap[key]
-
-		if okExisting && !okDesired {
-			// In the existing map but not in the desired map: Delete
+		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+		case diff2.CREATE:
+			changeNew := change.New
 			corrections = append(corrections, &models.Correction{
-				Msg: strings.Join(msg, "\n   "),
+				Msg: msgs,
 				F: func() error {
-					return a.deleteRecordset(existing, dc.Name)
+					return a.createRecordset(changeNew, dcn)
 				},
 			})
-			printer.Debugf("deleteRecordset: %s %s\n", key.NameFQDN, key.Type)
-			for _, rdata := range existing {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-			}
-		} else if !okExisting && okDesired {
-			// Not in the existing map but in the desired map: Create
-			lastCorrections = append(lastCorrections, &models.Correction{
-				Msg: strings.Join(msg, "\n   "),
+		case diff2.CHANGE:
+			changeNew := change.New
+			changeExisting := change.Old
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
 				F: func() error {
-					return a.createRecordset(desired, dc.Name)
+					return a.updateRecordset(changeExisting, changeNew, dcn)
 				},
 			})
-			printer.Debugf("createRecordset: %s %s\n", key.NameFQDN, key.Type)
-			for _, rdata := range desired {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-			}
-		} else if okExisting && okDesired {
-			// In the existing map and in the desired map: Replace
-			lastCorrections = append(lastCorrections, &models.Correction{
-				Msg: strings.Join(msg, "\n   "),
+		case diff2.DELETE:
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
 				F: func() error {
-					return a.updateRecordset(existing, desired, dc.Name)
+					return a.deleteRecordset(change.Old, dcn)
 				},
 			})
-			printer.Debugf("updateRecordset: %s %s\n", key.NameFQDN, key.Type)
-			for _, rdata := range desired {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
-			}
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
-	// Append creates and updates after deletes
-	corrections = append(corrections, lastCorrections...)
-
-	printer.Debugf("Found %d corrections (actualChangeCount=%d)\n", len(corrections), actualChangeCount)
 	return corrections, actualChangeCount, nil
 }

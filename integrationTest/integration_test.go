@@ -1748,7 +1748,7 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
-			not("NAMECHEAP", "ALIDNS"), // Will fail until converted to use diff2 module.
+			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
