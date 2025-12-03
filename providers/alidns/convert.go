@@ -15,6 +15,7 @@ func nativeToRecord(r *alidns.Record, domain string) (*models.RecordConfig, erro
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
+
 	label, err := idna.ToASCII(r.RR)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert label to ASCII: %w", err)

@@ -83,6 +83,20 @@ func RegisterMaintainer(
 	ProviderMaintainers[providerName] = gitHubUsername
 }
 
+// ProviderDefaultTTLs stores the default TTL for each provider.
+var ProviderDefaultTTLs = map[string]uint32{}
+
+// RegisterDefaultTTL registers a default TTL for a provider.
+// This is used by get-zones to determine the DefaultTTL when generating output.
+func RegisterDefaultTTL(providerName string, defaultTTL uint32) {
+	ProviderDefaultTTLs[providerName] = defaultTTL
+}
+
+// GetDefaultTTL returns the default TTL for a provider, or 0 if not registered.
+func GetDefaultTTL(providerName string) uint32 {
+	return ProviderDefaultTTLs[providerName]
+}
+
 // CreateRegistrar initializes a registrar instance from given credentials.
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	var err error

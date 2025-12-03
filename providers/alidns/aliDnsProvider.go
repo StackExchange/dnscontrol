@@ -46,6 +46,9 @@ func init() {
 	// The domain name in the browser's address bar does not change, but the content displayed is from the target website.
 	providers.RegisterCustomRecordType("IMPLICIT_URL_FORWARDING", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	// Register default TTL of 600 seconds (10 minutes) for Alibaba Cloud DNS
+	// This is the minimum TTL for free/personal edition domains
+	providers.RegisterDefaultTTL(providerName, 600)
 
 }
 
@@ -150,6 +153,11 @@ func (a *aliDnsDsp) PrepDesiredRecords(dc *models.DomainConfig) {
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 
 	for _, rec := range dc.Records {
+		// If TTL is 0 (not set), use the minimum TTL as default
+		if rec.TTL == 0 {
+			rec.TTL = versionInfo.minTTL
+		}
+
 		if rec.TTL < versionInfo.minTTL {
 			printer.Warnf("record %s has TTL %d which is below the minimum %d for this domain version (%s)\n",
 				rec.GetLabelFQDN(), rec.TTL, versionInfo.minTTL, versionInfo.versionCode)
