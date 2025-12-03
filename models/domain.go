@@ -40,8 +40,8 @@ type DomainConfig struct {
 	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
 
-	IgnoreExternalDNS       bool   `json:"ignore_external_dns,omitempty"`        // IGNORE_EXTERNAL_DNS
-	ExternalDNSPrefix       string `json:"external_dns_prefix,omitempty"`        // IGNORE_EXTERNAL_DNS prefix
+	IgnoreExternalDNS bool   `json:"ignore_external_dns,omitempty"` // IGNORE_EXTERNAL_DNS
+	ExternalDNSPrefix string `json:"external_dns_prefix,omitempty"` // IGNORE_EXTERNAL_DNS prefix
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	// DNSSEC        bool              `json:"dnssec,omitempty"`
