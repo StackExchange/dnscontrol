@@ -223,10 +223,10 @@ func makeTests() []*TestGroup {
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
 			not("LINODE"), // Linode does not support arbitrary TTLs: 666 and 1000 are both rounded up to 3600.
-			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 900), ttl(a("www", "2.2.2.2"), 800), ttl(a("www", "5.6.7.8"), 700)),
+			tc("Start", ttl(a("@", "8.8.8.8"), 900), ttl(a("www", "1.2.3.4"), 800), ttl(a("www", "5.6.7.8"), 700)),
+			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 911), ttl(a("www", "1.2.3.4"), 800), ttl(a("www", "5.6.7.8"), 700)),
+			tc("Change single ttl in set", ttl(a("@", "8.8.8.8"), 911), ttl(a("www", "1.2.3.4"), 822), ttl(a("www", "5.6.7.8"), 700)),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 933), ttl(a("www", "2.2.2.2"), 933), ttl(a("www", "5.6.7.8"), 933)),
 		),
 
 		// Narrative: Did you see that `not("NETCUP")` code?  NETCUP just
