@@ -22,11 +22,11 @@ func TestRR(t *testing.T) {
 		Name:     "@",
 		NameFQDN: "example.com",
 		target:   "mailto:test@example.com",
-		TTL:      300,
+		TTL:      600,
 		CaaTag:   "iodef",
 		CaaFlag:  1,
 	}
-	expected = "example.com.\t300\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
+	expected = "example.com.\t600\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
 	found = experiment.ToRR().String()
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
@@ -37,12 +37,12 @@ func TestRR(t *testing.T) {
 		Name:             "@",
 		NameFQDN:         "_443._tcp.example.com",
 		target:           "abcdef0123456789",
-		TTL:              300,
+		TTL:              600,
 		TlsaUsage:        0,
 		TlsaSelector:     0,
 		TlsaMatchingType: 1,
 	}
-	expected = "_443._tcp.example.com.\t300\tIN\tTLSA\t0 0 1 abcdef0123456789"
+	expected = "_443._tcp.example.com.\t600\tIN\tTLSA\t0 0 1 abcdef0123456789"
 	found = experiment.ToRR().String()
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
