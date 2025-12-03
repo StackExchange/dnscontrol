@@ -52,7 +52,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HETZNER_V2','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -87,6 +87,7 @@ jobs:
       GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
       GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
+      HETZNER_V2_DOMAIN: ${{ vars.HETZNER_V2_DOMAIN }}
       HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }}
@@ -154,6 +155,8 @@ jobs:
       HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
       HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
       #
+      HETZNER_V2_API_TOKEN: ${{ secrets.HETZNER_V2_API_TOKEN }}
+      #
       HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
       HEXONET_PW: ${{ secrets.HEXONET_PW }}
       HEXONET_UID: ${{ secrets.HEXONET_UID }}
@@ -194,7 +197,7 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run: mkdir -p "$TEST_RESULTS"
     - name: restore_cache
       uses: actions/cache@v4.3.0

@@ -53,7 +53,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
-	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -708,28 +708,40 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name         string   `json:"name"`
-	Target       cfTarget `json:"target"`
-	Service      string   `json:"service"`       // SRV
-	Proto        string   `json:"proto"`         // SRV
-	Priority     uint16   `json:"priority"`      // SRV
-	Weight       uint16   `json:"weight"`        // SRV
-	Port         uint16   `json:"port"`          // SRV
-	Tag          string   `json:"tag"`           // CAA
-	Flags        uint16   `json:"flags"`         // CAA/DNSKEY
-	Value        string   `json:"value"`         // CAA
-	Usage        uint8    `json:"usage"`         // TLSA
-	Selector     uint8    `json:"selector"`      // TLSA
-	MatchingType uint8    `json:"matching_type"` // TLSA
-	Certificate  string   `json:"certificate"`   // TLSA
-	Algorithm    uint8    `json:"algorithm"`     // SSHFP/DNSKEY/DS
-	HashType     uint8    `json:"type"`          // SSHFP
-	Fingerprint  string   `json:"fingerprint"`   // SSHFP
-	Protocol     uint8    `json:"protocol"`      // DNSKEY
-	PublicKey    string   `json:"public_key"`    // DNSKEY
-	KeyTag       uint16   `json:"key_tag"`       // DS
-	DigestType   uint8    `json:"digest_type"`   // DS
-	Digest       string   `json:"digest"`        // DS
+	Name          string   `json:"name"`
+	Target        cfTarget `json:"target"`
+	Service       string   `json:"service"`        // SRV
+	Proto         string   `json:"proto"`          // SRV
+	Priority      uint16   `json:"priority"`       // SRV
+	Weight        uint16   `json:"weight"`         // SRV
+	Port          uint16   `json:"port"`           // SRV
+	Tag           string   `json:"tag"`            // CAA
+	Flags         uint16   `json:"flags"`          // CAA/DNSKEY
+	Value         string   `json:"value"`          // CAA
+	Usage         uint8    `json:"usage"`          // TLSA
+	Selector      uint8    `json:"selector"`       // TLSA
+	MatchingType  uint8    `json:"matching_type"`  // TLSA
+	Certificate   string   `json:"certificate"`    // TLSA
+	Algorithm     uint8    `json:"algorithm"`      // SSHFP/DNSKEY/DS
+	HashType      uint8    `json:"type"`           // SSHFP
+	Fingerprint   string   `json:"fingerprint"`    // SSHFP
+	Protocol      uint8    `json:"protocol"`       // DNSKEY
+	PublicKey     string   `json:"public_key"`     // DNSKEY
+	KeyTag        uint16   `json:"key_tag"`        // DS
+	DigestType    uint8    `json:"digest_type"`    // DS
+	Digest        string   `json:"digest"`         // DS
+	Altitude      float64  `json:"altitude"`       // LOC
+	LatDegrees    uint8    `json:"lat_degrees"`    // LOC
+	LatDirection  string   `json:"lat_direction"`  // LOC
+	LatMinutes    uint8    `json:"lat_minutes"`    // LOC
+	LatSeconds    float64  `json:"lat_seconds"`    // LOC
+	LongDegrees   uint8    `json:"long_degrees"`   // LOC
+	LongDirection string   `json:"long_direction"` // LOC
+	LongMinutes   uint8    `json:"long_minutes"`   // LOC
+	LongSeconds   float64  `json:"long_seconds"`   // LOC
+	PrecisionHorz float64  `json:"precision_horz"` // LOC
+	PrecisionVert float64  `json:"precision_vert"` // LOC
+	Size          float64  `json:"size"`           // LOC
 }
 
 // cfTarget is a SRV target. A null target is represented by an empty string, but
@@ -819,6 +831,15 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+	// Check for read_only metadata
+	// https://github.com/StackExchange/dnscontrol/issues/3850
+	if cr.Meta != nil {
+		if metaMap, ok := cr.Meta.(map[string]interface{}); ok {
+			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
+				return nil, nil
+			}
+		}
+	}
 
 	// ALIAS in Cloudflare works like CNAME.
 	if cr.Type == "ALIAS" {

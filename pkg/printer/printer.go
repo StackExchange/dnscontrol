@@ -13,7 +13,7 @@ import (
 // CLI is an abstraction around the CLI.
 type CLI interface {
 	Printer
-	StartDomain(domain string)
+	StartDomain(dc *models.DomainConfig)
 	StartDNSProvider(name string, skip bool)
 	EndProvider(name string, numCorrections int, err error)
 	EndProvider2(name string, numCorrections int)
@@ -89,8 +89,12 @@ type ConsolePrinter struct {
 }
 
 // StartDomain is called at the start of each domain.
-func (c ConsolePrinter) StartDomain(domain string) {
-	fmt.Fprintf(c.Writer, "******************** Domain: %s\n", domain)
+func (c ConsolePrinter) StartDomain(dc *models.DomainConfig) {
+	if dc.Name == dc.NameUnicode {
+		fmt.Fprintf(c.Writer, "******************** Domain: %s\n", dc.Name)
+	} else {
+		fmt.Fprintf(c.Writer, "******************** Domain: %s (%s)\n", dc.Name, dc.NameUnicode)
+	}
 }
 
 // PrintCorrection is called to print/format each correction.

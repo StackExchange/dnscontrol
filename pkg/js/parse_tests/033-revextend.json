@@ -11,7 +11,6 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "8.9.in-addr.arpa"
       },
       "name": "8.9.in-addr.arpa",
@@ -39,7 +38,6 @@
         "bind": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
