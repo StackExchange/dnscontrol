@@ -2068,6 +2068,12 @@ func makeTests() []*TestGroup {
 		//    every quarter. There may be library updates, API changes,
 		//    etc.
 
+		// This SHOULD be the last test. We do this so that we always
+		// leave zones with a single TXT record exclaming our success.
+		// Nothing depends on this record existing or should depend on it.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
 	}
 
 	return tests

@@ -13,7 +13,7 @@ const (
 	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
 	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
 	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
-	DomainNameIDN     = "dnscontrol_nameidn"     // A copy of DomainConfig.NameIDN
+	DomainNameASCII   = "dnscontrol_nameascii"   // A copy of DomainConfig.NameASCII
 	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
 )
 
@@ -39,6 +39,9 @@ type DomainConfig struct {
 
 	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
+
+	IgnoreExternalDNS bool   `json:"ignore_external_dns,omitempty"` // IGNORE_EXTERNAL_DNS
+	ExternalDNSPrefix string `json:"external_dns_prefix,omitempty"` // IGNORE_EXTERNAL_DNS prefix
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	// DNSSEC        bool              `json:"dnssec,omitempty"`
@@ -71,7 +74,7 @@ func (dc *DomainConfig) PostProcess() {
 
 	// Turn the user-supplied name into the fixed forms.
 	ff := domaintags.MakeDomainNameVarieties(dc.Name)
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameIDN, ff.NameUnicode, ff.UniqueName
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
 	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
@@ -79,7 +82,7 @@ func (dc *DomainConfig) PostProcess() {
 		dc.Metadata[DomainTag] = dc.Tag
 	}
 	//dc.Metadata[DomainNameRaw] = dc.NameRaw
-	//dc.Metadata[DomainNameIDN] = dc.Name
+	//dc.Metadata[DomainNameASCII] = dc.Name
 	//dc.Metadata[DomainNameUnicode] = dc.NameUnicode
 	dc.Metadata[DomainUniqueName] = dc.UniqueName
 }
@@ -233,7 +236,7 @@ func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correctio
 func MakeFakeDomainConfig(domain string) *DomainConfig {
 	v := domaintags.MakeDomainNameVarieties(domain)
 	return &DomainConfig{
-		Name:        v.NameIDN,
+		Name:        v.NameASCII,
 		NameRaw:     v.NameRaw,
 		NameUnicode: v.NameUnicode,
 	}
