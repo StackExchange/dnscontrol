@@ -30,7 +30,6 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 		rtype := n.RrsetType
 
 		if rtypeinfo.IsModernType(rtype) {
-			// func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dc *models.DomainConfig) (*models.RecordConfig, error) {
 			rc, err = rtypecontrol.NewRecordConfigFromString(n.RrsetName, uint32(n.RrsetTTL), rtype, value, dc)
 			if err != nil {
 				return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
