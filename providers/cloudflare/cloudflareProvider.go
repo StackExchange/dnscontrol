@@ -73,14 +73,8 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	//providers.RegisterCustomRecordType("CF_REDIRECT", providerName, "")
-	//providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", providerName, "")
 	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
-
-	// providers.SupportedRecordTypes(provderName,
-	// 	"CLOUDFLAREAPI_SINGLE_REDIRECT",
-	// )
 }
 
 // cloudflareProvider is the handle for API calls.
@@ -455,7 +449,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	// iterate backwards so first defined page rules have highest priority
-	//prPriority := 0
 	for i := len(dc.Records) - 1; i >= 0; i-- {
 		rec := dc.Records[i]
 		if rec.Metadata == nil {
@@ -605,8 +598,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		parsedMeta := &struct {
 			IPConversions string   `json:"ip_conversions"`
 			IgnoredLabels []string `json:"ignored_labels"`
-			//ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
-			ManageWorkers bool `json:"manage_workers"`
+			ManageWorkers bool     `json:"manage_workers"`
 			//
 			ManageSingleRedirects bool   `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
 			TranscodeLogFilename  string `json:"transcode_log"`           // Log the PAGE_RULE conversions.
@@ -616,7 +608,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			return nil, err
 		}
 		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
-		//api.manageRedirects = parsedMeta.ManageRedirects
 		api.tcLogFilename = parsedMeta.TranscodeLogFilename
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:

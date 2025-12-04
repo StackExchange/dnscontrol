@@ -222,7 +222,6 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 			}
 			rec = *prec
 			rec.TTL = rr.Header().Ttl
-			fmt.Printf("DEBUG: RP record parsed as %+v\n", rec)
 		default:
 			// Legacy types:
 			rec, err = models.RRtoRCTxtBug(rr, zoneName)
