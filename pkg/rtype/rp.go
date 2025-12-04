@@ -2,6 +2,7 @@ package rtype
 
 import (
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/miekg/dns"
 )
@@ -20,7 +21,7 @@ func (handle *RP) Name() string {
 }
 
 // FromArgs fills in the RecordConfig from []any, which is typically from a parsed config file.
-func (handle *RP) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
+func (handle *RP) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	if err := rtypecontrol.PaveArgs(args[1:], "ss"); err != nil {
 		return err
 	}
@@ -31,11 +32,11 @@ func (handle *RP) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, ar
 		},
 	}
 
-	return handle.FromStruct(dc, rec, args[0].(string), fields)
+	return handle.FromStruct(dcn, rec, args[0].(string), fields)
 }
 
 // FromStruct fills in the RecordConfig from a struct, typically from an API response.
-func (handle *RP) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+func (handle *RP) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	rec.F = fields
 
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()

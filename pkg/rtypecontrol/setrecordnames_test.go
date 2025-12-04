@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 )
 
 func TestSetRecordNames(t *testing.T) {
-	dc := &models.DomainConfig{
-		Name:        "example.com",
+	dc := &domaintags.DomainNameVarieties{
+		NameASCII:   "example.com",
 		NameRaw:     "example.com",
 		NameUnicode: "example.com",
 	}
-	dcIDN := &models.DomainConfig{
-		Name:        "xn--bcher-kva.com",
+	dcIDN := &domaintags.DomainNameVarieties{
+		NameASCII:   "xn--bcher-kva.com",
 		NameRaw:     "bücher.com",
 		NameUnicode: "bücher.com",
 	}
@@ -21,7 +22,7 @@ func TestSetRecordNames(t *testing.T) {
 	tests := []struct {
 		name        string
 		rec         *models.RecordConfig
-		dc          *models.DomainConfig
+		dc          *domaintags.DomainNameVarieties
 		n           string
 		expectedRec *models.RecordConfig
 	}{

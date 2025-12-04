@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
@@ -325,7 +326,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 			"CLOUDFLAREAPI_SINGLE_REDIRECT",
 			1,
 			[]any{srName, code, srWhen, srThen},
-			models.MakeFakeDomainConfig(domain))
+			domaintags.MakeDomainNameVarieties(domain))
 		if err != nil {
 			return nil, err
 		}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
@@ -30,7 +31,7 @@ func (handle *SingleRedirectConfig) Name() string {
 	return "CLOUDFLAREAPI_SINGLE_REDIRECT"
 }
 
-func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
+func (handle *SingleRedirectConfig) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
 		return err
@@ -66,9 +67,9 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	rec.Name = "@"
 	rec.NameRaw = "@"
 	rec.NameUnicode = "@"
-	rec.NameFQDN = dc.Name
-	rec.NameFQDNRaw = dc.NameRaw
-	rec.NameFQDNUnicode = dc.NameUnicode
+	rec.NameFQDN = dcn.NameASCII
+	rec.NameFQDNRaw = dcn.NameRaw
+	rec.NameFQDNUnicode = dcn.NameUnicode
 	rec.TTL = 1
 
 	// Fill in the legacy fields:
@@ -76,7 +77,7 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	return nil
 }
 
-func (handle *SingleRedirectConfig) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+func (handle *SingleRedirectConfig) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
 }
 

@@ -14,7 +14,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
-			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc)
+			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc.DomainNameVarieties())
 			if err != nil {
 				return err
 			}
@@ -32,7 +32,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	return nil
 }
 
-func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dc *models.DomainConfig) (*models.RecordConfig, error) {
+func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -46,10 +46,10 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dc *models.DomainC
 		TTL:      ttl,
 		Metadata: map[string]string{},
 	}
-	setRecordNames(rec, dc, args[0].(string))
+	setRecordNames(rec, dcn, args[0].(string))
 
 	// Fill in the .F/.Fields* fields.
-	err := Func[t].FromArgs(dc, rec, args)
+	err := Func[t].FromArgs(dcn, rec, args)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dc *models.DomainC
 	return rec, nil
 }
 
-func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dc *models.DomainConfig) (*models.RecordConfig, error) {
+func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -69,11 +69,11 @@ func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dc *
 	if err != nil {
 		return nil, err
 	}
-	return NewRecordConfigFromStruct(name, ttl, t, rec, dc)
+	return NewRecordConfigFromStruct(name, ttl, t, rec, dcn)
 
 }
 
-func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc *models.DomainConfig) (*models.RecordConfig, error) {
+func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -87,9 +87,9 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 		TTL:      ttl,
 		Metadata: map[string]string{},
 	}
-	setRecordNames(rec, dc, name)
+	setRecordNames(rec, dcn, name)
 
-	err := Func[t].FromStruct(dc, rec, name, fields)
+	err := Func[t].FromStruct(dcn, rec, name, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 }
 
 // setRecordNames updates the .Name* fields.
-func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string) {
+func setRecordNames(rec *models.RecordConfig, dcn *domaintags.DomainNameVarieties, n string) {
 	// FYI(tlim): This code could be collapse
 	if rec.SubDomain == "" {
 		// Not _EXTEND() mode:
@@ -106,19 +106,19 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 			rec.Name = "@"
 			rec.NameRaw = "@"
 			rec.NameUnicode = "@"
-			rec.NameFQDN = dc.Name
-			rec.NameFQDNRaw = dc.NameRaw
-			rec.NameFQDNUnicode = dc.NameUnicode
-			rec.NameFQDN = dc.Name
-			rec.NameFQDNRaw = dc.NameRaw
-			rec.NameFQDNUnicode = dc.NameUnicode
+			rec.NameFQDN = dcn.NameASCII
+			rec.NameFQDNRaw = dcn.NameRaw
+			rec.NameFQDNUnicode = dcn.NameUnicode
+			rec.NameFQDN = dcn.NameASCII
+			rec.NameFQDNRaw = dcn.NameRaw
+			rec.NameFQDNUnicode = dcn.NameUnicode
 		} else {
 			rec.Name = strings.ToLower(domaintags.EfficientToASCII(n))
 			rec.NameRaw = n
 			rec.NameUnicode = domaintags.EfficientToUnicode(n)
-			rec.NameFQDN = rec.Name + "." + dc.Name
-			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
+			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
+			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
 		}
 	} else {
 		// D_EXTEND() mode:
@@ -129,16 +129,16 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 			rec.Name = sdASCII
 			rec.NameRaw = sdRaw
 			rec.NameUnicode = sdUnicode
-			rec.NameFQDN = rec.Name + "." + dc.Name
-			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
+			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
+			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
 		} else {
 			rec.Name = domaintags.EfficientToASCII(n) + "." + sdASCII
 			rec.NameRaw = n + "." + sdRaw
 			rec.NameUnicode = domaintags.EfficientToUnicode(rec.Name)
-			rec.NameFQDN = rec.Name + "." + dc.Name
-			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
+			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
+			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
 		}
 	}
 }

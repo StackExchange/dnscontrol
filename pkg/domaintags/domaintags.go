@@ -6,25 +6,24 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// DomainFixedForms stores the various fixed forms of a domain name and tag.
-// TODO(tlim): Rename this to DomainNameVarieties or something similar.
-type DomainFixedForms struct {
-	NameRaw     string // "originalinput.com" (name as input by the user, lowercased (no tag))
-	NameASCII   string // "punycode.com"
-	NameUnicode string // "unicode.com" (converted to downcase BEFORE unicode conversion)
-	UniqueName  string // "punycode.com!tag"
+// DomainNameVarieties stores the various forms of a domain name and tag.
+type DomainNameVarieties struct {
+	NameRaw     string // "originalinput.com" (name as input by the user (no tag))
+	NameASCII   string // "punycode.com" (converted to punycode and downcase)
+	NameUnicode string // "unicode.com" (converted to unicode, ASCII portions downcased)
+	UniqueName  string // "punycode.com!tag" (canonical unique name with tag)
 
 	Tag     string // The tag portion of `example.com!tag`
 	HasBang bool   // Was there a "!" in the input when creating this struct?
 }
 
-// MakeDomainFixedForms turns the user-supplied name into the fixed forms.
+// MakeDomainNameVarieties turns the user-supplied name into the varioius forms.
 // * .Tag: the domain tag (of "example.com!tag")
-// * .NameRaw: lowercase version of how the user input the name in dnsconfig.js.
-// * .Name: punycode version, downcased.
+// * .NameRaw: how the user input the name in dnsconfig.js (no tag)
+// * .NameASCII: punycode version, downcased
 // * .NameUnicode: unicode version of the name, downcased.
 // * .UniqueName: "example.com!tag" unique across the entire config.
-func MakeDomainNameVarieties(n string) DomainFixedForms {
+func MakeDomainNameVarieties(n string) *DomainNameVarieties {
 	var err error
 	var tag, nameRaw, nameASCII, nameUnicode, uniqueName string
 	var hasBang bool
@@ -74,7 +73,7 @@ func MakeDomainNameVarieties(n string) DomainFixedForms {
 		uniqueName = nameASCII
 	}
 
-	return DomainFixedForms{
+	return &DomainNameVarieties{
 		Tag:         tag,
 		NameRaw:     nameRaw,
 		NameASCII:   nameASCII,

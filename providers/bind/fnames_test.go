@@ -15,14 +15,14 @@ func Test_makeFileName(t *testing.T) {
 	fmtErrorOpt := "literal%?"
 	fmtErrorUnk := "literal%o" // Unknown % verb
 
-	ff := domaintags.DomainFixedForms{
+	ff := domaintags.DomainNameVarieties{
 		NameRaw:     "domy",
 		NameASCII:   "idn",
 		NameUnicode: "uni",
 		UniqueName:  "unique!taga",
 		Tag:         "tagy",
 	}
-	tagless := domaintags.DomainFixedForms{
+	tagless := domaintags.DomainNameVarieties{
 		NameRaw:     "domy",
 		NameASCII:   "idn",
 		NameUnicode: "uni",
@@ -32,7 +32,7 @@ func Test_makeFileName(t *testing.T) {
 
 	type args struct {
 		format string
-		ff     domaintags.DomainFixedForms
+		ff     domaintags.DomainNameVarieties
 	}
 	tests := []struct {
 		name string
@@ -63,9 +63,9 @@ func Test_makeFileName(t *testing.T) {
 }
 
 func Test_makeFileName_2(t *testing.T) {
-	ff1 := domaintags.MakeDomainNameVarieties(`EXAMple.com`)
-	ff2 := domaintags.MakeDomainNameVarieties(`EXAMple.com!myTag`)
-	ff3 := domaintags.MakeDomainNameVarieties(`рф.com!myTag`)
+	ff1 := *domaintags.MakeDomainNameVarieties(`EXAMple.com`)
+	ff2 := *domaintags.MakeDomainNameVarieties(`EXAMple.com!myTag`)
+	ff3 := *domaintags.MakeDomainNameVarieties(`рф.com!myTag`)
 
 	tests := []struct {
 		name   string

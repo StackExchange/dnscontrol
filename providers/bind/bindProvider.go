@@ -170,7 +170,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
 	}
-	ff := domaintags.DomainFixedForms{
+	ff := domaintags.DomainNameVarieties{
 		Tag:         meta[models.DomainTag],
 		NameRaw:     meta[models.DomainNameRaw],
 		NameASCII:   domain,
@@ -216,7 +216,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		case dns.TypeRP:
 			name := rr.Header().Name
 			name = strings.TrimSuffix(name, ".")
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, models.MakeFakeDomainConfig(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
@@ -301,7 +301,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	zonefile = filepath.Join(c.directory,
 		makeFileName(
 			c.filenameformat,
-			domaintags.DomainFixedForms{
+			domaintags.DomainNameVarieties{
 				Tag:         dc.Tag,
 				NameRaw:     dc.NameRaw,
 				NameASCII:   dc.Name,

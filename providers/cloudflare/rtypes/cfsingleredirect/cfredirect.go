@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
@@ -20,11 +21,11 @@ func (handle *CfRedirect) Name() string {
 	return "CF_REDIRECT"
 }
 
-func (handle *CfRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dc, rec, args, 301)
+func (handle *CfRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
+	return FromArgs_helper(dcn, rec, args, 301)
 }
 
-func (handle *CfRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+func (handle *CfRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CF_REDIRECT: FromStruct not implemented")
 }
 
@@ -39,11 +40,11 @@ func (handle *CfTempRedirect) Name() string {
 	return "CF_TEMP_REDIRECT"
 }
 
-func (handle *CfTempRedirect) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dc, rec, args, 302)
+func (handle *CfTempRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
+	return FromArgs_helper(dcn, rec, args, 302)
 }
 
-func (handle *CfTempRedirect) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+func (handle *CfTempRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CF_TEMP_REDIRECT: FromStruct not implemented")
 }
 
@@ -51,7 +52,7 @@ func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
-func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []any, code int) error {
+func FromArgs_helper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {
 
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "ss"); err != nil {
@@ -67,12 +68,12 @@ func FromArgs_helper(dc *models.DomainConfig, rec *models.RecordConfig, args []a
 	}
 
 	// Create the old-school name with a count prefix.
-	incRedirCount(dc.UniqueName)
-	name := fmt.Sprintf("%03d,%03d,%s,%s", getRedirCount(dc.UniqueName), code, prWhen, prThen)
+	incRedirCount(dcn.UniqueName)
+	name := fmt.Sprintf("%03d,%03d,%s,%s", getRedirCount(dcn.UniqueName), code, prWhen, prThen)
 
 	sr := SingleRedirectConfig{}
 	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
-	err = sr.FromArgs(dc, rec, []any{name, code, srWhen, srThen})
+	err = sr.FromArgs(dcn, rec, []any{name, code, srWhen, srThen})
 	if err != nil {
 		return err
 	}

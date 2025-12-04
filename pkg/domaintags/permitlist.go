@@ -7,7 +7,7 @@ import (
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
-	items []DomainFixedForms
+	items []*DomainNameVarieties
 }
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The

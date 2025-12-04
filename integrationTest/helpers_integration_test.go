@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
@@ -27,7 +28,7 @@ var (
 )
 
 // Global variable to hold the current DomainConfig	for use in FromRaw calls.
-var globalDC *models.DomainConfig
+var globalDCN *domaintags.DomainNameVarieties
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
@@ -203,7 +204,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	globalDC = dc
+	globalDCN = dc.DomainNameVarieties()
 
 	testGroups := makeTests()
 
@@ -343,7 +344,7 @@ func cfSingleRedirectEnabled() bool {
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", 1, []any{name, code, when, then}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", 1, []any{name, code, when, then}, globalDCN)
 	panicOnErr(err)
 	return rec
 }
@@ -355,13 +356,13 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", 1, []any{pattern, target}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", 1, []any{pattern, target}, globalDCN)
 	panicOnErr(err)
 	return rec
 }
 
 func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", 1, []any{pattern, target}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", 1, []any{pattern, target}, globalDCN)
 	panicOnErr(err)
 	return rec
 }
@@ -487,7 +488,7 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 }
 
 func rp(name string, m, t string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", 300, []any{name, m, t}, globalDC)
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", 300, []any{name, m, t}, globalDCN)
 	panicOnErr(err)
 	return rec
 }

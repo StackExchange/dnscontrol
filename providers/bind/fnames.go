@@ -11,7 +11,7 @@ import (
 )
 
 // makeFileName uses format to generate a zone's filename.  See the
-func makeFileName(format string, ff domaintags.DomainFixedForms) string {
+func makeFileName(format string, ff domaintags.DomainNameVarieties) string {
 	//fmt.Printf("DEBUG: makeFileName(%q, %+v)\n", format, ff)
 	if format == "" {
 		panic("BUG: makeFileName called with null format")
