@@ -763,6 +763,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("RP", providers.CanUseRP),
 	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),

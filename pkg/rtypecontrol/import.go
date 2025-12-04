@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -14,7 +15,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
-			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.Args, dc)
+			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc)
 			rec.FilePos = models.FixPosition(rawRec.FilePos)
 			if err != nil {
 				return fmt.Errorf("%s: %w", rec.FilePos, err)
@@ -32,24 +33,21 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	return nil
 }
 
-func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*models.RecordConfig, error) {
-	//fmt.Printf("DEBUG: NewRecordConfigFromRaw t=%q args=%+v\n", t, args)
+func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dc *models.DomainConfig) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
+	}
+	if t == "" {
+		panic("rtypecontrol: NewRecordConfigFromRaw: empty record type")
 	}
 
 	// Create as much of the RecordConfig as we can now. Allow New() to fill in the reset.
 	rec := &models.RecordConfig{
 		Type:     t,
-		Name:     args[0].(string), // May be fixed later.
+		TTL:      ttl,
 		Metadata: map[string]string{},
 	}
-
 	setRecordNames(rec, dc, args[0].(string))
-
-	if rec.Type == "" {
-		panic("rtypecontrol: NewRecordConfigFromRaw: empty record type")
-	}
 
 	// Fill in the .F/.Fields* fields.
 	err := Func[t].FromArgs(dc, rec, args)
@@ -60,18 +58,44 @@ func NewRecordConfigFromRaw(t string, args []any, dc *models.DomainConfig) (*mod
 	return rec, nil
 }
 
-func stringifyMetas(metas []map[string]any) map[string]string {
-	result := make(map[string]string)
-	for _, m := range metas {
-		for mk, mv := range m {
-			if v, ok := mv.(string); ok {
-				result[mk] = v // Already a string. No new malloc.
-			} else {
-				result[mk] = fmt.Sprintf("%v", mv)
-			}
-		}
+func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dc *models.DomainConfig) (*models.RecordConfig, error) {
+	if _, ok := Func[t]; !ok {
+		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
-	return result
+	if t == "" {
+		panic("rtypecontrol: NewRecordConfigFromStruct: empty record type")
+	}
+
+	rec, err := dns.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
+	if err != nil {
+		return nil, err
+	}
+	return NewRecordConfigFromStruct(name, ttl, t, rec, dc)
+
+}
+
+func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc *models.DomainConfig) (*models.RecordConfig, error) {
+	if _, ok := Func[t]; !ok {
+		return nil, fmt.Errorf("record type %q is not supported", t)
+	}
+	if t == "" {
+		panic("rtypecontrol: NewRecordConfigFromStruct: empty record type")
+	}
+
+	// Create as much of the RecordConfig as we can now. Allow New() to fill in the reset.
+	rec := &models.RecordConfig{
+		Type:     t,
+		TTL:      ttl,
+		Metadata: map[string]string{},
+	}
+	setRecordNames(rec, dc, name)
+
+	err := Func[t].FromStruct(dc, rec, name, fields)
+	if err != nil {
+		return nil, err
+	}
+
+	return rec, nil
 }
 
 func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string) {
@@ -87,9 +111,9 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 			rec.NameRaw = n
 			rec.NameUnicode = domaintags.EfficientToUnicode(n)
 		}
-		rec.NameFQDN = dnsutil.AddOrigin(rec.Name, dc.Name)
-		rec.NameFQDNRaw = dnsutil.AddOrigin(rec.NameRaw, dc.NameRaw)
-		rec.NameFQDNUnicode = dnsutil.AddOrigin(rec.NameUnicode, dc.NameUnicode)
+		rec.NameFQDN = dc.Name
+		rec.NameFQDNRaw = dc.NameRaw
+		rec.NameFQDNUnicode = dc.NameUnicode
 	} else {
 		// _EXTEND() mode:
 		// FIXME(tlim): Not implemented.

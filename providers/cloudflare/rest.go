@@ -138,6 +138,26 @@ func cfSvcbData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfLocData(rec *models.RecordConfig) *cfRecData {
+	latDir, latDeg, latMin, latSec := models.ReverseLatitude(rec.LocLatitude)
+	longDir, longDeg, longMin, longSec := models.ReverseLongitude(rec.LocLongitude)
+
+	return &cfRecData{
+		Altitude:      models.ReverseAltitude(rec.LocAltitude),
+		LatDegrees:    latDeg,
+		LatDirection:  latDir,
+		LatMinutes:    latMin,
+		LatSeconds:    latSec,
+		LongDegrees:   longDeg,
+		LongDirection: longDir,
+		LongMinutes:   longMin,
+		LongSeconds:   longSec,
+		PrecisionHorz: models.ReverseENotationInt(rec.LocHorizPre),
+		PrecisionVert: models.ReverseENotationInt(rec.LocVertPre),
+		Size:          models.ReverseENotationInt(rec.LocSize),
+	}
+}
+
 func cfNaptrData(rec *models.RecordConfig) *cfNaptrRecData {
 	return &cfNaptrRecData{
 		Flags:       rec.NaptrFlags,
@@ -155,13 +175,12 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 		content = rec.Metadata[metaOriginalIP]
 	}
 	prio := ""
-	if rec.Type == "MX" {
+	switch rec.Type {
+	case "MX":
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
-	}
-	if rec.Type == "TXT" {
+	case "TXT":
 		content = rec.GetTargetTXTJoined()
-	}
-	if rec.Type == "DS" {
+	case "DS":
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
 	if msg == "" {
@@ -180,28 +199,31 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				Content:  content,
 				Priority: &rec.MxPreference,
 			}
-			if rec.Type == "SRV" {
+			switch rec.Type {
+			case "SRV":
 				cf.Data = cfSrvData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "CAA" {
+			case "CAA":
 				cf.Data = cfCaaData(rec)
 				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
-			} else if rec.Type == "TLSA" {
+			case "TLSA":
 				cf.Data = cfTlsaData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "SSHFP" {
+			case "SSHFP":
 				cf.Data = cfSshfpData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "DNSKEY" {
+			case "DNSKEY":
 				cf.Data = cfDnskeyData(rec)
-			} else if rec.Type == "DS" {
+			case "DS":
 				cf.Data = cfDSData(rec)
-			} else if rec.Type == "NAPTR" {
+			case "NAPTR":
 				cf.Data = cfNaptrData(rec)
 				cf.Name = rec.GetLabelFQDN()
-			} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+			case "HTTPS", "SVCB":
 				cf.Data = cfSvcbData(rec)
+			case "LOC":
+				cf.Data = cfLocData(rec)
 			}
 			resp, err := c.cfClient.CreateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), cf)
 			if err != nil {
@@ -233,33 +255,35 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Priority: &rec.MxPreference,
 		TTL:      int(rec.TTL),
 	}
-	if rec.Type == "TXT" {
+	switch rec.Type {
+	case "TXT":
 		r.Content = rec.GetTargetTXTJoined()
-	}
-	if rec.Type == "SRV" {
+	case "SRV":
 		r.Data = cfSrvData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "CAA" {
+	case "CAA":
 		r.Data = cfCaaData(rec)
 		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
-	} else if rec.Type == "TLSA" {
+	case "TLSA":
 		r.Data = cfTlsaData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "SSHFP" {
+	case "SSHFP":
 		r.Data = cfSshfpData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "DNSKEY" {
+	case "DNSKEY":
 		r.Data = cfDnskeyData(rec)
 		r.Content = ""
-	} else if rec.Type == "DS" {
+	case "DS":
 		r.Data = cfDSData(rec)
 		r.Content = ""
-	} else if rec.Type == "NAPTR" {
+	case "NAPTR":
 		r.Data = cfNaptrData(rec)
 		r.Name = rec.GetLabelFQDN()
-	} else if rec.Type == "HTTPS" || rec.Type == "SVCB" {
+	case "HTTPS", "SVCB":
 		r.Data = cfSvcbData(rec)
+	case "LOC":
+		r.Data = cfLocData(rec)
 	}
 	_, err := c.cfClient.UpdateDNSRecord(context.Background(), cloudflare.ZoneIdentifier(domainID), r)
 	return err
@@ -297,12 +321,9 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		// if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
-		// 	return nil, err
-		// }
-		// r.SetLabel("@", domain)
 		rec, err := rtypecontrol.NewRecordConfigFromRaw(
 			"CLOUDFLAREAPI_SINGLE_REDIRECT",
+			1,
 			[]any{srName, code, srWhen, srThen},
 			models.MakeFakeDomainConfig(domain))
 		if err != nil {
@@ -310,7 +331,7 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		}
 		rec.Original = thisPr
 
-		// Store the IDs
+		// Store the IDs. These will be needed for update/delete operations.
 		sr := rec.F.(*cfsingleredirect.SingleRedirectConfig)
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
@@ -365,33 +386,6 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr cfsingler
 }
 
 func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr cfsingleredirect.SingleRedirectConfig) error {
-	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
-	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
-	// updatedRulesetRules := []cloudflare.RulesetRule{}
-
-	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	// if err != nil {
-	// 	return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
-	// }
-
-	// for _, rule := range rules.Rules {
-	// 	if rule.ID != cfr.SRRRulesetRuleID {
-	// 		updatedRulesetRules = append(updatedRulesetRules, rule)
-	// 	} else {
-	// 		printer.Printf("DEBUG: MATCH %v : %v\n", rule.ID, cfr.SRRRulesetRuleID)
-	// 	}
-	// }
-	// updatedRuleset.Rules = updatedRulesetRules
-	// _, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), updatedRuleset)
-
-	// Old Code
-
-	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	// if err != nil {
-	// 	return err
-	// }
-	// printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
-
 	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cloudflare.DeleteRulesetRuleParams{
 		RulesetID:     cfr.SRRRulesetID,
 		RulesetRuleID: cfr.SRRRulesetRuleID,
@@ -411,77 +405,6 @@ func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newre
 	}
 	return c.createSingleRedirect(domainID, *newrec.F.(*cfsingleredirect.SingleRedirectConfig))
 }
-
-// func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
-// 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %w", err)
-// 	}
-// 	recs := []*models.RecordConfig{}
-// 	for _, pr := range rules {
-// 		// only interested in forwarding rules. Lets be very specific, and skip anything else
-// 		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
-// 			continue
-// 		}
-// 		if pr.Actions[0].ID != "forwarding_url" {
-// 			continue
-// 		}
-// 		value := pr.Actions[0].Value.(map[string]interface{})
-// 		thisPr := pr
-// 		r := &models.RecordConfig{
-// 			Original: thisPr,
-// 		}
-
-// 		code := intZero(value["status_code"])
-
-// 		when := pr.Targets[0].Constraint.Value
-// 		then := value["url"].(string)
-// 		currentPrPrio := pr.Priority
-
-// 		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
-// 			return nil, err
-// 		}
-// 		r.SetLabel("@", domain)
-
-// 		recs = append(recs, r)
-// 	}
-// 	return recs, nil
-// }
-
-// func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
-// 	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
-// }
-
-// func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-// 	// maybe someday?
-// 	// c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
-// 	if err := c.deletePageRule(recordID, domainID); err != nil {
-// 		return err
-// 	}
-// 	return c.createPageRule(domainID, cfr)
-// }
-
-// func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-// 	priority := cfr.PRPriority
-// 	code := cfr.Code
-// 	prWhen := cfr.PRWhen
-// 	prThen := cfr.PRThen
-// 	pr := cloudflare.PageRule{
-// 		Status:   "active",
-// 		Priority: priority,
-// 		Targets: []cloudflare.PageRuleTarget{
-// 			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: prWhen}},
-// 		},
-// 		Actions: []cloudflare.PageRuleAction{
-// 			{ID: "forwarding_url", Value: &pageRuleFwdInfo{
-// 				StatusCode: code,
-// 				URL:        prThen,
-// 			}},
-// 		},
-// 	}
-// 	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
-// 	return err
-// }
 
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
 	res, err := c.cfClient.ListWorkerRoutes(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListWorkerRoutesParams{})
@@ -516,9 +439,6 @@ func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error 
 }
 
 func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
-	// Causing Stack Overflow (!?)
-	// return c.updateWorkerRoute(recordID, domainID, target)
-
 	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
 		return err
 	}
@@ -538,18 +458,4 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 
 	_, err := c.cfClient.CreateWorkerRoute(context.Background(), cloudflare.ZoneIdentifier(domainID), wr)
 	return err
-}
-
-// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
-// https://github.com/dominikh/go-tools/issues/810
-//
-//lint:ignore U1000 false positive due to
-type pageRuleConstraint struct {
-	Operator string `json:"operator"`
-	Value    string `json:"value"`
-}
-
-type pageRuleFwdInfo struct {
-	URL        string `json:"url"`
-	StatusCode uint16 `json:"status_code"`
 }

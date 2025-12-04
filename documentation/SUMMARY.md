@@ -50,6 +50,7 @@
     * [FRAME](language-reference/domain-modifiers/FRAME.md)
     * [HTTPS](language-reference/domain-modifiers/HTTPS.md)
     * [IGNORE](language-reference/domain-modifiers/IGNORE.md)
+    * [IGNORE_EXTERNAL_DNS](language-reference/domain-modifiers/IGNORE_EXTERNAL_DNS.md)
     * [IGNORE_NAME](language-reference/domain-modifiers/IGNORE_NAME.md)
     * [IGNORE_TARGET](language-reference/domain-modifiers/IGNORE_TARGET.md)
     * [IMPORT_TRANSFORM](language-reference/domain-modifiers/IMPORT_TRANSFORM.md)
@@ -137,7 +138,8 @@
 * [Gandi_v5](provider/gandi_v5.md)
 * [Gcore](provider/gcore.md)
 * [Google Cloud DNS](provider/gcloud.md)
-* [Hetzner DNS Console](provider/hetzner.md)
+* [Hetzner DNS API](provider/hetzner_v2.md)
+* [Hetzner DNS Console (legacy)](provider/hetzner.md)
 * [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
 * [Huawei Cloud DNS](provider/huaweicloud.md)
@@ -165,6 +167,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
+* [Vercel](provider/vercel.md)
 * [Vultr](provider/vultr.md)
 
 ## Commands

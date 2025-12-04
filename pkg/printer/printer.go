@@ -93,7 +93,7 @@ func (c ConsolePrinter) StartDomain(dc *models.DomainConfig) {
 	if dc.Name == dc.NameUnicode {
 		fmt.Fprintf(c.Writer, "******************** Domain: %s\n", dc.Name)
 	} else {
-		fmt.Fprintf(c.Writer, "******************** Domain: %s (%s)\n", dc.NameUnicode, dc.Name)
+		fmt.Fprintf(c.Writer, "******************** Domain: %s (%s)\n", dc.Name, dc.NameUnicode)
 	}
 }
 

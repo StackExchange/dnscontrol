@@ -42,11 +42,11 @@ type RecordConfig struct {
 	// Comparable is an opaque string that can be used to compare two
 	// RecordConfigs for equality. Typically this is the Zonefile line minus the
 	// label and TTL.
-	Comparable string `json:"-"` // Cache of ToComparableNoTTL()
+	Comparable string `json:"comparable,omitempty"` // Cache of ToComparableNoTTL()
 
 	// ZonefilePartial is the partial zonefile line for this record, excluding
 	// the label and TTL.  If this is not an official RR type, we invent the format.
-	ZonefilePartial string `json:"-"`
+	ZonefilePartial string `json:"zonfefilepartial,omitempty"`
 
 	//// Fields only relevant when RecordConfig was created from data in dnsconfig.js:
 
@@ -329,6 +329,10 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if rc.IsModernType() {
+		return rc.Comparable
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
@@ -348,6 +352,11 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
+	// IsModernType types store standard types as dns.RR directly in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		return rr
+	}
+
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
@@ -529,11 +538,14 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 
 func (rc *RecordConfig) IsModernType() bool {
 	//fmt.Printf("DEBUG: IsModernType rtype=%s\n", rc.Type)
-	if rc.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
-		return true
-	}
+	return rc.F != nil
 
-	return false
+	// switch rc.Type {
+	// case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP":
+	// 	return true
+	// }
+
+	// return false
 }
 
 // Records is a list of *RecordConfig.

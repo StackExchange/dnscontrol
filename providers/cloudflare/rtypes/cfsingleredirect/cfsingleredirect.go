@@ -17,12 +17,12 @@ type SingleRedirectConfig struct {
 	Code uint16 `json:"code,omitempty"` // 301 or 302
 	//
 	// SR == SingleRedirect
-	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
+	SRName           string `json:"sr_name,omitempty"`          // How is this displayed to the user
+	SRWhen           string `json:"sr_when,omitempty"`          // Condition for redirect
+	SRThen           string `json:"sr_then,omitempty"`          // Formula for redirect
+	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`     // ID of the ruleset containing this rule (populated by API)
+	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"` // ID of this rule within the ruleset (populated by API)
+	SRDisplay        string `json:"sr_display,omitempty"`       // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // Name returns the text (all caps) name of the rtype.
@@ -31,35 +31,38 @@ func (handle *SingleRedirectConfig) Name() string {
 }
 
 func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *models.RecordConfig, args []any) error {
-	//fmt.Printf("DEBUG: CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs called with args=%+v\n", args)
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
 		return err
 	}
 
 	// Unpack the args:
-	var name, when, then string
-	var code uint16
+	var name = args[0].(string)
+	var code = args[1].(uint16)
+	var when = args[2].(string)
+	var then = args[3].(string)
 
-	name = args[0].(string)
-	code = args[1].(uint16)
+	// Validate
 	if code != 301 && code != 302 && code != 303 && code != 307 && code != 308 {
 		return fmt.Errorf("%s: code (%03d) is not 301,302,303,307,308", rec.FilePos, code)
 	}
-	when = args[2].(string)
-	then = args[3].(string)
-	display := targetFromRaw(name, code, when, then)
 
+	// Calclate the Comparable and ZonefilePartial values:
+	display := targetFromRaw(name, code, when, then)
+	rec.Comparable = display
+	rec.ZonefilePartial = display
+
+	// Set the fields
 	rec.F = &SingleRedirectConfig{
-		Code: code,
-		//
+		Code:      code,
 		SRName:    name,
 		SRWhen:    when,
 		SRThen:    then,
 		SRDisplay: display,
 	}
 
-	//rec.Name = name
+	// Usually these fields do not need to be changed.  The caller sets appropriate values.
+	// But Cloudflare Single Redirects always use "@" as the name and TTL=1.  We override here.
 	rec.Name = "@"
 	rec.NameRaw = "@"
 	rec.NameUnicode = "@"
@@ -67,11 +70,14 @@ func (handle *SingleRedirectConfig) FromArgs(dc *models.DomainConfig, rec *model
 	rec.NameFQDNRaw = dc.NameRaw
 	rec.NameFQDNUnicode = dc.NameUnicode
 	rec.TTL = 1
-	rec.Comparable = display
-	rec.ZonefilePartial = display
 
-	_ = rec.SetTarget(name)
+	// Fill in the legacy fields:
+	handle.CopyToLegacyFields(rec)
 	return nil
+}
+
+func (handle *SingleRedirectConfig) FromStruct(dc *models.DomainConfig, rec *models.RecordConfig, name string, fields any) error {
+	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
 }
 
 // targetFromRaw create the display text used for a normal Redirect.
@@ -84,13 +90,6 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 	)
 }
 
-func (handle *SingleRedirectConfig) AsRFC1038String(*models.RecordConfig) string {
-	return handle.SRDisplay
-}
-
 func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig) {
-	rec.SetTarget(handle.SRDisplay)
+	_ = rec.SetTarget(rec.F.(*SingleRedirectConfig).SRDisplay)
 }
-
-//func (handle *SingleRedirectConfig) IDNFields(argsRaw) (argsIDN, argsUnicode, error) {}
-//func (handle *SingleRedirectConfig) CopyFromLegacyFields(*models.RecordConfig)       {}

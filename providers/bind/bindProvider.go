@@ -27,6 +27,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -35,18 +36,19 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDNSKEY:           providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseOPENPGPKEY:       providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRP:               providers.Can(),
 	providers.CanUseSMIMEA:           providers.Can(),
 	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -69,7 +71,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		api.directory = "zones"
 	}
 	if api.filenameformat == "" {
-		api.filenameformat = "%U.zone"
+		api.filenameformat = "%c.zone"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -171,7 +173,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	ff := domaintags.DomainFixedForms{
 		Tag:         meta[models.DomainTag],
 		NameRaw:     meta[models.DomainNameRaw],
-		NameIDN:     domain,
+		NameASCII:   domain,
 		NameUnicode: meta[models.DomainNameUnicode],
 		UniqueName:  meta[models.DomainUniqueName],
 	}
@@ -204,10 +206,31 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRCTxtBug(rr, zoneName)
-		if err != nil {
-			return nil, err
+		var rec models.RecordConfig
+		var prec *models.RecordConfig
+		var err error
+
+		// Modern types:
+		rtype := rr.Header().Rrtype
+		switch rtype {
+		case dns.TypeRP:
+			name := rr.Header().Name
+			name = strings.TrimSuffix(name, ".")
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, models.MakeFakeDomainConfig(zoneName))
+			if err != nil {
+				return nil, err
+			}
+			rec = *prec
+			rec.TTL = rr.Header().Ttl
+			fmt.Printf("DEBUG: RP record parsed as %+v\n", rec)
+		default:
+			// Legacy types:
+			rec, err = models.RRtoRCTxtBug(rr, zoneName)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 		foundRecords = append(foundRecords, &rec)
 	}
 
@@ -282,7 +305,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 			domaintags.DomainFixedForms{
 				Tag:         dc.Tag,
 				NameRaw:     dc.NameRaw,
-				NameIDN:     dc.Name,
+				NameASCII:   dc.Name,
 				NameUnicode: dc.NameUnicode,
 				UniqueName:  dc.UniqueName,
 			},

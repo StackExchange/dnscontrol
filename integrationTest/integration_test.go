@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
@@ -170,6 +171,13 @@ func makeTests() []*TestGroup {
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("RP",
+			requires(providers.CanUseRP),
+			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
 		),
 
 		// TXT
@@ -411,6 +419,7 @@ func makeTests() []*TestGroup {
 				"NETCUP",      // NS records not currently supported.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
+				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
@@ -621,6 +630,7 @@ func makeTests() []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
+			//  - VERCEL: up to 100 per pages
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
@@ -637,6 +647,7 @@ func makeTests() []*TestGroup {
 				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",       // Test beaks limits.
 				"FORTIGATE", // No paging
+				"VERCEL",    // Rate limit 100 creation per hour, 101 needs an hour, too much
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
@@ -1344,6 +1355,20 @@ func makeTests() []*TestGroup {
 			tc("simple", aghAAAAPassthrough("foo", "")),
 		),
 
+		// VERCEL features(?)
+
+		// Turns out that Vercel does support whitespace in the CAA record,
+		// but it only supports `cansignhttpexchanges` field, all other fields,
+		// `validationmethods`, `accounturi` are not supported
+		//
+		// In order to test the `CAA whitespace` capabilities and quirks, let's go!
+		testgroup("VERCEL CAA whitespace - cansignhttpexchanges",
+			only(
+				"VERCEL",
+			),
+			tc("CAA whitespace - cansignhttpexchanges", caa("@", 128, "issue", "digicert.com; cansignhttpexchanges=yes")),
+		),
+
 		//// IGNORE* features
 
 		// Narrative: You're basically done now. These remaining tests
@@ -2043,6 +2068,12 @@ func makeTests() []*TestGroup {
 		//    every quarter. There may be library updates, API changes,
 		//    etc.
 
+		// This SHOULD be the last test. We do this so that we always
+		// leave zones with a single TXT record exclaming our success.
+		// Nothing depends on this record existing or should depend on it.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
 	}
 
 	return tests

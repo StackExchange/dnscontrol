@@ -8,7 +8,7 @@ import (
 )
 
 // backwards compatibility:
-var validTypes = map[string]struct{}{}
+//var validTypes = map[string]struct{}{}
 
 type RType interface {
 	// Returns the name of the rtype ("A", "MX", etc.)
@@ -16,9 +16,9 @@ type RType interface {
 
 	// RecordConfig factory. Updates a RecordConfig's fields based on args.
 	FromArgs(*models.DomainConfig, *models.RecordConfig, []any) error
+	FromStruct(*models.DomainConfig, *models.RecordConfig, string, any) error
 
-	// Returns a string representation of the record in RFC1038 format.
-	// AsRFC1038String([]string) (string, error)
+	CopyToLegacyFields(*models.RecordConfig)
 }
 
 // Map of registered rtypes.
@@ -36,7 +36,7 @@ func Register(t RType) {
 	providers.RegisterCustomRecordType(name, "", "")
 }
 
-func IsValid(name string) bool {
+func IsModernType(name string) bool {
 	_, ok := Func[name]
 	return ok
 }

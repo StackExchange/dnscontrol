@@ -25,6 +25,7 @@ providers/gcloud @riyadhalnur
 providers/gcore @xddxdd
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
+providers/hetznerv2 @das7pad
 providers/hexonet @KaiSchwarz-cnic
 providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
@@ -52,4 +53,5 @@ providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
 providers/transip @blackshadev
+providers/vercel @SukkaW
 providers/vultr @pgaskin
