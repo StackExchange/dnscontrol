@@ -167,6 +167,12 @@ func GetZone(args GetZoneArgs) error {
 		return fmt.Errorf("failed GetZone CDP: %w", err)
 	}
 
+	// Get the actual provider type name from creds.json or args
+	providerType := args.ProviderName
+	if providerType == "" || providerType == "-" {
+		providerType = providerConfigs[args.CredName][pproviderTypeFieldName]
+	}
+
 	// decide which zones we need to convert
 	zones := args.ZoneNames
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
@@ -252,6 +258,13 @@ func GetZone(args GetZoneArgs) error {
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
+			}
+			// If provider has a registered default TTL and no records exist or MostCommonTTL returns 0,
+			// use the provider's default TTL
+			if defaultTTL == 0 || defaultTTL == models.DefaultTTL {
+				if providerDefaultTTL := providers.GetDefaultTTL(providerType); providerDefaultTTL > 0 {
+					defaultTTL = providerDefaultTTL
+				}
 			}
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))

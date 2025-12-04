@@ -39,7 +39,7 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)((adguardhome|akamaiedge|autodns|axfrd|azure|azure_private_dns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cnr|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|fortigate|gandi|gcloud|gcore|hedns|hetzner|hetznerv2|hexonet|hostingde|huaweicloud|inwx|joker|linode|loopia|luadns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|vercel|vultr).*:)+.*"
+      regexp: "(?i)((adguardhome|akamaiedge|autodns|axfrd|azure|azure_private_dns|alidns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cnr|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|fortigate|gandi|gcloud|gcore|hedns|hetzner|hetznerv2|hexonet|hostingde|huaweicloud|inwx|joker|linode|loopia|luadns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|vercel|vultr).*:)+.*"
       order: 2
     - title: 'Documentation:'
       regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
