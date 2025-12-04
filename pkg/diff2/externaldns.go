@@ -81,10 +81,9 @@ func parseExternalDNSTxtLabel(label string, customPrefix string) *externalDNSMan
 	if customPrefix != "" {
 		if strings.HasPrefix(strings.ToLower(workingLabel), strings.ToLower(customPrefix)) {
 			workingLabel = workingLabel[len(customPrefix):]
-		} else {
-			// Custom prefix specified but not found - this might be a legacy record
-			// Continue with original label
 		}
+		// else: Custom prefix specified but not found - this might be a legacy record
+		// Continue with original label
 	}
 
 	// Standard prefixes used by external-dns

@@ -1,52 +1,52 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "extdns-default.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "ignore_external_dns": true,
       "meta": {
         "dnscontrol_uniquename": "extdns-default.com"
       },
+      "name": "extdns-default.com",
       "records": [],
-      "ignore_external_dns": true
+      "registrar": "none"
     },
     {
-      "name": "extdns-custom.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "external_dns_prefix": "extdns-",
+      "ignore_external_dns": true,
       "meta": {
         "dnscontrol_uniquename": "extdns-custom.com"
       },
+      "name": "extdns-custom.com",
       "records": [],
-      "ignore_external_dns": true,
-      "external_dns_prefix": "extdns-"
+      "registrar": "none"
     },
     {
-      "name": "extdns-combined.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "ignore_external_dns": true,
       "meta": {
         "dnscontrol_uniquename": "extdns-combined.com"
       },
+      "name": "extdns-combined.com",
       "records": [
         {
-          "type": "CNAME",
-          "name": "api",
-          "ttl": 300,
           "filepos": "[line:12:5]",
-          "target": "www.extdns-combined.com."
+          "name": "api",
+          "target": "www.extdns-combined.com.",
+          "ttl": 300,
+          "type": "CNAME"
         },
         {
-          "type": "A",
-          "name": "www",
-          "ttl": 300,
           "filepos": "[line:11:5]",
-          "target": "1.2.3.4"
+          "name": "www",
+          "target": "1.2.3.4",
+          "ttl": 300,
+          "type": "A"
         }
       ],
-      "ignore_external_dns": true
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }

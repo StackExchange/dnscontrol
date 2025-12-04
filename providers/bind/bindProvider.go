@@ -69,7 +69,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		api.directory = "zones"
 	}
 	if api.filenameformat == "" {
-		api.filenameformat = "%U.zone"
+		api.filenameformat = "%c.zone"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -171,7 +171,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	ff := domaintags.DomainFixedForms{
 		Tag:         meta[models.DomainTag],
 		NameRaw:     meta[models.DomainNameRaw],
-		NameIDN:     domain,
+		NameASCII:   domain,
 		NameUnicode: meta[models.DomainNameUnicode],
 		UniqueName:  meta[models.DomainUniqueName],
 	}
@@ -282,7 +282,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 			domaintags.DomainFixedForms{
 				Tag:         dc.Tag,
 				NameRaw:     dc.NameRaw,
-				NameIDN:     dc.Name,
+				NameASCII:   dc.Name,
 				NameUnicode: dc.NameUnicode,
 				UniqueName:  dc.UniqueName,
 			},

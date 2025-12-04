@@ -292,6 +292,18 @@ func makeTests() []*TestGroup {
 
 		testgroup("Ech",
 			requires(providers.CanUseHTTPS),
+			not(
+				// Last tested in 2025-12-04. Turns out that Vercel implements an unknown validation
+				// on the `ech` parameter, and our dummy base64 string are being rejected with:
+				//
+				// Invalid base64 string: [our base64] (key: ech)
+				//
+				// Since Vercel's validation process is unknown and not documented, we can't implement
+				// a rejectif within auditrecord to reject them statically.
+				//
+				// Let's just ignore ECH test for Vercel for now.
+				"VERCEL",
+			),
 			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
 			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),
 			tc("Ignore the ECH key while changing other values", https("@", 1, "example.net.", "port=80 ech=IGNORE")),
@@ -2034,11 +2046,6 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// This MUST be the last test.
-		testgroup("final",
-			tc("final", txt("final", `TestDNSProviders was successful!`)),
-		),
-
 		testgroup("SMIMEA",
 			requires(providers.CanUseSMIMEA),
 			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
@@ -2061,6 +2068,12 @@ func makeTests() []*TestGroup {
 		//    every quarter. There may be library updates, API changes,
 		//    etc.
 
+		// This SHOULD be the last test. We do this so that we always
+		// leave zones with a single TXT record exclaming our success.
+		// Nothing depends on this record existing or should depend on it.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
 	}
 
 	return tests
