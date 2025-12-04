@@ -300,6 +300,18 @@ func makeTests() []*TestGroup {
 
 		testgroup("Ech",
 			requires(providers.CanUseHTTPS),
+			not(
+				// Last tested in 2025-12-04. Turns out that Vercel implements an unknown validation
+				// on the `ech` parameter, and our dummy base64 string are being rejected with:
+				//
+				// Invalid base64 string: [our base64] (key: ech)
+				//
+				// Since Vercel's validation process is unknown and not documented, we can't implement
+				// a rejectif within auditrecord to reject them statically.
+				//
+				// Let's just ignore ECH test for Vercel for now.
+				"VERCEL",
+			),
 			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
 			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),
 			tc("Ignore the ECH key while changing other values", https("@", 1, "example.net.", "port=80 ech=IGNORE")),
@@ -600,6 +612,7 @@ func makeTests() []*TestGroup {
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
+			tc("Chinese label", a("中文", "1.2.3.4")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		),
 		testgroup("IDNAs in CNAME targets",

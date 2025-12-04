@@ -16,6 +16,12 @@
     "group_id": "$AED_GROUP_ID",
     "host": "$AED_HOST"
   },
+  "ALIDNS": {
+    "TYPE": "ALIDNS",
+    "access_key_id": "$ALIDNS_ACCESS_KEY_ID",
+    "access_key_secret": "$ALIDNS_ACCESS_KEY_SECRET",
+    "domain": "$ALIDNS_DOMAIN"
+  },
   "AUTODNS": {
     "TYPE": "AUTODNS",
     "context": "$AUTODNS_CONTEXT",

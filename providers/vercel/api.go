@@ -89,12 +89,13 @@ func (c *vercelProvider) ListDNSRecords(ctx context.Context, domain string) ([]D
 type httpsRecord struct {
 	Priority int64  `json:"priority"`
 	Target   string `json:"target"`
-	Params   string `json:"params,omitempty"`
+	Params   string `json:"params"`
 }
 
 // createDNSRecordRequest embeds the official SDK request but adds HTTPS support
 type createDNSRecordRequest struct {
 	vercelClient.CreateDNSRecordRequest
+	Value *string      `json:"value,omitempty"`
 	HTTPS *httpsRecord `json:"https,omitempty"`
 }
 

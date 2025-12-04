@@ -1,5 +1,6 @@
 providers/adguardhome @ishanjain28
 providers/akamaiedgedns @edglynes
+providers/alidns @bytemain
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
