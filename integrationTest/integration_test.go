@@ -2033,11 +2033,6 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// This MUST be the last test.
-		testgroup("final",
-			tc("final", txt("final", `TestDNSProviders was successful!`)),
-		),
-
 		testgroup("SMIMEA",
 			requires(providers.CanUseSMIMEA),
 			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
@@ -2060,6 +2055,12 @@ func makeTests() []*TestGroup {
 		//    every quarter. There may be library updates, API changes,
 		//    etc.
 
+		// This SHOULD be the last test. We do this so that we always
+		// leave zones with a single TXT record exclaming our success.
+		// Nothing depends on this record existing or should depend on it.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
 	}
 
 	return tests
