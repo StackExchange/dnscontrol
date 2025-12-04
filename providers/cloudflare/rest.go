@@ -379,7 +379,7 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr cfsingler
 		return fmt.Errorf("failed fetching redirect rule list cloudflare: %w", err)
 	}
 	newSingleRedirect.Rules = newSingleRedirectRules
-	newSingleRedirect.Rules = append(newSingleRedirect.Rules, rules.Rules...)
+	newSingleRedirect.Rules = append(rules.Rules, newSingleRedirect.Rules...)
 
 	_, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newSingleRedirect)
 

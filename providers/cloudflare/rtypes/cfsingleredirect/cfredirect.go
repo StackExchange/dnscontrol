@@ -2,7 +2,6 @@ package cfsingleredirect
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
@@ -67,9 +66,8 @@ func FromArgs_helper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConf
 		return err
 	}
 
-	// Create the old-school name with a count prefix.
-	incRedirCount(dcn.UniqueName)
-	name := fmt.Sprintf("%03d,%03d,%s,%s", getRedirCount(dcn.UniqueName), code, prWhen, prThen)
+	// Create a rule name:
+	name := fmt.Sprintf("%03d,%s,%s", code, prWhen, prThen)
 
 	sr := SingleRedirectConfig{}
 	rec.Type = sr.Name() // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
@@ -79,22 +77,4 @@ func FromArgs_helper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConf
 	}
 
 	return nil
-}
-
-// The legacy system prepended a count to the name to coordinate ordering.
-
-var redirCount = map[string]int{}
-var redirCountMutex = sync.RWMutex{}
-
-func incRedirCount(name string) {
-	redirCountMutex.Lock()
-	defer redirCountMutex.Unlock()
-
-	redirCount[name]++
-}
-
-func getRedirCount(name string) int {
-	redirCountMutex.Lock()
-	defer redirCountMutex.Unlock()
-	return redirCount[name]
 }
