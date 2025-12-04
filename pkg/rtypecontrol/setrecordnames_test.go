@@ -172,6 +172,20 @@ func TestSetRecordNames(t *testing.T) {
 				NameFQDNUnicode: "www.bücher.bücher.com",
 			},
 		},
+		{
+			name: "dotted_label",
+			rec:  &models.RecordConfig{},
+			dc:   dc,
+			n:    "example.com.",
+			expectedRec: &models.RecordConfig{
+				Name:            "example.com",
+				NameRaw:         "example.com",
+				NameUnicode:     "example.com",
+				NameFQDN:        "example.com",
+				NameFQDNRaw:     "example.com",
+				NameFQDNUnicode: "example.com",
+			},
+		},
 	}
 
 	for _, tt := range tests {

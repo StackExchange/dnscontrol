@@ -99,16 +99,24 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 
 // setRecordNames updates the .Name* fields.
 func setRecordNames(rec *models.RecordConfig, dcn *domaintags.DomainNameVarieties, n string) {
-	// FYI(tlim): This code could be collapse
+
+	if strings.HasSuffix(n, ".") {
+		nr := n[:len(n)-1]
+		rec.Name = strings.ToLower(domaintags.EfficientToASCII(nr))
+		rec.NameRaw = nr
+		rec.NameUnicode = domaintags.EfficientToUnicode(rec.Name)
+		rec.NameFQDN = rec.Name
+		rec.NameFQDNRaw = rec.NameRaw
+		rec.NameFQDNUnicode = rec.NameUnicode
+		return
+	}
+
 	if rec.SubDomain == "" {
 		// Not _EXTEND() mode:
 		if n == "@" {
 			rec.Name = "@"
 			rec.NameRaw = "@"
 			rec.NameUnicode = "@"
-			rec.NameFQDN = dcn.NameASCII
-			rec.NameFQDNRaw = dcn.NameRaw
-			rec.NameFQDNUnicode = dcn.NameUnicode
 			rec.NameFQDN = dcn.NameASCII
 			rec.NameFQDNRaw = dcn.NameRaw
 			rec.NameFQDNUnicode = dcn.NameUnicode

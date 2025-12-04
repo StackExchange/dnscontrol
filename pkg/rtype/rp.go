@@ -1,10 +1,13 @@
 package rtype
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/miekg/dns"
+	"github.com/miekg/dns/dnsutil"
 )
 
 func init() {
@@ -27,10 +30,11 @@ func (handle *RP) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 	}
 	fields := &RP{
 		dns.RP{
-			Mbox: args[1].(string),
-			Txt:  args[2].(string),
+			Mbox: dnsutil.AddOrigin(args[1].(string), dcn.NameASCII),
+			Txt:  dnsutil.AddOrigin(args[2].(string), dcn.NameASCII),
 		},
 	}
+	fmt.Printf("RP FromArgs: %+v\n", fields)
 
 	return handle.FromStruct(dcn, rec, args[0].(string), fields)
 }
