@@ -65,15 +65,15 @@ To differentiate the different domains, specify the domains as
 
 {% code title="dnsconfig.js" %}
 ```javascript
-var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+var REG_NONE = NewRegistrar("none");
 var DNS_INSIDE = NewDnsProvider("Cloudflare");
 var DNS_OUTSIDE = NewDnsProvider("bind");
 
-D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
+D("example.com!inside", REG_NONE, DnsProvider(DNS_INSIDE),
   A("www", "10.10.10.10"),
 );
 
-D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
+D("example.com!outside", REG_NONE, DnsProvider(DNS_OUTSIDE),
   A("www", "20.20.20.20"),
 );
 
