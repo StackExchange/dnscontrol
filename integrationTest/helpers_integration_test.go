@@ -32,13 +32,13 @@ var globalDCN *domaintags.DomainNameVarieties
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-func CfProxyOff() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
-func CfProxyOn() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
-func CfProxyFull1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
-func CfProxyFull2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
-func CfCProxyOff() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CfCProxyOn() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
+// A-record proxy off/on
+func CfProxyOff() *TestCase { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+
+// CNAME-record proxy off/on
+func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
