@@ -1180,6 +1180,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("CF_REDIRECT",
 			only("CLOUDFLAREAPI"),
+			alltrue(cfSingleRedirectEnabled()),
 			tc("redir", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 			tc("change", cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
 			tc("changelabel", cfRedir("cable.**current-domain**/*", "https://change.cnn.com/$1")),

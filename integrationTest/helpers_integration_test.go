@@ -340,7 +340,7 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 }
 
 func cfSingleRedirectEnabled() bool {
-	return ((*enableCFRedirectMode) != true)
+	return (*enableCFRedirectMode)
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
