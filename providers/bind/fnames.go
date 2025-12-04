@@ -13,11 +13,6 @@ import (
 // makeFileName uses format to generate a zone's filename.  See the
 func makeFileName(format string, ff domaintags.DomainFixedForms) string {
 	//fmt.Printf("DEBUG: makeFileName(%q, %+v)\n", format, ff)
-	nameRaw := ff.NameRaw
-	nameIDN := ff.NameIDN
-	nameUnicode := ff.NameUnicode
-	uniquename := ff.UniqueName
-	tag := ff.Tag
 	if format == "" {
 		panic("BUG: makeFileName called with null format")
 	}
@@ -40,16 +35,31 @@ func makeFileName(format string, ff domaintags.DomainFixedForms) string {
 		pos++
 		tok = tokens[pos]
 		switch tok {
-		case "D":
-			b.WriteString(nameRaw)
-		case "T":
-			b.WriteString(tag)
-		case "U":
-			b.WriteString(uniquename)
-		case "I":
-			b.WriteString(nameIDN)
-		case "N":
-			b.WriteString(nameUnicode)
+
+		// v4.28 names
+		case "r": // NameRaw     "originalinput.com" (i for input)
+			b.WriteString(ff.NameRaw)
+		case "a": // NameASCII   "punycode.com" (a for ascii)
+			b.WriteString(ff.NameASCII)
+		case "u": // NameUnicode "unicode.com" (u for unicode)
+			b.WriteString(ff.NameUnicode)
+		case "c": // UniqueName  "punycode.com!tag" or "punycode.com" if no tag (c for canonical)
+			b.WriteString(ff.UniqueName)
+		case "f": //
+			b.WriteString(ff.NameASCII)
+			if ff.Tag != "" {
+				b.WriteString("_")
+				b.WriteString(ff.Tag)
+			}
+		case "F": //
+			if ff.Tag != "" {
+				b.WriteString(ff.Tag)
+				b.WriteString("_")
+			}
+			b.WriteString(ff.NameASCII)
+		case "T": // Tag         The tag portion of `example.com!tag`
+			b.WriteString(ff.Tag)
+
 		case "%":
 			b.WriteString("%")
 		case "?":
@@ -59,9 +69,20 @@ func makeFileName(format string, ff domaintags.DomainFixedForms) string {
 			}
 			pos++
 			tok = tokens[pos]
-			if tag != "" {
+			if ff.Tag != "" {
 				b.WriteString(tok)
 			}
+
+		// Legacy names kept for compatibility
+		case "U": // the domain name as specified in `D()`
+			b.WriteString(strings.ToLower(ff.NameRaw))
+			if ff.Tag != "" {
+				b.WriteString("!")
+				b.WriteString(ff.Tag)
+			}
+		case "D": // domain (without tag) as specified in D() (no IDN conversion, but downcased)
+			b.WriteString(strings.ToLower(ff.NameRaw))
+
 		default:
 			fmt.Fprintf(&b, "%%(unknown %%verb %%%s)", tok)
 		}
@@ -156,14 +177,14 @@ func makeExtractor(format string) (string, error) {
 			pos++
 			tok = tokens[pos]
 			switch tok {
-			case "D":
+			case "D", "a", "u", "r":
 				b.WriteString(`(.*)`)
 			case "T":
 				if pass == 0 {
 					// On the second pass, nothing is generated.
 					b.WriteString(`.*`)
 				}
-			case "U":
+			case "U", "c":
 				if pass == 0 {
 					b.WriteString(`(.*)!.+`)
 				} else {

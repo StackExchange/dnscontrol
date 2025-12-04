@@ -10,7 +10,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 		input           string
 		wantTag         string
 		wantNameRaw     string
-		wantNameIDN     string
+		wantNameASCII   string
 		wantNameUnicode string
 		wantUniqueName  string
 		wantHasBang     bool
@@ -20,7 +20,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "example.com",
 			wantTag:         "",
 			wantNameRaw:     "example.com",
-			wantNameIDN:     "example.com",
+			wantNameASCII:   "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com",
 			wantHasBang:     false,
@@ -30,7 +30,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "example.com!mytag",
 			wantTag:         "mytag",
 			wantNameRaw:     "example.com",
-			wantNameIDN:     "example.com",
+			wantNameASCII:   "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!mytag",
 			wantHasBang:     true,
@@ -40,7 +40,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "example.com!",
 			wantTag:         "",
 			wantNameRaw:     "example.com",
-			wantNameIDN:     "example.com",
+			wantNameASCII:   "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!",
 			wantHasBang:     true,
@@ -50,7 +50,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "उदाहरण.com",
 			wantTag:         "",
 			wantNameRaw:     "उदाहरण.com",
-			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
+			wantNameASCII:   "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com",
 			wantHasBang:     false,
@@ -60,7 +60,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "उदाहरण.com!mytag",
 			wantTag:         "mytag",
 			wantNameRaw:     "उदाहरण.com",
-			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
+			wantNameASCII:   "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com!mytag",
 			wantHasBang:     true,
@@ -70,17 +70,29 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			input:           "xn--p1b6ci4b4b3a.com",
 			wantTag:         "",
 			wantNameRaw:     "xn--p1b6ci4b4b3a.com",
-			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
+			wantNameASCII:   "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com",
 			wantHasBang:     false,
+		},
+		{
+			// Unicode chars should be left alone (as far as case folding goes)
+			// Here are some Armenian characters https://tools.lgm.cl/lettercase.html
+			name:            "mixed case unicode",
+			input:           "fooԷէԸըԹ.com!myTag",
+			wantTag:         "myTag",
+			wantNameRaw:     "fooԷէԸըԹ.com",
+			wantNameASCII:   "xn--foo-b7dfg43aja.com",
+			wantNameUnicode: "fooԷէԸըԹ.com",
+			wantUniqueName:  "xn--foo-b7dfg43aja.com!myTag",
+			wantHasBang:     true,
 		},
 		{
 			name:            "punycode domain with tag",
 			input:           "xn--p1b6ci4b4b3a.com!mytag",
 			wantTag:         "mytag",
 			wantNameRaw:     "xn--p1b6ci4b4b3a.com",
-			wantNameIDN:     "xn--p1b6ci4b4b3a.com",
+			wantNameASCII:   "xn--p1b6ci4b4b3a.com",
 			wantNameUnicode: "उदाहरण.com",
 			wantUniqueName:  "xn--p1b6ci4b4b3a.com!mytag",
 			wantHasBang:     true,
@@ -89,8 +101,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			name:            "mixed case domain",
 			input:           "Example.COM",
 			wantTag:         "",
-			wantNameRaw:     "example.com",
-			wantNameIDN:     "example.com",
+			wantNameRaw:     "Example.COM",
+			wantNameASCII:   "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com",
 			wantHasBang:     false,
@@ -99,11 +111,33 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			name:            "mixed case domain with tag",
 			input:           "Example.COM!MyTag",
 			wantTag:         "MyTag",
-			wantNameRaw:     "example.com",
-			wantNameIDN:     "example.com",
+			wantNameRaw:     "Example.COM",
+			wantNameASCII:   "example.com",
 			wantNameUnicode: "example.com",
 			wantUniqueName:  "example.com!MyTag",
 			wantHasBang:     true,
+		},
+		// This is used in the documentation for the BIND provider, thus we test
+		// it to make sure we got it right.
+		{
+			name:            "BIND example 1",
+			input:           "рф.com!myTag",
+			wantTag:         "myTag",
+			wantNameRaw:     "рф.com",
+			wantNameASCII:   "xn--p1ai.com",
+			wantNameUnicode: "рф.com",
+			wantUniqueName:  "xn--p1ai.com!myTag",
+			wantHasBang:     true,
+		},
+		{
+			name:            "BIND example 2",
+			input:           "рф.com",
+			wantTag:         "",
+			wantNameRaw:     "рф.com",
+			wantNameASCII:   "xn--p1ai.com",
+			wantNameUnicode: "рф.com",
+			wantUniqueName:  "xn--p1ai.com",
+			wantHasBang:     false,
 		},
 	}
 
@@ -116,8 +150,8 @@ func Test_MakeDomainFixForms(t *testing.T) {
 			if got.NameRaw != tt.wantNameRaw {
 				t.Errorf("MakeDomainFixForms() gotNameRaw = %v, want %v", got.NameRaw, tt.wantNameRaw)
 			}
-			if got.NameIDN != tt.wantNameIDN {
-				t.Errorf("MakeDomainFixForms() gotNameIDN = %v, want %v", got.NameIDN, tt.wantNameIDN)
+			if got.NameASCII != tt.wantNameASCII {
+				t.Errorf("MakeDomainFixForms() gotNameASCII = %v, want %v", got.NameASCII, tt.wantNameASCII)
 			}
 			if got.NameUnicode != tt.wantNameUnicode {
 				t.Errorf("MakeDomainFixForms() gotNameUnicode = %v, want %v", got.NameUnicode, tt.wantNameUnicode)
