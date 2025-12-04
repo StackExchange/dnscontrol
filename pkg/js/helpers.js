@@ -1353,8 +1353,6 @@ function recordBuilder(type, opts) {
             if (
                 d.subdomain &&
                 record.type != 'CF_SINGLE_REDIRECT' &&
-                record.type != 'CF_REDIRECT' &&
-                record.type != 'CF_TEMP_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE' &&
                 record.type != 'ADGUARDHOME_A_PASSTHROUGH' &&
                 record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH'
@@ -1491,28 +1489,6 @@ function _validateCloudflareRedirect(value) {
     }
     return value.indexOf(',') === -1;
 }
-
-var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
-    args: [
-        ['source', _validateCloudflareRedirect],
-        ['destination', _validateCloudflareRedirect],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = '@';
-        record.target = args.source + ',' + args.destination;
-    },
-});
-
-var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
-    args: [
-        ['source', _validateCloudflareRedirect],
-        ['destination', _validateCloudflareRedirect],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = '@';
-        record.target = args.source + ',' + args.destination;
-    },
-});
 
 var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
     args: [
@@ -2467,9 +2443,19 @@ function rawrecordBuilder(type) {
             rawArgs.push(arguments[i]);
         }
 
+        // Record which line called this record type.
+        // NB(tlim): Hopefully we can find a better way to do this in the
+        // future. Right now we're faking that there was an error just to parse
+        // out the line number. That's inefficient but I can't find anything better.
+        // This will certainly break if we change to a different Javascript interpreter.
+        // Hopefully any other interpreter will have a better way to do this.
+        var positionLines = new Error().stack.split('\n');
+        var position = positionLines[positionLines.length - 2];
+
         return function (d) {
             var record = {
                 type: type,
+                filepos: position,
             };
 
             // Process the args: Functions are executed, objects are assumed to
@@ -2506,5 +2492,7 @@ function rawrecordBuilder(type) {
 
 // PLEASE KEEP THIS LIST ALPHABETICAL!
 
-// CLOUDFLAREAPI:
+var CF_REDIRECT = rawrecordBuilder('CF_REDIRECT');
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
+var CF_TEMP_REDIRECT = rawrecordBuilder('CF_TEMP_REDIRECT');
+var RP = rawrecordBuilder('RP');

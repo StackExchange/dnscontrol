@@ -7,7 +7,7 @@ import (
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
-	items []DomainFixedForms
+	items []*DomainNameVarieties
 }
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The
@@ -23,7 +23,7 @@ func CompilePermitList(s string) PermitList {
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
 		}
-		ff := MakeDomainFixForms(l)
+		ff := MakeDomainNameVarieties(l)
 		if ff.HasBang && ff.NameASCII == "" { // Treat empty name as wildcard.
 			ff.NameASCII = "*"
 		}
@@ -40,7 +40,7 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		return true
 	}
 
-	domToCheckFF := MakeDomainFixForms(domToCheck)
+	domToCheckFF := MakeDomainNameVarieties(domToCheck)
 
 	for _, filterItem := range pl.items {
 

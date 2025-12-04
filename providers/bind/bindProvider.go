@@ -27,6 +27,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
@@ -35,18 +36,19 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
-	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDHCID:            providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
 	providers.CanUseDNSKEY:           providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseOPENPGPKEY:       providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRP:               providers.Can(),
 	providers.CanUseSMIMEA:           providers.Can(),
 	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -168,7 +170,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist! (will create)\n", c.directory)
 	}
-	ff := domaintags.DomainFixedForms{
+	ff := domaintags.DomainNameVarieties{
 		Tag:         meta[models.DomainTag],
 		NameRaw:     meta[models.DomainNameRaw],
 		NameASCII:   domain,
@@ -204,10 +206,29 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRCTxtBug(rr, zoneName)
-		if err != nil {
-			return nil, err
+		var rec models.RecordConfig
+		var prec *models.RecordConfig
+		var err error
+
+		// Modern types:
+		rtype := rr.Header().Rrtype
+		switch rtype {
+		case dns.TypeRP:
+			name := rr.Header().Name
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			if err != nil {
+				return nil, err
+			}
+			rec = *prec
+			rec.TTL = rr.Header().Ttl
+		default:
+			// Legacy types:
+			rec, err = models.RRtoRCTxtBug(rr, zoneName)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 		foundRecords = append(foundRecords, &rec)
 	}
 
@@ -279,7 +300,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	zonefile = filepath.Join(c.directory,
 		makeFileName(
 			c.filenameformat,
-			domaintags.DomainFixedForms{
+			domaintags.DomainNameVarieties{
 				Tag:         dc.Tag,
 				NameRaw:     dc.NameRaw,
 				NameASCII:   dc.Name,

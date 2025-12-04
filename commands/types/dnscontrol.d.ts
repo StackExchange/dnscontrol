@@ -550,13 +550,13 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; issuevmc: string[]|string; issuevmc_critical?: boolean; issuemail: string[]|string; issuemail_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
- * generate a HTTP 301 permanent redirect.
+ * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * Rules) to generate a HTTP 301 permanent redirect.
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
@@ -587,36 +587,50 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
 
 /**
  * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
- * Typically one uses 302 (temporary) or (less likely) 301 (permanent).
+ * Typically one uses 302 (temporary) or 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
+ *
+ * DNSControl will delete any "single redirects" it doesn't recognize (i.e. ones created via the web UI) so please be careful.
  *
  * Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_SINGLE_REDIRECT("name", 302, "when", "then"),
  *   CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
  *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ *   CF_TEMP_REDIRECT("*example.com/*", "https://contests.otherexample.com/$2"),
  * );
  * ```
  *
  * The fields are:
  *
- * * name: The name (basically a comment, but it must be unique)
+ * * name: The name (basically a comment)
  * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * NOTE: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ * DNSControl does not currently choose the order of the rules.  New rules are
+ * added to the end of the list. Use Cloudflare's dashboard to re-order the rule,
+ * DNSControl should not change them.  (In the future we hope to add a feature
+ * where the order the rules appear in dnsconfig.js is maintained in the
+ * dashboard.)
+ *
+ * ## `CF_REDIRECT` and `CF_TEMP_REDIRECT`
+ *
+ * `CF_REDIRECT` and `CF_TEMP_REDIRECT` used to manage Cloudflare Page Rules.
+ * However that feature is going away.  To help with the migration, DNSControl now
+ * translates those commands into CF_SINGLE_REDIRECT equivalents.  The conversion
+ * process is a transpiler that only understands certain formats. Please submit
+ * a Github issue if you find something it can't handle.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
 declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
@@ -624,9 +638,9 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
- * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
- * Page Rule types other than "Forwarding URL” will be left alone.
+ * Page Rule types other than "Forwarding URL" will be left alone.
  *
  * WARNING: Cloudflare does not currently fully document the Page Rules API and
  * this interface is not extensively tested. Take precautions such as making
@@ -634,9 +648,12 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `dnscontrol push`. This is especially true when mixing Page Rules that are
  * managed by DNSControl and those that aren't.
  *
+ * This example redirects the bare (aka apex, or naked) domain to www:
+ *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_TEMP_REDIRECT("example.example.com/*", "https://otherplace.yourdomain.com/$1"),
+ *   CF_TEMP_REDIRECT("example.com/*", "https://www.example.com/$1"),
+ *
  * );
  * ```
  *
@@ -3204,6 +3221,21 @@ declare function REV(address: string): string;
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
  */
 declare function REVCOMPAT(rfc: string): string;
+
+/**
+ * `RP()` adds an RP record to a domain.
+ *
+ * The RP implementation in DNSControl is still experimental and may change.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   RP("@", "user.example.com.", "example.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/rp
+ */
+declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.

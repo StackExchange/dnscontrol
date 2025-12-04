@@ -10,6 +10,8 @@ import (
 	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
@@ -313,9 +315,6 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules.Rules {
 		thisPr := pr
-		r := &models.RecordConfig{
-			Original: thisPr,
-		}
 
 		// Extract the valuables from the rule, use it to make the sr:
 		srName := pr.Description
@@ -323,23 +322,28 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		if err := cfsingleredirect.MakeSingleRedirectFromAPI(r, code, srName, srWhen, srThen); err != nil {
+		rec, err := rtypecontrol.NewRecordConfigFromRaw(
+			"CLOUDFLAREAPI_SINGLE_REDIRECT",
+			1,
+			[]any{srName, code, srWhen, srThen},
+			domaintags.MakeDomainNameVarieties(domain))
+		if err != nil {
 			return nil, err
 		}
-		r.SetLabel("@", domain)
+		rec.Original = thisPr
 
-		// Store the IDs
-		sr := r.CloudflareRedirect
+		// Store the IDs. These will be needed for update/delete operations.
+		sr := rec.F.(*cfsingleredirect.SingleRedirectConfig)
 		sr.SRRRulesetID = rules.ID
 		sr.SRRRulesetRuleID = pr.ID
 
-		recs = append(recs, r)
+		recs = append(recs, rec)
 	}
 
 	return recs, nil
 }
 
-func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr cfsingleredirect.SingleRedirectConfig) error {
 	newSingleRedirectRulesActionParameters := cloudflare.RulesetRuleActionParameters{}
 	newSingleRedirectRule := cloudflare.RulesetRule{}
 	newSingleRedirectRules := []cloudflare.RulesetRule{}
@@ -375,41 +379,14 @@ func (c *cloudflareProvider) createSingleRedirect(domainID string, cfr models.Cl
 		return fmt.Errorf("failed fetching redirect rule list cloudflare: %w", err)
 	}
 	newSingleRedirect.Rules = newSingleRedirectRules
-	newSingleRedirect.Rules = append(newSingleRedirect.Rules, rules.Rules...)
+	newSingleRedirect.Rules = append(rules.Rules, newSingleRedirect.Rules...)
 
 	_, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), newSingleRedirect)
 
 	return err
 }
 
-func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	// This block should delete rules using the as is Cloudflare Golang lib in theory, need to debug why it isn't
-	// updatedRuleset := cloudflare.UpdateEntrypointRulesetParams{}
-	// updatedRulesetRules := []cloudflare.RulesetRule{}
-
-	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	// if err != nil {
-	// 	return fmt.Errorf("failed fetching redirect rule list cloudflare: %s", err)
-	// }
-
-	// for _, rule := range rules.Rules {
-	// 	if rule.ID != cfr.SRRRulesetRuleID {
-	// 		updatedRulesetRules = append(updatedRulesetRules, rule)
-	// 	} else {
-	// 		printer.Printf("DEBUG: MATCH %v : %v\n", rule.ID, cfr.SRRRulesetRuleID)
-	// 	}
-	// }
-	// updatedRuleset.Rules = updatedRulesetRules
-	// _, err = c.cfClient.UpdateEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), updatedRuleset)
-
-	// Old Code
-
-	// rules, err := c.cfClient.GetEntrypointRuleset(context.Background(), cloudflare.ZoneIdentifier(domainID), "http_request_dynamic_redirect")
-	// if err != nil {
-	// 	return err
-	// }
-	// printer.Printf("DEBUG: CALLING API DeleteRulesetRule: SRRRulesetID=%v, cfr.SRRRulesetRuleID=%v\n", cfr.SRRRulesetID, cfr.SRRRulesetRuleID)
-
+func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr cfsingleredirect.SingleRedirectConfig) error {
 	err := c.cfClient.DeleteRulesetRule(context.Background(), cloudflare.ZoneIdentifier(domainID), cloudflare.DeleteRulesetRuleParams{
 		RulesetID:     cfr.SRRRulesetID,
 		RulesetRuleID: cfr.SRRRulesetRuleID,
@@ -424,81 +401,10 @@ func (c *cloudflareProvider) deleteSingleRedirects(domainID string, cfr models.C
 }
 
 func (c *cloudflareProvider) updateSingleRedirect(domainID string, oldrec, newrec *models.RecordConfig) error {
-	if err := c.deleteSingleRedirects(domainID, *oldrec.CloudflareRedirect); err != nil {
+	if err := c.deleteSingleRedirects(domainID, *oldrec.F.(*cfsingleredirect.SingleRedirectConfig)); err != nil {
 		return err
 	}
-	return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
-}
-
-func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
-	rules, err := c.cfClient.ListPageRules(context.Background(), id)
-	if err != nil {
-		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %w", err)
-	}
-	recs := []*models.RecordConfig{}
-	for _, pr := range rules {
-		// only interested in forwarding rules. Lets be very specific, and skip anything else
-		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
-			continue
-		}
-		if pr.Actions[0].ID != "forwarding_url" {
-			continue
-		}
-		value := pr.Actions[0].Value.(map[string]interface{})
-		thisPr := pr
-		r := &models.RecordConfig{
-			Original: thisPr,
-		}
-
-		code := intZero(value["status_code"])
-
-		when := pr.Targets[0].Constraint.Value
-		then := value["url"].(string)
-		currentPrPrio := pr.Priority
-
-		if err := cfsingleredirect.MakePageRule(r, currentPrPrio, code, when, then); err != nil {
-			return nil, err
-		}
-		r.SetLabel("@", domain)
-
-		recs = append(recs, r)
-	}
-	return recs, nil
-}
-
-func (c *cloudflareProvider) deletePageRule(recordID, domainID string) error {
-	return c.cfClient.DeletePageRule(context.Background(), domainID, recordID)
-}
-
-func (c *cloudflareProvider) updatePageRule(recordID, domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	// maybe someday?
-	// c.apiProvider.UpdatePageRule(context.Background(), domainId, recordID, )
-	if err := c.deletePageRule(recordID, domainID); err != nil {
-		return err
-	}
-	return c.createPageRule(domainID, cfr)
-}
-
-func (c *cloudflareProvider) createPageRule(domainID string, cfr models.CloudflareSingleRedirectConfig) error {
-	priority := cfr.PRPriority
-	code := cfr.Code
-	prWhen := cfr.PRWhen
-	prThen := cfr.PRThen
-	pr := cloudflare.PageRule{
-		Status:   "active",
-		Priority: priority,
-		Targets: []cloudflare.PageRuleTarget{
-			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: prWhen}},
-		},
-		Actions: []cloudflare.PageRuleAction{
-			{ID: "forwarding_url", Value: &pageRuleFwdInfo{
-				StatusCode: code,
-				URL:        prThen,
-			}},
-		},
-	}
-	_, err := c.cfClient.CreatePageRule(context.Background(), domainID, pr)
-	return err
+	return c.createSingleRedirect(domainID, *newrec.F.(*cfsingleredirect.SingleRedirectConfig))
 }
 
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
@@ -534,9 +440,6 @@ func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error 
 }
 
 func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
-	// Causing Stack Overflow (!?)
-	// return c.updateWorkerRoute(recordID, domainID, target)
-
 	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
 		return err
 	}
@@ -556,18 +459,4 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 
 	_, err := c.cfClient.CreateWorkerRoute(context.Background(), cloudflare.ZoneIdentifier(domainID), wr)
 	return err
-}
-
-// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
-// https://github.com/dominikh/go-tools/issues/810
-//
-//lint:ignore U1000 false positive due to
-type pageRuleConstraint struct {
-	Operator string `json:"operator"`
-	Value    string `json:"value"`
-}
-
-type pageRuleFwdInfo struct {
-	URL        string `json:"url"`
-	StatusCode uint16 `json:"status_code"`
 }

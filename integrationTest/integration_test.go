@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/StackExchange/dnscontrol/v4/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
@@ -170,6 +171,19 @@ func makeTests() []*TestGroup {
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("RP",
+			requires(providers.CanUseRP),
+			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
+		),
+		testgroup("RP",
+			requires(providers.CanUseRP),
+			tc("Create RP", rp("foo", "user", "server")),
+			tc("Create RP", rp("foo", "user2", "server")),
+			tc("Create RP", rp("foo", "user2", "waiter")),
 		),
 
 		// TXT
@@ -608,7 +622,7 @@ func makeTests() []*TestGroup {
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		),
 		testgroup("IDNAs in CNAME targets",
-			not("CLOUDFLAREAPI"),
+			//not("CLOUDFLAREAPI"),
 			// LINODE: hostname validation does not allow the target domain TLD
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
@@ -1158,84 +1172,13 @@ func makeTests() []*TestGroup {
 
 		// CLOUDFLAREAPI: Redirects:
 
-		// go test -v -verbose -profile CLOUDFLAREAPI                // PAGE_RULEs
-		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=c  // Convert: Convert page rules to Single Redirect
-		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=n  // New: Convert old to new Single Redirect
-		// ProTip: Add this to just run this test:
-		//  -start 59 -end 60
-
-		testgroup("CF_REDIRECT",
-			only("CLOUDFLAREAPI"),
-			tc("redir", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("change", cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
-			tc("changelabel", cfRedir("cable.**current-domain**/*", "https://change.cnn.com/$1")),
-
-			// Removed these for speed.  They tested if order matters,
-			// which it doesn't seem to.  Re-add if needed.
-			tcEmptyZone(),
-			tc("multipleA",
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-			),
-			tcEmptyZone(),
-			tc("multipleB",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-
-			// NB(tlim): This test case used to fail but mysteriously started working.
-			tcEmptyZone(),
-			tc("multiple3",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedir("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
-			),
-
-			// Repeat the above tests using CF_TEMP_REDIR instead
-			tcEmptyZone(),
-			tc("tempredir", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("tempchange", cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
-			tc("tempchangelabel", cfRedirTemp("cable.**current-domain**/*", "https://change.cnn.com/$1")),
-			tcEmptyZone(),
-			tc("tempmultipleA",
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-			),
-			tcEmptyZone(),
-			tc("tempmultipleB",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-			),
-			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			// NB(tlim): This test case used to fail but mysteriously started working.
-			tc("tempmultiple3",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
-			),
-		),
+		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
 
 		testgroup("CF_REDIRECT_CONVERT",
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 			tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("convert301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 		),
 
 		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
@@ -1254,72 +1197,32 @@ func makeTests() []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			CfProxyOff(), tcEmptyZone(),
 			CfProxyOn(), tcEmptyZone(),
-			CfProxyFull1(), tcEmptyZone(),
-			CfProxyFull2(), tcEmptyZone(),
 		),
 
-		// These next testgroups attempt every possible transition between off, on, full1 and full2.
-		// "full1" simulates "full" without the IP being translated.
-		// "full2" simulates "full" WITH the IP translated.
-
-		testgroup("CF_PROXY A off to X",
+		testgroup("CF_PROXY A off to on",
 			only("CLOUDFLAREAPI"),
-			// CF_PROXY_OFF(), CF_PROXY_OFF(), tcEmptyZone(), // redundant
-			CfProxyOff(), CfProxyOn(), tcEmptyZone(),
-			CfProxyOff(), CfProxyFull1(), tcEmptyZone(),
-			CfProxyOff(), CfProxyFull2(), tcEmptyZone(),
+			CfProxyOff(), CfProxyOn(),
 		),
 
-		testgroup("CF_PROXY A on to X",
+		testgroup("CF_PROXY A on to off",
 			only("CLOUDFLAREAPI"),
-			CfProxyOn(), CfProxyOff(), tcEmptyZone(),
-			// CF_PROXY_ON(), CF_PROXY_ON(), tcEmptyZone(), // redundant
-			// CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			CfProxyOn(), CfProxyFull2(), tcEmptyZone(),
-		),
-
-		testgroup("CF_PROXY A full1 to X",
-			only("CLOUDFLAREAPI"),
-			CfProxyFull1(), CfProxyOff(), tcEmptyZone(),
-			// CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			// CF_PROXY_FULL1(), tcEmptyZone(), // redundant
-			CfProxyFull1(), CfProxyFull2(), tcEmptyZone(),
-		),
-
-		testgroup("CF_PROXY A full2 to X",
-			only("CLOUDFLAREAPI"),
-			CfProxyFull2(), CfProxyOff(), tcEmptyZone(),
-			CfProxyFull2(), CfProxyOn(), tcEmptyZone(),
-			CfProxyFull2(), CfProxyFull1(), tcEmptyZone(),
-			// CF_PROXY_FULL2(), CF_PROXY_FULL2(), tcEmptyZone(), // redundant
+			CfProxyOn(), CfProxyOff(),
 		),
 
 		testgroup("CF_PROXY CNAME create",
 			only("CLOUDFLAREAPI"),
 			CfCProxyOff(), tcEmptyZone(),
 			CfCProxyOn(), tcEmptyZone(),
-			CfCProxyFull(), tcEmptyZone(),
 		),
 
-		testgroup("CF_PROXY CNAME off to X",
+		testgroup("CF_PROXY CNAME off to on",
 			only("CLOUDFLAREAPI"),
-			// CF_CPROXY_OFF(), CF_CPROXY_OFF(), tcEmptyZone(),  // redundant
-			CfCProxyOff(), CfCProxyOn(), tcEmptyZone(),
-			CfCProxyOff(), CfCProxyFull(), tcEmptyZone(),
+			CfCProxyOff(), CfCProxyOn(),
 		),
 
-		testgroup("CF_PROXY CNAME on to X",
+		testgroup("CF_PROXY CNAME on to off",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOn(), CfCProxyOff(), tcEmptyZone(),
-			// CF_CPROXY_ON(), CF_CPROXY_ON(), tcEmptyZone(), // redundant
-			// CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-		),
-
-		testgroup("CF_PROXY CNAME full to X",
-			only("CLOUDFLAREAPI"),
-			CfCProxyFull(), CfCProxyOff(), tcEmptyZone(),
-			// CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			// CF_CPROXY_FULL(), tcEmptyZone(), // redundant
+			CfCProxyOn(), CfCProxyOff(),
 		),
 
 		testgroup("CF_WORKER_ROUTE",
@@ -2053,6 +1956,11 @@ func makeTests() []*TestGroup {
 			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
 			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
 			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
+		// This MUST be the last test.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
 		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far

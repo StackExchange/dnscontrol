@@ -9,24 +9,40 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[line:2:5]",
-          "meta": {
-            "orig_custom_type": "CF_REDIRECT"
+          "comparable": "name=(301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+          "fields": {
+            "code": 301,
+            "sr_display": "name=(301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+            "sr_name": "301,test1.foo.com,https://goo.com/$1",
+            "sr_then": "concat(\"https://goo.com\", http.request.uri.path)",
+            "sr_when": "http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\""
           },
+          "filepos": "[line:2:5]",
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1",
-          "ttl": 300,
-          "type": "CF_REDIRECT"
+          "name_raw": "@",
+          "name_unicode": "@",
+          "target": "name=(301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+          "ttl": 1,
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(301,test1.foo.com,https://goo.com/$1) code=(301) when=(http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))"
         },
         {
-          "filepos": "[line:3:5]",
-          "meta": {
-            "orig_custom_type": "CF_TEMP_REDIRECT"
+          "comparable": "name=(302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+          "fields": {
+            "code": 302,
+            "sr_display": "name=(302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+            "sr_name": "302,test2.foo.com,https://goo.com/$1",
+            "sr_then": "concat(\"https://goo.com\", http.request.uri.path)",
+            "sr_when": "http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\""
           },
+          "filepos": "[line:3:5]",
           "name": "@",
-          "target": "test.foo.com,https://goo.com/$1",
-          "ttl": 300,
-          "type": "CF_TEMP_REDIRECT"
+          "name_raw": "@",
+          "name_unicode": "@",
+          "target": "name=(302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))",
+          "ttl": 1,
+          "type": "CLOUDFLAREAPI_SINGLE_REDIRECT",
+          "zonfefilepartial": "name=(302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))"
         }
       ],
       "registrar": "none"

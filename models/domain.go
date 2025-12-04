@@ -73,7 +73,7 @@ func (dc *DomainConfig) PostProcess() {
 	}
 
 	// Turn the user-supplied name into the fixed forms.
-	ff := domaintags.MakeDomainFixForms(dc.Name)
+	ff := domaintags.MakeDomainNameVarieties(dc.Name)
 	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
@@ -124,6 +124,10 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
+		if rec.IsModernType() {
+			continue // Modern types handle punycode themselves.
+		}
+
 		// Update the label:
 		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {
@@ -227,4 +231,16 @@ func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correctio
 	dc.pendingCorrectionsMutex.Lock()
 	defer dc.pendingCorrectionsMutex.Unlock()
 	return dc.pendingPopulateCorrections[providerName]
+}
+
+// DomainNameVarieties returns the domain's names in various forms.
+func (dc *DomainConfig) DomainNameVarieties() *domaintags.DomainNameVarieties {
+	return &domaintags.DomainNameVarieties{
+		NameRaw:     dc.NameRaw,
+		NameASCII:   dc.Name,
+		NameUnicode: dc.NameUnicode,
+		UniqueName:  dc.UniqueName,
+		Tag:         dc.Tag,
+		HasBang:     dc.Tag != "",
+	}
 }

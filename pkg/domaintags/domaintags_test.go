@@ -143,7 +143,7 @@ func Test_MakeDomainFixForms(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := MakeDomainFixForms(tt.input)
+			got := MakeDomainNameVarieties(tt.input)
 			if got.Tag != tt.wantTag {
 				t.Errorf("MakeDomainFixForms() gotTag = %v, want %v", got.Tag, tt.wantTag)
 			}
