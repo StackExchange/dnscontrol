@@ -59,9 +59,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 		return fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type)
 	}
 
-	rc.Type = rtype
-
-	switch rtype { // #rtype_variations
+	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {

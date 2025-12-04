@@ -536,16 +536,10 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	return nil
 }
 
+// IsModernType returns true if this RecordConfig uses the new "F" field to store its rdata.
+// Once all record types have been migrated to use "F", this function can be removed.
 func (rc *RecordConfig) IsModernType() bool {
-	//fmt.Printf("DEBUG: IsModernType rtype=%s\n", rc.Type)
 	return rc.F != nil
-
-	// switch rc.Type {
-	// case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP":
-	// 	return true
-	// }
-
-	// return false
 }
 
 // Records is a list of *RecordConfig.

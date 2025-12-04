@@ -2,11 +2,11 @@ package rtypecontrol
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 )
 
 // ImportRawRecords imports the RawRecordConfigs into RecordConfigs.
@@ -16,10 +16,10 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 		for _, rawRec := range dc.RawRecords {
 
 			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc)
-			rec.FilePos = models.FixPosition(rawRec.FilePos)
 			if err != nil {
-				return fmt.Errorf("%s: %w", rec.FilePos, err)
+				return err
 			}
+			rec.FilePos = models.FixPosition(rawRec.FilePos)
 
 			// Free memeory:
 			clear(rawRec.Args)
@@ -106,31 +106,39 @@ func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string)
 			rec.Name = "@"
 			rec.NameRaw = "@"
 			rec.NameUnicode = "@"
+			rec.NameFQDN = dc.Name
+			rec.NameFQDNRaw = dc.NameRaw
+			rec.NameFQDNUnicode = dc.NameUnicode
+			rec.NameFQDN = dc.Name
+			rec.NameFQDNRaw = dc.NameRaw
+			rec.NameFQDNUnicode = dc.NameUnicode
 		} else {
-			rec.Name = domaintags.EfficientToASCII(n)
+			rec.Name = strings.ToLower(domaintags.EfficientToASCII(n))
 			rec.NameRaw = n
 			rec.NameUnicode = domaintags.EfficientToUnicode(n)
+			rec.NameFQDN = rec.Name + "." + dc.Name
+			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
 		}
-		rec.NameFQDN = dc.Name
-		rec.NameFQDNRaw = dc.NameRaw
-		rec.NameFQDNUnicode = dc.NameUnicode
 	} else {
-		// _EXTEND() mode:
-		// FIXME(tlim): Not implemented.
+		// D_EXTEND() mode:
 		sdRaw := rec.SubDomain
-		sdIDN := domaintags.EfficientToASCII(rec.SubDomain)
-		sdUnicode := domaintags.EfficientToUnicode(rec.SubDomain)
+		sdASCII := strings.ToLower(domaintags.EfficientToASCII(rec.SubDomain))
+		sdUnicode := domaintags.EfficientToUnicode(sdASCII)
 		if n == "@" {
-			rec.Name = sdIDN
+			rec.Name = sdASCII
 			rec.NameRaw = sdRaw
 			rec.NameUnicode = sdUnicode
+			rec.NameFQDN = rec.Name + "." + dc.Name
+			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
 		} else {
-			rec.Name = domaintags.EfficientToASCII(n + "." + sdIDN)
+			rec.Name = domaintags.EfficientToASCII(n) + "." + sdASCII
 			rec.NameRaw = n + "." + sdRaw
-			rec.NameUnicode = domaintags.EfficientToUnicode(n + "." + sdUnicode)
+			rec.NameUnicode = domaintags.EfficientToUnicode(rec.Name)
+			rec.NameFQDN = rec.Name + "." + dc.Name
+			rec.NameFQDNRaw = rec.NameRaw + "." + dc.NameRaw
+			rec.NameFQDNUnicode = rec.NameUnicode + "." + dc.NameUnicode
 		}
-		rec.NameFQDN = dnsutil.AddOrigin(rec.Name, dc.Name)
-		rec.NameFQDNRaw = dnsutil.AddOrigin(rec.NameRaw, dc.NameRaw)
-		rec.NameFQDNUnicode = dnsutil.AddOrigin(rec.NameUnicode, dc.NameUnicode)
 	}
 }
