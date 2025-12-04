@@ -7,7 +7,8 @@ parameters:
   - modifiers...
 parameter_types:
   name: string
-  address: string
+  mbox: string
+  txt: string
   "modifiers...": RecordModifier[]
 ---
 

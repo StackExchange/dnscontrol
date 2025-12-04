@@ -3235,7 +3235,7 @@ declare function REVCOMPAT(rfc: string): string;
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/rp
  */
-declare function RP(name: string, mbox: unknown, txt: unknown, ...modifiers: RecordModifier[]): DomainModifier;
+declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.
