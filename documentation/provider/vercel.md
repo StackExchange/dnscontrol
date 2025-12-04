@@ -144,3 +144,13 @@ Vercel does not allow the record type to be changed after creation. If you try t
 ### Minimum TTL
 
 Vercel enforces a minimum TTL of 60 seconds (1 minute) for all records. We will always silently override the TTL to 60 seconds if you try to set a lower TTL.
+
+### HTTPS Record ECH Base64 Validation
+
+Currently, Vercel does implements IETF's "Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings" draft. However, Vercel also implements a validation process for the `ech` parameter in the `HTTPS` records, and will reject the request with the following error message if Vercel considers the `ech` value is invalid:
+
+```
+Invalid base64 string: [input] (key: ech)
+```
+
+The detail of Vercel's validation process is unknown, thus we can not support static validation for `dnscontrol check` or `dnscontrol preview`. You should use `ech=` with caution.
