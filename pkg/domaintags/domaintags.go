@@ -7,6 +7,7 @@ import (
 )
 
 // DomainFixedForms stores the various fixed forms of a domain name and tag.
+// TODO(tlim): Rename this to DomainNameVarieties or something similar.
 type DomainFixedForms struct {
 	NameRaw     string // "originalinput.com" (name as input by the user, lowercased (no tag))
 	NameASCII   string // "punycode.com"

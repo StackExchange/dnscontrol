@@ -11,7 +11,6 @@ import (
 
 // ImportRawRecords imports the RawRecordConfigs into RecordConfigs.
 func ImportRawRecords(domains []*models.DomainConfig) error {
-
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
@@ -98,8 +97,9 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 	return rec, nil
 }
 
+// setRecordNames updates the .Name* fields.
 func setRecordNames(rec *models.RecordConfig, dc *models.DomainConfig, n string) {
-
+	// FYI(tlim): This code could be collapse
 	if rec.SubDomain == "" {
 		// Not _EXTEND() mode:
 		if n == "@" {

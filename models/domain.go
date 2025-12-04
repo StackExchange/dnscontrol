@@ -233,6 +233,8 @@ func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correctio
 	return dc.pendingPopulateCorrections[providerName]
 }
 
+// MakeFakeDomainConfig makes a DomainConfig with the given domain name. This is a workaround so we don't have to change sygnatures of every function that needs a DomainConfig.
+// In the future we'll eliminate this by passing a DomainFixedForms instead (and possibly renaming DomainFixedForms).
 func MakeFakeDomainConfig(domain string) *DomainConfig {
 	v := domaintags.MakeDomainNameVarieties(domain)
 	return &DomainConfig{
