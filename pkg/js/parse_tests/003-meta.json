@@ -19,7 +19,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Cloudflare"
+      "registrar": "Cloudflare",
+      "uniquename": "foo.com"
     }
   ],
   "registrars": [

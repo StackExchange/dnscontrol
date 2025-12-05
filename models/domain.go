@@ -24,7 +24,7 @@ type DomainConfig struct {
 	NameUnicode string `json:"-"`    // name in Unicode format
 
 	Tag        string `json:"tag,omitempty"` // Split horizon tag.
-	UniqueName string `json:"-"`             // .Name + "!" + .Tag
+	UniqueName string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
 
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`

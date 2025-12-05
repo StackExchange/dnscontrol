@@ -9,6 +9,7 @@
       "name": "foo.com",
       "records": [],
       "registrar": "none",
+      "uniquename": "foo.com",
       "unmanaged": [
         {
           "label_pattern": "\\*.testignore",

@@ -106,7 +106,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "domain.tld"
     },
     {
       "dnsProviders": {
@@ -160,7 +161,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "sub.domain.tld"
     }
   ],
   "registrars": [
