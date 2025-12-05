@@ -30,7 +30,8 @@
           "type": "PTR"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "d.c.b.a.1.1.0.2.ip6.arpa"
     },
     {
       "dnsProviders": {
@@ -64,7 +65,8 @@
           "type": "PTR"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "8.b.d.0.1.0.0.2.ip6.arpa"
     }
   ],
   "registrars": [

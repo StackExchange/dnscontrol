@@ -107,7 +107,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "domain.tld"
     }
   ],
   "registrars": [

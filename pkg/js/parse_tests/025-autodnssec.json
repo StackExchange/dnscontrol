@@ -8,7 +8,8 @@
       },
       "name": "nothing.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "nothing.com"
     },
     {
       "auto_dnssec": "on",
@@ -18,7 +19,8 @@
       },
       "name": "with.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "with.com"
     },
     {
       "auto_dnssec": "off",
@@ -28,7 +30,8 @@
       },
       "name": "without.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "without.com"
     }
   ],
   "registrars": []

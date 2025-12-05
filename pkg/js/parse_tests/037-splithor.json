@@ -38,7 +38,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.com"
     },
     {
       "dnsProviders": {
@@ -66,7 +67,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "inside"
+      "tag": "inside",
+      "uniquename": "example.com!inside"
     },
     {
       "dnsProviders": {
@@ -87,7 +89,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "outside"
+      "tag": "outside",
+      "uniquename": "example.com!outside"
     },
     {
       "dnsProviders": {
@@ -113,7 +116,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.net"
     },
     {
       "dnsProviders": {
@@ -148,7 +152,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "inside"
+      "tag": "inside",
+      "uniquename": "example.net!inside"
     },
     {
       "dnsProviders": {
@@ -183,7 +188,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "outside"
+      "tag": "outside",
+      "uniquename": "example.net!outside"
     },
     {
       "dnsProviders": {
@@ -209,7 +215,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "empty.example.net"
     },
     {
       "dnsProviders": {
@@ -235,7 +242,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example-b.net!"
     }
   ],
   "registrars": [

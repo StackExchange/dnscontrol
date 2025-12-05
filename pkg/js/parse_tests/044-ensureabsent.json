@@ -24,7 +24,8 @@
           "type": "A"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "example.com"
     }
   ],
   "registrars": []

@@ -23,7 +23,8 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "foo1.com"
     },
     {
       "dnsProviders": {},
@@ -47,7 +48,8 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "inny"
     },
     {
       "dnsProviders": {},
@@ -71,7 +73,8 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "com.inny"
     }
   ],
   "registrars": []

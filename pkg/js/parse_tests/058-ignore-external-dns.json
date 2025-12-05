@@ -9,7 +9,8 @@
       },
       "name": "extdns-default.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "extdns-default.com"
     },
     {
       "dnsProviders": {},
@@ -20,7 +21,8 @@
       },
       "name": "extdns-custom.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "extdns-custom.com"
     },
     {
       "dnsProviders": {},
@@ -45,7 +47,8 @@
           "type": "A"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "extdns-combined.com"
     }
   ],
   "registrars": []

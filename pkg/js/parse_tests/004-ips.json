@@ -37,7 +37,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.com"
     }
   ],
   "registrars": [
