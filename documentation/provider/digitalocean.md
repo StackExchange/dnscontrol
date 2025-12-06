@@ -16,7 +16,7 @@ Example:
 ```
 {% endcode %}
 
-The [creds.json](../commands/creds.json#example-commands) page in the docs explains how you can generate this dynamically so you can pull the secret token from 1Password or the vault of your choosing.
+The [creds.json](../../commands/creds.json#example-commands) page in the docs explains how you can generate this dynamically so you can pull the secret token from 1Password or the vault of your choosing.
 
 ## Metadata
 
