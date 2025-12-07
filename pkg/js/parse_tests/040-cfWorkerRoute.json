@@ -19,7 +19,8 @@
           "type": "CF_WORKER_ROUTE"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     }
   ],
   "registrars": []

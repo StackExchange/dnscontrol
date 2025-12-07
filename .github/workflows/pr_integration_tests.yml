@@ -52,7 +52,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HETZNER_V2','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HETZNER_V2','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -73,6 +73,7 @@ jobs:
       # PROVIDER DOMAIN LIST
       # These providers will be tested if the env variable is set.
       # Set it to the domain name to use during the test.
+      ALIDNS_DOMAIN: ${{ vars.ALIDNS_DOMAIN }}
       AXFRDDNS_DOMAIN: ${{ vars.AXFRDDNS_DOMAIN }}
       AXFRDDNS_DNSSEC_DOMAIN: ${{ vars.AXFRDDNS_DNSSEC_DOMAIN }}
       AZURE_DNS_DOMAIN: ${{ vars.AZURE_DNS_DOMAIN }}
@@ -102,6 +103,9 @@ jobs:
       # PROVIDER SECRET LIST
       # The above providers have additional env variables they
       # need for credentials and such.
+      #
+      ALIDNS_ACCESS_KEY_ID: ${{ secrets.ALIDNS_ACCESS_KEY_ID }}
+      ALIDNS_ACCESS_KEY_SECRET: ${{ secrets.ALIDNS_ACCESS_KEY_SECRET }}
       #
       AXFRDDNS_MASTER: ${{ secrets.AXFRDDNS_MASTER }}
       AXFRDDNS_NAMESERVERS: ${{ secrets.AXFRDDNS_NAMESERVERS }}

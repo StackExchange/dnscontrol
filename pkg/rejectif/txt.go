@@ -18,6 +18,29 @@ func TxtHasBackslash(rc *models.RecordConfig) error {
 	return nil
 }
 
+// TxtHasUnpairedBackslash audits TXT records for strings that contain an odd number of consecutive backslashes.
+// Some providers strip single backslashes or convert odd consecutive backslashes to even.
+// e.g., "1back\slash" -> "1backslash", "3back\\\slash" -> "3back\\slash"
+func TxtHasUnpairedBackslash(rc *models.RecordConfig) error {
+	txt := rc.GetTargetTXTJoined()
+	i := 0
+	for i < len(txt) {
+		if txt[i] == '\\' {
+			count := 0
+			for i < len(txt) && txt[i] == '\\' {
+				count++
+				i++
+			}
+			if count%2 == 1 {
+				return errors.New("txtstring contains unpaired backslash (odd count)")
+			}
+		} else {
+			i++
+		}
+	}
+	return nil
+}
+
 // TxtHasBackticks audits TXT records for strings that contain backticks.
 func TxtHasBackticks(rc *models.RecordConfig) error {
 	if strings.Contains(rc.GetTargetTXTJoined(), "`") {

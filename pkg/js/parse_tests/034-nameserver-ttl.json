@@ -9,7 +9,8 @@
       },
       "name": "foo.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     },
     {
       "dnsProviders": {},
@@ -19,7 +20,8 @@
       },
       "name": "bar.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "bar.com"
     }
   ],
   "registrars": []

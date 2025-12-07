@@ -7,7 +7,7 @@ import (
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
-	items []DomainFixedForms
+	items []*DomainNameVarieties
 }
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The
@@ -23,9 +23,9 @@ func CompilePermitList(s string) PermitList {
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
 		}
-		ff := MakeDomainFixForms(l)
-		if ff.HasBang && ff.NameIDN == "" { // Treat empty name as wildcard.
-			ff.NameIDN = "*"
+		ff := MakeDomainNameVarieties(l)
+		if ff.HasBang && ff.NameASCII == "" { // Treat empty name as wildcard.
+			ff.NameASCII = "*"
 		}
 		sl.items = append(sl.items, ff)
 	}
@@ -40,7 +40,7 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		return true
 	}
 
-	domToCheckFF := MakeDomainFixForms(domToCheck)
+	domToCheckFF := MakeDomainNameVarieties(domToCheck)
 
 	for _, filterItem := range pl.items {
 
@@ -65,24 +65,24 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		// Now that we know the tag matches, we can focus on the name.
 
 		// `*!tag` or `*` matches everything.
-		if filterItem.NameIDN == "*" {
+		if filterItem.NameASCII == "*" {
 			return true
 		}
 
 		// If the name starts with "*." then match the suffix.
-		if strings.HasPrefix(filterItem.NameIDN, "*.") {
+		if strings.HasPrefix(filterItem.NameASCII, "*.") {
 			// example.com matches *.example.com
-			if domToCheckFF.NameIDN == filterItem.NameIDN[2:] || domToCheckFF.NameUnicode == filterItem.NameUnicode[2:] {
+			if domToCheckFF.NameASCII == filterItem.NameASCII[2:] || domToCheckFF.NameUnicode == filterItem.NameUnicode[2:] {
 				return true
 			}
 			// foo.example.com matches *.example.com
-			if strings.HasSuffix(domToCheckFF.NameIDN, filterItem.NameIDN[1:]) || strings.HasSuffix(domToCheckFF.NameUnicode, filterItem.NameUnicode[1:]) {
+			if strings.HasSuffix(domToCheckFF.NameASCII, filterItem.NameASCII[1:]) || strings.HasSuffix(domToCheckFF.NameUnicode, filterItem.NameUnicode[1:]) {
 				return true
 			}
 		}
 
 		// No wildcards? Exact match.
-		if filterItem.NameIDN == domToCheckFF.NameIDN || filterItem.NameUnicode == domToCheckFF.NameUnicode {
+		if filterItem.NameASCII == domToCheckFF.NameASCII || filterItem.NameUnicode == domToCheckFF.NameUnicode {
 			return true
 		}
 	}

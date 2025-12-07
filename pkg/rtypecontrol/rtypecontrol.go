@@ -1,21 +1,43 @@
 package rtypecontrol
 
-import "github.com/StackExchange/dnscontrol/v4/providers"
+import (
+	"fmt"
 
-var validTypes = map[string]struct{}{}
+	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/StackExchange/dnscontrol/v4/providers"
+)
 
-func Register(t string) {
-	// Does this already exist?
-	if _, ok := validTypes[t]; ok {
-		panic("rtype %q already registered. Can't register it a second time!")
-	}
+// backwards compatibility:
+//var validTypes = map[string]struct{}{}
 
-	validTypes[t] = struct{}{}
+type RType interface {
+	// Returns the name of the rtype ("A", "MX", etc.)
+	Name() string
 
-	providers.RegisterCustomRecordType(t, "", "")
+	// RecordConfig factory. Updates a RecordConfig's fields based on args.
+	FromArgs(*domaintags.DomainNameVarieties, *models.RecordConfig, []any) error
+	FromStruct(*domaintags.DomainNameVarieties, *models.RecordConfig, string, any) error
+
+	CopyToLegacyFields(*models.RecordConfig)
 }
 
-func IsValid(t string) bool {
-	_, ok := validTypes[t]
+// Map of registered rtypes.
+var Func map[string]RType = map[string]RType{}
+
+func Register(t RType) {
+	name := t.Name()
+	if _, ok := Func[name]; ok {
+		panic(fmt.Sprintf("rtype %q already registered. Can't register it a second time!", name))
+	}
+	// Store the interface
+	Func[name] = t
+
+	// For compatibility with legacy systems:
+	providers.RegisterCustomRecordType(name, "", "")
+}
+
+func IsModernType(name string) bool {
+	_, ok := Func[name]
 	return ok
 }

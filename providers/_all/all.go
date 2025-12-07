@@ -5,6 +5,7 @@ import (
 	// Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/StackExchange/dnscontrol/v4/providers/adguardhome"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/akamaiedgedns"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/alidns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/axfrddns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/azuredns"
@@ -58,5 +59,6 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/sakuracloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/transip"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/vercel"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/vultr"
 )

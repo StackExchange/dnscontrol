@@ -81,7 +81,8 @@
           "type": "SSHFP"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     }
   ],
   "registrars": []

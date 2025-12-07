@@ -55,6 +55,11 @@ func checkTarget(target string) error {
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	// #rtype_variations
 	validTypes := map[string]bool{
 		"A":                true,
@@ -175,6 +180,11 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox s
 
 // checkTargets returns true if rec.Target is valid for the rec.Type.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	label := rec.GetLabel()
 	target := rec.GetTargetField()
 	check := func(e error) {
@@ -753,6 +763,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("RP", providers.CanUseRP),
 	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),

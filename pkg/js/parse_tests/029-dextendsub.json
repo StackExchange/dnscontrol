@@ -62,7 +62,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.net"
     },
     {
       "dnsProviders": {
@@ -95,7 +96,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.tld"
     },
     {
       "dnsProviders": {
@@ -128,7 +130,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "bar.foo.tld"
     },
     {
       "dnsProviders": {
@@ -170,7 +173,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.help"
     },
     {
       "dnsProviders": {
@@ -212,7 +216,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "bar.foo.help"
     },
     {
       "dnsProviders": {
@@ -270,7 +275,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.here"
     },
     {
       "dnsProviders": {
@@ -328,7 +334,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.com"
     },
     {
       "dnsProviders": {
@@ -402,7 +409,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "xn--dsseldorf-q9a.example.net"
     },
     {
       "dnsProviders": {
@@ -476,7 +484,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "xn--tda.example.net"
     },
     {
       "dnsProviders": {
@@ -520,7 +529,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.tld"
     }
   ],
   "registrars": [

@@ -17,6 +17,7 @@ Currently supported DNS providers:
 
 - AdGuard Home
 - Akamai Edge DNS
+- Alibaba Cloud DNS (ALIDNS)
 - AutoDNS
 - AWS Route 53
 - AXFR+DDNS
@@ -65,6 +66,7 @@ Currently supported DNS providers:
 - Sakura Cloud
 - SoftLayer
 - TransIP
+- Vercel
 - Vultr
 
 Currently supported Domain Registrars:

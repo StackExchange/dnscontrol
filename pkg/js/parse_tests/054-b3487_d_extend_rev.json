@@ -110,7 +110,8 @@
           "type": "PTR"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "6.10.in-addr.arpa"
     }
   ],
   "registrars": [

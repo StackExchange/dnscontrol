@@ -25,7 +25,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "external"
+      "tag": "external",
+      "uniquename": "foo.com!external"
     },
     {
       "dnsProviders": {
@@ -53,7 +54,8 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "internal"
+      "tag": "internal",
+      "uniquename": "foo.com!internal"
     }
   ],
   "registrars": [

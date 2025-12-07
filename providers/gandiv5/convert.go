@@ -6,7 +6,10 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/go-gandi/go-gandi/livedns"
 )
@@ -18,25 +21,41 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 	// records for a label, all the IP addresses are listed in
 	// n.RrsetValues rather than having many livedns.DomainRecord's.
 	// We must split them out into individual records, one for each value.
+
+	dcn := domaintags.MakeDomainNameVarieties(origin)
+
 	for _, value := range n.RrsetValues {
-		rc := &models.RecordConfig{
-			TTL:      uint32(n.RrsetTTL),
-			Original: n,
-		}
-		rc.SetLabel(n.RrsetName, origin)
+		var rc *models.RecordConfig
+		var err error
 
-		switch rtype := n.RrsetType; rtype {
-		case "ALIAS":
-			rc.Type = "ALIAS"
-			err = rc.SetTarget(value)
-		default:
-			err = rc.PopulateFromStringFunc(rtype, value, origin, txtutil.ParseQuoted)
-		}
-		if err != nil {
-			return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
-		}
+		rtype := n.RrsetType
 
+		if rtypeinfo.IsModernType(rtype) {
+			rc, err = rtypecontrol.NewRecordConfigFromString(n.RrsetName, uint32(n.RrsetTTL), rtype, value, dcn)
+			if err != nil {
+				return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
+			}
+			rc.Original = n
+		} else {
+			rc = &models.RecordConfig{
+				TTL:      uint32(n.RrsetTTL),
+				Original: n,
+			}
+			rc.SetLabel(n.RrsetName, origin)
+
+			switch rtype := n.RrsetType; rtype {
+			case "ALIAS":
+				rc.Type = "ALIAS"
+				err = rc.SetTarget(value)
+			default:
+				err = rc.PopulateFromStringFunc(rtype, value, origin, txtutil.ParseQuoted)
+			}
+			if err != nil {
+				return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
+			}
+		}
 		rcs = append(rcs, rc)
+
 	}
 
 	return rcs, nil

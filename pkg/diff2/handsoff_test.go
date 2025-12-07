@@ -237,3 +237,204 @@ _2222222222222222.cr CNAME _333333.nnn.acm-validations.aws.
 FOREIGN:
 	`)
 }
+
+// Test_ignore_external_dns tests the IGNORE_EXTERNAL_DNS feature
+// using the full handsoff() function.
+func Test_ignore_external_dns(t *testing.T) {
+	domain := "f.com"
+
+	// Existing zone has external-dns managed records
+	existing := models.Records{
+		// External-dns TXT ownership record
+		makeTestRecord("a-myapp", "TXT", "heritage=external-dns,external-dns/owner=k8s-cluster", domain),
+		// The A record managed by external-dns
+		makeTestRecord("myapp", "A", "10.0.0.1", domain),
+		// Static record not managed by external-dns
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+		// Another external-dns managed record
+		makeTestRecord("cname-api", "TXT", "heritage=external-dns,external-dns/owner=k8s-cluster", domain),
+		makeTestRecord("api", "CNAME", "myapp.f.com.", domain),
+	}
+
+	// Desired only has the static record
+	desired := models.Records{
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+	}
+
+	// Call handsoff with IGNORE_EXTERNAL_DNS enabled
+	result, msgs, err := handsoff(
+		domain,
+		existing,
+		desired,
+		nil,   // absences
+		nil,   // unmanagedConfigs
+		false, // unmanagedSafely
+		false, // noPurge
+		true,  // ignoreExternalDNS
+		"",    // externalDNSPrefix (empty = default)
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that external-dns records are in the result (so they won't be deleted)
+	foundMyappA := false
+	foundMyappTXT := false
+	foundApiCNAME := false
+	foundApiTXT := false
+	foundStatic := false
+
+	for _, rec := range result {
+		switch {
+		case rec.GetLabel() == "myapp" && rec.Type == "A":
+			foundMyappA = true
+		case rec.GetLabel() == "a-myapp" && rec.Type == "TXT":
+			foundMyappTXT = true
+		case rec.GetLabel() == "api" && rec.Type == "CNAME":
+			foundApiCNAME = true
+		case rec.GetLabel() == "cname-api" && rec.Type == "TXT":
+			foundApiTXT = true
+		case rec.GetLabel() == "static" && rec.Type == "A":
+			foundStatic = true
+		}
+	}
+
+	if !foundMyappA {
+		t.Error("Expected myapp A record to be preserved")
+	}
+	if !foundMyappTXT {
+		t.Error("Expected a-myapp TXT record to be preserved")
+	}
+	if !foundApiCNAME {
+		t.Error("Expected api CNAME record to be preserved")
+	}
+	if !foundApiTXT {
+		t.Error("Expected cname-api TXT record to be preserved")
+	}
+	if !foundStatic {
+		t.Error("Expected static A record to be preserved")
+	}
+
+	// Check that we got a message about external-dns records
+	foundMsg := false
+	for _, msg := range msgs {
+		if strings.Contains(msg, "IGNORE_EXTERNAL_DNS") {
+			foundMsg = true
+			break
+		}
+	}
+	if !foundMsg {
+		t.Error("Expected message about IGNORE_EXTERNAL_DNS records")
+	}
+}
+
+// Test_ignore_external_dns_custom_prefix tests IGNORE_EXTERNAL_DNS with custom prefix
+func Test_ignore_external_dns_custom_prefix(t *testing.T) {
+	domain := "f.com"
+
+	// Existing zone has external-dns managed records with custom prefix "extdns-"
+	existing := models.Records{
+		// External-dns TXT ownership record with custom prefix
+		makeTestRecord("extdns-www", "TXT", "heritage=external-dns,external-dns/owner=k3s-cluster", domain),
+		// The A record managed by external-dns
+		makeTestRecord("www", "A", "10.0.0.1", domain),
+		// Static record
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+	}
+
+	// Desired only has the static record
+	desired := models.Records{
+		makeTestRecord("static", "A", "1.2.3.4", domain),
+	}
+
+	// Call handsoff with custom prefix
+	result, _, err := handsoff(
+		domain,
+		existing,
+		desired,
+		nil,       // absences
+		nil,       // unmanagedConfigs
+		false,     // unmanagedSafely
+		false,     // noPurge
+		true,      // ignoreExternalDNS
+		"extdns-", // externalDNSPrefix
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that external-dns records with custom prefix are preserved
+	foundWwwA := false
+	foundWwwTXT := false
+
+	for _, rec := range result {
+		switch {
+		case rec.GetLabel() == "www" && rec.Type == "A":
+			foundWwwA = true
+		case rec.GetLabel() == "extdns-www" && rec.Type == "TXT":
+			foundWwwTXT = true
+		}
+	}
+
+	if !foundWwwA {
+		t.Error("Expected www A record to be preserved with custom prefix")
+	}
+	if !foundWwwTXT {
+		t.Error("Expected extdns-www TXT record to be preserved with custom prefix")
+	}
+}
+
+// Test_ignore_external_dns_conflict tests conflict detection
+func Test_ignore_external_dns_conflict(t *testing.T) {
+	domain := "f.com"
+
+	// Existing zone has external-dns managed record
+	existing := models.Records{
+		makeTestRecord("a-myapp", "TXT", "heritage=external-dns,external-dns/owner=k8s-cluster", domain),
+		makeTestRecord("myapp", "A", "10.0.0.1", domain),
+	}
+
+	// Desired ALSO has myapp - this is a conflict!
+	desired := models.Records{
+		makeTestRecord("myapp", "A", "192.168.1.1", domain), // Different IP
+	}
+
+	// Call handsoff with IGNORE_EXTERNAL_DNS enabled
+	result, msgs, err := handsoff(
+		domain,
+		existing,
+		desired,
+		nil,   // absences
+		nil,   // unmanagedConfigs
+		false, // unmanagedSafely
+		false, // noPurge
+		true,  // ignoreExternalDNS
+		"",    // externalDNSPrefix
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should get a warning about the conflict
+	foundConflictWarning := false
+	for _, msg := range msgs {
+		if strings.Contains(msg, "WARNING") && strings.Contains(msg, "external-dns") {
+			foundConflictWarning = true
+			break
+		}
+	}
+	if !foundConflictWarning {
+		t.Error("Expected warning about conflict between desired and external-dns records")
+	}
+
+	// The desired record should be in result (not duplicated)
+	myappCount := 0
+	for _, rec := range result {
+		if rec.GetLabel() == "myapp" && rec.Type == "A" {
+			myappCount++
+		}
+	}
+	if myappCount != 1 {
+		t.Errorf("Expected exactly 1 myapp A record in result, got %d", myappCount)
+	}
+}

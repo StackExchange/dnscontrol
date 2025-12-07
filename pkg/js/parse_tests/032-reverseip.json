@@ -88,7 +88,8 @@
           "type": "PTR"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "3.2.1.in-addr.arpa"
     }
   ],
   "registrars": [

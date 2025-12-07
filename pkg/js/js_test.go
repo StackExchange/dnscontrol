@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"unicode"
 
@@ -131,8 +132,8 @@ func TestParsedFiles(t *testing.T) {
 				}
 				actualZone := buf.String()
 
-				es := string(expectedZone)
-				as := actualZone
+				es := strings.TrimSpace(string(expectedZone))
+				as := strings.TrimSpace(actualZone)
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
 					if err := os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0o644); err != nil {

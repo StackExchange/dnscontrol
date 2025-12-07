@@ -22,6 +22,7 @@ func Test_whichZonesToProcess(t *testing.T) {
 		dcTaggedEmpty,
 	}
 
+	// This is needed since we aren't calling js.ExecuteJavaScript().
 	for _, dc := range allDC {
 		dc.PostProcess()
 	}

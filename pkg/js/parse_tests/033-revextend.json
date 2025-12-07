@@ -31,7 +31,8 @@
           "type": "NS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "8.9.in-addr.arpa"
     },
     {
       "dnsProviders": {
@@ -66,7 +67,8 @@
           "type": "NS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "example.com"
     }
   ],
   "registrars": [

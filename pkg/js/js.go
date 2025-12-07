@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
@@ -124,6 +125,8 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	if err != nil {
 		return nil, err
 	}
+
+	rtypecontrol.ImportRawRecords(conf.Domains)
 
 	return conf, nil
 }
