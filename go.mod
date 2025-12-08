@@ -51,7 +51,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/oauth2 v0.33.0
+	golang.org/x/oauth2 v0.34.0
 	google.golang.org/api v0.257.0
 	gopkg.in/ns1/ns1-go.v2 v2.16.0
 )
@@ -72,7 +72,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
-	github.com/nicholas-fedor/shoutrrr v0.12.1
+	github.com/nicholas-fedor/shoutrrr v0.13.0
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
 	github.com/oracle/oci-go-sdk/v65 v65.105.0
 	github.com/vercel/terraform-provider-vercel v1.14.1
