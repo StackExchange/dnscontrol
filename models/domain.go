@@ -13,7 +13,6 @@ const (
 	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
 	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
 	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
-	DomainNameASCII   = "dnscontrol_nameascii"   // A copy of DomainConfig.NameASCII
 	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
 )
 
@@ -81,9 +80,8 @@ func (dc *DomainConfig) PostProcess() {
 	if dc.Tag != "" {
 		dc.Metadata[DomainTag] = dc.Tag
 	}
-	//dc.Metadata[DomainNameRaw] = dc.NameRaw
-	//dc.Metadata[DomainNameASCII] = dc.Name
-	//dc.Metadata[DomainNameUnicode] = dc.NameUnicode
+	dc.Metadata[DomainNameRaw] = dc.NameRaw
+	dc.Metadata[DomainNameUnicode] = dc.NameUnicode
 	dc.Metadata[DomainUniqueName] = dc.UniqueName
 }
 
