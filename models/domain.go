@@ -2,28 +2,32 @@ package models
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
 const (
-	// DomainUniqueName is the full `example.com!tag` name`
-	DomainUniqueName = "dnscontrol_uniquename"
-	// DomainTag is the tag part of `example.com!tag` name
-	DomainTag = "dnscontrol_tag"
+	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
+	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
+	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
+	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
-	Name             string         `json:"name"` // NO trailing "."
+	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
+	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
+	NameUnicode string `json:"-"`    // name in Unicode format
+
+	Tag        string `json:"tag,omitempty"` // Split horizon tag.
+	UniqueName string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
+
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
-	// Metadata[DomainUniqueName] // .Name + "!" + .Tag
-	// Metadata[DomainTag] // split horizon tag
 	Metadata         map[string]string `json:"meta,omitempty"`
 	Records          Records           `json:"records"`
 	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
@@ -34,6 +38,9 @@ type DomainConfig struct {
 
 	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // IGNORE()
 	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_IGNORE_SAFETY_CHECK
+
+	IgnoreExternalDNS bool   `json:"ignore_external_dns,omitempty"` // IGNORE_EXTERNAL_DNS
+	ExternalDNSPrefix string `json:"external_dns_prefix,omitempty"` // IGNORE_EXTERNAL_DNS prefix
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	// DNSSEC        bool              `json:"dnssec,omitempty"`
@@ -56,43 +63,38 @@ type DomainConfig struct {
 	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
-// GetSplitHorizonNames returns the domain's name, uniquename, and tag.
-func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
-	return dc.Name, dc.Metadata[DomainUniqueName], dc.Metadata[DomainTag]
-}
-
-// GetUniqueName returns the domain's uniquename.
-func (dc *DomainConfig) GetUniqueName() (uniquename string) {
-	return dc.Metadata[DomainUniqueName]
-}
-
-// UpdateSplitHorizonNames updates the split horizon fields
-// (uniquename and tag) based on name.
-func (dc *DomainConfig) UpdateSplitHorizonNames() {
-	name, unique, tag := dc.GetSplitHorizonNames()
-
-	if unique == "" {
-		unique = name
-	}
-
-	if tag == "" {
-		l := strings.SplitN(name, "!", 2)
-		if len(l) == 2 {
-			name = l[0]
-			tag = l[1]
-		}
-		if tag == "" {
-			// ensure empty tagged domain is treated as untagged
-			unique = name
-		}
-	}
-
-	dc.Name = name
+// PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
+// It is called by dns.go's PostProcess() function.
+func (dc *DomainConfig) PostProcess() {
+	// Ensure the metadata map is initialized.
 	if dc.Metadata == nil {
 		dc.Metadata = map[string]string{}
 	}
-	dc.Metadata[DomainUniqueName] = unique
-	dc.Metadata[DomainTag] = tag
+
+	// Turn the user-supplied name into the fixed forms.
+	ff := domaintags.MakeDomainNameVarieties(dc.Name)
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
+
+	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
+	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
+	if dc.Tag != "" {
+		dc.Metadata[DomainTag] = dc.Tag
+	}
+	dc.Metadata[DomainNameRaw] = dc.NameRaw
+	dc.Metadata[DomainNameUnicode] = dc.NameUnicode
+	dc.Metadata[DomainUniqueName] = dc.UniqueName
+}
+
+// GetSplitHorizonNames returns the domain's name, uniquename, and tag.
+// Deprecated: use .Name, .Uniquename, and .Tag directly instead.
+func (dc *DomainConfig) GetSplitHorizonNames() (name, uniquename, tag string) {
+	return dc.Name, dc.UniqueName, dc.Tag
+}
+
+// GetUniqueName returns the domain's uniquename.
+// Deprecated: dc.UniqueName directly instead.
+func (dc *DomainConfig) GetUniqueName() (uniquename string) {
+	return dc.UniqueName
 }
 
 // Copy returns a deep copy of the DomainConfig.
@@ -120,6 +122,10 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
+		if rec.IsModernType() {
+			continue // Modern types handle punycode themselves.
+		}
+
 		// Update the label:
 		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {
@@ -223,4 +229,16 @@ func (dc *DomainConfig) GetPopulateCorrections(providerName string) []*Correctio
 	dc.pendingCorrectionsMutex.Lock()
 	defer dc.pendingCorrectionsMutex.Unlock()
 	return dc.pendingPopulateCorrections[providerName]
+}
+
+// DomainNameVarieties returns the domain's names in various forms.
+func (dc *DomainConfig) DomainNameVarieties() *domaintags.DomainNameVarieties {
+	return &domaintags.DomainNameVarieties{
+		NameRaw:     dc.NameRaw,
+		NameASCII:   dc.Name,
+		NameUnicode: dc.NameUnicode,
+		UniqueName:  dc.UniqueName,
+		Tag:         dc.Tag,
+		HasBang:     dc.Tag != "",
+	}
 }

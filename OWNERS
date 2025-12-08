@@ -1,5 +1,6 @@
 providers/adguardhome @ishanjain28
 providers/akamaiedgedns @edglynes
+providers/alidns @bytemain
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
@@ -11,7 +12,7 @@ providers/cloudns @pragmaton
 providers/cnr @KaiSchwarz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
-providers/digitalocean @Deraen
+providers/digitalocean @chicks-net
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
@@ -25,6 +26,7 @@ providers/gcloud @riyadhalnur
 providers/gcore @xddxdd
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
+providers/hetznerv2 @das7pad
 providers/hexonet @KaiSchwarz-cnic
 providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
@@ -40,7 +42,7 @@ providers/namecheap @willpower232
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat
 providers/ns1 @costasd
-providers/opensrs @philhug
+# providers/opensrs NEEDS VOLUNTEER
 providers/oracle @kallsyms
 providers/ovh @masterzen
 providers/packetframe @hamptonmoore
@@ -52,4 +54,5 @@ providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
 providers/transip @blackshadev
+providers/vercel @SukkaW
 providers/vultr @pgaskin

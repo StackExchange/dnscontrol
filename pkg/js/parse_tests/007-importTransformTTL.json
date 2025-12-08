@@ -4,7 +4,8 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo1.com",
+        "dnscontrol_nameunicode": "foo1.com",
         "dnscontrol_uniquename": "foo1.com"
       },
       "name": "foo1.com",
@@ -24,12 +25,14 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "foo1.com"
     },
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "inny",
+        "dnscontrol_nameunicode": "inny",
         "dnscontrol_uniquename": "inny"
       },
       "name": "inny",
@@ -49,12 +52,14 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "inny"
     },
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "com.inny",
+        "dnscontrol_nameunicode": "com.inny",
         "dnscontrol_uniquename": "com.inny"
       },
       "name": "com.inny",
@@ -74,7 +79,8 @@
           "type": "A"
         }
       ],
-      "registrar": "reg"
+      "registrar": "reg",
+      "uniquename": "com.inny"
     }
   ],
   "registrars": []

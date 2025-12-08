@@ -115,6 +115,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
 		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
 		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
+		DomainModifierRP         = "[`RP`](../language-reference/domain-modifiers/RP.md)"
 		DomainModifierSMIMEA     = "[`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md)"
 		DomainModifierSoa        = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
 		DomainModifierSrv        = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
@@ -279,6 +280,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierPtr,
 			providers.CanUsePTR,
+		)
+		setCapability(
+			DomainModifierRP,
+			providers.CanUseRP,
 		)
 		setCapability(
 			DomainModifierSMIMEA,

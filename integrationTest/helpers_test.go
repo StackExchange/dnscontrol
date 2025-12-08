@@ -17,8 +17,8 @@ import (
 var (
 	providerFlag         = flag.String("provider", "", "Provider to run (if empty, deduced from -profile)")
 	profileFlag          = flag.String("profile", "", "Entry in profiles.json to use (if empty, copied from -provider)")
-	enableCFWorkers      = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
-	enableCFRedirectMode = flag.String("cfredirect", "", "cloudflare pagerule tests: default=page_rules, c=convert old to enw, n=new-style, o=none")
+	enableCFWorkers      = flag.Bool("cfworkers", true, "enable CF worker tests (default true)")
+	enableCFRedirectMode = flag.Bool("cfredirect", false, "enable CF SingleRedirect tests (default false)")
 )
 
 func init() {
@@ -104,15 +104,8 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[string
 		if *enableCFWorkers {
 			items = append(items, `"manage_workers": true`)
 		}
-		switch *enableCFRedirectMode {
-		case "":
-			items = append(items, `"manage_redirects": true`)
-		case "c":
-			items = append(items, `"manage_redirects": true`)
+		if *enableCFRedirectMode {
 			items = append(items, `"manage_single_redirects": true`)
-		case "n":
-			items = append(items, `"manage_single_redirects": true`)
-		case "o":
 		}
 		metadata = []byte(`{ ` + strings.Join(items, `, `) + ` }`)
 	}

@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/StackExchange/dnscontrol/v4/commands"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 	"github.com/fatih/color"

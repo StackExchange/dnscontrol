@@ -5,34 +5,7 @@ import (
 	"net"
 	"net/url"
 	"strings"
-
-	"github.com/StackExchange/dnscontrol/v4/models"
 )
-
-// TranscodePRtoSR takes a PAGE_RULE record, stores transcoded versions of the fields, and makes the record a CLOUDFLAREAPI_SINGLE_REDDIRECT.
-func TranscodePRtoSR(rec *models.RecordConfig) error {
-	rec.Type = SINGLEREDIRECT // This record is now a CLOUDFLAREAPI_SINGLE_REDIRECT
-
-	// Extract the fields we're reading from:
-	sr := rec.CloudflareRedirect
-	code := sr.Code
-	prWhen := sr.PRWhen
-	prThen := sr.PRThen
-	srName := sr.PRDisplay
-
-	// Convert old-style patterns to new-style rules:
-	srWhen, srThen, err := makeRuleFromPattern(prWhen, prThen)
-	if err != nil {
-		return err
-	}
-
-	// Fix the RecordConfig
-	return makeSingleRedirectFromConvert(rec,
-		sr.PRPriority,
-		prWhen, prThen,
-		code,
-		srName, srWhen, srThen)
-}
 
 // makeRuleFromPattern compile old-style patterns and replacements into new-style rules and expressions.
 func makeRuleFromPattern(pattern, replacement string) (string, string, error) {

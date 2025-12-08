@@ -11,6 +11,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_tag": "external",
         "dnscontrol_uniquename": "foo.com!external"
       },
@@ -24,13 +26,17 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "external",
+      "uniquename": "foo.com!external"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_tag": "internal",
         "dnscontrol_uniquename": "foo.com!internal"
       },
@@ -51,7 +57,9 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "tag": "internal",
+      "uniquename": "foo.com!internal"
     }
   ],
   "registrars": [

@@ -106,6 +106,8 @@ func handsoff(
 	unmanagedConfigs []*models.UnmanagedConfig,
 	unmanagedSafely bool,
 	noPurge bool,
+	ignoreExternalDNS bool,
+	externalDNSPrefix string,
 ) (models.Records, []string, error) {
 	var msgs []string
 
@@ -118,6 +120,16 @@ func handsoff(
 	punct := ":"
 	if printer.MaxReport == 0 {
 		punct = "."
+	}
+
+	// Process IGNORE_EXTERNAL_DNS feature:
+	var externalDNSIgnored models.Records
+	if ignoreExternalDNS {
+		externalDNSIgnored = GetExternalDNSIgnoredRecords(existing, domain, externalDNSPrefix)
+		if len(externalDNSIgnored) != 0 {
+			msgs = append(msgs, fmt.Sprintf("%d records not being deleted because of IGNORE_EXTERNAL_DNS%s", len(externalDNSIgnored), punct))
+			msgs = append(msgs, reportSkips(externalDNSIgnored, !printer.SkinnyReport)...)
+		}
 	}
 
 	// Process IGNORE*() and NO_PURGE features:
@@ -147,9 +159,25 @@ func handsoff(
 		}
 	}
 
+	// Check for conflicts between desired records and external-dns managed records.
+	// This warns users when they define a record that external-dns is also managing.
+	if ignoreExternalDNS && len(externalDNSIgnored) > 0 {
+		externalDNSConflicts := findExternalDNSConflicts(desired, externalDNSIgnored)
+		if len(externalDNSConflicts) != 0 {
+			msgs = append(msgs, fmt.Sprintf("WARNING: %d records are defined in your config but also managed by external-dns:", len(externalDNSConflicts)))
+			for _, r := range externalDNSConflicts {
+				msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
+			}
+			msgs = append(msgs, "Consider removing these from your config or from external-dns to avoid conflicts.")
+		}
+		// Filter out conflicts from externalDNSIgnored to avoid duplicates in desired
+		externalDNSIgnored = filterOutConflicts(externalDNSIgnored, externalDNSConflicts)
+	}
+
 	// Add the ignored/foreign items to the desired list so they are not deleted:
 	desired = append(desired, ignorable...)
 	desired = append(desired, foreign...)
+	desired = append(desired, externalDNSIgnored...)
 	return desired, msgs, nil
 }
 
@@ -284,4 +312,51 @@ func matchTarget(targetGlob glob.Glob, targetName string) bool {
 		return true
 	}
 	return targetGlob.Match(targetName)
+}
+
+// findExternalDNSConflicts returns records that appear in both desired and externalDNSIgnored.
+// This helps identify when a user has defined a record in their config that is also
+// being managed by external-dns.
+func findExternalDNSConflicts(desired, externalDNSIgnored models.Records) models.Records {
+	// Build a map of desired records keyed by label:type
+	desiredMap := make(map[string]bool)
+	for _, rec := range desired {
+		key := rec.GetLabel() + ":" + rec.Type
+		desiredMap[key] = true
+	}
+
+	// Find any external-dns ignored records that are also in desired
+	var conflicts models.Records
+	for _, rec := range externalDNSIgnored {
+		key := rec.GetLabel() + ":" + rec.Type
+		if desiredMap[key] {
+			conflicts = append(conflicts, rec)
+		}
+	}
+	return conflicts
+}
+
+// filterOutConflicts removes records from externalDNSIgnored that are in conflicts.
+// This prevents duplicates when appending externalDNSIgnored to desired.
+func filterOutConflicts(externalDNSIgnored, conflicts models.Records) models.Records {
+	if len(conflicts) == 0 {
+		return externalDNSIgnored
+	}
+
+	// Build a set of conflict keys
+	conflictSet := make(map[string]bool)
+	for _, rec := range conflicts {
+		key := rec.GetLabel() + ":" + rec.Type
+		conflictSet[key] = true
+	}
+
+	// Filter out conflicts
+	var filtered models.Records
+	for _, rec := range externalDNSIgnored {
+		key := rec.GetLabel() + ":" + rec.Type
+		if !conflictSet[key] {
+			filtered = append(filtered, rec)
+		}
+	}
+	return filtered
 }
