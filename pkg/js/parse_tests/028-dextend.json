@@ -11,6 +11,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
@@ -38,6 +40,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "bar.foo.com",
+        "dnscontrol_nameunicode": "bar.foo.com",
         "dnscontrol_uniquename": "bar.foo.com"
       },
       "name": "bar.foo.com",
@@ -65,6 +69,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.edu",
+        "dnscontrol_nameunicode": "foo.edu",
         "dnscontrol_uniquename": "foo.edu"
       },
       "name": "foo.edu",

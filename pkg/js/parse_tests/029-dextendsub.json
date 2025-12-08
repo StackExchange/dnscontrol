@@ -11,6 +11,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.net",
+        "dnscontrol_nameunicode": "foo.net",
         "dnscontrol_uniquename": "foo.net"
       },
       "name": "foo.net",
@@ -70,6 +72,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.tld",
+        "dnscontrol_nameunicode": "foo.tld",
         "dnscontrol_uniquename": "foo.tld"
       },
       "name": "foo.tld",
@@ -104,6 +108,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "bar.foo.tld",
+        "dnscontrol_nameunicode": "bar.foo.tld",
         "dnscontrol_uniquename": "bar.foo.tld"
       },
       "name": "bar.foo.tld",
@@ -138,6 +144,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.help",
+        "dnscontrol_nameunicode": "foo.help",
         "dnscontrol_uniquename": "foo.help"
       },
       "name": "foo.help",
@@ -181,6 +189,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "bar.foo.help",
+        "dnscontrol_nameunicode": "bar.foo.help",
         "dnscontrol_uniquename": "bar.foo.help"
       },
       "name": "bar.foo.help",
@@ -224,6 +234,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "foo.here",
+        "dnscontrol_nameunicode": "foo.here",
         "dnscontrol_uniquename": "foo.here"
       },
       "name": "foo.here",
@@ -283,6 +295,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -342,6 +356,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "d\u00fcsseldorf.example.net",
+        "dnscontrol_nameunicode": "d\u00fcsseldorf.example.net",
         "dnscontrol_uniquename": "xn--dsseldorf-q9a.example.net"
       },
       "name": "xn--dsseldorf-q9a.example.net",
@@ -417,6 +433,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "\u00fc.example.net",
+        "dnscontrol_nameunicode": "\u00fc.example.net",
         "dnscontrol_uniquename": "xn--tda.example.net"
       },
       "name": "xn--tda.example.net",
@@ -492,6 +510,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.tld",
+        "dnscontrol_nameunicode": "example.tld",
         "dnscontrol_uniquename": "example.tld"
       },
       "name": "example.tld",
