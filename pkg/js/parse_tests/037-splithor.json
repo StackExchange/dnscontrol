@@ -19,6 +19,8 @@
         "otherconfig": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -46,6 +48,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_tag": "inside",
         "dnscontrol_uniquename": "example.com!inside"
       },
@@ -75,6 +79,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_tag": "outside",
         "dnscontrol_uniquename": "example.com!outside"
       },
@@ -97,6 +103,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_uniquename": "example.net"
       },
       "name": "example.net",
@@ -124,6 +132,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_tag": "inside",
         "dnscontrol_uniquename": "example.net!inside"
       },
@@ -160,6 +170,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_tag": "outside",
         "dnscontrol_uniquename": "example.net!outside"
       },
@@ -196,6 +208,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "empty.example.net",
+        "dnscontrol_nameunicode": "empty.example.net",
         "dnscontrol_uniquename": "empty.example.net"
       },
       "name": "empty.example.net",
@@ -223,6 +237,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example-b.net",
+        "dnscontrol_nameunicode": "example-b.net",
         "dnscontrol_uniquename": "example-b.net!"
       },
       "name": "example-b.net",

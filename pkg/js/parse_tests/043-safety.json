@@ -4,6 +4,8 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_nameraw": "unsafe.com",
+        "dnscontrol_nameunicode": "unsafe.com",
         "dnscontrol_uniquename": "unsafe.com"
       },
       "name": "unsafe.com",
@@ -15,6 +17,8 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_nameraw": "safe.com",
+        "dnscontrol_nameunicode": "safe.com",
         "dnscontrol_uniquename": "safe.com"
       },
       "name": "safe.com",
