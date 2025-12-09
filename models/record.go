@@ -540,18 +540,18 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	return nil
 }
 
-// IsModernType returns true if this RecordConfig is implemented in the new
-// ("Modern") way (i.e. uses the RecordConfig .F field to store the rdata of the
-// record).
+// IsModernType returns true if this RecordConfig is a record type implemented
+// in the new ("Modern") style (i.e. uses the RecordConfig .F field to store
+// the rdata of the record).
 //
-// Since this check if .F != nil, it must be used only after the RecordConfig
+// Since this relies on .F, it must be used only after the RecordConfig
 // has been populated. Otherwise, use rtypecontrol.IsModernType(recordTypeName),
 // which takes the type name as input.
 //
 // NOTE: Do not confuse this with rtypeinfo.IsModernType() which provides
-// similar functionality.  The difference is that this function is used to have
-// a RecordConfig reveal if it uses a modern type.  rtypeinfo.IsModernType()
-// takes the rtype name as a string argument.
+// similar functionality.  This function is used to have a RecordConfig reveal
+// if it uses a modern type.  rtypeinfo.IsModernType() takes the rtype name as
+// a string argument.
 //
 // FUTURE(tlim): Once all record types have been migrated to use ".F", this function can be removed.
 func (rc *RecordConfig) IsModernType() bool {
