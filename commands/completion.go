@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"text/template"
 	"unicode/utf8"
@@ -112,17 +113,12 @@ func dnscontrolPrintCommandSuggestions(commands []*cli.Command, writer io.Writer
 }
 
 func dnscontrolCliArgContains(flagName string) bool {
-	for _, name := range strings.Split(flagName, ",") {
+	for name := range strings.SplitSeq(flagName, ",") {
 		name = strings.TrimSpace(name)
-		count := utf8.RuneCountInString(name)
-		if count > 2 {
-			count = 2
-		}
+		count := min(utf8.RuneCountInString(name), 2)
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range os.Args {
-			if a == flag {
-				return true
-			}
+		if slices.Contains(os.Args, flag) {
+			return true
 		}
 	}
 	return false
@@ -138,10 +134,9 @@ func dnscontrolPrintFlagSuggestions(lastArg string, flags []cli.Flag, writer io.
 		for _, name := range flag.Names() {
 			name = strings.TrimSpace(name)
 			// this will get total count utf8 letters in flag name
-			count := utf8.RuneCountInString(name)
-			if count > 2 {
-				count = 2 // reuse this count to generate single - or -- in flag completion
-			}
+			count := min(utf8.RuneCountInString(name),
+				// reuse this count to generate single - or -- in flag completion
+				2)
 			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
 			// skip flag completion for short flags example -v or -x
 			if strings.HasPrefix(lastArg, "--") && count == 1 {

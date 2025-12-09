@@ -96,7 +96,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 	}
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for _, comment := range z.Comments {
-		for _, line := range strings.Split(comment, "\n") {
+		for line := range strings.SplitSeq(comment, "\n") {
 			if line != "" {
 				fmt.Fprintln(w, ";", line)
 			}

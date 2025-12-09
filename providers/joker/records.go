@@ -78,8 +78,8 @@ func parseZoneLine(line string) []string {
 func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Records, error) {
 	var records models.Records
 
-	lines := strings.Split(strings.TrimSpace(zoneData), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(strings.TrimSpace(zoneData), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, "$") {
 			continue

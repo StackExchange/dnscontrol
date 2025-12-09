@@ -67,7 +67,7 @@ type RecordConfig struct {
 	// getting the records via the API, we store the original object here.
 	// Later if we need to pull out an ID or other provider-specific field, we
 	// can.  Typically deleting or updating a record requires knowing its ID.
-	Original interface{} `json:"-"`
+	Original any `json:"-"`
 
 	//// Legacy fields we hope to remove someday
 
@@ -151,7 +151,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		FilePos   string            `json:"filepos"` // Where in the file this record was defined.
-		Original  interface{}       `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
+		Original  any               `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
 		MxPreference       uint16            `json:"mxpreference,omitempty"`

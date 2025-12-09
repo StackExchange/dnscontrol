@@ -167,7 +167,7 @@ func (api *rwthProvider) deployZone(domain string) error {
 }
 
 // Send a request
-func (api *rwthProvider) request(endpoint string, method string, request url.Values, target interface{}) error {
+func (api *rwthProvider) request(endpoint string, method string, request url.Values, target any) error {
 	requestBody := strings.NewReader(request.Encode())
 	req, err := http.NewRequest(method, baseURL+endpoint, requestBody)
 	if err != nil {

@@ -22,7 +22,7 @@ func CompilePermitList(s string) PermitList {
 	}
 
 	sl := PermitList{}
-	for _, l := range strings.Split(s, ",") {
+	for l := range strings.SplitSeq(s, ",") {
 		l = strings.TrimSpace(l)
 		if l == "" { // Skip empty entries. They match nothing.
 			continue

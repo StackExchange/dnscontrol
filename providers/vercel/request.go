@@ -43,7 +43,7 @@ func (cr *clientRequest) toHTTPRequest() (*http.Request, error) {
 
 // doRequest is a helper function for consistently requesting data from vercel.
 // It implements rate limiting and retries.
-func (c *vercelProvider) doRequest(req clientRequest, v interface{}, rl *rateLimiter) error {
+func (c *vercelProvider) doRequest(req clientRequest, v any, rl *rateLimiter) error {
 	// Use a default http client with timeout
 	httpClient := &http.Client{
 		Timeout: 5 * 60 * time.Second,
@@ -86,7 +86,7 @@ func (c *vercelProvider) doRequest(req clientRequest, v interface{}, rl *rateLim
 	}
 }
 
-func (c *vercelProvider) processResponse(resp *http.Response, v interface{}, errorOnNoContent bool) error {
+func (c *vercelProvider) processResponse(resp *http.Response, v any, errorOnNoContent bool) error {
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response body: %w", err)

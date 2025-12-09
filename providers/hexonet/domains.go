@@ -4,13 +4,13 @@ package hexonet
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
 func (n *HXClient) EnsureZoneExists(domain string, metadata map[string]string) error {
-	r := n.client.Request(map[string]interface{}{
+	r := n.client.Request(map[string]any{
 		"COMMAND": "StatusDNSZone",
 		"DNSZONE": domain + ".",
 	})
 	code := r.GetCode()
 	if code == 545 {
-		r = n.client.Request(map[string]interface{}{
+		r = n.client.Request(map[string]any{
 			"COMMAND": "CreateDNSZone",
 			"DNSZONE": domain + ".",
 		})

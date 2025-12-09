@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -84,10 +85,8 @@ func testPermitted(p string, f TestGroup) error {
 
 	// If there are any "only" items, you must be one of them.
 	if len(f.only) != 0 {
-		for _, provider := range f.only {
-			if p == provider {
-				return nil
-			}
+		if slices.Contains(f.only, p) {
+			return nil
 		}
 		return errors.New("disabled by only")
 	}
@@ -544,7 +543,7 @@ func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
 	return r
 }
 
-func testgroup(desc string, items ...interface{}) *TestGroup {
+func testgroup(desc string, items ...any) *TestGroup {
 	group := &TestGroup{Desc: desc}
 	for _, item := range items {
 		switch v := item.(type) {

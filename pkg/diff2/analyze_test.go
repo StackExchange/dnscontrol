@@ -593,7 +593,6 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 	m := map[string]*targetConfig{}
 	for _, v := range mkTargetConfig(x...) {
-		v := v
 		m[v.comparableFull] = &v
 	}
 	return m
