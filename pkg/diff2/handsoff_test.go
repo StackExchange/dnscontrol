@@ -34,10 +34,12 @@ func parseZoneContents(content string, zoneName string, zonefileName string) (mo
 func showRecs(recs models.Records) string {
 	var result strings.Builder
 	for _, rec := range recs {
-		result.WriteString((rec.GetLabel() +
-			" " + rec.Type +
-			" " + rec.GetTargetCombined() +
-			"\n"))
+		result.WriteString(rec.GetLabel())
+		result.WriteString(" ")
+		result.WriteString(rec.Type)
+		result.WriteString(" ")
+		result.WriteString(rec.GetTargetCombined())
+		result.WriteString("\n")
 	}
 	return result.String()
 }
