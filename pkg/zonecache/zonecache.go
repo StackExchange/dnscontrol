@@ -5,12 +5,15 @@ import (
 	"sync"
 )
 
+// New creates a new ZoneCache of the given Zone type.
 func New[Zone any](fetchAll func() (map[string]Zone, error)) ZoneCache[Zone] {
 	return ZoneCache[Zone]{fetchAll: fetchAll}
 }
 
+// ErrZoneNotFound is returned when a requested zone is not found (in the cache).
 var ErrZoneNotFound = errors.New("zone not found")
 
+// ZoneCache is a thread-safe cache for DNS zones at this provider.
 type ZoneCache[Zone any] struct {
 	mu       sync.Mutex
 	cached   bool
@@ -36,6 +39,7 @@ func (c *ZoneCache[Zone]) ensureCached() error {
 	return nil
 }
 
+// HasZone returns true if the zone with the given name exists (in the cache).
 func (c *ZoneCache[Zone]) HasZone(name string) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

@@ -10,10 +10,17 @@ import (
 )
 
 const (
-	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
-	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
-	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
-	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
+	// DomainTag is the key used to store a copy of DomainConfig.Tag in the Metadata map.
+	DomainTag = "dnscontrol_tag"
+
+	// DomainUniqueName is the key used to store a copy of DomainConfig.UniqueName in the Metadata map.
+	DomainUniqueName = "dnscontrol_uniquename"
+
+	// DomainNameRaw is the key used to store a copy of DomainConfig.NameRaw in the Metadata map.
+	DomainNameRaw = "dnscontrol_nameraw"
+
+	// DomainNameUnicode is the key used to store a copy of DomainConfig.NameUnicode in the Metadata map.
+	DomainNameUnicode = "dnscontrol_nameunicode"
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).

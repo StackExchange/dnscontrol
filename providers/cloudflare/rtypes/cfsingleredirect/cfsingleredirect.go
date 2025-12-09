@@ -31,6 +31,7 @@ func (handle *SingleRedirectConfig) Name() string {
 	return "CLOUDFLAREAPI_SINGLE_REDIRECT"
 }
 
+// FromArgs populates a RecordConfig from the raw ([]any) args.
 func (handle *SingleRedirectConfig) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
@@ -77,6 +78,7 @@ func (handle *SingleRedirectConfig) FromArgs(dcn *domaintags.DomainNameVarieties
 	return nil
 }
 
+// FromStruct populates a RecordConfig from a struct, which will be stored in rec.F.
 func (handle *SingleRedirectConfig) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CLOUDFLAREAPI_SINGLE_REDIRECT: FromStruct not implemented")
 }
@@ -91,6 +93,7 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 	)
 }
 
+// CopyToLegacyFields copies data from rec.F to the legacy fields in rec.
 func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig) {
 	_ = rec.SetTarget(rec.F.(*SingleRedirectConfig).SRDisplay)
 }

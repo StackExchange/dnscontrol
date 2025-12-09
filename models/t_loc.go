@@ -200,6 +200,7 @@ func getENotationInt(x float32) (uint8, error) {
 	return packedValue, nil
 }
 
+// ReverseLatitude takes the packed latitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
 	if lat >= dns.LOC_EQUATOR {
@@ -218,6 +219,7 @@ func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 	return hemisphere, degrees, minutes, seconds
 }
 
+// ReverseLongitude takes the packed longitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLongitude(lon uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
 	if lon >= dns.LOC_PRIMEMERIDIAN {
@@ -236,6 +238,7 @@ func ReverseLongitude(lon uint32) (string, uint8, uint8, float64) {
 	return hemisphere, degrees, minutes, seconds
 }
 
+// ReverseAltitude takes the packed altitude and returns the altitude in meters.
 func ReverseAltitude(packedAltitude uint32) float64 {
 	return float64(packedAltitude)/100 - 100000
 }

@@ -32,6 +32,9 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	return nil
 }
 
+// NewRecordConfigFromRaw creates a new RecordConfig from the raw ([]any) args,
+// usually from the parsed dnsconfig.js file, but also useful when a provider
+// returns the fields of a record as individual values.
 func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
@@ -57,6 +60,9 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.Do
 	return rec, nil
 }
 
+// NewRecordConfigFromString creates a new RecordConfig from a string in the
+// format usually used in a zonefile but typically also used by providers
+// returning the fields of a record as a string.
 func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
@@ -73,6 +79,9 @@ func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dcn 
 
 }
 
+// NewRecordConfigFromStruct creates a new RecordConfig from a struct, typically
+// a miekg/dns struct. It must be the exact struct type used by the FromStruct()
+// method of the rtype package.
 func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)

@@ -74,8 +74,10 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 	unwrapProviderCapabilities(name, pm)
 }
 
+// ProviderMaintainers stores the GitHub usernames of maintainers for each provider.
 var ProviderMaintainers = map[string]string{}
 
+// RegisterMaintainer registers the GitHub username of the maintainer for a provider.
 func RegisterMaintainer(
 	providerName string,
 	gitHubUsername string,

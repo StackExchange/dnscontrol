@@ -56,14 +56,14 @@ func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		corrections = append(corrections, c)
 	}
 	for _, chng := range mod {
-		old_ := chng.Existing.Original.(*namecom.Record)
-		new_ := chng.Desired
+		oldRec := chng.Existing.Original.(*namecom.Record)
+		newRec := chng.Desired
 		c := &models.Correction{Msg: chng.String(), F: func() error {
-			err := n.deleteRecord(old_.ID, dc.Name)
+			err := n.deleteRecord(oldRec.ID, dc.Name)
 			if err != nil {
 				return err
 			}
-			return n.createRecord(new_, dc.Name)
+			return n.createRecord(newRec, dc.Name)
 		}}
 		corrections = append(corrections, c)
 	}
