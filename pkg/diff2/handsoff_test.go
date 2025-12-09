@@ -32,14 +32,14 @@ func parseZoneContents(content string, zoneName string, zonefileName string) (mo
 }
 
 func showRecs(recs models.Records) string {
-	result := ""
+	var result strings.Builder
 	for _, rec := range recs {
-		result += (rec.GetLabel() +
+		result.WriteString((rec.GetLabel() +
 			" " + rec.Type +
 			" " + rec.GetTargetCombined() +
-			"\n")
+			"\n"))
 	}
-	return result
+	return result.String()
 }
 
 func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, resultWanted string) {

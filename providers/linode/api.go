@@ -123,7 +123,7 @@ func (api *linodeProvider) deleteRecord(domainID, recordID int) error {
 	return nil
 }
 
-func (api *linodeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
+func (api *linodeProvider) newRequest(method, endpoint string, body any) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (api *linodeProvider) newRequest(method, endpoint string, body interface{})
 	return req, nil
 }
 
-func (api *linodeProvider) get(endpoint string, target interface{}) error {
+func (api *linodeProvider) get(endpoint string, target any) error {
 	req, err := api.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err

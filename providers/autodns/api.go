@@ -35,7 +35,7 @@ var (
 	defaultRetryMax  = 4
 )
 
-func (api *autoDNSProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
+func (api *autoDNSProvider) request(method string, requestPath string, data any) ([]byte, error) {
 	var retryCounter = 0
 
 	client := &http.Client{}

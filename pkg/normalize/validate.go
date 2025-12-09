@@ -137,10 +137,8 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
-	for _, ex := range []string{"SRV", "TLSA", "TXT", "LUA"} {
-		if rType == ex {
-			return nil
-		}
+	if slices.Contains([]string{"SRV", "TLSA", "TXT", "LUA"}, rType) {
+		return nil
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829

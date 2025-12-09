@@ -200,7 +200,7 @@ func TestShellCompletionCommand(t *testing.T) {
 					t.Fatalf("unexpected error: %v", err)
 				}
 
-				for _, line := range strings.Split(strings.TrimSpace(appWriterBuffer.String()), "\n") {
+				for line := range strings.SplitSeq(strings.TrimSpace(appWriterBuffer.String()), "\n") {
 					if !slices.Contains(tC.expected, line) {
 						t.Errorf("%q found, but not expected", line)
 					}

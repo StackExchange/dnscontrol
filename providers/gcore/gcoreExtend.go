@@ -37,7 +37,7 @@ type gcoreRRSetExtended struct {
 	Meta    *gcoreMetadata          `json:"meta"`
 }
 
-func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri string, bodyParams interface{}, dest interface{}) error {
+func dnssdkDo(ctx context.Context, c *dnssdk.Client, apiKey string, method, uri string, bodyParams any, dest any) error {
 	// Adapted from https://github.com/G-Core/gcore-dns-sdk-go/blob/main/client.go#L289
 	// No way to reflect a private method in Golang
 

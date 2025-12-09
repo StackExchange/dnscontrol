@@ -116,7 +116,7 @@ func (api *netcupProvider) login(apikey, password, customernumber string) error 
 	return nil
 }
 
-func (api *netcupProvider) get(action string, params interface{}) (json.RawMessage, error) {
+func (api *netcupProvider) get(action string, params any) (json.RawMessage, error) {
 	reqParam := request{
 		Action: action,
 		Param:  params,

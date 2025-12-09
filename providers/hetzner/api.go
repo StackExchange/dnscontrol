@@ -146,7 +146,7 @@ func (api *hetznerProvider) fetchAllZones() (map[string]zone, error) {
 	return zones, nil
 }
 
-func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}, statusOK func(code int) bool) error {
+func (api *hetznerProvider) request(endpoint string, method string, request any, target any, statusOK func(code int) bool) error {
 	if statusOK == nil {
 		statusOK = func(code int) bool {
 			return code == http.StatusOK

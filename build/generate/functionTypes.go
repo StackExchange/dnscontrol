@@ -34,7 +34,7 @@ func fixRuns(s string) string {
 
 var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
 
-func readDocFile(fPath string) (map[string]interface{}, string, error) {
+func readDocFile(fPath string) (map[string]any, string, error) {
 	content, err := os.ReadFile(fPath)
 	if err != nil {
 		return nil, "", err
@@ -61,7 +61,7 @@ func readDocFile(fPath string) (map[string]interface{}, string, error) {
 	return frontMatter, body, nil
 }
 
-func parseFrontMatter(content string) (map[string]interface{}, string, error) {
+func parseFrontMatter(content string) (map[string]any, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
 	if len(delimiterIndices) < 1 {
 		return nil, "", errors.New("failed to parse file. Remove it and try again")
@@ -69,7 +69,7 @@ func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	startIndex := delimiterIndices[0][0]
 	endIndex := delimiterIndices[1][0]
 	yamlString := content[startIndex+4 : endIndex]
-	var frontMatter map[string]interface{}
+	var frontMatter map[string]any
 	err := yaml.Unmarshal([]byte(yamlString), &frontMatter)
 	if err != nil {
 		return nil, "", err
@@ -134,14 +134,14 @@ func generateFunctionTypes() (string, error) {
 
 			paramNames := []string{}
 			if frontMatter["parameters"] != nil {
-				for _, p := range frontMatter["parameters"].([]interface{}) {
+				for _, p := range frontMatter["parameters"].([]any) {
 					paramNames = append(paramNames, p.(string))
 				}
 			}
 
 			suppliedParamTypes := map[string]string{}
 			if frontMatter["parameter_types"] != nil {
-				rawTypes := frontMatter["parameter_types"].(map[string]interface{})
+				rawTypes := frontMatter["parameter_types"].(map[string]any)
 				for k, v := range rawTypes {
 					suppliedParamTypes[k] = v.(string)
 				}
@@ -192,11 +192,11 @@ func generateFunctionTypes() (string, error) {
 		return funcs[i].Name < funcs[j].Name
 	})
 
-	content := ""
+	var content strings.Builder
 	for _, f := range funcs {
-		content += f.String()
+		content.WriteString(f.String())
 	}
-	return content, nil
+	return content.String(), nil
 }
 
 // Function is a struct the stores information about functions.

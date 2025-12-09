@@ -67,7 +67,7 @@ type vercelProvider struct {
 // implement their own NS and instead uses NS1 / Constellix (previously), we'd assume if
 // TTL and Priority are int64, they are in fact uint16 and otherwise be rejected by upstream
 // providers. Under this assumption, we'd convert int64 to uint16 as wells.
-func uint16Zero(value interface{}) uint16 {
+func uint16Zero(value any) uint16 {
 	switch v := value.(type) {
 	case float64:
 		return uint16(v)
