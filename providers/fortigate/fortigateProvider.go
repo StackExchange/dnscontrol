@@ -45,8 +45,7 @@ type fortigateProvider struct {
 	client   *apiClient
 }
 
-// Constructor
-
+// NewFortiGate creates a new instance of the FortiGate DNS provider.
 func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	host, vdom, apiKey := m["host"], m["vdom"], m["apiKey"]
 

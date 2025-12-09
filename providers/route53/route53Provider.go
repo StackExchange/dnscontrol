@@ -55,7 +55,7 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		config.WithRegion("us-east-1"),
 	}
 
-	keyID, secretKey, tokenID, roleArn, externalId := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
+	keyID, secretKey, tokenID, roleArn, externalID := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
 	// Token is optional and left empty unless required
 	if keyID != "" || secretKey != "" {
 		optFns = append(optFns, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(keyID, secretKey, tokenID)))
@@ -71,8 +71,8 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		sessionName := fmt.Sprintf("dnscontrol-route53-%d", time.Now().Unix())
 
 		var assumeOpts []func(*stscreds.AssumeRoleOptions)
-		if externalId != "" {
-			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalId) })
+		if externalID != "" {
+			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalID) })
 		}
 		assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.RoleSessionName = sessionName })
 

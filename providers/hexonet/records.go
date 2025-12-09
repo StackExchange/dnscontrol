@@ -92,10 +92,10 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 	for _, chng := range mod {
 		changes = true
 		fmt.Fprintln(buf, chng)
-		old_ := chng.Existing.Original.(*HXRecord)
-		new_ := chng.Desired
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old_)
-		newRecordString, err := n.createRecordString(new_, dc.Name)
+		oldRec := chng.Existing.Original.(*HXRecord)
+		newRec := chng.Desired
+		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(oldRec)
+		newRecordString, err := n.createRecordString(newRec, dc.Name)
 		if err != nil {
 			return corrections, 0, err
 		}

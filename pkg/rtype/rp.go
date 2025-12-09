@@ -17,6 +17,7 @@ type RP struct {
 	dns.RP
 }
 
+// Name returns the DNS record type as a string.
 func (handle *RP) Name() string {
 	return "RP"
 }
@@ -46,6 +47,7 @@ func (handle *RP) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 	return nil
 }
 
+// CopyToLegacyFields populates the legacy fields of the RecordConfig using the fields in .F.
 func (handle *RP) CopyToLegacyFields(rec *models.RecordConfig) {
 	rp := rec.F.(*RP)
 	_ = rec.SetTarget(rp.Mbox + " " + rp.Txt)

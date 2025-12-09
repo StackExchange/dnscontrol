@@ -236,6 +236,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// FixPosition takes the string representation of a position in a file that
+// comes from dnsconfig.js's initial execution, and reduces it down to just the
+// line/position we display to the user. The input is not well-defined, thus if
+// we find something we don't expect, we just return the original input.
 // TODO: Move this to rtypecontrol or a similar package.
 func FixPosition(str string) string {
 	if str == "" {
@@ -536,8 +540,20 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	return nil
 }
 
-// IsModernType returns true if this RecordConfig uses the new "F" field to store its rdata.
-// Once all record types have been migrated to use "F", this function can be removed.
+// IsModernType returns true if this RecordConfig is a record type implemented
+// in the new ("Modern") style (i.e. uses the RecordConfig .F field to store
+// the rdata of the record).
+//
+// Since this relies on .F, it must be used only after the RecordConfig
+// has been populated. Otherwise, use rtypecontrol.IsModernType(recordTypeName),
+// which takes the type name as input.
+//
+// NOTE: Do not confuse this with rtypeinfo.IsModernType() which provides
+// similar functionality.  This function is used to have a RecordConfig reveal
+// if it uses a modern type.  rtypeinfo.IsModernType() takes the rtype name as
+// a string argument.
+//
+// FUTURE(tlim): Once all record types have been migrated to use ".F", this function can be removed.
 func (rc *RecordConfig) IsModernType() bool {
 	return rc.F != nil
 }

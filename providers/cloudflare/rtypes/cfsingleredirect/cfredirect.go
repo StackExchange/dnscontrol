@@ -13,6 +13,7 @@ func init() {
 	rtypecontrol.Register(&CfTempRedirect{})
 }
 
+// CfRedirect represents the CF_REDIRECT rtype, which is a builder that produces CLOUDFLAREAPI_SINGLE_REDIRECT.
 type CfRedirect struct{}
 
 // Name returns the text (all caps) name of the rtype.
@@ -20,18 +21,22 @@ func (handle *CfRedirect) Name() string {
 	return "CF_REDIRECT"
 }
 
+// FromArgs populates a RecordConfig from the raw ([]any) args.
 func (handle *CfRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dcn, rec, args, 301)
+	return fromArgsHelper(dcn, rec, args, 301)
 }
 
+// FromStruct populates a RecordConfig from a struct, which will be stored in rec.F.
 func (handle *CfRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CF_REDIRECT: FromStruct not implemented")
 }
 
+// CopyToLegacyFields copies data from rec.F to the legacy fields in rec.
 func (handle *CfRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
+// CfTempRedirect represents the CF_TEMP_REDIRECT rtype, which is a builder that produces CLOUDFLAREAPI_SINGLE_REDIRECT.
 type CfTempRedirect struct{}
 
 // Name returns the text (all caps) name of the rtype.
@@ -39,19 +44,22 @@ func (handle *CfTempRedirect) Name() string {
 	return "CF_TEMP_REDIRECT"
 }
 
+// FromArgs populates a RecordConfig from the raw ([]any) args.
 func (handle *CfTempRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dcn, rec, args, 302)
+	return fromArgsHelper(dcn, rec, args, 302)
 }
 
+// FromStruct populates a RecordConfig from a struct, which will be stored in rec.F.
 func (handle *CfTempRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	panic("CF_TEMP_REDIRECT: FromStruct not implemented")
 }
 
+// CopyToLegacyFields copies data from rec.F to the legacy fields in rec.
 func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
-func FromArgs_helper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {
+func fromArgsHelper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {
 
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "ss"); err != nil {

@@ -280,8 +280,8 @@ func Test_ignore_external_dns(t *testing.T) {
 	// Check that external-dns records are in the result (so they won't be deleted)
 	foundMyappA := false
 	foundMyappTXT := false
-	foundApiCNAME := false
-	foundApiTXT := false
+	foundAPICNAME := false
+	foundAPITXT := false
 	foundStatic := false
 
 	for _, rec := range result {
@@ -291,9 +291,9 @@ func Test_ignore_external_dns(t *testing.T) {
 		case rec.GetLabel() == "a-myapp" && rec.Type == "TXT":
 			foundMyappTXT = true
 		case rec.GetLabel() == "api" && rec.Type == "CNAME":
-			foundApiCNAME = true
+			foundAPICNAME = true
 		case rec.GetLabel() == "cname-api" && rec.Type == "TXT":
-			foundApiTXT = true
+			foundAPITXT = true
 		case rec.GetLabel() == "static" && rec.Type == "A":
 			foundStatic = true
 		}
@@ -305,10 +305,10 @@ func Test_ignore_external_dns(t *testing.T) {
 	if !foundMyappTXT {
 		t.Error("Expected a-myapp TXT record to be preserved")
 	}
-	if !foundApiCNAME {
+	if !foundAPICNAME {
 		t.Error("Expected api CNAME record to be preserved")
 	}
-	if !foundApiTXT {
+	if !foundAPITXT {
 		t.Error("Expected cname-api TXT record to be preserved")
 	}
 	if !foundStatic {
