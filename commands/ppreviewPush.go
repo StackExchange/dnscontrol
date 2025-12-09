@@ -216,18 +216,21 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// We want to notify if args.Notify OR notify_on_*
 	if notifications, ok := providerConfigs["notifications"]; ok && notifications != nil {
 		if push {
-			if notifyOnPush, ok := notifications["notify_on_push"]; ok && notifyOnPush != nil {
-				if strconv.ParseBool(notifyOnPush) {
+			if notifyOnPush, ok := notifications["notify_on_push"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPush); b {
 					notify = true
 				}
 			}
 		} else {
-			if notifyOnPreview, ok := notifications["notify_on_preview"]; ok && notifyOnPreview != nil {
-				if strconv.ParseBool(notifyOnPreview) {
+			if notifyOnPreview, ok := notifications["notify_on_preview"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPreview); b {
 					notify = true
 				}
 			}
 		}
+	}
+	if notify {
+		out.PrintfIf(fullMode, "Notifications are enabled...\n")
 	}
 
 	out.PrintfIf(fullMode, "Creating an in-memory model of 'desired'...\n")
