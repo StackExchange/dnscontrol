@@ -56,7 +56,7 @@ func Warnf(fmt string, args ...any) {
 }
 
 // Errorf is called to print/format an error.
-// func Errorf(fmt string, args ...interface{}) {
+// func Errorf(fmt string, args ...any) {
 // 	DefaultPrinter.Errorf(fmt, args...)
 // }
 
