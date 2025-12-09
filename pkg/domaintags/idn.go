@@ -2,7 +2,9 @@ package domaintags
 
 import "golang.org/x/net/idna"
 
-// EfficientToASCII converts a domain name to its ASCII representation using IDNA, on error returns the original name, and avoids wasting memory when possible.
+// EfficientToASCII converts a domain name to its ASCII representation using
+// IDNA, on error returns the original name, and avoids allocating new memory
+// when possible.
 func EfficientToASCII(name string) string {
 	nameIDN, err := idna.ToASCII(name)
 	if err != nil {
@@ -15,7 +17,9 @@ func EfficientToASCII(name string) string {
 	return nameIDN
 }
 
-// EfficientToUnicode converts a domain name to its Unicode representation using IDNA, on error returns the original name, and avoids wasting memory when possible.
+// EfficientToUnicode converts a domain name to its Unicode representation
+// using IDNA, on error returns the original name, and avoids allocating new
+// memory when possible.
 func EfficientToUnicode(name string) string {
 	nameUnicode, err := idna.ToUnicode(name)
 	if err != nil {

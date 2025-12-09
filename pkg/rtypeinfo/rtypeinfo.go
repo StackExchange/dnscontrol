@@ -6,8 +6,8 @@ import "github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 // ("Modern") way. (i.e. uses the RecordConfig .F field to store the record's
 // rdata).
 //
-// Note that this does not simply check if .F != nil, which makes this function
-// useful before the RecordConfig is fully populated.
+// This does NOT rely on .F, which makes this function useful before the
+// RecordConfig is fully populated.
 //
 // NOTE: Do not confuse this with RecordConfig.IsModernType() which provides
 // similar functionality.  The difference is that this function receives the
