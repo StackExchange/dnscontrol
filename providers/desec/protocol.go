@@ -26,11 +26,11 @@ type desecProvider struct {
 }
 
 type domainObject struct {
-	Created    time.Time   `json:"created,omitempty"`
+	Created    time.Time   `json:"created"`
 	Keys       []dnssecKey `json:"keys,omitempty"`
 	MinimumTTL uint32      `json:"minimum_ttl,omitempty"`
 	Name       string      `json:"name,omitempty"`
-	Published  time.Time   `json:"published,omitempty"`
+	Published  time.Time   `json:"published"`
 }
 
 type resourceRecord struct {

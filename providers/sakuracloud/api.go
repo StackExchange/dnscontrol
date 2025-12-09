@@ -223,9 +223,9 @@ type commonServiceItem struct {
 	ID           string   `json:"ID,omitempty"`
 	Name         string   `json:"Name,omitempty"`
 	Settings     settings `json:"Settings"`
-	Status       status   `json:"Status,omitempty"`
+	Status       status   `json:"Status"`
 	ServiceClass string   `json:"ServiceClass,omitempty"`
-	Provider     provider `json:"Provider,omitempty"`
+	Provider     provider `json:"Provider"`
 }
 
 // settings is a resource setting.
