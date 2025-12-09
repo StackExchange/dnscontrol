@@ -21,7 +21,7 @@ func (handle *CfRedirect) Name() string {
 }
 
 func (handle *CfRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dcn, rec, args, 301)
+	return FromArgsHelper(dcn, rec, args, 301)
 }
 
 func (handle *CfRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
@@ -40,7 +40,7 @@ func (handle *CfTempRedirect) Name() string {
 }
 
 func (handle *CfTempRedirect) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
-	return FromArgs_helper(dcn, rec, args, 302)
+	return FromArgsHelper(dcn, rec, args, 302)
 }
 
 func (handle *CfTempRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
@@ -51,7 +51,7 @@ func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
-func FromArgs_helper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {
+func FromArgsHelper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {
 
 	// Pave the args to be the expected types.
 	if err := rtypecontrol.PaveArgs(args, "ss"); err != nil {

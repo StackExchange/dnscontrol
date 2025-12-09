@@ -22,7 +22,7 @@ type RType interface {
 	CopyToLegacyFields(*models.RecordConfig)
 }
 
-// Map of registered rtypes.
+// Fun is a map of registered rtypes.
 var Func map[string]RType = map[string]RType{}
 
 func Register(t RType) {

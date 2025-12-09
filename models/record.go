@@ -236,6 +236,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// FixPosition takes the string representation of a position in a file that
+// comes from dnsconfig.js's initial execution, and reduces it down to just the
+// line/position we display to the user. The input is not well-defined, thus if
+// we find something we don't expect, we just return the original input.
 // TODO: Move this to rtypecontrol or a similar package.
 func FixPosition(str string) string {
 	if str == "" {
