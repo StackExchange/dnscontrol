@@ -157,12 +157,24 @@ release:
   draft: true
   prerelease: auto
   mode: append
+  header: |
+    Greetings DNS fans!
+
+    Thanks to all contributors involved in this release! This is a community project and we couldn't do it without all of your contributions!
+
+    Sincerely,
+    --Tom Limoncelli
+
+    ## Monthly video call!
+
+    Everyone is invited to the __Monthly DNSControl Community Video Conference Call__ on the 3rd Monday of each  month. Join whether you are a new user with questions or an experienced developer that wants to discuss DNSControl internals... or anything in between! Meeting details on [GitHub Discussions](https://github.com/StackExchange/dnscontrol/discussions/categories/monthly-community-video-call?discussions_q=is%3Aopen+sort%3Adate_created+category%3A%22Monthly+Community+Video+Call%22).
+
   footer: |
     ## Deprecation warnings
 
     > [!WARNING]
     > - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-    > - **NAMEDOTCOM and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
+    > - **NAMEDOTCOM, OPENSRS and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 
     ## Install
 
