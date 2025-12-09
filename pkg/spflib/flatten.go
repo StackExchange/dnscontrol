@@ -37,7 +37,8 @@ func (s *SPFRecord) TXT() string {
 	var text strings.Builder
 	text.WriteString("v=spf1")
 	for _, p := range s.Parts {
-		text.WriteString(" " + p.Text)
+		text.WriteString(" ")
+		text.WriteString(p.Text)
 	}
 	return text.String()
 }
