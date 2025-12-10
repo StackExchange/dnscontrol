@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -210,8 +211,30 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return err
 	}
 
+	var notify = args.Notify
+
+	// We want to notify if args.Notify OR notify_on_*
+	if notifications, ok := providerConfigs["notifications"]; ok && notifications != nil {
+		if push {
+			if notifyOnPush, ok := notifications["notify_on_push"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPush); b {
+					notify = true
+				}
+			}
+		} else {
+			if notifyOnPreview, ok := notifications["notify_on_preview"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPreview); b {
+					notify = true
+				}
+			}
+		}
+	}
+	if notify {
+		out.PrintfIf(fullMode, "Notifications are enabled...\n")
+	}
+
 	out.PrintfIf(fullMode, "Creating an in-memory model of 'desired'...\n")
-	notifier, err := PInitializeProviders(cfg, providerConfigs, args.Notify)
+	notifier, err := PInitializeProviders(cfg, providerConfigs, notify)
 	if err != nil {
 		return err
 	}

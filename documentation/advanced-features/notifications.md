@@ -12,6 +12,8 @@ Notifications are configured in the `creds.json` file, since they often contain 
   "r53": {},
   "gcloud": {},
   "notifications": {
+    "notify_on_push": false,
+    "notify_on_preview": false,
     "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
     "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000",
     "shoutrrr_url": "discover://token@id"
@@ -22,7 +24,9 @@ Notifications are configured in the `creds.json` file, since they often contain 
 
 ## Usage
 
-If you want to send a notification, add the `--notify` flag to the `dnscontrol preview` or `dnscontrol push` commands.
+If you want to send a notification for a specific execution, add the `--notify` flag to the `dnscontrol preview` or `dnscontrol push` commands.
+
+To always send notifications, enable one or more of the `notify_on_push` or `notify_on_preview` options.
 
 Below is an example where we add [the A record](../language-reference/domain-modifiers/A.md) `foo` and display the notification output.
 
