@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	hxcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/apiclient"
 )
 

@@ -2,7 +2,7 @@
 
 Writing a new DNS provider is a relatively straightforward process.
 You essentially need to implement the
-[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider)
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/pkg/providers#DNSServiceProvider)
 and the system takes care of the rest.
 
 Please do note that if you submit a new provider you will be
@@ -122,7 +122,7 @@ Directory names should be consistent.  It should be all lowercase and match the 
 ## Step 4: Activate the driver
 
 Edit
-[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
@@ -130,7 +130,7 @@ Add the provider list so DNSControl knows it exists.
 **If you are implementing a DNS Service Provider:**
 
 Implement all the calls in the
-[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/providers#DNSServiceProvider).
+[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#DNSServiceProvider).
 
 The function `GetDomainCorrections()` is a bit interesting. It returns
 a list of corrections to be made. These are in the form of functions
@@ -139,7 +139,7 @@ that DNSControl can call to actually make the corrections.
 **If you are implementing a DNS Registrar:**
 
 Implement all the calls in the
-[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/providers#Registrar).
+[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#Registrar).
 
 The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
@@ -248,7 +248,7 @@ provider working well before adding these extras.
 
 Operational features have names like `providers.CanUseSRV` and
 `providers.CanUseAlias`.  The list of optional "capabilities" are
-in the file `dnscontrol/providers/providers.go` (look for `CanUseAlias`).
+in the file `dnscontrol/pkg/providers/providers.go` (look for `CanUseAlias`).
 
 Capabilities are processed early by DNSControl.  For example if a
 provider doesn't support SRV records, DNSControl will error out
