@@ -4,7 +4,8 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "sortfoo.com",
+        "dnscontrol_nameunicode": "sortfoo.com",
         "dnscontrol_uniquename": "sortfoo.com"
       },
       "name": "sortfoo.com",
@@ -45,7 +46,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "sortfoo.com"
     }
   ],
   "registrars": []

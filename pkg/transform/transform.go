@@ -51,7 +51,7 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 		}
 		parseList := func(s string) ([]net.IP, error) {
 			ips := []net.IP{}
-			for _, ip := range strings.Split(s, ",") {
+			for ip := range strings.SplitSeq(s, ",") {
 				if ip == "" {
 					continue
 				}
@@ -104,15 +104,15 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 		return nil, err
 	}
 	for _, conv := range transforms {
-		min_, err := ipToUint(conv.Low)
+		minIP, err := ipToUint(conv.Low)
 		if err != nil {
 			return nil, err
 		}
-		max_, err := ipToUint(conv.High)
+		maxIP, err := ipToUint(conv.High)
 		if err != nil {
 			return nil, err
 		}
-		if (thisIP >= min_) && (thisIP <= max_) {
+		if (thisIP >= minIP) && (thisIP <= maxIP) {
 			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
@@ -122,7 +122,7 @@ func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
 				if err != nil {
 					return nil, err
 				}
-				list = append(list, UintToIP(newbase+(thisIP-min_)))
+				list = append(list, UintToIP(newbase+(thisIP-minIP)))
 			}
 			return list, nil
 		}

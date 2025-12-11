@@ -2,7 +2,7 @@ package normalize
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -18,7 +18,7 @@ func sortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
 		keys[i] = k
 		i++
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }
 

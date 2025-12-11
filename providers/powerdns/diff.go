@@ -58,7 +58,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 		}
 	}
 
-	domainVariant := dsp.zoneName(dc.Name, dc.Metadata[models.DomainTag])
+	domainVariant := dsp.zoneName(dc.Name, dc.Tag)
 
 	// only append a Correction if there are any, otherwise causes an error when sending an empty rrset
 	if len(rrDeleteSets) > 0 {

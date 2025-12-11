@@ -71,7 +71,7 @@ type zoneConfig struct {
 	MasterIP              string          `json:"masterIp"`
 	Name                  string          `json:"name"` // Not required per docs, but required IRL
 	NameUnicode           string          `json:"nameUnicode"`
-	SOAValues             soaValues       `json:"soaValues,omitempty"`
+	SOAValues             soaValues       `json:"soaValues"`
 	Type                  string          `json:"type"`
 	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
 	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`

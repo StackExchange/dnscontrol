@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -62,7 +64,7 @@ func (n *Client) GetZoneRecordsCorrections(dc *models.DomainConfig, actual model
 	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
 	var builder strings.Builder
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	delrridx := 0
 	addrridx := 0
 
@@ -159,15 +161,13 @@ func toRecord(r *Record, origin string) *models.RecordConfig {
 }
 
 // updateZoneBy updates the zone with the provided changes.
-func (n *Client) updateZoneBy(params map[string]interface{}, domain string) error {
+func (n *Client) updateZoneBy(params map[string]any, domain string) error {
 	zone := domain
-	cmd := map[string]interface{}{
+	cmd := map[string]any{
 		"COMMAND": "ModifyDNSZone",
 		"DNSZONE": zone,
 	}
-	for key, val := range params {
-		cmd[key] = val
-	}
+	maps.Copy(cmd, params)
 	r := n.client.Request(cmd)
 	if !r.IsSuccess() {
 		return n.GetAPIError("Error while updating zone", zone, r)
@@ -181,7 +181,7 @@ func (n *Client) getRecords(domain string) ([]*Record, error) {
 
 	// Command to find out the total numbers of resource records for the zone
 	// so that the follow-up query can be done with the correct limit
-	cmd := map[string]interface{}{
+	cmd := map[string]any{
 		"COMMAND": "QueryDNSZoneRRList",
 		"DNSZONE": domain,
 		"ORDERBY": "type",
@@ -354,12 +354,7 @@ func (n *Client) deleteRecordString(record *Record) string {
 
 // Function to check the no-populate argument
 func isNoPopulate() bool {
-	for _, arg := range os.Args {
-		if arg == "--no-populate" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(os.Args, "--no-populate")
 }
 
 // Function to check if debug mode is enabled

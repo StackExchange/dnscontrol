@@ -99,26 +99,20 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 ) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
-	const LOCEquator uint64 = 0x80000000       // 1 << 31 // RFC 1876, Section 2.
-	const LOCPrimeMeridian uint64 = 0x80000000 // 1 << 31 // RFC 1876, Section 2.
-	const LOCHours uint32 = 60 * 1000
-	const LOCDegrees = 60 * LOCHours
-	const LOCAltitudeBase int32 = 100000
-
-	lat := uint64((uint32(d1) * LOCDegrees) + (uint32(m1) * LOCHours) + uint32(s1*1000))
-	lon := uint64((uint32(d2) * LOCDegrees) + (uint32(m2) * LOCHours) + uint32(s2*1000))
+	lat := uint32(d1)*dns.LOC_DEGREES + uint32(m1)*dns.LOC_HOURS + uint32(s1*1000)
+	lon := uint32(d2)*dns.LOC_DEGREES + uint32(m2)*dns.LOC_HOURS + uint32(s2*1000)
 	if strings.ToUpper(ns) == "N" {
-		rc.LocLatitude = uint32(LOCEquator + lat)
+		rc.LocLatitude = dns.LOC_EQUATOR + lat
 	} else { // "S"
-		rc.LocLatitude = uint32(LOCEquator - lat)
+		rc.LocLatitude = dns.LOC_EQUATOR - lat
 	}
 	if strings.ToUpper(ew) == "E" {
-		rc.LocLongitude = uint32(LOCPrimeMeridian + lon)
+		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN + lon
 	} else { // "W"
-		rc.LocLongitude = uint32(LOCPrimeMeridian - lon)
+		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN - lon
 	}
 	// Altitude
-	altitude := (float64(al) + float64(LOCAltitudeBase)) * 100
+	altitude := (float64(al) + dns.LOC_ALTITUDEBASE) * 100
 	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
 	rc.LocAltitude = uint32(clampedAltitude)
 
@@ -188,10 +182,7 @@ func getENotationInt(x float32) (uint8, error) {
 	}
 
 	// Truncate the mantissa (integer value) and ensure it's within 4 bits
-	mantissaInt := int(math.Floor(mantissa))
-	if mantissaInt > 9 {
-		mantissaInt = 9 // Cap mantissa at 9
-	}
+	mantissaInt := min(int(math.Floor(mantissa)), 9) // Cap mantissa at 9
 
 	// Ensure exponent is within 4 bits
 	if exp < 0 {
@@ -204,4 +195,58 @@ func getENotationInt(x float32) (uint8, error) {
 	packedValue := uint8((mantissaInt << 4) | (exp & 0x0F))
 
 	return packedValue, nil
+}
+
+// ReverseLatitude takes the packed latitude and returns the hemisphere, degrees, minutes, and seconds.
+func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
+	var hemisphere string
+	if lat >= dns.LOC_EQUATOR {
+		hemisphere = "N"
+		lat = lat - dns.LOC_EQUATOR
+	} else {
+		hemisphere = "S"
+		lat = dns.LOC_EQUATOR - lat
+	}
+	degrees := uint8(lat / dns.LOC_DEGREES)
+	lat -= uint32(degrees) * dns.LOC_DEGREES
+	minutes := uint8(lat / dns.LOC_HOURS)
+	lat -= uint32(minutes) * dns.LOC_HOURS
+	seconds := float64(lat) / 1000
+
+	return hemisphere, degrees, minutes, seconds
+}
+
+// ReverseLongitude takes the packed longitude and returns the hemisphere, degrees, minutes, and seconds.
+func ReverseLongitude(lon uint32) (string, uint8, uint8, float64) {
+	var hemisphere string
+	if lon >= dns.LOC_PRIMEMERIDIAN {
+		hemisphere = "E"
+		lon = lon - dns.LOC_PRIMEMERIDIAN
+	} else {
+		hemisphere = "W"
+		lon = dns.LOC_PRIMEMERIDIAN - lon
+	}
+	degrees := uint8(lon / dns.LOC_DEGREES)
+	lon -= uint32(degrees) * dns.LOC_DEGREES
+	minutes := uint8(lon / dns.LOC_HOURS)
+	lon -= uint32(minutes) * dns.LOC_HOURS
+	seconds := float64(lon) / 1000
+
+	return hemisphere, degrees, minutes, seconds
+}
+
+// ReverseAltitude takes the packed altitude and returns the altitude in meters.
+func ReverseAltitude(packedAltitude uint32) float64 {
+	return float64(packedAltitude)/100 - 100000
+}
+
+// ReverseENotationInt produces a number from a mantissa_exponent 4bits:4bits uint8
+func ReverseENotationInt(packedValue uint8) float64 {
+	mantissa := float64((packedValue >> 4) & 0x0F)
+	exponent := int(packedValue & 0x0F)
+
+	centimeters := mantissa * math.Pow10(exponent)
+
+	// Return in meters
+	return centimeters / 100
 }

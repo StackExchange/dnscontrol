@@ -12,7 +12,8 @@ import (
 )
 
 func generateFeatureMatrix() error {
-	var replacementContent = "Jump to a table:\n\n"
+	var replacementContent strings.Builder
+	replacementContent.WriteString("Jump to a table:\n\n")
 	matrix := matrixData()
 
 	for _, tableTitle := range matrix.FeatureTablesTitles {
@@ -22,25 +23,25 @@ func generateFeatureMatrix() error {
 		anchor = strings.Replace(anchor, " ", "-", -1)
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
-		replacementContent += jumptotableContent
+		replacementContent.WriteString(jumptotableContent)
 	}
 
 	for i, tableTitle := range matrix.FeatureTablesTitles {
-		replacementContent += fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
-			tableTitle, i+1, len(matrix.FeatureTablesTitles))
+		replacementContent.WriteString(fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
+			tableTitle, i+1, len(matrix.FeatureTablesTitles)))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
 		}
-		replacementContent += markdownTable
-		replacementContent += "\n"
+		replacementContent.WriteString(markdownTable)
+		replacementContent.WriteString("\n")
 	}
 
 	replaceInlineContent(
 		"documentation/provider/index.md",
 		"<!-- provider-matrix-start -->",
 		"<!-- provider-matrix-end -->",
-		replacementContent,
+		replacementContent.String(),
 	)
 
 	return nil
@@ -115,6 +116,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
 		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
 		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
+		DomainModifierRP         = "[`RP`](../language-reference/domain-modifiers/RP.md)"
 		DomainModifierSMIMEA     = "[`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md)"
 		DomainModifierSoa        = "[`SOA`](../language-reference/domain-modifiers/SOA.md)"
 		DomainModifierSrv        = "[`SRV`](../language-reference/domain-modifiers/SRV.md)"
@@ -279,6 +281,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierPtr,
 			providers.CanUsePTR,
+		)
+		setCapability(
+			DomainModifierRP,
+			providers.CanUseRP,
 		)
 		setCapability(
 			DomainModifierSMIMEA,

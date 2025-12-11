@@ -4,24 +4,28 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com",
         "ns_ttl": "86400"
       },
       "name": "foo.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     },
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "bar.com",
+        "dnscontrol_nameunicode": "bar.com",
         "dnscontrol_uniquename": "bar.com",
         "ns_ttl": "300"
       },
       "name": "bar.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "bar.com"
     }
   ],
   "registrars": []

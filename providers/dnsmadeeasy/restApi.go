@@ -214,7 +214,7 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 // It is reset after successful request
 var backoff = initialBackoff
 
-func (restApi *dnsMadeEasyRestAPI) sendRequest(request *apiRequest, response interface{}) (int, error) {
+func (restApi *dnsMadeEasyRestAPI) sendRequest(request *apiRequest, response any) (int, error) {
 retry:
 	req, err := restApi.createRequest(request)
 	if err != nil {
@@ -250,10 +250,7 @@ retry:
 
 			time.Sleep(backoff)
 
-			backoff = backoff + (backoff / 2)
-			if backoff > maxBackoff {
-				backoff = maxBackoff
-			}
+			backoff = min(backoff+(backoff/2), maxBackoff)
 
 			goto retry
 		}

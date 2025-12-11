@@ -80,9 +80,9 @@ type dnsimpleProvider struct {
 	// different accounts, so _each_ version needs to be initialized just once.
 	// Note that sync.Once contains a reference to sync.noCopy so this will cause
 	// `go vet` to catch attempts to copy this outer provider struct.
-	onceFetchAccountId sync.Once
+	onceFetchAccountID sync.Once
 
-	// This is protected under onceFetchAccountId so that this is fully safe concurrently.
+	// This is protected under onceFetchAccountID so that this is fully safe concurrently.
 	accountID string // Account id cache
 }
 
@@ -310,7 +310,7 @@ func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 
 func (c *dnsimpleProvider) getAccountID() (string, error) {
 	var onceErr error
-	c.onceFetchAccountId.Do(func() {
+	c.onceFetchAccountID.Do(func() {
 		client := c.getClient()
 		whoamiResponse, err := client.Identity.Whoami(context.Background())
 		if err != nil {
@@ -739,12 +739,13 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 
 // Compile the error messages returned by DNSimple's API into a single error message
 func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
-	message := fmt.Sprintf("%d %s", err.HTTPResponse.StatusCode, err.Message)
+	var message strings.Builder
+	message.WriteString(fmt.Sprintf("%d %s", err.HTTPResponse.StatusCode, err.Message))
 	for field, errors := range err.AttributeErrors {
 		e := strings.Join(errors, "& ")
-		message += fmt.Sprintf(": %s %s", field, e)
+		message.WriteString(fmt.Sprintf(": %s %s", field, e))
 	}
-	return errors.New(message)
+	return errors.New(message.String())
 }
 
 // Return true if the string ends in one of DNSimple's name server domains

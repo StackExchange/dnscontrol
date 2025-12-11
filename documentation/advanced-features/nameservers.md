@@ -18,7 +18,7 @@ var REG_NAMECOM = NewRegistrar("namedotcom_main");
 // The "NONE" registrar is a "fake" registrar.
 // This is useful if the registrar is not supported by DNSControl,
 // or if you don't want to control the domain's delegation.
-var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+var REG_NONE = NewRegistrar("none");
 
 // ========== DNS Providers:
 
@@ -83,7 +83,8 @@ updating the zone's records (most likely at a different provider).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_THIRDPARTY,
+var REG_NONE = NewRegistrar("none");
+D("example.com", REG_NONE,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4"),
 );

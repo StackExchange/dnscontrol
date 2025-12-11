@@ -109,7 +109,6 @@ type zRec struct {
 type zoneRecord struct {
 	XMLName    xml.Name   `xml:"struct"`
 	Properties []Property `xml:"member"`
-	// Properties map[string]interface{}
 }
 
 // zoneRecordsResponse decodes the API zoneRecords call.

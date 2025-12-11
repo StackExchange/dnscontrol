@@ -13,95 +13,66 @@ import (
 	"github.com/qdm12/reprint"
 )
 
-// RecordConfig stores a DNS record.
-// Valid types:
-//
-//	Official: (alphabetical)
-//	  A
-//	  AAAA
-//	  ANAME  // Technically not an official rtype yet.
-//	  CAA
-//	  CNAME
-//	  HTTPS
-//	  LOC
-//	  MX
-//	  NAPTR
-//	  NS
-//	  PTR
-//	  SMIMEA
-//	  SOA
-//	  SRV
-//	  SSHFP
-//	  SVCB
-//	  TLSA
-//	  TXT
-//	Pseudo-Types: (alphabetical)
-//	  ALIAS
-//	  CF_REDIRECT
-//	  CF_TEMP_REDIRECT
-//	  CF_WORKER_ROUTE
-//	  CLOUDFLAREAPI_SINGLE_REDIRECT
-//	  CLOUDNS_WR
-//	  FRAME
-//	  IMPORT_TRANSFORM
-//	  NAMESERVER
-//	  NO_PURGE
-//	  PAGE_RULE
-//	  PORKBUN_URLFWD
-//	  PURGE
-//	  URL
-//	  URL301
-//	  WORKER_ROUTE
-//
-// NOTE: All NEW record types should be prefixed with the provider name (Correct: CLOUDFLAREAPI_SINGLE_REDIRECT. Wrong: CF_REDIRECT)
-//
-// Notes about the fields:
-//
-// Name:
-//
-// This is the shortname i.e. the NameFQDN without the origin suffix. It should
-// never have a trailing "." It should never be null. The apex (naked domain) is
-// stored as "@". If the origin is "foo.com." and Name is "foo.com", this means
-// the intended FQDN is "foo.com.foo.com." (which may look odd)
-//
-// NameFQDN:
-//
-// This is the FQDN version of Name. It should never have a trailing ".".
-//
-// NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-// the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
-// as they will always work.
-//
-// target:
-//
-// This is the host or IP address of the record, with the other related
-// parameters (weight, priority, etc.) stored in individual fields.
-//
-// NOTE: Eventually we will unexport Target. Please start using the
-// setters (SetTarget*) and getters (GetTarget*) as they will always work.
-//
-// SubDomain:
-//
-// This is the subdomain path, if any, imported from the configuration. If
-// present at the time of canonicalization it is inserted between the
-// Name and origin when constructing a canonical (FQDN) target.
-// (the SubDomain is not used in processing the label itself. That was done in helpers.js)
-//
-// Idioms:
-//
-//	rec.Label() == "@"   // Is this record at the apex?
+// RecordConfig stores a DNS record whether it was created from data downloaded from
+// a provider's API ("actual") or from user input in dndsconfig.js ("desired").
 type RecordConfig struct {
-	Type      string            `json:"type"` // All caps rtype name.
-	Name      string            `json:"name"` // The short name. See above.
-	NameFQDN  string            `json:"-"`    // Must end with ".$origin". See above.
-	SubDomain string            `json:"subdomain,omitempty"`
-	target    string            // If a name, must end with "."
-	TTL       uint32            `json:"ttl,omitempty"`
-	Metadata  map[string]string `json:"meta,omitempty"`
-	FilePos   string            `json:"filepos"`
-	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+	// Type is the DNS record type (rtype), all caps, "A", "MX", etc.
+	Type string `json:"type"`
+
+	// TTL is the DNS record's TTL in seconds. 0 means provider default.
+	TTL uint32 `json:"ttl,omitempty"`
+
+	// Name is the shortname i.e. the FQDN without the parent directory's suffix.
+	// It should never be "".  Record at the apex (naked domain) are represented by "@".
+	Name        string `json:"name"`                   // The short name, PunyCode. See above.
+	NameRaw     string `json:"name_raw,omitempty"`     // .Name as the user entered it in dnsconfig.js (downcased).
+	NameUnicode string `json:"name_unicode,omitempty"` // .Name as Unicode (downcased, then convertedot Unicode).
+
+	// This is the FQDN version of .Name. It should never have a trailing ".".
+	NameFQDN        string `json:"-"` // Must end with ".$origin".
+	NameFQDNRaw     string `json:"-"` // .NameFQDN as the user entered it in dnsconfig.js (downcased).
+	NameFQDNUnicode string `json:"-"` // .NameFQDN as Unicode (downcased, then convertedot Unicode).
+
+	// F is the binary representation of the record's data usually a dns.XYZ struct.
+	// Always stored in Punycode, not Unicode. Downcased where applicable.
+	F any `json:"fields,omitempty"`
+	//FieldsAsRaw     []string // Fields as received from the dnsconfig.js file, converted to strings.
+	//FieldsAsUnicode []string // fields with IDN fields converted to Unicode for display purposes.
+
+	// Comparable is an opaque string that can be used to compare two
+	// RecordConfigs for equality. Typically this is the Zonefile line minus the
+	// label and TTL.
+	Comparable string `json:"comparable,omitempty"` // Cache of ToComparableNoTTL()
+
+	// ZonefilePartial is the partial zonefile line for this record, excluding
+	// the label and TTL.  If this is not an official RR type, we invent the format.
+	ZonefilePartial string `json:"zonfefilepartial,omitempty"`
+
+	//// Fields only relevant when RecordConfig was created from data in dnsconfig.js:
+
+	// Metadata (desired) added to the record via dnsconfig.js. For example: A("foo", "1.2.3.4", {metakey: "value"})
+	Metadata map[string]string `json:"meta,omitempty"`
+
+	// FilePos (desired) is "filename:line:char" of the record in dnsconfig.js (desired).
+	FilePos string `json:"filepos"`
+
+	// Subdomain (if non-empty) contains the subdomain path for this record.
+	// When .Name* fields are updated to include the subdomain, this field is
+	// cleared.
+	SubDomain string `json:"subdomain,omitempty"`
+
+	//// Fields only relevant when RecordConfig was created from data downloaded from a provider:
+
+	// Original is a pointer to the provider-specific record object. When
+	// getting the records via the API, we store the original object here.
+	// Later if we need to pull out an ID or other provider-specific field, we
+	// can.  Typically deleting or updating a record requires knowing its ID.
+	Original any `json:"-"`
+
+	//// Legacy fields we hope to remove someday
 
 	// If you add a field to this struct, also add it to the list in the UnmarshalJSON function.
+	target             string            // If a name, must end with "."
 	MxPreference       uint16            `json:"mxpreference,omitempty"`
 	SrvPriority        uint16            `json:"srvpriority,omitempty"`
 	SrvWeight          uint16            `json:"srvweight,omitempty"`
@@ -149,31 +120,6 @@ type RecordConfig struct {
 	AzureAlias         map[string]string `json:"azure_alias,omitempty"`
 	AnswerType         string            `json:"answer_type,omitempty"`
 	UnknownTypeName    string            `json:"unknown_type_name,omitempty"`
-
-	// Cloudflare-specific fields:
-	// When these are used, .target is set to a human-readable version (only to be used for display purposes).
-	CloudflareRedirect *CloudflareSingleRedirectConfig `json:"cloudflareapi_redirect,omitempty"`
-}
-
-// CloudflareSingleRedirectConfig contains info about a Cloudflare Single Redirect.
-//
-//	When these are used, .target is set to a human-readable version (only to be used for display purposes).
-type CloudflareSingleRedirectConfig struct {
-	//
-	Code uint16 `json:"code,omitempty"` // 301 or 302
-	// PR == PageRule
-	PRWhen     string `json:"pr_when,omitempty"`
-	PRThen     string `json:"pr_then,omitempty"`
-	PRPriority int    `json:"pr_priority,omitempty"` // Really an identifier for the rule.
-	PRDisplay  string `json:"pr_display,omitempty"`  // How is this displayed to the user (SetTarget) for CF_REDIRECT/CF_TEMP_REDIRECT
-	//
-	// SR == SingleRedirect
-	SRName           string `json:"sr_name,omitempty"` // How is this displayed to the user
-	SRWhen           string `json:"sr_when,omitempty"`
-	SRThen           string `json:"sr_then,omitempty"`
-	SRRRulesetID     string `json:"sr_rulesetid,omitempty"`
-	SRRRulesetRuleID string `json:"sr_rulesetruleid,omitempty"`
-	SRDisplay        string `json:"sr_display,omitempty"` // How is this displayed to the user (SetTarget) for CF_SINGLE_REDIRECT
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -205,7 +151,7 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TTL       uint32            `json:"ttl,omitempty"`
 		Metadata  map[string]string `json:"meta,omitempty"`
 		FilePos   string            `json:"filepos"` // Where in the file this record was defined.
-		Original  interface{}       `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
+		Original  any               `json:"-"`       // Store pointer to provider-specific record object. Used in diffing.
 		Args      []any             `json:"args,omitempty"`
 
 		MxPreference       uint16            `json:"mxpreference,omitempty"`
@@ -290,6 +236,11 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// FixPosition takes the string representation of a position in a file that
+// comes from dnsconfig.js's initial execution, and reduces it down to just the
+// line/position we display to the user. The input is not well-defined, thus if
+// we find something we don't expect, we just return the original input.
+// TODO: Move this to rtypecontrol or a similar package.
 func FixPosition(str string) string {
 	if str == "" {
 		return ""
@@ -382,6 +333,10 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 func (rc *RecordConfig) ToComparableNoTTL() string {
+	if rc.IsModernType() {
+		return rc.Comparable
+	}
+
 	switch rc.Type {
 	case "SOA":
 		return fmt.Sprintf("%s %v %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
@@ -401,6 +356,11 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
+	// IsModernType types store standard types as dns.RR directly in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		return rr
+	}
+
 	// Don't call this on fake types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
@@ -580,6 +540,24 @@ func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
 	return nil
 }
 
+// IsModernType returns true if this RecordConfig is a record type implemented
+// in the new ("Modern") style (i.e. uses the RecordConfig .F field to store
+// the rdata of the record).
+//
+// Since this relies on .F, it must be used only after the RecordConfig
+// has been populated. Otherwise, use rtypecontrol.IsModernType(recordTypeName),
+// which takes the type name as input.
+//
+// NOTE: Do not confuse this with rtypeinfo.IsModernType() which provides
+// similar functionality.  This function is used to have a RecordConfig reveal
+// if it uses a modern type.  rtypeinfo.IsModernType() takes the rtype name as
+// a string argument.
+//
+// FUTURE(tlim): Once all record types have been migrated to use ".F", this function can be removed.
+func (rc *RecordConfig) IsModernType() bool {
+	return rc.F != nil
+}
+
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
@@ -646,6 +624,10 @@ func PostProcessRecords(recs []*RecordConfig) {
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
 func Downcase(recs []*RecordConfig) {
 	for _, r := range recs {
+		if r.IsModernType() {
+			continue
+		}
+
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
@@ -673,6 +655,11 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 	originFQDN := origin + "."
 
 	for _, r := range recs {
+
+		if r.IsModernType() {
+			continue
+		}
+
 		switch r.Type { // #rtype_variations
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.

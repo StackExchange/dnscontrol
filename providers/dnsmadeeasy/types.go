@@ -15,7 +15,7 @@ type singleDomainResponse struct {
 	DelegateNameServers []string                         `json:"delegateNameServers"`
 	NameServers         []singleDomainResponseNameServer `json:"nameServers"`
 	ProcessMulti        bool                             `json:"processMulti"`
-	ActiveThirdParties  []interface{}                    `json:"activeThirdParties"`
+	ActiveThirdParties  []any                            `json:"activeThirdParties"`
 	PendingActionID     int                              `json:"pendingActionId"`
 	GtdEnabled          bool                             `json:"gtdEnabled"`
 	Created             int64                            `json:"created"`
@@ -40,16 +40,16 @@ type multiDomainResponse struct {
 }
 
 type multiDomainResponseDataEntry struct {
-	ID                 int           `json:"id"`
-	Name               string        `json:"name"`
-	FolderID           int           `json:"folderId"`
-	GtdEnabled         bool          `json:"gtdEnabled"`
-	ProcessMulti       bool          `json:"processMulti"`
-	ActiveThirdParties []interface{} `json:"activeThirdParties"`
-	PendingActionID    int           `json:"pendingActionId"`
-	VanityID           int           `json:"vanityId,omitempty"`
-	Created            int64         `json:"created"`
-	Updated            int64         `json:"updated"`
+	ID                 int    `json:"id"`
+	Name               string `json:"name"`
+	FolderID           int    `json:"folderId"`
+	GtdEnabled         bool   `json:"gtdEnabled"`
+	ProcessMulti       bool   `json:"processMulti"`
+	ActiveThirdParties []any  `json:"activeThirdParties"`
+	PendingActionID    int    `json:"pendingActionId"`
+	VanityID           int    `json:"vanityId,omitempty"`
+	Created            int64  `json:"created"`
+	Updated            int64  `json:"updated"`
 }
 
 type recordResponse struct {

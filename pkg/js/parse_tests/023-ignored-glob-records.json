@@ -4,12 +4,14 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
       "records": [],
       "registrar": "none",
+      "uniquename": "foo.com",
       "unmanaged": [
         {
           "label_pattern": "\\*.testignore",

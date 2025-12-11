@@ -550,13 +550,13 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; issuevmc: string[]|string; issuevmc_critical?: boolean; issuemail: string[]|string; issuemail_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
- * generate a HTTP 301 permanent redirect.
+ * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * Rules) to generate a HTTP 301 permanent redirect.
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
@@ -587,36 +587,50 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
 
 /**
  * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
- * Typically one uses 302 (temporary) or (less likely) 301 (permanent).
+ * Typically one uses 302 (temporary) or 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
+ *
+ * DNSControl will delete any "single redirects" it doesn't recognize (i.e. ones created via the web UI) so please be careful.
  *
  * Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_SINGLE_REDIRECT("name", 302, "when", "then"),
  *   CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
  *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ *   CF_TEMP_REDIRECT("*example.com/*", "https://contests.otherexample.com/$2"),
  * );
  * ```
  *
  * The fields are:
  *
- * * name: The name (basically a comment, but it must be unique)
+ * * name: The name (basically a comment)
  * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * NOTE: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ * DNSControl does not currently choose the order of the rules.  New rules are
+ * added to the end of the list. Use Cloudflare's dashboard to re-order the rule,
+ * DNSControl should not change them.  (In the future we hope to add a feature
+ * where the order the rules appear in dnsconfig.js is maintained in the
+ * dashboard.)
+ *
+ * ## `CF_REDIRECT` and `CF_TEMP_REDIRECT`
+ *
+ * `CF_REDIRECT` and `CF_TEMP_REDIRECT` used to manage Cloudflare Page Rules.
+ * However that feature is going away.  To help with the migration, DNSControl now
+ * translates those commands into CF_SINGLE_REDIRECT equivalents.  The conversion
+ * process is a transpiler that only understands certain formats. Please submit
+ * a Github issue if you find something it can't handle.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
 declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
@@ -624,9 +638,9 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
- * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
- * Page Rule types other than "Forwarding URL” will be left alone.
+ * Page Rule types other than "Forwarding URL" will be left alone.
  *
  * WARNING: Cloudflare does not currently fully document the Page Rules API and
  * this interface is not extensively tested. Take precautions such as making
@@ -634,9 +648,12 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `dnscontrol push`. This is especially true when mixing Page Rules that are
  * managed by DNSControl and those that aren't.
  *
+ * This example redirects the bare (aka apex, or naked) domain to www:
+ *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_TEMP_REDIRECT("example.example.com/*", "https://otherplace.yourdomain.com/$1"),
+ *   CF_TEMP_REDIRECT("example.com/*", "https://www.example.com/$1"),
+ *
  * );
  * ```
  *
@@ -746,15 +763,15 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * `example.com!outside`.
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+ * var REG_NONE = NewRegistrar("none");
  * var DNS_INSIDE = NewDnsProvider("Cloudflare");
  * var DNS_OUTSIDE = NewDnsProvider("bind");
  *
- * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
+ * D("example.com!inside", REG_NONE, DnsProvider(DNS_INSIDE),
  *   A("www", "10.10.10.10"),
  * );
  *
- * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
+ * D("example.com!outside", REG_NONE, DnsProvider(DNS_OUTSIDE),
  *   A("www", "20.20.20.20"),
  * );
  *
@@ -1672,6 +1689,196 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
 declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: string): DomainModifier;
 
 /**
+ * `IGNORE_EXTERNAL_DNS` makes DNSControl automatically detect and ignore DNS records
+ * managed by Kubernetes external-dns.
+ *
+ * ## Background
+ *
+ * [External-dns](https://github.com/kubernetes-sigs/external-dns) is a popular
+ * Kubernetes controller that synchronizes exposed Kubernetes Services and Ingresses
+ * with DNS providers. It creates DNS records automatically based on annotations on
+ * your Kubernetes resources.
+ *
+ * External-dns uses TXT records to track ownership of the DNS records it manages.
+ * These TXT records contain metadata in this format:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * When you have both DNSControl and external-dns managing the same DNS zone, conflicts
+ * can occur. DNSControl will try to delete records created by external-dns, and
+ * external-dns will recreate them, leading to an endless update cycle.
+ *
+ * ## How it works
+ *
+ * When `IGNORE_EXTERNAL_DNS` is enabled, DNSControl will:
+ *
+ * 1. Scan existing TXT records for the external-dns heritage marker (`heritage=external-dns`)
+ * 2. Parse the TXT record name to determine which DNS record it manages
+ * 3. Automatically ignore both the TXT ownership record and the corresponding DNS record
+ *
+ * External-dns creates TXT records with prefixes based on record type:
+ * - `a-<name>` for A records
+ * - `aaaa-<name>` for AAAA records
+ * - `cname-<name>` for CNAME records
+ * - `ns-<name>` for NS records
+ * - `mx-<name>` for MX records
+ * - `srv-<name>` for SRV records
+ * - `txt-<name>` for TXT records (when external-dns manages TXT records)
+ *
+ * For example, if external-dns creates an A record at `myapp.example.com`, it will
+ * also create a TXT record at `a-myapp.example.com` containing the heritage information.
+ *
+ * ## Usage
+ *
+ * ```javascript
+ * // Default: detect standard external-dns prefixes (a-, cname-, etc.)
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS(),
+ *   // Your static DNS records managed by DNSControl
+ *   A("www", "1.2.3.4"),
+ *   A("mail", "1.2.3.5"),
+ *   MX("@", 10, "mail"),
+ *   // Records created by external-dns (from Kubernetes Ingresses/Services)
+ *   // will be automatically detected and ignored
+ * );
+ * ```
+ *
+ * ## Custom Prefix Support
+ *
+ * If your external-dns is configured with a custom `--txt-prefix` (as documented in the
+ * [external-dns TXT registry docs](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md#prefixes-and-suffixes)),
+ * pass that prefix to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns is configured with --txt-prefix="extdns-"
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS("extdns-"),
+ *   A("www", "1.2.3.4"),
+ * );
+ * ```
+ *
+ * This will match TXT records like `extdns-www`, `extdns-api`, etc.
+ *
+ * Without a prefix argument, it detects:
+ * - The default `%{record_type}-` format (prefixes like `a-`, `cname-`, etc.)
+ * - Legacy format (TXT record with same name as managed record)
+ *
+ * ## Example scenario
+ *
+ * Suppose you have:
+ * - A Kubernetes cluster running external-dns with `--txt-owner-id=my-cluster`
+ * - An Ingress resource that creates an A record for `myapp.example.com` pointing to `10.0.0.1`
+ *
+ * External-dns will create:
+ * 1. An A record: `myapp.example.com` → `10.0.0.1`
+ * 2. A TXT record: `a-myapp.example.com` → `"heritage=external-dns,external-dns/owner=my-cluster,external-dns/resource=ingress/default/myapp"`
+ *
+ * With `IGNORE_EXTERNAL_DNS` enabled, DNSControl will:
+ * - Detect the TXT record at `a-myapp.example.com` as an external-dns ownership record
+ * - Ignore both the TXT record and the A record at `myapp.example.com`
+ * - Only manage the records you explicitly define in your `dnsconfig.js`
+ *
+ * ## Comparison with other options
+ *
+ * | Feature | Use case |
+ * |---------|----------|
+ * | `IGNORE_EXTERNAL_DNS` | Automatically ignore all external-dns managed records |
+ * | `IGNORE("*.k8s", "A,AAAA,CNAME,TXT")` | Ignore records under a specific subdomain pattern |
+ * | `NO_PURGE` | Don't delete any records (less precise, records may accumulate) |
+ *
+ * ## Caveats
+ *
+ * ### One per domain
+ *
+ * Only one `IGNORE_EXTERNAL_DNS()` should be used per domain. If you call it multiple
+ * times, the last prefix wins. If you have multiple external-dns instances with
+ * different prefixes managing the same zone, use `IGNORE()` patterns for additional
+ * prefixes.
+ *
+ * ### TXT Registry Format
+ *
+ * This feature relies on external-dns's [TXT registry](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md),
+ * which is the default registry type. The TXT record content format is well-documented:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * This feature detects the `heritage=external-dns` marker in TXT records to identify
+ * external-dns managed records.
+ *
+ * ### Custom Prefix Support
+ *
+ * This feature supports custom prefixes configured via external-dns's `--txt-prefix` flag.
+ * If you're using a custom prefix, pass it to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns uses --txt-prefix="extdns-"
+ * IGNORE_EXTERNAL_DNS("extdns-")
+ *
+ * // If external-dns uses --txt-prefix="myprefix-%{record_type}-"
+ * IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
+ *
+ * // If external-dns uses --txt-prefix="extdns-%{record_type}." (period format)
+ * // This is recommended for apex domain support per external-dns docs
+ * IGNORE_EXTERNAL_DNS("extdns-")  // Works with both hyphen and period format
+ * ```
+ *
+ * Without a prefix argument, it detects:
+ * - Default format: `%{record_type}-` prefix (e.g., `a-`, `cname-`)
+ * - Legacy format: Same name as managed record (no prefix)
+ *
+ * #### Period Format for Apex Domains
+ *
+ * If you need external-dns to manage apex (root) domain records, the external-dns
+ * documentation recommends using a prefix with `%{record_type}` followed by a period:
+ *
+ * ```yaml
+ * # external-dns deployment args
+ * args:
+ *   - --txt-prefix=extdns-%{record_type}.
+ * ```
+ *
+ * This creates TXT records like `extdns-a.www` for the `www` A record, and `extdns-a`
+ * for the apex A record. DNSControl's `IGNORE_EXTERNAL_DNS` supports both formats:
+ *
+ * - Hyphen format: `extdns-a-www` (from `--txt-prefix=extdns-` with default `%{record_type}-`)
+ * - Period format: `extdns-a.www` (from `--txt-prefix=extdns-%{record_type}.`)
+ *
+ * **Note:** Suffix-based naming (`--txt-suffix`) is not currently supported.
+ *
+ * ### Unsupported Registries
+ *
+ * External-dns supports multiple registry types. This feature **only** supports:
+ *
+ * - ✅ **TXT registry** (default) - Stores metadata in TXT records
+ *
+ * The following registries are **not supported**:
+ *
+ * - ❌ **DynamoDB registry** - Stores metadata in AWS DynamoDB
+ * - ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery
+ * - ❌ **noop registry** - No metadata persistence
+ *
+ * ### Legacy TXT Format
+ *
+ * External-dns versions prior to v0.16 created TXT records without the record type
+ * prefix (e.g., `myapp.example.com` instead of `a-myapp.example.com`). This legacy
+ * format is supported but may match more records than intended since the record type
+ * cannot be determined.
+ *
+ * ## See also
+ *
+ * * [`IGNORE`](IGNORE.md) for manually ignoring specific records with glob patterns
+ * * [`NO_PURGE`](NO_PURGE.md) for preventing deletion of all unmanaged records
+ * * [External-dns documentation](https://github.com/kubernetes-sigs/external-dns)
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_external_dns
+ */
+declare function IGNORE_EXTERNAL_DNS(prefix?: string): DomainModifier;
+
+/**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
  *
  * `IGNORE_NAME(a, b)` is the same as `IGNORE(a, b, "*")`.
@@ -2259,8 +2466,8 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * It looks like this:
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
- * D("example.com", REG_THIRDPARTY,
+ * var REG_NONE = NewRegistrar("none");
+ * D("example.com", REG_NONE,
  *   ...
  * );
  * ```
@@ -3014,6 +3221,21 @@ declare function REV(address: string): string;
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
  */
 declare function REVCOMPAT(rfc: string): string;
+
+/**
+ * `RP()` adds an RP record to a domain.
+ *
+ * The RP implementation in DNSControl is still experimental and may change.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   RP("@", "user.example.com.", "example.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/rp
+ */
+declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.

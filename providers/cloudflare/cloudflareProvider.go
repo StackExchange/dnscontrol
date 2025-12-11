@@ -113,14 +113,48 @@ Signature for the initializer (called any time an API client handle is needed):
 
 */
 
+//var features = providers.DocumentationNotes{
+//	// The default for unlisted capabilities is 'Cannot'.
+//	// See providers/capabilities.go for the entire list of capabilities.
+//	providers.CanGetZones:            providers.Can(),
+//	providers.CanConcur:              providers.Can(),
+//	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+//	providers.CanUseCAA:              providers.Can(),
+//	providers.CanUseDNSKEY:           providers.Cannot(),
+//	providers.CanUseDS:               providers.Can(),
+//	providers.CanUseDSForChildren:    providers.Can(),
+//	providers.CanUseHTTPS:            providers.Can(),
+//	providers.CanUseLOC:              providers.Can(),
+//	providers.CanUseNAPTR:            providers.Can(),
+//	providers.CanUsePTR:              providers.Can(),
+//	providers.CanUseSRV:              providers.Can(),
+//	providers.CanUseSSHFP:            providers.Can(),
+//	providers.CanUseSVCB:             providers.Can(),
+//	providers.CanUseTLSA:             providers.Can(),
+//	providers.DocCreateDomains:       providers.Can(),
+//	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+//	providers.DocOfficiallySupported: providers.Can(),
+//}
+//
+//func init() {
+//	const providerName = "CLOUDFLAREAPI"
+//	const providerMaintainer = "@tresni"
+//	fns := providers.DspFuncs{
+//		Initializer:   newCloudflare,
+//		RecordAuditor: AuditRecords,
+//	}
+//	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+//	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
+//	providers.RegisterMaintainer(providerName, providerMaintainer)
+//}
+
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	ipConversions   []transform.IPConversion
-	ignoredLabels   []string
-	manageRedirects bool // Old "Page Rule"-style redirects.
-	manageWorkers   bool
-	accountID       string
-	cfClient        *cloudflare.API
+	ipConversions []transform.IPConversion
+	ignoredLabels []string
+	manageWorkers bool
+	accountID     string
+	cfClient      *cloudflare.API
 	//
 	manageSingleRedirects bool // New "Single Redirects"-style redirects.
 	//
@@ -169,14 +203,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 			}
 			rec.Metadata["cloudflare_proxy"] = p
 		}
-	}
-
-	if c.manageRedirects { // if old
-		prs, err := c.getPageRules(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
 	}
 
 	if c.manageSingleRedirects { // if new xor old
@@ -318,21 +344,16 @@ func genComparable(rec *models.RecordConfig) string {
 
 func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
 	switch newrec.Type {
-	case "PAGE_RULE":
-		return []*models.Correction{{
-			Msg: msg,
-			F:   func() error { return c.createPageRule(domainID, *newrec.CloudflareRedirect) },
-		}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
+				return c.createSingleRedirect(domainID, *newrec.F.(*cfsingleredirect.SingleRedirectConfig))
 			},
 		}}
 	default:
@@ -343,26 +364,17 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
 	var idTxt string
 	switch oldrec.Type {
-	case "PAGE_RULE":
-		idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.SINGLEREDIRECT:
-		idTxt = oldrec.CloudflareRedirect.SRRRulesetID
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+		idTxt = oldrec.F.(*cfsingleredirect.SingleRedirectConfig).SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.YellowString(" id=%v", idTxt)
 
 	switch newrec.Type {
-	case "PAGE_RULE":
-		return []*models.Correction{{
-			Msg: msg,
-			F: func() error {
-				return c.updatePageRule(idTxt, domainID, *newrec.CloudflareRedirect)
-			},
-		}}
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -394,7 +406,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
@@ -405,12 +417,12 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		Msg: msg,
 		F: func() error {
 			switch recType {
-			case "PAGE_RULE":
-				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
+			// case "PAGE_RULE":
+			// 	return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
-			case cfsingleredirect.SINGLEREDIRECT:
-				return c.deleteSingleRedirects(domainID, *origRec.CloudflareRedirect)
+			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+				return c.deleteSingleRedirects(domainID, *origRec.F.(*cfsingleredirect.SingleRedirectConfig))
 			default:
 				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
 			}
@@ -462,11 +474,10 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 }
 
 const (
-	metaProxy         = "cloudflare_proxy"
-	metaProxyDefault  = metaProxy + "_default"
-	metaOriginalIP    = "original_ip" // TODO(tlim): Unclear what this means.
-	metaUniversalSSL  = "cloudflare_universalssl"
-	metaIPConversions = "ip_conversions" // TODO(tlim): Rename to obscure_rules.
+	metaProxy        = "cloudflare_proxy"
+	metaProxyDefault = metaProxy + "_default"
+	metaOriginalIP   = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL = "cloudflare_universalssl"
 )
 
 func checkProxyVal(v string) (string, error) {
@@ -509,7 +520,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	// iterate backwards so first defined page rules have highest priority
-	prPriority := 0
 	for i := len(dc.Records) - 1; i >= 0; i-- {
 		rec := dc.Records[i]
 		if rec.Metadata == nil {
@@ -543,61 +553,10 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 		}
 
-		// CF_REDIRECT record types:
-		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
-			if !c.manageRedirects && !c.manageSingleRedirects {
-				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
-			}
-			code := uint16(301)
-			if rec.Type == "CF_TEMP_REDIRECT" {
-				code = 302
-			}
-
-			part := strings.SplitN(rec.GetTargetField(), ",", 2)
-			prWhen, prThen := part[0], part[1]
-			prPriority++
-
-			// Convert this record to a PAGE_RULE.
-			if err := cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen); err != nil {
-				return err
-			}
-			rec.SetLabel("@", dc.Name)
-
-			if c.manageRedirects && !c.manageSingleRedirects {
-				// Old-Style only.  No additional work needed.
-			} else if !c.manageRedirects && c.manageSingleRedirects {
-				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
-				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-					return err
-				}
-				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-					return err
-				}
-			} else {
-				// Both old-style and new-style enabled!
-				// Retain the PAGE_RULE and append an additional SINGLEREDIRECT.
-
-				// make a copy:
-				newRec, err := rec.Copy()
-				if err != nil {
-					return err
-				}
-				// The copy becomes the CF SingleRedirect
-				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-					return err
-				}
-				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-					return err
-				}
-				// Append the copy to the end of the list.
-				dc.Records = append(dc.Records, newRec)
-
-				// The original PAGE_RULE remains untouched.
-			}
-		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {
+		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
-				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
+				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CLOUDFLAREAPI_SINGLE_REDIRECT records")
 			}
 		} else if rec.Type == "CF_WORKER_ROUTE" {
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
@@ -637,7 +596,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
-func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) LogTranscode(zone string, redirect *cfsingleredirect.SingleRedirectConfig) error {
 	// No filename? Don't log anything.
 	filename := c.tcLogFilename
 	if filename == "" {
@@ -708,10 +667,9 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions   string   `json:"ip_conversions"`
-			IgnoredLabels   []string `json:"ignored_labels"`
-			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
-			ManageWorkers   bool     `json:"manage_workers"`
+			IPConversions string   `json:"ip_conversions"`
+			IgnoredLabels []string `json:"ignored_labels"`
+			ManageWorkers bool     `json:"manage_workers"`
 			//
 			ManageSingleRedirects bool   `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
 			TranscodeLogFilename  string `json:"transcode_log"`           // Log the PAGE_RULE conversions.
@@ -721,7 +679,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			return nil, err
 		}
 		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
-		api.manageRedirects = parsedMeta.ManageRedirects
 		api.tcLogFilename = parsedMeta.TranscodeLogFilename
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
@@ -742,28 +699,40 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name         string   `json:"name"`
-	Target       cfTarget `json:"target"`
-	Service      string   `json:"service"`       // SRV
-	Proto        string   `json:"proto"`         // SRV
-	Priority     uint16   `json:"priority"`      // SRV
-	Weight       uint16   `json:"weight"`        // SRV
-	Port         uint16   `json:"port"`          // SRV
-	Tag          string   `json:"tag"`           // CAA
-	Flags        uint16   `json:"flags"`         // CAA/DNSKEY
-	Value        string   `json:"value"`         // CAA
-	Usage        uint8    `json:"usage"`         // TLSA
-	Selector     uint8    `json:"selector"`      // TLSA
-	MatchingType uint8    `json:"matching_type"` // TLSA
-	Certificate  string   `json:"certificate"`   // TLSA
-	Algorithm    uint8    `json:"algorithm"`     // SSHFP/DNSKEY/DS
-	HashType     uint8    `json:"type"`          // SSHFP
-	Fingerprint  string   `json:"fingerprint"`   // SSHFP
-	Protocol     uint8    `json:"protocol"`      // DNSKEY
-	PublicKey    string   `json:"public_key"`    // DNSKEY
-	KeyTag       uint16   `json:"key_tag"`       // DS
-	DigestType   uint8    `json:"digest_type"`   // DS
-	Digest       string   `json:"digest"`        // DS
+	Name          string   `json:"name"`
+	Target        cfTarget `json:"target"`
+	Service       string   `json:"service"`        // SRV
+	Proto         string   `json:"proto"`          // SRV
+	Priority      uint16   `json:"priority"`       // SRV
+	Weight        uint16   `json:"weight"`         // SRV
+	Port          uint16   `json:"port"`           // SRV
+	Tag           string   `json:"tag"`            // CAA
+	Flags         uint16   `json:"flags"`          // CAA/DNSKEY
+	Value         string   `json:"value"`          // CAA
+	Usage         uint8    `json:"usage"`          // TLSA
+	Selector      uint8    `json:"selector"`       // TLSA
+	MatchingType  uint8    `json:"matching_type"`  // TLSA
+	Certificate   string   `json:"certificate"`    // TLSA
+	Algorithm     uint8    `json:"algorithm"`      // SSHFP/DNSKEY/DS
+	HashType      uint8    `json:"type"`           // SSHFP
+	Fingerprint   string   `json:"fingerprint"`    // SSHFP
+	Protocol      uint8    `json:"protocol"`       // DNSKEY
+	PublicKey     string   `json:"public_key"`     // DNSKEY
+	KeyTag        uint16   `json:"key_tag"`        // DS
+	DigestType    uint8    `json:"digest_type"`    // DS
+	Digest        string   `json:"digest"`         // DS
+	Altitude      float64  `json:"altitude"`       // LOC
+	LatDegrees    uint8    `json:"lat_degrees"`    // LOC
+	LatDirection  string   `json:"lat_direction"`  // LOC
+	LatMinutes    uint8    `json:"lat_minutes"`    // LOC
+	LatSeconds    float64  `json:"lat_seconds"`    // LOC
+	LongDegrees   uint8    `json:"long_degrees"`   // LOC
+	LongDirection string   `json:"long_direction"` // LOC
+	LongMinutes   uint8    `json:"long_minutes"`   // LOC
+	LongSeconds   float64  `json:"long_seconds"`   // LOC
+	PrecisionHorz float64  `json:"precision_horz"` // LOC
+	PrecisionVert float64  `json:"precision_vert"` // LOC
+	Size          float64  `json:"size"`           // LOC
 }
 
 // cfTarget is a SRV target. A null target is represented by an empty string, but
@@ -774,7 +743,7 @@ type cfTarget string
 // represented by a false boolean or a dot. Domain names are FQDNs without a
 // trailing period (as of 2019-11-05).
 func (c *cfTarget) UnmarshalJSON(data []byte) error {
-	var obj interface{}
+	var obj any
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return err
 	}
@@ -819,7 +788,7 @@ type cfNaptrRecData struct {
 }
 
 // uint16Zero converts value to uint16 or returns 0.
-func uint16Zero(value interface{}) uint16 {
+func uint16Zero(value any) uint16 {
 	switch v := value.(type) {
 	case float64:
 		return uint16(v)
@@ -830,20 +799,8 @@ func uint16Zero(value interface{}) uint16 {
 	return 0
 }
 
-// intZero converts value to uint16 or returns 0.
-func intZero(value interface{}) uint16 {
-	switch v := value.(type) {
-	case float64:
-		return uint16(v)
-	case int:
-		return uint16(v)
-	case nil:
-	}
-	return 0
-}
-
 // stringDefault returns the value as a string or returns the default value if nil.
-func stringDefault(value interface{}, def string) string {
+func stringDefault(value any, def string) string {
 	switch v := value.(type) {
 	case string:
 		return v
@@ -853,6 +810,15 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+	// Check for read_only metadata
+	// https://github.com/StackExchange/dnscontrol/issues/3850
+	if cr.Meta != nil {
+		if metaMap, ok := cr.Meta.(map[string]any); ok {
+			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
+				return nil, nil
+			}
+		}
+	}
 
 	// ALIAS in Cloudflare works like CNAME.
 	if cr.Type == "ALIAS" {
@@ -894,7 +860,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := cr.Data.(map[string]interface{})
+		data := cr.Data.(map[string]any)
 
 		target := stringDefault(data["target"], "MISSING.TARGET")
 		if target != "." {

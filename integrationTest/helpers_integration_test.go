@@ -7,15 +7,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -26,21 +28,24 @@ var (
 	printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 )
 
+// Global variable to hold the current DomainConfig	for use in FromRaw calls.
+var globalDCN *domaintags.DomainNameVarieties
+
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-func CfProxyOff() *TestCase   { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
-func CfProxyOn() *TestCase    { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
-func CfProxyFull1() *TestCase { return tc("proxyf1", cfProxyA("prxy", "174.136.107.111", "full")) }
-func CfProxyFull2() *TestCase { return tc("proxyf2", cfProxyA("prxy", "174.136.107.222", "full")) }
-func CfCProxyOff() *TestCase  { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CfCProxyOn() *TestCase   { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-func CfCProxyFull() *TestCase { return tc("cproxyf", cfProxyCNAME("cproxy", "example.com.", "full")) }
+// A-record proxy off/on
+func CfProxyOff() *TestCase { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
+func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
+
+// CNAME-record proxy off/on
+func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
+func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
-	dc.UpdateSplitHorizonNames()
+	dc.PostProcess()
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -80,10 +85,8 @@ func testPermitted(p string, f TestGroup) error {
 
 	// If there are any "only" items, you must be one of them.
 	if len(f.only) != 0 {
-		for _, provider := range f.only {
-			if p == provider {
-				return nil
-			}
+		if slices.Contains(f.only, p) {
+			return nil
 		}
 		return errors.New("disabled by only")
 	}
@@ -148,6 +151,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			return
 		}
 
+		//fmt.Printf("DEBUG: Running test %q: Names %q %q %q\n", desc, dom.Name, dom.NameRaw, dom.NameUnicode)
+
 		// get and run corrections for first time
 		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
@@ -198,6 +203,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
+	globalDCN = dc.DomainNameVarieties()
+
 	testGroups := makeTests()
 
 	firstGroup := *startIdx
@@ -332,13 +339,13 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 }
 
 func cfSingleRedirectEnabled() bool {
-	return ((*enableCFRedirectMode) != "")
+	return (*enableCFRedirectMode)
 }
 
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
-	r := makeRec("@", name, cfsingleredirect.SINGLEREDIRECT)
-	panicOnErr(cfsingleredirect.FromRaw(r, []any{name, code, when, then})) // Should not happen
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CLOUDFLAREAPI_SINGLE_REDIRECT", 1, []any{name, code, when, then}, globalDCN)
+	panicOnErr(err)
+	return rec
 }
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
@@ -348,15 +355,15 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_REDIRECT")
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_REDIRECT", 1, []any{pattern, target}, globalDCN)
+	panicOnErr(err)
+	return rec
 }
 
 func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "CF_TEMP_REDIRECT")
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("CF_TEMP_REDIRECT", 1, []any{pattern, target}, globalDCN)
+	panicOnErr(err)
+	return rec
 }
 
 func aghAPassthrough(pattern, target string) *models.RecordConfig {
@@ -479,6 +486,12 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 	return r
 }
 
+func rp(name string, m, t string) *models.RecordConfig {
+	rec, err := rtypecontrol.NewRecordConfigFromRaw("RP", 300, []any{name, m, t}, globalDCN)
+	panicOnErr(err)
+	return rec
+}
+
 func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SMIMEA")
 	panicOnErr(r.SetTargetSMIMEA(usage, selector, matchingtype, target))
@@ -530,7 +543,7 @@ func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
 	return r
 }
 
-func testgroup(desc string, items ...interface{}) *TestGroup {
+func testgroup(desc string, items ...any) *TestGroup {
 	group := &TestGroup{Desc: desc}
 	for _, item := range items {
 		switch v := item.(type) {
