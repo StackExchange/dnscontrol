@@ -57,6 +57,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❌ | ✅ | ❌ |
 | [`INTERNETBS`](internetbs.md) | ❌ | ❌ | ✅ |
 | [`INWX`](inwx.md) | ❌ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❌ | ✅ | ❌ |
@@ -120,6 +121,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
+| [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ❌ | ✅ |
 | [`INTERNETBS`](internetbs.md) | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❌ | ❌ | ✅ | ✅ |
@@ -180,6 +182,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❌ | ✅ | ❌ | ❌ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`JOKER`](joker.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
@@ -237,6 +240,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❌ | ❌ | ✅ | ❌ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
@@ -293,6 +297,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ✅ | ❌ | ❌ | ✅ | ✅ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
@@ -339,6 +344,7 @@ Jump to a table:
 | [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❌ | ❌ | ✅ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
 | [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
@@ -421,6 +427,7 @@ Providers in this category and their maintainers are:
 |[`HEXONET`](hexonet.md)|@KaiSchwarz-cnic|
 |[`HOSTINGDE`](hostingde.md)|@membero|
 |[`HUAWEICLOUD`](huaweicloud.md)|@huihuimoe|
+|[`INFOMANIAK`](infomaniak.md)|@jbelien|
 |[`INTERNETBS`](internetbs.md)|@pragmaton|
 |[`INWX`](inwx.md)|@patschi|
 |[`LINODE`](linode.md)|@koesie10|
