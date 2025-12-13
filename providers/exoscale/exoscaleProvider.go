@@ -83,7 +83,10 @@ func init() {
 // EnsureZoneExists creates a zone if it does not exist
 func (c *exoscaleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := c.findDomainByName(domain)
-
+	if err == ErrDomainNotFound {
+		d := &egoscale.DNSDomain{UnicodeName: &domain}
+		_, err = c.client.CreateDNSDomain(context.Background(), c.apiZone, d)
+	}
 	return err
 }
 
