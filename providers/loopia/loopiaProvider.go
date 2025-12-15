@@ -26,7 +26,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/miekg/dns/dnsutil"
 )
 

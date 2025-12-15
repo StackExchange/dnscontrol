@@ -17,7 +17,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/miekg/dns"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )

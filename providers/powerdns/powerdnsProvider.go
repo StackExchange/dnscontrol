@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	pdns "github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
 )

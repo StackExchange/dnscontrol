@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 const defaultEndpoint = "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1"

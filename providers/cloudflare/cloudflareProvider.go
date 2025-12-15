@@ -17,9 +17,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
