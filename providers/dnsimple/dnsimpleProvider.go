@@ -14,8 +14,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
 )

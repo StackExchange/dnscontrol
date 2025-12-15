@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
 	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
 )
 
 func TestDNSProviders(t *testing.T) {

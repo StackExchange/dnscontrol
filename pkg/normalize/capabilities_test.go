@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	providersImportDir   = "../../providers"
+	providersImportDir   = "../../pkg/providers"
 	providersPackageName = "providers"
 )
 
