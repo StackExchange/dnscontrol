@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )

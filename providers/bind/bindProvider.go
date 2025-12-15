@@ -27,8 +27,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/miekg/dns"
 )
 

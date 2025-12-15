@@ -11,11 +11,12 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
-	"strings"
 )
 
 // initialize initializes the "Akamai OPEN EdgeGrid" library

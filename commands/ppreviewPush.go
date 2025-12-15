@@ -26,9 +26,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 type cmdZoneCache struct {
