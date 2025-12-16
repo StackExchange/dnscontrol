@@ -2,7 +2,7 @@
 
 Writing a new DNS provider is a relatively straightforward process.
 You essentially need to implement the
-[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/pkg/providers#DNSServiceProvider)
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#DNSServiceProvider)
 and the system takes care of the rest.
 
 Please do note that if you submit a new provider you will be
