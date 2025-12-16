@@ -122,7 +122,7 @@ Directory names should be consistent.  It should be all lowercase and match the 
 ## Step 4: Activate the driver
 
 Edit
-[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/pkg/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
