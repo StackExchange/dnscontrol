@@ -24,7 +24,8 @@ Modifier arguments are processed according to type as follows:
 {% code title="dnsconfig.js" %}
 ```javascript
 // simple domain
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+D("example.com", REG_MY_PROVIDER,
+  DnsProvider(DSP_MY_PROVIDER),
   A("@","1.2.3.4"),           // "@" means the apex domain. In this case, "example.com" itself.
   CNAME("test", "foo.example2.com."),
 );
@@ -52,6 +53,34 @@ otherwise known as the domain's apex, the bare domain, or the naked domain.
 In other words, if you want to put a DNS record at the apex of a domain, use an `"@"` for the label, not an empty string (`""`).
 In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain. 
 {% endhint %}
+
+# `no_ns`
+
+To prevent DNSControl from accidentally deleting your nameservers (at the
+parent domain), registrar updates are disabled if the list of nameservers for a
+zone (as computed from `dnsconfig.js`) is empty.
+
+This can happen when a provider doesn't give any control over the apex NS
+records, there are no default nameservers, and the provider returns an empty
+list of nameservers (such as Gandi and Vercel).
+
+In this situation, you will see an error message such as:
+
+```
+Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns:'true'} to force
+```
+
+To add this, add the meta data to the zone immediately following the registrar.
+
+```javascript
+D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
+  ...
+  ...
+  ...
+);
+```
+
+Note that the value `true` is a string.
 
 # Split Horizon DNS
 
