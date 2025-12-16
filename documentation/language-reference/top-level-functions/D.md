@@ -61,8 +61,9 @@ parent domain), registrar updates are disabled if the list of nameservers for a
 zone (as computed from `dnsconfig.js`) is empty.
 
 This can happen when a provider doesn't give any control over the apex NS
-records, there are no default nameservers, and the provider returns an empty
-list of nameservers (such as Gandi and Vercel).
+records, there are no default nameservers, there are no `NAMESERVER()`
+statements, and the provider returns an empty list of nameservers (such as
+Gandi and Vercel).
 
 In this situation, you will see an error message such as:
 
