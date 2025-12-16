@@ -263,7 +263,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 		out.Printf("CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
 		for i, zone := range zonesConcurrent {
-			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
+			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.UniqueName)
 			go func(zone *models.DomainConfig) {
 				start := time.Now()
 				err := oneZonePopulate(zone, zcache)
@@ -284,7 +284,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 		out.Printf("SERIALLY checking for %d zone(s)\n", len(zonesSerial))
 		for _, zone := range zonesSerial {
-			out.Printf("Serially checking for zone: %q\n", zone.Name)
+			out.Printf("Serially checking for zone: %q\n", zone.UniqueName)
 			if err := oneZonePopulate(zone, zcache); err != nil {
 				anyErrors = true
 			}
@@ -331,7 +331,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
 	for i, zone := range zonesConcurrent {
-		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
+		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.UniqueName)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
 			start := time.Now()
 			err := oneZone(zone, args)
@@ -351,7 +351,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 	out.Printf("SERIALLY gathering records of %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
-		out.Printf("Serially Gathering: %q\n", zone.Name)
+		out.Printf("Serially Gathering: %q\n", zone.UniqueName)
 		if err := oneZone(zone, args); err != nil {
 			anyErrors = true
 		}
