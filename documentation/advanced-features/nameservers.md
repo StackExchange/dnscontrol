@@ -69,7 +69,6 @@ D("example.com", REG_NAMECOM,
 ```
 {% endcode %}
 
-
 ## Registrar is elsewhere
 
 Purpose:
@@ -91,6 +90,30 @@ D("example.com", REG_NONE,
 ```
 {% endcode %}
 
+## Domain is "nowhere"
+
+Suppose you don't want to manage a domain, but you want to list the zone in
+your `dnsconfig.js` file for inventory purposes. For example, suppose there are
+domains that some other part of your company maintains, but you want to list it
+in your `dnsconfig.js` because it is authoratative for the company.
+
+```javascript
+var REG_NONE = NewRegistrar("none");
+
+function INVENTORY_ONLY(name) {
+    D(name, REG_NONE, { no_ns: "true" });
+}
+
+INVENTORY_ONLY('example.com");
+INVENTORY_ONLY('example2.com");
+INVENTORY_ONLY('example.net");
+```
+
+Now you can produce a list of your zones like this:
+
+```shell
+dnscontrol print-ir | jq -r '.domains[].name'
+```
 
 ## Zone is elsewhere
 
