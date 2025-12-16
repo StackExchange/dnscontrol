@@ -81,7 +81,9 @@ D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
 );
 ```
 
-Note that the value `true` is a string.
+{% hint style="info" %}
+**NOTE**: The value `true` of `no_ns` is a string.
+{% endhint %}
 
 # Split Horizon DNS
 
