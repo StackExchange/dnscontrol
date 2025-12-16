@@ -2,7 +2,7 @@
 
 Writing a new DNS provider is a relatively straightforward process.
 You essentially need to implement the
-[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/pkg/providers#DNSServiceProvider)
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#DNSServiceProvider)
 and the system takes care of the rest.
 
 Please do note that if you submit a new provider you will be
@@ -122,7 +122,7 @@ Directory names should be consistent.  It should be all lowercase and match the 
 ## Step 4: Activate the driver
 
 Edit
-[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/pkg/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
