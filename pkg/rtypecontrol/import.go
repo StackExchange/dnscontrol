@@ -14,11 +14,20 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
-			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc.DomainNameVarieties())
+			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc.DomainNameVarieties(), models.FixPosition(rawRec.FilePos))
 			if err != nil {
 				return err
 			}
-			rec.FilePos = models.FixPosition(rawRec.FilePos)
+			// TODO(tlim): Check if rec.Name might be a typo of dc.Name.  But not if meta["skip_fqdn_check"]=="true"
+			// See "validate.go"
+			/*
+							        }
+				        if label == domain || strings.HasSuffix(label, "."+domain) {
+				                if m := meta["skip_fqdn_check"]; m != "true" {
+				                        return errors.New(errorRepeat(label, domain))
+				                }
+
+			*/
 
 			// Free memeory:
 			clear(rawRec.Args)
@@ -35,7 +44,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 // NewRecordConfigFromRaw creates a new RecordConfig from the raw ([]any) args,
 // usually from the parsed dnsconfig.js file, but also useful when a provider
 // returns the fields of a record as individual values.
-func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties) (*models.RecordConfig, error) {
+func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties, FilePos string) (*models.RecordConfig, error) {
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -48,8 +57,14 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.Do
 		Type:     t,
 		TTL:      ttl,
 		Metadata: map[string]string{},
+		FilePos:  FilePos,
 	}
-	setRecordNames(rec, dcn, args[0].(string))
+	if err := setRecordNames(rec, dcn, args[0].(string)); err != nil {
+		return rec, err
+	}
+	if strings.HasSuffix(rec.Name, ".") {
+		return nil, fmt.Errorf("label %q is not in zone %s", args[0].(string), dcn.DisplayName)
+	}
 
 	// Fill in the .F/.Fields* fields.
 	err := Func[t].FromArgs(dcn, rec, args)
@@ -96,7 +111,12 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 		TTL:      ttl,
 		Metadata: map[string]string{},
 	}
-	setRecordNames(rec, dcn, name)
+	if err := setRecordNames(rec, dcn, name); err != nil {
+		return rec, err
+	}
+	if strings.HasSuffix(rec.Name, ".") {
+		return nil, fmt.Errorf("label %q is not in zone %q", name, dcn.NameASCII+".")
+	}
 
 	err := Func[t].FromStruct(dcn, rec, name, fields)
 	if err != nil {
@@ -104,58 +124,4 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 	}
 
 	return rec, nil
-}
-
-// setRecordNames updates the .Name* fields.
-func setRecordNames(rec *models.RecordConfig, dcn *domaintags.DomainNameVarieties, n string) {
-
-	if strings.HasSuffix(n, ".") {
-		nr := n[:len(n)-1]
-		rec.Name = strings.ToLower(domaintags.EfficientToASCII(nr))
-		rec.NameRaw = nr
-		rec.NameUnicode = domaintags.EfficientToUnicode(rec.Name)
-		rec.NameFQDN = rec.Name
-		rec.NameFQDNRaw = rec.NameRaw
-		rec.NameFQDNUnicode = rec.NameUnicode
-		return
-	}
-
-	if rec.SubDomain == "" {
-		// Not _EXTEND() mode:
-		if n == "@" {
-			rec.Name = "@"
-			rec.NameRaw = "@"
-			rec.NameUnicode = "@"
-			rec.NameFQDN = dcn.NameASCII
-			rec.NameFQDNRaw = dcn.NameRaw
-			rec.NameFQDNUnicode = dcn.NameUnicode
-		} else {
-			rec.Name = strings.ToLower(domaintags.EfficientToASCII(n))
-			rec.NameRaw = n
-			rec.NameUnicode = domaintags.EfficientToUnicode(n)
-			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
-			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
-		}
-	} else {
-		// D_EXTEND() mode:
-		sdRaw := rec.SubDomain
-		sdASCII := strings.ToLower(domaintags.EfficientToASCII(rec.SubDomain))
-		sdUnicode := domaintags.EfficientToUnicode(sdASCII)
-		if n == "@" {
-			rec.Name = sdASCII
-			rec.NameRaw = sdRaw
-			rec.NameUnicode = sdUnicode
-			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
-			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
-		} else {
-			rec.Name = domaintags.EfficientToASCII(n) + "." + sdASCII
-			rec.NameRaw = n + "." + sdRaw
-			rec.NameUnicode = domaintags.EfficientToUnicode(rec.Name)
-			rec.NameFQDN = rec.Name + "." + dcn.NameASCII
-			rec.NameFQDNRaw = rec.NameRaw + "." + dcn.NameRaw
-			rec.NameFQDNUnicode = rec.NameUnicode + "." + dcn.NameUnicode
-		}
-	}
 }

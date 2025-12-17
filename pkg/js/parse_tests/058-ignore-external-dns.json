@@ -39,14 +39,14 @@
       "name": "extdns-combined.com",
       "records": [
         {
-          "filepos": "[line:12:5]",
+          "filepos": "[config:12:5]",
           "name": "api",
           "target": "www.extdns-combined.com.",
           "ttl": 300,
           "type": "CNAME"
         },
         {
-          "filepos": "[line:11:5]",
+          "filepos": "[config:11:5]",
           "name": "www",
           "target": "1.2.3.4",
           "ttl": 300,

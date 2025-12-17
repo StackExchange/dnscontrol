@@ -18,14 +18,14 @@
       "name": "foo.net",
       "records": [
         {
-          "filepos": "[line:7:5]",
+          "filepos": "[config:7:5]",
           "name": "@",
           "target": "10.1.1.1",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:11:5]",
+          "filepos": "[config:11:5]",
           "name": "bar",
           "subdomain": "bar",
           "target": "10.3.3.3",
@@ -33,7 +33,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:12:5]",
+          "filepos": "[config:12:5]",
           "name": "www.bar",
           "subdomain": "bar",
           "target": "10.4.4.4",
@@ -41,7 +41,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:70:5]",
+          "filepos": "[config:70:5]",
           "name": "a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "target": "10.25.25.25",
@@ -49,7 +49,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:71:5]",
+          "filepos": "[config:71:5]",
           "name": "www.a.long.path.of.sub.domains",
           "subdomain": "a.long.path.of.sub.domains",
           "target": "10.26.26.26",
@@ -57,7 +57,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:8:5]",
+          "filepos": "[config:8:5]",
           "name": "www",
           "target": "10.2.2.2",
           "ttl": 300,
@@ -79,21 +79,21 @@
       "name": "foo.tld",
       "records": [
         {
-          "filepos": "[line:18:5]",
+          "filepos": "[config:18:5]",
           "name": "@",
           "target": "20.5.5.5",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:30:5]",
+          "filepos": "[config:30:5]",
           "name": "a",
           "target": "20.10.10.10",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:19:5]",
+          "filepos": "[config:19:5]",
           "name": "www",
           "target": "20.6.6.6",
           "ttl": 300,
@@ -115,21 +115,21 @@
       "name": "bar.foo.tld",
       "records": [
         {
-          "filepos": "[line:23:5]",
+          "filepos": "[config:23:5]",
           "name": "@",
           "target": "30.7.7.7",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:27:5]",
+          "filepos": "[config:27:5]",
           "name": "a",
           "target": "30.9.9.9",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:24:5]",
+          "filepos": "[config:24:5]",
           "name": "www",
           "target": "30.8.8.8",
           "ttl": 300,
@@ -151,14 +151,14 @@
       "name": "foo.help",
       "records": [
         {
-          "filepos": "[line:36:5]",
+          "filepos": "[config:36:5]",
           "name": "@",
           "target": "40.12.12.12",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:49:5]",
+          "filepos": "[config:49:5]",
           "name": "morty",
           "subdomain": "morty",
           "target": "40.17.17.17",
@@ -166,7 +166,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:50:5]",
+          "filepos": "[config:50:5]",
           "name": "www.morty",
           "subdomain": "morty",
           "target": "40.18.18.18",
@@ -174,7 +174,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:37:5]",
+          "filepos": "[config:37:5]",
           "name": "www",
           "target": "40.12.12.12",
           "ttl": 300,
@@ -196,21 +196,21 @@
       "name": "bar.foo.help",
       "records": [
         {
-          "filepos": "[line:41:5]",
+          "filepos": "[config:41:5]",
           "name": "@",
           "target": "50.13.13.13",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:42:5]",
+          "filepos": "[config:42:5]",
           "name": "www",
           "target": "50.14.14.14",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:45:5]",
+          "filepos": "[config:45:5]",
           "name": "zip",
           "subdomain": "zip",
           "target": "50.15.15.15",
@@ -218,7 +218,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:46:5]",
+          "filepos": "[config:46:5]",
           "name": "www.zip",
           "subdomain": "zip",
           "target": "50.16.16.16",
@@ -241,14 +241,14 @@
       "name": "foo.here",
       "records": [
         {
-          "filepos": "[line:56:5]",
+          "filepos": "[config:56:5]",
           "name": "@",
           "target": "60.19.19.19",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:60:5]",
+          "filepos": "[config:60:5]",
           "name": "bar",
           "subdomain": "bar",
           "target": "60.21.21.21",
@@ -256,7 +256,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:64:5]",
+          "filepos": "[config:64:5]",
           "name": "baz.bar",
           "subdomain": "baz.bar",
           "target": "60.23.23.23",
@@ -264,7 +264,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:65:5]",
+          "filepos": "[config:65:5]",
           "name": "www.baz.bar",
           "subdomain": "baz.bar",
           "target": "60.24.24.24",
@@ -272,7 +272,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:61:5]",
+          "filepos": "[config:61:5]",
           "name": "www.bar",
           "subdomain": "bar",
           "target": "60.22.22.22",
@@ -280,7 +280,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:57:5]",
+          "filepos": "[config:57:5]",
           "name": "www",
           "target": "60.20.20.20",
           "ttl": 300,
@@ -302,14 +302,14 @@
       "name": "example.com",
       "records": [
         {
-          "filepos": "[line:77:5]",
+          "filepos": "[config:77:5]",
           "name": "@",
           "target": "10.0.0.1",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:82:5]",
+          "filepos": "[config:82:5]",
           "name": "d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.3",
@@ -317,7 +317,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:83:5]",
+          "filepos": "[config:83:5]",
           "name": "www.d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.4",
@@ -325,14 +325,14 @@
           "type": "A"
         },
         {
-          "filepos": "[line:78:5]",
+          "filepos": "[config:78:5]",
           "name": "www",
           "target": "10.0.0.2",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:87:5]",
+          "filepos": "[config:87:5]",
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.5",
@@ -340,7 +340,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:88:5]",
+          "filepos": "[config:88:5]",
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.6",
@@ -363,14 +363,14 @@
       "name": "xn--dsseldorf-q9a.example.net",
       "records": [
         {
-          "filepos": "[line:94:5]",
+          "filepos": "[config:94:5]",
           "name": "@",
           "target": "10.0.0.7",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:104:5]",
+          "filepos": "[config:104:5]",
           "name": "d\u00fcsseltal",
           "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.11",
@@ -378,7 +378,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:105:5]",
+          "filepos": "[config:105:5]",
           "name": "www.d\u00fcsseltal",
           "subdomain": "d\u00fcsseltal",
           "target": "10.0.0.12",
@@ -386,7 +386,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:99:5]",
+          "filepos": "[config:99:5]",
           "name": "subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.9",
@@ -394,7 +394,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:100:5]",
+          "filepos": "[config:100:5]",
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.10",
@@ -402,14 +402,14 @@
           "type": "A"
         },
         {
-          "filepos": "[line:95:5]",
+          "filepos": "[config:95:5]",
           "name": "www",
           "target": "10.0.0.8",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:109:5]",
+          "filepos": "[config:109:5]",
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.13",
@@ -417,7 +417,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:110:5]",
+          "filepos": "[config:110:5]",
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.14",
@@ -440,14 +440,14 @@
       "name": "xn--tda.example.net",
       "records": [
         {
-          "filepos": "[line:116:5]",
+          "filepos": "[config:116:5]",
           "name": "@",
           "target": "10.0.0.15",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:126:5]",
+          "filepos": "[config:126:5]",
           "name": "d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.19",
@@ -455,7 +455,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:127:5]",
+          "filepos": "[config:127:5]",
           "name": "www.d\u00fcsseldorf",
           "subdomain": "d\u00fcsseldorf",
           "target": "10.0.0.20",
@@ -463,7 +463,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:121:5]",
+          "filepos": "[config:121:5]",
           "name": "subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.17",
@@ -471,7 +471,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:122:5]",
+          "filepos": "[config:122:5]",
           "name": "www.subdomain",
           "subdomain": "subdomain",
           "target": "10.0.0.18",
@@ -479,14 +479,14 @@
           "type": "A"
         },
         {
-          "filepos": "[line:117:5]",
+          "filepos": "[config:117:5]",
           "name": "www",
           "target": "10.0.0.16",
           "ttl": 300,
           "type": "A"
         },
         {
-          "filepos": "[line:131:5]",
+          "filepos": "[config:131:5]",
           "name": "\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.21",
@@ -494,7 +494,7 @@
           "type": "A"
         },
         {
-          "filepos": "[line:132:5]",
+          "filepos": "[config:132:5]",
           "name": "www.\u00fc",
           "subdomain": "\u00fc",
           "target": "10.0.0.22",
@@ -517,7 +517,7 @@
       "name": "example.tld",
       "records": [
         {
-          "filepos": "[line:138:5]",
+          "filepos": "[config:138:5]",
           "name": "a.sub",
           "subdomain": "sub",
           "target": "b.sub.example.tld.",
@@ -525,7 +525,7 @@
           "type": "CNAME"
         },
         {
-          "filepos": "[line:139:5]",
+          "filepos": "[config:139:5]",
           "name": "b.sub",
           "subdomain": "sub",
           "target": "sub.example.tld.",
@@ -533,7 +533,7 @@
           "type": "CNAME"
         },
         {
-          "filepos": "[line:140:5]",
+          "filepos": "[config:140:5]",
           "name": "c.sub",
           "subdomain": "sub",
           "target": "sub.example.tld.",
@@ -541,7 +541,7 @@
           "type": "CNAME"
         },
         {
-          "filepos": "[line:142:5]",
+          "filepos": "[config:142:5]",
           "name": "e.sub",
           "subdomain": "sub",
           "target": "otherdomain.tld.",

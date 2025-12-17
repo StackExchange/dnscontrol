@@ -11,7 +11,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[line:3:5]",
+          "filepos": "[config:3:5]",
           "name": "@",
           "svcparams": "alpn=\"h3,h2\" port=443 ipv4hint=123.123.123.123 ipv6hint=dead::beaf",
           "svcpriority": 2,
@@ -20,7 +20,7 @@
           "type": "HTTPS"
         },
         {
-          "filepos": "[line:2:5]",
+          "filepos": "[config:2:5]",
           "name": "@",
           "svcpriority": 1,
           "target": ".",

@@ -11,7 +11,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[line:6:5]",
+          "filepos": "[config:6:5]",
           "name": "_ntp._udp",
           "srvport": 1,
           "target": "zeros.foo.com.",
@@ -19,7 +19,7 @@
           "type": "SRV"
         },
         {
-          "filepos": "[line:2:5]",
+          "filepos": "[config:2:5]",
           "name": "_ntp._udp",
           "srvport": 123,
           "srvpriority": 1,
@@ -29,7 +29,7 @@
           "type": "SRV"
         },
         {
-          "filepos": "[line:3:5]",
+          "filepos": "[config:3:5]",
           "name": "_ntp._udp",
           "srvport": 123,
           "srvpriority": 2,
@@ -39,7 +39,7 @@
           "type": "SRV"
         },
         {
-          "filepos": "[line:4:5]",
+          "filepos": "[config:4:5]",
           "name": "_ntp._udp",
           "srvport": 123,
           "srvpriority": 3,
@@ -49,7 +49,7 @@
           "type": "SRV"
         },
         {
-          "filepos": "[line:5:5]",
+          "filepos": "[config:5:5]",
           "name": "_ntp._udp",
           "srvport": 123,
           "srvpriority": 4,

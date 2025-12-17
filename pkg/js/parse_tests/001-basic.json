@@ -18,7 +18,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[line:5:5]",
+          "filepos": "[config:5:5]",
           "name": "@",
           "target": "1.2.3.4",
           "ttl": 300,

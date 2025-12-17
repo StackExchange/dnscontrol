@@ -326,7 +326,8 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 			"CLOUDFLAREAPI_SINGLE_REDIRECT",
 			1,
 			[]any{srName, code, srWhen, srThen},
-			domaintags.MakeDomainNameVarieties(domain))
+			domaintags.MakeDomainNameVarieties(domain),
+			"")
 		if err != nil {
 			return nil, err
 		}

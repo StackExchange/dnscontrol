@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 

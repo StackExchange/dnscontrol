@@ -13,7 +13,7 @@
         {
           "caaflag": 128,
           "caatag": "iodef",
-          "filepos": "[line:12:5]",
+          "filepos": "[config:12:5]",
           "name": "@",
           "target": "https://example.com",
           "ttl": 300,
@@ -22,7 +22,7 @@
         {
           "caaflag": 128,
           "caatag": "iodef",
-          "filepos": "[line:8:5]",
+          "filepos": "[config:8:5]",
           "name": "@",
           "target": "mailto:test@example.com",
           "ttl": 300,
@@ -30,7 +30,7 @@
         },
         {
           "caatag": "iodef",
-          "filepos": "[line:10:5]",
+          "filepos": "[config:10:5]",
           "name": "@",
           "target": "http://example.com",
           "ttl": 300,
@@ -38,7 +38,7 @@
         },
         {
           "caatag": "issue",
-          "filepos": "[line:3:5]",
+          "filepos": "[config:3:5]",
           "name": "@",
           "target": "letsencrypt.org",
           "ttl": 300,
@@ -46,7 +46,7 @@
         },
         {
           "caatag": "issuewild",
-          "filepos": "[line:5:5]",
+          "filepos": "[config:5:5]",
           "name": "@",
           "target": ";",
           "ttl": 300,
