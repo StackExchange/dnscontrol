@@ -18,16 +18,20 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 			if err != nil {
 				return err
 			}
-			// TODO(tlim): Check if rec.Name might be a typo of dc.Name.  But not if meta["skip_fqdn_check"]=="true"
-			// See "validate.go"
-			/*
-							        }
-				        if label == domain || strings.HasSuffix(label, "."+domain) {
-				                if m := meta["skip_fqdn_check"]; m != "true" {
-				                        return errors.New(errorRepeat(label, domain))
-				                }
-
-			*/
+			if rec.Metadata["skip_fqdn_check"] != "true" && stutters(rec.Name, dc.Name) {
+				var shortname string
+				if rec.Name == dc.Name {
+					shortname = "@"
+				} else {
+					shortname = strings.TrimSuffix(rec.Name, "."+dc.Name)
+				}
+				return fmt.Errorf(
+					"The name %q is an error (repeats the domain). Maybe instead of %q you intended %q? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to disable this check",
+					rec.NameFQDNRaw,
+					rec.NameRaw,
+					shortname,
+				)
+			}
 
 			// Free memeory:
 			clear(rawRec.Args)
@@ -39,6 +43,16 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	}
 
 	return nil
+}
+
+func stutters(name, domain string) bool {
+	if name == "@" {
+		return false
+	}
+	if name == domain || strings.HasSuffix(name, "."+domain) {
+		return true
+	}
+	return false
 }
 
 // NewRecordConfigFromRaw creates a new RecordConfig from the raw ([]any) args,
