@@ -11,35 +11,35 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[config:2:5]",
+          "filepos": "[line:2:5]",
           "name": "a",
           "target": "simple",
           "ttl": 300,
           "type": "TXT"
         },
         {
-          "filepos": "[config:3:5]",
+          "filepos": "[line:3:5]",
           "name": "b",
           "target": "ws at end ",
           "ttl": 300,
           "type": "TXT"
         },
         {
-          "filepos": "[config:4:5]",
+          "filepos": "[line:4:5]",
           "name": "c",
           "target": "one",
           "ttl": 300,
           "type": "TXT"
         },
         {
-          "filepos": "[config:5:5]",
+          "filepos": "[line:5:5]",
           "name": "d",
           "target": "bonieclyde",
           "ttl": 300,
           "type": "TXT"
         },
         {
-          "filepos": "[config:6:5]",
+          "filepos": "[line:6:5]",
           "name": "e",
           "target": "strawwoodbrick",
           "ttl": 300,

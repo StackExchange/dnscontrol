@@ -247,7 +247,7 @@ func FixPosition(str string) string {
 	}
 	str = strings.TrimSpace(str)
 	str = strings.ReplaceAll(str, "\n", " ")
-	str = strings.ReplaceAll(str, "<anonymous>", "config")
+	str = strings.ReplaceAll(str, "<anonymous>", "line")
 	str = strings.TrimPrefix(str, "at ")
 	return fmt.Sprintf("[%s]", str)
 }

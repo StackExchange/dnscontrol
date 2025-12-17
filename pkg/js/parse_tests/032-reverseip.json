@@ -18,21 +18,21 @@
       "name": "3.2.1.in-addr.arpa",
       "records": [
         {
-          "filepos": "[config:7:5]",
+          "filepos": "[line:7:5]",
           "name": "1",
           "target": "foo.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[config:8:5]",
+          "filepos": "[line:8:5]",
           "name": "2",
           "target": "bar.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[config:9:5]",
+          "filepos": "[line:9:5]",
           "meta": {
             "skip_fqdn_check": "true"
           },
@@ -42,7 +42,7 @@
           "type": "PTR"
         },
         {
-          "filepos": "[config:14:5]",
+          "filepos": "[line:14:5]",
           "name": "4",
           "subdomain": "4",
           "target": "silly.example.com.",
@@ -50,7 +50,7 @@
           "type": "PTR"
         },
         {
-          "filepos": "[config:17:5]",
+          "filepos": "[line:17:5]",
           "name": "5",
           "subdomain": "5",
           "target": "willy.example.com.",
@@ -58,7 +58,7 @@
           "type": "PTR"
         },
         {
-          "filepos": "[config:20:5]",
+          "filepos": "[line:20:5]",
           "name": "6",
           "subdomain": "6",
           "target": "billy.example.com.",
@@ -66,21 +66,21 @@
           "type": "PTR"
         },
         {
-          "filepos": "[config:24:5]",
+          "filepos": "[line:24:5]",
           "name": "7",
           "target": "my.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[config:27:5]",
+          "filepos": "[line:27:5]",
           "name": "8",
           "target": "fair.example.com.",
           "ttl": 300,
           "type": "PTR"
         },
         {
-          "filepos": "[config:30:5]",
+          "filepos": "[line:30:5]",
           "meta": {
             "skip_fqdn_check": "true"
           },

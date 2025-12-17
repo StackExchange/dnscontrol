@@ -18,7 +18,7 @@
       "name": "foo.com",
       "records": [
         {
-          "filepos": "[config:11:5]",
+          "filepos": "[line:11:5]",
           "meta": {
             "orig_custom_type": "CF_WORKER_ROUTE"
           },
@@ -36,7 +36,7 @@
             "sr_then": "concat(\"https://goo.com\", http.request.uri.path)",
             "sr_when": "http.host eq \"test1.foo.com\" and http.request.uri.path eq \"/\""
           },
-          "filepos": "[config:9:5]",
+          "filepos": "[line:9:5]",
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
@@ -54,7 +54,7 @@
             "sr_then": "concat(\"https://goo.com\", http.request.uri.path)",
             "sr_when": "http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\""
           },
-          "filepos": "[config:10:5]",
+          "filepos": "[line:10:5]",
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
@@ -64,7 +64,7 @@
           "zonfefilepartial": "name=(302,test2.foo.com,https://goo.com/$1) code=(302) when=(http.host eq \"test2.foo.com\" and http.request.uri.path eq \"/\") then=(concat(\"https://goo.com\", http.request.uri.path))"
         },
         {
-          "filepos": "[config:6:5]",
+          "filepos": "[line:6:5]",
           "name": "test1.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.1",
@@ -72,7 +72,7 @@
           "type": "A"
         },
         {
-          "filepos": "[config:7:5]",
+          "filepos": "[line:7:5]",
           "name": "test2.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.2",
@@ -80,7 +80,7 @@
           "type": "A"
         },
         {
-          "filepos": "[config:8:5]",
+          "filepos": "[line:8:5]",
           "name": "test3.foo.com.sub",
           "subdomain": "sub",
           "target": "10.2.3.3",
