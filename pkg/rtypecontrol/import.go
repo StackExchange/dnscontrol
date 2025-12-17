@@ -13,6 +13,7 @@ import (
 func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
+			filePos := models.FixPosition(rawRec.FilePos)
 
 			rec, err := NewRecordConfigFromRaw(FromRawOpts{
 				Type:    rawRec.Type,
@@ -20,10 +21,13 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 				Args:    rawRec.Args,
 				Metas:   rawRec.Metas,
 				DCN:     dc.DomainNameVarieties(),
-				FilePos: models.FixPosition(rawRec.FilePos),
+				FilePos: filePos,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("error processing record at %s [%s(%s)]: %v",
+					filePos,
+					rawRec.Type, StringifyQuoted(rawRec.Args),
+					err)
 			}
 			if rec.Metadata["skip_fqdn_check"] != "true" && stutters(rec.Name, dc.Name) {
 				var shortname string
@@ -106,7 +110,13 @@ func NewRecordConfigFromRaw(opts FromRawOpts) (*models.RecordConfig, error) {
 	// Fill in the metadata fields.
 	for _, meta := range opts.Metas {
 		for k, v := range meta {
-			rec.Metadata[k] = fmt.Sprintf("%v", v)
+			vStr := fmt.Sprintf("%v", v)
+			v, exists := rec.Metadata[k]
+			//fmt.Printf("DEBUG: meta key=%q value=%q v,e=%q,%q\n", k, vStr, v, exists)
+			if exists && v == vStr {
+				return nil, fmt.Errorf("duplicate metadata key %q (%q -- %q)", k, rec.Metadata[k], vStr)
+			}
+			rec.Metadata[k] = vStr
 		}
 	}
 
