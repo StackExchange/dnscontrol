@@ -14,7 +14,14 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
 
-			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc.DomainNameVarieties(), models.FixPosition(rawRec.FilePos))
+			rec, err := NewRecordConfigFromRaw(FromRawOpts{
+				Type:    rawRec.Type,
+				TTL:     rawRec.TTL,
+				Args:    rawRec.Args,
+				Metas:   rawRec.Metas,
+				DCN:     dc.DomainNameVarieties(),
+				FilePos: models.FixPosition(rawRec.FilePos),
+			})
 			if err != nil {
 				return err
 			}
@@ -55,10 +62,26 @@ func stutters(name, domain string) bool {
 	return false
 }
 
+// FromRawOpts contains the options for creating a RecordConfig from raw data.
+type FromRawOpts struct {
+	Type    string                          // Record type (e.g., "A", "CNAME")
+	TTL     uint32                          // Time to live
+	Args    []any                           // Arguments for the record
+	Metas   []map[string]any                // Metadata for the record
+	DCN     *domaintags.DomainNameVarieties // Domain name varieties
+	FilePos string                          // Position in the file where this record was defined
+}
+
 // NewRecordConfigFromRaw creates a new RecordConfig from the raw ([]any) args,
 // usually from the parsed dnsconfig.js file, but also useful when a provider
 // returns the fields of a record as individual values.
-func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties, FilePos string) (*models.RecordConfig, error) {
+func NewRecordConfigFromRaw(opts FromRawOpts) (*models.RecordConfig, error) {
+	t := opts.Type
+	ttl := opts.TTL
+	args := opts.Args
+	dcn := opts.DCN
+	FilePos := opts.FilePos
+
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -78,6 +101,13 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.Do
 	}
 	if strings.HasSuffix(rec.Name, ".") {
 		return nil, fmt.Errorf("label %q is not in zone %s", args[0].(string), dcn.DisplayName)
+	}
+
+	// Fill in the metadata fields.
+	for _, meta := range opts.Metas {
+		for k, v := range meta {
+			rec.Metadata[k] = fmt.Sprintf("%v", v)
+		}
 	}
 
 	// Fill in the .F/.Fields* fields.
