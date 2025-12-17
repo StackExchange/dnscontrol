@@ -248,7 +248,7 @@ func TestFixPosition(t *testing.T) {
 		{
 			name: "random string",
 			pos:  "alsdjfsljd",
-			want: "[line:alsdjfsljd]",
+			want: "[alsdjfsljd]",
 		},
 	}
 	for _, tt := range tests {

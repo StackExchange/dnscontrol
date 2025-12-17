@@ -18,7 +18,6 @@ func TestSetRecordNames(t *testing.T) {
 		NameRaw:     "bücher.com",
 		NameUnicode: "bücher.com",
 	}
-	_ = dcIDN
 
 	tests := []struct {
 		name        string
@@ -344,7 +343,7 @@ func TestSetRecordNames(t *testing.T) {
 			gotErr := setRecordNames(tt.rec, tt.dc, tt.n)
 			if (gotErr != nil && (!tt.expectedErr)) || (gotErr == nil && tt.expectedErr) {
 				t.Errorf("Error: got \"%v\", want %v", gotErr, tt.expectedErr)
-			} else if gotErr != nil {
+			} else if gotErr != nil && tt.expectedErr {
 				// Expected error, test passed.
 			} else {
 				if tt.rec.NameRaw != tt.expectedRec.NameRaw {
