@@ -118,7 +118,7 @@ func TestParsedFiles(t *testing.T) {
 				} else {
 					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")
 				}
-				// fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
+				fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
 				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue

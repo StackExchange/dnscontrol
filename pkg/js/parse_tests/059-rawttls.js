@@ -1,6 +1,5 @@
-D("example.com", "none", {
-        no_ns: 'true'
-    },
+D("example.com", "none",
+
     TXT("mytxt", "Do not call me on my phone"),
 
     // Test at the apex two ways:
