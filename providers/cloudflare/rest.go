@@ -322,12 +322,12 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		rec, err := rtypecontrol.NewRecordConfigFromRaw(
-			"CLOUDFLAREAPI_SINGLE_REDIRECT",
-			1,
-			[]any{srName, code, srWhen, srThen},
-			domaintags.MakeDomainNameVarieties(domain),
-			"")
+		rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+			Type: "CLOUDFLAREAPI_SINGLE_REDIRECT",
+			TTL:  1,
+			Args: []any{srName, code, srWhen, srThen},
+			DCN:  domaintags.MakeDomainNameVarieties(domain),
+		})
 		if err != nil {
 			return nil, err
 		}

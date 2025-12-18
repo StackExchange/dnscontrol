@@ -13,10 +13,21 @@ import (
 func ImportRawRecords(domains []*models.DomainConfig) error {
 	for _, dc := range domains {
 		for _, rawRec := range dc.RawRecords {
+			filePos := models.FixPosition(rawRec.FilePos)
 
-			rec, err := NewRecordConfigFromRaw(rawRec.Type, rawRec.TTL, rawRec.Args, dc.DomainNameVarieties(), models.FixPosition(rawRec.FilePos))
+			rec, err := NewRecordConfigFromRaw(FromRawOpts{
+				Type:    rawRec.Type,
+				TTL:     rawRec.TTL,
+				Args:    rawRec.Args,
+				Metas:   rawRec.Metas,
+				DCN:     dc.DomainNameVarieties(),
+				FilePos: filePos,
+			})
 			if err != nil {
-				return err
+				return fmt.Errorf("error processing record at %s [%s(%s)]: %v",
+					filePos,
+					rawRec.Type, StringifyQuoted(rawRec.Args),
+					err)
 			}
 			if rec.Metadata["skip_fqdn_check"] != "true" && stutters(rec.Name, dc.Name) {
 				var shortname string
@@ -55,10 +66,27 @@ func stutters(name, domain string) bool {
 	return false
 }
 
+// FromRawOpts contains the options for creating a RecordConfig from raw data.
+// Except Type and Args, all fields are optional.
+type FromRawOpts struct {
+	Type    string                          // (required) Record type (e.g., "A", "CNAME")
+	TTL     uint32                          // Time to live
+	Args    []any                           // (required) Arguments for the record
+	Metas   []map[string]any                // Metadata for the record
+	DCN     *domaintags.DomainNameVarieties // Domain name varieties
+	FilePos string                          // Position in the file where this record was defined
+}
+
 // NewRecordConfigFromRaw creates a new RecordConfig from the raw ([]any) args,
 // usually from the parsed dnsconfig.js file, but also useful when a provider
 // returns the fields of a record as individual values.
-func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.DomainNameVarieties, FilePos string) (*models.RecordConfig, error) {
+func NewRecordConfigFromRaw(opts FromRawOpts) (*models.RecordConfig, error) {
+	t := opts.Type
+	ttl := opts.TTL
+	args := opts.Args
+	dcn := opts.DCN
+	FilePos := opts.FilePos
+
 	if _, ok := Func[t]; !ok {
 		return nil, fmt.Errorf("record type %q is not supported", t)
 	}
@@ -73,11 +101,29 @@ func NewRecordConfigFromRaw(t string, ttl uint32, args []any, dcn *domaintags.Do
 		Metadata: map[string]string{},
 		FilePos:  FilePos,
 	}
+
+	// Set the label names:
 	if err := setRecordNames(rec, dcn, args[0].(string)); err != nil {
 		return rec, err
 	}
+	// If setRecordNames notices that a FQDN was used but it is outside the
+	// D()/D_EXTEND() domain, it will leave the name as a FQDN ending in a dot.
+	// We catch that here:
 	if strings.HasSuffix(rec.Name, ".") {
 		return nil, fmt.Errorf("label %q is not in zone %s", args[0].(string), dcn.DisplayName)
+	}
+
+	// Fill in the metadata fields.
+	for _, meta := range opts.Metas {
+		for k, v := range meta {
+			vStr := fmt.Sprintf("%v", v)
+			v, exists := rec.Metadata[k]
+			//fmt.Printf("DEBUG: meta key=%q value=%q v,e=%q,%q\n", k, vStr, v, exists)
+			if exists && v == vStr {
+				return nil, fmt.Errorf("duplicate metadata key %q (%q -- %q)", k, rec.Metadata[k], vStr)
+			}
+			rec.Metadata[k] = vStr
+		}
 	}
 
 	// Fill in the .F/.Fields* fields.
@@ -124,6 +170,12 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 		Type:     t,
 		TTL:      ttl,
 		Metadata: map[string]string{},
+	}
+	if err := setRecordNames(rec, dcn, name); err != nil {
+		return rec, err
+	}
+	if strings.HasSuffix(rec.Name, ".") {
+		return nil, fmt.Errorf("label %q is not in zone %q", name, dcn.NameASCII+".")
 	}
 	if err := setRecordNames(rec, dcn, name); err != nil {
 		return rec, err
