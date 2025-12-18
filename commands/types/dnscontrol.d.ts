@@ -780,7 +780,7 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * );
  * ```
  *
- * Note that the value `true` is a string.
+ * NOTE: The value `true` of `no_ns` is a string.
  *
  * # Split Horizon DNS
  *
