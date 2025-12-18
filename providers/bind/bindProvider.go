@@ -176,6 +176,9 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 		NameASCII:   domain,
 		NameUnicode: meta[models.DomainNameUnicode],
 		UniqueName:  meta[models.DomainUniqueName],
+		// NB(tlim): When "get-zones" is called, these values are populated
+		// directly by commands/getZones.go near where provider.GetZoneRecords()
+		// is called. Changes here may need to be reflected there too.
 	}
 	zonefile = filepath.Join(c.directory,
 		makeFileName(
@@ -190,7 +193,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
-		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", zonefile)
+		fmt.Fprintf(os.Stderr, "INFO: File does not (yet) exist: %q\n", zonefile)
 		return nil, nil
 	}
 	if err != nil {

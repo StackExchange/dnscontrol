@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/ditashi/jsbeautifier-go/jsbeautifier"
 	"github.com/urfave/cli/v2"
@@ -24,6 +26,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 type FmtArgs struct {
 	InputFile  string
 	OutputFile string
+	Verbose    bool
 }
 
 func (args *FmtArgs) flags() []cli.Flag {
@@ -38,38 +41,65 @@ func (args *FmtArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "output",
 		Aliases:     []string{"o"},
+		Value:       "dnsconfig.js",
 		Usage:       "Output file",
 		Destination: &args.OutputFile,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "verbose",
+		Aliases:     []string{"v"},
+		Value:       false,
+		Usage:       "Enable verbose output",
+		Destination: &args.Verbose,
 	})
 	return flags
 }
 
 // FmtFile reads and formats a file.
 func FmtFile(args FmtArgs) error {
-	fileBytes, readErr := os.ReadFile(args.InputFile)
-	if readErr != nil {
-		return readErr
+	var fileBytes []byte
+	if args.InputFile == "" {
+		var err error
+		fileBytes, err = io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+	} else {
+		var err error
+		fileBytes, err = os.ReadFile(args.InputFile)
+		if err != nil {
+			return err
+		}
 	}
+	original := string(fileBytes)
 
 	opts := jsbeautifier.DefaultOptions()
-
-	str := string(fileBytes)
-	beautified, beautifyErr := jsbeautifier.Beautify(&str, opts)
+	beautified, beautifyErr := jsbeautifier.Beautify(&original, opts)
 	if beautifyErr != nil {
 		return beautifyErr
 	}
 
-	if len(beautified) != 0 && beautified[len(beautified)-1] != '\n' {
+	beautified = strings.TrimSpace(beautified)
+	if len(beautified) != 0 {
 		beautified = beautified + "\n"
 	}
 
 	if args.OutputFile == "" {
 		fmt.Print(beautified)
 	} else {
-		if err := os.WriteFile(args.OutputFile, []byte(beautified), 0o744); err != nil {
-			return err
+		changed := original != beautified
+		if changed {
+			if err := os.WriteFile(args.OutputFile, []byte(beautified), 0o744); err != nil {
+				return err
+			}
 		}
-		fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)
+		if args.Verbose || changed {
+			if changed {
+				fmt.Fprintf(os.Stderr, "%s (formatted)\n", args.OutputFile)
+			} else {
+				fmt.Fprintf(os.Stderr, "%s (unchanged)\n", args.OutputFile)
+			}
+		}
 	}
 	return nil
 }

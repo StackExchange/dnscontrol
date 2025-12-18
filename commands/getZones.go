@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/urfave/cli/v2"
@@ -206,9 +207,15 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone,
+		ff := domaintags.MakeDomainNameVarieties(zone)
+		recs, err := provider.GetZoneRecords(ff.NameASCII,
+			// Populate the map "manually" so that BIND's GetZoneRecords() has
+			// the information it needs to construct filenames.  If this code
+			// changes, you probably need to change that code too.
 			map[string]string{
-				models.DomainUniqueName: zone,
+				models.DomainUniqueName:  ff.UniqueName,
+				models.DomainNameRaw:     ff.NameRaw,
+				models.DomainNameUnicode: ff.NameUnicode,
 			})
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
