@@ -60,7 +60,7 @@ $
 # Using `fmt` as a filter
 
 `fmt` can also work as a filter by setting the input or output to `""` in which
-case it stdin or stdout is used, respectively.  When the output is stdout, the
+case stdin or stdout is used, respectively.  When the output is stdout, the
 filename is never output.
 
 ```shell
