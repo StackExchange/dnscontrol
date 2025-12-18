@@ -1,0 +1,180 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
+        "dnscontrol_uniquename": "example.com"
+      },
+      "name": "example.com",
+      "records": [
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:6:5]",
+          "name": "@",
+          "name_raw": "@",
+          "name_unicode": "@",
+          "target": "",
+          "ttl": 300,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user2.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:7:5]",
+          "name": "@",
+          "name_raw": "@",
+          "name_unicode": "@",
+          "target": "",
+          "ttl": 300,
+          "type": "RP",
+          "zonfefilepartial": "user2.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:10:5]",
+          "name": "aaa300",
+          "name_raw": "aaa300",
+          "name_unicode": "aaa300",
+          "target": "",
+          "ttl": 300,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:14:5]",
+          "name": "bbb1",
+          "name_raw": "bbb1",
+          "name_unicode": "bbb1",
+          "target": "",
+          "ttl": 1111,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:17:5]",
+          "name": "ccc2",
+          "name_raw": "ccc2",
+          "name_unicode": "ccc2",
+          "target": "",
+          "ttl": 2222,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:20:5]",
+          "name": "ddd1",
+          "name_raw": "ddd1",
+          "name_unicode": "ddd1",
+          "target": "",
+          "ttl": 1111,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:24:5]",
+          "name": "eee3",
+          "name_raw": "eee3",
+          "name_unicode": "eee3",
+          "target": "",
+          "ttl": 3333,
+          "type": "RP",
+          "zonfefilepartial": "user.example.com. mytxt.example.com."
+        },
+        {
+          "filepos": "[line:3:5]",
+          "name": "mytxt",
+          "target": "Do not call me on my phone",
+          "ttl": 300,
+          "type": "TXT"
+        }
+      ],
+      "registrar": "none",
+      "uniquename": "example.com"
+    }
+  ],
+  "registrars": []
+}

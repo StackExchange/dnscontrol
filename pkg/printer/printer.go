@@ -90,11 +90,7 @@ type ConsolePrinter struct {
 
 // StartDomain is called at the start of each domain.
 func (c ConsolePrinter) StartDomain(dc *models.DomainConfig) {
-	if dc.Name == dc.NameUnicode {
-		fmt.Fprintf(c.Writer, "******************** Domain: %s\n", dc.UniqueName)
-	} else {
-		fmt.Fprintf(c.Writer, "******************** Domain: %s (%s)\n", dc.UniqueName, dc.NameUnicode)
-	}
+	fmt.Fprintf(c.Writer, "******************** Domain: %s\n", dc.DisplayName)
 }
 
 // PrintCorrection is called to print/format each correction.

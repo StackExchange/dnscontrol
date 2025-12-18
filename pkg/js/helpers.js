@@ -2456,6 +2456,7 @@ function rawrecordBuilder(type) {
             var record = {
                 type: type,
                 filepos: position,
+                ttl: d.defaultTTL,
             };
 
             // Process the args: Functions are executed, objects are assumed to

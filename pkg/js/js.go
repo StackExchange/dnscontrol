@@ -126,7 +126,9 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 		return nil, err
 	}
 
-	rtypecontrol.ImportRawRecords(conf.Domains)
+	if err := rtypecontrol.ImportRawRecords(conf.Domains); err != nil {
+		return nil, err
+	}
 
 	return conf, nil
 }
