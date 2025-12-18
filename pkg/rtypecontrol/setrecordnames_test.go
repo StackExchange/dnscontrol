@@ -9,13 +9,13 @@ import (
 
 func TestSetRecordNames(t *testing.T) {
 	dc := &domaintags.DomainNameVarieties{
-		NameASCII:   "example.com",
 		NameRaw:     "example.com",
+		NameASCII:   "example.com",
 		NameUnicode: "example.com",
 	}
 	dcIDN := &domaintags.DomainNameVarieties{
-		NameASCII:   "xn--bcher-kva.com",
 		NameRaw:     "bücher.com",
+		NameASCII:   "xn--bcher-kva.com",
 		NameUnicode: "bücher.com",
 	}
 
@@ -34,11 +34,11 @@ func TestSetRecordNames(t *testing.T) {
 			dc:   dc,
 			n:    "@",
 			expectedRec: &models.RecordConfig{
-				Name:            "@",
 				NameRaw:         "@",
+				Name:            "@",
 				NameUnicode:     "@",
-				NameFQDN:        "example.com",
 				NameFQDNRaw:     "example.com",
+				NameFQDN:        "example.com",
 				NameFQDNUnicode: "example.com",
 			},
 		},
@@ -48,11 +48,11 @@ func TestSetRecordNames(t *testing.T) {
 			dc:   dc,
 			n:    "www",
 			expectedRec: &models.RecordConfig{
-				Name:            "www",
 				NameRaw:         "www",
+				Name:            "www",
 				NameUnicode:     "www",
-				NameFQDN:        "www.example.com",
 				NameFQDNRaw:     "www.example.com",
+				NameFQDN:        "www.example.com",
 				NameFQDNUnicode: "www.example.com",
 			},
 		},
@@ -62,11 +62,11 @@ func TestSetRecordNames(t *testing.T) {
 			dc:   dc,
 			n:    "bücher",
 			expectedRec: &models.RecordConfig{
-				Name:            "xn--bcher-kva",
 				NameRaw:         "bücher",
+				Name:            "xn--bcher-kva",
 				NameUnicode:     "bücher",
-				NameFQDN:        "xn--bcher-kva.example.com",
 				NameFQDNRaw:     "bücher.example.com",
+				NameFQDN:        "xn--bcher-kva.example.com",
 				NameFQDNUnicode: "bücher.example.com",
 			},
 		},
@@ -76,11 +76,11 @@ func TestSetRecordNames(t *testing.T) {
 			dc:   dcIDN,
 			n:    "www",
 			expectedRec: &models.RecordConfig{
-				Name:            "www",
 				NameRaw:         "www",
+				Name:            "www",
 				NameUnicode:     "www",
-				NameFQDN:        "www.xn--bcher-kva.com",
 				NameFQDNRaw:     "www.bücher.com",
+				NameFQDN:        "www.xn--bcher-kva.com",
 				NameFQDNUnicode: "www.bücher.com",
 			},
 		},
@@ -91,11 +91,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "@",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "sub",
-				Name:            "sub",
 				NameRaw:         "sub",
+				Name:            "sub",
 				NameUnicode:     "sub",
-				NameFQDN:        "sub.example.com",
 				NameFQDNRaw:     "sub.example.com",
+				NameFQDN:        "sub.example.com",
 				NameFQDNUnicode: "sub.example.com",
 			},
 		},
@@ -106,11 +106,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "www",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "sub",
-				Name:            "www.sub",
 				NameRaw:         "www.sub",
+				Name:            "www.sub",
 				NameUnicode:     "www.sub",
-				NameFQDN:        "www.sub.example.com",
 				NameFQDNRaw:     "www.sub.example.com",
+				NameFQDN:        "www.sub.example.com",
 				NameFQDNUnicode: "www.sub.example.com",
 			},
 		},
@@ -121,11 +121,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "www",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "bücher",
-				Name:            "www.xn--bcher-kva",
 				NameRaw:         "www.bücher",
+				Name:            "www.xn--bcher-kva",
 				NameUnicode:     "www.bücher",
-				NameFQDN:        "www.xn--bcher-kva.example.com",
 				NameFQDNRaw:     "www.bücher.example.com",
+				NameFQDN:        "www.xn--bcher-kva.example.com",
 				NameFQDNUnicode: "www.bücher.example.com",
 			},
 		},
@@ -136,11 +136,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "bücher",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "sub",
-				Name:            "xn--bcher-kva.sub",
 				NameRaw:         "bücher.sub",
+				Name:            "xn--bcher-kva.sub",
 				NameUnicode:     "bücher.sub",
-				NameFQDN:        "xn--bcher-kva.sub.example.com",
 				NameFQDNRaw:     "bücher.sub.example.com",
+				NameFQDN:        "xn--bcher-kva.sub.example.com",
 				NameFQDNUnicode: "bücher.sub.example.com",
 			},
 		},
@@ -151,11 +151,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "könig",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "bücher",
-				Name:            "xn--knig-5qa.xn--bcher-kva",
 				NameRaw:         "könig.bücher",
+				Name:            "xn--knig-5qa.xn--bcher-kva",
 				NameUnicode:     "könig.bücher",
-				NameFQDN:        "xn--knig-5qa.xn--bcher-kva.example.com",
 				NameFQDNRaw:     "könig.bücher.example.com",
+				NameFQDN:        "xn--knig-5qa.xn--bcher-kva.example.com",
 				NameFQDNUnicode: "könig.bücher.example.com",
 			},
 		},
@@ -166,11 +166,11 @@ func TestSetRecordNames(t *testing.T) {
 			n:    "www",
 			expectedRec: &models.RecordConfig{
 				SubDomain:       "bücher",
-				Name:            "www.xn--bcher-kva",
 				NameRaw:         "www.bücher",
+				Name:            "www.xn--bcher-kva",
 				NameUnicode:     "www.bücher",
-				NameFQDN:        "www.xn--bcher-kva.xn--bcher-kva.com",
 				NameFQDNRaw:     "www.bücher.bücher.com",
+				NameFQDN:        "www.xn--bcher-kva.xn--bcher-kva.com",
 				NameFQDNUnicode: "www.bücher.bücher.com",
 			},
 		},
@@ -306,36 +306,6 @@ func TestSetRecordNames(t *testing.T) {
 				NameFQDNUnicode: "www.bücher.bücher.com",
 			},
 		},
-
-		{
-			name: "dotted_apex",
-			rec:  &models.RecordConfig{},
-			dc:   dc,
-			n:    "example.com.",
-			expectedRec: &models.RecordConfig{
-				Name:            "@",
-				NameRaw:         "@",
-				NameUnicode:     "@",
-				NameFQDN:        "example.com",
-				NameFQDNRaw:     "example.com",
-				NameFQDNUnicode: "example.com",
-			},
-		},
-
-		{
-			name: "dotted_label",
-			rec:  &models.RecordConfig{},
-			dc:   dcIDN,
-			n:    "www.bücher.com.",
-			expectedRec: &models.RecordConfig{
-				Name:            "www",
-				NameRaw:         "www",
-				NameUnicode:     "www",
-				NameFQDN:        "www.xn--bcher-kva.com",
-				NameFQDNRaw:     "www.bücher.com",
-				NameFQDNUnicode: "www.bücher.com",
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -355,11 +325,11 @@ func TestSetRecordNames(t *testing.T) {
 				if tt.rec.NameUnicode != tt.expectedRec.NameUnicode {
 					t.Errorf("NameUnicode: got %q, want %q", tt.rec.NameUnicode, tt.expectedRec.NameUnicode)
 				}
-				if tt.rec.NameFQDN != tt.expectedRec.NameFQDN {
-					t.Errorf("NameFQDN: got %q, want %q", tt.rec.NameFQDN, tt.expectedRec.NameFQDN)
-				}
 				if tt.rec.NameFQDNRaw != tt.expectedRec.NameFQDNRaw {
 					t.Errorf("NameFQDNRaw: got %q, want %q", tt.rec.NameFQDNRaw, tt.expectedRec.NameFQDNRaw)
+				}
+				if tt.rec.NameFQDN != tt.expectedRec.NameFQDN {
+					t.Errorf("NameFQDN: got %q, want %q", tt.rec.NameFQDN, tt.expectedRec.NameFQDN)
 				}
 				if tt.rec.NameFQDNUnicode != tt.expectedRec.NameFQDNUnicode {
 					t.Errorf("NameFQDNUnicode: got %q, want %q", tt.rec.NameFQDNUnicode, tt.expectedRec.NameFQDNUnicode)

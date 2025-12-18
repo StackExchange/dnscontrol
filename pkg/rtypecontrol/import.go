@@ -67,10 +67,11 @@ func stutters(name, domain string) bool {
 }
 
 // FromRawOpts contains the options for creating a RecordConfig from raw data.
+// Except Type and Args, all fields are optional.
 type FromRawOpts struct {
-	Type    string                          // Record type (e.g., "A", "CNAME")
+	Type    string                          // (required) Record type (e.g., "A", "CNAME")
 	TTL     uint32                          // Time to live
-	Args    []any                           // Arguments for the record
+	Args    []any                           // (required) Arguments for the record
 	Metas   []map[string]any                // Metadata for the record
 	DCN     *domaintags.DomainNameVarieties // Domain name varieties
 	FilePos string                          // Position in the file where this record was defined
@@ -100,9 +101,14 @@ func NewRecordConfigFromRaw(opts FromRawOpts) (*models.RecordConfig, error) {
 		Metadata: map[string]string{},
 		FilePos:  FilePos,
 	}
+
+	// Set the label names:
 	if err := setRecordNames(rec, dcn, args[0].(string)); err != nil {
 		return rec, err
 	}
+	// If setRecordNames notices that a FQDN was used but it is outside the
+	// D()/D_EXTEND() domain, it will leave the name as a FQDN ending in a dot.
+	// We catch that here:
 	if strings.HasSuffix(rec.Name, ".") {
 		return nil, fmt.Errorf("label %q is not in zone %s", args[0].(string), dcn.DisplayName)
 	}
@@ -164,6 +170,12 @@ func NewRecordConfigFromStruct(name string, ttl uint32, t string, fields any, dc
 		Type:     t,
 		TTL:      ttl,
 		Metadata: map[string]string{},
+	}
+	if err := setRecordNames(rec, dcn, name); err != nil {
+		return rec, err
+	}
+	if strings.HasSuffix(rec.Name, ".") {
+		return nil, fmt.Errorf("label %q is not in zone %q", name, dcn.NameASCII+".")
 	}
 	if err := setRecordNames(rec, dcn, name); err != nil {
 		return rec, err
