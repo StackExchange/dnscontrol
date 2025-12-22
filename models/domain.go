@@ -25,12 +25,13 @@ const (
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
-	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
 	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
+	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
 	NameUnicode string `json:"-"`    // name in Unicode format
 
-	Tag        string `json:"tag,omitempty"` // Split horizon tag.
-	UniqueName string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
+	Tag         string `json:"tag,omitempty"` // Split horizon tag.
+	UniqueName  string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
+	DisplayName string `json:"-"`             // For TUI display: "canonical!tag" or "canonical!tag (unicode)"
 
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
@@ -80,7 +81,7 @@ func (dc *DomainConfig) PostProcess() {
 
 	// Turn the user-supplied name into the fixed forms.
 	ff := domaintags.MakeDomainNameVarieties(dc.Name)
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName, dc.DisplayName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName, ff.DisplayName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
 	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.

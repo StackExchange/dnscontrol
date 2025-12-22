@@ -74,6 +74,10 @@
             "sr_when": "whenmeta"
           },
           "filepos": "[line:9:5]",
+          "meta": {
+            "metanum": "22",
+            "metastr": "stringy"
+          },
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",

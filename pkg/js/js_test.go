@@ -13,8 +13,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
@@ -117,7 +118,7 @@ func TestParsedFiles(t *testing.T) {
 				} else {
 					zoneFile = filepath.Join(testDir, testName, dc.Name+".zone")
 				}
-				// fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
+				//fmt.Printf("DEBUG: zonefile = %q\n", zoneFile)
 				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue

@@ -22,15 +22,15 @@ type RecordConfig struct {
 	// TTL is the DNS record's TTL in seconds. 0 means provider default.
 	TTL uint32 `json:"ttl,omitempty"`
 
-	// Name is the shortname i.e. the FQDN without the parent directory's suffix.
+	// Name is the shortname i.e. the FQDN without the parent domains's suffix.
 	// It should never be "".  Record at the apex (naked domain) are represented by "@".
+	NameRaw     string `json:"name_raw,omitempty"`     // .Name as the user entered it in dnsconfig.js
 	Name        string `json:"name"`                   // The short name, PunyCode. See above.
-	NameRaw     string `json:"name_raw,omitempty"`     // .Name as the user entered it in dnsconfig.js (downcased).
 	NameUnicode string `json:"name_unicode,omitempty"` // .Name as Unicode (downcased, then convertedot Unicode).
 
 	// This is the FQDN version of .Name. It should never have a trailing ".".
-	NameFQDN        string `json:"-"` // Must end with ".$origin".
 	NameFQDNRaw     string `json:"-"` // .NameFQDN as the user entered it in dnsconfig.js (downcased).
+	NameFQDN        string `json:"-"` // Must end with ".$origin".
 	NameFQDNUnicode string `json:"-"` // .NameFQDN as Unicode (downcased, then convertedot Unicode).
 
 	// F is the binary representation of the record's data usually a dns.XYZ struct.
@@ -247,8 +247,9 @@ func FixPosition(str string) string {
 	}
 	str = strings.TrimSpace(str)
 	str = strings.ReplaceAll(str, "\n", " ")
-	str = strings.TrimPrefix(str, "at <anonymous>:")
-	return fmt.Sprintf("[line:%s]", str)
+	str = strings.ReplaceAll(str, "<anonymous>", "line")
+	str = strings.TrimPrefix(str, "at ")
+	return fmt.Sprintf("[%s]", str)
 }
 
 // Copy returns a deep copy of a RecordConfig.

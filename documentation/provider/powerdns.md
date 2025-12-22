@@ -2,7 +2,7 @@
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `POWERDNS`
 along with your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html).
-In most cases the Server id is `localhost`.
+In most cases the Server id (`serverName`) is `localhost`.
 
 Example:
 
@@ -20,23 +20,24 @@ Example:
 {% endcode %}
 
 ## Metadata
-Following metadata are available:
+Following provider metadata are available:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-{
+var DSP_POWERDNS = NewDnsProvider("pdns", {
     'default_ns': [
         'a.example.com.',
         'b.example.com.'
     ],
     'dnssec_on_create': false,
     'zone_kind': 'Native',
-}
+    'use_views': true
+});
 ```
 {% endcode %}
 
-- `default_ns` sets the nameserver which are used
-- `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
+- `default_ns` sets the nameservers which are used.
+- `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones.
 - `zone_kind` is the type that will be used when creating the zone.
   <br>Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`.
   <br>Please see [PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.

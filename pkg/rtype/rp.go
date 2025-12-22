@@ -1,6 +1,8 @@
 package rtype
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
@@ -25,7 +27,10 @@ func (handle *RP) Name() string {
 // FromArgs fills in the RecordConfig from []any, which is typically from a parsed config file.
 func (handle *RP) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	if err := rtypecontrol.PaveArgs(args[1:], "ss"); err != nil {
-		return err
+		return fmt.Errorf("ERROR: (%s) [RP(%q, %v)]: %w",
+			rec.FilePos,
+			rec.Name, rtypecontrol.StringifyQuoted(args[1:]),
+			err)
 	}
 	fields := &RP{
 		dns.RP{

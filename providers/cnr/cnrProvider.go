@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	cnrcl "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/apiclient"
 )
 

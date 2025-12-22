@@ -2,11 +2,11 @@ package fortigate
 
 import (
 	"fmt"
-	"golang.org/x/net/idna"
 	"net"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"golang.org/x/net/idna"
 )
 
 // nativeToRecord – convert an fgDNSRecord coming from FortiGate into a *models.RecordConfig that dnscontrol understands

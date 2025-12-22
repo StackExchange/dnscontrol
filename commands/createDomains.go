@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/urfave/cli/v2"
 )
 
