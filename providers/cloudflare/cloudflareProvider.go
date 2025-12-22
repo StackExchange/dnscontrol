@@ -45,22 +45,26 @@ Domain level metadata available:
 func init() {
 	providers.Register(
 		providers.RegisterOpts{
-			Name:               "CLOUDFLARE",
-			NameAliases:        []string{"CLOUDFLAREAPI"},
+			Name:               "CLOUDFLAREAPI",
+			NameAliases:        []string{"CLOUDFLARE"},
 			MaintainerGithubID: "@tresni",
-			SupportLevel:       "official", // "official", "community", "needs_volunteer", "deprecated"
-			Initializer:        initializer,
-			RecordAuditor:      AuditRecords,
-			BrokeConcurrency:   false,
-			DualHostSupport:    "Cloudflare will not work well in situations where it is not the only DNS server",
+			SupportLevel:       providers.SupportLevelOfficial,
+			ProviderHandle:     cloudflareProvider{},
+
+			// Legacy functions:
+			//RegistrarInitializer:          newReg,
+			DNSServiceProviderInitializer: newCloudflare,
+			RecordAuditor:                 AuditRecords,
+
 			// Fields in the creds.json file:
 			CredsFields: []string{
 				"apitoken",
 				"apikey", "apiuser",
 				"accountid",
 			},
+
 			// Fields in the REGISTRAR("credkey", { metafield: "foo" })
-			MetaFields: []string{
+			MetadataFields: []string{
 				"ip_conversions:string",
 				"ignored_labels:string",
 				"transcode_log:string",
@@ -68,42 +72,47 @@ func init() {
 				"manage_workers:bool",
 				"manage_single_redirects:bool",
 			},
+
 			// DNS RecordTypes supported:
-			RecordTypes: []any{
+			RecordTypes: []string{
 				"A",
 				"AAAA",
 				"ALIAS:note:CF automatically flattens CNAME records into A records dynamically",
 				"CAA",
-				"DHCID:unimplemented", // Indicates provider supports it, but DNSControl doesn't have code to support it
-				"DNAME:unimplemented:note:This note appears in documentation", // Anything after "note:" is for documentation.
-				"DS:both", // "apex" (DS only supported at the apex), "children" (supports DS on children), "both" (default)
+				"CNAME",
+				"DNSKEY",
+				"DS",
 				"HTTPS",
+				"LOC",
 				"MX",
 				"NAPTR",
 				"OPENPGPKEY",
 				"PTR",
 				"SMIMEA",
+				"SPF",
 				"SRV",
 				"SSHFP",
 				"SVCB",
 				"TLSA",
 				"TXT",
+
 				// Custom Types
-				"CF_SINGLE_REDIRECT",
-				"CF_REDIRECT",
-				"CF_TEMP_REDIRECT",
-				"CF_WORKER_ROUTE",
+				"CLOUDFLAREAPI_SINGLE_REDIRECT",
+				"WORKER_ROUTE",
 			},
-		},
-	)
+
+			Features: providers.DocumentationNotes{
+				// The default for unlisted capabilities is 'Cannot'.
+				// See providers/capabilities.go for the entire list of capabilities.
+				providers.CanConcur:           providers.Can(),
+				providers.CanUseDSForChildren: providers.Can(),
+				providers.DocDualHost:         providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+			},
+		})
 }
 
 /*
     client := providers.NewClient("credKey") // Get an API handle
-  _, ok := client.(providers.Registrar) // Is this a registrar?
-  _, ok := client.(providers.DNSServiceProvider) // Is this a DNS Service Provider?
-  _, ok := client.(providers.ZoneLister) // Does "get-zones" work?
-  _, ok := client.(providers.ZoneCreator) // Does "create-zone" work?
   rtypeMap := providers.GetSupportedRecordTypes("CLOUDFLARE") // List supported record types
   b := providers.IsRTypeSupported("CLOUDFLARE", "TXT") // Is TXT supported?
   b := providers.IsFeatureSupported("CLOUDFLARE", "feature_name") // Is feature_name supported?
@@ -112,41 +121,6 @@ Signature for the initializer (called any time an API client handle is needed):
   func clientFactory(m map[string]string, metadata map[string]string) (providers.DNSServiceProvider, error) {}
 
 */
-
-//var features = providers.DocumentationNotes{
-//	// The default for unlisted capabilities is 'Cannot'.
-//	// See providers/capabilities.go for the entire list of capabilities.
-//	providers.CanGetZones:            providers.Can(),
-//	providers.CanConcur:              providers.Can(),
-//	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-//	providers.CanUseCAA:              providers.Can(),
-//	providers.CanUseDNSKEY:           providers.Cannot(),
-//	providers.CanUseDS:               providers.Can(),
-//	providers.CanUseDSForChildren:    providers.Can(),
-//	providers.CanUseHTTPS:            providers.Can(),
-//	providers.CanUseLOC:              providers.Can(),
-//	providers.CanUseNAPTR:            providers.Can(),
-//	providers.CanUsePTR:              providers.Can(),
-//	providers.CanUseSRV:              providers.Can(),
-//	providers.CanUseSSHFP:            providers.Can(),
-//	providers.CanUseSVCB:             providers.Can(),
-//	providers.CanUseTLSA:             providers.Can(),
-//	providers.DocCreateDomains:       providers.Can(),
-//	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-//	providers.DocOfficiallySupported: providers.Can(),
-//}
-//
-//func init() {
-//	const providerName = "CLOUDFLAREAPI"
-//	const providerMaintainer = "@tresni"
-//	fns := providers.DspFuncs{
-//		Initializer:   newCloudflare,
-//		RecordAuditor: AuditRecords,
-//	}
-//	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-//	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
-//	providers.RegisterMaintainer(providerName, providerMaintainer)
-//}
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
