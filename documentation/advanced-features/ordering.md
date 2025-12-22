@@ -35,11 +35,11 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 
 The re-ordering feature can be disabled using the `--disableordering` global flag (it goes before `preview` or `push`). While the code has been extensively tested, it is new and you may still find a bug.  This flag leaves the updates unordered and may require multiple `push` runs to complete the update.
 
-If you encounter any issues with the reordering please [open an issue](https://github.com/StackExchange/dnscontrol/issues). 
+If you encounter any issues with the reordering please [open an issue](https://github.com/StackExchange/dnscontrol/issues).
 
 ## Internals
 
-DNSControl sorts all changes based on the dependencies within these changes. Each record define it's dependencies in `models.Record`. For DNSControl it doesn't matter of a CNAME's target is an A or AAAA or TXT, it will ensure all changes on the target get sorted before the depending CNAME record. The creation of the graph happens in `dnsgraph.CreateGraph([]Graphable)` and thereafter the sorting happens in `graphsort.SortUsingGraph([]Graphable)`. 
-The Graphable is an interface to make the sorting module more seperate from the rest of the DNSControl code, currently the only Graphable implementation is `diff2.Change`. 
+DNSControl sorts all changes based on the dependencies within these changes. Each record define it's dependencies in `models.Record`. For DNSControl it doesn't matter of a CNAME's target is an A or AAAA or TXT, it will ensure all changes on the target get sorted before the depending CNAME record. The creation of the graph happens in `dnsgraph.CreateGraph([]Graphable)` and thereafter the sorting happens in `graphsort.SortUsingGraph([]Graphable)`.
+The Graphable is an interface to make the sorting module more separate from the rest of the DNSControl code, currently the only Graphable implementation is `diff2.Change`.
 
-In order to add a new sortable rtype one should add it to the `models.Record.GetGetDependencies()` and return the dependent records, this is used inside the `diff2.Change` to detect if a depdency is backwards (dependent on the old state) or forward (dependent on new state). Now the new rtype should be sorted accordingly just like MX and CNAME records.
+In order to add a new sortable rtype one should add it to the `models.Record.GetGetDependencies()` and return the dependent records, this is used inside the `diff2.Change` to detect if a dependency is backwards (dependent on the old state) or forward (dependent on new state). Now the new rtype should be sorted accordingly just like MX and CNAME records.

@@ -92,7 +92,7 @@ k2._domainkey.subdomain   IN  TXT "v=DKIM1; h=sha1:sha256; k=rsa; n=some=20human
    * `ed25519`
 * `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
 * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
-  * `*`: explicity allows all service types
+  * `*`: explicitly allows all service types
   * `email`: restricts key to email service only
 * `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
   * `y`: Testing mode.
