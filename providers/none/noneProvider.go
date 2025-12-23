@@ -1,6 +1,10 @@
 package none
 
-import "github.com/StackExchange/dnscontrol/v4/pkg/providers"
+import (
+	"encoding/json"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+)
 
 /* The none provider does nothing. It can be used as a placeholder for third party providers or when you don't want the provider to perform any actions. */
 
@@ -10,25 +14,14 @@ type none struct{}
 func init() {
 	providers.Register(
 		providers.RegisterOpts{
-			Name: "NONE",
-			//NameAliases:        []string{},
-			MaintainerGithubID: "@tlimoncelli",
+			Name:               "NONE",
+			MaintainerGithubID: "@TomOnTime",
 			SupportLevel:       providers.SupportLevelOfficial,
-			ProviderHandle:     none{},
+			ProviderHandle:     &none{},
 
-			// Legacy functions:
-			//RegistrarInitializer:          newReg,
-			//DNSServiceProviderInitializer: newCloudflare,
-			//RecordAuditor:                 AuditRecords,
-
-			// Fields in the creds.json file:
-			//CredsFields: []string{ },
-
-			// Fields in the REGISTRAR("credkey", { metafield: "foo" })
-			//MetadataFields: []string{},
-
-			// DNS RecordTypes supported:
-			//RecordTypes: []string{},
+			RegistrarInitializer:          newNoneReg,
+			DNSServiceProviderInitializer: newNoneDSP,
+			RecordAuditor:                 AuditRecords,
 
 			Features: providers.DocumentationNotes{
 				// The default for unlisted capabilities is 'Cannot'.
@@ -38,4 +31,12 @@ func init() {
 				providers.DocDualHost:         providers.Can(),
 			},
 		})
+}
+
+func newNoneDSP(_ map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+	return &none{}, nil
+}
+
+func newNoneReg(_ map[string]string) (providers.Registrar, error) {
+	return &none{}, nil
 }

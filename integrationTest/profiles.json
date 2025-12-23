@@ -271,6 +271,10 @@
     "slug": "$NETLIFY_ACCOUNT_SLUG",
     "token": "$NETLIFY_TOKEN"
   },
+  "NONE": {
+    "TYPE": "NONE",
+    "domain": "$NONE_DOMAIN",
+  },
   "NS1": {
     "TYPE": "NS1",
     "api_token": "$NS1_TOKEN",

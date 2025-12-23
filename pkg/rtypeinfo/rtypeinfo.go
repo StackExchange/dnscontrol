@@ -19,3 +19,5 @@ func IsModernType(t string) bool {
 	_, ok := rtypecontrol.Func[t]
 	return ok
 }
+
+var IsValidType map[string]struct{}

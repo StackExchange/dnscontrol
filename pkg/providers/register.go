@@ -3,6 +3,8 @@ package providers
 import (
 	"fmt"
 	"log"
+	"maps"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -111,6 +113,9 @@ func Register(opts RegisterOpts) {
 	if opts.SupportLevel == SupportLevelOfficial {
 		opts.HasFeature[DocOfficiallySupported] = DocumentationNote{HasFeature: true}
 	}
+	fmt.Printf("DEBUG: opts.HasFeature[DocCreateDomains] = %+v\n", opts.HasFeature[DocCreateDomains])
+	fmt.Printf("DEBUG: opts.HasFeature[CanGetZones] = %+v\n", opts.HasFeature[CanGetZones])
+	fmt.Printf("DEBUG: opts.HasFeature[IsDnsServiceProvider] = %+v\n", opts.HasFeature[IsDnsServiceProvider])
 
 	//
 	// Populate legacy fields for backward compatibility.
@@ -121,38 +126,102 @@ func Register(opts RegisterOpts) {
 
 	// Populate .Features if needed.
 	opts.Features = createFeaturesForRecordTypes(opts.Features, opts.IsRecordTypeSupported)
+	opts.Features = createFeaturesForOther(opts.Features, opts.HasFeature)
+
+	// Am I a registrar?
+	if opts.RegistrarInitializer != nil || opts.HasFeature[IsRegistrar].HasFeature {
+		RegisterRegistrarType(opts.Name, opts.RegistrarInitializer)
+		//RegistrarTypes[opts.Name] = opts.RegistrarInitializer
+	}
 
 	// Am I a DNS service provider?
-	if opts.DNSServiceProviderInitializer != nil {
+	if opts.DNSServiceProviderInitializer != nil || opts.HasFeature[IsDnsServiceProvider].HasFeature {
 		RegisterDomainServiceProviderType(opts.Name, DspFuncs{
 			Initializer:   opts.DNSServiceProviderInitializer,
 			RecordAuditor: opts.RecordAuditor,
 		}, opts.Features)
+		//DNSProviderTypes[opts.Name] = DspFuncs{Initializer: opts.DNSServiceProviderInitializer, RecordAuditor: opts.RecordAuditor}
+		fmt.Printf("DEBUG: Registered DSP %q\n", opts.Name)
+		for i, j := range opts.Features {
+			fmt.Printf("DEBUG:    Feature: %q: %+v\n", i, j)
+		}
+		fmt.Printf("DEBUG: end\n")
 	}
-
-	// Am I a registrar?
-	if opts.RegistrarInitializer != nil {
-		RegisterRegistrarType(opts.Name, opts.RegistrarInitializer)
-	}
+	fmt.Printf("DEBUG: Provider %q registered with features:\n", opts.Name)
+	fmt.Printf("DEBUG:       recTypes = %v\n", opts.IsRecordTypeSupported)
+	fmt.Printf("DEBUG:       others   = %v\n", opts.Features)
+	unwrapProviderCapabilities(opts.Name, []ProviderMetadata{
+		opts.Features, // The non-recordtype features.
+		//slices.Collect(maps.Values(opts.IsRecordTypeSupported)), // The Record Types supported.
+		//opts.IsRecordTypeSupported, // The Record Types supported.
+		convertToDocumentationNotes(opts.IsRecordTypeSupported), // The Record Types supported.
+	})
 
 	RegisterMaintainer(opts.Name, opts.MaintainerGithubID)
 
+	//fmt.Printf("DEBUG: providerCapabilities[%q] %v\n", opts.Name, providerCapabilities[opts.Name])
+	//fmt.Printf("DEBUG: providerCapabilities[%q][CanUseSMIME] %v\n", opts.Name, providerCapabilities[opts.Name][CanUseSMIMEA])
+	//fmt.Printf("DEBUG: Notes[%q] %v\n", opts.Name, Notes[opts.Name])
+	//fmt.Printf("DEBUG: Notes[%q][CanUseSMIME] %v\n", opts.Name, Notes[opts.Name][CanUseSMIMEA])
+
 }
 
-var AllRecordTypes = []string{}
+var ValidTypes = []string{}
+var IsValidType = map[string]struct{}{}
 
+// PostInitAllProviders performs any initialization that has to be done after
+// all providers have registered themselves. For example, collecting all the
+// record types supported by any provider.
 func PostInitAllProviders() {
-	fmt.Printf("UNIMPLEMENTED: PostInitAllProviders\n")
+	typeMap := map[string]DocumentationNote{}
 
-	// Gather the names of all types supported by all providers.
-	// supportedTypes := findSupportedRecordTypes()
+	// 	DNSProviderTypes[name] = fns
+	// RegisterTypes[name]
 
-	// find any provider that has an empty .SupportedRecordTypes list; that means it supports all types.
-	// In that case, we just support all types.
+	// Gather the names of all record types supported by any provider.
+	for _, opts := range Info {
+		for _, rtypeName := range opts.SupportedRecordTypes {
+			typeMap[rtypeName] = DocumentationNote{HasFeature: true}
+		}
+	}
+	typeList := slices.Sorted(maps.Keys(typeMap))
 
-	// Fill these in:
-	// IsRecordTypeSupported map[string]DocumentationNote
-	// SupportedRecordTypes []string // Being on this map means it is supported.
+	// Save the data for global access:
+	ValidTypes = typeList
+	for _, rt := range typeList {
+		IsValidType[rt] = struct{}{}
+	}
+
+	// Any providers that support all record types? Populate their record type support info.
+	fmt.Printf("DEBUG: Provider Info %v\n", Info)
+	for providerName, opts := range Info {
+		fmt.Printf("DEBUG: Provider %q\n", providerName)
+		// Find any provider that has an empty .SupportedRecordTypes list; that means it supports all types.
+		if len(opts.RecordTypes) == 0 {
+			fmt.Printf("DEBUG:  EMPTY %q\n", providerName)
+			// Populate the record-type support info:
+			opts.SupportedRecordTypes = typeList
+			opts.IsRecordTypeSupported = typeMap
+			opts.RecordTypes = typeList // Pretend the user specified all types.
+			// Repopulate the features for the provider:
+			unwrapProviderCapabilities(providerName, []ProviderMetadata{
+				opts.Features, // The non-recordtype features.
+				convertToDocumentationNotes(opts.IsRecordTypeSupported), // The Record Types supported.
+			})
+		}
+	}
+
+	// DEBUG
+	fmt.Printf("DEBUG: ValidTypes: %#v\n", ValidTypes)
+	//fmt.Printf("DEBUG: IsValidType: %#v\n", IsValidType)
+}
+
+func convertToDocumentationNotes(in map[string]DocumentationNote) DocumentationNotes {
+	ret := DocumentationNotes{}
+	for k, v := range in {
+		ret[nameToCap[k]] = &v
+	}
+	return ret
 }
 
 // parseFieldTypeSpec parses field type specifications into a map of field names to types. Field types supported are:
@@ -250,6 +319,7 @@ func parseRecordTypes(rtypes []string) (map[string]DocumentationNote, []string) 
 		}
 
 		m[name] = DocumentationNote{
+			HasFeature:    true,
 			Comment:       note,
 			Unimplemented: unimplemented,
 			Link:          url,
@@ -298,28 +368,30 @@ func checkForLegacyFeatures(features DocumentationNotes) {
 // nameToCap maps record type names to their corresponding Capability constants.
 // This map should be treated as read-only after initialization.
 var nameToCap = map[string]Capability{
-	"AKAMAICDN":    CanUseAKAMAICDN,
-	"AKAMAITLC":    CanUseAKAMAITLC,
-	"Alias":        CanUseAlias,
-	"AzureAlias":   CanUseAzureAlias,
-	"CAA":          CanUseCAA,
-	"DHCID":        CanUseDHCID,
-	"DNAME":        CanUseDNAME,
-	"DS":           CanUseDS,
-	"HTTPS":        CanUseHTTPS,
-	"LOC":          CanUseLOC,
-	"NAPTR":        CanUseNAPTR,
-	"PTR":          CanUsePTR,
-	"Route53Alias": CanUseRoute53Alias,
-	"RP":           CanUseRP,
-	"SMIMEA":       CanUseSMIMEA,
-	"SOA":          CanUseSOA,
-	"SRV":          CanUseSRV,
-	"SSHFP":        CanUseSSHFP,
-	"SVCB":         CanUseSVCB,
-	"TLSA":         CanUseTLSA,
-	"DNSKEY":       CanUseDNSKEY,
-	"OPENPGPKEY":   CanUseOPENPGPKEY,
+	"AKAMAICDN":         CanUseAKAMAICDN,
+	"AKAMAITLC":         CanUseAKAMAITLC,
+	"ALIAS":             CanUseAlias,
+	"AZURE_ALIAS_A":     CanUseAzureAlias,
+	"AZURE_ALIAS_AAAA":  CanUseAzureAlias,
+	"AZURE_ALIAS_CNAME": CanUseAzureAlias,
+	"CAA":               CanUseCAA,
+	"DHCID":             CanUseDHCID,
+	"DNAME":             CanUseDNAME,
+	"DS":                CanUseDS,
+	"HTTPS":             CanUseHTTPS,
+	"LOC":               CanUseLOC,
+	"NAPTR":             CanUseNAPTR,
+	"PTR":               CanUsePTR,
+	"R53_ALIAS":         CanUseRoute53Alias,
+	"RP":                CanUseRP,
+	"SMIMEA":            CanUseSMIMEA,
+	"SOA":               CanUseSOA,
+	"SRV":               CanUseSRV,
+	"SSHFP":             CanUseSSHFP,
+	"SVCB":              CanUseSVCB,
+	"TLSA":              CanUseTLSA,
+	"DNSKEY":            CanUseDNSKEY,
+	"OPENPGPKEY":        CanUseOPENPGPKEY,
 }
 
 // Populate the legacy Features map based on supported record types.
@@ -328,6 +400,14 @@ func createFeaturesForRecordTypes(features DocumentationNotes, rtypeInfo map[str
 		if cap, ok := nameToCap[rtype]; ok {
 			features[cap] = &doc
 		}
+	}
+	return features
+}
+
+func createFeaturesForOther(features DocumentationNotes, hasFeature map[Capability]DocumentationNote) DocumentationNotes {
+	for cap, doc := range hasFeature {
+		fmt.Printf("DEBUG: createFeaturesForOther: cap=%q doc=%+v\n", cap, doc)
+		features[cap] = &doc
 	}
 	return features
 }

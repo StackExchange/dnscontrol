@@ -49,7 +49,7 @@ func init() {
 			NameAliases:        []string{"CLOUDFLARE"},
 			MaintainerGithubID: "@tresni",
 			SupportLevel:       providers.SupportLevelOfficial,
-			ProviderHandle:     cloudflareProvider{},
+			ProviderHandle:     &cloudflareProvider{},
 
 			// Legacy functions:
 			//RegistrarInitializer:          newReg,
@@ -80,7 +80,7 @@ func init() {
 				"ALIAS:note:CF automatically flattens CNAME records into A records dynamically",
 				"CAA",
 				"CNAME",
-				"DNSKEY",
+				//"DNSKEY",
 				"DS",
 				"HTTPS",
 				"LOC",
@@ -88,7 +88,7 @@ func init() {
 				"NAPTR",
 				"OPENPGPKEY",
 				"PTR",
-				"SMIMEA",
+				//"SMIMEA",
 				"SPF",
 				"SRV",
 				"SSHFP",
@@ -98,7 +98,7 @@ func init() {
 
 				// Custom Types
 				"CLOUDFLAREAPI_SINGLE_REDIRECT",
-				"WORKER_ROUTE",
+				"CF_WORKER_ROUTE",
 			},
 
 			Features: providers.DocumentationNotes{
@@ -106,7 +106,8 @@ func init() {
 				// See providers/capabilities.go for the entire list of capabilities.
 				providers.CanConcur:           providers.Can(),
 				providers.CanUseDSForChildren: providers.Can(),
-				providers.DocDualHost:         providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+				//providers.CanAutoDNSSEC:       providers.Can(),
+				providers.DocDualHost: providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 			},
 		})
 }

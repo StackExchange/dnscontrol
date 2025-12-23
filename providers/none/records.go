@@ -11,8 +11,3 @@ func (n none) GetZoneRecords(domain string, meta map[string]string) (models.Reco
 func (n none) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	return nil, 0, nil
 }
-
-// // GetDomainCorrections returns corrections to update a domain.
-// func (n none) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	return nil, nil
-// }

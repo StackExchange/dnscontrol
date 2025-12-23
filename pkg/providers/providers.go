@@ -126,6 +126,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 	if !ok {
 		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
 	}
+	fmt.Printf("DEBUG: Creating DSP of type %q: p=%+v\n", providerTypeName, p)
 	return p.Initializer(config, meta)
 }
 

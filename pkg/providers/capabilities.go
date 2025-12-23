@@ -182,6 +182,7 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 		providerCapabilities[pName] = map[Capability]bool{}
 	}
 	for _, pm := range meta {
+		//fmt.Printf("DEBUG: unwrapProviderCapabilities: pm type = %T (%v)\n", pm, k)
 		switch x := pm.(type) {
 		case Capability:
 			providerCapabilities[pName][x] = true
@@ -194,7 +195,9 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 				providerCapabilities[pName][k] = v.HasFeature
 			}
 		default:
-			log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
+			log.Printf("Unrecognized ProviderMetadata type: %T", pm)
+			panic("Unrecognized ProviderMetadata type")
+			//log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
 		}
 	}
 }
