@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"fmt"
 	"log"
 	"maps"
 	"slices"
@@ -113,9 +112,9 @@ func Register(opts RegisterOpts) {
 	if opts.SupportLevel == SupportLevelOfficial {
 		opts.HasFeature[DocOfficiallySupported] = DocumentationNote{HasFeature: true}
 	}
-	fmt.Printf("DEBUG: opts.HasFeature[DocCreateDomains] = %+v\n", opts.HasFeature[DocCreateDomains])
-	fmt.Printf("DEBUG: opts.HasFeature[CanGetZones] = %+v\n", opts.HasFeature[CanGetZones])
-	fmt.Printf("DEBUG: opts.HasFeature[IsDnsServiceProvider] = %+v\n", opts.HasFeature[IsDnsServiceProvider])
+	//fmt.Printf("DEBUG: opts.HasFeature[DocCreateDomains] = %+v\n", opts.HasFeature[DocCreateDomains])
+	//fmt.Printf("DEBUG: opts.HasFeature[CanGetZones] = %+v\n", opts.HasFeature[CanGetZones])
+	//fmt.Printf("DEBUG: opts.HasFeature[IsDnsServiceProvider] = %+v\n", opts.HasFeature[IsDnsServiceProvider])
 
 	//
 	// Populate legacy fields for backward compatibility.
@@ -141,15 +140,15 @@ func Register(opts RegisterOpts) {
 			RecordAuditor: opts.RecordAuditor,
 		}, opts.Features)
 		//DNSProviderTypes[opts.Name] = DspFuncs{Initializer: opts.DNSServiceProviderInitializer, RecordAuditor: opts.RecordAuditor}
-		fmt.Printf("DEBUG: Registered DSP %q\n", opts.Name)
-		for i, j := range opts.Features {
-			fmt.Printf("DEBUG:    Feature: %q: %+v\n", i, j)
-		}
-		fmt.Printf("DEBUG: end\n")
+		//fmt.Printf("DEBUG: Registered DSP %q\n", opts.Name)
+		//for i, j := range opts.Features {
+		//	fmt.Printf("DEBUG:    Feature: %q: %+v\n", i, j)
+		//}
+		//fmt.Printf("DEBUG: end\n")
 	}
-	fmt.Printf("DEBUG: Provider %q registered with features:\n", opts.Name)
-	fmt.Printf("DEBUG:       recTypes = %v\n", opts.IsRecordTypeSupported)
-	fmt.Printf("DEBUG:       others   = %v\n", opts.Features)
+	//fmt.Printf("DEBUG: Provider %q registered with features:\n", opts.Name)
+	//fmt.Printf("DEBUG:       recTypes = %v\n", opts.IsRecordTypeSupported)
+	//fmt.Printf("DEBUG:       others   = %v\n", opts.Features)
 	unwrapProviderCapabilities(opts.Name, []ProviderMetadata{
 		opts.Features, // The non-recordtype features.
 		//slices.Collect(maps.Values(opts.IsRecordTypeSupported)), // The Record Types supported.
@@ -193,12 +192,12 @@ func PostInitAllProviders() {
 	}
 
 	// Any providers that support all record types? Populate their record type support info.
-	fmt.Printf("DEBUG: Provider Info %v\n", Info)
+	//fmt.Printf("DEBUG: Provider Info %v\n", Info)
 	for providerName, opts := range Info {
-		fmt.Printf("DEBUG: Provider %q\n", providerName)
+		//fmt.Printf("DEBUG: Provider %q\n", providerName)
 		// Find any provider that has an empty .SupportedRecordTypes list; that means it supports all types.
 		if len(opts.RecordTypes) == 0 {
-			fmt.Printf("DEBUG:  EMPTY %q\n", providerName)
+			//fmt.Printf("DEBUG:  EMPTY %q\n", providerName)
 			// Populate the record-type support info:
 			opts.SupportedRecordTypes = typeList
 			opts.IsRecordTypeSupported = typeMap
@@ -212,7 +211,7 @@ func PostInitAllProviders() {
 	}
 
 	// DEBUG
-	fmt.Printf("DEBUG: ValidTypes: %#v\n", ValidTypes)
+	//fmt.Printf("DEBUG: ValidTypes: %#v\n", ValidTypes)
 	//fmt.Printf("DEBUG: IsValidType: %#v\n", IsValidType)
 }
 
@@ -406,7 +405,7 @@ func createFeaturesForRecordTypes(features DocumentationNotes, rtypeInfo map[str
 
 func createFeaturesForOther(features DocumentationNotes, hasFeature map[Capability]DocumentationNote) DocumentationNotes {
 	for cap, doc := range hasFeature {
-		fmt.Printf("DEBUG: createFeaturesForOther: cap=%q doc=%+v\n", cap, doc)
+		//fmt.Printf("DEBUG: createFeaturesForOther: cap=%q doc=%+v\n", cap, doc)
 		features[cap] = &doc
 	}
 	return features

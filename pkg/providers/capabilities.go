@@ -23,7 +23,6 @@ const (
 	// Can() indicates that it has been tested and shown to work concurrently.
 	// Cannot() indicates it has not been tested OR it has been shown to not
 	// work when used concurrently.  The default is Cannot().
-	// When using providers.Register(), use .ConcurrencyUntested = true instead.
 	CanConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
@@ -71,7 +70,6 @@ const (
 
 	// CanUseDSForChildren indicates the provider can handle DS record types, but
 	// only for children records, not at the root of the zone.
-	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDSForChildren
 
 	// CanUseHTTPS indicates the provider can handle HTTPS records
@@ -182,7 +180,6 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 		providerCapabilities[pName] = map[Capability]bool{}
 	}
 	for _, pm := range meta {
-		//fmt.Printf("DEBUG: unwrapProviderCapabilities: pm type = %T (%v)\n", pm, k)
 		switch x := pm.(type) {
 		case Capability:
 			providerCapabilities[pName][x] = true
@@ -195,9 +192,7 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 				providerCapabilities[pName][k] = v.HasFeature
 			}
 		default:
-			log.Printf("Unrecognized ProviderMetadata type: %T", pm)
-			panic("Unrecognized ProviderMetadata type")
-			//log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
+			log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
 		}
 	}
 }

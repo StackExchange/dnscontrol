@@ -126,7 +126,6 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 	if !ok {
 		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
 	}
-	fmt.Printf("DEBUG: Creating DSP of type %q: p=%+v\n", providerTypeName, p)
 	return p.Initializer(config, meta)
 }
 
@@ -183,13 +182,13 @@ type CustomRType struct {
 // provider is the registered type of provider this is valid with
 // name is the record type as it will appear in the js. (should be something like $PROVIDER_FOO)
 // realType is the record type it will be replaced with after validation
-// NB(tlim): This only applies to providers that don't use the new providers.Register() function.
+// NB(tlim): This is only needed by providers that don't use the new providers.Register() function.
 func RegisterCustomRecordType(name, provider, realType string) {
 	customRecordTypes[name] = &CustomRType{Name: name, Provider: provider, RealType: realType}
 }
 
 // GetCustomRecordType returns a registered custom record type, or nil if none
-// NB(tlim): This only applies to providers that don't use the new providers.Register() function.
+// NB(tlim): This is only needed by providers that don't use the new providers.Register() function.
 func GetCustomRecordType(rType string) *CustomRType {
 	return customRecordTypes[rType]
 }
