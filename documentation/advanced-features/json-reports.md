@@ -6,9 +6,8 @@ The report is JSON-formatted and contains the zonename, the provider or
 registrar name, the number of changes (corrections), and the correction details.
 All values are in text, values may contain `<`,`>` and `&` escape as needed.
 
-To generate the report, add the `--report <filename>` option to a preview or
-push command (this includes `preview`, `ppreview`, `push`,
-`ppush`).
+To generate the report, add the `--report <filename>` option to a `preview` or
+`push` command.
 
 The report lists the changes that would be (preview) or are (push) attempted,
 whether they are successful or not.

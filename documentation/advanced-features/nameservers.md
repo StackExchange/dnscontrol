@@ -95,7 +95,7 @@ D("example.com", REG_NONE,
 Suppose you don't want to manage a domain, but you want to list the zone in
 your `dnsconfig.js` file for inventory purposes. For example, suppose there are
 domains that some other part of your company maintains, but you want to list it
-in your `dnsconfig.js` because it is authoratative for the company.
+in your `dnsconfig.js` because it is authoritative for the company.
 
 ```javascript
 var REG_NONE = NewRegistrar("none");
