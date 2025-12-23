@@ -975,7 +975,7 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  *    * `ed25519`
  * * `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
  * * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
- *   * `*`: explicity allows all service types
+ *   * `*`: explicitly allows all service types
  *   * `email`: restricts key to email service only
  * * `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
  *   * `y`: Testing mode.
@@ -3572,7 +3572,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ## Advanced Technique: Define once, use many
  *
- * In some situations we define an SPF setting once and want to re-use
+ * In some situations we define an SPF setting once and want to reuse
  * it on many domains. Here's how to do this:
  *
  * ```javascript
