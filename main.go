@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/StackExchange/dnscontrol/v4/commands"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
 	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
@@ -21,5 +22,6 @@ func main() {
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
 		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://docs.dnscontrol.org/getting-started/getting-started#source for more information on how to build dnscontrol correctly.\n\n")
 	}
+	providers.PostInitAllProviders()
 	os.Exit(commands.Run("DNSControl version " + version.Version()))
 }
