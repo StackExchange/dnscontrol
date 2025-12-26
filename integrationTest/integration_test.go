@@ -1876,6 +1876,25 @@ func makeTests() []*TestGroup {
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
 		),
 
+		// CLOUDNS features
+
+		testgroup("CLOUDNS geodns tests",
+			only("CLOUDNS"),
+			tc("Add record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "US",
+			})),
+			tc("Update record with default geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})),
+			tc("Update record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "BR",
+			})),
+			tc("Delete metadata from record", a("@", "1.2.3.4")),
+			tc("Update a record with the value DEFAULT after removing the metadata should do nothing", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})).ExpectNoChanges(),
+		),
+
 		// PORKBUN features
 
 		testgroup("PORKBUN_URLFWD tests",
