@@ -13,7 +13,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `BIND`.
 Optional fields include:
 
 * `directory`: Location of the zone files.  Default: `zones` (in the current directory).
-* `filenameformat`: The formula used to generate the zone filenames. The default is usually sufficient.  Default: `"%c.zone"`
+* [`filenameformat`](#filenameformat): The formula used to generate the zone filenames. The default is usually sufficient.  Default: `"%c.zone"`
 
 Example:
 
