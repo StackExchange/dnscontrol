@@ -33,6 +33,8 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
 		r.Priority = rc.MxPreference
+	case recordTypeTLSA:
+		r.Value = fmt.Sprintf("%d %d %d %s", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	}
 
 	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
@@ -70,6 +72,8 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 		err = rc.SetTargetMX(r.Priority, recordValue)
 	case "SRV":
 		err = rc.SetTargetSRV(r.Priority, r.Weight, r.Port, recordValue)
+	case "TLSA":
+		err = rc.SetTargetTLSAString(recordValue)
 	default:
 		err = rc.PopulateFromStringFunc(rc.Type, recordValue, domain, nil)
 	}
@@ -96,6 +100,7 @@ const (
 	recordTypePTR      recordType = 10
 	recordTypeScript   recordType = 11
 	recordTypeNS       recordType = 12
+	recordTypeTLSA     recordType = 15
 )
 
 func recordTypeFromString(t string) recordType {
@@ -124,6 +129,8 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeScript
 	case "NS":
 		return recordTypeNS
+	case "TLSA":
+		return recordTypeTLSA
 	case "BUNNY_DNS_RDR":
 		return recordTypeRedirect
 	default:
@@ -159,6 +166,8 @@ func recordTypeToString(t recordType) string {
 		return "SCRIPT"
 	case recordTypeNS:
 		return "NS"
+	case recordTypeTLSA:
+		return "TLSA"
 	default:
 		panic(fmt.Errorf("BUNNY_DNS: native rtype %v unimplemented", t))
 	}
