@@ -85,6 +85,23 @@ func Run(v string) int {
 			Destination: &color.NoColor,
 			Value:       false,
 		},
+		&cli.BoolFlag{
+			Name:   "generate-bash-completion",
+			Usage:  "Generate bash completion",
+			Hidden: true,
+		},
+	}
+	app.Before = func(ctx context.Context, c *cli.Command) (context.Context, error) {
+		// In v2, EnableBashCompletion would automatically add this flag and trigger completion.
+		// In v3, we need to handle it manually.
+		// Only handle at root level - subcommands like shell-completion will handle their own.
+		if c.Bool("generate-bash-completion") && c.Root() == c {
+			if c.Root().ShellComplete != nil {
+				c.Root().ShellComplete(ctx, c)
+			}
+			return ctx, cli.Exit("", 0)
+		}
+		return ctx, nil
 	}
 	sort.Slice(commands, func(i, j int) bool {
 		return commands[i].Name < commands[j].Name

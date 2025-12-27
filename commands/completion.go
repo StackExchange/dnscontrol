@@ -30,6 +30,26 @@ func shellCompletionCommand() *cli.Command {
 		Usage:       "generate shell completion scripts",
 		ArgsUsage:   fmt.Sprintf("[ %s ]", strings.Join(supportedShells, " | ")),
 		Description: fmt.Sprintf("Generate shell completion script for [ %s ]", strings.Join(supportedShells, " | ")),
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:   "generate-bash-completion",
+				Usage:  "Generate bash completion",
+				Hidden: true,
+			},
+		},
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			// In v2, EnableBashCompletion would automatically add this flag and trigger completion.
+			// In v3, we need to handle it manually.
+			// This runs before Action, so we intercept the flag here.
+			if cmd.Bool("generate-bash-completion") {
+				if cmd.ShellComplete != nil {
+					cmd.ShellComplete(ctx, cmd)
+				}
+				// Mark that we handled completion so Action can skip
+				return context.WithValue(ctx, "completionHandled", true), nil
+			}
+			return ctx, nil
+		},
 		// BashComplete: func(ctx *cli.Context) {  // BashComplete renamed to ShellComplete in v3
 		ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 			for _, shell := range supportedShells {
@@ -41,13 +61,20 @@ func shellCompletionCommand() *cli.Command {
 			}
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			// If completion was handled in Before, skip normal action
+			if ctx.Value("completionHandled") != nil {
+				return nil
+			}
+
 			var inputShell string
 			if inputShell = cmd.Args().First(); inputShell == "" {
+				//fmt.Printf("DEBUG: no shell argument, checking $SHELL\n")
 				if inputShell = os.Getenv("SHELL"); inputShell == "" {
 					return cli.Exit(errors.New("shell not specified"), 1)
 				}
 			}
 			shellName := path.Base(inputShell) // necessary if using $SHELL, noop otherwise
+			//fmt.Printf("DEBUG: shellName = %q\n", shellName)
 
 			template := templates[shellName]
 			if template == nil {

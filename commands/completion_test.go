@@ -199,7 +199,20 @@ func TestShellCompletionCommand(t *testing.T) {
 				// 	app.EnableBashCompletion = false
 				// }()
 
-				err := app.Run(context.Background(), []string{app.Name, "shell-completion", tC.shellArg, "--generate-bash-completion"})
+				cmdargs := []string{app.Name,
+					"shell-completion",
+					tC.shellArg,
+					"--generate-bash-completion",
+				}
+				if tC.shellArg == "" {
+					// remove empty argument to simulate user not providing it
+					cmdargs = []string{app.Name,
+						"shell-completion",
+						"--generate-bash-completion",
+					}
+				}
+				//fmt.Printf("DEBUG: app.Run(%v)\n", cmdargs)
+				err := app.Run(context.Background(), cmdargs)
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
