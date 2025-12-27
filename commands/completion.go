@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
@@ -12,7 +13,8 @@ import (
 	"text/template"
 	"unicode/utf8"
 
-	"github.com/urfave/cli/v2"
+	// "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 //go:embed completion-scripts/completion.*.gotmpl
@@ -28,18 +30,19 @@ func shellCompletionCommand() *cli.Command {
 		Usage:       "generate shell completion scripts",
 		ArgsUsage:   fmt.Sprintf("[ %s ]", strings.Join(supportedShells, " | ")),
 		Description: fmt.Sprintf("Generate shell completion script for [ %s ]", strings.Join(supportedShells, " | ")),
-		BashComplete: func(ctx *cli.Context) {
+		// BashComplete: func(ctx *cli.Context) {  // BashComplete renamed to ShellComplete in v3
+		ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 			for _, shell := range supportedShells {
-				if strings.HasPrefix(shell, ctx.Args().First()) {
-					if _, err := ctx.App.Writer.Write([]byte(shell + "\n")); err != nil {
+				if strings.HasPrefix(shell, cmd.Args().First()) {
+					if _, err := cmd.Root().Writer.Write([]byte(shell + "\n")); err != nil {
 						panic(err)
 					}
 				}
 			}
 		},
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			var inputShell string
-			if inputShell = ctx.Args().First(); inputShell == "" {
+			if inputShell = cmd.Args().First(); inputShell == "" {
 				if inputShell = os.Getenv("SHELL"); inputShell == "" {
 					return cli.Exit(errors.New("shell not specified"), 1)
 				}
@@ -51,9 +54,9 @@ func shellCompletionCommand() *cli.Command {
 				return cli.Exit(fmt.Errorf("unknown shell: %s", inputShell), 1)
 			}
 
-			err = template.Execute(ctx.App.Writer, struct {
-				App *cli.App
-			}{ctx.App})
+			err = template.Execute(cmd.Root().Writer, struct {
+				App *cli.Command
+			}{cmd.Root()})
 			if err != nil {
 				return cli.Exit(fmt.Errorf("failed to print completion script: %w", err), 1)
 			}

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -9,7 +10,8 @@ import (
 	"text/template"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/urfave/cli/v2"
+	// "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type shellTestDataItem struct {
@@ -19,7 +21,8 @@ type shellTestDataItem struct {
 }
 
 // setupTestShellCompletionCommand resets the buffers used to capture output and errors from the app.
-func setupTestShellCompletionCommand(app *cli.App) func(t *testing.T) {
+func setupTestShellCompletionCommand(app *cli.Command) func(t *testing.T) {
+	// func setupTestShellCompletionCommand(app *cli.App) func(t *testing.T) {  // v2 syntax
 	return func(t *testing.T) {
 		app.Writer.(*bytes.Buffer).Reset()
 		cli.ErrWriter.(*bytes.Buffer).Reset()
@@ -27,7 +30,8 @@ func setupTestShellCompletionCommand(app *cli.App) func(t *testing.T) {
 }
 
 func TestShellCompletionCommand(t *testing.T) {
-	app := cli.NewApp()
+	// app := cli.NewApp()  // v2 syntax
+	app := &cli.Command{}
 	app.Name = "testing"
 
 	var appWriterBuffer bytes.Buffer
@@ -67,7 +71,7 @@ func TestShellCompletionCommand(t *testing.T) {
 				tearDownTest := setupTestShellCompletionCommand(app)
 				defer tearDownTest(t)
 
-				err := app.Run([]string{app.Name, "shell-completion", tt.shellName})
+				err := app.Run(context.Background(), []string{app.Name, "shell-completion", tt.shellName})
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -92,7 +96,7 @@ func TestShellCompletionCommand(t *testing.T) {
 			tearDownTest := setupTestShellCompletionCommand(app)
 			defer tearDownTest(t)
 
-			err := app.Run([]string{app.Name, "shell-completion", "invalid"})
+			err := app.Run(context.Background(), []string{app.Name, "shell-completion", "invalid"})
 
 			if err == nil {
 				t.Fatal("expected error, but didn't get one")
@@ -120,7 +124,7 @@ func TestShellCompletionCommand(t *testing.T) {
 
 				t.Setenv("SHELL", tt.shellPath)
 
-				err := app.Run([]string{app.Name, "shell-completion"})
+				err := app.Run(context.Background(), []string{app.Name, "shell-completion"})
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -147,7 +151,7 @@ func TestShellCompletionCommand(t *testing.T) {
 
 			t.Setenv("SHELL", invalidShellTestDataItem.shellPath)
 
-			err := app.Run([]string{app.Name, "shell-completion"})
+			err := app.Run(context.Background(), []string{app.Name, "shell-completion"})
 			if err == nil {
 				t.Fatal("expected error, but didn't get one")
 			}
@@ -190,12 +194,12 @@ func TestShellCompletionCommand(t *testing.T) {
 			t.Run(tC.shellArg, func(t *testing.T) {
 				tearDownTest := setupTestShellCompletionCommand(app)
 				defer tearDownTest(t)
-				app.EnableBashCompletion = true
-				defer func() {
-					app.EnableBashCompletion = false
-				}()
+				// app.EnableBashCompletion = true  // v2: Not available in v3
+				// defer func() {
+				// 	app.EnableBashCompletion = false
+				// }()
 
-				err := app.Run([]string{app.Name, "shell-completion", tC.shellArg, "--generate-bash-completion"})
+				err := app.Run(context.Background(), []string{app.Name, "shell-completion", tC.shellArg, "--generate-bash-completion"})
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -239,10 +243,12 @@ func testHelperGetShellsAndCompletionScripts() ([]shellTestDataItem, error) {
 
 // testHelperRenderTemplateFromApp renders a given template with a given app.
 // This is used to test the output of the CLI command against a 'known good' value.
-func testHelperRenderTemplateFromApp(app *cli.App, scriptTemplate *template.Template) (string, error) {
+func testHelperRenderTemplateFromApp(app *cli.Command, scriptTemplate *template.Template) (string, error) {
+	// func testHelperRenderTemplateFromApp(app *cli.App, scriptTemplate *template.Template) (string, error) {  // v2 syntax
 	var scriptBytes bytes.Buffer
 	err := scriptTemplate.Execute(&scriptBytes, struct {
-		App *cli.App
+		App *cli.Command
+		// App *cli.App  // v2 syntax
 	}{app})
 
 	return scriptBytes.String(), err

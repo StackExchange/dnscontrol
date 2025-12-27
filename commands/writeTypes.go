@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"context"
 	_ "embed" // Required by go:embed
 	"os"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
-	"github.com/urfave/cli/v2"
+	// "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -13,7 +15,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	return &cli.Command{
 		Name:  "write-types",
 		Usage: "[BETA] Write a TypeScript declaration file in the current directory",
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(WriteTypes(args))
 		},
 		Flags: args.flags(),
