@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,7 +12,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/urfave/cli/v2"
+
+	// "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -20,15 +23,15 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Name:    "get-zones",
 		Aliases: []string{"get-zone"},
 		Usage:   "gets a zone from a provider (stand-alone)",
-		Action: func(ctx *cli.Context) error {
-			if ctx.NArg() < 3 {
+		Action: func(ctx context.Context, c *cli.Command) error {
+			if c.NArg() < 3 {
 				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
 			}
-			args.CredName = ctx.Args().Get(0)
-			arg1 := ctx.Args().Get(1)
+			args.CredName = c.Args().Get(0)
+			arg1 := c.Args().Get(1)
 			args.ProviderName = arg1
 			// In v4.0, skip the first args.ZoneNames if it equals "-".
-			args.ZoneNames = ctx.Args().Slice()[2:]
+			args.ZoneNames = c.Args().Slice()[2:]
 
 			if arg1 != "" && arg1 != "-" {
 				// NB(tlim): In v4.0 this "if" can be removed.
@@ -83,17 +86,17 @@ var _ = cmd(catUtils, func() *cli.Command {
 	return &cli.Command{
 		Name:  "check-creds",
 		Usage: "Do a small operation to verify credentials (stand-alone)",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			var arg0, arg1 string
 			// This takes one or two command-line args.
 			// Starting in v3.16: Using it with 2 args will generate a warning.
 			// Starting in v4.0: Using it with 2 args might be an error.
-			if ctx.NArg() == 1 {
-				arg0 = ctx.Args().Get(0)
+			if c.NArg() == 1 {
+				arg0 = c.Args().Get(0)
 				arg1 = ""
-			} else if ctx.NArg() == 2 {
-				arg0 = ctx.Args().Get(0)
-				arg1 = ctx.Args().Get(1)
+			} else if c.NArg() == 2 {
+				arg0 = c.Args().Get(0)
+				arg1 = c.Args().Get(1)
 			} else {
 				return cli.Exit("Arguments should be: credskey [providername] (Ex: r53 ROUTE53)", 1)
 			}
