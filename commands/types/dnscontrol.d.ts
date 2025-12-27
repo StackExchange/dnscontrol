@@ -2841,7 +2841,7 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
  */
-declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
+declare function NewDnsProvider(name: string, typeOrMeta?: (string | object), meta?: object): string;
 
 /**
  * NewRegistrar activates a Registrar Provider specified in `creds.json`.

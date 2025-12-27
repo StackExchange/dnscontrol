@@ -2,11 +2,11 @@
 name: NewDnsProvider
 parameters:
   - name
-  - type
+  - typeOrMeta
   - meta
 parameter_types:
   name: string
-  type: string?
+  typeOrMeta: (string | object)?
   meta: object?
 return: string
 ---
