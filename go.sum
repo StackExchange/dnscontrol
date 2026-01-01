@@ -249,8 +249,8 @@ github.com/hashicorp/go-retryablehttp v0.7.7 h1:C8hUCYzor8PIfXHa4UrZkU4VvK8o9ISH
 github.com/hashicorp/go-retryablehttp v0.7.7/go.mod h1:pkQpWZeYWskR+D1tR2O5OcBFOxfA7DoAO6xtkuQnHTk=
 github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9TFvymaRGZED3FCV0=
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
-github.com/hetznercloud/hcloud-go/v2 v2.32.0 h1:BRe+k7ESdYv3xQLBGdKUfk+XBFRJNGKzq70nJI24ciM=
-github.com/hetznercloud/hcloud-go/v2 v2.32.0/go.mod h1:hAanyyfn9M0cMmZ68CXzPCF54KRb9EXd8eiE2FHKGIE=
+github.com/hetznercloud/hcloud-go/v2 v2.33.0 h1:g9hwuo60IXbupXJCYMlO4xDXgxxMPuFk31iOpLXDCV4=
+github.com/hetznercloud/hcloud-go/v2 v2.33.0/go.mod h1:GzYEl7slIGKc6Ttt08hjiJvGj8/PbWzcQf6IUi02dIs=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.181 h1:t0vgvyLg/WRUlXbhLqoSCdhdl1EHynroGJTmZ8SIThU=
 github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.181/go.mod h1:M+yna96Fx9o5GbIUnF3OvVvQGjgfVSyeJbV9Yb1z/wI=
 github.com/influxdata/tdigest v0.0.1 h1:XpFptwYmnEKUqmkcDjrzffswZ3nvNeevbUSLPP/ZzIY=
