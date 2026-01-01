@@ -11,6 +11,10 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
+{% hint style="warning" %}
+**DEPRECATED**: This record type is deprecated. Please use `URL` (for temporary redirects) or `URL301` (for permanent redirects) instead. PORKBUN_URLFWD will continue to work but is no longer recommended for new configurations.
+{% endhint %}
+
 `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
 
 
