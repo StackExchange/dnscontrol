@@ -73,11 +73,25 @@ retry:
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Cannot(), // per docs
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Cannot(), // per docs
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Cannot(), // per docs
+	providers.CanUseDNAME:            providers.Cannot(), // per docs
+	providers.CanUseDNSKEY:           providers.Cannot(), // per docs
+	providers.CanUseDS:               providers.Cannot(), // per docs
+	providers.CanUseHTTPS:            providers.Cannot(), // per docs
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Cannot(), // per docs
+	providers.CanUsePTR:              providers.Cannot(), // per docs
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(), // per docs
+	providers.CanUseSMIMEA:           providers.Cannot(), // per docs
+	providers.CanUseSVCB:             providers.Cannot(), // per docs
+	providers.CanUseTLSA:             providers.Cannot(), // per docs
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
