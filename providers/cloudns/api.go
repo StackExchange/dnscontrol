@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
-	"golang.org/x/time/rate"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 // Api layer for ClouDNS
@@ -20,7 +21,7 @@ type cloudnsProvider struct {
 		subid    string
 	}
 
-	requestLimit *rate.Limiter
+	requestLimit *AdaptiveLimiter
 
 	sync.Mutex       // Protects all access to the following fields:
 	domainIndex      map[string]string
@@ -295,7 +296,11 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 
 	req.URL.RawQuery = q.Encode()
 
-	// ClouDNS has a rate limit (not documented) of 10 request/second
+	// ClouDNS has an undocumented rate limit
+	// But the API does not provide a different status code (it's a 200) nor rate limit headers.
+	// The response is {"status":"Failed","statusDescription":"Request blocked. 84.86.84.86 is sending more than 20 requests per second."}
+
+retry:
 	if err := c.requestLimit.Wait(context.Background()); err != nil {
 		return nil, err
 	}
@@ -311,6 +316,15 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	err = json.Unmarshal(bodyString, &errResp)
 	if err == nil {
 		if errResp.Status == "Failed" {
+			// If this is a rate limit error
+			if strings.Contains(errResp.Description, "Request blocked.") && strings.Contains(errResp.Description, "is sending more than") {
+
+				printer.Warnf("ClouDNS API rate limited, pausing API calls...\n")
+				c.requestLimit.NotifyRateLimited()
+
+				goto retry
+			}
+
 			// For debug only - req.URL.RequestURI() contains the authentication params:
 			// return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
 			return bodyString, fmt.Errorf("ClouDNS API error: %s", errResp.Description)
