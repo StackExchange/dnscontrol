@@ -2910,6 +2910,8 @@ declare function OPENPGPKEY(name: string, target: string, ...modifiers: RecordMo
 declare function PANIC(message: string): never;
 
 /**
+ * **DEPRECATED**: This record type is deprecated. Please use `URL` (for temporary redirects) or `URL301` (for permanent redirects) instead. PORKBUN_URLFWD will continue to work but is no longer recommended for new configurations.
+ *
  * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
  *
  * ```javascript
@@ -3835,6 +3837,18 @@ declare function TXT(name: string, contents: string, ...modifiers: RecordModifie
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/)
  *
+ * ### Porkbun
+ *
+ * This creates a temporary (HTTP 302) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL("redirect", "https://example.org"),
+ * );
+ * ```
+ *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
  */
 declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
@@ -3847,6 +3861,18 @@ declare function URL(name: string, target: string, ...modifiers: RecordModifier[
  * This is a URL Redirect record with a type of "Permanent", it creates a 301 redirect to the target.
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/).
+ *
+ * ### Porkbun
+ *
+ * This creates a permanent (HTTP 301) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL301("redirect", "https://example.org"),
+ * );
+ * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
  */

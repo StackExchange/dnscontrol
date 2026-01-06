@@ -111,6 +111,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 	providers.RegisterCustomRecordType("PORKBUN_URLFWD", providerName, "")
+	providers.RegisterCustomRecordType("URL", providerName, "")
+	providers.RegisterCustomRecordType("URL301", providerName, "")
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -118,9 +120,14 @@ func (c *porkbunProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
+// isURLForwardingType returns true if the record type is a URL forwarding type.
+func isURLForwardingType(recordType string) bool {
+	return recordType == "PORKBUN_URLFWD" || recordType == "URL" || recordType == "URL301"
+}
+
 func genComparable(rec *models.RecordConfig) string {
-	if rec.Type == "PORKBUN_URLFWD" {
-		return fmt.Sprintf("type=%s includePath=%s wildcard=%s", rec.Metadata[metaType], rec.Metadata[metaIncludePath], rec.Metadata[metaWildcard])
+	if isURLForwardingType(rec.Type) {
+		return fmt.Sprintf("includePath=%s wildcard=%s", rec.Metadata[metaIncludePath], rec.Metadata[metaWildcard])
 	}
 	return ""
 }
@@ -135,19 +142,33 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
-		if record.Type == "PORKBUN_URLFWD" {
+		if isURLForwardingType(record.Type) {
 			record.TTL = 0
 			if record.Metadata == nil {
 				record.Metadata = make(map[string]string)
 			}
+			// Set metadata type based on record type
 			if record.Metadata[metaType] == "" {
-				record.Metadata[metaType] = "temporary"
+				if record.Type == "URL301" {
+					record.Metadata[metaType] = "permanent"
+				} else {
+					// Default for URL and PORKBUN_URLFWD
+					record.Metadata[metaType] = "temporary"
+				}
 			}
 			if record.Metadata[metaIncludePath] == "" {
 				record.Metadata[metaIncludePath] = "no"
 			}
 			if record.Metadata[metaWildcard] == "" {
 				record.Metadata[metaWildcard] = "yes"
+			}
+			if record.Type == "PORKBUN_URLFWD" {
+				printer.Warnf("`PORKBUN_URLFWD` is deprecated. Please use `URL` or `URL301` instead.\n")
+				if record.Metadata[metaType] == "permanent" {
+					record.Type = "URL301"
+				} else {
+					record.Type = "URL"
+				}
 			}
 		}
 	}
@@ -169,7 +190,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: change.Msgs[0],
 				F: func() error {
-					if change.New[0].Type == "PORKBUN_URLFWD" {
+					if isURLForwardingType(change.New[0].Type) {
 						return c.createURLForwardingRecord(dc.Name, req)
 					}
 					return c.createRecord(dc.Name, req)
@@ -184,7 +205,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
-					if change.New[0].Type == "PORKBUN_URLFWD" {
+					if isURLForwardingType(change.New[0].Type) {
 						return c.modifyURLForwardingRecord(dc.Name, id, req)
 					}
 					return c.modifyRecord(dc.Name, id, req)
@@ -195,7 +216,7 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 			corr = &models.Correction{
 				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
 				F: func() error {
-					if change.Old[0].Type == "PORKBUN_URLFWD" {
+					if isURLForwardingType(change.Old[0].Type) {
 						return c.deleteURLForwardingRecord(dc.Name, id)
 					}
 					return c.deleteRecord(dc.Name, id)
@@ -256,8 +277,12 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	}
 	for i := range forwards {
 		r := &forwards[i]
+		recordType := "URL"
+		if r.Type == "permanent" {
+			recordType = "URL301"
+		}
 		rc := &models.RecordConfig{
-			Type:     "PORKBUN_URLFWD",
+			Type:     recordType,
 			Original: r,
 			Metadata: map[string]string{
 				metaType:        r.Type,
@@ -346,7 +371,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 
 // toReq takes a RecordConfig and turns it into the native format used by the API.
 func toReq(rc *models.RecordConfig) (requestParams, error) {
-	if rc.Type == "PORKBUN_URLFWD" {
+	if isURLForwardingType(rc.Type) {
 		subdomain := rc.GetLabel()
 		if subdomain == "@" {
 			subdomain = ""
