@@ -3574,7 +3574,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ## Advanced Technique: Define once, use many
  *
- * In some situations we define an SPF setting once and want to re-use
+ * In some situations we define an SPF setting once and want to reuse
  * it on many domains. Here's how to do this:
  *
  * ```javascript
