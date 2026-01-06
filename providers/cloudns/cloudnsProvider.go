@@ -44,7 +44,6 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
@@ -158,9 +157,9 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 	var (
 		reportMsgs []string
-		create diff.Changeset
-		del diff.Changeset
-		modify diff.Changeset
+		create     diff.Changeset
+		del        diff.Changeset
+		modify     diff.Changeset
 	)
 	for _, inst := range instructions {
 		cor := diff.Correlation{}
@@ -343,13 +342,13 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 
 	// Add metadata for GeoDNS
 	// Note: By default, it works only with A, AAAA, CNAME, NAPTR or SRV record
-	// but you can ask the support for others type of record and they enable it 
+	// but you can ask the support for others type of record and they enable it
 	// for your ClouDNS account.
 	if r.GeodnsCode != "" {
 		if rc.Metadata == nil {
 			rc.Metadata = map[string]string{}
 		}
-		rc.Metadata[metaGeodnsCode] = r.GeodnsCode;
+		rc.Metadata[metaGeodnsCode] = r.GeodnsCode
 	}
 
 	var err error
@@ -434,11 +433,11 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 
 	// Add metadata for GeoDNS
 	// Note: By default, it works only with A, AAAA, CNAME, NAPTR or SRV record
-	// but you can ask the support for others type of record and they enable it 
+	// but you can ask the support for others type of record and they enable it
 	// for your ClouDNS account.
 	geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := rc.Metadata[metaGeodnsCode]
 	if geodnsCodeFromMetadataExist == true {
-		req["geodns-code"] = geodnsCodeFromMetadataValue;
+		req["geodns-code"] = geodnsCodeFromMetadataValue
 	}
 
 	switch rc.Type { // #rtype_variations
@@ -524,7 +523,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 
 	// By default, the value is "DEFAULT"
 	// To compare geodns metadata, we replace the value "DEFAULT" with an empty string
-	// Here, we replace the empty string with "DEFAULT", so the end user can see the 
+	// Here, we replace the empty string with "DEFAULT", so the end user can see the
 	// real value send to the provider.
 
 	geodnsCodeFromExistingRcMetadataValue, geodnsCodeFromExistingRcMetadataExist := existingRc.Metadata[metaGeodnsCode]
