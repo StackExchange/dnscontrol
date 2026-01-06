@@ -13,8 +13,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
-
-	// "github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v3"
 )
 
@@ -168,7 +166,6 @@ func exit(err error) error {
 
 // stringSliceToMap converts cli.StringSlice to map[string]string for further processing
 func stringSliceToMap(stringSlice []string) map[string]string {
-	// func stringSliceToMap(stringSlice cli.StringSlice) map[string]string {  // v2 syntax
 	mapString := make(map[string]string, len(stringSlice))
 	for _, values := range stringSlice {
 		parts := strings.SplitN(values, "=", 2)

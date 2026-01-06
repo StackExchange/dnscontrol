@@ -14,8 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
-
-	// "github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v3"
 )
 
@@ -45,13 +43,10 @@ var _ = cmd(catDebug, &cli.Command{
 
 // Run will execute the CLI
 func Run(v string) int {
-	// app := cli.NewApp()
-	// In v3, there's no cli.App, everything is a cli.Command
 	app := &cli.Command{
 		Name:    "dnscontrol",
 		Usage:   "DNSControl is a compiler and DSL for managing dns zones",
 		Version: v,
-		// HideVersion: true,  // Not available in v3
 	}
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
@@ -107,8 +102,6 @@ func Run(v string) int {
 		return commands[i].Name < commands[j].Name
 	})
 	app.Commands = commands
-	// app.EnableBashCompletion = true  // Removed in v3
-	// app.BashComplete = func(cCtx *cli.Context) {  // BashComplete renamed to ShellComplete
 	app.ShellComplete = func(ctx context.Context, c *cli.Command) {
 		// ripped from cli.DefaultCompleteWithFlags
 		var lastArg string
@@ -238,8 +231,7 @@ type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
 	DevMode  bool
-	// Variable cli.StringSlice  // v2 syntax
-	Variable []string // v3: Destination is now *[]string
+	Variable []string
 }
 
 func (args *ExecuteDSLArgs) flags() []cli.Flag {

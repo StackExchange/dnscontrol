@@ -6,8 +6,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-
-	// "github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v3"
 )
 

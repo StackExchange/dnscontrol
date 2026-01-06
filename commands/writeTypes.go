@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
-	// "github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v3"
 )
 

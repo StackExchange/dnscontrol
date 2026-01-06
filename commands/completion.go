@@ -13,7 +13,6 @@ import (
 	"text/template"
 	"unicode/utf8"
 
-	// "github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v3"
 )
 
@@ -50,7 +49,6 @@ func shellCompletionCommand() *cli.Command {
 			}
 			return ctx, nil
 		},
-		// BashComplete: func(ctx *cli.Context) {  // BashComplete renamed to ShellComplete in v3
 		ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 			for _, shell := range supportedShells {
 				if strings.HasPrefix(shell, cmd.Args().First()) {
@@ -68,7 +66,6 @@ func shellCompletionCommand() *cli.Command {
 
 			var inputShell string
 			if inputShell = cmd.Args().First(); inputShell == "" {
-				//fmt.Printf("DEBUG: no shell argument, checking $SHELL\n")
 				if inputShell = os.Getenv("SHELL"); inputShell == "" {
 					return cli.Exit(errors.New("shell not specified"), 1)
 				}
