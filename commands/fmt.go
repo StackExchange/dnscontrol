@@ -1,13 +1,14 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/ditashi/jsbeautifier-go/jsbeautifier"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -15,7 +16,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	return &cli.Command{
 		Name:  "fmt",
 		Usage: "[BETA] Format and prettify a given file",
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(FmtFile(args))
 		},
 		Flags: args.flags(),

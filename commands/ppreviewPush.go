@@ -2,6 +2,7 @@ package commands
 
 import (
 	"cmp"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,11 +13,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/nozzle/throttler"
-	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
-	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -29,6 +25,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/nozzle/throttler"
+	"github.com/urfave/cli/v3"
+	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 )
 
 type cmdZoneCache struct {
@@ -41,7 +41,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	return &cli.Command{
 		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -90,7 +90,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.ConcurMode,
 		Value:       "concurrent",
 		Usage:       `Which providers to run concurrently: concurrent, none, all`,
-		Action: func(c *cli.Context, s string) error {
+		Action: func(ctx context.Context, c *cli.Command, s string) error {
 			if !slices.Contains([]string{"concurrent", "none", "all"}, s) {
 				fmt.Printf("%q is not a valid option for --cmode.  Values are: concurrent, none, all\n", s)
 				os.Exit(1)
@@ -103,7 +103,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.ConcurMax,
 		Value:       999,
 		Usage:       `Maximum number of concurrent connections`,
-		Action: func(c *cli.Context, v int) error {
+		Action: func(ctx context.Context, c *cli.Command, v int) error {
 			if v < 1 {
 				fmt.Printf("%d is not a valid value for --cmax.  Values must be 1 or greater\n", v)
 				os.Exit(1)
@@ -131,7 +131,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:   "reportmax",
 		Hidden: false,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, maxreport int) error {
+		Action: func(ctx context.Context, c *cli.Command, maxreport int) error {
 			printer.MaxReport = maxreport
 			return nil
 		},
@@ -154,7 +154,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	return &cli.Command{
 		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
