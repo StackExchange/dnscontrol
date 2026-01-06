@@ -254,7 +254,7 @@ func (c *cloudnsProvider) isDnssecEnabled(id string) (bool, error) {
 			if errResp.Description == "The DNSSEC is not active." {
 				return false, nil
 			}
-			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %w", err)
+			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %s", errResp.Description)
 		}
 	}
 
