@@ -16,7 +16,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-DNSKEY adds a DNSKEY record to the domain.
+`DNSKEY` adds a [DNS Key record](https://www.rfc-editor.org/rfc/rfc4034) to the domain.
 
 Flags should be a number.
 

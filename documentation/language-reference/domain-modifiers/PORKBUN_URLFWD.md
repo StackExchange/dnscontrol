@@ -11,7 +11,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
+`PORKBUN_URLFWD` is a [Porkbun](../../provider/porkbun.md)-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
 
 
 {% code title="dnsconfig.js" %}

@@ -29,8 +29,9 @@ parameter_types:
   ttl: Duration?
 ---
 
-DNSControl contains a `CAA_BUILDER` which can be used to simply create
-[`CAA()`](../domain-modifiers/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain-modifiers/CAA.md) record
+`CAA_BUILDER` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain.
+
+`CAA_BUILDER` eases the creation of [`CAA`](CAA.md) records. Instead of creating each [`CAA`](CAA.md) record
 individually, you can simply configure your report mail address, the
 authorized certificate authorities and the builder cares about the rest.
 
@@ -55,7 +56,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```
 {% endcode %}
 
-`CAA_BUILDER()` builds multiple records:
+`CAA_BUILDER` builds multiple records:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -100,7 +101,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 ```
 {% endcode %}
 
-`CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
+`CAA_BUILDER` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
 
 {% code title="dnsconfig.js" %}
 ```javascript
