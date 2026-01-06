@@ -165,7 +165,7 @@ Jump to a table:
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
