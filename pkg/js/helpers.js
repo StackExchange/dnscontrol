@@ -1511,6 +1511,9 @@ var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
+/**
+ * @deprecated Please use URL or URL301 instead
+ */
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
 // LOC_BUILDER_DD takes an object:

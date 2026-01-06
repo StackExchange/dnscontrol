@@ -435,6 +435,7 @@ func makeTests() []*TestGroup {
 				"JOKER",       // Not supported via the Zone API.
 				"NAMEDOTCOM",  // "Ignores @ for NS records"
 				"NETCUP",      // NS records not currently supported.
+				"PORKBUN",     // Record ignored.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
 				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
