@@ -165,7 +165,7 @@ Jump to a table:
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
@@ -223,7 +223,7 @@ Jump to a table:
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ✅ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
@@ -279,7 +279,7 @@ Jump to a table:
 | [`CNR`](cnr.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❔ | ❌ | ❔ |
@@ -329,6 +329,7 @@ Jump to a table:
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ❌ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❌ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
