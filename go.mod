@@ -48,7 +48,6 @@ require (
 	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.11.1
 	github.com/transip/gotransip/v6 v6.26.1
-	github.com/urfave/cli/v2 v2.27.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/oauth2 v0.34.0
@@ -75,6 +74,7 @@ require (
 	github.com/nicholas-fedor/shoutrrr v0.13.1
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
 	github.com/oracle/oci-go-sdk/v65 v65.105.2
+	github.com/urfave/cli/v3 v3.6.1
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
@@ -105,7 +105,6 @@ require (
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deepmap/oapi-codegen v1.9.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -146,7 +145,6 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
@@ -155,7 +153,6 @@ require (
 	github.com/sony/gobreaker v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
-	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

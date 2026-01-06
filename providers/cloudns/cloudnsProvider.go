@@ -44,7 +44,6 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
