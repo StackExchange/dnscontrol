@@ -288,12 +288,20 @@ func (c *cloudnsProvider) getNameservers(domain string) ([]string, error) {
 	}
 
 	// The API response might be an array of strings, or an object with string keys "1", "2", etc.
+	// And sometimes it contains values that are blank strings, which we don't want to include in the result.
 
 	// Try as array first
 	var arr []string
 	errFromArray := json.Unmarshal(bodyString, &arr)
 	if errFromArray == nil {
-		return arr, nil
+		// Filter out empty strings
+		nameservers := make([]string, 0, len(arr))
+		for _, ns := range arr {
+			if ns != "" {
+				nameservers = append(nameservers, ns)
+			}
+		}
+		return nameservers, nil
 	}
 
 	// Try as map
@@ -304,7 +312,9 @@ func (c *cloudnsProvider) getNameservers(domain string) ([]string, error) {
 
 	nameservers := make([]string, 0, len(nr))
 	for _, ns := range nr {
-		nameservers = append(nameservers, ns)
+		if ns != "" {
+			nameservers = append(nameservers, ns)
+		}
 	}
 
 	return nameservers, nil
