@@ -35,7 +35,7 @@ Jump to a table:
 | [`BIND`](bind.md) | ✅ | ✅ | ❌ |
 | [`BUNNY_DNS`](bunny_dns.md) | ❌ | ✅ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ |
-| [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ❌ |
+| [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ✅ | ✅ |
 | [`DESEC`](desec.md) | ❌ | ✅ | ❌ |
