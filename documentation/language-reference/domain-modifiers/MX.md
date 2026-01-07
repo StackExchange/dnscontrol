@@ -12,7 +12,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-MX adds an MX record to the domain.
+`MX` adds a [Mail exchange record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
 
 Priority should be a number.
 

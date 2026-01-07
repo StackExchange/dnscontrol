@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`TXT` adds an `TXT` record To a domain. The name should be the relative
+`TXT` adds a [Text record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative
 label for the record. Use `@` for the domain apex.
 
 The contents is either a single or multiple strings.  To
