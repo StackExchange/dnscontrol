@@ -91,7 +91,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Cannot(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
@@ -338,6 +338,8 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 			rc.SvcParams = strings.Join(c[2:], " ")
 		}
 		err = rc.SetTarget(c[1])
+	case "SSHFP":
+		err = rc.SetTargetSSHFPString(r.Content)
 	default:
 		err = rc.SetTarget(r.Content)
 	}
@@ -392,6 +394,9 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "SVCB":
 		req["content"] = fmt.Sprintf("%d %s %s",
 			rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
+	case "SSHFP":
+		req["content"] = fmt.Sprintf("%v %v %s",
+			rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	default:
 		return nil, fmt.Errorf("porkbun.toReq rtype %q unimplemented", rc.Type)
 	}
