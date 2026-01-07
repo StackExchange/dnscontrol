@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-CNAME adds a CNAME record to the domain. The name should be the relative label for the domain.
+`CNAME` adds a [Canonical name record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
 Using `@` or `*` for CNAME records is not recommended, as different providers support them differently.
 
 Target should be a string representing the CNAME target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
