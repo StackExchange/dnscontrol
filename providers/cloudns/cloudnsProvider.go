@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -24,8 +25,7 @@ Info required in `creds.json`:
    - auth-password
 */
 
-// NewCloudns creates the provider.
-func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
 	c := &cloudnsProvider{}
 	c.requestLimit = NewAdaptiveLimiter(10, 10)
 
@@ -36,6 +36,14 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	}
 
 	return c, nil
+}
+
+func NewDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return NewCloudns(conf)
+}
+
+func NewReg(conf map[string]string) (providers.Registrar, error) {
+	return NewCloudns(conf)
 }
 
 var features = providers.DocumentationNotes{
@@ -69,10 +77,11 @@ func init() {
 	const providerName = "CLOUDNS"
 	const providerMaintainer = "@pragmaton"
 	fns := providers.DspFuncs{
-		Initializer:   NewCloudns,
+		Initializer:   NewDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, NewReg)
 	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -266,6 +275,36 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return corrections, actualChangeCount, nil
+}
+
+// GetRegistrarCorrections returns corrections to update domain nameserver delegation
+func (c *cloudnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	// 1. Get current nameservers from registrar
+	existing, err := c.getNameservers(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(existing)
+	existingStr := strings.Join(existing, ",")
+
+	// 2. Get desired nameservers from config
+	desired := models.NameserversToStrings(dc.Nameservers)
+	sort.Strings(desired)
+	desiredStr := strings.Join(desired, ",")
+
+	// 3. Compare and return correction if needed
+	if existingStr != desiredStr {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Update nameservers from '%s' to '%s'", existingStr, desiredStr),
+				F: func() error {
+					return c.setNameservers(dc.Name, desired)
+				},
+			},
+		}, nil
+	}
+
+	return nil, nil
 }
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -255,7 +256,7 @@ func (c *cloudnsProvider) isDnssecEnabled(id string) (bool, error) {
 			if errResp.Description == "The DNSSEC is not active." {
 				return false, nil
 			}
-			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %w", err)
+			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %s", errResp.Description)
 		}
 	}
 
@@ -280,20 +281,77 @@ func (c *cloudnsProvider) setDnssec(id string, enabled bool) error {
 	return nil
 }
 
+func (c *cloudnsProvider) getNameservers(domain string) ([]string, error) {
+	params := requestParams{"domain-name": domain}
+
+	bodyString, err := c.get("/domains/get-nameservers.json", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching nameservers from ClouDNS: %w", err)
+	}
+
+	// The API response might be an array of strings, or an object with string keys "1", "2", etc.
+	// And sometimes it contains values that are blank strings, which we don't want to include in the result.
+
+	// Try as array first
+	var arr []string
+	errFromArray := json.Unmarshal(bodyString, &arr)
+	if errFromArray == nil {
+		// Filter out empty strings
+		nameservers := make([]string, 0, len(arr))
+		for _, ns := range arr {
+			if ns != "" {
+				nameservers = append(nameservers, ns)
+			}
+		}
+		return nameservers, nil
+	}
+
+	// Try as map
+	var nr map[string]string
+	if err := json.Unmarshal(bodyString, &nr); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal nameservers from ClouDNS: when attempting object %w, when attempting array %w", err, errFromArray)
+	}
+
+	nameservers := make([]string, 0, len(nr))
+	for _, ns := range nr {
+		if ns != "" {
+			nameservers = append(nameservers, ns)
+		}
+	}
+
+	return nameservers, nil
+}
+
+func (c *cloudnsProvider) setNameservers(domain string, nameservers []string) error {
+	q := url.Values{}
+	q.Add("domain-name", domain)
+	for _, ns := range nameservers {
+		q.Add("nameservers[]", ns)
+	}
+
+	if _, err := c.getWithQuery("/domains/set-nameservers.json", q); err != nil {
+		return fmt.Errorf("failed setting nameservers at ClouDNS: %w", err)
+	}
+	return nil
+}
+
 func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, error) {
+	q := url.Values{}
+	for pName, pValue := range params {
+		q.Add(pName, pValue)
+	}
+	return c.getWithQuery(endpoint, q)
+}
+
+func (c *cloudnsProvider) getWithQuery(endpoint string, q url.Values) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest(http.MethodGet, "https://api.cloudns.net"+endpoint, nil)
-	q := req.URL.Query()
 
 	// TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)
 	q.Add("sub-auth-id", c.creds.subid)
-
-	for pName, pValue := range params {
-		q.Add(pName, pValue)
-	}
 
 	req.URL.RawQuery = q.Encode()
 
