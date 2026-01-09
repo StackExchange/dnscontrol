@@ -429,6 +429,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
+				"DNSCALE",     // Apex NS records are managed by DNScale.
 				"DNSIMPLE",    // Does not support NS records nor subdomains.
 				"EXOSCALE",    // Not supported.
 				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."

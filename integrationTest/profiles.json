@@ -114,6 +114,11 @@
     "domain": "$DIGITALOCEAN_DOMAIN",
     "token": "$DIGITALOCEAN_TOKEN"
   },
+  "DNSCALE": {
+    "TYPE": "DNSCALE",
+    "api_key": "$DNSCALE_API_KEY",
+    "domain": "$DNSCALE_DOMAIN"
+  },
   "DNSIMPLE": {
     "TYPE": "DNSIMPLE",
     "baseurl": "https://api.sandbox.dnsimple.com",
