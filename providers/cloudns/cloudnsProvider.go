@@ -361,6 +361,20 @@ func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]st
 	return c.createDomain(domain)
 }
 
+// returns names of all DNS zones managed by this provider.
+func (c *cloudnsProvider) ListZones() ([]string, error) {
+	if err := c.fetchZones(); err != nil {
+		return nil, err
+	}
+
+	zones := make([]string, 0, len(c.domainIndex))
+	for zone := range c.domainIndex {
+		zones = append(zones, zone)
+	}
+
+	return zones, nil
+}
+
 // parses the ClouDNS format into our standard RecordConfig
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
