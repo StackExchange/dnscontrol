@@ -135,7 +135,7 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	domainID, ok, err := c.fetchDomainIndex(dc.Name)
+	domainID, ok, err := c.idForDomain(dc.Name)
 	if err != nil {
 		return nil, 0, err
 	} else if !ok {
@@ -353,7 +353,7 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 
 // EnsureZoneExists creates a zone if it does not exist
 func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
-	if _, ok, err := c.fetchDomainIndex(domain); err != nil {
+	if _, ok, err := c.idForDomain(domain); err != nil {
 		return err
 	} else if ok { // zone already exists
 		return nil
