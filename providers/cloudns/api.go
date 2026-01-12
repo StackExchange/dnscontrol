@@ -140,44 +140,52 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) ([]uint32, erro
 	return allowedTTLValues, nil
 }
 
-func (c *cloudnsProvider) fetchDomainIndex(name string) (string, bool, error) {
-	c.Lock()
-	defer c.Unlock()
-
-	if c.domainIndex == nil {
-		rowsPerPage := 100
-		page := 1
-		for {
-			var dr zoneResponse
-			params := requestParams{
-				"page":          strconv.Itoa(page),
-				"rows-per-page": strconv.Itoa(rowsPerPage),
-			}
-			endpoint := "/dns/list-zones.json"
-			bodyString, err := c.get(endpoint, params)
-			if err != nil {
-				return "", false, fmt.Errorf("failed fetching domain list from ClouDNS: %w", err)
-			}
-			if err := json.Unmarshal(bodyString, &dr); err != nil {
-				return "", false, fmt.Errorf("failed to unmarshal domain list from ClouDNS: %w", err)
-			}
-
-			if c.domainIndex == nil {
-				c.domainIndex = map[string]string{}
-			}
-
-			for _, domain := range dr {
-				c.domainIndex[domain.Name] = domain.Name
-			}
-			if len(dr) < rowsPerPage {
-				break
-			}
-			page++
-		}
+func (c *cloudnsProvider) idForDomain(name string) (string, bool, error) {
+	if err := c.fetchZones(); err != nil {
+		return "", false, err
 	}
 
 	index, ok := c.domainIndex[name]
 	return index, ok, nil
+}
+
+func (c *cloudnsProvider) fetchZones() error {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.domainIndex != nil {
+		return nil
+	}
+
+	c.domainIndex = map[string]string{}
+
+	rowsPerPage := 100
+	page := 1
+	for {
+		var dr zoneResponse
+		params := requestParams{
+			"page":          strconv.Itoa(page),
+			"rows-per-page": strconv.Itoa(rowsPerPage),
+		}
+		endpoint := "/dns/list-zones.json"
+		bodyString, err := c.get(endpoint, params)
+		if err != nil {
+			return fmt.Errorf("failed fetching domain list from ClouDNS: %w", err)
+		}
+		if err := json.Unmarshal(bodyString, &dr); err != nil {
+			return fmt.Errorf("failed to unmarshal domain list from ClouDNS: %w", err)
+		}
+
+		for _, domain := range dr {
+			c.domainIndex[domain.Name] = domain.Name
+		}
+		if len(dr) < rowsPerPage {
+			break
+		}
+		page++
+	}
+
+	return nil
 }
 
 func (c *cloudnsProvider) createDomain(domain string) error {
