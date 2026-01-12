@@ -86,7 +86,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(), // per docs
 	providers.CanUsePTR:              providers.Cannot(), // per docs
-	providers.CanUseSOA:              providers.Cannot(), // despite docs
+	providers.CanUseSOA:              providers.Cannot("Technically SOA is supported but in reality the API only permits updates to the TTL. That is insufficient for DNSControl to claim 'support'"),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(), // per docs
 	providers.CanUseSMIMEA:           providers.Cannot(), // per docs
