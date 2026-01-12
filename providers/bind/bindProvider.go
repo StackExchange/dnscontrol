@@ -241,7 +241,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-func (c *bindProvider) EnsureZoneExists(_ string) error {
+func (c *bindProvider) EnsureZoneExists(_ string, _ map[string]string) error {
 	return nil
 }
 
