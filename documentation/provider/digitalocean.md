@@ -58,13 +58,14 @@ The [API reference](https://docs.digitalocean.com/reference/api/digitalocean/#ta
 | NS    | This record type defines the name servers that are used for this zone. |
 | TXT   | This record type is used to associate a string of text with a hostname, primarily used for verification. |
 | SRV   | This record type specifies the location (hostname and port number) of servers for specific services. |
-| SOA   | This record type defines administrative information about the zone. Can only have ttl changed, cannot be deleted |
 
 ## Unsupported record types
 
 This means that `ALIAS`, `DHCID`, `DNAME`, `DS`, `FRAME`, `HTTPS`, `LOC`, `OPENPGPKEY`, `PTR`, `SMIMEA`, `SSHFP`, `SVCB`, `TLSA`, `URL`, or `URL301` presumably **do not work** with Digital Ocean.
 
 In 2025, the provider maintainer has confirmed that `ALIAS` and `LOC` records are rejected. The other ones that do not work are expected in this circumstance. `SPF` records are not a problem since they are turned into `TXT` record types.
+
+Since `SOA` record support is so limited we do not provide the option to update it.
 
 ## Limitations
 
