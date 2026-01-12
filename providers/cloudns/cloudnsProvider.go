@@ -296,7 +296,7 @@ func (c *cloudnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*m
 	if existingStr != desiredStr {
 		return []*models.Correction{
 			{
-				Msg: fmt.Sprintf("Update nameservers from '%s' to '%s'", existingStr, desiredStr),
+				Msg: fmt.Sprintf("Update nameservers from %q to %q", existingStr, desiredStr),
 				F: func() error {
 					return c.setNameservers(dc.Name, desired)
 				},
