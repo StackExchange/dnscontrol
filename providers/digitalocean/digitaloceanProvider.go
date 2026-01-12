@@ -86,7 +86,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(), // per docs
 	providers.CanUsePTR:              providers.Cannot(), // per docs
-	providers.CanUseSOA:              providers.Can(),
+	providers.CanUseSOA:              providers.Cannot(), // despite docs
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(), // per docs
 	providers.CanUseSMIMEA:           providers.Cannot(), // per docs
