@@ -52,6 +52,7 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		if part == "" {
 			continue
 		}
+		lcpart := strings.ToLower(part) // We have seen "Ip4" instead of "ip4".  Let's be gracious and allow it.
 		p := &SPFPart{Text: part}
 		if qualifiers[part[0]] {
 			part = part[1:]
@@ -60,11 +61,10 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		if part == "all" {
 			// all. nothing else matters.
 			break
-		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
+		} else if lcpart == "a" || lcpart == "mx" {
 			p.IsLookup = true
-		} else if strings.HasPrefix(part, "Ip4:") || strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
-			// NB(tlim): "Ip4" is a typo in oclc.org. We'll fix it here at least for now.
-			// "Be liberal in what you accept, and strict in what you send."
+		} else if strings.HasPrefix(lcpart, "ip4:") || strings.HasPrefix(lcpart, "ip6:") {
+			// ip address, 0 lookups
 			continue
 		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect=") {
 			// redirect is only partially implemented. redirect is a
