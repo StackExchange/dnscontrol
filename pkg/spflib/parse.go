@@ -62,8 +62,9 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 			break
 		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
 			p.IsLookup = true
-		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
-			// ip address, 0 lookups
+		} else if strings.HasPrefix(part, "Ip4:") || strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
+			// NB(tlim): "Ip4" is a typo in oclc.org. We'll fix it here at least for now.
+			// "Be liberal in what you accept, and strict in what you send."
 			continue
 		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect=") {
 			// redirect is only partially implemented. redirect is a
