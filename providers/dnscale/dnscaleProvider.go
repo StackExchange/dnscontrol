@@ -246,7 +246,7 @@ func (p *dnscaleProvider) EnsureZoneExists(domain string, metadata map[string]st
 
 // API methods
 
-func (p *dnscaleProvider) doRequest(ctx context.Context, method, path string, body interface{}) ([]byte, error) {
+func (p *dnscaleProvider) doRequest(ctx context.Context, method, path string, body any) ([]byte, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
