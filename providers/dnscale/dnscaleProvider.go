@@ -395,11 +395,10 @@ func toRecordConfig(domain string, r Record) (*models.RecordConfig, error) {
 	if before, ok := strings.CutSuffix(r.Name, domainWithDot); ok {
 		name = before
 		name = strings.TrimSuffix(name, ".")
-	} else if strings.HasSuffix(r.Name, domain) {
-		name = strings.TrimSuffix(r.Name, domain)
-		name = strings.TrimSuffix(name, ".")
+	} else if before, ok := strings.CutSuffix(r.Name, domain); ok {
+		name = strings.TrimSuffix(before, ".")
 	}
-	if name == "" || name == domain {
+	if name == "" {
 		name = "@"
 	}
 	rc.SetLabel(name, domain)
