@@ -18,6 +18,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/cscglobal"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/desec"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/digitalocean"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/dnscale"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/doh"
