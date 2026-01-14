@@ -25,6 +25,10 @@ func generateOwnersFile() error {
 		ownersData.WriteString("\n")
 	}
 
+	// Overall maintainer
+	ownersData.WriteString("\n")
+	ownersData.WriteString("* @tlimoncelli\n")
+
 	file, err := os.Create(".github/CODEOWNERS")
 	if err != nil {
 		return err
