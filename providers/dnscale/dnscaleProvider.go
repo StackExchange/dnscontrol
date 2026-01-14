@@ -403,8 +403,8 @@ func toRecordConfig(domain string, r Record) (*models.RecordConfig, error) {
 	// Extract label from full record name
 	name := strings.TrimSuffix(r.Name, ".")
 	domainWithDot := domain + "."
-	if strings.HasSuffix(r.Name, domainWithDot) {
-		name = strings.TrimSuffix(r.Name, domainWithDot)
+	if before, ok := strings.CutSuffix(r.Name, domainWithDot); ok {
+			name = before
 		name = strings.TrimSuffix(name, ".")
 	} else if strings.HasSuffix(r.Name, domain) {
 		name = strings.TrimSuffix(r.Name, domain)
