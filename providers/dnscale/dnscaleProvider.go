@@ -96,20 +96,9 @@ type zonesResponse struct {
 	Zones []Zone `json:"zones"`
 }
 
-// zoneResponse represents a single zone response.
-type zoneResponse struct {
-	Zone
-}
-
 // recordsResponse represents the records list response.
 type recordsResponse struct {
 	Records []Record `json:"records"`
-}
-
-// recordResponse represents a single record response.
-type recordResponse struct {
-	Message string `json:"message"`
-	Record  Record `json:"record"`
 }
 
 // NewProvider initializes a DNScale DNSServiceProvider.
@@ -404,7 +393,7 @@ func toRecordConfig(domain string, r Record) (*models.RecordConfig, error) {
 	name := strings.TrimSuffix(r.Name, ".")
 	domainWithDot := domain + "."
 	if before, ok := strings.CutSuffix(r.Name, domainWithDot); ok {
-			name = before
+		name = before
 		name = strings.TrimSuffix(name, ".")
 	} else if strings.HasSuffix(r.Name, domain) {
 		name = strings.TrimSuffix(r.Name, domain)
