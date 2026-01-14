@@ -327,7 +327,7 @@ func (p *dnscaleProvider) getZoneByName(name string) (*Zone, error) {
 }
 
 func (p *dnscaleProvider) createZone(name string) error {
-	reqBody := map[string]interface{}{
+	reqBody := map[string]any{
 		"name":   name,
 		"type":   "primary",
 		"region": "EU",
