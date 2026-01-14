@@ -372,7 +372,7 @@ func (p *dnscaleProvider) createRecord(zoneID string, rec Record) error {
 }
 
 func (p *dnscaleProvider) updateRecord(zoneID, recordID string, rec Record) error {
-	reqBody := map[string]interface{}{
+	reqBody := map[string]any{
 		"name":    rec.Name,
 		"type":    rec.Type,
 		"content": rec.Content,
