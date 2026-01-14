@@ -354,7 +354,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
 
 1. Run `go generate ./...` to make sure all generated files are fresh.
 2. Make sure the following files were created and/or updated:
-  * `OWNERS`
+  * `CODEOWNERS`
   * `README.md`
   * `.github/workflows/pr_integration_tests.yml` (The PROVIDERS list)
   * `.goreleaser.yml` (Search for `Provider-specific changes`)
