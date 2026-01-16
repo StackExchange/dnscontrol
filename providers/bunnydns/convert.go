@@ -9,7 +9,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var fqdnTypes = []recordType{recordTypeCNAME, recordTypeMX, recordTypeNS, recordTypePTR, recordTypeSRV}
+var fqdnTypes = []recordType{recordTypeCNAME, recordTypeHTTPS, recordTypeMX, recordTypeNS, recordTypePTR, recordTypeSRV, recordTypeSVCB}
+var nullTypes = []recordType{recordTypeHTTPS, recordTypeMX, recordTypeSVCB}
 
 func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 	r := record{
@@ -33,15 +34,24 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
 		r.Priority = rc.MxPreference
+	case recordTypeSVCB, recordTypeHTTPS:
+		r.Priority = rc.SvcPriority
 	case recordTypeTLSA:
 		r.Value = fmt.Sprintf("%d %d %d %s", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	}
 
 	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
-	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX record.
-	isNullMX := r.Type == recordTypeMX && r.Priority == 0 && r.Value == "."
-	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullMX {
+	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX or a self-pointing HTTPS/SVCB record.
+	isNullRecord := slices.Contains(nullTypes, r.Type) && r.Value == "."
+	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullRecord {
 		r.Value = strings.TrimSuffix(r.Value, ".")
+	}
+
+	// In the case of SVCB/HTTPS records, the Target is part of the Value.
+	// After removing trailing dots for said target, we can add the params to the value.
+	switch r.Type {
+	case recordTypeSVCB, recordTypeHTTPS:
+		r.Value = fmt.Sprintf("%s %s", r.Value, rc.SvcParams)
 	}
 
 	return &r, nil
@@ -58,8 +68,13 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	// Bunny DNS always operates with fully-qualified names and does not use any trailing dots.
 	// If a record already contains a trailing dot, which the provider UI also accepts, the record value is left as-is.
 	recordValue := r.Value
-	if slices.Contains(fqdnTypes, r.Type) && !strings.HasSuffix(r.Value, ".") {
-		recordValue = dnsutil.AddOrigin(r.Value+".", domain)
+
+	// Bunny DNS has the Target and Params on the same Value, so we have to split them
+	recordParts := strings.SplitN(recordValue, " ", 2)
+
+	if slices.Contains(fqdnTypes, r.Type) && !strings.HasSuffix(recordParts[0], ".") {
+		recordParts[0] = dnsutil.AddOrigin(recordParts[0]+".", domain)
+		recordValue = strings.Join(recordParts, " ")
 	}
 
 	var err error
@@ -72,6 +87,8 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 		err = rc.SetTargetMX(r.Priority, recordValue)
 	case "SRV":
 		err = rc.SetTargetSRV(r.Priority, r.Weight, r.Port, recordValue)
+	case "SVCB", "HTTPS":
+		err = rc.SetTargetSVCBString(r.Name, fmt.Sprintf("%d %s", r.Priority, recordValue))
 	case "TLSA":
 		err = rc.SetTargetTLSAString(recordValue)
 	default:
@@ -100,6 +117,8 @@ const (
 	recordTypePTR      recordType = 10
 	recordTypeScript   recordType = 11
 	recordTypeNS       recordType = 12
+	recordTypeSVCB     recordType = 13
+	recordTypeHTTPS    recordType = 14
 	recordTypeTLSA     recordType = 15
 )
 
@@ -129,6 +148,10 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeScript
 	case "NS":
 		return recordTypeNS
+	case "SVCB":
+		return recordTypeSVCB
+	case "HTTPS":
+		return recordTypeHTTPS
 	case "TLSA":
 		return recordTypeTLSA
 	case "BUNNY_DNS_RDR":
@@ -166,6 +189,10 @@ func recordTypeToString(t recordType) string {
 		return "SCRIPT"
 	case recordTypeNS:
 		return "NS"
+	case recordTypeSVCB:
+		return "SVCB"
+	case recordTypeHTTPS:
+		return "HTTPS"
 	case recordTypeTLSA:
 		return "TLSA"
 	default:
