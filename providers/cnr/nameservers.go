@@ -3,6 +3,7 @@ package cnr
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -73,12 +74,12 @@ func (n *Client) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Cor
 	sort.Strings(foundLower)
 	foundNameservers := strings.Join(foundLower, ",")
 
-	expected := []string{}
+	expected := make([]string, 0, len(dc.Nameservers))
 	for _, ns := range dc.Nameservers {
-		name := strings.ToLower(strings.TrimRight(ns.Name, "."))
-		expected = append(expected, name)
+		expected = append(expected, strings.ToLower(strings.TrimRight(ns.Name, ".")))
 	}
-	sort.Strings(expected)
+	slices.Sort(expected)
+	expected = slices.Compact(expected)
 	expectedNameservers := strings.Join(expected, ",")
 
 	if foundNameservers != expectedNameservers {

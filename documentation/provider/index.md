@@ -54,7 +54,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
 | [`HEDNS`](hedns.md) | ❌ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ✅ | ❌ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ✅ | ❌ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ✅ | ❌ |
 | [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
@@ -105,7 +105,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
-| [`DNSCALE`](dnscale.md) | ❌ | ❔ | ✅ | ✅ |
+| [`DNSCALE`](dnscale.md) | ✅ | ✅ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
@@ -118,7 +118,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ✅ | ✅ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
@@ -168,7 +168,7 @@ Jump to a table:
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
-| [`DNSCALE`](dnscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`DNSCALE`](dnscale.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
@@ -179,7 +179,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
 | [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
@@ -227,7 +227,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
-| [`DNSCALE`](dnscale.md) | ❔ | ❔ | ✅ | ✅ |
+| [`DNSCALE`](dnscale.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
@@ -237,7 +237,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❔ | ❌ | ✅ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
@@ -294,7 +294,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ✅ | ❔ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
@@ -342,7 +342,7 @@ Jump to a table:
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ |
 | [`HEDNS`](hedns.md) | ❌ | ❔ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
@@ -414,6 +414,7 @@ Providers in this category and their maintainers are:
 |[`CSCGLOBAL`](cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](desec.md)|@D3luxee|
 |[`DIGITALOCEAN`](digitalocean.md)|@chicks-net|
+|[`DNSCALE`](dnscale.md)|@dnscale-ops|
 |[`DNSIMPLE`](dnsimple.md)|@onlyhavecans|
 |[`DNSMADEEASY`](dnsmadeeasy.md)|@vojtad|
 |[`DNSOVERHTTPS`](dnsoverhttps.md)|@mikenz|
