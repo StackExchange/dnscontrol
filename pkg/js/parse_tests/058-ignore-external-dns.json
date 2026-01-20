@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "ignore_external_dns": true,
       "meta": {
@@ -15,6 +16,7 @@
       "uniquename": "extdns-default.com"
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "external_dns_prefix": "extdns-",
       "ignore_external_dns": true,
@@ -29,6 +31,7 @@
       "uniquename": "extdns-custom.com"
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "ignore_external_dns": true,
       "meta": {

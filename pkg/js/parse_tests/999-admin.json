@@ -1,0 +1,73 @@
+{
+  "registrars": [
+    {
+      "name": "none",
+      "type": "-"
+    }
+  ],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "example.com",
+      "uniquename": "example.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
+        "dnscontrol_uniquename": "example.com"
+      },
+      "records": [],
+      "admin": {
+        "registrar": "cloudflare_main",
+        "dnsProviders": {
+          "bind": -1,
+          "gandi_myacct": 2
+        },
+        "delegations": [
+          "ns1",
+          "ns2.example.com.",
+          "ns4.whatever.com."
+        ],
+        "delegated_signers": [
+          {
+          }
+        ],
+        "glue": [
+          "ns1",
+          "ns2",
+          "ns4.whatever.com."
+        ]
+      }
+    },
+    {
+      "name": "example.net",
+      "uniquename": "example.net",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
+        "dnscontrol_uniquename": "example.net"
+      },
+      "records": [],
+      "admin": {
+        "registrar": "cloudflare_main",
+        "dnsProviders": {
+          "bind": -1,
+          "gandi_myacct": 2
+        },
+        "delegations": [
+          "ns1",
+          "ns2.example.com.",
+          "ns4.whatever.com."
+        ],
+        "glue": [
+          "ns1",
+          "ns2",
+          "ns4.whatever.com."
+        ]
+      }
+    }
+  ]
+}

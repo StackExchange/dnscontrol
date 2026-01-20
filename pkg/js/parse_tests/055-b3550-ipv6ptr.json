@@ -7,6 +7,7 @@
   ],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },
@@ -36,6 +37,7 @@
       "uniquename": "d.c.b.a.1.1.0.2.ip6.arpa"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },

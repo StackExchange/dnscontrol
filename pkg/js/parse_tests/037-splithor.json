@@ -15,6 +15,7 @@
   ],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {
         "otherconfig": -1
       },
@@ -44,6 +45,7 @@
       "uniquename": "example.com"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -75,6 +77,7 @@
       "uniquename": "example.com!inside"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },
@@ -99,6 +102,7 @@
       "uniquename": "example.com!outside"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },
@@ -128,6 +132,7 @@
       "uniquename": "example.net"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -166,6 +171,7 @@
       "uniquename": "example.net!inside"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },
@@ -204,6 +210,7 @@
       "uniquename": "example.net!outside"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },
@@ -233,6 +240,7 @@
       "uniquename": "empty.example.net"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "bind": -1
       },

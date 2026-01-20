@@ -7,6 +7,7 @@
   ],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -68,6 +69,7 @@
       "uniquename": "foo.net"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -104,6 +106,7 @@
       "uniquename": "foo.tld"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -140,6 +143,7 @@
       "uniquename": "bar.foo.tld"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -185,6 +189,7 @@
       "uniquename": "foo.help"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -230,6 +235,7 @@
       "uniquename": "bar.foo.help"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -291,6 +297,7 @@
       "uniquename": "foo.here"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -352,6 +359,7 @@
       "uniquename": "example.com"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -429,6 +437,7 @@
       "uniquename": "xn--dsseldorf-q9a.example.net"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -506,6 +515,7 @@
       "uniquename": "xn--tda.example.net"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },

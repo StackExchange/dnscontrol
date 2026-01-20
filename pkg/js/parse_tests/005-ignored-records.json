@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "foo.com",
@@ -56,6 +57,7 @@
       ]
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "diff2.com",

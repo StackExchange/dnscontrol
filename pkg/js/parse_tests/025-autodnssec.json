@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "nothing.com",
@@ -14,6 +15,7 @@
       "uniquename": "nothing.com"
     },
     {
+      "admin": {},
       "auto_dnssec": "on",
       "dnsProviders": {},
       "meta": {
@@ -27,6 +29,7 @@
       "uniquename": "with.com"
     },
     {
+      "admin": {},
       "auto_dnssec": "off",
       "dnsProviders": {},
       "meta": {

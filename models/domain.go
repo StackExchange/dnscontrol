@@ -63,12 +63,24 @@ type DomainConfig struct {
 	// Raw user-input from dnsconfig.js that will be processed into RecordConfigs later:
 	RawRecords []RawRecordConfig `json:"rawrecords,omitempty"`
 
+	// This consolidates many other fields for easier processing:
+	Admin AdminConfig `json:"admin,omitempty"`
+
 	// Pending work to do for each provider.  Provider may be a registrar or DSP.
 	pendingCorrectionsMutex    sync.Mutex               // Protect pendingCorrections*
 	pendingCorrections         map[string][]*Correction // Work to be done for each provider
 	pendingCorrectionsOrder    []string                 // Call the providers in this order
 	pendingActualChangeCount   map[string]int           // Number of changes to report (cumulative)
 	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
+}
+
+type AdminConfig struct {
+	Registrar           string         `json:"registrar,omitempty"`
+	DNSServiceProviders map[string]int `json:"dnsProviders,omitempty"`
+	Delegations         []string       `json:"delegations,omitempty"`
+	//DelegatedSigners    []RecordConfig `json:"delegated_signers,omitempty"`
+	DelegatedSigners []RecordConfig `json:"delegated_signers,omitempty"`
+	Glue             []string       `json:"glue,omitempty"`
 }
 
 // PostProcess performs and post-processing required after running dnsconfig.js and loading the result.

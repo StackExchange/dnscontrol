@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "example.com",

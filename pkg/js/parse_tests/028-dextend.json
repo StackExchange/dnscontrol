@@ -7,6 +7,7 @@
   ],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -36,6 +37,7 @@
       "uniquename": "foo.com"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },
@@ -65,6 +67,7 @@
       "uniquename": "bar.foo.com"
     },
     {
+      "admin": {},
       "dnsProviders": {
         "Cloudflare": -1
       },

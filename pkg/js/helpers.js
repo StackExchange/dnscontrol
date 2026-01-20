@@ -119,6 +119,7 @@ function newDomain(name, registrar) {
         ignored_names: [],
         ignored_targets: [],
         unmanaged: [],
+        admin: {},
     };
 }
 
@@ -127,6 +128,8 @@ function processDargs(m, domain) {
     // function: call it with domain
     // array: process recursively
     // object: merge it into metadata
+    //console.log("processDargs");
+    //console.log(m, domain);
     if (_.isFunction(m)) {
         m(domain);
     } else if (_.isArray(m)) {
@@ -148,6 +151,7 @@ function processDargs(m, domain) {
 // D(name,registrar): Create a DNS Domain. Use the parameters as records and mods.
 function D(name, registrar) {
     var domain = newDomain(name, registrar);
+    // Add the DEFAULTS() args to the domain.
     for (var i = 0; i < defaultArgs.length; i++) {
         processDargs(defaultArgs[i], domain);
     }
@@ -173,6 +177,11 @@ function D(name, registrar) {
     conf.domains.push(domain);
     conf.domain_names.push(name);
 }
+
+// ZONE(name): Create a DNS zone. Older code calls these "domains" but they're really zones.
+function ZONE(name) {
+    D(name, "none");
+};
 
 function INCLUDE(name) {
     var domain = _getDomainObject(name);
@@ -866,15 +875,15 @@ function locStringBuilder(record, args) {
         (args.alt < -100000
             ? -100000
             : args.alt > 42849672.95
-              ? 42849672.95
-              : args.alt.toString()) + 'm';
+                ? 42849672.95
+                : args.alt.toString()) + 'm';
     precisionbuffer +=
         ' ' +
         (args.siz > 90000000
             ? 90000000
             : args.siz < 0
-              ? 0
-              : args.siz.toString()) +
+                ? 0
+                : args.siz.toString()) +
         'm';
     precisionbuffer +=
         ' ' +
@@ -914,8 +923,8 @@ function locDMSBuilder(record, args) {
         record.localtitude > 4294967295
             ? 4294967295
             : record.localtitude < 0
-              ? 0
-              : record.localtitude;
+                ? 0
+                : record.localtitude;
     // Size
     record.locsize = getENotationInt(args.siz);
     // Horizontal Precision
@@ -1052,6 +1061,98 @@ function NAMESERVER_TTL(v) {
     }
     return { ns_ttl: v.toString() };
 }
+
+function ADMIN() {
+    //console.log(JSON.stringify(params));
+    var args = Array.prototype.slice.call(arguments);
+    return function (d) {
+        d.admin = {}; // TODO(tlim): Check for dups
+        d.admin.subdomain = "";
+        processADMINargs(args, d.admin);
+    };
+}
+
+function processADMINargs(m, adminConfig) {
+    // for each modifier, if it is a...
+    // array: process recursively
+    // object: merge it into metadata
+    //console.log("processDargs");
+    //console.log(m, domain);
+    if (_.isFunction(m)) {
+        m(adminConfig);
+    } else if (_.isArray(m)) {
+        for (var j in m) {
+            processADMINargs(m[j], adminConfig);
+        }
+    } else if (_.isObject(m)) {
+        _.extend(adminConfig, m);
+    } else {
+        throw (
+            'WARNING: ADMIN modifier type unsupported: ' +
+            typeof m
+        );
+    }
+}
+
+function A_REGISTRAR(name) {
+    if (arguments.length != 1) {
+        throw 'A_REGISTRAR only accepts one argument for name.';
+    }
+    return function (ac) {
+        ac.registrar = name;
+    };
+}
+
+function A_DNSPROVIDER(name, nsCount) {
+    if (arguments.length === 0) {
+        throw 'A_DNSPROVIDERS requires at least one argument.';
+    }
+    if (typeof nsCount === 'undefined') {
+        nsCount = -1;
+    }
+    return function (ac) {
+        if (!ac.dnsProviders) {
+            ac.dnsProviders = {};
+        }
+        ac.dnsProviders[name] = nsCount;
+    };
+}
+
+function A_DELEGATIONS() {
+    if (arguments.length === 0) {
+        throw 'A_DELEGATIONS requires at least one argument.';
+    }
+    var args = Array.prototype.slice.call(arguments);
+    return function (ac) {
+        if (!ac.delegations) {
+            ac.delegations = [];
+        }
+        ac.delegations = ac.delegations.concat(args);
+    };
+}
+function A_DELEGATED_SIGNERS() {
+    if (arguments.length === 0) {
+        throw 'A_DELEGATED_SIGNERS requires at least one argument.';
+    }
+    var args = Array.prototype.slice.call(arguments);
+    return function (ac) {
+        if (!ac.delegated_signers) {
+            ac.delegated_signers = [];
+        }
+        // if (!ac.defaultTTL) {
+        //     ac.defaultTTL = 3600;
+        // }
+        //ac.delegated_signers = ac.delegated_signers.concat(args);
+        ac.delegated_signers = ac.delegated_signers.concat(args);
+        for (var i = 0; i < args.length; i++) {
+            item = args[i];
+            result = item();
+            console.log('Adding delegated signer: ' + item);
+            ac.delegated_signers.push(item);
+        }
+    };
+}
+
 
 function format_tt(transform_table) {
     // Turn [[low: 1, high: 2, newBase: 3], [low: 4, high: 5, newIP: 6]]
@@ -1341,7 +1442,8 @@ function recordBuilder(type, opts) {
             var record = {
                 type: type,
                 meta: {},
-                ttl: d.defaultTTL,
+                //ttl: d.defaultTTL,
+                ttl: 0,
                 filepos: position,
             };
 
@@ -1400,47 +1502,47 @@ function recordBuilder(type, opts) {
 /**
  * @deprecated
  */
-function addRecord(d, type, name, target, mods) {
-    // if target is number, assume ip address. convert it.
-    if (_.isNumber(target)) {
-        target = num2dot(target);
-    }
-    var rec = {
-        type: type,
-        name: name,
-        target: target,
-        ttl: d.defaultTTL,
-        priority: 0,
-        meta: {},
-    };
-    // for each modifier, decide based on type:
-    // - Function: call is with the record as the argument
-    // - Object: merge it into the metadata
-    // - Number: IF MX record assume it is priority
-    if (mods) {
-        for (var i = 0; i < mods.length; i++) {
-            var m = mods[i];
-            if (_.isFunction(m)) {
-                m(rec);
-            } else if (_.isObject(m)) {
-                // convert transforms to strings
-                if (m.transform && _.isArray(m.transform)) {
-                    m.transform = format_tt(m.transform);
-                }
-                _.extend(rec.meta, m);
-                _.extend(rec.meta, m);
-            } else {
-                console.log(
-                    'WARNING: Modifier type unsupported:',
-                    typeof m,
-                    '(Skipping!)'
-                );
-            }
-        }
-    }
-    d.records.push(rec);
-    return rec;
-}
+// function addRecord(d, type, name, target, mods) {
+//     // if target is number, assume ip address. convert it.
+//     if (_.isNumber(target)) {
+//         target = num2dot(target);
+//     }
+//     var rec = {
+//         type: type,
+//         name: name,
+//         target: target,
+//         ttl: d.defaultTTL,
+//         priority: 0,
+//         meta: {},
+//     };
+//     // for each modifier, decide based on type:
+//     // - Function: call is with the record as the argument
+//     // - Object: merge it into the metadata
+//     // - Number: IF MX record assume it is priority
+//     if (mods) {
+//         for (var i = 0; i < mods.length; i++) {
+//             var m = mods[i];
+//             if (_.isFunction(m)) {
+//                 m(rec);
+//             } else if (_.isObject(m)) {
+//                 // convert transforms to strings
+//                 if (m.transform && _.isArray(m.transform)) {
+//                     m.transform = format_tt(m.transform);
+//                 }
+//                 _.extend(rec.meta, m);
+//                 _.extend(rec.meta, m);
+//             } else {
+//                 console.log(
+//                     'WARNING: Modifier type unsupported:',
+//                     typeof m,
+//                     '(Skipping!)'
+//                 );
+//             }
+//         }
+//     }
+//     d.records.push(rec);
+//     return rec;
+// }
 
 // ip conversion functions from http://stackoverflow.com/a/8105740/121660
 // via http://javascript.about.com/library/blipconvert.htm
@@ -1795,7 +1897,7 @@ function CAA_BUILDER(value) {
         throw 'CAA_BUILDER requires at least one entry at issue, issuewild, issuevmc or issuemail';
     }
 
-    var CAA_TTL = function () {};
+    var CAA_TTL = function () { };
     if (value.ttl) {
         CAA_TTL = TTL(value.ttl);
     }
@@ -1812,7 +1914,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issue) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issue_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1821,7 +1923,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuewild) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuewild_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1832,7 +1934,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuevmc) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuevmc_critical) {
             flag = CAA_CRITICAL;
         }
@@ -1843,7 +1945,7 @@ function CAA_BUILDER(value) {
     }
 
     if (value.issuemail) {
-        var flag = function () {};
+        var flag = function () { };
         if (value.issuemail_critical) {
             flag = CAA_CRITICAL;
         }
@@ -2062,7 +2164,7 @@ function DKIM_BUILDER(value) {
     }
 
     // Handle TTL
-    var DKIM_TTL = value.ttl ? TTL(value.ttl) : function () {};
+    var DKIM_TTL = value.ttl ? TTL(value.ttl) : function () { };
 
     return TXT(fullLabel, record.join('; '), DKIM_TTL);
 }
@@ -2294,20 +2396,20 @@ function M365_BUILDER(name, value) {
             CNAME(
                 'selector1._domainkey',
                 'selector1-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
         r.push(
             CNAME(
                 'selector2._domainkey',
                 'selector2-' +
-                    value.domainGUID +
-                    '._domainkey.' +
-                    value.initialDomain +
-                    '.'
+                value.domainGUID +
+                '._domainkey.' +
+                value.initialDomain +
+                '.'
             )
         );
     }
@@ -2499,4 +2601,5 @@ function rawrecordBuilder(type) {
 var CF_REDIRECT = rawrecordBuilder('CF_REDIRECT');
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 var CF_TEMP_REDIRECT = rawrecordBuilder('CF_TEMP_REDIRECT');
+var DS_NEW = rawrecordBuilder('DS_NEW');
 var RP = rawrecordBuilder('RP');

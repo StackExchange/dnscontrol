@@ -208,7 +208,12 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		// the fields, please let us know!
 	}{}
 	if err := json.Unmarshal(b, &recj); err != nil {
+		fmt.Printf("DEBUG: UnmarshalJSON error: %v\n", err)
 		return err
+	}
+	fmt.Printf("DEBUG: UnmarshalJSON success! %+v\n", recj)
+	if recj == nil {
+		return nil
 	}
 
 	recj.FilePos = FixPosition(recj.FilePos)

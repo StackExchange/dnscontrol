@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "unsafe.com",
@@ -15,6 +16,7 @@
       "unmanaged_disable_safety_check": true
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "safe.com",

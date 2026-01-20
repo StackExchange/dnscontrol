@@ -2,6 +2,7 @@
   "dns_providers": [],
   "domains": [
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "foo1.com",
@@ -29,6 +30,7 @@
       "uniquename": "foo1.com"
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "inny",
@@ -56,6 +58,7 @@
       "uniquename": "inny"
     },
     {
+      "admin": {},
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "com.inny",
