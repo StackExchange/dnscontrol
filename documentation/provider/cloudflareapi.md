@@ -390,6 +390,23 @@ were created outside of DNSControl.
 Cloudflare has restrictions that may result in DNSControl's attempt to insert
 DS records to fail.
 
+## TXT records
+
+Do you see this warning in the Cloudflare dashboard?
+
+> "The content field of TXT records must be in quotation marks. Cloudflare may
+> add quotation marks on your behalf, which will not affect how the record
+> works."
+
+![Cloudflare dumb TXT warning](../assets/providers/cloudflareapi/invalid-warning.png)
+
+TXT records created/updated by DNSControl v4.31.1 and prior will produce this warning. It is meaningless and should be ignored.
+
+If you are unable to ignore the warning, any of these will remove it:
+
+* In the Cloudflare dashboard, click to edit the record and immediately save it. As of 2026-01-21, Cloudflare's UI can fix the issue, not just complain about it.
+* Force DNSControl to update the record. Either change it (make an inconsequential change), or delete the TXT record and allow DNSControl to recreate it.
+
 ## Integration testing
 
 The integration tests assume that Cloudflare Workers are enabled and the credentials used
