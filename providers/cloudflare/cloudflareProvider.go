@@ -801,9 +801,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	case "TXT":
-		fmt.Printf("\nDEBUG: TXT content from Cloudflare: %q\n", cr.Content)
 		s, err := parseCfTxtContent(cr.Content)
-		fmt.Printf("\nDEBUG: TXT content decoded........: %q\n", s)
 		if err != nil {
 			return rc, err
 		}
