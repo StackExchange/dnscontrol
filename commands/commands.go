@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -13,7 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 // categories of commands
@@ -34,7 +35,7 @@ func cmd(cat string, c *cli.Command) bool {
 var _ = cmd(catDebug, &cli.Command{
 	Name:  "version",
 	Usage: "Print version information",
-	Action: func(c *cli.Context) error {
+	Action: func(ctx context.Context, c *cli.Command) error {
 		_, err := fmt.Println(version.Version())
 		return err
 	},
@@ -42,11 +43,11 @@ var _ = cmd(catDebug, &cli.Command{
 
 // Run will execute the CLI
 func Run(v string) int {
-	app := cli.NewApp()
-	app.Version = v
-	app.Name = "dnscontrol"
-	app.HideVersion = true
-	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
+	app := &cli.Command{
+		Name:    "dnscontrol",
+		Usage:   "DNSControl is a compiler and DSL for managing dns zones",
+		Version: v,
+	}
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "debug",
@@ -63,7 +64,7 @@ func Run(v string) int {
 			Name:   "diff2",
 			Usage:  "Obsolete flag. Will be removed in v5 or later",
 			Hidden: true,
-			Action: func(ctx *cli.Context, v bool) error {
+			Action: func(ctx context.Context, c *cli.Command, v bool) error {
 				pobsoleteDiff2FlagUsed = true
 				return nil
 			},
@@ -79,11 +80,29 @@ func Run(v string) int {
 			Destination: &color.NoColor,
 			Value:       false,
 		},
+		&cli.BoolFlag{
+			Name:   "generate-bash-completion",
+			Usage:  "Generate bash completion",
+			Hidden: true,
+		},
 	}
-	sort.Sort(cli.CommandsByName(commands))
+	app.Before = func(ctx context.Context, c *cli.Command) (context.Context, error) {
+		// In v2, EnableBashCompletion would automatically add this flag and trigger completion.
+		// In v3, we need to handle it manually.
+		// Only handle at root level - subcommands like shell-completion will handle their own.
+		if c.Bool("generate-bash-completion") && c.Root() == c {
+			if c.Root().ShellComplete != nil {
+				c.Root().ShellComplete(ctx, c)
+			}
+			return ctx, cli.Exit("", 0)
+		}
+		return ctx, nil
+	}
+	sort.Slice(commands, func(i, j int) bool {
+		return commands[i].Name < commands[j].Name
+	})
 	app.Commands = commands
-	app.EnableBashCompletion = true
-	app.BashComplete = func(cCtx *cli.Context) {
+	app.ShellComplete = func(ctx context.Context, c *cli.Command) {
 		// ripped from cli.DefaultCompleteWithFlags
 		var lastArg string
 
@@ -94,14 +113,14 @@ func Run(v string) int {
 		if lastArg != "" {
 			if strings.HasPrefix(lastArg, "-") {
 				if !islastFlagComplete(lastArg, app.Flags) {
-					dnscontrolPrintFlagSuggestions(lastArg, app.Flags, cCtx.App.Writer)
+					dnscontrolPrintFlagSuggestions(lastArg, app.Flags, c.Writer)
 					return
 				}
 			}
 		}
-		dnscontrolPrintCommandSuggestions(app.Commands, cCtx.App.Writer)
+		dnscontrolPrintCommandSuggestions(app.Commands, c.Writer)
 	}
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		return 1
 	}
 	return 0
@@ -212,7 +231,7 @@ type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
 	DevMode  bool
-	Variable cli.StringSlice
+	Variable []string
 }
 
 func (args *ExecuteDSLArgs) flags() []cli.Flag {
@@ -302,40 +321,4 @@ func (args *FilterArgs) flags() []cli.Flag {
 			Value:       "",
 		},
 	}
-}
-
-// domainInList takes a domain and a list of domains and returns true if the
-// domain is in the list, accounting for wildcards and tags.
-func domainInList(domain string, list []string) bool {
-	for _, item := range list {
-		if item == domain {
-			return true
-		}
-		if strings.HasPrefix(item, "*") && strings.HasSuffix(domain, item[1:]) {
-			return true
-		}
-		filterDom, filterTag, isFilterTagged := strings.Cut(item, "!")
-		splitDom, domainTag, isDomainTagged := strings.Cut(domain, "!")
-		if splitDom == filterDom {
-			if isDomainTagged {
-				if filterTag == "*" {
-					return true
-				}
-				if domainTag == "" && !isFilterTagged {
-					// domain example.com! == filter example.com
-					return true
-				}
-				if isFilterTagged && domainTag == filterTag {
-					return true
-				}
-			}
-			if isFilterTagged {
-				if filterTag == "" && !isDomainTagged {
-					// filter example.com! == domain example.com
-					return true
-				}
-			}
-		}
-	}
-	return false
 }

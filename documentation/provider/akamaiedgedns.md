@@ -35,9 +35,35 @@ Example:
 ```
 {% endcode %}
 
+## Limitations
+
+### Records
+
+#### AKAMAICDN
+
+The AKAMAICDN target must be an Edge Hostname preconfigured in your Akamai account. 
+
+The AKAMAICDN record must have a TTL of 20 seconds.
+
+The AKAMAICDN record may only be used at the zone apex (`@`) if an AKAMAITLC record hasn't been used.
+
+#### AKAMAITLC
+
+The AKAMAITLC record can only be used at the zone apex (`@`).
+
+The AKAMAITLC record can only be used once per zone.
+
+#### ALIAS
+Akamai Edge DNS does directly support `ALIAS` records. This provider will convert `ALIAS` records used at the 
+zone apex (`@`) to `AKAMAITLC` records, and any other names to `CNAME` records.
+
+### Secondary zones
+
+This provider only supports creating primary zones in Akamai. If a secondary zone has been manually created, only `AKAMAICDN` and `AKAMAITLC` records can be managed, as all other records are read-only.
+
 ## Usage
 
-A new zone created by DNSControl:
+A new primary zone created by DNSControl:
 
 ```shell
 dnscontrol create-domains
@@ -70,11 +96,9 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("www", "www.preconfigured.edgesuite.net", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
 {% endcode %}
-
-AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
-The AKAMAICDN target must be preconfigured in the Akamai network.

@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 
-	"golang.org/x/time/rate"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
 // Api layer for ClouDNS
@@ -20,7 +22,7 @@ type cloudnsProvider struct {
 		subid    string
 	}
 
-	requestLimit *rate.Limiter
+	requestLimit *AdaptiveLimiter
 
 	sync.Mutex       // Protects all access to the following fields:
 	domainIndex      map[string]string
@@ -62,6 +64,7 @@ type domainRecord struct {
 	Protocol         string `json:"protocol"`
 	TTL              string `json:"ttl"`
 	Status           int8   `json:"status"`
+	GeodnsCode       string `json:"geodns-location-code,omitempty"`
 	CaaFlag          string `json:"caa_flag,omitempty"`
 	CaaTag           string `json:"caa_type,omitempty"`
 	CaaValue         string `json:"caa_value,omitempty"`
@@ -137,44 +140,52 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) ([]uint32, erro
 	return allowedTTLValues, nil
 }
 
-func (c *cloudnsProvider) fetchDomainIndex(name string) (string, bool, error) {
-	c.Lock()
-	defer c.Unlock()
-
-	if c.domainIndex == nil {
-		rowsPerPage := 100
-		page := 1
-		for {
-			var dr zoneResponse
-			params := requestParams{
-				"page":          strconv.Itoa(page),
-				"rows-per-page": strconv.Itoa(rowsPerPage),
-			}
-			endpoint := "/dns/list-zones.json"
-			bodyString, err := c.get(endpoint, params)
-			if err != nil {
-				return "", false, fmt.Errorf("failed fetching domain list from ClouDNS: %w", err)
-			}
-			if err := json.Unmarshal(bodyString, &dr); err != nil {
-				return "", false, fmt.Errorf("failed to unmarshal domain list from ClouDNS: %w", err)
-			}
-
-			if c.domainIndex == nil {
-				c.domainIndex = map[string]string{}
-			}
-
-			for _, domain := range dr {
-				c.domainIndex[domain.Name] = domain.Name
-			}
-			if len(dr) < rowsPerPage {
-				break
-			}
-			page++
-		}
+func (c *cloudnsProvider) idForDomain(name string) (string, bool, error) {
+	if err := c.fetchZones(); err != nil {
+		return "", false, err
 	}
 
 	index, ok := c.domainIndex[name]
 	return index, ok, nil
+}
+
+func (c *cloudnsProvider) fetchZones() error {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.domainIndex != nil {
+		return nil
+	}
+
+	c.domainIndex = map[string]string{}
+
+	rowsPerPage := 100
+	page := 1
+	for {
+		var dr zoneResponse
+		params := requestParams{
+			"page":          strconv.Itoa(page),
+			"rows-per-page": strconv.Itoa(rowsPerPage),
+		}
+		endpoint := "/dns/list-zones.json"
+		bodyString, err := c.get(endpoint, params)
+		if err != nil {
+			return fmt.Errorf("failed fetching domain list from ClouDNS: %w", err)
+		}
+		if err := json.Unmarshal(bodyString, &dr); err != nil {
+			return fmt.Errorf("failed to unmarshal domain list from ClouDNS: %w", err)
+		}
+
+		for _, domain := range dr {
+			c.domainIndex[domain.Name] = domain.Name
+		}
+		if len(dr) < rowsPerPage {
+			break
+		}
+		page++
+	}
+
+	return nil
 }
 
 func (c *cloudnsProvider) createDomain(domain string) error {
@@ -184,6 +195,11 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 	}
 	if _, err := c.get("/dns/register.json", params); err != nil {
 		return fmt.Errorf("failed create domain (ClouDNS): %w", err)
+	}
+	c.Lock()
+	defer c.Unlock()
+	if c.domainIndex != nil {
+		c.domainIndex[domain] = domain
 	}
 	return nil
 }
@@ -248,7 +264,7 @@ func (c *cloudnsProvider) isDnssecEnabled(id string) (bool, error) {
 			if errResp.Description == "The DNSSEC is not active." {
 				return false, nil
 			}
-			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %w", err)
+			return false, fmt.Errorf("failed fetching DS records from ClouDNS: %s", errResp.Description)
 		}
 	}
 
@@ -273,10 +289,71 @@ func (c *cloudnsProvider) setDnssec(id string, enabled bool) error {
 	return nil
 }
 
+func (c *cloudnsProvider) getNameservers(domain string) ([]string, error) {
+	params := requestParams{"domain-name": domain}
+
+	bodyString, err := c.get("/domains/get-nameservers.json", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching nameservers from ClouDNS: %w", err)
+	}
+
+	// The API response might be an array of strings, or an object with string keys "1", "2", etc.
+	// And sometimes it contains values that are blank strings, which we don't want to include in the result.
+
+	// Try as array first
+	var arr []string
+	errFromArray := json.Unmarshal(bodyString, &arr)
+	if errFromArray == nil {
+		// Filter out empty strings
+		nameservers := make([]string, 0, len(arr))
+		for _, ns := range arr {
+			if ns != "" {
+				nameservers = append(nameservers, ns)
+			}
+		}
+		return nameservers, nil
+	}
+
+	// Try as map
+	var nr map[string]string
+	if err := json.Unmarshal(bodyString, &nr); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal nameservers from ClouDNS: when attempting object %w, when attempting array %w", err, errFromArray)
+	}
+
+	nameservers := make([]string, 0, len(nr))
+	for _, ns := range nr {
+		if ns != "" {
+			nameservers = append(nameservers, ns)
+		}
+	}
+
+	return nameservers, nil
+}
+
+func (c *cloudnsProvider) setNameservers(domain string, nameservers []string) error {
+	q := url.Values{}
+	q.Add("domain-name", domain)
+	for _, ns := range nameservers {
+		q.Add("nameservers[]", ns)
+	}
+
+	if _, err := c.getWithQuery("/domains/set-nameservers.json", q); err != nil {
+		return fmt.Errorf("failed setting nameservers at ClouDNS: %w", err)
+	}
+	return nil
+}
+
 func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, error) {
+	q := url.Values{}
+	for pName, pValue := range params {
+		q.Add(pName, pValue)
+	}
+	return c.getWithQuery(endpoint, q)
+}
+
+func (c *cloudnsProvider) getWithQuery(endpoint string, q url.Values) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest(http.MethodGet, "https://api.cloudns.net"+endpoint, nil)
-	q := req.URL.Query()
 
 	// TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
@@ -284,13 +361,13 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	q.Add("auth-password", c.creds.password)
 	q.Add("sub-auth-id", c.creds.subid)
 
-	for pName, pValue := range params {
-		q.Add(pName, pValue)
-	}
-
 	req.URL.RawQuery = q.Encode()
 
-	// ClouDNS has a rate limit (not documented) of 10 request/second
+	// ClouDNS has an undocumented rate limit
+	// But the API does not provide a different status code (it's a 200) nor rate limit headers.
+	// The response is {"status":"Failed","statusDescription":"Request blocked. 84.86.84.86 is sending more than 20 requests per second."}
+
+retry:
 	if err := c.requestLimit.Wait(context.Background()); err != nil {
 		return nil, err
 	}
@@ -306,6 +383,15 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	err = json.Unmarshal(bodyString, &errResp)
 	if err == nil {
 		if errResp.Status == "Failed" {
+			// If this is a rate limit error
+			if strings.Contains(errResp.Description, "Request blocked.") && strings.Contains(errResp.Description, "is sending more than") {
+
+				printer.Warnf("ClouDNS API rate limited, pausing API calls...\n")
+				c.requestLimit.NotifyRateLimited()
+
+				goto retry
+			}
+
 			// For debug only - req.URL.RequestURI() contains the authentication params:
 			// return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
 			return bodyString, fmt.Errorf("ClouDNS API error: %s", errResp.Description)

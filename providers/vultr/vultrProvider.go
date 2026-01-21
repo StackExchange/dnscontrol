@@ -9,7 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/vultr/govultr/v2"
 	"golang.org/x/net/idna"
 	"golang.org/x/oauth2"
@@ -181,7 +181,7 @@ func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *vultrProvider) EnsureZoneExists(domain string) error {
+func (api *vultrProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {

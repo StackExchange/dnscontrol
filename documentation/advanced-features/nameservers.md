@@ -18,7 +18,7 @@ var REG_NAMECOM = NewRegistrar("namedotcom_main");
 // The "NONE" registrar is a "fake" registrar.
 // This is useful if the registrar is not supported by DNSControl,
 // or if you don't want to control the domain's delegation.
-var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+var REG_NONE = NewRegistrar("none");
 
 // ========== DNS Providers:
 
@@ -69,7 +69,6 @@ D("example.com", REG_NAMECOM,
 ```
 {% endcode %}
 
-
 ## Registrar is elsewhere
 
 Purpose:
@@ -83,13 +82,38 @@ updating the zone's records (most likely at a different provider).
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REG_THIRDPARTY,
+var REG_NONE = NewRegistrar("none");
+D("example.com", REG_NONE,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4"),
 );
 ```
 {% endcode %}
 
+## Domain is "nowhere"
+
+Suppose you don't want to manage a domain, but you want to list the zone in
+your `dnsconfig.js` file for inventory purposes. For example, suppose there are
+domains that some other part of your company maintains, but you want to list it
+in your `dnsconfig.js` because it is authoritative for the company.
+
+```javascript
+var REG_NONE = NewRegistrar("none");
+
+function INVENTORY_ONLY(name) {
+    D(name, REG_NONE, { no_ns: "true" });
+}
+
+INVENTORY_ONLY('example.com");
+INVENTORY_ONLY('example2.com");
+INVENTORY_ONLY('example.net");
+```
+
+Now you can produce a list of your zones like this:
+
+```shell
+dnscontrol print-ir | jq -r '.domains[].name'
+```
 
 ## Zone is elsewhere
 

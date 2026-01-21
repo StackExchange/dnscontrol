@@ -14,7 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/bind"
 )
 
@@ -250,7 +250,7 @@ func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string
 	return existingRecords, nil
 }
 
-func (api *autoDNSProvider) EnsureZoneExists(domain string) error {
+func (api *autoDNSProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	// try to get zone
 	_, err := api.getZone(domain)
 

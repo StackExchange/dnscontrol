@@ -26,7 +26,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
 	"github.com/go-gandi/go-gandi/livedns"
@@ -60,6 +60,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRP:               providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),

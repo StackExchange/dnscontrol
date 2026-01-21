@@ -11,8 +11,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
@@ -446,7 +446,7 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, e
 	return sets, nil
 }
 
-func (g *gcloudProvider) EnsureZoneExists(domain string) error {
+func (g *gcloudProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	z, err := g.getZone(domain)
 	if err != nil {
 		if _, ok := err.(errNoExist); !ok {

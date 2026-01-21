@@ -11,7 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/digitalocean/godo"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
@@ -73,11 +73,25 @@ retry:
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Cannot(), // per docs
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Cannot(), // per docs
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Cannot(), // per docs
+	providers.CanUseDNAME:            providers.Cannot(), // per docs
+	providers.CanUseDNSKEY:           providers.Cannot(), // per docs
+	providers.CanUseDS:               providers.Cannot(), // per docs
+	providers.CanUseHTTPS:            providers.Cannot(), // per docs
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Cannot(), // per docs
+	providers.CanUsePTR:              providers.Cannot(), // per docs
+	providers.CanUseSOA:              providers.Cannot("Technically SOA is supported but in reality the API only permits updates to the TTL. That is insufficient for DNSControl to claim 'support'"),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(), // per docs
+	providers.CanUseSMIMEA:           providers.Cannot(), // per docs
+	providers.CanUseSVCB:             providers.Cannot(), // per docs
+	providers.CanUseTLSA:             providers.Cannot(), // per docs
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -85,7 +99,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	const providerName = "DIGITALOCEAN"
-	const providerMaintainer = "@Deraen"
+	const providerMaintainer = "@chicks-net"
 	fns := providers.DspFuncs{
 		Initializer:   NewDo,
 		RecordAuditor: AuditRecords,
@@ -95,7 +109,7 @@ func init() {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *digitaloceanProvider) EnsureZoneExists(domain string) error {
+func (api *digitaloceanProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
@@ -368,9 +382,6 @@ func pauseAndRetry(resp *godo.Response) bool {
 	// a simple exponential back-off with a 3-minute max.
 	log.Printf("Delaying %v due to ratelimit\n", backoff)
 	time.Sleep(backoff)
-	backoff = backoff + (backoff / 2)
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
+	backoff = min(backoff+(backoff/2), maxBackoff)
 	return true
 }

@@ -10,8 +10,9 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -54,6 +55,11 @@ func checkTarget(target string) error {
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	// #rtype_variations
 	validTypes := map[string]bool{
 		"A":                true,
@@ -131,10 +137,8 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
-	for _, ex := range []string{"SRV", "TLSA", "TXT"} {
-		if rType == ex {
-			return nil
-		}
+	if slices.Contains([]string{"SRV", "TLSA", "TXT", "LUA"}, rType) {
+		return nil
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829
@@ -174,6 +178,11 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox s
 
 // checkTargets returns true if rec.Target is valid for the rec.Type.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	label := rec.GetLabel()
 	target := rec.GetTargetField()
 	check := func(e error) {
@@ -226,6 +235,16 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "SRV":
 		check(checkTarget(target))
+	case "LUA":
+		upper := strings.ToUpper(rec.LuaRType)
+		if upper == "" {
+			check(errors.New("LUA records must specify an emitted rtype"))
+			break
+		}
+		if _, ok := dns.StringToType[upper]; !ok {
+			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", rec.LuaRType))
+		}
+		rec.LuaRType = upper
 	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
@@ -573,10 +592,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
-	// Parse out names and tags.
-	for _, d := range config.Domains {
-		d.UpdateSplitHorizonNames()
-	}
 
 	// Verify uniquenames are unique
 	seen := map[string]bool{}
@@ -732,6 +747,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	// If a zone uses rType X, the provider must support capability Y.
 	// {"X", providers.Y},
 	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
+	capabilityCheck("AKAMAITLC", providers.CanUseAKAMAITLC),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
@@ -745,6 +761,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("RP", providers.CanUseRP),
 	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),

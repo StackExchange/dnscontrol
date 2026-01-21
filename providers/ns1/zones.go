@@ -40,7 +40,7 @@ func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
 	}
 }
 
-func (n *nsone) EnsureZoneExists(domain string) error {
+func (n *nsone) EnsureZoneExists(domain string, metadata map[string]string) error {
 	// This enables the create-domains subcommand
 	zone := dns.NewZone(domain)
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -191,7 +191,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string) error {
+func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.domainExists(domain)
 	if err != nil {
 		return err

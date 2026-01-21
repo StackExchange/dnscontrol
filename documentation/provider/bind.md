@@ -13,7 +13,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `BIND`.
 Optional fields include:
 
 * `directory`: Location of the zone files.  Default: `zones` (in the current directory).
-* `filenameformat`: The formula used to generate the zone filenames. The default is usually sufficient.  Default: `"%U.zone"`
+* [`filenameformat`](#filenameformat): The formula used to generate the zone filenames. The default is usually sufficient.  Default: `"%c.zone"`
 
 Example:
 
@@ -27,6 +27,12 @@ Example:
 }
 ```
 {% endcode %}
+
+As of v4.2.0 `dnscontrol push` will create subdirectories along the path to
+the filename. This includes both the portion of the path created by the
+`directory` setting and the `filenameformat` setting. For security reasons, the
+automatic creation of subdirectories is disabled if `dnscontrol` is running as
+root. (Running DNSControl as root is not recommended in general.)
 
 ## Meta configuration
 
@@ -84,42 +90,59 @@ DNSControl does not handle special serial number math such as "looping through z
 # filenameformat
 
 The `filenameformat` parameter specifies the file name to be used when
-writing the zone file. The default (`%U.zone`) is acceptable in most cases: the
+writing the zone file. The default (`%c.zone`) is acceptable in most cases: the
 file name is the name as specified in the `D()` function plus ".zone".
 
 The filenameformat is a string with a few printf-like `%` verbs:
 
-  * `%U`  the domain name as specified in `D()`
-  * `%D`  the domain name without any split horizon tag (the "example.com" part of "example.com!tag")
-  * `%T`  the split horizon tag, or "" (the "tag" part of "example.com!tag")
-  * `%?x` this returns `x` if the split horizon tag is non-null, otherwise nothing. `x` can be any printable.
-  * `%%`  `%`
-  * ordinary characters (not `%`) are copied unchanged to the output stream
-  * FYI: format strings must not end with an incomplete `%` or `%?`
+| Verb    | Description                                       | `EXAMple.com` | `EXAMple.com!MyTag` | `рф.com!myTag`       |
+| ------- | ------------------------------------------------- | ------------- | ------------------- | -------------------- |
+| `%T`    | the tag                                           | "" (null)     | `myTag`             | `myTag`              |
+| `%c`    | canonical name, globally unique and comparable    | `example.com` | `example.com!myTag` | `xn--p1ai.com!myTag` |
+| `%a`    | ASCII domain (Punycode, downcased)                | `example.com` | `example.com`       | `xn--p1ai.com`       |
+| `%u`    | Unicode domain (non-Unicode parts downcased)      | `example.com` | `example.com`       | `рф.com`             |
+| `%r`    | Raw (unmodified) Domain from `D()` (risky!)       | `EXAMple.com` | `EXAMple.com`       | `рф.com`             |
+| `%f`    | like `%c` but better for filenames (`%a%?_%T`)    | `example.com` | `example.com_myTag` | `xn--p1ai.com_myTag` |
+| `%F`    | like `%f` but reversed order (`%T%?_%a`)          | `example.com` | `myTag_example.com` | `myTag_xn--p1ai.com` |
+| `%?x`   | returns `x` if tag exists, otherwise ""           | "" (null)     | `x`                 | `x`                  |
+| `%%`    | a literal percent sign                            | `%`           | `%`                 | `%`                  |
+| `a-Z./` | other printable characters are copied exactly     | `a-Z./`       | `a-Z./`             | `a-Z./`              |
+| `%U`    | (deprecated, use `%c`) Same as `%D%?!%T` (risky!) | `example.com` | `example.com!myTag` | `рф.com!myTag`       |
+| `%D`    | (deprecated, use `%r`) mangles Unicode (risky!)   | `example.com` | `example.com`       | `рф.com`             |
 
-Typical values:
+* `%?x` is typically used to generate an optional `!` or `_` if there is a tag.
+* `%r` is considered "risky" because it can produce a domain name that is not
+    canonical. For example, if you use `D("FOO.com")` and later change it to `D("foo.com")`, your file names will change.
+* Format strings must not end with an incomplete `%` or `%?`
+* Generating a filename without a tag is risky. For example, if the same
+   `dnsconfig.js` has `D("example.com!inside", DSP_BIND)` and
+   `D("example.com!outside", DSP_BIND)`, both will use the same filename.
+   DNSControl will write both zone files to the same file, flapping between the
+   two. No error or warning will be output.
 
-  * `%U.zone` (The default)
-    * `example.com.zone` or `example.com!tag.zone`
-  * `%T%*U%D.zone`  (optional tag and `_` + domain + `.zone`)
-    * `tag_example.com.zone` or `example.com.zone`
-  * `db_%T%?_%D`
-    * `db_inside_example.com` or `db_example.com`
-  * `db_%D`
-    * `db_example.com`
+Useful examples:
 
-The last example will generate the same name for both
-`D("example.com!inside")` and `D("example.com!outside")`.  This
-assumes two BIND providers are configured in `creds.json`, each with
-a different `directory` setting. Otherwise `dnscontrol` will write
-both domains to the same file, flapping between the two back and
-forth.
+| Verb         | Description                         | `EXAMple.com`      | `EXAMple.com!MyTag`      | `рф.com!myTag`            |
+| ------------ | ----------------------------------- | ------------------ | ------------------------ | ------------------------- |
+| `%c.zone`    | Default format (v4.28 and later)    | `example.com.zone` | `example.com!myTag.zone` | `xn--p1ai.com!myTag.zone` |
+| `%U.zone`    | Default format (pre-v4.28) (risky!) | `example.com.zone` | `example.com!myTag.zone` | `рф.com!myTag.zone`       |
+| `db_%f`      | Recommended in a popular DNS book   | `db_example.com`   | `db_example.com_myTag`   | `db_xn--p1ai.com_myTag`   |
+| `db_%a%?_%T` | same as above but using `%?_`       | `db_example.com`   | `db_example.com_myTag`   | `db_xn--p1ai.com_myTag`   |
 
-(new in v4.2.0) `dnscontrol push` will create subdirectories along the path to
-the filename. This includes both the portion of the path created by the
-`directory` setting and the `filenameformat` setting. The automatic creation of
-subdirectories is disabled if `dnscontrol` is running as root for security
-reasons.
+Compatibility notes:
+
+* `%D` should not be used. It downcases the string in a way that is probably
+    incompatible with Unicode characters.  It is retained for compatibility with
+    pre-v4.28 releases. If your domain has capital Unicode characters, backwards
+    compatibility is not guaranteed. Use `%r` instead.
+* `%U` relies on `%D` which is deprecated. Use `%c` instead.
+* As of v4.28 the default format string changed from `%U.zone` to `%c.zone`. This
+    should only matter if your `D()` statements included non-ASCII (Unicode)
+    runes that were capitalized.
+* If you are using pre-v4.28 releases the above table is slightly misleading
+    because uppercase ASCII letters do not always work. If you are using
+    pre-v4.28 releases, assume the above table lists `example.com` instead
+    of `EXAMpl.com`.
 
 # FYI: get-zones
 
@@ -130,7 +153,8 @@ any files named `*.zone` and assumes they are zone files.
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 
-If `filenameformat` is defined, `dnscontrol` makes a guess at which
-filenames are zones but doesn't try to hard to get it right, which is
-mathematically impossible in some cases.  Feel free to file an issue if
-your format string doesn't work. I love a challenge!
+If `filenameformat` is defined, `dnscontrol` makes a guess at which filenames
+are zones by reversing the logic of the format string. It doesn't try very hard
+to get this right, as getting it right in all situations is mathematically
+impossible.  Feel free to file an issue if find a situation where it doesn't
+work. I love a challenge!

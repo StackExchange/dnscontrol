@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	pdns "github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
 )
@@ -46,6 +46,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCustomRecordType("LUA", providerName, "")
 }
 
 // powerdnsProvider represents the powerdnsProvider DNSServiceProvider.
@@ -58,8 +59,20 @@ type powerdnsProvider struct {
 	DNSSecOnCreate bool                 `json:"dnssec_on_create"`
 	ZoneKind       zones.ZoneKind       `json:"zone_kind"`
 	SOAEditAPI     zones.ZoneSOAEditAPI `json:"soa_edit_api,omitempty"`
+	UseViews       bool                 `json:"use_views,omitempty"`
 
 	nameservers []*models.Nameserver
+}
+
+// Build the variant name for powerdns. this is the domain + "." + the tag
+// so dnscontrol "example.com!internal" becomes powerdns "example.com..internal"
+// See https://doc.powerdns.com/authoritative/views.html
+func (dsp *powerdnsProvider) zoneName(domain string, tag string) string {
+	base := canonical(domain)
+	if dsp.UseViews && tag != "" {
+		return base + "." + tag
+	}
+	return base
 }
 
 // newDSP initializes a PowerDNS DNSServiceProvider.

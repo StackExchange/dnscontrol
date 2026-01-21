@@ -1,0 +1,69 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_nameraw": "bar.com",
+        "dnscontrol_nameunicode": "bar.com",
+        "dnscontrol_uniquename": "bar.com"
+      },
+      "name": "bar.com",
+      "records": [
+        {
+          "comparable": "user2.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:5:5]",
+          "meta": {
+            "skip_fqdn_check": "true"
+          },
+          "name": "bar.com",
+          "name_raw": "bar.com",
+          "name_unicode": "bar.com",
+          "target": "",
+          "ttl": 300,
+          "type": "RP",
+          "zonfefilepartial": "user2.example.com. mytxt.example.com."
+        },
+        {
+          "comparable": "user2.example.com. mytxt.example.com.",
+          "fields": {
+            "Hdr": {
+              "Class": 0,
+              "Name": "",
+              "Rdlength": 0,
+              "Rrtype": 0,
+              "Ttl": 0
+            },
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
+          "filepos": "[line:4:5]",
+          "meta": {
+            "skip_fqdn_check": "true"
+          },
+          "name": "foo.bar.com",
+          "name_raw": "foo.bar.com",
+          "name_unicode": "foo.bar.com",
+          "target": "",
+          "ttl": 300,
+          "type": "RP",
+          "zonfefilepartial": "user2.example.com. mytxt.example.com."
+        }
+      ],
+      "registrar": "none",
+      "uniquename": "bar.com"
+    }
+  ],
+  "registrars": []
+}

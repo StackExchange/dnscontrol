@@ -267,6 +267,38 @@ declare function ADGUARDHOME_A_PASSTHROUGH(source: string, destination: string):
 declare function AKAMAICDN(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `AKAMAITLC` is a proprietary Top-Level CNAME (TLC) record type specific to Akamai Edge DNS.
+ * It allows CNAME-like functionality at the zone apex (`@`) of a domain where regular CNAME records
+ * are not permitted.
+ *
+ * The difference between `AKAMAITLC` and `CNAME` is that `AKAMAITLC` records are resolved by Akamai Edge DNS
+ * servers instead of the client's resolver. This is similar to how `AKAMAICDN` records work, except that `AKAMAITLC`
+ * records can be pointed to any domain, not just Akamai properties. If you are pointing to an Akamai property,
+ * you should use `AKAMAICDN` instead.
+ *
+ * Important restrictions:
+ * - Can only be used at the zone apex (`@`)
+ * - Limited to one `AKAMAITLC` record per zone
+ * - Cannot coexist with an `AKAMAICDN` record at the apex
+ *
+ * The `answer_type` parameter controls which record types are returned when clients resolve the target:
+ * - `DUAL`: Returns both IPv4 (`A`) and IPv6 (`AAAA`) records
+ * - `A`: Returns only IPv4 records
+ * - `AAAA`: Returns only IPv6 records
+ *
+ * ## Example
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     // Redirect example.com to google.com, returning both A and AAAA records
+ *     AKAMAITLC("@", "DUAL", "google.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/akamai-edge-dns/akamaitlc
+ */
+declare function AKAMAITLC(name: string, answer_type: "DUAL" | "A" | "AAAA", target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * ALIAS is a virtual record type that points a record at another record. It is analogous to a CNAME, but is usually resolved at request-time and served as an A record. Unlike CNAMEs, ALIAS records can be used at the zone apex (`@`)
  *
  * Different providers handle ALIAS records differently, and many do not support it at all. Attempting to use ALIAS records with a DNS provider type that does not support them will result in an error.
@@ -518,13 +550,13 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; issuevmc: string[]|string; issuevmc_critical?: boolean; issuemail: string[]|string; issuemail_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
- * generate a HTTP 301 permanent redirect.
+ * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * Rules) to generate a HTTP 301 permanent redirect.
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
@@ -555,36 +587,50 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
 
 /**
  * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
- * Typically one uses 302 (temporary) or (less likely) 301 (permanent).
+ * Typically one uses 302 (temporary) or 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
+ *
+ * DNSControl will delete any "single redirects" it doesn't recognize (i.e. ones created via the web UI) so please be careful.
  *
  * Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_SINGLE_REDIRECT("name", 302, "when", "then"),
  *   CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
  *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ *   CF_TEMP_REDIRECT("*example.com/*", "https://contests.otherexample.com/$2"),
  * );
  * ```
  *
  * The fields are:
  *
- * * name: The name (basically a comment, but it must be unique)
+ * * name: The name (basically a comment)
  * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * NOTE: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ * DNSControl does not currently choose the order of the rules.  New rules are
+ * added to the end of the list. Use Cloudflare's dashboard to re-order the rule,
+ * DNSControl should not change them.  (In the future we hope to add a feature
+ * where the order the rules appear in dnsconfig.js is maintained in the
+ * dashboard.)
+ *
+ * ## `CF_REDIRECT` and `CF_TEMP_REDIRECT`
+ *
+ * `CF_REDIRECT` and `CF_TEMP_REDIRECT` used to manage Cloudflare Page Rules.
+ * However that feature is going away.  To help with the migration, DNSControl now
+ * translates those commands into CF_SINGLE_REDIRECT equivalents.  The conversion
+ * process is a transpiler that only understands certain formats. Please submit
+ * a Github issue if you find something it can't handle.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
 declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
@@ -592,9 +638,9 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
- * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
- * Page Rule types other than "Forwarding URL” will be left alone.
+ * Page Rule types other than "Forwarding URL" will be left alone.
  *
  * WARNING: Cloudflare does not currently fully document the Page Rules API and
  * this interface is not extensively tested. Take precautions such as making
@@ -602,9 +648,12 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `dnscontrol push`. This is especially true when mixing Page Rules that are
  * managed by DNSControl and those that aren't.
  *
+ * This example redirects the bare (aka apex, or naked) domain to www:
+ *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_TEMP_REDIRECT("example.example.com/*", "https://otherplace.yourdomain.com/$1"),
+ *   CF_TEMP_REDIRECT("example.com/*", "https://www.example.com/$1"),
+ *
  * );
  * ```
  *
@@ -677,7 +726,8 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * ```javascript
  * // simple domain
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ * D("example.com", REG_MY_PROVIDER,
+ *   DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),           // "@" means the apex domain. In this case, "example.com" itself.
  *   CNAME("test", "foo.example2.com."),
  * );
@@ -703,6 +753,35 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * In other words, if you want to put a DNS record at the apex of a domain, use an `"@"` for the label, not an empty string (`""`).
  * In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain.
  *
+ * # `no_ns`
+ *
+ * To prevent DNSControl from accidentally deleting your nameservers (at the
+ * parent domain), registrar updates are disabled if the list of nameservers for a
+ * zone (as computed from `dnsconfig.js`) is empty.
+ *
+ * This can happen when a provider doesn't give any control over the apex NS
+ * records, there are no default nameservers, there are no `NAMESERVER()`
+ * statements, and the provider returns an empty list of nameservers (such as
+ * Gandi and Vercel).
+ *
+ * In this situation, you will see an error message such as:
+ *
+ * ```
+ * Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns:'true'} to force
+ * ```
+ *
+ * To add this, add the meta data to the zone immediately following the registrar.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
+ *   ...
+ *   ...
+ *   ...
+ * );
+ * ```
+ *
+ * NOTE: The value `true` of `no_ns` is a string.
+ *
  * # Split Horizon DNS
  *
  * DNSControl supports Split Horizon DNS. Simply
@@ -714,15 +793,15 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * `example.com!outside`.
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+ * var REG_NONE = NewRegistrar("none");
  * var DNS_INSIDE = NewDnsProvider("Cloudflare");
  * var DNS_OUTSIDE = NewDnsProvider("bind");
  *
- * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
+ * D("example.com!inside", REG_NONE, DnsProvider(DNS_INSIDE),
  *   A("www", "10.10.10.10"),
  * );
  *
- * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
+ * D("example.com!outside", REG_NONE, DnsProvider(DNS_OUTSIDE),
  *   A("www", "20.20.20.20"),
  * );
  *
@@ -833,10 +912,9 @@ declare function DHCID(name: string, digest: string, ...modifiers: RecordModifie
 declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
 
 /**
- * DNSControl contains a `DKIM_BUILDER` which can be used to simply create
- * DKIM policies for your domains.
+ * DNSControl contains a `DKIM_BUILDER` helper function that generates DKIM DNS TXT records according to RFC 6376 (DomainKeys Identified Mail) and its updates.
  *
- * ## Example
+ * ## Examples
  *
  * ### Simple example
  *
@@ -860,13 +938,15 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   DKIM_BUILDER({
- *     label: "alerts",
  *     selector: "k2",
  *     pubkey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L",
- *     flags: ['y'],
- *     hashtypes: ['sha256'],
- *     keytype: 'rsa',
+ *     label: "subdomain",
+ *     version: "DKIM1",
+ *     hashtypes: ['sha1', 'sha256'],
+ *     keytype: "rsa",
+ *     note: "some human-readable notes",
  *     servicetypes: ['email'],
+ *     flags: ['y', 's'],
  *     ttl: 150
  *   }),
  * );
@@ -875,30 +955,42 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * This yields the following record:
  *
  * ```text
- *
- * k2._domainkey.alerts    IN  TXT "v=DKIM1; k=rsa; s=email; t=y; h=sha256; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L" ttl=150
- *
+ * k2._domainkey.subdomain   IN  TXT "v=DKIM1; h=sha1:sha256; k=rsa; n=some=20human-readable=20notes; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L; s=email; t=y:s" ttl=150
  * ```
  *
- * ### Parameters
+ * ## Parameters
  *
- * * `label:` The DNS label for the DKIM record (`[selector]._domainkey` prefix is added; default: `'@'`)
- * * `selector:` Selector used for the label. e.g. `s1` or `mail`
- * * `pubkey:` Public key `p` to be used for DKIM.
- * * `keytype:` Key type `k`. Defaults to `'rsa'` if omitted (optional)
- * * `flags:` Which types `t` of flags to activate, ie. 'y' and/or 's'. Array, defaults to 's' (optional)
- * * `hashtypes:` Acceptable hash algorithms `h` (optional)
- * * `servicetypes:` Record-applicable service types (optional)
- * * `note:` Note field `n` for admins. Avoid if possible to keep record length short. (optional)
- * * `ttl:` Input for `TTL` method (optional)
+ * * `selector` (string, required): The selector subdividing the namespace for the domain.
+ * * `pubkey` (string, optional): The base64-encoded public key (RSA or Ed25519). Default: empty (key revocation or non-sending domain).
+ * * `label` (string, optional): The DNS label for the DKIM record. Default: `@`.
+ * * `version` (string, optional): DKIM version. Maps to the `v=` tag. Default: `DKIM1` (currently the only supported value).
+ * * `hashtypes` (array, optional): Acceptable hash algorithms for signing. Maps to the `h=` tag.
+ *   * Supported values for RSA key:
+ *     * `sha1`
+ *     * `sha256`
+ *   * Supported values for Ed25519 key:
+ *     * `sha256`
+ * * `keytype` (string, optional): Key algorithm type. Maps to the `k=` tag. Default: `rsa`. Supported values:
+ *    * `rsa`
+ *    * `ed25519`
+ * * `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
+ * * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
+ *   * `*`: explicitly allows all service types
+ *   * `email`: restricts key to email service only
+ * * `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
+ *   * `y`: Testing mode.
+ *   * `s`: Subdomain restriction.
+ * * `ttl` (number, optional): DNS TTL value in seconds
  *
- * ### Caveats
+ * ## Related RFCs
  *
- * * DKIM (TXT) records are automatically split using `AUTOSPLIT`.
+ * * RFC 6376: DomainKeys Identified Mail (DKIM) Signatures
+ * * RFC 8301: Cryptographic Algorithm and Key Usage Update to DKIM
+ * * RFC 8463: A New Cryptographic Signature Method for DKIM (Ed25519)
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dkim_builder
  */
-declare function DKIM_BUILDER(opts: { label?: string; selector: string; pubkey: string; flags?: string[]; hashtypes?: string[]; keytype?: string; servicetypes?: string[]; note?: string; ttl?: Duration }): DomainModifier;
+declare function DKIM_BUILDER(opts: { selector: string; pubkey?: string; label?: string; version?: string; hashtypes?: string|string[]; keytype?: string; note?: string; servicetypes?: string|string[]; flags?: string|string[]; ttl?: Duration }): DomainModifier;
 
 /**
  * DNSControl contains a `DMARC_BUILDER` which can be used to simply create
@@ -1627,6 +1719,196 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
 declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: string): DomainModifier;
 
 /**
+ * `IGNORE_EXTERNAL_DNS` makes DNSControl automatically detect and ignore DNS records
+ * managed by Kubernetes external-dns.
+ *
+ * ## Background
+ *
+ * [External-dns](https://github.com/kubernetes-sigs/external-dns) is a popular
+ * Kubernetes controller that synchronizes exposed Kubernetes Services and Ingresses
+ * with DNS providers. It creates DNS records automatically based on annotations on
+ * your Kubernetes resources.
+ *
+ * External-dns uses TXT records to track ownership of the DNS records it manages.
+ * These TXT records contain metadata in this format:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * When you have both DNSControl and external-dns managing the same DNS zone, conflicts
+ * can occur. DNSControl will try to delete records created by external-dns, and
+ * external-dns will recreate them, leading to an endless update cycle.
+ *
+ * ## How it works
+ *
+ * When `IGNORE_EXTERNAL_DNS` is enabled, DNSControl will:
+ *
+ * 1. Scan existing TXT records for the external-dns heritage marker (`heritage=external-dns`)
+ * 2. Parse the TXT record name to determine which DNS record it manages
+ * 3. Automatically ignore both the TXT ownership record and the corresponding DNS record
+ *
+ * External-dns creates TXT records with prefixes based on record type:
+ * - `a-<name>` for A records
+ * - `aaaa-<name>` for AAAA records
+ * - `cname-<name>` for CNAME records
+ * - `ns-<name>` for NS records
+ * - `mx-<name>` for MX records
+ * - `srv-<name>` for SRV records
+ * - `txt-<name>` for TXT records (when external-dns manages TXT records)
+ *
+ * For example, if external-dns creates an A record at `myapp.example.com`, it will
+ * also create a TXT record at `a-myapp.example.com` containing the heritage information.
+ *
+ * ## Usage
+ *
+ * ```javascript
+ * // Default: detect standard external-dns prefixes (a-, cname-, etc.)
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS(),
+ *   // Your static DNS records managed by DNSControl
+ *   A("www", "1.2.3.4"),
+ *   A("mail", "1.2.3.5"),
+ *   MX("@", 10, "mail"),
+ *   // Records created by external-dns (from Kubernetes Ingresses/Services)
+ *   // will be automatically detected and ignored
+ * );
+ * ```
+ *
+ * ## Custom Prefix Support
+ *
+ * If your external-dns is configured with a custom `--txt-prefix` (as documented in the
+ * [external-dns TXT registry docs](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md#prefixes-and-suffixes)),
+ * pass that prefix to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns is configured with --txt-prefix="extdns-"
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS("extdns-"),
+ *   A("www", "1.2.3.4"),
+ * );
+ * ```
+ *
+ * This will match TXT records like `extdns-www`, `extdns-api`, etc.
+ *
+ * Without a prefix argument, it detects:
+ * - The default `%{record_type}-` format (prefixes like `a-`, `cname-`, etc.)
+ * - Legacy format (TXT record with same name as managed record)
+ *
+ * ## Example scenario
+ *
+ * Suppose you have:
+ * - A Kubernetes cluster running external-dns with `--txt-owner-id=my-cluster`
+ * - An Ingress resource that creates an A record for `myapp.example.com` pointing to `10.0.0.1`
+ *
+ * External-dns will create:
+ * 1. An A record: `myapp.example.com` → `10.0.0.1`
+ * 2. A TXT record: `a-myapp.example.com` → `"heritage=external-dns,external-dns/owner=my-cluster,external-dns/resource=ingress/default/myapp"`
+ *
+ * With `IGNORE_EXTERNAL_DNS` enabled, DNSControl will:
+ * - Detect the TXT record at `a-myapp.example.com` as an external-dns ownership record
+ * - Ignore both the TXT record and the A record at `myapp.example.com`
+ * - Only manage the records you explicitly define in your `dnsconfig.js`
+ *
+ * ## Comparison with other options
+ *
+ * | Feature | Use case |
+ * |---------|----------|
+ * | `IGNORE_EXTERNAL_DNS` | Automatically ignore all external-dns managed records |
+ * | `IGNORE("*.k8s", "A,AAAA,CNAME,TXT")` | Ignore records under a specific subdomain pattern |
+ * | `NO_PURGE` | Don't delete any records (less precise, records may accumulate) |
+ *
+ * ## Caveats
+ *
+ * ### One per domain
+ *
+ * Only one `IGNORE_EXTERNAL_DNS()` should be used per domain. If you call it multiple
+ * times, the last prefix wins. If you have multiple external-dns instances with
+ * different prefixes managing the same zone, use `IGNORE()` patterns for additional
+ * prefixes.
+ *
+ * ### TXT Registry Format
+ *
+ * This feature relies on external-dns's [TXT registry](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md),
+ * which is the default registry type. The TXT record content format is well-documented:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * This feature detects the `heritage=external-dns` marker in TXT records to identify
+ * external-dns managed records.
+ *
+ * ### Custom Prefix Support
+ *
+ * This feature supports custom prefixes configured via external-dns's `--txt-prefix` flag.
+ * If you're using a custom prefix, pass it to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns uses --txt-prefix="extdns-"
+ * IGNORE_EXTERNAL_DNS("extdns-")
+ *
+ * // If external-dns uses --txt-prefix="myprefix-%{record_type}-"
+ * IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
+ *
+ * // If external-dns uses --txt-prefix="extdns-%{record_type}." (period format)
+ * // This is recommended for apex domain support per external-dns docs
+ * IGNORE_EXTERNAL_DNS("extdns-")  // Works with both hyphen and period format
+ * ```
+ *
+ * Without a prefix argument, it detects:
+ * - Default format: `%{record_type}-` prefix (e.g., `a-`, `cname-`)
+ * - Legacy format: Same name as managed record (no prefix)
+ *
+ * #### Period Format for Apex Domains
+ *
+ * If you need external-dns to manage apex (root) domain records, the external-dns
+ * documentation recommends using a prefix with `%{record_type}` followed by a period:
+ *
+ * ```yaml
+ * # external-dns deployment args
+ * args:
+ *   - --txt-prefix=extdns-%{record_type}.
+ * ```
+ *
+ * This creates TXT records like `extdns-a.www` for the `www` A record, and `extdns-a`
+ * for the apex A record. DNSControl's `IGNORE_EXTERNAL_DNS` supports both formats:
+ *
+ * - Hyphen format: `extdns-a-www` (from `--txt-prefix=extdns-` with default `%{record_type}-`)
+ * - Period format: `extdns-a.www` (from `--txt-prefix=extdns-%{record_type}.`)
+ *
+ * **Note:** Suffix-based naming (`--txt-suffix`) is not currently supported.
+ *
+ * ### Unsupported Registries
+ *
+ * External-dns supports multiple registry types. This feature **only** supports:
+ *
+ * - ✅ **TXT registry** (default) - Stores metadata in TXT records
+ *
+ * The following registries are **not supported**:
+ *
+ * - ❌ **DynamoDB registry** - Stores metadata in AWS DynamoDB
+ * - ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery
+ * - ❌ **noop registry** - No metadata persistence
+ *
+ * ### Legacy TXT Format
+ *
+ * External-dns versions prior to v0.16 created TXT records without the record type
+ * prefix (e.g., `myapp.example.com` instead of `a-myapp.example.com`). This legacy
+ * format is supported but may match more records than intended since the record type
+ * cannot be determined.
+ *
+ * ## See also
+ *
+ * * [`IGNORE`](IGNORE.md) for manually ignoring specific records with glob patterns
+ * * [`NO_PURGE`](NO_PURGE.md) for preventing deletion of all unmanaged records
+ * * [External-dns documentation](https://github.com/kubernetes-sigs/external-dns)
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_external_dns
+ */
+declare function IGNORE_EXTERNAL_DNS(prefix?: string): DomainModifier;
+
+/**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
  *
  * `IGNORE_NAME(a, b)` is the same as `IGNORE(a, b, "*")`.
@@ -1972,6 +2254,106 @@ declare function LOC_BUILDER_DMS_STR(opts: { label?: string; str: string; alt?: 
 declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: number; ttl?: Duration }): DomainModifier;
 
 /**
+ * # LUA
+ *
+ * `LUA()` adds a **PowerDNS Lua record** to a domain. Use this when you want answers computed at **query time** (traffic steering, geo/ASN steering, weighted pools, health-based failover, time-based values, etc.) using the PowerDNS Authoritative Server’s built-in Lua engine.
+ *
+ * > **Provider support:** `LUA()` is supported **only** by the **PowerDNS** DNS provider in DNSControl. Ensure your zones are served by PowerDNS and that Lua records are enabled.
+ * > See: PowerDNS provider page and Supported providers matrix.
+ * > (References at the end.)
+ *
+ * ## Signature
+ *
+ * ```typescript
+ * LUA(
+ *   name: string,
+ *   rtype: string,                  // e.g. "A", "AAAA", "CNAME", "TXT", "PTR", "LOC", ...
+ *   contents: string | string[],    // the Lua snippet
+ *   ...modifiers: RecordModifier[]
+ * ): DomainModifier
+ * ```
+ *
+ * - **`name`** — label for the record (`"@"` for the zone apex).
+ * - **`rtype`** — the RR type the Lua snippet **emits** (e.g., `"A"`, `"AAAA"`, `"CNAME"`, `"TXT"`, `"PTR"`, `"LOC"`).
+ * - **`contents`** — the Lua snippet (string or array). See **Syntax** below.
+ * - **`modifiers`** — standard record modifiers like `TTL(60)`.
+ *
+ * ## Prerequisites (PowerDNS)
+ *
+ * PowerDNS Authoritative Server **4.2+** supports Lua records. You must enable Lua records either **globally** (in `pdns.conf`) or **per-zone** via domain metadata.
+ *
+ * - **Global:** set `enable-lua-records=yes` (or `shared`) and reload PowerDNS.
+ * - **Per-zone:** set metadata `ENABLE-LUA-RECORDS = 1` for the zone.
+ *
+ * See PowerDNS’s **Lua Records** overview and **Lua Reference** for details and helpers.
+ *
+ * ## Syntax
+ *
+ * PowerDNS evaluates the `contents` with two modes:
+ *
+ * - **Single expression (most common):** write **just the expression** — **no `return`**. PowerDNS implicitly treats the snippet as if it were the argument to `return`.
+ * - **Multi-statement script:** start the snippet with a **leading semicolon (`;`)**. In this mode you can write multiple statements and must include your own `return`.
+ *
+ * The value produced must be valid **RDATA** for the chosen `rtype` (IPv4 for `A`, IPv6 for `AAAA`, a single FQDN with trailing dot for `CNAME`, proper text for `TXT`, etc.). Helper functions and preset variables (e.g., `pickrandom`, `pickclosest`, `country`, `continent`, `qname`, `ifportup`) are defined in the PowerDNS Lua reference.
+ *
+ * ## Examples
+ *
+ * ### Single expression (implicit `return`)
+ *
+ * ```javascript
+ * // Weighted/random selection
+ * LUA("app", "A", "pickrandom({'192.0.2.11',3}, {'192.0.2.22',1})", TTL(60));
+ *
+ * // Health-aware pool: only addresses with TCP/443 up are served
+ * LUA("www", "A", "ifportup(443, {'192.0.2.1','192.0.2.2'})", TTL(60));
+ *
+ * // Geo proximity
+ * LUA("edge", "A", "pickclosest({'192.0.2.1','192.0.2.2','198.51.100.1'})", TTL(60));
+ * ```
+ *
+ * ### Multi-statement (leading `;`)
+ *
+ * ```javascript
+ * LUA("api", "A", [
+ *   "; if continent('EU') then ",
+ *   "    return {'198.51.100.1'} ",
+ *   "  else ",
+ *   "    return {'192.0.2.10','192.0.2.20'} ",
+ *   "  end"
+ * ], TTL(60));
+ *
+ * // Dynamic TXT, showing the queried name (string building example)
+ * LUA("_diag", "TXT", "; return 'Got a TXT query for ' .. qname:toString()", TTL(30));
+ * ```
+ *
+ * ### Other RR types
+ *
+ * Lua can emit data for many RR types as long as the RDATA is valid for that type:
+ *
+ * ```javascript
+ * LUA("edge", "CNAME", "('edgesvc.example.net.')", TTL(60));
+ * LUA("pop.asu", "LOC", "latlonloc(-25.286, -57.645, 100)", TTL(300)); // ~Asunción, 100m
+ * ```
+ *
+ * ## Tips & gotchas
+ *
+ * - **Use low TTLs** (e.g., 30–120s) for dynamic behavior to update promptly.
+ * - **Don’t mix address families:** `A` answers must be IPv4; `AAAA` answers must be IPv6.
+ * - **Serials & transfers:** Lua answers are computed at query time; changing only the Lua behavior does **not** change the zone’s SOA serial. Zone transfer and serial behavior follow normal PowerDNS rules.
+ * - **Provider limitation:** Only the **PowerDNS** provider in DNSControl accepts `LUA()`; other providers will ignore or reject it.
+ *
+ * ## References
+ *
+ * - PowerDNS **Lua Records** overview (syntax, examples).
+ * - PowerDNS **Lua Reference** (functions, preset variables, objects).
+ * - DNSControl **PowerDNS provider** page.
+ * - DNSControl **Supported providers** table.
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//lua
+ */
+declare function LUA(name: string, rtype: string, contents: string | string[], ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
  *
  * It defaults to a setup without support for legacy Skype for Business applications.
@@ -2114,8 +2496,8 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * It looks like this:
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
- * D("example.com", REG_THIRDPARTY,
+ * var REG_NONE = NewRegistrar("none");
+ * D("example.com", REG_NONE,
  *   ...
  * );
  * ```
@@ -2459,7 +2841,7 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
  */
-declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
+declare function NewDnsProvider(name: string, meta?: object): string;
 
 /**
  * NewRegistrar activates a Registrar Provider specified in `creds.json`.
@@ -2528,6 +2910,8 @@ declare function OPENPGPKEY(name: string, target: string, ...modifiers: RecordMo
 declare function PANIC(message: string): never;
 
 /**
+ * **DEPRECATED**: This record type is deprecated. Please use `URL` (for temporary redirects) or `URL301` (for permanent redirects) instead. PORKBUN_URLFWD will continue to work but is no longer recommended for new configurations.
+ *
  * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
  *
  * ```javascript
@@ -2871,6 +3255,21 @@ declare function REV(address: string): string;
 declare function REVCOMPAT(rfc: string): string;
 
 /**
+ * `RP()` adds an RP record to a domain.
+ *
+ * The RP implementation in DNSControl is still experimental and may change.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   RP("@", "user.example.com.", "example.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/rp
+ */
+declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.
  *
  * To create the name, you can the following command:
@@ -3175,7 +3574,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ## Advanced Technique: Define once, use many
  *
- * In some situations we define an SPF setting once and want to re-use
+ * In some situations we define an SPF setting once and want to reuse
  * it on many domains. Here's how to do this:
  *
  * ```javascript
@@ -3438,6 +3837,18 @@ declare function TXT(name: string, contents: string, ...modifiers: RecordModifie
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/)
  *
+ * ### Porkbun
+ *
+ * This creates a temporary (HTTP 302) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL("redirect", "https://example.org"),
+ * );
+ * ```
+ *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
  */
 declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
@@ -3450,6 +3861,18 @@ declare function URL(name: string, target: string, ...modifiers: RecordModifier[
  * This is a URL Redirect record with a type of "Permanent", it creates a 301 redirect to the target.
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/).
+ *
+ * ### Porkbun
+ *
+ * This creates a permanent (HTTP 301) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL301("redirect", "https://example.org"),
+ * );
+ * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
  */

@@ -9,7 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
 	"github.com/transip/gotransip/v6/repository"
@@ -239,7 +239,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 
 // removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers
 func removeDomainNameserversFromDomainRecords(dc *models.DomainConfig) {
-	nameserverLookup := map[string]interface{}{}
+	nameserverLookup := map[string]any{}
 	for _, nameserver := range dc.Nameservers {
 		nameserverLookup[nameserver.Name] = nil
 	}

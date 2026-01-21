@@ -11,7 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -314,7 +314,7 @@ func parsePriority(priority int) int {
 	return priority
 }
 
-func (api *realtimeregisterAPI) EnsureZoneExists(domain string) error {
+func (api *realtimeregisterAPI) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.zoneExists(domain)
 	if err != nil {
 		return err

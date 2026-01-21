@@ -23,7 +23,7 @@ func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) erro
 	// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
 	allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
 	if !slices.Contains(allowedTags, tag) {
-		return fmt.Errorf("CAA tag (%v) is not one of the valid types.", tag)
+		return fmt.Errorf("CAA tag (%v) is not one of the valid types", tag)
 	}
 
 	return nil

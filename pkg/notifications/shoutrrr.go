@@ -3,7 +3,7 @@ package notifications
 import (
 	"fmt"
 
-	"github.com/containrrr/shoutrrr"
+	"github.com/nicholas-fedor/shoutrrr"
 )
 
 func init() {

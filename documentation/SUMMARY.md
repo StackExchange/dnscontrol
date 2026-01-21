@@ -50,6 +50,7 @@
     * [FRAME](language-reference/domain-modifiers/FRAME.md)
     * [HTTPS](language-reference/domain-modifiers/HTTPS.md)
     * [IGNORE](language-reference/domain-modifiers/IGNORE.md)
+    * [IGNORE_EXTERNAL_DNS](language-reference/domain-modifiers/IGNORE_EXTERNAL_DNS.md)
     * [IGNORE_NAME](language-reference/domain-modifiers/IGNORE_NAME.md)
     * [IGNORE_TARGET](language-reference/domain-modifiers/IGNORE_TARGET.md)
     * [IMPORT_TRANSFORM](language-reference/domain-modifiers/IMPORT_TRANSFORM.md)
@@ -70,6 +71,7 @@
     * [OPENPGPKEY](language-reference/domain-modifiers/OPENPGPKEY.md)
     * [PTR](language-reference/domain-modifiers/PTR.md)
     * [PURGE](language-reference/domain-modifiers/PURGE.md)
+    * [RP](language-reference/domain-modifiers/RP.md)
     * [SMIMEA](language-reference/domain-modifiers/SMIMEA.md)
     * [SOA](language-reference/domain-modifiers/SOA.md)
     * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
@@ -86,6 +88,7 @@
             * [ADGUARDHOME_AAAA_PASSTHROUGH](language-reference/domain-modifiers/ADGUARDHOME_AAAA_PASSTHROUGH.md)
         * Akamai Edge Dns
             * [AKAMAICDN](language-reference/domain-modifiers/AKAMAICDN.md)
+            * [AKAMAITLC](language-reference/domain-modifiers/AKAMAITLC.md)
         * Amazon Route 53
             * [R53_ALIAS](language-reference/domain-modifiers/R53_ALIAS.md)
         * Azure DNS
@@ -97,6 +100,8 @@
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
+        * PowerDNS
+            * [LUA](language-reference/domain-modifiers/LUA.md)     
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
@@ -110,13 +115,14 @@
 * [Supported providers](provider/index.md)
 * [AdGuard Home](provider/adguardhome.md)
 * [Akamai Edge DNS](provider/akamaiedgedns.md)
+* [Alibaba Cloud DNS (ALIDNS)](provider/alidns.md)
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
 * [AXFR+DDNS](provider/axfrddns.md)
-* [Azure DNS](provider/azure_dns.md)
-* [Azure Private DNS](provider/azure_private_dns.md)
+* [Azure DNS](provider/azuredns.md)
+* [Azure Private DNS](provider/azureprivatedns.md)
 * [BIND](provider/bind.md)
-* [Bunny DNS](provider/bunny\_dns.md)
+* [Bunny DNS](provider/bunnydns.md)
 * [CentralNic Reseller (CNR) - formerly RRPProxy](provider/cnr.md)
 * [Cloudflare](provider/cloudflareapi.md)
 * [ClouDNS](provider/cloudns.md)
@@ -124,6 +130,7 @@
 * [deSEC](provider/desec.md)
 * [DigitalOcean](provider/digitalocean.md)
 * [DNS Made Easy](provider/dnsmadeeasy.md)
+* [DNScale](provider/dnscale.md)
 * [DNSimple](provider/dnsimple.md)
 * [DNS-over-HTTPS](provider/dnsoverhttps.md)
 * [DOMAINNAMESHOP](provider/domainnameshop.md)
@@ -131,10 +138,11 @@
 * [easyname](provider/easyname.md)
 * [Exoscale](provider/exoscale.md)
 * [Fortigate](provider/fortigate.md)
-* [Gandi_v5](provider/gandi_v5.md)
+* [Gandi_v5](provider/gandiv5.md)
 * [Gcore](provider/gcore.md)
 * [Google Cloud DNS](provider/gcloud.md)
-* [Hetzner DNS Console](provider/hetzner.md)
+* [Hetzner DNS API](provider/hetznerv2.md)
+* [Hetzner DNS Console (legacy)](provider/hetzner.md)
 * [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
 * [Huawei Cloud DNS](provider/huaweicloud.md)
@@ -162,6 +170,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
+* [Vercel](provider/vercel.md)
 * [Vultr](provider/vultr.md)
 
 ## Commands

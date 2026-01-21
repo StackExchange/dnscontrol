@@ -17,7 +17,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -28,7 +28,8 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Can(),
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAKAMAITLC:        providers.Can(),
+	providers.CanUseAlias:            providers.Can("Akamai Edge DNS does not directly support ALIAS. Apex record will be converted to AKAMAITLC, any others to CNAME."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Can(),
@@ -58,6 +59,7 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterCustomRecordType("AKAMAICDN", providerName, "")
+	providers.RegisterCustomRecordType("AKAMAITLC", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
@@ -99,7 +101,7 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
+func (a *edgeDNSProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if zoneDoesExist(domain) {
 		printer.Debugf("Zone %s already exists\n", domain)
 		return nil
@@ -109,6 +111,11 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+
+	if err := a.preprocessConfig(dc); err != nil {
+		return nil, 0, err
+	}
+
 	keysToUpdate, toReport, actualChangeCount, err := diff.NewCompat(dc).ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, 0, err
@@ -234,4 +241,20 @@ func (a *edgeDNSProvider) ListZones() ([]string, error) {
 		return nil, err
 	}
 	return zones, nil
+}
+
+func (a *edgeDNSProvider) preprocessConfig(dc *models.DomainConfig) error {
+	for _, rec := range dc.Records {
+		// Convert ALIAS records to the Akamai equivalents. AKAMAITLC is only valid
+		// at the apex, so any other ALIAS must be converted to CNAME.
+		if rec.Type == "ALIAS" {
+			if rec.Name == "@" {
+				rec.ChangeType("AKAMAITLC", dc.Name)
+				rec.AnswerType = "DUAL"
+			} else {
+				rec.ChangeType("CNAME", dc.Name)
+			}
+		}
+	}
+	return nil
 }

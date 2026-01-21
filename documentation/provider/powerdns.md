@@ -2,7 +2,7 @@
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `POWERDNS`
 along with your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html).
-In most cases the Server id is `localhost`.
+In most cases the Server id (`serverName`) is `localhost`.
 
 Example:
 
@@ -20,23 +20,24 @@ Example:
 {% endcode %}
 
 ## Metadata
-Following metadata are available:
+Following provider metadata are available:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-{
+var DSP_POWERDNS = NewDnsProvider("pdns", {
     'default_ns': [
         'a.example.com.',
         'b.example.com.'
     ],
     'dnssec_on_create': false,
     'zone_kind': 'Native',
-}
+    'use_views': true
+});
 ```
 {% endcode %}
 
-- `default_ns` sets the nameserver which are used
-- `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
+- `default_ns` sets the nameservers which are used.
+- `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones.
 - `zone_kind` is the type that will be used when creating the zone.
   <br>Can be one of `Native`, `Master` or `Slave`, when not specified it defaults to `Native`.
   <br>Please see [PowerDNS documentation](https://doc.powerdns.com/authoritative/modes-of-operation.html) for explanation of the kinds.
@@ -45,6 +46,8 @@ Following metadata are available:
   <br> Can be one of `DEFAULT`, `INCREASE`, `EPOCH`, `SOA-EDIT` or `SOA-EDIT-INCREASE`, default format is YYYYMMDD01.
   <br>Please see [PowerDNS SOA-EDIT-DNSUPDATE documentation](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-edit-dnsupdate-settings) for explanation of the kinds.
   <br>**Note that these tokens are case-sensitive!**
+- `use_views` enables mapping dnscontrol tags to PowerDNS views.
+  <br>Set to `true` to enable, defaults to `false`.
 
 ## Usage
 An example configuration:
@@ -62,6 +65,11 @@ D("example.com", REG_NONE, DnsProvider(DSP_POWERDNS),
 
 ## Activation
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
+
+## Tags and Variants
+If you use a dnscontrol *tag* (like `example.com!internal`) it will be mapped to a powerdns *variant* (like `example.com..internal`) when `use_views` is enabled in the provider metadata.
+
+See [PowerDNS documentation on Views](https://doc.powerdns.com/authoritative/views.html) for details on how to setup networks and views for these variants.
 
 ## Caveats
 

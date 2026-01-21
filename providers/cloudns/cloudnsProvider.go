@@ -4,14 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/fatih/color"
+
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/miekg/dns/dnsutil"
-	"golang.org/x/time/rate"
 )
 
 /*
@@ -21,10 +25,9 @@ Info required in `creds.json`:
    - auth-password
 */
 
-// NewCloudns creates the provider.
-func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
 	c := &cloudnsProvider{}
-	c.requestLimit = rate.NewLimiter(10, 10)
+	c.requestLimit = NewAdaptiveLimiter(10, 10)
 
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
@@ -35,13 +38,20 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	return c, nil
 }
 
+func NewDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return NewCloudns(conf)
+}
+
+func NewReg(conf map[string]string) (providers.Registrar, error) {
+	return NewCloudns(conf)
+}
+
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDNAME:            providers.Can(),
@@ -67,10 +77,11 @@ func init() {
 	const providerName = "CLOUDNS"
 	const providerMaintainer = "@pragmaton"
 	fns := providers.DspFuncs{
-		Initializer:   NewCloudns,
+		Initializer:   NewDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
+	providers.RegisterRegistrarType(providerName, NewReg)
 	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -124,7 +135,7 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	domainID, ok, err := c.fetchDomainIndex(dc.Name)
+	domainID, ok, err := c.idForDomain(dc.Name)
 	if err != nil {
 		return nil, 0, err
 	} else if !ok {
@@ -148,19 +159,46 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		return nil, 0, err
 	}
 
-	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	instructions, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, compareMetadata)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	var (
+		reportMsgs []string
+		create     diff.Changeset
+		del        diff.Changeset
+		modify     diff.Changeset
+	)
+	for _, inst := range instructions {
+		cor := diff.Correlation{}
+		switch inst.Type {
+		case diff2.REPORT:
+			reportMsgs = append(reportMsgs, inst.Msgs...)
+		case diff2.CREATE:
+			cor.Desired = inst.New[0]
+			create = append(create, cor)
+		case diff2.CHANGE:
+			cor.Existing = inst.Old[0]
+			cor.Desired = inst.New[0]
+			modify = append(modify, cor)
+		case diff2.DELETE:
+			cor.Existing = inst.Old[0]
+			del = append(del, cor)
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+		}
+	}
+
 	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
+	corrections := diff.GenerateMessageCorrections(reportMsgs)
 	corrections = append(corrections, dnssecFixes...)
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {
 		id := m.Existing.Original.(*domainRecord).ID
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
+			Msg: fmt.Sprintf("%s%s, ClouDNS ID: %s", m.String(), addMetadataCorrection(m.Existing, m.Desired), id),
 			F: func() error {
 				return c.deleteRecord(domainID, id)
 			},
@@ -193,7 +231,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		}
 
 		corr := &models.Correction{
-			Msg: m.String(),
+			Msg: fmt.Sprintf("%s%s", m.String(), addMetadataCorrection(m.Existing, m.Desired)),
 			F: func() error {
 				return c.createRecord(domainID, req)
 			},
@@ -228,7 +266,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 		}
 
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
+			Msg: fmt.Sprintf("%s%s, ClouDNS ID: %s: ", m.String(), addMetadataCorrection(m.Existing, m.Desired), id),
 			F: func() error {
 				return c.modifyRecord(domainID, id, req)
 			},
@@ -237,6 +275,36 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	}
 
 	return corrections, actualChangeCount, nil
+}
+
+// GetRegistrarCorrections returns corrections to update domain nameserver delegation
+func (c *cloudnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	// 1. Get current nameservers from registrar
+	existing, err := c.getNameservers(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(existing)
+	existingStr := strings.Join(existing, ",")
+
+	// 2. Get desired nameservers from config
+	desired := models.NameserversToStrings(dc.Nameservers)
+	sort.Strings(desired)
+	desiredStr := strings.Join(desired, ",")
+
+	// 3. Compare and return correction if needed
+	if existingStr != desiredStr {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Update nameservers from %q to %q", existingStr, desiredStr),
+				F: func() error {
+					return c.setNameservers(dc.Name, desired)
+				},
+			},
+		}, nil
+	}
+
+	return nil, nil
 }
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
@@ -284,13 +352,27 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
-	if _, ok, err := c.fetchDomainIndex(domain); err != nil {
+func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
+	if _, ok, err := c.idForDomain(domain); err != nil {
 		return err
 	} else if ok { // zone already exists
 		return nil
 	}
 	return c.createDomain(domain)
+}
+
+// returns names of all DNS zones managed by this provider.
+func (c *cloudnsProvider) ListZones() ([]string, error) {
+	if err := c.fetchZones(); err != nil {
+		return nil, err
+	}
+
+	zones := make([]string, 0, len(c.domainIndex))
+	for zone := range c.domainIndex {
+		zones = append(zones, zone)
+	}
+
+	return zones, nil
 }
 
 // parses the ClouDNS format into our standard RecordConfig
@@ -310,6 +392,17 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 		Original:     r,
 	}
 	rc.SetLabel(r.Host, domain)
+
+	// Add metadata for GeoDNS
+	// Note: By default, it works only with A, AAAA, CNAME, NAPTR or SRV record
+	// but you can ask the support for others type of record and they enable it
+	// for your ClouDNS account.
+	if r.GeodnsCode != "" {
+		if rc.Metadata == nil {
+			rc.Metadata = map[string]string{}
+		}
+		rc.Metadata[metaGeodnsCode] = r.GeodnsCode
+	}
 
 	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
@@ -391,6 +484,15 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["host"] = ""
 	}
 
+	// Add metadata for GeoDNS
+	// Note: By default, it works only with A, AAAA, CNAME, NAPTR or SRV record
+	// but you can ask the support for others type of record and they enable it
+	// for your ClouDNS account.
+	geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := rc.Metadata[metaGeodnsCode]
+	if geodnsCodeFromMetadataExist == true {
+		req["geodns-code"] = geodnsCodeFromMetadataValue
+	}
+
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR", "DNAME":
 		// Nothing special.
@@ -444,4 +546,85 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	return req, nil
+}
+
+func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.RecordConfig) string {
+	if existingRc == nil {
+		if desiredRc.Metadata != nil {
+			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := desiredRc.Metadata[metaGeodnsCode]
+			if geodnsCodeFromMetadataExist == true {
+				return color.GreenString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
+			}
+		}
+
+		return ""
+	}
+	if desiredRc == nil {
+		if existingRc.Metadata != nil {
+			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := existingRc.Metadata[metaGeodnsCode]
+			if geodnsCodeFromMetadataExist == true {
+				return color.RedString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
+			}
+		}
+
+		return ""
+	}
+
+	if compareMetadata(existingRc) == compareMetadata(desiredRc) {
+		return ""
+	}
+
+	// By default, the value is "DEFAULT"
+	// To compare geodns metadata, we replace the value "DEFAULT" with an empty string
+	// Here, we replace the empty string with "DEFAULT", so the end user can see the
+	// real value send to the provider.
+
+	geodnsCodeFromExistingRcMetadataValue, geodnsCodeFromExistingRcMetadataExist := existingRc.Metadata[metaGeodnsCode]
+	geodnsCodeFromDesiredRcMetadataValue, geodnsCodeFromDesiredRcMetadataExist := desiredRc.Metadata[metaGeodnsCode]
+
+	if geodnsCodeFromExistingRcMetadataExist == false {
+		geodnsCodeFromExistingRcMetadataValue = "DEFAULT"
+	}
+
+	if geodnsCodeFromDesiredRcMetadataExist == false {
+		geodnsCodeFromDesiredRcMetadataValue = "DEFAULT"
+	}
+
+	return color.YellowString(", (location=%s) -> (location=%s)", geodnsCodeFromExistingRcMetadataValue, geodnsCodeFromDesiredRcMetadataValue)
+}
+
+func compareMetadata(rc *models.RecordConfig) string {
+	if rc.Metadata == nil || len(rc.Metadata) == 0 {
+		return ""
+	}
+
+	// To compare GeoDNS metadata, we must temporary remove the value "DEFAULT".
+	// - DNS record without GeoDNS return ""
+	// - DNS record with GeoDNS return "DEFAULT" as empty value
+	val, exist := rc.Metadata[metaGeodnsCode]
+	if exist == true && val == "DEFAULT" {
+		delete(rc.Metadata, metaGeodnsCode)
+	}
+
+	// If there is no metadata left, we return an empty string (like the first if)
+	// Useful for the case where a DNS record has the "DEFAULT" GeoDNS value
+	// or the account doesn't have GeoDNS feature enabled
+	if len(rc.Metadata) == 0 {
+		return ""
+	}
+
+	// json.Marshal always serialize all fields in alphabetical order,
+	// so the metadata string will be consistent between runs
+	result, err := json.Marshal(rc.Metadata)
+	if err != nil {
+		printer.Warnf("Cannot serialize metadata of record %s", rc)
+		return ""
+	}
+
+	// Restore the metadata value
+	if exist == true && val == "DEFAULT" {
+		rc.Metadata[metaGeodnsCode] = "DEFAULT"
+	}
+
+	return string(result)
 }

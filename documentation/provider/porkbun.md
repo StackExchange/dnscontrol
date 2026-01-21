@@ -68,3 +68,36 @@ D("example.com", REG_PORKBUN, DnsProvider(DSP_R53),
 );
 ```
 {% endcode %}
+
+## URL Forwarding
+
+Porkbun supports URL forwarding (redirects) using the `URL` and `URL301` record types:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_PORKBUN = NewRegistrar("porkbun");
+var DSP_PORKBUN = NewDnsProvider("porkbun");
+
+D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+    // Temporary redirect (HTTP 302)
+    URL("redirect", "https://example.org"),
+    // Permanent redirect (HTTP 301)
+    URL301("www", "https://example.com"),
+);
+```
+{% endcode %}
+
+By default, URL forwarding includes wildcard subdomains but does not include the URI path in redirection. You can customize this behavior using metadata:
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+    // Include path and disable wildcard
+    URL("redirect", "https://example.org", {includePath: "yes", wildcard: "no"}),
+);
+```
+{% endcode %}
+
+{% hint style="info" %}
+**NOTE**: The legacy `PORKBUN_URLFWD` record type is deprecated. Please use `URL` or `URL301` instead.
+{% endhint %}

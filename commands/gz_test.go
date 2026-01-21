@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
 	"github.com/andreyvit/diff"
 )
 
@@ -63,7 +63,7 @@ func testFormat(t *testing.T, domain, format string) {
 	// Read the expected result
 	want, err := os.ReadFile(expectedFilename)
 	if err != nil {
-		log.Fatal(fmt.Errorf("can't read expected %q: %w", outfile.Name(), err))
+		log.Fatal(fmt.Errorf("can't read expected %q: %w", expectedFilename, err))
 	}
 
 	if w, g := string(want), string(got); w != g {

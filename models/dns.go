@@ -105,17 +105,10 @@ type Correction struct {
 	Msg string
 }
 
-// DomainContainingFQDN finds the best domain from the dns config for the given record fqdn.
-// It will chose the domain whose name is the longest suffix match for the fqdn.
-func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
-	fqdn = strings.TrimSuffix(fqdn, ".")
-	longestLength := 0
-	var d *DomainConfig
-	for _, dom := range config.Domains {
-		if (dom.Name == fqdn || strings.HasSuffix(fqdn, "."+dom.Name)) && len(dom.Name) > longestLength {
-			longestLength = len(dom.Name)
-			d = dom
-		}
+// PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
+func (config *DNSConfig) PostProcess() error {
+	for _, domain := range config.Domains {
+		domain.PostProcess()
 	}
-	return d
+	return nil
 }

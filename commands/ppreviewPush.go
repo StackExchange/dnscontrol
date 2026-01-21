@@ -2,10 +2,13 @@ package commands
 
 import (
 	"cmp"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -14,15 +17,16 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/nozzle/throttler"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
 )
@@ -37,7 +41,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	return &cli.Command{
 		Name:  "preview",
 		Usage: "read live configuration and identify changes to be made, without applying them",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(PPreview(args))
 		},
 		Flags: args.flags(),
@@ -54,7 +58,6 @@ type PPreviewArgs struct {
 	ConcurMode        string
 	ConcurMax         int // Maximum number of concurrent connections
 	NoPopulate        bool
-	DePopulate        bool
 	PopulateOnPreview bool
 	Report            string
 	Full              bool
@@ -87,7 +90,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.ConcurMode,
 		Value:       "concurrent",
 		Usage:       `Which providers to run concurrently: concurrent, none, all`,
-		Action: func(c *cli.Context, s string) error {
+		Action: func(ctx context.Context, c *cli.Command, s string) error {
 			if !slices.Contains([]string{"concurrent", "none", "all"}, s) {
 				fmt.Printf("%q is not a valid option for --cmode.  Values are: concurrent, none, all\n", s)
 				os.Exit(1)
@@ -100,7 +103,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Destination: &args.ConcurMax,
 		Value:       999,
 		Usage:       `Maximum number of concurrent connections`,
-		Action: func(c *cli.Context, v int) error {
+		Action: func(ctx context.Context, c *cli.Command, v int) error {
 			if v < 1 {
 				fmt.Printf("%d is not a valid value for --cmax.  Values must be 1 or greater\n", v)
 				os.Exit(1)
@@ -112,11 +115,6 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
 		Usage:       `Do not auto-create zones at the provider`,
-	})
-	flags = append(flags, &cli.BoolFlag{
-		Name:        "depopulate",
-		Destination: &args.NoPopulate,
-		Usage:       `Delete unknown zones at provider (dangerous!)`,
 	})
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "populate-on-preview",
@@ -133,7 +131,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 		Name:   "reportmax",
 		Hidden: false,
 		Usage:  `Limit the IGNORE/NO_PURGE report to this many lines (Expermental. Will change in the future.)`,
-		Action: func(ctx *cli.Context, maxreport int) error {
+		Action: func(ctx context.Context, c *cli.Command, maxreport int) error {
 			printer.MaxReport = maxreport
 			return nil
 		},
@@ -156,7 +154,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	return &cli.Command{
 		Name:  "push",
 		Usage: "identify changes to be made, and perform them",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(PPush(args))
 		},
 		Flags: args.flags(),
@@ -213,8 +211,30 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return err
 	}
 
+	var notify = args.Notify
+
+	// We want to notify if args.Notify OR notify_on_*
+	if notifications, ok := providerConfigs["notifications"]; ok && notifications != nil {
+		if push {
+			if notifyOnPush, ok := notifications["notify_on_push"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPush); b {
+					notify = true
+				}
+			}
+		} else {
+			if notifyOnPreview, ok := notifications["notify_on_preview"]; ok {
+				if b, _ := strconv.ParseBool(notifyOnPreview); b {
+					notify = true
+				}
+			}
+		}
+	}
+	if notify {
+		out.PrintfIf(fullMode, "Notifications are enabled...\n")
+	}
+
 	out.PrintfIf(fullMode, "Creating an in-memory model of 'desired'...\n")
-	notifier, err := PInitializeProviders(cfg, providerConfigs, args.Notify)
+	notifier, err := PInitializeProviders(cfg, providerConfigs, notify)
 	if err != nil {
 		return err
 	}
@@ -243,7 +263,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 		out.Printf("CONCURRENTLY checking for %d zone(s)\n", len(zonesConcurrent))
 		for i, zone := range zonesConcurrent {
-			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.Name)
+			out.PrintfIf(fullMode, "Concurrently checking for zone: %q\n", zone.UniqueName)
 			go func(zone *models.DomainConfig) {
 				start := time.Now()
 				err := oneZonePopulate(zone, zcache)
@@ -264,7 +284,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 
 		out.Printf("SERIALLY checking for %d zone(s)\n", len(zonesSerial))
 		for _, zone := range zonesSerial {
-			out.Printf("Serially checking for zone: %q\n", zone.Name)
+			out.Printf("Serially checking for zone: %q\n", zone.UniqueName)
 			if err := oneZonePopulate(zone, zcache); err != nil {
 				anyErrors = true
 			}
@@ -292,7 +312,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 					continue // Do not emit noise when zone exists
 				}
 				if !started {
-					out.StartDomain(zone.GetUniqueName())
+					out.StartDomain(zone)
 					started = true
 				}
 				skip := skipProvider(provider.Name, providersToProcess)
@@ -300,7 +320,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				if !skip {
 					totalCorrections += len(corrections)
 					out.EndProvider2(provider.Name, len(corrections))
-					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+					reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 					anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push || args.PopulateOnPreview, interactive, notifier, report))
 				}
 			}
@@ -311,7 +331,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	t := throttler.New(args.ConcurMax, len(zonesConcurrent))
 	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
 	for i, zone := range zonesConcurrent {
-		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.Name)
+		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.UniqueName)
 		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
 			start := time.Now()
 			err := oneZone(zone, args)
@@ -331,7 +351,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	}
 	out.Printf("SERIALLY gathering records of %d zone(s)\n", len(zonesSerial))
 	for _, zone := range zonesSerial {
-		out.Printf("Serially Gathering: %q\n", zone.Name)
+		out.Printf("Serially Gathering: %q\n", zone.UniqueName)
 		if err := oneZone(zone, args); err != nil {
 			anyErrors = true
 		}
@@ -355,7 +375,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	// Now we know what to do, print or do the tasks.
 	out.PrintfIf(fullMode, "PHASE 3: CORRECTIONS\n")
 	for _, zone := range zonesToProcess {
-		out.StartDomain(zone.GetUniqueName())
+		out.StartDomain(zone)
 
 		// Process DNS provider changes:
 		providersToProcess := whichProvidersToProcess(zone.DNSProviderInstances, args.Providers)
@@ -367,7 +387,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 				numActions := zone.GetChangeCount(provider.Name)
 				totalCorrections += numActions
 				out.EndProvider2(provider.Name, numActions)
-				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name))
+				reportItems = append(reportItems, genReportItem(zone.Name, corrections, provider.Name, ""))
 				anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, provider.Name, corrections, out, push, interactive, notifier, report))
 			}
 		}
@@ -380,7 +400,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 			numActions := zone.GetChangeCount(zone.RegistrarInstance.Name)
 			out.EndProvider2(zone.RegistrarName, numActions)
 			totalCorrections += numActions
-			reportItems = append(reportItems, genReportItem(zone.Name, corrections, zone.RegistrarName))
+			reportItems = append(reportItems, genReportItem(zone.Name, corrections, "", zone.RegistrarName))
 			anyErrors = cmp.Or(anyErrors, pprintOrRunCorrections(zone.Name, zone.RegistrarInstance.Name, corrections, out, push, interactive, notifier, report))
 		}
 	}
@@ -404,29 +424,16 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	return nil
 }
 
-// func countActions(corrections []*models.Correction) int {
-//	r := 0
-//	for _, c := range corrections {
-//		if c.F != nil {
-//			r++
-//		}
-//	}
-//	return r
-//}
-
 // whichZonesToProcess takes a list of DomainConfigs and a filter string and
-// returns a list of DomainConfigs whose metadata[DomainUniqueName] matched the
+// returns a list of DomainConfigs whose Domain.UniqueName matched the
 // filter. The filter string is a comma-separated list of domain names. If the
 // filter string is empty or "all", all domains are returned.
 func whichZonesToProcess(domains []*models.DomainConfig, filter string) []*models.DomainConfig {
-	if filter == "" || filter == "all" {
-		return domains
-	}
+	fh := domaintags.CompilePermitList(filter)
 
-	permitList := strings.Split(filter, ",")
 	var picked []*models.DomainConfig
 	for _, domain := range domains {
-		if domainInList(domain.GetUniqueName(), permitList) {
+		if fh.Permitted(domain.GetUniqueName()) {
 			picked = append(picked, domain)
 		}
 	}
@@ -493,7 +500,7 @@ func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) error {
 	var errs []error
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
-		populateCorrections, err := generatePopulateCorrections(provider, zone.Name, zc)
+		populateCorrections, err := generatePopulateCorrections(provider, zone, zc)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -564,19 +571,51 @@ func skipProvider(name string, providers []*models.DNSProviderInstance) bool {
 	})
 }
 
-func genReportItem(zname string, corrections []*models.Correction, pname string) *ReportItem {
-	// Only count the actions, not the messages.
-	cnt := 0
+func parseCorrectionMsg(s string) []string {
+	// Regex to remove the terminal styled formatting
+	ansiRe := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+	s = ansiRe.ReplaceAllString(s, "")
+	// Create a slice(array) of correction/actions/changes from Msg
+	corrections := strings.Split(s, "\n")
+	// Clean up the slice, precaution remove any empty entries.
+	clean := make([]string, 0, len(corrections))
+	for _, l := range corrections {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			clean = append(clean, l)
+		}
+	}
+	return clean
+}
+
+func genReportItem(zoneName string, corrections []*models.Correction, providerName string, registrarName string) *ReportItem {
+	correctionDetails := make([]string, 0)
 	for _, cor := range corrections {
 		if cor.F != nil {
-			cnt++
+			// `corrections` is a list that contains "informational" messages
+			// (where `.F = nil`) and "actions" to be taken (where `.F != nil`).
+			// When `.F = nil`, the contents of `.Msg` can either be a concatenation of all
+			// actions(all changes done in a single API call) or a single
+			// action(one API call per change), depending on the provider's implementation.
+			//
+			// We are parsing `cor.Msg` to remove terminal styled formatting and create
+			// a comprehensive list of actions (changes), as well as get an accurate
+			// number of corrections (`len(correctionDetails)`).
+
+			correctionDetails = append(correctionDetails, parseCorrectionMsg(cor.Msg)...)
 		}
 	}
 
 	r := ReportItem{
-		Domain:      zname,
-		Corrections: cnt,
-		Provider:    pname,
+		Domain:            zoneName,
+		Corrections:       len(correctionDetails),
+		CorrectionDetails: correctionDetails,
+	}
+	if providerName != "" {
+		r.Provider = providerName
+	}
+	if registrarName != "" {
+		r.Registrar = registrarName
 	}
 	return &r
 }
@@ -635,17 +674,19 @@ func writeReport(report string, reportItems []*ReportItem) error {
 		return err
 	}
 	defer f.Close()
-	b, err := json.MarshalIndent(reportItems, "", "  ")
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(b); err != nil {
+
+	// Disabling HTML encoding
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+
+	if err := enc.Encode(reportItems); err != nil {
 		return err
 	}
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName string, zcache *cmdZoneCache) ([]*models.Correction, error) {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *cmdZoneCache) ([]*models.Correction, error) {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil, nil // We can't generate a list. No corrections are possible.
@@ -658,7 +699,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 	}
 	zones := *z
 
-	aceZoneName, _ := idna.ToASCII(zoneName)
+	aceZoneName, _ := idna.ToASCII(zone.Name)
 	if slices.Contains(zones, aceZoneName) {
 		return nil, nil // zone exists. Nothing to do.
 	}
@@ -671,7 +712,7 @@ func generatePopulateCorrections(provider *models.DNSProviderInstance, zoneName 
 
 	return []*models.Correction{{
 		Msg: fmt.Sprintf("Ensuring zone %q exists in %q", aceZoneName, provider.Name),
-		F:   func() error { return creator.EnsureZoneExists(aceZoneName) },
+		F:   func() error { return creator.EnsureZoneExists(aceZoneName, zone.Metadata) },
 	}}, nil
 }
 

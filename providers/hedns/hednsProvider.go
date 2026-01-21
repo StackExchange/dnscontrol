@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,8 +20,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -167,16 +168,14 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *hednsProvider) EnsureZoneExists(domain string) error {
+func (c *hednsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err
 	}
 
-	for _, d := range domains {
-		if d == domain {
-			return nil
-		}
+	if slices.Contains(domains, domain) {
+		return nil
 	}
 
 	return c.createDomain(domain)

@@ -16,6 +16,12 @@
     "group_id": "$AED_GROUP_ID",
     "host": "$AED_HOST"
   },
+  "ALIDNS": {
+    "TYPE": "ALIDNS",
+    "access_key_id": "$ALIDNS_ACCESS_KEY_ID",
+    "access_key_secret": "$ALIDNS_ACCESS_KEY_SECRET",
+    "domain": "$ALIDNS_DOMAIN"
+  },
   "AUTODNS": {
     "TYPE": "AUTODNS",
     "context": "$AUTODNS_CONTEXT",
@@ -108,6 +114,11 @@
     "domain": "$DIGITALOCEAN_DOMAIN",
     "token": "$DIGITALOCEAN_TOKEN"
   },
+  "DNSCALE": {
+    "TYPE": "DNSCALE",
+    "api_key": "$DNSCALE_API_KEY",
+    "domain": "$DNSCALE_DOMAIN"
+  },
   "DNSIMPLE": {
     "TYPE": "DNSIMPLE",
     "baseurl": "https://api.sandbox.dnsimple.com",
@@ -175,6 +186,11 @@
     "TYPE": "HETZNER",
     "api_key": "$HETZNER_API_KEY",
     "domain": "$HETZNER_DOMAIN"
+  },
+  "HETZNER_V2": {
+    "TYPE": "HETZNER_V2",
+    "api_token": "$HETZNER_V2_API_TOKEN",
+    "domain": "$HETZNER_V2_DOMAIN"
   },
   "HEXONET": {
     "TYPE": "HEXONET",
@@ -334,6 +350,12 @@
     "PrivateKey": "$TRANSIP_PRIVATE_KEY",
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "VERCEL": {
+    "TYPE": "VERCEL",
+    "api_token": "$VERCEL_API_TOKEN",
+    "domain": "$VERCEL_DOMAIN",
+    "team_id": "$VERCEL_TEAM_ID"
   },
   "VULTR": {
     "TYPE": "VULTR",

@@ -6,8 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 )
 
 func TestDNSProviders(t *testing.T) {
@@ -172,6 +173,19 @@ func makeTests() []*TestGroup {
 			tc("Change MX p", mx("testmx", 100, "bar.com.")),
 		),
 
+		testgroup("RP",
+			requires(providers.CanUseRP),
+			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
+			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
+		),
+		testgroup("RP",
+			requires(providers.CanUseRP),
+			tc("Create RP", rp("foo", "user", "server")),
+			tc("Create RP", rp("foo", "user2", "server")),
+			tc("Create RP", rp("foo", "user2", "waiter")),
+		),
+
 		// TXT
 
 		// Narrative: TXT records can be very complex but we'll save those
@@ -292,6 +306,18 @@ func makeTests() []*TestGroup {
 
 		testgroup("Ech",
 			requires(providers.CanUseHTTPS),
+			not(
+				// Last tested in 2025-12-04. Turns out that Vercel implements an unknown validation
+				// on the `ech` parameter, and our dummy base64 string are being rejected with:
+				//
+				// Invalid base64 string: [our base64] (key: ech)
+				//
+				// Since Vercel's validation process is unknown and not documented, we can't implement
+				// a rejectif within auditrecord to reject them statically.
+				//
+				// Let's just ignore ECH test for Vercel for now.
+				"VERCEL",
+			),
 			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
 			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),
 			tc("Ignore the ECH key while changing other values", https("@", 1, "example.net.", "port=80 ech=IGNORE")),
@@ -403,14 +429,17 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
+				"DNSCALE",     // Apex NS records are managed by DNScale.
 				"DNSIMPLE",    // Does not support NS records nor subdomains.
 				"EXOSCALE",    // Not supported.
 				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
 				"JOKER",       // Not supported via the Zone API.
 				"NAMEDOTCOM",  // "Ignores @ for NS records"
 				"NETCUP",      // NS records not currently supported.
+				"PORKBUN",     // Record ignored.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
+				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),
@@ -591,10 +620,11 @@ func makeTests() []*TestGroup {
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
+			tc("Chinese label", a("中文", "1.2.3.4")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		),
 		testgroup("IDNAs in CNAME targets",
-			not("CLOUDFLAREAPI"),
+			//not("CLOUDFLAREAPI"),
 			// LINODE: hostname validation does not allow the target domain TLD
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
@@ -621,6 +651,7 @@ func makeTests() []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
+			//  - VERCEL: up to 100 per pages
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
@@ -637,6 +668,7 @@ func makeTests() []*TestGroup {
 				"TRANSIP",   // Doesn't page. Works fine.  Due to the slow API we skip.
 				"CNR",       // Test beaks limits.
 				"FORTIGATE", // No paging
+				"VERCEL",    // Rate limit 100 creation per hour, 101 needs an hour, too much
 			),
 			tc("99 records", manyA("pager101-rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("pager101-rec%04d", "1.2.3.4", 100)...),
@@ -1142,84 +1174,13 @@ func makeTests() []*TestGroup {
 
 		// CLOUDFLAREAPI: Redirects:
 
-		// go test -v -verbose -profile CLOUDFLAREAPI                // PAGE_RULEs
-		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=c  // Convert: Convert page rules to Single Redirect
-		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=n  // New: Convert old to new Single Redirect
-		// ProTip: Add this to just run this test:
-		//  -start 59 -end 60
-
-		testgroup("CF_REDIRECT",
-			only("CLOUDFLAREAPI"),
-			tc("redir", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("change", cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
-			tc("changelabel", cfRedir("cable.**current-domain**/*", "https://change.cnn.com/$1")),
-
-			// Removed these for speed.  They tested if order matters,
-			// which it doesn't seem to.  Re-add if needed.
-			tcEmptyZone(),
-			tc("multipleA",
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-			),
-			tcEmptyZone(),
-			tc("multipleB",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-
-			// NB(tlim): This test case used to fail but mysteriously started working.
-			tcEmptyZone(),
-			tc("multiple3",
-				cfRedir("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedir("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
-			),
-
-			// Repeat the above tests using CF_TEMP_REDIR instead
-			tcEmptyZone(),
-			tc("tempredir", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("tempchange", cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1")),
-			tc("tempchangelabel", cfRedirTemp("cable.**current-domain**/*", "https://change.cnn.com/$1")),
-			tcEmptyZone(),
-			tc("tempmultipleA",
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-			),
-			tcEmptyZone(),
-			tc("tempmultipleB",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-			),
-			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			tc("tempchange1",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cablenews.**current-domain**/*", "https://change.cnn.com/$1"),
-			),
-			// NB(tlim): This test case used to fail but mysteriously started working.
-			tc("tempmultiple3",
-				cfRedirTemp("msnbc.**current-domain**/*", "https://msnbc.cnn.com/$1"),
-				cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1"),
-				cfRedirTemp("nytimes.**current-domain**/*", "https://www.nytimes.com/$1"),
-			),
-		),
+		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
 
 		testgroup("CF_REDIRECT_CONVERT",
 			only("CLOUDFLAREAPI"),
 			alltrue(cfSingleRedirectEnabled()),
 			tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 			tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("convert301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
 		),
 
 		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
@@ -1238,72 +1199,32 @@ func makeTests() []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			CfProxyOff(), tcEmptyZone(),
 			CfProxyOn(), tcEmptyZone(),
-			CfProxyFull1(), tcEmptyZone(),
-			CfProxyFull2(), tcEmptyZone(),
 		),
 
-		// These next testgroups attempt every possible transition between off, on, full1 and full2.
-		// "full1" simulates "full" without the IP being translated.
-		// "full2" simulates "full" WITH the IP translated.
-
-		testgroup("CF_PROXY A off to X",
+		testgroup("CF_PROXY A off to on",
 			only("CLOUDFLAREAPI"),
-			// CF_PROXY_OFF(), CF_PROXY_OFF(), tcEmptyZone(), // redundant
-			CfProxyOff(), CfProxyOn(), tcEmptyZone(),
-			CfProxyOff(), CfProxyFull1(), tcEmptyZone(),
-			CfProxyOff(), CfProxyFull2(), tcEmptyZone(),
+			CfProxyOff(), CfProxyOn(),
 		),
 
-		testgroup("CF_PROXY A on to X",
+		testgroup("CF_PROXY A on to off",
 			only("CLOUDFLAREAPI"),
-			CfProxyOn(), CfProxyOff(), tcEmptyZone(),
-			// CF_PROXY_ON(), CF_PROXY_ON(), tcEmptyZone(), // redundant
-			// CF_PROXY_ON(), CF_PROXY_FULL1().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			CfProxyOn(), CfProxyFull2(), tcEmptyZone(),
-		),
-
-		testgroup("CF_PROXY A full1 to X",
-			only("CLOUDFLAREAPI"),
-			CfProxyFull1(), CfProxyOff(), tcEmptyZone(),
-			// CF_PROXY_FULL1(), CF_PROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			// CF_PROXY_FULL1(), tcEmptyZone(), // redundant
-			CfProxyFull1(), CfProxyFull2(), tcEmptyZone(),
-		),
-
-		testgroup("CF_PROXY A full2 to X",
-			only("CLOUDFLAREAPI"),
-			CfProxyFull2(), CfProxyOff(), tcEmptyZone(),
-			CfProxyFull2(), CfProxyOn(), tcEmptyZone(),
-			CfProxyFull2(), CfProxyFull1(), tcEmptyZone(),
-			// CF_PROXY_FULL2(), CF_PROXY_FULL2(), tcEmptyZone(), // redundant
+			CfProxyOn(), CfProxyOff(),
 		),
 
 		testgroup("CF_PROXY CNAME create",
 			only("CLOUDFLAREAPI"),
 			CfCProxyOff(), tcEmptyZone(),
 			CfCProxyOn(), tcEmptyZone(),
-			CfCProxyFull(), tcEmptyZone(),
 		),
 
-		testgroup("CF_PROXY CNAME off to X",
+		testgroup("CF_PROXY CNAME off to on",
 			only("CLOUDFLAREAPI"),
-			// CF_CPROXY_OFF(), CF_CPROXY_OFF(), tcEmptyZone(),  // redundant
-			CfCProxyOff(), CfCProxyOn(), tcEmptyZone(),
-			CfCProxyOff(), CfCProxyFull(), tcEmptyZone(),
+			CfCProxyOff(), CfCProxyOn(),
 		),
 
-		testgroup("CF_PROXY CNAME on to X",
+		testgroup("CF_PROXY CNAME on to off",
 			only("CLOUDFLAREAPI"),
-			CfCProxyOn(), CfCProxyOff(), tcEmptyZone(),
-			// CF_CPROXY_ON(), CF_CPROXY_ON(), tcEmptyZone(), // redundant
-			// CF_CPROXY_ON(), CF_CPROXY_FULL().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-		),
-
-		testgroup("CF_PROXY CNAME full to X",
-			only("CLOUDFLAREAPI"),
-			CfCProxyFull(), CfCProxyOff(), tcEmptyZone(),
-			// CF_CPROXY_FULL(), CF_CPROXY_ON().ExpectNoChanges(), tcEmptyZone(), // Removed for speed
-			// CF_CPROXY_FULL(), tcEmptyZone(), // redundant
+			CfCProxyOn(), CfCProxyOff(),
 		),
 
 		testgroup("CF_WORKER_ROUTE",
@@ -1342,6 +1263,20 @@ func makeTests() []*TestGroup {
 		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAAAAPassthrough("foo", "")),
+		),
+
+		// VERCEL features(?)
+
+		// Turns out that Vercel does support whitespace in the CAA record,
+		// but it only supports `cansignhttpexchanges` field, all other fields,
+		// `validationmethods`, `accounturi` are not supported
+		//
+		// In order to test the `CAA whitespace` capabilities and quirks, let's go!
+		testgroup("VERCEL CAA whitespace - cansignhttpexchanges",
+			only(
+				"VERCEL",
+			),
+			tc("CAA whitespace - cansignhttpexchanges", caa("@", 128, "issue", "digicert.com; cansignhttpexchanges=yes")),
 		),
 
 		//// IGNORE* features
@@ -1943,6 +1878,25 @@ func makeTests() []*TestGroup {
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
 		),
 
+		// CLOUDNS features
+
+		testgroup("CLOUDNS geodns tests",
+			only("CLOUDNS"),
+			tc("Add record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "US",
+			})),
+			tc("Update record with default geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})),
+			tc("Update record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "BR",
+			})),
+			tc("Delete metadata from record", a("@", "1.2.3.4")),
+			tc("Update a record with the value DEFAULT after removing the metadata should do nothing", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})).ExpectNoChanges(),
+		),
+
 		// PORKBUN features
 
 		testgroup("PORKBUN_URLFWD tests",
@@ -2016,11 +1970,6 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// This MUST be the last test.
-		testgroup("final",
-			tc("final", txt("final", `TestDNSProviders was successful!`)),
-		),
-
 		testgroup("SMIMEA",
 			requires(providers.CanUseSMIMEA),
 			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
@@ -2028,6 +1977,11 @@ func makeTests() []*TestGroup {
 			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
 			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
 			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
+		// This MUST be the last test.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
 		),
 
 		// Narrative: Congrats! You're done!  If you've made it this far
@@ -2043,6 +1997,12 @@ func makeTests() []*TestGroup {
 		//    every quarter. There may be library updates, API changes,
 		//    etc.
 
+		// This SHOULD be the last test. We do this so that we always
+		// leave zones with a single TXT record exclaming our success.
+		// Nothing depends on this record existing or should depend on it.
+		testgroup("final",
+			tc("final", txt("final", `TestDNSProviders was successful!`)),
+		),
 	}
 
 	return tests

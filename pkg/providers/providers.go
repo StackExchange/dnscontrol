@@ -22,7 +22,7 @@ type DNSServiceProvider interface {
 // ZoneCreator should be implemented by providers that have the ability to create zones
 // (used for automatically creating zones if they don't exist)
 type ZoneCreator interface {
-	EnsureZoneExists(domain string) error
+	EnsureZoneExists(domain string, metadata map[string]string) error
 }
 
 // ZoneLister should be implemented by providers that have the
@@ -74,13 +74,29 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 	unwrapProviderCapabilities(name, pm)
 }
 
+// ProviderMaintainers stores the GitHub usernames of maintainers for each provider.
 var ProviderMaintainers = map[string]string{}
 
+// RegisterMaintainer registers the GitHub username of the maintainer for a provider.
 func RegisterMaintainer(
 	providerName string,
 	gitHubUsername string,
 ) {
 	ProviderMaintainers[providerName] = gitHubUsername
+}
+
+// ProviderDefaultTTLs stores the default TTL for each provider.
+var ProviderDefaultTTLs = map[string]uint32{}
+
+// RegisterDefaultTTL registers a default TTL for a provider.
+// This is used by get-zones to determine the DefaultTTL when generating output.
+func RegisterDefaultTTL(providerName string, defaultTTL uint32) {
+	ProviderDefaultTTLs[providerName] = defaultTTL
+}
+
+// GetDefaultTTL returns the default TTL for a provider, or 0 if not registered.
+func GetDefaultTTL(providerName string) uint32 {
+	return ProviderDefaultTTLs[providerName]
 }
 
 // CreateRegistrar initializes a registrar instance from given credentials.

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,9 +9,11 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/urfave/cli/v2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -19,15 +22,15 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Name:    "get-zones",
 		Aliases: []string{"get-zone"},
 		Usage:   "gets a zone from a provider (stand-alone)",
-		Action: func(ctx *cli.Context) error {
-			if ctx.NArg() < 3 {
+		Action: func(ctx context.Context, c *cli.Command) error {
+			if c.NArg() < 3 {
 				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
 			}
-			args.CredName = ctx.Args().Get(0)
-			arg1 := ctx.Args().Get(1)
+			args.CredName = c.Args().Get(0)
+			arg1 := c.Args().Get(1)
 			args.ProviderName = arg1
 			// In v4.0, skip the first args.ZoneNames if it equals "-".
-			args.ZoneNames = ctx.Args().Slice()[2:]
+			args.ZoneNames = c.Args().Slice()[2:]
 
 			if arg1 != "" && arg1 != "-" {
 				// NB(tlim): In v4.0 this "if" can be removed.
@@ -82,17 +85,17 @@ var _ = cmd(catUtils, func() *cli.Command {
 	return &cli.Command{
 		Name:  "check-creds",
 		Usage: "Do a small operation to verify credentials (stand-alone)",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			var arg0, arg1 string
 			// This takes one or two command-line args.
 			// Starting in v3.16: Using it with 2 args will generate a warning.
 			// Starting in v4.0: Using it with 2 args might be an error.
-			if ctx.NArg() == 1 {
-				arg0 = ctx.Args().Get(0)
+			if c.NArg() == 1 {
+				arg0 = c.Args().Get(0)
 				arg1 = ""
-			} else if ctx.NArg() == 2 {
-				arg0 = ctx.Args().Get(0)
-				arg1 = ctx.Args().Get(1)
+			} else if c.NArg() == 2 {
+				arg0 = c.Args().Get(0)
+				arg1 = c.Args().Get(1)
 			} else {
 				return cli.Exit("Arguments should be: credskey [providername] (Ex: r53 ROUTE53)", 1)
 			}
@@ -167,6 +170,12 @@ func GetZone(args GetZoneArgs) error {
 		return fmt.Errorf("failed GetZone CDP: %w", err)
 	}
 
+	// Get the actual provider type name from creds.json or args
+	providerType := args.ProviderName
+	if providerType == "" || providerType == "-" {
+		providerType = providerConfigs[args.CredName][pproviderTypeFieldName]
+	}
+
 	// decide which zones we need to convert
 	zones := args.ZoneNames
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
@@ -200,7 +209,16 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone, nil)
+		ff := domaintags.MakeDomainNameVarieties(zone)
+		recs, err := provider.GetZoneRecords(ff.NameASCII,
+			// Populate the map "manually" so that BIND's GetZoneRecords() has
+			// the information it needs to construct filenames.  If this code
+			// changes, you probably need to change that code too.
+			map[string]string{
+				models.DomainUniqueName:  ff.UniqueName,
+				models.DomainNameRaw:     ff.NameRaw,
+				models.DomainNameUnicode: ff.NameUnicode,
+			})
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
@@ -249,6 +267,13 @@ func GetZone(args GetZoneArgs) error {
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
+			}
+			// If provider has a registered default TTL and no records exist or MostCommonTTL returns 0,
+			// use the provider's default TTL
+			if defaultTTL == 0 || defaultTTL == models.DefaultTTL {
+				if providerDefaultTTL := providers.GetDefaultTTL(providerType); providerDefaultTTL > 0 {
+					defaultTTL = providerDefaultTTL
+				}
 			}
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
@@ -367,6 +392,8 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	case "TXT":
 		target = jsonQuoted(rec.GetTargetTXTJoined())
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
+	case "LUA":
+		target = fmt.Sprintf("%q, %s", rec.LuaRType, jsonQuoted(rec.GetTargetTXTJoined()))
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		// DnsControl uses the API to get this info. NAMESERVER() is just

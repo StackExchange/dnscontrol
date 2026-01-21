@@ -12,7 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 /*
@@ -210,7 +210,7 @@ func (l *luadnsProvider) makeDeleteCorrection(deleterec *models.RecordConfig, zo
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (l *luadnsProvider) EnsureZoneExists(domain string) error {
+func (l *luadnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if l.zones == nil {
 		if err := l.fetchDomainList(); err != nil {
 			return err

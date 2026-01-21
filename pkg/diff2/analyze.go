@@ -143,12 +143,10 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	// Build maps required by filterBy
 	eKeys := map[string]*targetConfig{}
 	for _, v := range existing {
-		v := v
 		eKeys[v.comparableFull] = &v
 	}
 	dKeys := map[string]*targetConfig{}
 	for _, v := range desired {
-		v := v
 		dKeys[v.comparableFull] = &v
 	}
 
@@ -245,7 +243,9 @@ func humanDiff(a, b targetConfig) string {
 	}
 
 	// Just the TTLs are different:
-	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
+	return fmt.Sprintf("ttl=(%d->%d) %s",
+		a.rec.TTL, b.rec.TTL,
+		a.comparableNoTTL)
 }
 
 var echRe = regexp.MustCompile(`ech="?([\w+/=]+)"?`)

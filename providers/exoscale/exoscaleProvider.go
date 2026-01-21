@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	egoscale "github.com/exoscale/egoscale/v2"
 )
 
@@ -81,7 +81,7 @@ func init() {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *exoscaleProvider) EnsureZoneExists(domain string) error {
+func (c *exoscaleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := c.findDomainByName(domain)
 
 	return err
@@ -219,11 +219,11 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, mod := range modify {
-		old_ := mod.Existing.Original.(*egoscale.DNSDomainRecord)
-		new_ := mod.Desired
+		oldRec := mod.Existing.Original.(*egoscale.DNSDomainRecord)
+		newRec := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old_, new_, domainID),
+			F:   c.updateRecordFunc(oldRec, newRec, domainID),
 		})
 	}
 

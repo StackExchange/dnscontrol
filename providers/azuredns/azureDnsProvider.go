@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 type azurednsProvider struct {
@@ -691,7 +691,7 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	return records, nil
 }
 
-func (a *azurednsProvider) EnsureZoneExists(domain string) error {
+func (a *azurednsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}

@@ -223,9 +223,9 @@ type commonServiceItem struct {
 	ID           string   `json:"ID,omitempty"`
 	Name         string   `json:"Name,omitempty"`
 	Settings     settings `json:"Settings"`
-	Status       status   `json:"Status,omitempty"`
+	Status       status   `json:"Status"`
 	ServiceClass string   `json:"ServiceClass,omitempty"`
-	Provider     provider `json:"Provider,omitempty"`
+	Provider     provider `json:"Provider"`
 }
 
 // settings is a resource setting.
@@ -269,6 +269,7 @@ type sakuracloudAPI struct {
 	commonServiceItemMap map[string]*commonServiceItem
 }
 
+// NewSakuracloudAPI creates and returns a sakuracloudAPI instance.
 func NewSakuracloudAPI(accessToken, accessTokenSecret, endpoint string) (*sakuracloudAPI, error) {
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
@@ -349,7 +350,6 @@ func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error)
 		}
 
 		for _, item := range respData.CommonServiceItems {
-			item := item
 			items = append(items, &item)
 		}
 

@@ -11,7 +11,8 @@
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.net",
+        "dnscontrol_nameunicode": "foo.net",
         "dnscontrol_uniquename": "foo.net"
       },
       "name": "foo.net",
@@ -63,14 +64,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.net"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.tld",
+        "dnscontrol_nameunicode": "foo.tld",
         "dnscontrol_uniquename": "foo.tld"
       },
       "name": "foo.tld",
@@ -97,14 +100,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.tld"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "bar.foo.tld",
+        "dnscontrol_nameunicode": "bar.foo.tld",
         "dnscontrol_uniquename": "bar.foo.tld"
       },
       "name": "bar.foo.tld",
@@ -131,14 +136,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "bar.foo.tld"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.help",
+        "dnscontrol_nameunicode": "foo.help",
         "dnscontrol_uniquename": "foo.help"
       },
       "name": "foo.help",
@@ -174,14 +181,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.help"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "bar.foo.help",
+        "dnscontrol_nameunicode": "bar.foo.help",
         "dnscontrol_uniquename": "bar.foo.help"
       },
       "name": "bar.foo.help",
@@ -217,14 +226,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "bar.foo.help"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.here",
+        "dnscontrol_nameunicode": "foo.here",
         "dnscontrol_uniquename": "foo.here"
       },
       "name": "foo.here",
@@ -276,14 +287,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "foo.here"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -335,17 +348,19 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.com"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "d\u00fcsseldorf.example.net"
+        "dnscontrol_nameraw": "d\u00fcsseldorf.example.net",
+        "dnscontrol_nameunicode": "d\u00fcsseldorf.example.net",
+        "dnscontrol_uniquename": "xn--dsseldorf-q9a.example.net"
       },
-      "name": "d\u00fcsseldorf.example.net",
+      "name": "xn--dsseldorf-q9a.example.net",
       "records": [
         {
           "filepos": "[line:94:5]",
@@ -410,17 +425,19 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "xn--dsseldorf-q9a.example.net"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
-        "dnscontrol_uniquename": "\u00fc.example.net"
+        "dnscontrol_nameraw": "\u00fc.example.net",
+        "dnscontrol_nameunicode": "\u00fc.example.net",
+        "dnscontrol_uniquename": "xn--tda.example.net"
       },
-      "name": "\u00fc.example.net",
+      "name": "xn--tda.example.net",
       "records": [
         {
           "filepos": "[line:116:5]",
@@ -485,14 +502,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "xn--tda.example.net"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "example.tld",
+        "dnscontrol_nameunicode": "example.tld",
         "dnscontrol_uniquename": "example.tld"
       },
       "name": "example.tld",
@@ -530,7 +549,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.tld"
     }
   ],
   "registrars": [

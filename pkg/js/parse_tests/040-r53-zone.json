@@ -4,17 +4,21 @@
     {
       "dnsProviders": {},
       "meta": {
-        "dnscontrol_tag": "",
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com",
         "zone_id": "Z2FTEDLFRTZ"
       },
       "name": "foo.com",
       "records": [],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     },
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_tag": "internal",
         "dnscontrol_uniquename": "foo.com!internal",
         "zone_id": "Z2FTEDLFRTF"
@@ -37,7 +41,9 @@
           "type": "R53_ALIAS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "tag": "internal",
+      "uniquename": "foo.com!internal"
     }
   ],
   "registrars": []
