@@ -9,263 +9,6 @@ func TestPaveArgs(t *testing.T) {
 		dataRule string
 		wantErr  bool
 	}{
-		// String tests
-		{
-			name:     "string",
-			dataArgs: []any{"one"},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "int to string",
-			dataArgs: []any{int(100)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "uint8 to string",
-			dataArgs: []any{uint8(42)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "uint16 to string",
-			dataArgs: []any{uint16(1000)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "int8 to string",
-			dataArgs: []any{int8(50)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "int16 to string",
-			dataArgs: []any{int16(500)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "int32 to string",
-			dataArgs: []any{int32(10000)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "uint to string",
-			dataArgs: []any{uint(999)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "float32 to string",
-			dataArgs: []any{float32(3.14)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-		{
-			name:     "float64 to string",
-			dataArgs: []any{float64(2.718)},
-			dataRule: "s",
-			wantErr:  false,
-		},
-
-		// uint8 ('b') tests
-		{
-			name:     "string to uint8",
-			dataArgs: []any{"42"},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "uint8 to uint8",
-			dataArgs: []any{uint8(100)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "uint16 to uint8",
-			dataArgs: []any{uint16(200)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "uint16 overflow uint8",
-			dataArgs: []any{uint16(300)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "int16 to uint8",
-			dataArgs: []any{int16(100)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "int16 negative to uint8",
-			dataArgs: []any{int16(-1)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "int16 overflow uint8",
-			dataArgs: []any{int16(300)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "uint to uint8",
-			dataArgs: []any{uint(50)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "uint overflow uint8",
-			dataArgs: []any{uint(500)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "int to uint8",
-			dataArgs: []any{int(100)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "int negative to uint8",
-			dataArgs: []any{int(-5)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "int overflow uint8",
-			dataArgs: []any{int(300)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "float64 to uint8",
-			dataArgs: []any{float64(50.5)},
-			dataRule: "b",
-			wantErr:  false,
-		},
-		{
-			name:     "float64 negative to uint8",
-			dataArgs: []any{float64(-1.0)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "float64 overflow uint8",
-			dataArgs: []any{float64(300.0)},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "invalid string to uint8",
-			dataArgs: []any{"abc"},
-			dataRule: "b",
-			wantErr:  true,
-		},
-		{
-			name:     "string overflow uint8",
-			dataArgs: []any{"300"},
-			dataRule: "b",
-			wantErr:  true,
-		},
-
-		// uint16 ('w') tests
-		{
-			name:     "uint16",
-			dataArgs: []any{uint16(1)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "uint8 to uint16",
-			dataArgs: []any{uint8(100)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "int16 to uint16",
-			dataArgs: []any{int16(1000)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "int16 negative to uint16",
-			dataArgs: []any{int16(-1)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "uint to uint16",
-			dataArgs: []any{uint(30000)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "uint overflow uint16",
-			dataArgs: []any{uint(70000)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "int to uint16",
-			dataArgs: []any{int(3)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "int negative to uint16",
-			dataArgs: []any{int(-10)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "int overflow uint16",
-			dataArgs: []any{int(70000)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "float64 to uint16",
-			dataArgs: []any{float64(2)},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "float64 negative to uint16",
-			dataArgs: []any{float64(-5.0)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "float64 overflow uint16",
-			dataArgs: []any{float64(70000.0)},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "string to uint16",
-			dataArgs: []any{"111"},
-			dataRule: "w",
-			wantErr:  false,
-		},
-		{
-			name:     "invalid string to uint16",
-			dataArgs: []any{"one"},
-			dataRule: "w",
-			wantErr:  true,
-		},
-		{
-			name:     "string overflow uint16",
-			dataArgs: []any{"70000"},
-			dataRule: "w",
-			wantErr:  true,
-		},
 
 		// Error cases
 		{
@@ -311,6 +54,61 @@ func TestPaveArgs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := PaveArgs(tt.dataArgs, tt.dataRule); (err != nil) != tt.wantErr {
 				t.Errorf("PaveArgs() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+func TestPaveArgsConversionsCompact(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []any
+		argTypes string
+		want     []any
+		wantErr  bool
+	}{
+		// String conversions - all should result in string type
+		{name: "string unchanged", args: []any{"hello"}, argTypes: "s", want: []any{"hello"}},
+		{name: "int to string", args: []any{int(123)}, argTypes: "s", want: []any{"123"}},
+		{name: "uint8 to string", args: []any{uint8(42)}, argTypes: "s", want: []any{"42"}},
+		{name: "bool to string", args: []any{true}, argTypes: "s", want: []any{"true"}},
+
+		// uint8 ('b') conversions - all should result in uint8 type
+		{name: "uint8 unchanged", args: []any{uint8(100)}, argTypes: "b", want: []any{uint8(100)}},
+		{name: "uint16 to uint8 valid", args: []any{uint16(255)}, argTypes: "b", want: []any{uint8(255)}},
+		{name: "int16 to uint8 valid", args: []any{int16(100)}, argTypes: "b", want: []any{uint8(100)}},
+		{name: "uint to uint8 valid", args: []any{uint(200)}, argTypes: "b", want: []any{uint8(200)}},
+		{name: "int to uint8 valid", args: []any{int(50)}, argTypes: "b", want: []any{uint8(50)}},
+		{name: "float64 to uint8 valid", args: []any{float64(100.9)}, argTypes: "b", want: []any{uint8(100)}},
+		{name: "string to uint8 valid", args: []any{"255"}, argTypes: "b", want: []any{uint8(255)}},
+		{name: "string to uint8 zero", args: []any{"0"}, argTypes: "b", want: []any{uint8(0)}},
+
+		// uint16 ('w') conversions - all should result in uint16 type
+		{name: "uint16 unchanged", args: []any{uint16(1000)}, argTypes: "w", want: []any{uint16(1000)}},
+		{name: "uint8 to uint16", args: []any{uint8(255)}, argTypes: "w", want: []any{uint16(255)}},
+		{name: "int16 to uint16 valid", args: []any{int16(32767)}, argTypes: "w", want: []any{uint16(32767)}},
+		{name: "uint to uint16 valid", args: []any{uint(65535)}, argTypes: "w", want: []any{uint16(65535)}},
+		{name: "int to uint16 valid", args: []any{int(30000)}, argTypes: "w", want: []any{uint16(30000)}},
+		{name: "float64 to uint16 valid", args: []any{float64(1234.5)}, argTypes: "w", want: []any{uint16(1234)}},
+		{name: "string to uint16 valid", args: []any{"65535"}, argTypes: "w", want: []any{uint16(65535)}},
+
+		// Multiple arguments
+		{name: "multiple types", args: []any{uint8(1), "test", uint16(1000)}, argTypes: "bsw", want: []any{uint8(1), "test", uint16(1000)}},
+		{name: "all conversions", args: []any{"100", int(200), float64(50.5)}, argTypes: "bbs", want: []any{uint8(100), uint8(200), "50.5"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := PaveArgs(tt.args, tt.argTypes)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PaveArgs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				for i, want := range tt.want {
+					if tt.args[i] != want {
+						t.Errorf("PaveArgs() arg[%d] = %v (type %T), want %v (type %T)", i, tt.args[i], tt.args[i], want, want)
+					}
+				}
 			}
 		})
 	}

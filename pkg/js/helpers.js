@@ -470,25 +470,6 @@ var CAA = recordBuilder('CAA', {
 // CNAME(name,target, recordModifiers...)
 var CNAME = recordBuilder('CNAME');
 
-// // DS(name, keytag, algorithm, digestype, digest)
-// var DS = recordBuilder('DS', {
-//     args: [
-//         ['name', _.isString],
-//         ['keytag', _.isNumber],
-//         ['algorithm', _.isNumber],
-//         ['digesttype', _.isNumber],
-//         ['digest', _.isString],
-//     ],
-//     transform: function (record, args, modifiers) {
-//         record.name = args.name;
-//         record.dskeytag = args.keytag;
-//         record.dsalgorithm = args.algorithm;
-//         record.dsdigesttype = args.digesttype;
-//         record.dsdigest = args.digest;
-//         record.target = args.target;
-//     },
-// });
-
 // DHCID(name,target, recordModifiers...)
 var DHCID = recordBuilder('DHCID');
 
