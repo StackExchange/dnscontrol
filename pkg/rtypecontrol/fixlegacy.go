@@ -9,12 +9,12 @@ import "github.com/StackExchange/dnscontrol/v4/models"
 func FixLegacyAll(dc *models.DomainConfig) {
 	for _, rec := range dc.Records {
 
-		FixLegacyRecords(rec)
+		FixLegacyRecord(rec)
 	}
 }
 
-// FixLegacyRecords populates .F to compenstate for providers that have not been
-func FixLegacyRecords(rec *models.RecordConfig) {
+// FixLegacyRecord populates .F to compenstate for providers that have not been
+func FixLegacyRecord(rec *models.RecordConfig) {
 	// Populate .F if needed:
 	// That is... If rec.F == nil and this is a "moderne" type.
 	if rec.F != nil {
