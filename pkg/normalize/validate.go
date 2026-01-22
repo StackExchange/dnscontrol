@@ -399,6 +399,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
+		// No need to call FixLegacyAll here. These records were created from dnsconfig.js, not from a provider.
+
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL

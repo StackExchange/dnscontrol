@@ -362,15 +362,22 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
-	// IsModernType types store standard types as dns.RR directly in rc.F.
-	if rr, ok := rc.F.(dns.RR); ok {
-		return rr
-	}
-
-	// Don't call this on fake types.
+	// Function is not valid on pseudo-types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
+	}
+
+	// If this IsModernType, the dns.RR is already in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		rr.Header().Name = rc.NameFQDN + "."
+		rr.Header().Rrtype = rdtype
+		rr.Header().Class = dns.ClassINET
+		rr.Header().Ttl = rc.TTL
+		if rc.TTL == 0 {
+			rr.Header().Ttl = DefaultTTL
+		}
+		return rr
 	}
 
 	// Magically create an RR of the correct type.
@@ -401,16 +408,16 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DHCID).Digest = rc.GetTargetField()
 	case dns.TypeDNAME:
 		rr.(*dns.DNAME).Target = rc.GetTargetField()
-	case dns.TypeDS:
-		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
-		rr.(*dns.DS).DigestType = rc.DsDigestType
-		rr.(*dns.DS).Digest = rc.DsDigest
-		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeDNSKEY:
 		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
 		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
 		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
 		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
+	case dns.TypeDS:
+		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
+		rr.(*dns.DS).DigestType = rc.DsDigestType
+		rr.(*dns.DS).Digest = rc.DsDigest
+		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeHTTPS:
 		rr.(*dns.HTTPS).Priority = rc.SvcPriority
 		rr.(*dns.HTTPS).Target = rc.GetTargetField()

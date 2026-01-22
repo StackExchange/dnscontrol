@@ -46,6 +46,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 		Name: domainName,
 	}
 	dc.PostProcess()
+	rtypecontrol.FixLegacyAll(dc)
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -144,6 +145,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			TargetPattern: "",
 		})
 		models.PostProcessRecords(dom.Records)
+		rtypecontrol.FixLegacyAll(dom)
 		dom2, _ := dom.Copy()
 
 		if err := providers.AuditRecords(*providerFlag, dom.Records); err != nil {
@@ -404,9 +406,14 @@ func dname(name, target string) *models.RecordConfig {
 }
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r := makeRec(name, "", "DS")
-	panicOnErr(r.SetTargetDS(keyTag, algorithm, digestType, digest))
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+		Type: "DS",
+		TTL:  300,
+		Args: []any{name, keyTag, algorithm, digestType, digest},
+		DCN:  globalDCN,
+	})
+	panicOnErr(err)
+	return rec
 }
 
 func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
