@@ -130,6 +130,7 @@
 * [deSEC](provider/desec.md)
 * [DigitalOcean](provider/digitalocean.md)
 * [DNS Made Easy](provider/dnsmadeeasy.md)
+* [DNScale](provider/dnscale.md)
 * [DNSimple](provider/dnsimple.md)
 * [DNS-over-HTTPS](provider/dnsoverhttps.md)
 * [DOMAINNAMESHOP](provider/domainnameshop.md)

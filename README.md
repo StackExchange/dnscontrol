@@ -32,6 +32,7 @@ Currently supported DNS providers:
 - deSEC
 - DigitalOcean
 - DNS Made Easy
+- DNScale
 - DNSimple
 - Domainnameshop (Domeneshop)
 - Exoscale

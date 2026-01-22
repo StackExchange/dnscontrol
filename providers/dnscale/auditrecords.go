@@ -16,8 +16,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("MX", rejectif.MxNull) // MX records must have a target
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes)      // TXT records shouldn't contain unescaped double quotes
-	a.Add("TXT", rejectif.TxtIsEmpty)              // DNScale doesn't support empty TXT records
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes)        // TXT records shouldn't contain unescaped double quotes
+	a.Add("TXT", rejectif.TxtIsEmpty)                // DNScale doesn't support empty TXT records
 	a.Add("TXT", rejectif.TxtStartsOrEndsWithSpaces) // DNScale doesn't support leading/trailing whitespace in TXT records
 
 	return a.Audit(records)

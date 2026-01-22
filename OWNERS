@@ -13,6 +13,7 @@ providers/cnr @KaiSchwarz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @chicks-net
+providers/dnscale @dnscale-ops
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
