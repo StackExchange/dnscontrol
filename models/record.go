@@ -363,6 +363,18 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
+	// If this IsModernType, the dns.RR is already in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		rr.Header().Name = rc.NameFQDN + "."
+		rr.Header().Rrtype = rdtype
+		rr.Header().Class = dns.ClassINET
+		rr.Header().Ttl = rc.TTL
+		if rc.TTL == 0 {
+			rr.Header().Ttl = DefaultTTL
+		}
+		return rr
+	}
+
 	// Magically create an RR of the correct type.
 	rr := dns.TypeToRR[rdtype]()
 
@@ -373,11 +385,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	rr.Header().Ttl = rc.TTL
 	if rc.TTL == 0 {
 		rr.Header().Ttl = DefaultTTL
-	}
-
-	// If this IsModernType, the dns.RR is already in rc.F.
-	if rr, ok := rc.F.(dns.RR); ok {
-		return rr
 	}
 
 	// Fill in the data.
@@ -401,6 +408,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
 		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
 		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
+	case dns.TypeDS:
+		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
+		rr.(*dns.DS).DigestType = rc.DsDigestType
+		rr.(*dns.DS).Digest = rc.DsDigest
+		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeHTTPS:
 		rr.(*dns.HTTPS).Priority = rc.SvcPriority
 		rr.(*dns.HTTPS).Target = rc.GetTargetField()

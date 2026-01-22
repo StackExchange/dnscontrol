@@ -21,11 +21,11 @@
             "Digest": "FFFF",
             "DigestType": 1,
             "Hdr": {
-              "Class": 0,
-              "Name": "",
+              "Class": 1,
+              "Name": "foo.com.",
               "Rdlength": 0,
-              "Rrtype": 0,
-              "Ttl": 0
+              "Rrtype": 43,
+              "Ttl": 300
             },
             "KeyTag": 1
           },
@@ -49,11 +49,11 @@
             "Digest": "AABBCCDDEEFF",
             "DigestType": 2,
             "Hdr": {
-              "Class": 0,
-              "Name": "",
+              "Class": 1,
+              "Name": "foo.com.",
               "Rdlength": 0,
-              "Rrtype": 0,
-              "Ttl": 0
+              "Rrtype": 43,
+              "Ttl": 300
             },
             "KeyTag": 1000
           },
