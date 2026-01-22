@@ -97,3 +97,8 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig) {
 	_ = rec.SetTarget(rec.F.(*SingleRedirectConfig).SRDisplay)
 }
+
+// CopyFromLegacyFields populates rec.F from the legacy RecordType fields.
+func (handle *SingleRedirectConfig) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT is built in FromArgs.
+}

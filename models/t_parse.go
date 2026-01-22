@@ -3,8 +3,6 @@ package models
 import (
 	"fmt"
 	"net"
-
-	"github.com/StackExchange/dnscontrol/v4/pkg/legacyfix"
 )
 
 // PopulateFromStringFunc populates a RecordConfig by parsing a common RFC1035-like format.
@@ -62,40 +60,6 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	}
 
 	switch rc.Type = rtype; rtype { // #rtype_variations
-
-	// Modern (RecordConfigV2) types
-
-	// case "DS":
-	// //return rc.SetTargetDSString(contents)
-	// //func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
-	// dcn := domaintags.MakeDomainNameVarieties(origin)
-
-	// fields := &DS{
-	// 	dns.DS{
-	// 		KeyTag:     args[1].(uint16),
-	// 		Algorithm:  args[2].(uint8),
-	// 		DigestType: args[3].(uint8),
-	// 		Digest:     args[4].(string),
-	// 	},
-	// }
-	// //rtypecontrol.NewRecordConfigFromStruct("UNKNOWN_PFSF", 0, rtype, f, dcn)
-
-	// rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
-	// 	Type:    "DS",
-	// 	//TTL:     rawRec.TTL,
-	// 	Args:    []any{"UNKNOWN_PFSF", strings.Split(contents, " ")},
-	// 	DCN:     domaintags.MakeDomainNameVarieties(origin)
-	// 	//FilePos: filePos,
-	// })
-
-	// return rtypecontrol.NewRecordConfigFromString("UNKNOWN_PFSF", 0, rtype, contents, domaintags.MakeDomainNameVarieties(origin), func(rec *RecordConfig, dcn *domaintags.DomainNameVarieties, args []any) error {
-	// 	return rtypecontrol.Get("DS").FromArgs(dcn, rec, args)
-	// }).CopyTo(rec)
-
-	// Maybe put a helper function in rtype.?
-
-	// legacy types: (RecordConfigV1)
-
 	case "A":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
@@ -113,11 +77,7 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 	case "CAA":
 		return rc.SetTargetCAAString(contents)
 	case "DS":
-		_ = rc.SetTargetDSString(contents)
-		//rtypefix.CopyFromLegacyFields(rc)
-		//rtype.CopyFromLegacyFields(rc)
-		legacyfix.CopyFromLegacyFields(rc)
-		return nil
+		return rc.SetTargetDSString(contents)
 	case "DNSKEY":
 		return rc.SetTargetDNSKEYString(contents)
 	case "DHCID":
