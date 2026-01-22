@@ -357,20 +357,7 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
-	// IsModernType types store standard types as dns.RR directly in rc.F.
-	if rr, ok := rc.F.(dns.RR); ok {
-		rdtype := dns.StringToType[rc.Type]
-		rr.Header().Name = rc.NameFQDN + "."
-		rr.Header().Rrtype = rdtype
-		rr.Header().Class = dns.ClassINET
-		rr.Header().Ttl = rc.TTL
-		if rc.TTL == 0 {
-			rr.Header().Ttl = DefaultTTL
-		}
-		return rr
-	}
-
-	// Don't call this on pseudo types.
+	// Function is not valid on pseudo-types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
@@ -386,6 +373,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	rr.Header().Ttl = rc.TTL
 	if rc.TTL == 0 {
 		rr.Header().Ttl = DefaultTTL
+	}
+
+	// If this IsModernType, the dns.RR is already in rc.F.
+	if rr, ok := rc.F.(dns.RR); ok {
+		return rr
 	}
 
 	// Fill in the data.
@@ -404,11 +396,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DHCID).Digest = rc.GetTargetField()
 	case dns.TypeDNAME:
 		rr.(*dns.DNAME).Target = rc.GetTargetField()
-	case dns.TypeDS:
-		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
-		rr.(*dns.DS).DigestType = rc.DsDigestType
-		rr.(*dns.DS).Digest = rc.DsDigest
-		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeDNSKEY:
 		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
 		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol

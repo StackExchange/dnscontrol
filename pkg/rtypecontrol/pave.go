@@ -8,11 +8,12 @@ import (
 
 // PaveArgs converts each arg to its desired type, or returns an error if conversion fails or if the number of arguments is wrong.
 // argTypes is a string where each rune specifies the desired type of the arg in the same position:
+// 's': string (will convert other types to string using %v)
 // 'b': uint8 (will convert strings, truncate floats, etc)
 // 'w': uint16 (will convert strings, truncate floats, etc)
 // FUTURE 'd': uint32 (will convert strings, truncate floats, etc)
 // FUTURE 'q': uint64 (will convert strings, truncate floats, etc)
-// 's': string (will convert other types to string using %v)
+// FUTURE: Uppercase runes for signed types.
 func PaveArgs(args []any, argTypes string) error {
 	if len(args) != len(argTypes) {
 		return fmt.Errorf("wrong number of arguments. Expected %v, got %v", len(argTypes), len(args))
@@ -21,6 +22,13 @@ func PaveArgs(args []any, argTypes string) error {
 	for i, at := range argTypes {
 		arg := args[i]
 		switch at {
+
+		case 's':
+			if _, ok := arg.(string); ok {
+				args[i] = arg.(string)
+			} else {
+				args[i] = fmt.Sprintf("%v", arg)
+			}
 
 		case 'b': // uint8
 			switch v := arg.(type) {
@@ -31,7 +39,6 @@ func PaveArgs(args []any, argTypes string) error {
 					return fmt.Errorf("value %q overflows uint8", arg)
 				}
 				args[i] = uint8(v)
-
 			case int16:
 				if v < 0 || v > math.MaxUint8 {
 					return fmt.Errorf("value %q overflows uint8", arg)
@@ -96,13 +103,6 @@ func PaveArgs(args []any, argTypes string) error {
 				args[i] = uint16(ni)
 			default:
 				return fmt.Errorf("value %q is type %T, expected uint16", arg, arg)
-			}
-
-		case 's':
-			if _, ok := arg.(string); ok {
-				args[i] = arg.(string)
-			} else {
-				args[i] = fmt.Sprintf("%v", arg)
 			}
 
 		default:

@@ -26,6 +26,7 @@ If you are using VSCode, the equivalent configuration is:
             "mode": "test",
             "program": "${workspaceFolder}/integrationTest",
             "cwd": "${workspaceFolder}/integrationTest",
+            "envFile": "${workspaceFolder}/integrationTest/.env",
             "args": [
                 "-test.v",
                 "-test.run",
