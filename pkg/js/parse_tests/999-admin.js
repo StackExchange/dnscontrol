@@ -8,7 +8,10 @@ D("example.com", REG_NONE,
             "bind": -1,
         },
         delegations: ["ns1", "ns2.example.com.", "ns4.whatever.com."],
-        //delegated_signers: [DS("example.com", 2371, 13, 2, "ABCDEF"), ],
+        delegated_signers: [
+            DS("example.com", 2371, 13, 2, "ABCDEF"),
+            DS("example.net", 2371, 13, 2, "ABCDEF"),
+        ],
         glue: ["ns1", "ns2", "ns4.whatever.com."],
     }),
 );
@@ -20,8 +23,8 @@ D("example.net", REG_NONE,
         A_DNSPROVIDER("bind"),
         A_DELEGATIONS("ns1", "ns2.example.com.", "ns4.whatever.com."),
         A_DELEGATED_SIGNERS(
-            DS_NEW("example.com", 2371, 13, 2, "ABCDEF"),
-            DS_NEW("example.net", 2371, 13, 2, "ABCDEF"),
+            DS("example.com", 2371, 13, 2, "ABCDEF"),
+            DS("example.net", 2371, 13, 2, "ABCDEF"),
         ), {
             glue: ["ns1", "ns2", "ns4.whatever.com."]
         },
