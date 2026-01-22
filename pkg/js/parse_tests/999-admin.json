@@ -1,73 +1,72 @@
 {
-  "registrars": [
-    {
-      "name": "none",
-      "type": "-"
-    }
-  ],
   "dns_providers": [],
   "domains": [
     {
-      "name": "example.com",
-      "uniquename": "example.com",
-      "registrar": "none",
+      "admin": {
+        "delegated_signers": [
+          {}
+        ],
+        "delegations": [
+          "ns1",
+          "ns2.example.com.",
+          "ns4.whatever.com."
+        ],
+        "dnsProviders": {
+          "bind": -1,
+          "gandi_myacct": 2
+        },
+        "glue": [
+          "ns1",
+          "ns2",
+          "ns4.whatever.com."
+        ],
+        "registrar": "cloudflare_main"
+      },
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "example.com",
         "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
+      "name": "example.com",
       "records": [],
+      "registrar": "none",
+      "uniquename": "example.com"
+    },
+    {
       "admin": {
-        "registrar": "cloudflare_main",
-        "dnsProviders": {
-          "bind": -1,
-          "gandi_myacct": 2
-        },
         "delegations": [
           "ns1",
           "ns2.example.com.",
           "ns4.whatever.com."
         ],
-        "delegated_signers": [
-          {
-          }
-        ],
+        "dnsProviders": {
+          "bind": -1,
+          "gandi_myacct": 2
+        },
         "glue": [
           "ns1",
           "ns2",
           "ns4.whatever.com."
-        ]
-      }
-    },
-    {
-      "name": "example.net",
-      "uniquename": "example.net",
-      "registrar": "none",
+        ],
+        "registrar": "cloudflare_main"
+      },
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "example.net",
         "dnscontrol_nameunicode": "example.net",
         "dnscontrol_uniquename": "example.net"
       },
+      "name": "example.net",
       "records": [],
-      "admin": {
-        "registrar": "cloudflare_main",
-        "dnsProviders": {
-          "bind": -1,
-          "gandi_myacct": 2
-        },
-        "delegations": [
-          "ns1",
-          "ns2.example.com.",
-          "ns4.whatever.com."
-        ],
-        "glue": [
-          "ns1",
-          "ns2",
-          "ns4.whatever.com."
-        ]
-      }
+      "registrar": "none",
+      "uniquename": "example.net"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "none",
+      "type": "-"
     }
   ]
 }
