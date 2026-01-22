@@ -359,10 +359,18 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 func (rc *RecordConfig) ToRR() dns.RR {
 	// IsModernType types store standard types as dns.RR directly in rc.F.
 	if rr, ok := rc.F.(dns.RR); ok {
+		rdtype := dns.StringToType[rc.Type]
+		rr.Header().Name = rc.NameFQDN + "."
+		rr.Header().Rrtype = rdtype
+		rr.Header().Class = dns.ClassINET
+		rr.Header().Ttl = rc.TTL
+		if rc.TTL == 0 {
+			rr.Header().Ttl = DefaultTTL
+		}
 		return rr
 	}
 
-	// Don't call this on fake types.
+	// Don't call this on pseudo types.
 	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
