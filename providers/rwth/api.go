@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/mkrc"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
@@ -117,7 +118,7 @@ func (api *rwthProvider) getAllRecords(domain string) ([]models.RecordConfig, er
 			return nil, err
 		}
 
-		recConfig, err := models.RRtoRC(dnsRec, domain) // and make it a RC
+		recConfig, err := mkrc.RRtoRC(dnsRec, domain) // and make it a RC
 		if err != nil {
 			return nil, err
 		}

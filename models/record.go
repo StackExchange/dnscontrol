@@ -403,16 +403,17 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.DHCID).Digest = rc.GetTargetField()
 	case dns.TypeDNAME:
 		rr.(*dns.DNAME).Target = rc.GetTargetField()
+	case dns.TypeDS:
+		// rr.(*dns.DS).Algorithm = rc.DsAlgorithm
+		// rr.(*dns.DS).DigestType = rc.DsDigestType
+		// rr.(*dns.DS).Digest = rc.DsDigest
+		// rr.(*dns.DS).KeyTag = rc.DsKeyTag
+		panic("DS should have been handled as modern type")
 	case dns.TypeDNSKEY:
 		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
 		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
 		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
 		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
-	case dns.TypeDS:
-		rr.(*dns.DS).Algorithm = rc.DsAlgorithm
-		rr.(*dns.DS).DigestType = rc.DsDigestType
-		rr.(*dns.DS).Digest = rc.DsDigest
-		rr.(*dns.DS).KeyTag = rc.DsKeyTag
 	case dns.TypeHTTPS:
 		rr.(*dns.HTTPS).Priority = rc.SvcPriority
 		rr.(*dns.HTTPS).Target = rc.GetTargetField()
