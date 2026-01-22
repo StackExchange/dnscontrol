@@ -39,6 +39,8 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 			Digest:     args[4].(string),
 		},
 	}
+	fmt.Printf("DEBUG: DS.FromArgs: populated fields: %+v\n", fields)
+	fmt.Printf("DEBUG: DS.FromArgs: populated fields: %T\n", fields)
 
 	return handle.FromStruct(dcn, rec, args[0].(string), fields)
 }
@@ -56,6 +58,11 @@ func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 
 // CopyToLegacyFields populates the legacy fields of the RecordConfig using the fields in .F.
 func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
+	fmt.Printf("DEBUG: DS.CopyTo: : rec   %T\n", rec)
+	fmt.Printf("DEBUG: DS.CopyTo: : rec.F %T\n", rec.F)
+	x := rec.F
+	fmt.Printf("DEBUG: DS.CopyTo: : x     %T\n", x)
+
 	ds := rec.F.(*DS)
 	_ = rec.SetTargetDS(ds.KeyTag, ds.Algorithm, ds.DigestType, ds.Digest)
 }

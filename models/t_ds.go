@@ -9,6 +9,8 @@ import (
 
 // SetTargetDS sets the DS fields.
 func (rc *RecordConfig) SetTargetDS(keytag uint16, algorithm, digesttype uint8, digest string) error {
+
+	// Legacy
 	rc.DsKeyTag = keytag
 	rc.DsAlgorithm = algorithm
 	rc.DsDigestType = digesttype
