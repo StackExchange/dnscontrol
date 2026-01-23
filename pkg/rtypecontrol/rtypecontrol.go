@@ -18,6 +18,7 @@ type RType interface {
 	FromStruct(*domaintags.DomainNameVarieties, *models.RecordConfig, string, any) error
 
 	CopyToLegacyFields(*models.RecordConfig)
+	CopyFromLegacyFields(*models.RecordConfig)
 }
 
 // Func is a map of registered rtypes.

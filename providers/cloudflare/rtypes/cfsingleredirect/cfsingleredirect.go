@@ -34,7 +34,7 @@ func (handle *SingleRedirectConfig) Name() string {
 // FromArgs populates a RecordConfig from the raw ([]any) args.
 func (handle *SingleRedirectConfig) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	// Pave the args to be the expected types.
-	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
+	if err := rtypecontrol.PaveArgs(args, "swss"); err != nil {
 		return err
 	}
 
@@ -96,4 +96,20 @@ func targetFromRaw(name string, code uint16, when, then string) string {
 // CopyToLegacyFields copies data from rec.F to the legacy fields in rec.
 func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig) {
 	_ = rec.SetTarget(rec.F.(*SingleRedirectConfig).SRDisplay)
+}
+
+// CopyFromLegacyFields populates rec.F from the legacy RecordType fields.
+func (handle *SingleRedirectConfig) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT is built in FromArgs.
+
+	// However, we add some assertions here to catch mistakes.
+	if rec.F == nil {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.F == nil")
+	}
+	if rec.ZonefilePartial == "" {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.ZonefilePartial == \"\"")
+	}
+	if rec.Comparable == "" {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.Comparable == \"\"")
+	}
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/miekg/dns"
 	"golang.org/x/oauth2"
@@ -106,7 +107,7 @@ func zoneFileToRecords(r io.Reader, origin string) (models.Records, error) {
 	zp := dns.NewZoneParser(r, origin, origin)
 	var records []*models.RecordConfig
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRC(rr, origin)
+		rec, err := dnsrr.RRtoRC(rr, origin)
 		if err != nil {
 			return nil, err
 		}

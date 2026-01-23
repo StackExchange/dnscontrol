@@ -125,6 +125,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	if err != nil {
 		return nil, err
 	}
+	// No need to call FixLegacyDC here. These records were created from dnsconfig.js, not from a provider.
 
 	if err := rtypecontrol.ImportRawRecords(conf.Domains); err != nil {
 		return nil, err
