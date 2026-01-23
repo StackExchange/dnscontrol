@@ -1,4 +1,4 @@
-package mkrc
+package dnsrr
 
 import (
 	"fmt"

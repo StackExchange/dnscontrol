@@ -24,8 +24,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/pkg/mkrc"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
@@ -235,7 +235,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 			rec.TTL = rr.Header().Ttl
 		default:
 			// Legacy types:
-			rec, err = mkrc.RRtoRCTxtBug(rr, zoneName)
+			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
 			if err != nil {
 				return nil, err
 			}
