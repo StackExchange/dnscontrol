@@ -46,6 +46,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 		Name: domainName,
 	}
 	dc.PostProcess()
+	rtypecontrol.FixLegacyDC(dc)
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)

@@ -49,11 +49,20 @@ func (handle *RP) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
 	rec.Comparable = rec.ZonefilePartial
 
+	handle.CopyToLegacyFields(rec)
 	return nil
 }
 
 // CopyToLegacyFields populates the legacy fields of the RecordConfig using the fields in .F.
 func (handle *RP) CopyToLegacyFields(rec *models.RecordConfig) {
-	rp := rec.F.(*RP)
-	_ = rec.SetTarget(rp.Mbox + " " + rp.Txt)
+	// RP, like all new RRs, does not have legacy fields. Even .target is deprecated.
+}
+
+// CopyFromLegacyFields populates the legacy fields of the RecordConfig using the fields in .F.
+func (handle *RP) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// RP is RecordConfigv2 and has no legacy fields. Even .target is deprecated.
+
+	// Fix up ZonefilePartial and Comparable:
+	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
+	rec.Comparable = rec.ZonefilePartial
 }
