@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 
 	"github.com/urfave/cli/v3"
 )
@@ -222,6 +223,7 @@ func GetZone(args GetZoneArgs) error {
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
+		rtypecontrol.FixLegacyRecords(&recs) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
 		zoneRecs[i] = recs
 	}
 

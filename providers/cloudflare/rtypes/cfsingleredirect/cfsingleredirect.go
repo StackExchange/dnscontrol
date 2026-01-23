@@ -101,4 +101,15 @@ func (handle *SingleRedirectConfig) CopyToLegacyFields(rec *models.RecordConfig)
 // CopyFromLegacyFields populates rec.F from the legacy RecordType fields.
 func (handle *SingleRedirectConfig) CopyFromLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT is built in FromArgs.
+
+	// However, we add some assertions here to catch mistakes.
+	if rec.F == nil {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.F == nil")
+	}
+	if rec.ZonefilePartial == "" {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.ZonefilePartial == \"\"")
+	}
+	if rec.Comparable == "" {
+		panic("assertion failed: SingleRedirectConfig CopyFromLegacyFields called with rec.Comparable == \"\"")
+	}
 }

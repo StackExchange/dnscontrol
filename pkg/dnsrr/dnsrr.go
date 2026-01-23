@@ -56,7 +56,7 @@ func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (models.RecordConfig, e
 	case *dns.DNAME:
 		err = rc.SetTarget(v.Target)
 	case *dns.DS:
-		err = rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest)
+		panic("DS should be handled as modern type")
 	case *dns.DNSKEY:
 		err = rc.SetTargetDNSKEY(v.Flags, v.Protocol, v.Algorithm, v.PublicKey)
 	case *dns.HTTPS:
