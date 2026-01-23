@@ -404,10 +404,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	case dns.TypeDNAME:
 		rr.(*dns.DNAME).Target = rc.GetTargetField()
 	case dns.TypeDS:
-		// rr.(*dns.DS).Algorithm = rc.DsAlgorithm
-		// rr.(*dns.DS).DigestType = rc.DsDigestType
-		// rr.(*dns.DS).Digest = rc.DsDigest
-		// rr.(*dns.DS).KeyTag = rc.DsKeyTag
 		panic("DS should have been handled as modern type")
 	case dns.TypeDNSKEY:
 		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
