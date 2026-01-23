@@ -46,7 +46,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 		Name: domainName,
 	}
 	dc.PostProcess()
-	rtypecontrol.FixLegacyAll(dc)
+	rtypecontrol.FixLegacyDC(dc)
 
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
@@ -145,7 +145,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			TargetPattern: "",
 		})
 		models.PostProcessRecords(dom.Records)
-		rtypecontrol.FixLegacyAll(dom)
+		rtypecontrol.FixLegacyDC(dom)
 		dom2, _ := dom.Copy()
 
 		if err := providers.AuditRecords(*providerFlag, dom.Records); err != nil {

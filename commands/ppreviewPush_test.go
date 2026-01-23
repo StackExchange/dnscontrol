@@ -26,7 +26,7 @@ func Test_whichZonesToProcess(t *testing.T) {
 	// This is needed since we aren't calling js.ExecuteJavaScript().
 	for _, dc := range allDC {
 		dc.PostProcess()
-		rtypecontrol.FixLegacyAll(dc)
+		rtypecontrol.FixLegacyDC(dc)
 	}
 
 	type args struct {
