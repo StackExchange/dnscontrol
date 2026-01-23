@@ -34,7 +34,7 @@ func (handle *SingleRedirectConfig) Name() string {
 // FromArgs populates a RecordConfig from the raw ([]any) args.
 func (handle *SingleRedirectConfig) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any) error {
 	// Pave the args to be the expected types.
-	if err := rtypecontrol.PaveArgs(args, "siss"); err != nil {
+	if err := rtypecontrol.PaveArgs(args, "swss"); err != nil {
 		return err
 	}
 
