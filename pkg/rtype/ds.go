@@ -65,6 +65,7 @@ func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
 
 // CopyFromLegacyFields uses the the legacy fields to populate .F
 func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// Copy fields:
 	rec.F = &DS{
 		dns.DS{
 			KeyTag:     rec.DsKeyTag,
@@ -73,4 +74,8 @@ func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
 			Digest:     rec.DsDigest,
 		},
 	}
+
+	// Fix up ZonefilePartial and Comparable:
+	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
+	rec.Comparable = rec.ZonefilePartial
 }
