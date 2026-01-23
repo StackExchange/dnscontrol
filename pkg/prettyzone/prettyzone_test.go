@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
