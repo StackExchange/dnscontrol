@@ -145,6 +145,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			TargetPattern: "",
 		})
 		models.PostProcessRecords(dom.Records)
+		rtypecontrol.FixLegacyDC(dom)
 		dom2, _ := dom.Copy()
 
 		if err := providers.AuditRecords(*providerFlag, dom.Records); err != nil {
