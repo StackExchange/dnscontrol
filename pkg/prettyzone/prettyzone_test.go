@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
