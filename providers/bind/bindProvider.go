@@ -219,7 +219,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		switch rtype {
 		case dns.TypeRP:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, dns.TypeToString[rtype], rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
