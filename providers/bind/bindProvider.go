@@ -30,6 +30,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
 	"github.com/miekg/dns"
 )
 
@@ -214,18 +215,18 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var prec *models.RecordConfig
 		var err error
 
-		// Modern types:
 		rtype := rr.Header().Rrtype
-		switch rtype {
-		case dns.TypeRP:
+		rtypeStr := dns.TypeToString[rtype]
+		if rtypeinfo.IsModernType(rtypeStr) {
+			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
 			rec = *prec
 			rec.TTL = rr.Header().Ttl
-		default:
+		} else {
 			// Legacy types:
 			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
 			if err != nil {
