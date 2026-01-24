@@ -39,6 +39,7 @@ Currently supported DNS providers:
 - Fortigate
 - Gandi
 - Gcore
+- Gidinet
 - Google DNS
 - Hetzner
 - HEXONET
@@ -80,6 +81,7 @@ Currently supported Domain Registrars:
 - Dynadot
 - easyname
 - Gandi
+- Gidinet
 - HEXONET
 - hosting.de
 - Internet.bs
