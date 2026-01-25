@@ -18,7 +18,7 @@ generate "Dynamic Single Redirects" for a limited number of use cases. See
 [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
 {% endhint %}
 
-`CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+`CF_TEMP_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
 Rules) to generate a HTTP 302 temporary redirect.
 
 If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then

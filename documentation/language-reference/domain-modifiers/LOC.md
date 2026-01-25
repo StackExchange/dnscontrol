@@ -26,6 +26,8 @@ parameter_types:
   vertical_precision: number
 ---
 
+`LOC` add a [Location record](https://www.rfc-editor.org/rfc/rfc1876) to the domain.
+
 The parameter number types ingested are as follows:
 
 ```

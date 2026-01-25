@@ -16,7 +16,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-DS adds a DS record to the domain.
+`DS` adds a [Delegation signer record](https://www.rfc-editor.org/rfc/rfc4034) to the domain.
 
 Key Tag should be a number.
 

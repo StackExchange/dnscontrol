@@ -14,7 +14,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+`SSHFP` adds a [SSH Public Key Fingerprint record](https://www.rfc-editor.org/rfc/rfc4255) to the domain. The record contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
 
 **Algorithm** (type of the key)
 
