@@ -24,11 +24,13 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
 	"github.com/miekg/dns"
 )
 
@@ -213,20 +215,20 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var prec *models.RecordConfig
 		var err error
 
-		// Modern types:
 		rtype := rr.Header().Rrtype
-		switch rtype {
-		case dns.TypeRP:
+		rtypeStr := dns.TypeToString[rtype]
+		if rtypeinfo.IsModernType(rtypeStr) {
+			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
 			rec = *prec
 			rec.TTL = rr.Header().Ttl
-		default:
+		} else {
 			// Legacy types:
-			rec, err = models.RRtoRCTxtBug(rr, zoneName)
+			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
 			if err != nil {
 				return nil, err
 			}
@@ -241,7 +243,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-func (c *bindProvider) EnsureZoneExists(_ string) error {
+func (c *bindProvider) EnsureZoneExists(_ string, _ map[string]string) error {
 	return nil
 }
 

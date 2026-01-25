@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/miekg/dns"
 	testifyrequire "github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ func parseZoneContents(content string, zoneName string, zonefileName string) (mo
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRCTxtBug(rr, zoneName)
+		rec, err := dnsrr.RRtoRCTxtBug(rr, zoneName)
 		if err != nil {
 			return nil, err
 		}

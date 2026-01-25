@@ -17,8 +17,8 @@ func PtrNameMagic(name, domain string) (string, error) {
 	// If the name is already in-addr.arpa or ipv6.arpa,
 	// make sure the domain matches.
 	if strings.HasSuffix(name, ".in-addr.arpa.") || strings.HasSuffix(name, ".ip6.arpa.") {
-		if strings.HasSuffix(name, "."+domain+".") {
-			return strings.TrimSuffix(name, "."+domain+"."), nil
+		if before, ok := strings.CutSuffix(name, "."+domain+"."); ok {
+			return before, nil
 		}
 		return name, fmt.Errorf("PTR record %v in wrong domain (%v)", name, domain)
 	}

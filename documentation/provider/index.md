@@ -40,6 +40,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ✅ | ✅ |
 | [`DESEC`](desec.md) | ❌ | ✅ | ❌ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ✅ | ❌ |
+| [`DNSCALE`](dnscale.md) | ❌ | ✅ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ❌ | ✅ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❌ | ✅ | ❌ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❌ | ❌ | ✅ |
@@ -104,6 +105,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
+| [`DNSCALE`](dnscale.md) | ❌ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
@@ -165,7 +167,8 @@ Jump to a table:
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| [`DNSCALE`](dnscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
@@ -217,13 +220,14 @@ Jump to a table:
 | [`AZURE_DNS`](azure_dns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ❔ |
+| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
+| [`DNSCALE`](dnscale.md) | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
@@ -273,13 +277,14 @@ Jump to a table:
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
+| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| [`DNSCALE`](dnscale.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❔ | ❌ | ❔ |
@@ -409,6 +414,7 @@ Providers in this category and their maintainers are:
 |[`CSCGLOBAL`](cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](desec.md)|@D3luxee|
 |[`DIGITALOCEAN`](digitalocean.md)|@chicks-net|
+|[`DNSCALE`](dnscale.md)|@dnscale-ops|
 |[`DNSIMPLE`](dnsimple.md)|@onlyhavecans|
 |[`DNSMADEEASY`](dnsmadeeasy.md)|@vojtad|
 |[`DNSOVERHTTPS`](dnsoverhttps.md)|@mikenz|
