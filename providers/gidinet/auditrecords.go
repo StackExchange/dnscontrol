@@ -21,7 +21,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2026-01-25
 
-	a.Add("TXT", rejectif.TxtLongerThan(254)) // Last verified 2026-01-25
+	// Note: Long TXT records (>250 chars) are supported via automatic chunking.
+	// The API accepts format: "chunk1" "chunk2" where each chunk is ≤250 chars.
 
 	return a.Audit(records)
 }

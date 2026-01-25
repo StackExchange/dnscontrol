@@ -272,11 +272,9 @@ func toRecordConfig(domain string, r *DNSRecordListItem) (*models.RecordConfig, 
 		}
 
 	case "TXT":
-		// Gidinet returns TXT values with surrounding quotes, strip them
-		txtData := r.Data
-		if len(txtData) >= 2 && txtData[0] == '"' && txtData[len(txtData)-1] == '"' {
-			txtData = txtData[1 : len(txtData)-1]
-		}
+		// Gidinet may return TXT values in chunked format: "chunk1" "chunk2"
+		// Use unchunkTXT to parse back to a single string
+		txtData := unchunkTXT(r.Data)
 		if err := rc.SetTargetTXT(txtData); err != nil {
 			return nil, err
 		}
@@ -319,7 +317,8 @@ func toGidinetRecord(domain string, rc *models.RecordConfig) *DNSRecord {
 		rec.Data = strings.TrimSuffix(target, ".")
 
 	case "TXT":
-		rec.Data = rc.GetTargetTXTJoined()
+		// Chunk long TXT values into quoted segments for the API
+		rec.Data = chunkTXT(rc.GetTargetTXTJoined())
 
 	default: // A, AAAA, etc.
 		rec.Data = rc.GetTargetField()

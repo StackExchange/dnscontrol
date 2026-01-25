@@ -314,6 +314,75 @@ func fromFQDN(fqdn, domain string) string {
 	return fqdn
 }
 
+// Maximum length for a single TXT chunk in the Gidinet API
+const maxTXTChunkLen = 250
+
+// chunkTXT splits a long TXT value into quoted chunks for the Gidinet API.
+// The API rejects single strings longer than ~250 characters, but accepts
+// multiple quoted segments like: "chunk1" "chunk2" "chunk3"
+// Short values (<= maxTXTChunkLen) are returned as-is without quotes.
+func chunkTXT(value string) string {
+	if len(value) <= maxTXTChunkLen {
+		return value
+	}
+
+	var chunks []string
+	for len(value) > 0 {
+		end := maxTXTChunkLen
+		if end > len(value) {
+			end = len(value)
+		}
+		chunks = append(chunks, `"`+value[:end]+`"`)
+		value = value[end:]
+	}
+	return strings.Join(chunks, " ")
+}
+
+// unchunkTXT parses a TXT value that may be in chunked format back to a single string.
+// Handles formats like: "chunk1" "chunk2" or just: plain value
+func unchunkTXT(data string) string {
+	data = strings.TrimSpace(data)
+
+	// If it doesn't start with a quote, return as-is
+	if len(data) == 0 || data[0] != '"' {
+		return data
+	}
+
+	// Parse quoted strings
+	var result strings.Builder
+	i := 0
+	for i < len(data) {
+		// Skip whitespace
+		for i < len(data) && (data[i] == ' ' || data[i] == '\t') {
+			i++
+		}
+		if i >= len(data) {
+			break
+		}
+
+		// Expect opening quote
+		if data[i] != '"' {
+			// Not a quoted string, append rest and break
+			result.WriteString(data[i:])
+			break
+		}
+		i++ // skip opening quote
+
+		// Read until closing quote
+		start := i
+		for i < len(data) && data[i] != '"' {
+			i++
+		}
+		result.WriteString(data[start:i])
+
+		if i < len(data) {
+			i++ // skip closing quote
+		}
+	}
+
+	return result.String()
+}
+
 // --- Registrar API methods ---
 
 // getNameserversForDomain fetches the current nameservers for a specific domain
