@@ -179,9 +179,9 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
 
 
 /**
- * A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `A` adds an [IPv4 Address record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
- * The address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
+ * The address should be an IP address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
  *
  * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
  *
@@ -199,7 +199,7 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
 declare function A(name: string, address: string | number, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * AAAA adds an AAAA record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `AAAA` adds an [IPv6 Address record](https://www.rfc-editor.org/rfc/rfc3596) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * The address should be an IPv6 address as a string.
  *
@@ -410,7 +410,7 @@ declare const AUTODNSSEC_ON: DomainModifier;
 declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `CAA()` adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `CAA` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * Tag can be one of
  * 1. `"issue"`
@@ -445,8 +445,9 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
 declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "contactemail" | "contactphone" | "issuemail" | "issuevmc", value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * DNSControl contains a `CAA_BUILDER` which can be used to simply create
- * [`CAA()`](../domain-modifiers/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain-modifiers/CAA.md) record
+ * `CAA_BUILDER` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain.
+ *
+ * `CAA_BUILDER` eases the creation of [`CAA`](CAA.md) records. Instead of creating each [`CAA`](CAA.md) record
  * individually, you can simply configure your report mail address, the
  * authorized certificate authorities and the builder cares about the rest.
  *
@@ -469,7 +470,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
  * );
  * ```
  *
- * `CAA_BUILDER()` builds multiple records:
+ * `CAA_BUILDER` builds multiple records:
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -510,7 +511,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
  * );
  * ```
  *
- * `CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
+ * `CAA_BUILDER` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -555,7 +556,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * `CF_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 301 permanent redirect.
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
@@ -586,7 +587,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
 declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
+ * `CF_SINGLE_REDIRECT` is a [Cloudflare](../../provider/cloudflareapi.md)-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
  * Typically one uses 302 (temporary) or 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
@@ -635,7 +636,7 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * `CF_TEMP_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
  * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then
@@ -695,7 +696,7 @@ declare function CF_WORKER_ROUTE(pattern: string, script: string): DomainModifie
 declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * CNAME adds a CNAME record to the domain. The name should be the relative label for the domain.
+ * `CNAME` adds a [Canonical name record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
  * Using `@` or `*` for CNAME records is not recommended, as different providers support them differently.
  *
  * Target should be a string representing the CNAME target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
@@ -872,7 +873,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
 declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 
 /**
- * DHCID adds a DHCID record to the domain.
+ * `DHCID` adds a [DHCP identifier record](https://www.rfc-editor.org/rfc/rfc4701) to the domain.
  *
  * Digest should be a string.
  *
@@ -887,14 +888,14 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 declare function DHCID(name: string, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an
- * error to insert records that match an `IGNORE()` pattern. This disables that
+ * `DISABLE_IGNORE_SAFETY_CHECK` disables the safety check. Normally it is an
+ * error to insert records that match an `IGNORE` pattern. This disables that
  * safety check for the entire domain.
  *
- * It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK()` which is
+ * It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK` which is
  * deprecated as of DNSControl v4.0.0.0.
  *
- * See [`IGNORE()`](../domain-modifiers/IGNORE.md) for more information.
+ * See [`IGNORE`](../domain-modifiers/IGNORE.md) for more information.
  *
  * ## Syntax
  *
@@ -1089,7 +1090,7 @@ declare function DKIM_BUILDER(opts: { selector: string; pubkey?: string; label?:
 declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): DomainModifier;
 
 /**
- * DNAME adds a DNAME record to the domain.
+ * `DNAME` adds a [Delegation name record](https://www.rfc-editor.org/rfc/rfc6672) to the domain.
  *
  * Target should be a string.
  *
@@ -1192,7 +1193,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
 declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: string, dnsProvider: string): void;
 
 /**
- * DS adds a DS record to the domain.
+ * `DS` adds a [Delegation signer record](https://www.rfc-editor.org/rfc/rfc4034) to the domain.
  *
  * Key Tag should be a number.
  *
@@ -1297,7 +1298,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
 declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
 
 /**
- * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record-modifiers/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
+ * DefaultTTL sets the Time To Live (TTL) for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record-modifiers/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
  * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../top-level-functions/DEFAULTS.md) to override the internal defaults.
  *
  * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain-modifiers/NAMESERVER_TTL.md) to set a default TTL for all NS records.
@@ -1969,6 +1970,8 @@ declare function INCLUDE(domain: string): DomainModifier;
 declare function IP(ip: string): number;
 
 /**
+ * `LOC` add a [Location record](https://www.rfc-editor.org/rfc/rfc1876) to the domain.
+ *
  * The parameter number types ingested are as follows:
  *
  * ```
@@ -2407,7 +2410,7 @@ declare function LUA(name: string, rtype: string, contents: string | string[], .
 declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): DomainModifier;
 
 /**
- * MX adds an MX record to the domain.
+ * `MX` adds a [Mail exchange record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
  *
  * Priority should be a number.
  *
@@ -2784,7 +2787,7 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
 declare const NO_PURGE: DomainModifier;
 
 /**
- * NS adds a NS record to the domain. The name should be the relative label for the domain.
+ * `NS` adds a [Name server record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
  *
  * The name may not be `@` (the bare domain), as that is controlled via [`NAMESERVER()`](NAMESERVER.md).
  * The difference between `NS()` and [`NAMESERVER()`](NAMESERVER.md) is explained in the [`NAMESERVER()` description](NAMESERVER.md).
@@ -2883,7 +2886,7 @@ declare function NewDnsProvider(name: string, meta?: object): string;
 declare function NewRegistrar(name: string, type?: string, meta?: object): string;
 
 /**
- * OPENPGPKEY adds a OPENPGPKEY record to the domain.
+ * `OPENPGPKEY` adds an [OpenPGP public key record](https://www.rfc-editor.org/rfc/rfc7929) to the domain.
  *
  * So far, no transformation is applied to the parameters. The data will be passed to the DNS server as-is.
  * Reference RFC 7929 for details.
@@ -2912,7 +2915,7 @@ declare function PANIC(message: string): never;
 /**
  * **DEPRECATED**: This record type is deprecated. Please use `URL` (for temporary redirects) or `URL301` (for permanent redirects) instead. PORKBUN_URLFWD will continue to work but is no longer recommended for new configurations.
  *
- * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
+ * `PORKBUN_URLFWD` is a [Porkbun](../../provider/porkbun.md)-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -2933,7 +2936,7 @@ declare function PANIC(message: string): never;
 declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * PTR adds a PTR record to the domain.
+ * `PTR` adds a [PTR Resource record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
  *
  * The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
  * saving the user from having to reverse the IP address manually.
@@ -3255,7 +3258,9 @@ declare function REV(address: string): string;
 declare function REVCOMPAT(rfc: string): string;
 
 /**
- * `RP()` adds an RP record to a domain.
+ * `RP` adds an [Responsible Person record](https://www.rfc-editor.org/rfc/rfc1183) to a domain.
+ *
+ * An RP record contains contact details for the domain. Usually an email address with the `@` replaced by a `.`.
  *
  * The RP implementation in DNSControl is still experimental and may change.
  *
@@ -3270,7 +3275,7 @@ declare function REVCOMPAT(rfc: string): string;
 declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.
+ * `SMIMEA` adds an [S/MIME cert association record](https://www.rfc-editor.org/rfc/rfc8162) to a domain. The name should be the hashed and stripped local part of the e-mail.
  *
  * To create the name, you can the following command:
  *
@@ -3302,7 +3307,7 @@ declare function RP(name: string, mbox: string, txt: string, ...modifiers: Recor
 declare function SMIMEA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
+ * `SOA` adds a [Start of Authority record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -3311,8 +3316,8 @@ declare function SMIMEA(name: string, usage: number, selector: number, type: num
  * ```
  *
  * ## Notes
- * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
- * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
+ * * The serial number is managed automatically.  It isn't even a field in `SOA`.
+ * * Most providers automatically generate SOA records.  They will ignore any `SOA` statements.
  * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
  *
  * There is more info about `SOA` in the documentation for the [BIND provider](../../provider/bind.md).
@@ -3606,7 +3611,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
 declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize?: number; parts: string[]; flatten?: string[] }): DomainModifier;
 
 /**
- * `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
+ * `SRV` adds a [Service locator record](https://www.rfc-editor.org/rfc/rfc2782) to a domain. The name should be the relative label for the record.
  *
  * Priority, weight, and port are ints.
  *
@@ -3624,7 +3629,7 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
 declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+ * `SSHFP` adds a [SSH Public Key Fingerprint record](https://www.rfc-editor.org/rfc/rfc4255) to the domain. The record contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
  *
  * **Algorithm** (type of the key)
  *
@@ -3657,7 +3662,7 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * SVCB adds an SVCB record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `SVCB` adds a [Service Binding record](https://www.rfc-editor.org/rfc/rfc9460) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
  *
@@ -3676,7 +3681,7 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
 declare function SVCB(name: string, priority: number, target: string, params: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
+ * `TLSA` adds a [TLSA certificate association record](https://www.rfc-editor.org/rfc/rfc6698) to a domain. The name should be the relative label for the record.
  *
  * Usage, selector, and type are ints.
  *
@@ -3727,7 +3732,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
 declare function TTL(ttl: Duration): RecordModifier;
 
 /**
- * `TXT` adds an `TXT` record To a domain. The name should be the relative
+ * `TXT` adds a [Text record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative
  * label for the record. Use `@` for the domain apex.
  *
  * The contents is either a single or multiple strings.  To

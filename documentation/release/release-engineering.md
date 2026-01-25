@@ -32,10 +32,10 @@ git commit -am "CHORE: generate-all.sh"
 ## Step 2. Tag the commit in main that you want to release
 
 ```shell
-git tag -l |grep -F v4. | sort --version-sort --field-separator=. --key=2,2 | tail
-export VERSION=v4.x.0
 git checkout main
 git pull --rebase --ff-only --prune
+git tag -l |grep -F v4. | sort --version-sort --field-separator=. --key=2,2 | tail
+export VERSION=v4.x.0
 git tag -m "Release $VERSION" -a $VERSION
 git push origin HEAD --tags
 ```
