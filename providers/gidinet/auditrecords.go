@@ -11,13 +11,17 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("MX", rejectif.MxNull) // MX priority 0 is allowed (means highest priority)
+	a.Add("MX", rejectif.MxNull) // Last verified 2026-01-24
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Gidinet doesn't support quotes in TXT
-	a.Add("TXT", rejectif.TxtIsEmpty)         // Empty TXT records not allowed
-	a.Add("TXT", rejectif.TxtHasBackticks)    // Backticks not supported
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2026-01-24
 
-	a.Add("SRV", rejectif.SrvHasNullTarget) // SRV must have a target
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2026-01-24
+
+	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2026-01-24
+
+	a.Add("TXT", rejectif.TxtHasBackslash) // Last verified 2026-01-25
+
+	a.Add("TXT", rejectif.TxtLongerThan(254)) // Last verified 2026-01-25
 
 	return a.Audit(records)
 }

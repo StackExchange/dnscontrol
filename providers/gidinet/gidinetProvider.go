@@ -26,10 +26,10 @@ var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanAutoDNSSEC:          providers.Cannot(),
-	providers.CanConcur:              providers.Cannot(), // SOAP API, safer to serialize
+	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(), // Only premium service
+	providers.CanUseCAA:              providers.Cannot("Only premium service"),
 	providers.CanUseDHCID:            providers.Cannot(),
 	providers.CanUseDNAME:            providers.Cannot(),
 	providers.CanUseDNSKEY:           providers.Cannot(),
@@ -39,11 +39,11 @@ var features = providers.DocumentationNotes{
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSRV:              providers.Cannot("API returns error for SRV records"),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseSVCB:             providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.DocCreateDomains:       providers.Cannot(), // Must be created via web UI
+	providers.DocCreateDomains:       providers.Cannot("Must be created via web UI"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }

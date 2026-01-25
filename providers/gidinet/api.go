@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 )
 
@@ -37,35 +38,35 @@ func newClient(username, password string) *gidinetProvider {
 }
 
 // buildSOAPRequest creates a SOAP envelope with the given body content
-func buildSOAPRequest(body interface{}) ([]byte, error) {
+func buildSOAPRequest(body any) ([]byte, error) {
 	// Build XML manually to handle namespaces properly
 	bodyXML, err := xml.MarshalIndent(body, "    ", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal SOAP body: %w", err)
 	}
 
-	soapEnvelope := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?>
+	soapEnvelope := `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-%s
+` + string(bodyXML) + `
   </soap:Body>
-</soap:Envelope>`, string(bodyXML))
+</soap:Envelope>`
 
 	return []byte(soapEnvelope), nil
 }
 
 // doSOAPRequest sends a SOAP request to the DNS API and returns the response body
-func (c *gidinetProvider) doSOAPRequest(action string, requestBody interface{}) ([]byte, error) {
+func (c *gidinetProvider) doSOAPRequest(action string, requestBody any) ([]byte, error) {
 	return c.doSOAPRequestToURL(dnsAPIURL, dnsSoapAction+action, requestBody)
 }
 
 // doCoreAPIRequest sends a SOAP request to the Core API and returns the response body
-func (c *gidinetProvider) doCoreAPIRequest(action string, requestBody interface{}) ([]byte, error) {
+func (c *gidinetProvider) doCoreAPIRequest(action string, requestBody any) ([]byte, error) {
 	return c.doSOAPRequestToURL(coreAPIURL, coreSoapAction+action, requestBody)
 }
 
 // doSOAPRequestToURL sends a SOAP request to the specified URL and returns the response body
-func (c *gidinetProvider) doSOAPRequestToURL(url, soapAction string, requestBody interface{}) ([]byte, error) {
+func (c *gidinetProvider) doSOAPRequestToURL(url, soapAction string, requestBody any) ([]byte, error) {
 	soapData, err := buildSOAPRequest(requestBody)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func (c *gidinetProvider) doSOAPRequestToURL(url, soapAction string, requestBody
 }
 
 // parseSOAPResponse extracts the response from a SOAP envelope
-func parseSOAPResponse(data []byte, response interface{}) error {
+func parseSOAPResponse(data []byte, response any) error {
 	// Find the Body content and unmarshal it
 	// We need to handle the SOAP envelope wrapper
 	type envelope struct {
@@ -221,13 +222,13 @@ func (c *gidinetProvider) recordDelete(record *DNSRecord) error {
 }
 
 // domainGetList fetches all domains from the account
-func (c *gidinetProvider) domainGetList() ([]*DomainListItem, error) {
-	var allDomains []*DomainListItem
+func (c *gidinetProvider) domainGetList() ([]*domainListItem, error) {
+	var allDomains []*domainListItem
 	pageNumber := 1
 	pageSize := 200 // Maximum allowed
 
 	for {
-		request := &DomainGetListRequest{
+		request := &domainGetListRequest{
 			AccountUsername:     c.username,
 			AccountPasswordB64:  c.passwordB64,
 			OrderFieldID:        0, // Order by name
@@ -246,7 +247,7 @@ func (c *gidinetProvider) domainGetList() ([]*DomainListItem, error) {
 			return nil, err
 		}
 
-		var response DomainGetListResponse
+		var response domainGetListResponse
 		if err := parseSOAPResponse(responseData, &response); err != nil {
 			return nil, err
 		}
@@ -275,18 +276,17 @@ func (c *gidinetProvider) domainGetList() ([]*DomainListItem, error) {
 // fixTTL snaps a TTL value to the nearest allowed value
 func fixTTL(ttl uint32) uint32 {
 	// If TTL is larger than the largest allowed value, return the largest
-	if ttl > AllowedTTLValues[len(AllowedTTLValues)-1] {
-		return AllowedTTLValues[len(AllowedTTLValues)-1]
+	if ttl > allowedTTLValues[len(allowedTTLValues)-1] {
+		return allowedTTLValues[len(allowedTTLValues)-1]
 	}
 
-	// Find the smallest allowed value that is >= ttl
-	for _, v := range AllowedTTLValues {
-		if v >= ttl {
-			return v
-		}
+	// Find the smallest allowed value that is >= ttl using binary search
+	idx, _ := slices.BinarySearch(allowedTTLValues, ttl)
+	if idx < len(allowedTTLValues) {
+		return allowedTTLValues[idx]
 	}
 
-	return AllowedTTLValues[0]
+	return allowedTTLValues[0]
 }
 
 // toFQDN converts a hostname to FQDN if needed
@@ -297,8 +297,8 @@ func toFQDN(hostname, domain string) string {
 	if strings.HasSuffix(hostname, "."+domain) {
 		return hostname
 	}
-	if strings.HasSuffix(hostname, ".") {
-		return strings.TrimSuffix(hostname, ".")
+	if before, ok := strings.CutSuffix(hostname, "."); ok {
+		return before
 	}
 	return hostname + "." + domain
 }
@@ -308,9 +308,8 @@ func fromFQDN(fqdn, domain string) string {
 	if fqdn == domain || fqdn == domain+"." {
 		return "@"
 	}
-	suffix := "." + domain
-	if strings.HasSuffix(fqdn, suffix) {
-		return strings.TrimSuffix(fqdn, suffix)
+	if before, ok := strings.CutSuffix(fqdn, "."+domain); ok {
+		return before
 	}
 	return fqdn
 }
@@ -349,7 +348,7 @@ func (c *gidinetProvider) setNameservers(domainName string, nameservers []string
 	// Join nameservers with comma, no spaces
 	nsString := strings.Join(nameservers, ",")
 
-	request := &DomainNameServersChangeRequest{
+	request := &domainNameServersChangeRequest{
 		AccountUsername:      c.username,
 		AccountPasswordB64:   c.passwordB64,
 		Domain:               domainName,
@@ -362,7 +361,7 @@ func (c *gidinetProvider) setNameservers(domainName string, nameservers []string
 		return err
 	}
 
-	var response DomainNameServersChangeResponse
+	var response domainNameServersChangeResponse
 	if err := parseSOAPResponse(responseData, &response); err != nil {
 		return err
 	}

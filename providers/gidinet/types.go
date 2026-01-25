@@ -13,7 +13,7 @@ type SOAPEnvelope struct {
 // SOAPBody represents the SOAP body
 type SOAPBody struct {
 	XMLName  xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
-	Content  interface{}
+	Content  any
 	Fault    *SOAPFault `xml:"Fault,omitempty"`
 	InnerXML []byte     `xml:",innerxml"`
 }
@@ -137,8 +137,8 @@ const (
 	ResultCodeInUse          = 6 // Object in use
 )
 
-// AllowedTTLValues lists the TTL values supported by the Gidinet API
-var AllowedTTLValues = []uint32{
+// allowedTTLValues lists the TTL values supported by the Gidinet API
+var allowedTTLValues = []uint32{
 	60,     // 60 seconds
 	300,    // 5 minutes
 	600,    // 10 minutes
@@ -157,8 +157,8 @@ var AllowedTTLValues = []uint32{
 
 // --- CoreAPI structures for domain listing ---
 
-// DomainGetListRequest is the request for domainGetList (CoreAPI)
-type DomainGetListRequest struct {
+// domainGetListRequest is the request for domainGetList (CoreAPI)
+type domainGetListRequest struct {
 	XMLName             xml.Name `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainGetList"`
 	AccountUsername     string   `xml:"accountUsername"`
 	AccountPasswordB64  string   `xml:"accountPasswordB64"`
@@ -173,8 +173,8 @@ type DomainGetListRequest struct {
 	TechContactID       int64    `xml:"techContactID"`
 }
 
-// DomainListItem represents a domain in the domainGetList response
-type DomainListItem struct {
+// domainListItem represents a domain in the domainGetList response
+type domainListItem struct {
 	DomainID            int64  `xml:"domainId"`
 	DomainName          string `xml:"domainName"`
 	DomainExtension     string `xml:"domainExtension"`
@@ -190,8 +190,8 @@ type DomainListItem struct {
 	ServiceType         int    `xml:"serviceType"`
 }
 
-// DomainGetListResponse is the response from domainGetList (CoreAPI)
-type DomainGetListResponse struct {
+// domainGetListResponse is the response from domainGetList (CoreAPI)
+type domainGetListResponse struct {
 	XMLName           xml.Name          `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainGetListResponse"`
 	ResultCode        int               `xml:"domainGetListResult>resultCode"`
 	ResultSubCode     int               `xml:"domainGetListResult>resultSubCode"`
@@ -200,7 +200,7 @@ type DomainGetListResponse struct {
 	TotalDomains      int               `xml:"domainGetListResult>totalDomains"`
 	CurrentPageNumber int               `xml:"domainGetListResult>currentPageNumber"`
 	ResultItemCount   int               `xml:"domainGetListResult>resultItemCount"`
-	ResultItems       []*DomainListItem `xml:"domainGetListResult>resultItems>DomainListItem"`
+	ResultItems       []*domainListItem `xml:"domainGetListResult>resultItems>DomainListItem"`
 }
 
 // Domain status codes
@@ -218,8 +218,8 @@ const (
 
 // --- Registrar API structures ---
 
-// DomainNameServersChangeRequest is the request for domainNameServersChange (CoreAPI)
-type DomainNameServersChangeRequest struct {
+// domainNameServersChangeRequest is the request for domainNameServersChange (CoreAPI)
+type domainNameServersChangeRequest struct {
 	XMLName              xml.Name `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainNameServersChange"`
 	AccountUsername      string   `xml:"accountUsername"`
 	AccountPasswordB64   string   `xml:"accountPasswordB64"`
@@ -228,8 +228,8 @@ type DomainNameServersChangeRequest struct {
 	AdditionalParameters []string `xml:"additionalParameters"` // Not used in current version
 }
 
-// OpResultItem represents an operation result item
-type OpResultItem struct {
+// opResultItem represents an operation result item
+type opResultItem struct {
 	ServiceKey        string `xml:"serviceKey"`
 	ServiceHostname   string `xml:"serviceHostname"`
 	ExitCode          int    `xml:"exitCode"`          // 0=completed, 1=queued, 2=failed
@@ -237,11 +237,11 @@ type OpResultItem struct {
 	ResultItemID      int64  `xml:"resultItemId"`
 }
 
-// DomainNameServersChangeResponse is the response from domainNameServersChange (CoreAPI)
-type DomainNameServersChangeResponse struct {
+// domainNameServersChangeResponse is the response from domainNameServersChange (CoreAPI)
+type domainNameServersChangeResponse struct {
 	XMLName       xml.Name        `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainNameServersChangeResponse"`
 	ResultCode    int             `xml:"domainNameServersChangeResult>resultCode"`
 	ResultSubCode int             `xml:"domainNameServersChangeResult>resultSubCode"`
 	ResultText    string          `xml:"domainNameServersChangeResult>resultText"`
-	ResultItems   []*OpResultItem `xml:"domainNameServersChangeResult>resultItems>OpResultItem"`
+	ResultItems   []*opResultItem `xml:"domainNameServersChangeResult>resultItems>OpResultItem"`
 }
