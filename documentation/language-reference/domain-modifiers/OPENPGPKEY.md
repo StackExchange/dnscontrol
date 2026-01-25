@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-OPENPGPKEY adds a OPENPGPKEY record to the domain.
+`OPENPGPKEY` adds an [OpenPGP public key record](https://www.rfc-editor.org/rfc/rfc7929) to the domain.
 
 So far, no transformation is applied to the parameters. The data will be passed to the DNS server as-is.
 Reference RFC 7929 for details.

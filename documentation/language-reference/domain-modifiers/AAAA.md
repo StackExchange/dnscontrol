@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-AAAA adds an AAAA record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+`AAAA` adds an [IPv6 Address record](https://www.rfc-editor.org/rfc/rfc3596) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
 The address should be an IPv6 address as a string.
 

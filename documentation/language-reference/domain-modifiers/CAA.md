@@ -12,7 +12,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`CAA()` adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+`CAA` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
 Tag can be one of
 1. `"issue"`
