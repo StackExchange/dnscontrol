@@ -1,7 +1,7 @@
 package cloudflare
 
 import (
-	"net"
+	"net/netip"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -103,9 +103,9 @@ func TestIpRewriting(t *testing.T) {
 	cf := &cloudflareProvider{}
 	domain := newDomainConfig()
 	cf.ipConversions = []transform.IPConversion{{
-		Low:      net.ParseIP("1.2.3.0"),
-		High:     net.ParseIP("1.2.3.40"),
-		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
+		Low:      netip.MustParseAddr("1.2.3.0"),
+		High:     netip.MustParseAddr("1.2.3.40"),
+		NewBases: []netip.Addr{netip.MustParseAddr("255.255.255.0")},
 		NewIPs:   nil,
 	}}
 	for _, tst := range tests {

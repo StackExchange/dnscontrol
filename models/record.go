@@ -390,9 +390,15 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	// Fill in the data.
 	switch rdtype { // #rtype_variations
 	case dns.TypeA:
-		rr.(*dns.A).A = rc.GetTargetIP()
+		addr := rc.GetTargetIP()
+		s := addr.AsSlice()
+		//rr.(*dns.A).A = net.IP(s)
+		rr.(*dns.A).A = s[0:4]
 	case dns.TypeAAAA:
-		rr.(*dns.AAAA).AAAA = rc.GetTargetIP()
+		addr := rc.GetTargetIP()
+		s := addr.AsSlice()
+		//rr.(*dns.AAAA).AAAA = net.IP(s)
+		rr.(*dns.AAAA).AAAA = s[0:16]
 	case dns.TypeCAA:
 		rr.(*dns.CAA).Flag = rc.CaaFlag
 		rr.(*dns.CAA).Tag = rc.CaaTag

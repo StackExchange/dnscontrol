@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -218,8 +218,8 @@ func buildZonePayload(dc *models.DomainConfig, resourceRecords []*fgDNSRecord) (
 	payload["authoritative"] = "enable"
 
 	if v, ok := dc.Metadata["forwarder"]; ok {
-		ip := net.ParseIP(v)
-		if ip == nil || ip.To4() == nil {
+		ip, err := netip.ParseAddr(v)
+		if err != nil || !ip.Is4() {
 			return nil, fmt.Errorf("[FORTIGATE] Invalid forwarder IP: %q", v)
 		}
 		payload["forwarder"] = []string{v}
