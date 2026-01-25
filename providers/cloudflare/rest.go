@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go"
-	"golang.org/x/net/idna"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/cloudflare/cloudflare-go"
+	"golang.org/x/net/idna"
 )
 
 func (c *cloudflareProvider) fetchAllZones() (map[string]cloudflare.Zone, error) {
@@ -180,7 +180,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	case "MX":
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	case "TXT":
-		content = rec.GetTargetTXTJoined()
+		content = txtutil.EncodeQuoted(rec.GetTargetTXTJoined())
 	case "DS":
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
@@ -258,7 +258,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	}
 	switch rec.Type {
 	case "TXT":
-		r.Content = rec.GetTargetTXTJoined()
+		r.Content = txtutil.EncodeQuoted(rec.GetTargetTXTJoined())
 	case "SRV":
 		r.Data = cfSrvData(rec)
 		r.Name = rec.GetLabelFQDN()

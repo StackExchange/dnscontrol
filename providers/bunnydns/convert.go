@@ -47,11 +47,16 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Value = strings.TrimSuffix(r.Value, ".")
 	}
 
-	// In the case of SVCB/HTTPS records, the Target is part of the Value.
-	// After removing trailing dots for said target, we can add the params to the value.
 	switch r.Type {
 	case recordTypeSVCB, recordTypeHTTPS:
+		// In the case of SVCB/HTTPS records, the Target is part of the Value.
+		// After removing trailing dots for said target, we can add the params to the value.
 		r.Value = fmt.Sprintf("%s %s", r.Value, rc.SvcParams)
+	case recordTypeSRV:
+		// SRV empty target is represented as "."
+		if r.Value == "" {
+			r.Value = "."
+		}
 	}
 
 	return &r, nil

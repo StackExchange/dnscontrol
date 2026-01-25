@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-DNAME adds a DNAME record to the domain.
+`DNAME` adds a [Delegation name record](https://www.rfc-editor.org/rfc/rfc6672) to the domain.
 
 Target should be a string.
 
