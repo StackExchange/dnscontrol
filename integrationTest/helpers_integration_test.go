@@ -406,9 +406,14 @@ func dname(name, target string) *models.RecordConfig {
 }
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r := makeRec(name, "", "DS")
-	panicOnErr(r.SetTargetDS(keyTag, algorithm, digestType, digest))
-	return r
+	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+		Type: "DS",
+		TTL:  300,
+		Args: []any{name, keyTag, algorithm, digestType, digest},
+		DCN:  globalDCN,
+	})
+	panicOnErr(err)
+	return rec
 }
 
 func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
