@@ -7,7 +7,7 @@ import (
 )
 
 // Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
-type Capability uint32
+type Capability int
 
 const (
 	// Keep this list sorted.
