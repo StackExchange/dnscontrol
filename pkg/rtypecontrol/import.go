@@ -36,6 +36,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 				} else {
 					shortname = strings.TrimSuffix(rec.Name, "."+dc.Name)
 				}
+				//lint:ignore ST1005 providing advice in a presentation ready format.
 				return fmt.Errorf(
 					"The name %q is an error (repeats the domain). Maybe instead of %q you intended %q? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to disable this check",
 					rec.NameFQDNRaw,
