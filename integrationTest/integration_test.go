@@ -1227,6 +1227,27 @@ func makeTests() []*TestGroup {
 			CfCProxyOn(), CfCProxyOff(),
 		),
 
+		// CLOUDFLAREAPI: CNAME FLATTENING (requires paid plan)
+
+		testgroup("CF_CNAME_FLATTEN create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), tcEmptyZone(),
+			CfFlattenOn(), tcEmptyZone(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN off to on",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), CfFlattenOn(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN on to off",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOn(), CfFlattenOff(),
+		),
+
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
