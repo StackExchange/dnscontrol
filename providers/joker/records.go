@@ -230,7 +230,7 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 					// Parse TTL from the end if present (position 5)
 					if len(parts) >= 6 {
 						if ttlParsed, err := strconv.ParseUint(parts[5], 10, 32); err == nil {
-							ttl = uint32(ttlParsed)
+							rc.TTL = uint32(ttlParsed)
 						}
 					}
 				}
@@ -266,7 +266,8 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 				// Parse TTL from position 4
 				if len(parts) >= 5 {
 					if ttlParsed, err := strconv.ParseUint(parts[4], 10, 32); err == nil {
-						ttl = uint32(ttlParsed)
+						//rc.TTL = uint32(ttlParsed)
+						rc.TTL = uint32(ttlParsed)
 					}
 				}
 				// Parse flags, service, and regex from positions 7, 8, 9
@@ -357,7 +358,7 @@ func (api *jokerProvider) updateZoneRecords(domain string, records models.Record
 }
 
 // recordsToZoneFormat converts RecordConfig records to Joker zone format.
-func (api *jokerProvider) recordsToZoneFormat(domain string, records models.Records) string {
+func (api *jokerProvider) recordsToZoneFormat(_ string, records models.Records) string {
 	var lines []string
 
 	for _, rc := range records {
