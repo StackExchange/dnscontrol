@@ -103,6 +103,7 @@ This provider accepts some optional metadata:
 
 Record level metadata available:
    * `cloudflare_proxy` ("on", "off", or "full")
+   * `cloudflare_cname_flatten` ("on" or "off") - Per-record CNAME flattening (paid plans only)
 
 Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
@@ -141,6 +142,8 @@ the following aliases are *pre-defined*:
 var CF_PROXY_OFF = {"cloudflare_proxy": "off"};     // Proxy disabled.
 var CF_PROXY_ON = {"cloudflare_proxy": "on"};       // Proxy enabled.
 var CF_PROXY_FULL = {"cloudflare_proxy": "full"};   // Proxy+Railgun enabled.
+var CF_CNAME_FLATTEN_OFF = {"cloudflare_cname_flatten": "off"};  // CNAME flattening disabled (default).
+var CF_CNAME_FLATTEN_ON = {"cloudflare_cname_flatten": "on"};    // CNAME flattening enabled (paid plans only).
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
 var CF_PROXY_DEFAULT_OFF = {"cloudflare_proxy_default": "off"};
@@ -201,6 +204,33 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
 
+## CNAME flattening
+
+Cloudflare supports [CNAME flattening](https://developers.cloudflare.com/dns/cname-flattening/), which resolves CNAME targets to their IP addresses at the edge. This can be enabled zone-wide (for zones on paid Cloudflare plans) or per-record.
+
+DNSControl supports per-record CNAME flattening using the `CF_CNAME_FLATTEN_ON` modifier:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
+
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    // Enable CNAME flattening for this record
+    CNAME("cdn", "cdn.provider.com.", CF_CNAME_FLATTEN_ON),
+
+    // CNAME flattening disabled (default behavior)
+    CNAME("www", "www.example.com."),
+    CNAME("api", "api.example.com.", CF_CNAME_FLATTEN_OFF),
+);
+```
+{% endcode %}
+
+{% hint style="warning" %}
+**Paid plans only:** Per-record CNAME flattening requires a Cloudflare paid subscription (Pro, Business, or Enterprise). Free plans do not support this feature. If you attempt to enable CNAME flattening on a free zone, the Cloudflare API will return an error.
+{% endhint %}
+
+For more information, see [Cloudflare's CNAME flattening documentation](https://developers.cloudflare.com/dns/cname-flattening/).
 
 ## Old-style vs new-style redirects
 
@@ -420,6 +450,18 @@ go test -v -verbose -profile CLOUDFLAREAPI -cfworkers=false
 ```
 
 When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.
+
+### CNAME flattening tests
+
+Tests for per-record CNAME flattening (`CF_CNAME_FLATTEN_ON`/`CF_CNAME_FLATTEN_OFF`) are disabled by default
+because they require a paid Cloudflare plan. To enable these tests, use the `-cfflatten=true` flag:
+
+```shell
+cd integrationTest
+go test -v -verbose -profile CLOUDFLAREAPI -cfflatten=true
+```
+
+If you run with `-cfflatten=true` on a free zone, the tests will fail with an error from the Cloudflare API.
 
 ## Cloudflare special TTLs
 
