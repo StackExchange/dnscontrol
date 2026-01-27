@@ -257,6 +257,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 }
 
 func genComparable(rec *models.RecordConfig) string {
+	var parts []string
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
@@ -266,10 +267,18 @@ func genComparable(rec *models.RecordConfig) string {
 			if proxy == "off" {
 				proxy = "false"
 			}
-			return "proxy=" + proxy
+			parts = append(parts, "proxy="+proxy)
 		}
 	}
-	return ""
+	if rec.Type == "CNAME" {
+		flatten := rec.Metadata[metaCNAMEFlatten]
+		if flatten == "on" {
+			parts = append(parts, "flatten=true")
+		} else {
+			parts = append(parts, "flatten=false")
+		}
+	}
+	return strings.Join(parts, ",")
 }
 
 func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
@@ -408,12 +417,21 @@ const (
 	metaProxyDefault = metaProxy + "_default"
 	metaOriginalIP   = "original_ip" // TODO(tlim): Unclear what this means.
 	metaUniversalSSL = "cloudflare_universalssl"
+	metaCNAMEFlatten = "cloudflare_cname_flatten"
 )
 
 func checkProxyVal(v string) (string, error) {
 	v = strings.ToLower(v)
 	if v != "on" && v != "off" && v != "full" {
 		return "", fmt.Errorf("bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
+	}
+	return v, nil
+}
+
+func checkCNAMEFlattenVal(v string) (string, error) {
+	v = strings.ToLower(v)
+	if v != "on" && v != "off" {
+		return "", fmt.Errorf("bad metadata value for cloudflare_cname_flatten: '%s'. Use on/off", v)
 	}
 	return v, nil
 }
@@ -481,6 +499,18 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				}
 				rec.Metadata[metaProxy] = val
 			}
+		}
+
+		// Validate CNAME flattening metadata (only valid on CNAME records)
+		if val := rec.Metadata[metaCNAMEFlatten]; val != "" {
+			if rec.Type != "CNAME" {
+				return fmt.Errorf("cloudflare_cname_flatten set on %v record: %#v (only valid on CNAME records)", rec.Type, rec.GetLabel())
+			}
+			val, err := checkCNAMEFlattenVal(val)
+			if err != nil {
+				return err
+			}
+			rec.Metadata[metaCNAMEFlatten] = val
 		}
 
 		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
@@ -781,6 +811,15 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			} else {
 				rc.Metadata[metaProxy] = "off"
 			}
+		}
+	}
+
+	// Check for CNAME flattening setting
+	if cr.Type == "CNAME" {
+		if cr.Settings.FlattenCNAME != nil && *cr.Settings.FlattenCNAME {
+			rc.Metadata[metaCNAMEFlatten] = "on"
+		} else {
+			rc.Metadata[metaCNAMEFlatten] = "off"
 		}
 	}
 

@@ -1452,6 +1452,8 @@ function num2dot(num) {
 var CF_PROXY_OFF = { cloudflare_proxy: 'off' }; // Proxy disabled.
 var CF_PROXY_ON = { cloudflare_proxy: 'on' }; // Proxy enabled.
 var CF_PROXY_FULL = { cloudflare_proxy: 'full' }; // Proxy+Railgun enabled.
+var CF_CNAME_FLATTEN_OFF = { cloudflare_cname_flatten: 'off' }; // CNAME flattening disabled (default).
+var CF_CNAME_FLATTEN_ON = { cloudflare_cname_flatten: 'on' }; // CNAME flattening enabled (paid plans only).
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
 var CF_PROXY_DEFAULT_OFF = { cloudflare_proxy_default: 'off' };
