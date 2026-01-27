@@ -489,7 +489,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	// but you can ask the support for others type of record and they enable it
 	// for your ClouDNS account.
 	geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := rc.Metadata[metaGeodnsCode]
-	if geodnsCodeFromMetadataExist == true {
+	if geodnsCodeFromMetadataExist {
 		req["geodns-code"] = geodnsCodeFromMetadataValue
 	}
 
@@ -552,7 +552,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	if existingRc == nil {
 		if desiredRc.Metadata != nil {
 			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := desiredRc.Metadata[metaGeodnsCode]
-			if geodnsCodeFromMetadataExist == true {
+			if geodnsCodeFromMetadataExist {
 				return color.GreenString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
 			}
 		}
@@ -562,7 +562,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	if desiredRc == nil {
 		if existingRc.Metadata != nil {
 			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := existingRc.Metadata[metaGeodnsCode]
-			if geodnsCodeFromMetadataExist == true {
+			if geodnsCodeFromMetadataExist {
 				return color.RedString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
 			}
 		}
@@ -582,11 +582,11 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	geodnsCodeFromExistingRcMetadataValue, geodnsCodeFromExistingRcMetadataExist := existingRc.Metadata[metaGeodnsCode]
 	geodnsCodeFromDesiredRcMetadataValue, geodnsCodeFromDesiredRcMetadataExist := desiredRc.Metadata[metaGeodnsCode]
 
-	if geodnsCodeFromExistingRcMetadataExist == false {
+	if !geodnsCodeFromExistingRcMetadataExist {
 		geodnsCodeFromExistingRcMetadataValue = "DEFAULT"
 	}
 
-	if geodnsCodeFromDesiredRcMetadataExist == false {
+	if !geodnsCodeFromDesiredRcMetadataExist {
 		geodnsCodeFromDesiredRcMetadataValue = "DEFAULT"
 	}
 
@@ -594,7 +594,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 }
 
 func compareMetadata(rc *models.RecordConfig) string {
-	if rc.Metadata == nil || len(rc.Metadata) == 0 {
+	if len(rc.Metadata) == 0 {
 		return ""
 	}
 
@@ -602,7 +602,7 @@ func compareMetadata(rc *models.RecordConfig) string {
 	// - DNS record without GeoDNS return ""
 	// - DNS record with GeoDNS return "DEFAULT" as empty value
 	val, exist := rc.Metadata[metaGeodnsCode]
-	if exist == true && val == "DEFAULT" {
+	if exist && val == "DEFAULT" {
 		delete(rc.Metadata, metaGeodnsCode)
 	}
 
@@ -622,7 +622,7 @@ func compareMetadata(rc *models.RecordConfig) string {
 	}
 
 	// Restore the metadata value
-	if exist == true && val == "DEFAULT" {
+	if exist && val == "DEFAULT" {
 		rc.Metadata[metaGeodnsCode] = "DEFAULT"
 	}
 
