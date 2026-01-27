@@ -266,7 +266,6 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 				// Parse TTL from position 4
 				if len(parts) >= 5 {
 					if ttlParsed, err := strconv.ParseUint(parts[4], 10, 32); err == nil {
-						//rc.TTL = uint32(ttlParsed)
 						rc.TTL = uint32(ttlParsed)
 					}
 				}
