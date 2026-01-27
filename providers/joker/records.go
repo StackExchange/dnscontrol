@@ -229,8 +229,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 					}
 					// Parse TTL from the end if present (position 5)
 					if len(parts) >= 6 {
+						// TODO test this permutation
 						if ttlParsed, err := strconv.ParseUint(parts[5], 10, 32); err == nil {
-							ttl = uint32(ttlParsed)
+							rc.TTL = uint32(ttlParsed)
 						}
 					}
 				}
@@ -265,8 +266,9 @@ func (api *jokerProvider) parseZoneRecords(domain, zoneData string) (models.Reco
 				}
 				// Parse TTL from position 4
 				if len(parts) >= 5 {
+					// TODO test this permutation
 					if ttlParsed, err := strconv.ParseUint(parts[4], 10, 32); err == nil {
-						ttl = uint32(ttlParsed)
+						rc.TTL = uint32(ttlParsed)
 					}
 				}
 				// Parse flags, service, and regex from positions 7, 8, 9
