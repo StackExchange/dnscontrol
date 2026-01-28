@@ -4,11 +4,11 @@ import (
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func toRecordConfig(domain string, currentRecord *domainNameShopRecord) (*models.RecordConfig, error) {
-	name := dnsutil.AddOrigin(currentRecord.Host, domain)
+	name := dnsutilv1.AddOrigin(currentRecord.Host, domain)
 
 	target := currentRecord.Data
 

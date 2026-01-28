@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 /* .target is kind of a mess.
@@ -48,7 +48,7 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
-	if _, ok := dns.StringToType[rc.Type]; !ok {
+	if _, ok := dnsv1.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
 		case "LUA":
 			return rc.luaCombined()

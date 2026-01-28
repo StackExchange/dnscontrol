@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 var (
@@ -302,7 +302,7 @@ func (tc *TestCase) UnsafeIgnore() *TestCase {
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
-	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**.")
+	r.NameFQDN = dnsutilv1.AddOrigin(label, "**current-domain**.")
 }
 
 func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {

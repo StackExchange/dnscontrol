@@ -12,8 +12,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Returns false if target does not validate.
@@ -206,8 +206,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(errors.New("cannot create CNAME record for bare domain"))
 		}
-		labelFQDN := dnsutil.AddOrigin(label, domain)
-		targetFQDN := dnsutil.AddOrigin(target, domain)
+		labelFQDN := dnsutilv1.AddOrigin(label, domain)
+		targetFQDN := dnsutilv1.AddOrigin(target, domain)
 		if labelFQDN == targetFQDN {
 			check(errors.New("CNAME loop (target points at itself)"))
 		}
@@ -241,7 +241,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(errors.New("LUA records must specify an emitted rtype"))
 			break
 		}
-		if _, ok := dns.StringToType[upper]; !ok {
+		if _, ok := dnsv1.StringToType[upper]; !ok {
 			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", rec.LuaRType))
 		}
 		rec.LuaRType = upper
@@ -265,7 +265,7 @@ func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
 	if strings.HasSuffix(target, ".") {
 		return target + nd + "."
 	}
-	return dnsutil.AddOrigin(target, oldDomain) + "." + nd + "."
+	return dnsutilv1.AddOrigin(target, oldDomain) + "." + nd + "."
 }
 
 func newRec(rec *models.RecordConfig, ttl uint32) *models.RecordConfig {
@@ -394,7 +394,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				errs = append(errs, err)
 			}
 			// Unlike any other FQDN in this system, it is stored as a FQDN without the trailing dot.
-			n := dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			n := dnsutilv1.AddOrigin(ns.Name, domain.Name+".")
 			ns.Name = strings.TrimSuffix(n, ".")
 		}
 
@@ -450,7 +450,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.SubDomain != "" {
 					origin = rec.SubDomain + "." + origin
 				}
-				if err := rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin)); err != nil {
+				if err := rec.SetTarget(dnsutilv1.AddOrigin(rec.GetTargetField(), origin)); err != nil {
 					errs = append(errs, err)
 				}
 			} else if rec.Type == "A" || rec.Type == "AAAA" {

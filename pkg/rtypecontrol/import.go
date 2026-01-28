@@ -6,7 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // ImportRawRecords imports the RawRecordConfigs into RecordConfigs.
@@ -146,7 +146,7 @@ func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dcn 
 		panic("rtypecontrol: NewRecordConfigFromStruct: empty record type")
 	}
 
-	rec, err := dns.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
+	rec, err := dnsv1.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
 	if err != nil {
 		return nil, err
 	}

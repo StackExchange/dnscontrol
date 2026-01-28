@@ -8,8 +8,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/jinzhu/copier"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"github.com/qdm12/reprint"
 )
 
@@ -289,7 +289,7 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 		rc.NameFQDN = origin
 	} else {
 		rc.Name = short
-		rc.NameFQDN = dnsutil.AddOrigin(short, origin)
+		rc.NameFQDN = dnsutilv1.AddOrigin(short, origin)
 	}
 }
 
@@ -310,7 +310,7 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
-	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
+	rc.Name = dnsutilv1.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
 }
 
@@ -356,18 +356,18 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 }
 
 // ToRR converts a RecordConfig to a dns.RR.
-func (rc *RecordConfig) ToRR() dns.RR {
+func (rc *RecordConfig) ToRR() dnsv1.RR {
 	// Function is not valid on pseudo-types.
-	rdtype, ok := dns.StringToType[rc.Type]
+	rdtype, ok := dnsv1.StringToType[rc.Type]
 	if !ok {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
 	// If this IsModernType, the dns.RR is already in rc.F.
-	if rr, ok := rc.F.(dns.RR); ok {
+	if rr, ok := rc.F.(dnsv1.RR); ok {
 		rr.Header().Name = rc.NameFQDN + "."
 		rr.Header().Rrtype = rdtype
-		rr.Header().Class = dns.ClassINET
+		rr.Header().Class = dnsv1.ClassINET
 		rr.Header().Ttl = rc.TTL
 		if rc.TTL == 0 {
 			rr.Header().Ttl = DefaultTTL
@@ -376,12 +376,12 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	}
 
 	// Magically create an RR of the correct type.
-	rr := dns.TypeToRR[rdtype]()
+	rr := dnsv1.TypeToRR[rdtype]()
 
 	// Fill in the header.
 	rr.Header().Name = rc.NameFQDN + "."
 	rr.Header().Rrtype = rdtype
-	rr.Header().Class = dns.ClassINET
+	rr.Header().Class = dnsv1.ClassINET
 	rr.Header().Ttl = rc.TTL
 	if rc.TTL == 0 {
 		rr.Header().Ttl = DefaultTTL
@@ -389,97 +389,96 @@ func (rc *RecordConfig) ToRR() dns.RR {
 
 	// Fill in the data.
 	switch rdtype { // #rtype_variations
-	case dns.TypeA:
+	case dnsv1.TypeA:
 		addr := rc.GetTargetIP()
 		s := addr.AsSlice()
-		rr.(*dns.A).A = s[0:4]
-	case dns.TypeAAAA:
+		rr.(*dnsv1.A).A = s[0:4]
+	case dnsv1.TypeAAAA:
 		addr := rc.GetTargetIP()
 		s := addr.AsSlice()
-		//rr.(*dns.AAAA).AAAA = net.IP(s)
-		rr.(*dns.AAAA).AAAA = s[0:16]
-	case dns.TypeCAA:
-		rr.(*dns.CAA).Flag = rc.CaaFlag
-		rr.(*dns.CAA).Tag = rc.CaaTag
-		rr.(*dns.CAA).Value = rc.GetTargetField()
-	case dns.TypeCNAME:
-		rr.(*dns.CNAME).Target = rc.GetTargetField()
-	case dns.TypeDHCID:
-		rr.(*dns.DHCID).Digest = rc.GetTargetField()
-	case dns.TypeDNAME:
-		rr.(*dns.DNAME).Target = rc.GetTargetField()
-	case dns.TypeDS:
+		rr.(*dnsv1.AAAA).AAAA = s[0:16]
+	case dnsv1.TypeCAA:
+		rr.(*dnsv1.CAA).Flag = rc.CaaFlag
+		rr.(*dnsv1.CAA).Tag = rc.CaaTag
+		rr.(*dnsv1.CAA).Value = rc.GetTargetField()
+	case dnsv1.TypeCNAME:
+		rr.(*dnsv1.CNAME).Target = rc.GetTargetField()
+	case dnsv1.TypeDHCID:
+		rr.(*dnsv1.DHCID).Digest = rc.GetTargetField()
+	case dnsv1.TypeDNAME:
+		rr.(*dnsv1.DNAME).Target = rc.GetTargetField()
+	case dnsv1.TypeDS:
 		panic("DS should have been handled as modern type")
-	case dns.TypeDNSKEY:
-		rr.(*dns.DNSKEY).Flags = rc.DnskeyFlags
-		rr.(*dns.DNSKEY).Protocol = rc.DnskeyProtocol
-		rr.(*dns.DNSKEY).Algorithm = rc.DnskeyAlgorithm
-		rr.(*dns.DNSKEY).PublicKey = rc.DnskeyPublicKey
-	case dns.TypeHTTPS:
-		rr.(*dns.HTTPS).Priority = rc.SvcPriority
-		rr.(*dns.HTTPS).Target = rc.GetTargetField()
-		rr.(*dns.HTTPS).Value = rc.GetSVCBValue()
-	case dns.TypeLOC:
+	case dnsv1.TypeDNSKEY:
+		rr.(*dnsv1.DNSKEY).Flags = rc.DnskeyFlags
+		rr.(*dnsv1.DNSKEY).Protocol = rc.DnskeyProtocol
+		rr.(*dnsv1.DNSKEY).Algorithm = rc.DnskeyAlgorithm
+		rr.(*dnsv1.DNSKEY).PublicKey = rc.DnskeyPublicKey
+	case dnsv1.TypeHTTPS:
+		rr.(*dnsv1.HTTPS).Priority = rc.SvcPriority
+		rr.(*dnsv1.HTTPS).Target = rc.GetTargetField()
+		rr.(*dnsv1.HTTPS).Value = rc.GetSVCBValue()
+	case dnsv1.TypeLOC:
 		// fmt.Printf("ToRR long: %d, lat:%d, sz: %d, hz:%d, vt:%d\n", rc.LocLongitude, rc.LocLatitude, rc.LocSize, rc.LocHorizPre, rc.LocVertPre)
 		// fmt.Printf("ToRR rc: %+v\n", *rc)
-		rr.(*dns.LOC).Version = rc.LocVersion
-		rr.(*dns.LOC).Longitude = rc.LocLongitude
-		rr.(*dns.LOC).Latitude = rc.LocLatitude
-		rr.(*dns.LOC).Altitude = rc.LocAltitude
-		rr.(*dns.LOC).Size = rc.LocSize
-		rr.(*dns.LOC).HorizPre = rc.LocHorizPre
-		rr.(*dns.LOC).VertPre = rc.LocVertPre
-	case dns.TypeMX:
-		rr.(*dns.MX).Preference = rc.MxPreference
-		rr.(*dns.MX).Mx = rc.GetTargetField()
-	case dns.TypeNAPTR:
-		rr.(*dns.NAPTR).Order = rc.NaptrOrder
-		rr.(*dns.NAPTR).Preference = rc.NaptrPreference
-		rr.(*dns.NAPTR).Flags = rc.NaptrFlags
-		rr.(*dns.NAPTR).Service = rc.NaptrService
-		rr.(*dns.NAPTR).Regexp = rc.NaptrRegexp
-		rr.(*dns.NAPTR).Replacement = rc.GetTargetField()
-	case dns.TypeNS:
-		rr.(*dns.NS).Ns = rc.GetTargetField()
-	case dns.TypeOPENPGPKEY:
-		rr.(*dns.OPENPGPKEY).PublicKey = rc.GetTargetField()
-	case dns.TypePTR:
-		rr.(*dns.PTR).Ptr = rc.GetTargetField()
-	case dns.TypeSMIMEA:
-		rr.(*dns.SMIMEA).Usage = rc.SmimeaUsage
-		rr.(*dns.SMIMEA).MatchingType = rc.SmimeaMatchingType
-		rr.(*dns.SMIMEA).Selector = rc.SmimeaSelector
-		rr.(*dns.SMIMEA).Certificate = rc.GetTargetField()
-	case dns.TypeSOA:
-		rr.(*dns.SOA).Ns = rc.GetTargetField()
-		rr.(*dns.SOA).Mbox = rc.SoaMbox
-		rr.(*dns.SOA).Serial = rc.SoaSerial
-		rr.(*dns.SOA).Refresh = rc.SoaRefresh
-		rr.(*dns.SOA).Retry = rc.SoaRetry
-		rr.(*dns.SOA).Expire = rc.SoaExpire
-		rr.(*dns.SOA).Minttl = rc.SoaMinttl
-	case dns.TypeSPF:
-		rr.(*dns.SPF).Txt = rc.GetTargetTXTSegmented()
-	case dns.TypeSRV:
-		rr.(*dns.SRV).Priority = rc.SrvPriority
-		rr.(*dns.SRV).Weight = rc.SrvWeight
-		rr.(*dns.SRV).Port = rc.SrvPort
-		rr.(*dns.SRV).Target = rc.GetTargetField()
-	case dns.TypeSSHFP:
-		rr.(*dns.SSHFP).Algorithm = rc.SshfpAlgorithm
-		rr.(*dns.SSHFP).Type = rc.SshfpFingerprint
-		rr.(*dns.SSHFP).FingerPrint = rc.GetTargetField()
-	case dns.TypeSVCB:
-		rr.(*dns.SVCB).Priority = rc.SvcPriority
-		rr.(*dns.SVCB).Target = rc.GetTargetField()
-		rr.(*dns.SVCB).Value = rc.GetSVCBValue()
-	case dns.TypeTLSA:
-		rr.(*dns.TLSA).Usage = rc.TlsaUsage
-		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
-		rr.(*dns.TLSA).Selector = rc.TlsaSelector
-		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
-	case dns.TypeTXT:
-		rr.(*dns.TXT).Txt = rc.GetTargetTXTSegmented()
+		rr.(*dnsv1.LOC).Version = rc.LocVersion
+		rr.(*dnsv1.LOC).Longitude = rc.LocLongitude
+		rr.(*dnsv1.LOC).Latitude = rc.LocLatitude
+		rr.(*dnsv1.LOC).Altitude = rc.LocAltitude
+		rr.(*dnsv1.LOC).Size = rc.LocSize
+		rr.(*dnsv1.LOC).HorizPre = rc.LocHorizPre
+		rr.(*dnsv1.LOC).VertPre = rc.LocVertPre
+	case dnsv1.TypeMX:
+		rr.(*dnsv1.MX).Preference = rc.MxPreference
+		rr.(*dnsv1.MX).Mx = rc.GetTargetField()
+	case dnsv1.TypeNAPTR:
+		rr.(*dnsv1.NAPTR).Order = rc.NaptrOrder
+		rr.(*dnsv1.NAPTR).Preference = rc.NaptrPreference
+		rr.(*dnsv1.NAPTR).Flags = rc.NaptrFlags
+		rr.(*dnsv1.NAPTR).Service = rc.NaptrService
+		rr.(*dnsv1.NAPTR).Regexp = rc.NaptrRegexp
+		rr.(*dnsv1.NAPTR).Replacement = rc.GetTargetField()
+	case dnsv1.TypeNS:
+		rr.(*dnsv1.NS).Ns = rc.GetTargetField()
+	case dnsv1.TypeOPENPGPKEY:
+		rr.(*dnsv1.OPENPGPKEY).PublicKey = rc.GetTargetField()
+	case dnsv1.TypePTR:
+		rr.(*dnsv1.PTR).Ptr = rc.GetTargetField()
+	case dnsv1.TypeSMIMEA:
+		rr.(*dnsv1.SMIMEA).Usage = rc.SmimeaUsage
+		rr.(*dnsv1.SMIMEA).MatchingType = rc.SmimeaMatchingType
+		rr.(*dnsv1.SMIMEA).Selector = rc.SmimeaSelector
+		rr.(*dnsv1.SMIMEA).Certificate = rc.GetTargetField()
+	case dnsv1.TypeSOA:
+		rr.(*dnsv1.SOA).Ns = rc.GetTargetField()
+		rr.(*dnsv1.SOA).Mbox = rc.SoaMbox
+		rr.(*dnsv1.SOA).Serial = rc.SoaSerial
+		rr.(*dnsv1.SOA).Refresh = rc.SoaRefresh
+		rr.(*dnsv1.SOA).Retry = rc.SoaRetry
+		rr.(*dnsv1.SOA).Expire = rc.SoaExpire
+		rr.(*dnsv1.SOA).Minttl = rc.SoaMinttl
+	case dnsv1.TypeSPF:
+		rr.(*dnsv1.SPF).Txt = rc.GetTargetTXTSegmented()
+	case dnsv1.TypeSRV:
+		rr.(*dnsv1.SRV).Priority = rc.SrvPriority
+		rr.(*dnsv1.SRV).Weight = rc.SrvWeight
+		rr.(*dnsv1.SRV).Port = rc.SrvPort
+		rr.(*dnsv1.SRV).Target = rc.GetTargetField()
+	case dnsv1.TypeSSHFP:
+		rr.(*dnsv1.SSHFP).Algorithm = rc.SshfpAlgorithm
+		rr.(*dnsv1.SSHFP).Type = rc.SshfpFingerprint
+		rr.(*dnsv1.SSHFP).FingerPrint = rc.GetTargetField()
+	case dnsv1.TypeSVCB:
+		rr.(*dnsv1.SVCB).Priority = rc.SvcPriority
+		rr.(*dnsv1.SVCB).Target = rc.GetTargetField()
+		rr.(*dnsv1.SVCB).Value = rc.GetSVCBValue()
+	case dnsv1.TypeTLSA:
+		rr.(*dnsv1.TLSA).Usage = rc.TlsaUsage
+		rr.(*dnsv1.TLSA).MatchingType = rc.TlsaMatchingType
+		rr.(*dnsv1.TLSA).Selector = rc.TlsaSelector
+		rr.(*dnsv1.TLSA).Certificate = rc.GetTargetField()
+	case dnsv1.TypeTXT:
+		rr.(*dnsv1.TXT).Txt = rc.GetTargetTXTSegmented()
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 		// We panic so that we quickly find any switch statements
@@ -532,19 +531,19 @@ func (rc *RecordConfig) Key() RecordKey {
 }
 
 // GetSVCBValue returns the SVCB Key/Values as a list of Key/Values.
-func (rc *RecordConfig) GetSVCBValue() []dns.SVCBKeyValue {
+func (rc *RecordConfig) GetSVCBValue() []dnsv1.SVCBKeyValue {
 	if !strings.Contains(rc.SvcParams, "IGNORE+DNSCONTROL") {
 		rc.SvcParams = strings.ReplaceAll(rc.SvcParams, "ech=IGNORE", "ech=IGNORE+DNSCONTROL+++")
 	}
 
-	record, err := dns.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
+	record, err := dnsv1.NewRR(fmt.Sprintf("%s %s %d %s %s", rc.NameFQDN, rc.Type, rc.SvcPriority, rc.target, rc.SvcParams))
 	if err != nil {
 		log.Fatalf("could not parse SVCB record: %s", err)
 	}
 	switch r := record.(type) {
-	case *dns.HTTPS:
+	case *dnsv1.HTTPS:
 		return r.Value
-	case *dns.SVCB:
+	case *dnsv1.SVCB:
 		return r.Value
 	}
 	return nil
@@ -673,15 +672,15 @@ func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 		switch r.Type { // #rtype_variations
 		case "ALIAS", "ANAME", "CNAME", "DNAME", "DS", "DNSKEY", "MX", "NS", "NAPTR", "PTR", "SRV":
 			// Target is a hostname that might be a shortname. Turn it into a FQDN.
-			r.target = dnsutil.AddOrigin(r.target, originFQDN)
+			r.target = dnsutilv1.AddOrigin(r.target, originFQDN)
 		case "A", "AKAMAICDN", "AKAMAITLC", "CAA", "DHCID", "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "HTTPS", "IMPORT_TRANSFORM", "LOC", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
 			// Do nothing.
 		case "SOA":
 			if r.target != "DEFAULT_NOT_SET." {
-				r.target = dnsutil.AddOrigin(r.target, originFQDN) // .target stores the Ns
+				r.target = dnsutilv1.AddOrigin(r.target, originFQDN) // .target stores the Ns
 			}
 			if r.SoaMbox != "DEFAULT_NOT_SET." {
-				r.SoaMbox = dnsutil.AddOrigin(r.SoaMbox, originFQDN)
+				r.SoaMbox = dnsutilv1.AddOrigin(r.SoaMbox, originFQDN)
 			}
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.

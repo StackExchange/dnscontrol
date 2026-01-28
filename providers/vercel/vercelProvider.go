@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"time"
 
+	"codeberg.org/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
@@ -162,7 +162,7 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 		rc.SetLabel(name, domain)
 
 		if r.Type == "CNAME" || r.Type == "MX" {
-			r.Value = dns.CanonicalName(r.Value)
+			r.Value = dnsutil.Canonical(r.Value)
 		}
 
 		switch rtype := r.RecordType; rtype {

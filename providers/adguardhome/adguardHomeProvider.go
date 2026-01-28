@@ -10,7 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -162,7 +162,7 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 
 	case "CNAME", "ALIAS":
 		re.Answer = rc.GetTargetField()
-		re.Answer = dnsutil.TrimDomainName(re.Answer, domain)
+		re.Answer = dnsutilv1.TrimDomainName(re.Answer, domain)
 
 	case "ADGUARDHOME_A_PASSTHROUGH":
 		re.Answer = "A"
@@ -197,7 +197,7 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	} else if r.Answer == "AAAA" {
 		rc.Type = "ADGUARDHOME_AAAA_PASSTHROUGH"
 	} else {
-		answer := dnsutil.TrimDomainName(r.Answer, domain)
+		answer := dnsutilv1.TrimDomainName(r.Answer, domain)
 		rc.SetTarget(answer)
 
 		if r.Domain == domain {

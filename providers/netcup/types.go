@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 type request struct {
@@ -94,7 +94,7 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	case "TXT":
 		_ = rc.SetTargetTXT(r.Destination)
 	case "NS", "ALIAS", "CNAME", "MX":
-		_ = rc.SetTarget(dnsutil.AddOrigin(addTailingDot(r.Destination), domain))
+		_ = rc.SetTarget(dnsutilv1.AddOrigin(addTailingDot(r.Destination), domain))
 	case "SRV":
 		parts := strings.Split(r.Destination, " ")
 		priority, _ := strconv.ParseUint(parts[0], 10, 16)

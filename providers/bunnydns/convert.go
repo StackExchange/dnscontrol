@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
 )
 
@@ -78,7 +78,7 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	recordParts := strings.SplitN(recordValue, " ", 2)
 
 	if slices.Contains(fqdnTypes, r.Type) && !strings.HasSuffix(recordParts[0], ".") {
-		recordParts[0] = dnsutil.AddOrigin(recordParts[0]+".", domain)
+		recordParts[0] = dnsutilv1.AddOrigin(recordParts[0]+".", domain)
 		recordValue = strings.Join(recordParts, " ")
 	}
 
