@@ -1248,6 +1248,49 @@ func makeTests() []*TestGroup {
 			CfFlattenOn(), CfFlattenOff(),
 		),
 
+		// CLOUDFLAREAPI: COMMENTS (works on all plans)
+
+		testgroup("CF_COMMENT create",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			CfCommentCreate(), tcEmptyZone(),
+		),
+
+		testgroup("CF_COMMENT change",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			CfCommentCreate(), CfCommentChange(),
+		),
+
+		testgroup("CF_COMMENT remove",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			CfCommentCreate(), CfCommentRemove(),
+		),
+
+		// CLOUDFLAREAPI: TAGS (requires paid plan)
+
+		testgroup("CF_TAGS create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			CfTagsCreate(), tcEmptyZone(),
+		),
+
+		testgroup("CF_TAGS change",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			CfTagsCreate(), CfTagsChange(),
+		),
+
+		testgroup("CF_TAGS remove",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			CfTagsCreate(), CfTagsRemove(),
+		),
+
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
