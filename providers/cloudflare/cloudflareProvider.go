@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"os"
 	"strconv"
 	"strings"
@@ -586,8 +586,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
-		ip := net.ParseIP(rec.GetTargetField())
-		if ip == nil {
+		ip, err := netip.ParseAddr(rec.GetTargetField())
+		if err != nil {
 			return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
 		}
 		newIP, err := transform.IP(ip, c.ipConversions)

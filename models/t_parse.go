@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"net"
+	"net/netip"
 )
 
 // PopulateFromStringFunc populates a RecordConfig by parsing a common RFC1035-like format.
@@ -61,14 +61,14 @@ func (rc *RecordConfig) PopulateFromStringFunc(rtype, contents, origin string, t
 
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To4() == nil {
+		ip, err := netip.ParseAddr(contents)
+		if err != nil || !ip.Is4() {
 			return fmt.Errorf("invalid IP in A record: %s", contents)
 		}
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To16() == nil {
+		ip, err := netip.ParseAddr(contents)
+		if err != nil || !ip.Is6() {
 			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
@@ -170,14 +170,14 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	}
 	switch rc.Type = rtype; rtype { // #rtype_variations
 	case "A":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To4() == nil {
+		ip, err := netip.ParseAddr(contents)
+		if err != nil || !ip.Is4() {
 			return fmt.Errorf("invalid IP in A record: %s", contents)
 		}
 		return rc.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
-		ip := net.ParseIP(contents)
-		if ip == nil || ip.To16() == nil {
+		ip, err := netip.ParseAddr(contents)
+		if err != nil || !ip.Is6() {
 			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
 		return rc.SetTargetIP(ip) // Reformat to canonical form.

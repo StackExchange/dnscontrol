@@ -2,7 +2,6 @@ package fortigate
 
 import (
 	"fmt"
-	"net"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -40,18 +39,16 @@ func nativeToRecord(domain string, n fgDNSRecord) (*models.RecordConfig, error) 
 	// Type-specific fields
 	switch rc.Type {
 	case "A":
-		ip := net.ParseIP(n.IP)
-		if ip == nil || ip.To4() == nil {
+		err := rc.SetTarget(n.IP)
+		if err != nil {
 			return nil, fmt.Errorf("[FORTIGATE] Invalid IPv4 address %q in %+v", n.IP, n)
 		}
-		rc.SetTargetIP(ip)
 
 	case "AAAA":
-		ip := net.ParseIP(n.IPv6)
-		if ip == nil || ip.To16() == nil || ip.To4() != nil {
+		err := rc.SetTarget(n.IPv6)
+		if err != nil {
 			return nil, fmt.Errorf("[FORTIGATE] Invalid IPv6 address %q in %+v", n.IPv6, n)
 		}
-		rc.SetTargetIP(ip)
 
 	case "CNAME":
 		if n.CanonicalName == "" {
@@ -131,7 +128,7 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 		switch n.Type {
 		case "A":
 			ip := record.GetTargetIP()
-			if ip == nil || ip.To4() == nil {
+			if !ip.Is4() {
 				errors = append(errors, fmt.Errorf("[FORTIGATE] A record is missing a valid IPv4 address: %s", record.GetLabelFQDN()))
 				continue
 			}
@@ -139,7 +136,7 @@ func recordsToNative(recs models.Records) ([]*fgDNSRecord, []error) {
 
 		case "AAAA":
 			ip := record.GetTargetIP()
-			if ip == nil || ip.To16() == nil || ip.To4() != nil {
+			if !ip.Is6() {
 				errors = append(errors, fmt.Errorf("[FORTIGATE] AAAA record is missing a valid IPv6 address: %s", record.GetLabelFQDN()))
 				continue
 			}

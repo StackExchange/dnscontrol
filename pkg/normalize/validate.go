@@ -3,7 +3,7 @@ package normalize
 import (
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 	"sort"
 	"strconv"
@@ -18,7 +18,7 @@ import (
 
 // Returns false if target does not validate.
 func checkIPv4(label string) error {
-	if net.ParseIP(label).To4() == nil {
+	if addr, err := netip.ParseAddr(label); err != nil || !addr.Is4() {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv4 address", label)
 	}
 	return nil
@@ -26,7 +26,7 @@ func checkIPv4(label string) error {
 
 // Returns false if target does not validate.
 func checkIPv6(label string) error {
-	if net.ParseIP(label).To16() == nil {
+	if addr, err := netip.ParseAddr(label); err != nil || !addr.Is6() {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv6 address", label)
 	}
 	return nil
@@ -308,7 +308,8 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 		}
 		switch rec.Type {
 		case "A":
-			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
+			addr, _ := netip.ParseAddr(rec.GetTargetField())
+			trs, err := transform.IPToList(addr, transforms)
 			if err != nil {
 				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%w", rec.GetTargetField(), transforms, err)
 			}
@@ -453,7 +454,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, err)
 				}
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
-				if err := rec.SetTarget(net.ParseIP(rec.GetTargetField()).String()); err != nil {
+				if err := rec.SetTargetIP(rec.GetTargetIP()); err != nil {
 					errs = append(errs, err)
 				}
 			} else if rec.Type == "PTR" {
@@ -889,13 +890,13 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		ip := net.ParseIP(rec.GetTargetField()) // ip already validated above
-		newIPs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), table)
+		ip := rec.GetTargetIP()
+		newIPs, err := transform.IPToList(rec.GetTargetIP(), table)
 		if err != nil {
 			return err
 		}
 		for i, newIP := range newIPs {
-			if i == 0 && !newIP.Equal(ip) {
+			if i == 0 && newIP.Compare(ip) != 0 {
 				// replace target of first record if different
 				if err := rec.SetTarget(newIP.String()); err != nil {
 					return err
