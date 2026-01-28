@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"codeberg.org/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
@@ -232,7 +233,7 @@ func readKey(raw string, kind string) (*Key, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
-	id := dnsv1.CanonicalName(arr[1])
+	id := dnsutil.Canonical(arr[1])
 	return &Key{algo: algo, id: id, secret: arr[2]}, nil
 }
 
