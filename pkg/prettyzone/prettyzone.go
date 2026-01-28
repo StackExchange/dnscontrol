@@ -137,8 +137,16 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		comment := ""
 		if cp, ok := rr.Metadata["cloudflare_proxy"]; ok {
 			if cp == "true" {
-				comment = " ; CF_PROXY_ON"
+				comment += " CF_PROXY_ON"
 			}
+		}
+		if cf, ok := rr.Metadata["cloudflare_cname_flatten"]; ok {
+			if cf == "on" {
+				comment += " CF_CNAME_FLATTEN_ON"
+			}
+		}
+		if comment != "" {
+			comment = " ;" + comment
 		}
 
 		fmt.Fprintf(w, "%s%s%s\n",

@@ -311,11 +311,19 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				cfproxy := ""
+				cfmeta := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
-						cfproxy = "\tcloudflare_proxy=true"
+						cfmeta += ",cloudflare_proxy=true"
 					}
+				}
+				if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
+					if cf == "on" {
+						cfmeta += ",cloudflare_cname_flatten=on"
+					}
+				}
+				if cfmeta != "" {
+					cfmeta = "\t" + cfmeta[1:] // Remove leading comma, add tab
 				}
 
 				ty := rec.Type
@@ -323,7 +331,7 @@ func GetZone(args GetZoneArgs) error {
 					ty = rec.UnknownTypeName
 				}
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfmeta)
 			}
 
 		default:
@@ -357,6 +365,13 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 		if cp == "true" {
 			cfproxy = ", CF_PROXY_ON"
+		}
+	}
+
+	cfflatten := ""
+	if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
+		if cf == "on" {
+			cfflatten = ", CF_CNAME_FLATTEN_ON"
 		}
 	}
 
@@ -412,7 +427,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s)`, rec.Type, rec.Name, target, cfproxy, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

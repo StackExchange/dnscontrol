@@ -41,6 +41,16 @@ func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107
 func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
 func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
 
+// Helper constants/funcs for the CLOUDFLARE CNAME flattening testing:
+
+// CNAME flattening off/on (requires paid plan)
+func CfFlattenOff() *TestCase {
+	return tc("flattenoff", cfFlattenCNAME("cflatten", "example.com.", "off"))
+}
+func CfFlattenOn() *TestCase {
+	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
+}
+
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
@@ -337,6 +347,13 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	r := cname(name, target)
 	r.Metadata = make(map[string]string)
 	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfFlattenCNAME(name, target, status string) *models.RecordConfig {
+	r := cname(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_cname_flatten"] = status
 	return r
 }
 

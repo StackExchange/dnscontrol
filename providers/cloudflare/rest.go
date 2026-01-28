@@ -190,6 +190,9 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
 	}
+	if rec.Metadata[metaCNAMEFlatten] == "on" {
+		msg = msg + fmt.Sprintf("\nENABLE CNAME FLATTENING for new record %s %s", rec.GetLabel(), rec.Type)
+	}
 	arr := []*models.Correction{{
 		Msg: msg,
 		F: func() error {
@@ -199,6 +202,11 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				TTL:      int(rec.TTL),
 				Content:  content,
 				Priority: &rec.MxPreference,
+			}
+			// Set CNAME flattening setting if enabled
+			if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" {
+				flatten := true
+				cf.Settings = cloudflare.DNSRecordSettings{FlattenCNAME: &flatten}
 			}
 			switch rec.Type {
 			case "SRV":
@@ -256,6 +264,13 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Priority: &rec.MxPreference,
 		TTL:      int(rec.TTL),
 	}
+
+	// Handle CNAME flattening setting
+	if rec.Type == "CNAME" {
+		flatten := rec.Metadata[metaCNAMEFlatten] == "on"
+		r.Settings = cloudflare.DNSRecordSettings{FlattenCNAME: &flatten}
+	}
+
 	switch rec.Type {
 	case "TXT":
 		r.Content = txtutil.EncodeQuoted(rec.GetTargetTXTJoined())

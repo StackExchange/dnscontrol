@@ -138,6 +138,10 @@ declare const CF_PROXY_OFF: RecordModifier;
 declare const CF_PROXY_ON: RecordModifier;
 /** Proxy+Railgun enabled. */
 declare const CF_PROXY_FULL: RecordModifier;
+/** Per-record CNAME flattening disabled (default) */
+declare const CF_CNAME_FLATTEN_OFF: RecordModifier;
+/** Per-record CNAME flattening enabled (requires Cloudflare paid plan) */
+declare const CF_CNAME_FLATTEN_ON: RecordModifier;
 
 /** Proxy default off for entire domain (the default) */
 declare const CF_PROXY_DEFAULT_OFF: DomainModifier;

@@ -114,7 +114,7 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 	// Altitude
 	altitude := (float64(al) + dns.LOC_ALTITUDEBASE) * 100
 	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
-	rc.LocAltitude = uint32(clampedAltitude)
+	rc.LocAltitude = uint32(math.Round(clampedAltitude))
 
 	var err error
 	// Size
