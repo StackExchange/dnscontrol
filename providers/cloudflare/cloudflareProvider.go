@@ -553,6 +553,11 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		// Validate that CF_TAGS is only used when CF_MANAGE_TAGS is enabled
 		if rec.Metadata[metaTags] != "" && dc.Metadata[metaManageTags] != "true" {
 			return fmt.Errorf("CF_TAGS used on %v record %#v but CF_MANAGE_TAGS is not enabled for this domain", rec.Type, rec.GetLabel())
+      
+		// CNAME flattening and proxy are mutually exclusive (Opinion 6: if ambiguous, forbid it)
+		// Cloudflare silently disables flattening when proxy is enabled, which leads to confusing behavior
+		if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" && rec.Metadata[metaProxy] == "on" {
+			return fmt.Errorf("CNAME record %#v has both CF_PROXY_ON and CF_CNAME_FLATTEN_ON set, but these are mutually exclusive; Cloudflare ignores CNAME flattening when proxy is enabled", rec.GetLabel())
 		}
 
 		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {

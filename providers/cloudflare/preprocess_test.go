@@ -87,6 +87,22 @@ func TestPreprocess_DefaultProxy_Validation(t *testing.T) {
 	}
 }
 
+func TestPreprocess_CNAMEFlattenProxyMutualExclusion(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	rec := &models.RecordConfig{
+		Type:     "CNAME",
+		Metadata: map[string]string{metaCNAMEFlatten: "on", metaProxy: "on"},
+	}
+	rec.SetLabel("foo", "test.com")
+	rec.MustSetTarget("example.com.")
+	domain.Records = append(domain.Records, rec)
+	err := cf.preprocessConfig(domain)
+	if err == nil {
+		t.Fatal("Expected validation error for CNAME with both flatten and proxy, but got none")
+	}
+}
+
 func TestIpRewriting(t *testing.T) {
 	tests := []struct {
 		Given, Expected string
