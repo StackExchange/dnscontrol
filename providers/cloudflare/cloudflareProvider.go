@@ -199,8 +199,17 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	var corrections []*models.Correction
 
+	// Check if comment/tag management is enabled for this domain
+	manageComments := dc.Metadata[metaManageComments] == "true"
+	manageTags := dc.Metadata[metaManageTags] == "true"
+
+	// Create a comparable function that includes comments/tags only if management is enabled
+	comparableFunc := func(rec *models.RecordConfig) string {
+		return genComparableWithMgmt(rec, manageComments, manageTags)
+	}
+
 	// Cloudflare is a "ByRecord" API.
-	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, genComparable)
+	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, comparableFunc)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -256,7 +265,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	return corrections, actualChangeCount, nil
 }
 
-func genComparable(rec *models.RecordConfig) string {
+func genComparableWithMgmt(rec *models.RecordConfig, manageComments, manageTags bool) string {
 	var parts []string
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
@@ -277,6 +286,16 @@ func genComparable(rec *models.RecordConfig) string {
 		} else {
 			parts = append(parts, "flatten=false")
 		}
+	}
+	// Include comment in comparison only if comment management is enabled
+	if manageComments {
+		comment := rec.Metadata[metaComment]
+		parts = append(parts, "comment="+comment)
+	}
+	// Include tags in comparison only if tag management is enabled
+	if manageTags {
+		tags := rec.Metadata[metaTags]
+		parts = append(parts, "tags="+tags)
 	}
 	return strings.Join(parts, ",")
 }
@@ -413,11 +432,15 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 }
 
 const (
-	metaProxy        = "cloudflare_proxy"
-	metaProxyDefault = metaProxy + "_default"
-	metaOriginalIP   = "original_ip" // TODO(tlim): Unclear what this means.
-	metaUniversalSSL = "cloudflare_universalssl"
-	metaCNAMEFlatten = "cloudflare_cname_flatten"
+	metaProxy          = "cloudflare_proxy"
+	metaProxyDefault   = metaProxy + "_default"
+	metaOriginalIP     = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL   = "cloudflare_universalssl"
+	metaCNAMEFlatten   = "cloudflare_cname_flatten"
+	metaComment        = "cloudflare_comment"
+	metaTags           = "cloudflare_tags"
+	metaManageComments = "cloudflare_manage_comments"
+	metaManageTags     = "cloudflare_manage_tags"
 )
 
 func checkProxyVal(v string) (string, error) {
@@ -511,6 +534,25 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 				return err
 			}
 			rec.Metadata[metaCNAMEFlatten] = val
+		}
+
+		// Validate tags (check for reserved cf- prefix)
+		if tags := rec.Metadata[metaTags]; tags != "" {
+			for _, tag := range strings.Split(tags, ",") {
+				if strings.HasPrefix(strings.ToLower(tag), "cf-") {
+					return fmt.Errorf("cloudflare_tags on %v record %#v contains reserved tag prefix 'cf-': %q", rec.Type, rec.GetLabel(), tag)
+				}
+			}
+		}
+
+		// Validate that CF_COMMENT is only used when CF_MANAGE_COMMENTS is enabled
+		if rec.Metadata[metaComment] != "" && dc.Metadata[metaManageComments] != "true" {
+			return fmt.Errorf("CF_COMMENT used on %v record %#v but CF_MANAGE_COMMENTS is not enabled for this domain", rec.Type, rec.GetLabel())
+		}
+
+		// Validate that CF_TAGS is only used when CF_MANAGE_TAGS is enabled
+		if rec.Metadata[metaTags] != "" && dc.Metadata[metaManageTags] != "true" {
+			return fmt.Errorf("CF_TAGS used on %v record %#v but CF_MANAGE_TAGS is not enabled for this domain", rec.Type, rec.GetLabel())
 		}
 
 		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
@@ -821,6 +863,14 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		} else {
 			rc.Metadata[metaCNAMEFlatten] = "off"
 		}
+	}
+
+	// Read comment and tags from API response
+	if cr.Comment != "" {
+		rc.Metadata[metaComment] = cr.Comment
+	}
+	if len(cr.Tags) > 0 {
+		rc.Metadata[metaTags] = strings.Join(cr.Tags, ",")
 	}
 
 	switch rType := cr.Type; rType { // #rtype_variations
