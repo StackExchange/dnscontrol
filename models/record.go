@@ -392,7 +392,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	case dns.TypeA:
 		addr := rc.GetTargetIP()
 		s := addr.AsSlice()
-		//rr.(*dns.A).A = net.IP(s)
 		rr.(*dns.A).A = s[0:4]
 	case dns.TypeAAAA:
 		addr := rc.GetTargetIP()
