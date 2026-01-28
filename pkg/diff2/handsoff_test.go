@@ -8,14 +8,14 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
 // parseZoneContents is copied verbatim from providers/bind/bindProvider.go
 // because import cycles and... tests shouldn't depend on huge modules.
 func parseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {

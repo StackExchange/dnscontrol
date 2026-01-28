@@ -12,8 +12,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
@@ -21,8 +21,8 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 	// get back the same string.
 	// This is used after any WriteZoneFile test as an extra verification step.
 
-	zp := dns.NewZoneParser(buf, "bosun.org", "bozun.org.zone")
-	var parsed []dns.RR
+	zp := dnsv1.NewZoneParser(buf, "bosun.org", "bozun.org.zone")
+	var parsed []dnsv1.RR
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		parsed = append(parsed, rr)
 	}
@@ -43,7 +43,7 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 }
 
 // rrstoRCs converts []dns.RR to []RecordConfigs.
-func rrstoRCs(rrs []dns.RR, origin string) (models.Records, error) {
+func rrstoRCs(rrs []dnsv1.RR, origin string) (models.Records, error) {
 	rcs := make(models.Records, 0, len(rrs))
 	for _, r := range rrs {
 		rc, err := dnsrr.RRtoRC(r, origin)
@@ -57,7 +57,7 @@ func rrstoRCs(rrs []dns.RR, origin string) (models.Records, error) {
 }
 
 // writeZoneFileRR is a helper for when you have []dns.RR instead of models.Records
-func writeZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
+func writeZoneFileRR(w io.Writer, records []dnsv1.RR, origin string) error {
 	rcs, err := rrstoRCs(records, origin)
 	if err != nil {
 		return err
@@ -67,13 +67,13 @@ func writeZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
 }
 
 func TestMostCommonTtl(t *testing.T) {
-	var records []dns.RR
+	var records []dnsv1.RR
 	var g, e uint32
-	r1, _ := dns.NewRR("bosun.org. 100 IN A 1.1.1.1")
-	r2, _ := dns.NewRR("bosun.org. 200 IN A 1.1.1.1")
-	r3, _ := dns.NewRR("bosun.org. 300 IN A 1.1.1.1")
-	r4, _ := dns.NewRR("bosun.org. 400 IN NS foo.bosun.org.")
-	r5, _ := dns.NewRR("bosun.org. 400 IN NS bar.bosun.org.")
+	r1, _ := dnsv1.NewRR("bosun.org. 100 IN A 1.1.1.1")
+	r2, _ := dnsv1.NewRR("bosun.org. 200 IN A 1.1.1.1")
+	r3, _ := dnsv1.NewRR("bosun.org. 300 IN A 1.1.1.1")
+	r4, _ := dnsv1.NewRR("bosun.org. 400 IN NS foo.bosun.org.")
+	r5, _ := dnsv1.NewRR("bosun.org. 400 IN NS bar.bosun.org.")
 
 	// All records are TTL=100
 	records = nil
@@ -127,11 +127,11 @@ func TestMostCommonTtl(t *testing.T) {
 // func WriteZoneFile
 
 func TestWriteZoneFileSimple(t *testing.T) {
-	r1, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.153")
-	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
-	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
+	r1, _ := dnsv1.NewRR("bosun.org. 300 IN A 192.30.252.153")
+	r2, _ := dnsv1.NewRR("bosun.org. 300 IN A 192.30.252.154")
+	r3, _ := dnsv1.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3}, "bosun.org"); err != nil {
 		t.Fatal(err)
 	}
 	expected := `$TTL 300
@@ -149,12 +149,12 @@ www              IN CNAME bosun.org.
 }
 
 func TestWriteZoneFileSimpleTtl(t *testing.T) {
-	r1, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.153")
-	r2, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.154")
-	r3, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.155")
-	r4, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
+	r1, _ := dnsv1.NewRR("bosun.org. 100 IN A 192.30.252.153")
+	r2, _ := dnsv1.NewRR("bosun.org. 100 IN A 192.30.252.154")
+	r3, _ := dnsv1.NewRR("bosun.org. 100 IN A 192.30.252.155")
+	r4, _ := dnsv1.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org"); err != nil {
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3, r4}, "bosun.org"); err != nil {
 		t.Fatal(err)
 	}
 	expected := `$TTL 100
@@ -174,19 +174,19 @@ www        300   IN CNAME bosun.org.
 
 func TestWriteZoneFileMx(t *testing.T) {
 	// sort by priority
-	r1, _ := dns.NewRR("aaa.bosun.org. IN MX 1 aaa.example.com.")
-	r2, _ := dns.NewRR("aaa.bosun.org. IN MX 5 aaa.example.com.")
-	r3, _ := dns.NewRR("aaa.bosun.org. IN MX 10 aaa.example.com.")
+	r1, _ := dnsv1.NewRR("aaa.bosun.org. IN MX 1 aaa.example.com.")
+	r2, _ := dnsv1.NewRR("aaa.bosun.org. IN MX 5 aaa.example.com.")
+	r3, _ := dnsv1.NewRR("aaa.bosun.org. IN MX 10 aaa.example.com.")
 	// same priority? sort by name
-	r4, _ := dns.NewRR("bbb.bosun.org. IN MX 10 ccc.example.com.")
-	r5, _ := dns.NewRR("bbb.bosun.org. IN MX 10 bbb.example.com.")
-	r6, _ := dns.NewRR("bbb.bosun.org. IN MX 10 aaa.example.com.")
+	r4, _ := dnsv1.NewRR("bbb.bosun.org. IN MX 10 ccc.example.com.")
+	r5, _ := dnsv1.NewRR("bbb.bosun.org. IN MX 10 bbb.example.com.")
+	r6, _ := dnsv1.NewRR("bbb.bosun.org. IN MX 10 aaa.example.com.")
 	// a mix
-	r7, _ := dns.NewRR("ccc.bosun.org. IN MX 40 zzz.example.com.")
-	r8, _ := dns.NewRR("ccc.bosun.org. IN MX 40 aaa.example.com.")
-	r9, _ := dns.NewRR("ccc.bosun.org. IN MX 1 ttt.example.com.")
+	r7, _ := dnsv1.NewRR("ccc.bosun.org. IN MX 40 zzz.example.com.")
+	r8, _ := dnsv1.NewRR("ccc.bosun.org. IN MX 40 aaa.example.com.")
+	r9, _ := dnsv1.NewRR("ccc.bosun.org. IN MX 1 ttt.example.com.")
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org"); err != nil {
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org"); err != nil {
 		t.Fatal(err)
 	}
 	if buf.String() != testdataZFMX {
@@ -211,13 +211,13 @@ ccc              IN MX    1 ttt.example.com.
 
 func TestWriteZoneFileSrv(t *testing.T) {
 	// exhibits explicit ttls and long name
-	r1, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 9999 foo.com.`)
-	r2, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 20 5050 foo.com.`)
-	r3, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
-	r4, _ := dns.NewRR(`bosun.org. 300 IN SRV 20 10 5050 foo.com.`)
-	r5, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
+	r1, _ := dnsv1.NewRR(`bosun.org. 300 IN SRV 10 10 9999 foo.com.`)
+	r2, _ := dnsv1.NewRR(`bosun.org. 300 IN SRV 10 20 5050 foo.com.`)
+	r3, _ := dnsv1.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
+	r4, _ := dnsv1.NewRR(`bosun.org. 300 IN SRV 20 10 5050 foo.com.`)
+	r5, _ := dnsv1.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org"); err != nil { // 5
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3, r4, r5}, "bosun.org"); err != nil { // 5
 		t.Fatal(err)
 	}
 	if buf.String() != testdataZFSRV {
@@ -238,11 +238,11 @@ var testdataZFSRV = `$TTL 300
 
 func TestWriteZoneFilePtr(t *testing.T) {
 	// exhibits explicit ttls and long name
-	r1, _ := dns.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
-	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
-	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
+	r1, _ := dnsv1.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
+	r2, _ := dnsv1.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
+	r3, _ := dnsv1.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3}, "bosun.org"); err != nil {
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3}, "bosun.org"); err != nil {
 		t.Fatal(err)
 	}
 	if buf.String() != testdataZFPTR {
@@ -261,14 +261,14 @@ var testdataZFPTR = `$TTL 300
 
 func TestWriteZoneFileCaa(t *testing.T) {
 	// exhibits explicit ttls and long name
-	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
-	r2, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
-	r3, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)
-	r4, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.com"`)
-	r5, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
-	r6, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
+	r1, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
+	r2, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
+	r3, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)
+	r4, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.com"`)
+	r5, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
+	r6, _ := dnsv1.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
 	buf := &bytes.Buffer{}
-	if err := writeZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org"); err != nil {
+	if err := writeZoneFileRR(buf, []dnsv1.RR{r1, r2, r3, r4, r5, r6}, "bosun.org"); err != nil {
 		t.Fatal(err)
 	}
 	if buf.String() != testdataZFCAA {
@@ -304,7 +304,7 @@ func TestWriteZoneFileTxt(t *testing.T) {
 	t513 := `t511             IN TXT   "` + r("o", 255) + `" "` + r("P", 255) + `" "` + r("q", 3) + `"`
 	for i, d := range []string{t10, t254, t255, t256, t509, t510, t511, t512, t513} {
 		// Make the rr:
-		rr, err := dns.NewRR(d)
+		rr, err := dnsv1.NewRR(d)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -314,7 +314,7 @@ func TestWriteZoneFileTxt(t *testing.T) {
 
 		// Generate the zonefile:
 		buf := &bytes.Buffer{}
-		if err := writeZoneFileRR(buf, []dns.RR{rr}, "bosun.org"); err != nil {
+		if err := writeZoneFileRR(buf, []dnsv1.RR{rr}, "bosun.org"); err != nil {
 			t.Fatal(err)
 		}
 		gz := buf.String()
@@ -331,8 +331,8 @@ func TestWriteZoneFileTxt(t *testing.T) {
 
 // Test 1 of each record type
 
-func mustNewRR(s string) dns.RR {
-	r, err := dns.NewRR(s)
+func mustNewRR(s string) dnsv1.RR {
+	r, err := dnsv1.NewRR(s)
 	if err != nil {
 		panic(err)
 	}
@@ -342,7 +342,7 @@ func mustNewRR(s string) dns.RR {
 func TestWriteZoneFileEach(t *testing.T) {
 	// Each rtype should be listed in this test exactly once.
 	// If an rtype has more than one variations, add a test like TestWriteZoneFileCaa to test each.
-	var d []dns.RR
+	var d []dnsv1.RR
 	// #rtype_variations
 	d = append(d, mustNewRR(`4.5                  300 IN PTR   y.bosun.org.`)) // Wouldn't actually be in this domain.
 	d = append(d, mustNewRR(`bosun.org.           300 IN A     1.2.3.4`))
@@ -398,15 +398,15 @@ x                IN CNAME bosun.org.
 `
 
 func TestWriteZoneFileSynth(t *testing.T) {
-	r1, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.153")
-	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
-	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
+	r1, _ := dnsv1.NewRR("bosun.org. 300 IN A 192.30.252.153")
+	r2, _ := dnsv1.NewRR("bosun.org. 300 IN A 192.30.252.154")
+	r3, _ := dnsv1.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	rsynm := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
 	rsynm.SetLabel("myalias", "bosun.org")
 	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
 	rsynz.SetLabel("zalias", "bosun.org")
 
-	recs, err := rrstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	recs, err := rrstoRCs([]dnsv1.RR{r1, r2, r3}, "bosun.org")
 	if err != nil {
 		panic(err)
 	}
@@ -440,7 +440,7 @@ www              IN CNAME bosun.org.
 // Test sorting
 
 func TestWriteZoneFileOrder(t *testing.T) {
-	var records []dns.RR
+	var records []dnsv1.RR
 	for i, td := range []string{
 		"@",
 		"@",
@@ -459,8 +459,8 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		"zt.mup",
 		"zap",
 	} {
-		name := dnsutil.AddOrigin(td, "stackoverflow.com.")
-		r, _ := dns.NewRR(fmt.Sprintf("%s 300 IN A 1.2.3.%d", name, i))
+		name := dnsutilv1.AddOrigin(td, "stackoverflow.com.")
+		r, _ := dnsv1.NewRR(fmt.Sprintf("%s 300 IN A 1.2.3.%d", name, i))
 		records = append(records, r)
 	}
 

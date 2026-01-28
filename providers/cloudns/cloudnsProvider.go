@@ -15,7 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -409,7 +409,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "TXT":
 		err = rc.SetTargetTXT(r.Target)
 	case "CNAME", "DNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
-		if err := rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain)); err != nil {
+		if err := rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain)); err != nil {
 			return nil, err
 		}
 	case "CAA":
@@ -452,7 +452,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "NAPTR":
 		naptrOrder, _ := strconv.ParseUint(r.NaptrOrder, 10, 16)
 		naptrPreference, _ := strconv.ParseUint(r.NaptrPreference, 10, 16)
-		target := dnsutil.AddOrigin(r.NaptrReplacement+".", domain)
+		target := dnsutilv1.AddOrigin(r.NaptrReplacement+".", domain)
 		err = rc.SetTargetNAPTR(uint16(naptrOrder), uint16(naptrPreference), r.NaptrFlags, r.NaptrService, r.NaptrRegexp, target)
 	default:
 		err = rc.SetTarget(r.Target)

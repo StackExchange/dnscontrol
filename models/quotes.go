@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 /*
@@ -59,10 +59,10 @@ func ParseQuotedFields(s string) ([]string, error) {
 	// "foo" "bar"  -> two strings: `foo` and `bar`
 
 	// The dns package doesn't expose the quote parser. Therefore we create a TXT record and extract the strings.
-	rr, err := dns.NewRR("example.com. IN TXT " + s)
+	rr, err := dnsv1.NewRR("example.com. IN TXT " + s)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse %q TXT: %w", s, err)
 	}
 
-	return rr.(*dns.TXT).Txt, nil
+	return rr.(*dnsv1.TXT).Txt, nil
 }

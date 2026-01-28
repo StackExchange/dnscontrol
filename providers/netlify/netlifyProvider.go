@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -114,7 +114,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
 		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
-			r.Value = dns.CanonicalName(r.Value)
+			r.Value = dnsv1.CanonicalName(r.Value)
 		}
 
 		switch rtype := r.Type; rtype {
