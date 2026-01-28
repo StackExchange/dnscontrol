@@ -8,7 +8,12 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-// GetRegistrarCorrections returns corrections to update domain nameserver delegation
+// GetRegistrarCorrections returns corrections to update domain nameserver delegation.
+//
+// IMPORTANT: This functionality requires API reseller account credentials.
+// Regular customer API credentials cannot manage nameserver delegation.
+// TODO: Test with customer credentials to capture the specific error and provide
+// a user-friendly message when non-reseller credentials are used.
 func (c *gidinetProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	// Get current nameservers from registrar
 	existing, err := c.getNameserversForDomain(dc.Name)

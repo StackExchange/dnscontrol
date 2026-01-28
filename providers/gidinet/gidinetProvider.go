@@ -20,6 +20,14 @@ Gidinet DNS API provider:
 Info required in `creds.json`:
    - username
    - password
+
+Note on Registrar functionality:
+   The registrar API (for managing nameservers via NAMESERVER()) requires
+   API reseller account credentials. Regular customer API credentials can
+   only manage DNS records, not domain registration settings.
+
+   TODO: Test with customer API credentials to document the specific error
+   returned when attempting to set NS records, and provide a clearer message.
 */
 
 var features = providers.DocumentationNotes{
