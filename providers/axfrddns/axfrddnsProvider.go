@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net" // Verified not used for net.IP
 	"strings"
 	"sync"
 	"time"

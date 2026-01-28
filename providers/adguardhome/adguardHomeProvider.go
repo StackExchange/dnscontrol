@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
@@ -184,10 +184,10 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	}
 	rc.SetLabelFromFQDN(r.Domain, domain)
 
-	addr := net.ParseIP(r.Answer)
-	if addr != nil {
+	addr, err := netip.ParseAddr(r.Answer)
+	if err != nil {
 		rc.SetTargetIP(addr)
-		if addr.To4() != nil {
+		if addr.Is4() {
 			rc.Type = "A"
 		} else {
 			rc.Type = "AAAA"

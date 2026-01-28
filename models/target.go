@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -21,11 +21,12 @@ func (rc *RecordConfig) GetTargetField() string {
 }
 
 // GetTargetIP returns the net.IP stored in .target.
-func (rc *RecordConfig) GetTargetIP() net.IP {
+func (rc *RecordConfig) GetTargetIP() netip.Addr {
 	if rc.Type != "A" && rc.Type != "AAAA" {
 		panic(fmt.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
 	}
-	return net.ParseIP(rc.target)
+	ip, _ := netip.ParseAddr(rc.target)
+	return ip
 }
 
 // GetTargetCombinedFunc returns all the rdata fields of a RecordConfig as one
@@ -191,7 +192,7 @@ func (rc *RecordConfig) MustSetTarget(target string) {
 }
 
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
-func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
+func (rc *RecordConfig) SetTargetIP(ip netip.Addr) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
 	return rc.SetTarget(ip.String())
 }

@@ -3,7 +3,7 @@ package spflib
 import (
 	"encoding/json"
 	"fmt"
-	"net"
+	"net" // Not used for IP addresses.
 	"os"
 	"strings"
 )
