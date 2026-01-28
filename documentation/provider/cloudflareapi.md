@@ -230,6 +230,10 @@ D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 **Paid plans only:** Per-record CNAME flattening requires a Cloudflare paid subscription (Pro, Business, or Enterprise). Free plans do not support this feature. If you attempt to enable CNAME flattening on a free zone, the Cloudflare API will return an error.
 {% endhint %}
 
+{% hint style="warning" %}
+**Mutual exclusivity:** `CF_CNAME_FLATTEN_ON` and `CF_PROXY_ON` cannot be used together on the same record. Cloudflare silently ignores CNAME flattening when proxy is enabled, which leads to confusing behavior. DNSControl will return an error if both are set. See [Opinion 6](https://docs.dnscontrol.org/developer-info/opinions#opinion-6-if-it-is-ambiguous-in-dns-it-is-forbidden-in-dnscontrol).
+{% endhint %}
+
 For more information, see [Cloudflare's CNAME flattening documentation](https://developers.cloudflare.com/dns/cname-flattening/).
 
 ## Old-style vs new-style redirects
