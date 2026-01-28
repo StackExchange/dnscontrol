@@ -392,12 +392,10 @@ func (rc *RecordConfig) ToRR() dnsv1.RR {
 	case dnsv1.TypeA:
 		addr := rc.GetTargetIP()
 		s := addr.AsSlice()
-		//rr.(*dns.A).A = net.IP(s)
 		rr.(*dnsv1.A).A = s[0:4]
 	case dnsv1.TypeAAAA:
 		addr := rc.GetTargetIP()
 		s := addr.AsSlice()
-		//rr.(*dns.AAAA).AAAA = net.IP(s)
 		rr.(*dnsv1.AAAA).AAAA = s[0:16]
 	case dnsv1.TypeCAA:
 		rr.(*dnsv1.CAA).Flag = rc.CaaFlag
