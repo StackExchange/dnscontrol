@@ -13,7 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/digitalocean/godo"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -291,7 +291,7 @@ retry:
 
 func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
-	name := dnsutil.AddOrigin(r.Name, domain)
+	name := dnsutilv1.AddOrigin(r.Name, domain)
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)

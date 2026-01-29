@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"github.com/ovh/go-ovh/ovh"
 )
 
@@ -112,7 +112,7 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 			recordType = nativeType
 		}
 		record := Record{
-			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
+			SubDomain: dnsutilv1.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: recordType,
 			Target:    rc.GetTargetCombined(),
 			TTL:       rc.TTL,

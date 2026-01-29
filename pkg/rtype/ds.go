@@ -6,7 +6,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 
 // DS RR.
 type DS struct {
-	dns.DS
+	dnsv1.DS
 }
 
 // Name returns the DNS record type as a string.
@@ -31,7 +31,7 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 			rec.Name, rtypecontrol.StringifyQuoted(args[1:]),
 			err)
 	}
-	fields := &dns.DS{
+	fields := &dnsv1.DS{
 		KeyTag:     args[1].(uint16),
 		Algorithm:  args[2].(uint8),
 		DigestType: args[3].(uint8),
@@ -44,7 +44,7 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 // FromStruct fills in the RecordConfig from a struct, typically from an API response.
 func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	// Fields is of type "any" thus we must validate the type. It should be the "inner" type of .F, not the outer type, rtype.DS{}.
-	ds, ok := fields.(*dns.DS)
+	ds, ok := fields.(*dnsv1.DS)
 	if !ok {
 		return fmt.Errorf("fields is not *dns.DS, got %T", fields)
 	}
@@ -67,7 +67,7 @@ func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
 func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
 	// Copy fields:
 	rec.F = &DS{
-		dns.DS{
+		dnsv1.DS{
 			KeyTag:     rec.DsKeyTag,
 			Algorithm:  rec.DsAlgorithm,
 			DigestType: rec.DsDigestType,

@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // SetTargetLOC sets the LOC fields from the rr.LOC type properties.
@@ -51,7 +51,7 @@ func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error
 
 	// Build a string with which to init the rr.LOC object:
 	str := fmt.Sprintf("%s. LOC %s\n", origin, contents)
-	loc, err := dns.NewRR(str)
+	loc, err := dnsv1.NewRR(str)
 	if err != nil {
 		return fmt.Errorf("can't parse LOC data: %w", err)
 	}
@@ -99,20 +99,20 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 ) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
-	lat := uint32(d1)*dns.LOC_DEGREES + uint32(m1)*dns.LOC_HOURS + uint32(s1*1000)
-	lon := uint32(d2)*dns.LOC_DEGREES + uint32(m2)*dns.LOC_HOURS + uint32(s2*1000)
+	lat := uint32(d1)*dnsv1.LOC_DEGREES + uint32(m1)*dnsv1.LOC_HOURS + uint32(s1*1000)
+	lon := uint32(d2)*dnsv1.LOC_DEGREES + uint32(m2)*dnsv1.LOC_HOURS + uint32(s2*1000)
 	if strings.ToUpper(ns) == "N" {
-		rc.LocLatitude = dns.LOC_EQUATOR + lat
+		rc.LocLatitude = dnsv1.LOC_EQUATOR + lat
 	} else { // "S"
-		rc.LocLatitude = dns.LOC_EQUATOR - lat
+		rc.LocLatitude = dnsv1.LOC_EQUATOR - lat
 	}
 	if strings.ToUpper(ew) == "E" {
-		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN + lon
+		rc.LocLongitude = dnsv1.LOC_PRIMEMERIDIAN + lon
 	} else { // "W"
-		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN - lon
+		rc.LocLongitude = dnsv1.LOC_PRIMEMERIDIAN - lon
 	}
 	// Altitude
-	altitude := (float64(al) + dns.LOC_ALTITUDEBASE) * 100
+	altitude := (float64(al) + dnsv1.LOC_ALTITUDEBASE) * 100
 	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
 	rc.LocAltitude = uint32(math.Round(clampedAltitude))
 
@@ -200,17 +200,17 @@ func getENotationInt(x float32) (uint8, error) {
 // ReverseLatitude takes the packed latitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
-	if lat >= dns.LOC_EQUATOR {
+	if lat >= dnsv1.LOC_EQUATOR {
 		hemisphere = "N"
-		lat = lat - dns.LOC_EQUATOR
+		lat = lat - dnsv1.LOC_EQUATOR
 	} else {
 		hemisphere = "S"
-		lat = dns.LOC_EQUATOR - lat
+		lat = dnsv1.LOC_EQUATOR - lat
 	}
-	degrees := uint8(lat / dns.LOC_DEGREES)
-	lat -= uint32(degrees) * dns.LOC_DEGREES
-	minutes := uint8(lat / dns.LOC_HOURS)
-	lat -= uint32(minutes) * dns.LOC_HOURS
+	degrees := uint8(lat / dnsv1.LOC_DEGREES)
+	lat -= uint32(degrees) * dnsv1.LOC_DEGREES
+	minutes := uint8(lat / dnsv1.LOC_HOURS)
+	lat -= uint32(minutes) * dnsv1.LOC_HOURS
 	seconds := float64(lat) / 1000
 
 	return hemisphere, degrees, minutes, seconds
@@ -219,17 +219,17 @@ func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 // ReverseLongitude takes the packed longitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLongitude(lon uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
-	if lon >= dns.LOC_PRIMEMERIDIAN {
+	if lon >= dnsv1.LOC_PRIMEMERIDIAN {
 		hemisphere = "E"
-		lon = lon - dns.LOC_PRIMEMERIDIAN
+		lon = lon - dnsv1.LOC_PRIMEMERIDIAN
 	} else {
 		hemisphere = "W"
-		lon = dns.LOC_PRIMEMERIDIAN - lon
+		lon = dnsv1.LOC_PRIMEMERIDIAN - lon
 	}
-	degrees := uint8(lon / dns.LOC_DEGREES)
-	lon -= uint32(degrees) * dns.LOC_DEGREES
-	minutes := uint8(lon / dns.LOC_HOURS)
-	lon -= uint32(minutes) * dns.LOC_HOURS
+	degrees := uint8(lon / dnsv1.LOC_DEGREES)
+	lon -= uint32(degrees) * dnsv1.LOC_DEGREES
+	minutes := uint8(lon / dnsv1.LOC_HOURS)
+	lon -= uint32(minutes) * dnsv1.LOC_HOURS
 	seconds := float64(lon) / 1000
 
 	return hemisphere, degrees, minutes, seconds

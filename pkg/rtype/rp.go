@@ -6,8 +6,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func init() {
@@ -16,7 +16,7 @@ func init() {
 
 // RP RR. See RFC 1138, Section 2.2.
 type RP struct {
-	dns.RP
+	dnsv1.RP
 }
 
 // Name returns the DNS record type as a string.
@@ -33,9 +33,9 @@ func (handle *RP) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 			err)
 	}
 	fields := &RP{
-		dns.RP{
-			Mbox: dnsutil.AddOrigin(args[1].(string), dcn.NameASCII+"."),
-			Txt:  dnsutil.AddOrigin(args[2].(string), dcn.NameASCII+"."),
+		dnsv1.RP{
+			Mbox: dnsutilv1.AddOrigin(args[1].(string), dcn.NameASCII+"."),
+			Txt:  dnsutilv1.AddOrigin(args[2].(string), dcn.NameASCII+"."),
 		},
 	}
 

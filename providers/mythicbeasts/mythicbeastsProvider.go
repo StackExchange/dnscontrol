@@ -16,7 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -104,7 +104,7 @@ func (n *mythicBeastsProvider) GetZoneRecords(domain string, meta map[string]str
 }
 
 func zoneFileToRecords(r io.Reader, origin string) (models.Records, error) {
-	zp := dns.NewZoneParser(r, origin, origin)
+	zp := dnsv1.NewZoneParser(r, origin, origin)
 	var records []*models.RecordConfig
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec, err := dnsrr.RRtoRC(rr, origin)
@@ -137,7 +137,7 @@ func (n *mythicBeastsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig
 					var b strings.Builder
 					for _, record := range result.DesiredPlus {
 						switch rr := record.ToRR().(type) {
-						case *dns.SSHFP:
+						case *dnsv1.SSHFP:
 							// "Hex strings [for SSHFP] must be in lower-case", per Mythic Beasts API docs.
 							// miekg's DNS outputs uppercase: https://github.com/miekg/dns/blob/48f38ebef989eedc6b57f1869ae849ccc8f5fe29/types.go#L988
 							fmt.Fprintf(&b, "%s %d %d %s\n", rr.Header().String(), rr.Algorithm, rr.Type, strings.ToLower(rr.FingerPrint))
