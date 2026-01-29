@@ -74,10 +74,41 @@ See [PowerDNS documentation on Views](https://doc.powerdns.com/authoritative/vie
 ## Caveats
 
 ### SOA Records
-The SOA record is supported for use, but behavior is slightly different than expected.
+SOA-support was implemented in version 4.16. Versions earlier than that (e.g., 4.15 and earlier) do not support SOA records and will raise an error if they are present in dnscontrol. However, version 4.16 _requires_ SOA-records to be present in dnscontrol, since dnscontrol will synchronize SOA records as any normal records to PowerDNS (as PowerDNS handles SOA as any other record), and thus remove them if not present in dnscontrol. See below for tips how to handle this.
+
+In version later than 4.16+ the SOA record is supported for use, but behavior is slightly different than expected.
 If the SOA record is used, [PowerDNS will not increase the serial](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-serial-updates) if the SOA record content changes.
 This itself comes with exceptions as well, if the `SOA-EDIT-API` is changed to a different value the logic will update the serial to a new value.
 See [this issue for detailed testing](https://github.com/StackExchange/dnscontrol/pull/3404#issuecomment-2628989200) of behavior.
 
 The recommended procedure when changing the SOA record contents is to update the SOA record alone.
 Updates to other records will be done if changes are present, but the serial **will not change**. The serial will update once a new push is done that does not include an SOA record change.
+
+### Tips for upgrading past version 4.16
+Since dnscontrol v4.16 SOA-records have to be present in dnscontrol for PowerDNS. This is a breaking change from version 4.15 and requires changes on the user side. 
+
+If you have a large number of zones it might be useful to handle this via built-in functions of dnscontrol. 
+
+```javascript
+// Add to bottom of dnsconfig.js or similar
+
+// Default SOA
+var SOA_DEFAULT = [
+  SOA(
+  "@",
+  "ns.example.org.", // <-- Change to your nameserver
+  "noc.example.org.", // <-- Change to your contact adress / administrators address
+  7200, // <--refresh
+  900, // <--retry
+  604800, // <--expire
+  1800, // <-- ttl for _ZONE_
+  TTL("1h")) // <-- ttl for _RECORD_
+];
+
+// Add default SOA to all configured domains
+var domains = getConfiguredDomains();
+for (i = 0; i < domains.length; i++) {
+  // Possibly introduce an if-statment to set different SOAs to reverses, k8s-zones, etc
+  D_EXTEND(domains[i], SOA_DEFAULT);
+}
+```
