@@ -89,6 +89,7 @@ Since dnscontrol v4.16 SOA-records have to be present in dnscontrol for PowerDNS
 
 If you have a large number of zones it might be useful to handle this via built-in functions of dnscontrol. 
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // Add to bottom of dnsconfig.js or similar
 
@@ -112,6 +113,7 @@ for (i = 0; i < domains.length; i++) {
   D_EXTEND(domains[i], SOA_DEFAULT);
 }
 ```
+{% endcode %}
 
 This will set a default SOA for all zones managed by this dnscontrol
 instance. Note that you might want to have different SOAs for different
