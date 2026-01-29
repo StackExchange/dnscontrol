@@ -1253,19 +1253,9 @@ func makeTests() []*TestGroup {
 		testgroup("CF_COMMENT create",
 			only("CLOUDFLAREAPI"),
 			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
-			CfCommentCreate(), tcEmptyZone(),
-		),
-
-		testgroup("CF_COMMENT change",
-			only("CLOUDFLAREAPI"),
-			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
-			CfCommentCreate(), CfCommentChange(),
-		),
-
-		testgroup("CF_COMMENT remove",
-			only("CLOUDFLAREAPI"),
-			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
-			CfCommentCreate(), CfCommentRemove(),
+			tc("comment_create", cfCommentA("cmnt", "174.136.107.111", "Test comment")),
+			tc("comment_change", cfCommentA("cmnt", "174.136.107.111", "Changed comment")),
+			tc("comment_remove", a("cmnt", "174.136.107.111")),
 		),
 
 		// CLOUDFLAREAPI: TAGS (requires paid plan)
@@ -1274,21 +1264,9 @@ func makeTests() []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFTags),
 			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
-			CfTagsCreate(), tcEmptyZone(),
-		),
-
-		testgroup("CF_TAGS change",
-			only("CLOUDFLAREAPI"),
-			alltrue(*enableCFTags),
-			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
-			CfTagsCreate(), CfTagsChange(),
-		),
-
-		testgroup("CF_TAGS remove",
-			only("CLOUDFLAREAPI"),
-			alltrue(*enableCFTags),
-			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
-			CfTagsCreate(), CfTagsRemove(),
+			tc("tags_create", cfTagsA("tags", "174.136.107.111", "tag1,tag2")),
+			tc("tags_change", cfTagsA("tags", "174.136.107.111", "tag2,tag3")),
+			tc("tags_remove", a("tags", "174.136.107.111")),
 		),
 
 		testgroup("CF_WORKER_ROUTE",

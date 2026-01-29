@@ -51,31 +51,6 @@ func CfFlattenOn() *TestCase {
 	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
 }
 
-// Helper constants/funcs for the CLOUDFLARE comments testing:
-
-// A-record with comment
-func CfCommentCreate() *TestCase {
-	return tc("comment_create", cfCommentA("cmnt", "174.136.107.111", "Test comment"))
-}
-func CfCommentChange() *TestCase {
-	return tc("comment_change", cfCommentA("cmnt", "174.136.107.111", "Changed comment"))
-}
-func CfCommentRemove() *TestCase {
-	return tc("comment_remove", a("cmnt", "174.136.107.111"))
-}
-
-// Helper constants/funcs for the CLOUDFLARE tags testing:
-
-// A-record with tags (requires paid plan)
-func CfTagsCreate() *TestCase {
-	return tc("tags_create", cfTagsA("tags", "174.136.107.111", "tag1,tag2"))
-}
-func CfTagsChange() *TestCase {
-	return tc("tags_change", cfTagsA("tags", "174.136.107.111", "tag2,tag3"))
-}
-func CfTagsRemove() *TestCase {
-	return tc("tags_remove", a("tags", "174.136.107.111"))
-}
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{

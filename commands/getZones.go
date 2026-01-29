@@ -285,10 +285,10 @@ func GetZone(args GetZoneArgs) error {
 			hasComments := false
 			hasTags := false
 			for _, rec := range recs {
-				if comment, ok := rec.Metadata["cloudflare_comment"]; ok && comment != "" {
+				if rec.Metadata["cloudflare_comment"] != "" {
 					hasComments = true
 				}
-				if tags, ok := rec.Metadata["cloudflare_tags"]; ok && tags != "" {
+				if rec.Metadata["cloudflare_tags"] != "" {
 					hasTags = true
 				}
 				if hasComments && hasTags {
@@ -344,10 +344,10 @@ func GetZone(args GetZoneArgs) error {
 						cfmeta += ",cloudflare_cname_flatten=on"
 					}
 				}
-				if comment, ok := rec.Metadata["cloudflare_comment"]; ok && comment != "" {
+				if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
 					cfmeta += ",cloudflare_comment=" + comment
 				}
-				if tags, ok := rec.Metadata["cloudflare_tags"]; ok && tags != "" {
+				if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
 					cfmeta += ",cloudflare_tags=" + tags
 				}
 				if cfmeta != "" {
@@ -404,12 +404,12 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	}
 
 	cfcomment := ""
-	if comment, ok := rec.Metadata["cloudflare_comment"]; ok && comment != "" {
+	if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
 		cfcomment = fmt.Sprintf(", CF_COMMENT(%s)", jsonQuoted(comment))
 	}
 
 	cftags := ""
-	if tags, ok := rec.Metadata["cloudflare_tags"]; ok && tags != "" {
+	if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
 		// Convert comma-separated tags to CF_TAGS("tag1", "tag2", ...)
 		tagList := strings.Split(tags, ",")
 		quotedTags := make([]string, len(tagList))
