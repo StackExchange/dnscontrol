@@ -978,7 +978,7 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * * `keytype` (string, optional): Key algorithm type. Maps to the `k=` tag. Default: `rsa`. Supported values:
  *    * `rsa`
  *    * `ed25519`
- * * `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
+ * * `note` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
  * * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
  *   * `*`: explicitly allows all service types
  *   * `email`: restricts key to email service only
