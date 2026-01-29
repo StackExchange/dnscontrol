@@ -280,6 +280,28 @@ func GetZone(args GetZoneArgs) error {
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
+
+			// Check if any records have comments or tags, and add management flags if so
+			hasComments := false
+			hasTags := false
+			for _, rec := range recs {
+				if rec.Metadata["cloudflare_comment"] != "" {
+					hasComments = true
+				}
+				if rec.Metadata["cloudflare_tags"] != "" {
+					hasTags = true
+				}
+				if hasComments && hasTags {
+					break
+				}
+			}
+			if hasComments {
+				o = append(o, "CF_MANAGE_COMMENTS // opt into comments syncing")
+			}
+			if hasTags {
+				o = append(o, "CF_MANAGE_TAGS // opt into tags syncing")
+			}
+
 			for _, rec := range recs {
 				if (rec.Type == "CNAME") && (rec.Name == "@") {
 					o = append(o, "// NOTE: CNAME at apex may require manual editing.")
@@ -321,6 +343,12 @@ func GetZone(args GetZoneArgs) error {
 					if cf == "on" {
 						cfmeta += ",cloudflare_cname_flatten=on"
 					}
+				}
+				if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+					cfmeta += ",cloudflare_comment=" + comment
+				}
+				if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+					cfmeta += ",cloudflare_tags=" + tags
 				}
 				if cfmeta != "" {
 					cfmeta = "\t" + cfmeta[1:] // Remove leading comma, add tab
@@ -375,6 +403,22 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		}
 	}
 
+	cfcomment := ""
+	if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+		cfcomment = fmt.Sprintf(", CF_COMMENT(%s)", jsonQuoted(comment))
+	}
+
+	cftags := ""
+	if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+		// Convert comma-separated tags to CF_TAGS("tag1", "tag2", ...)
+		tagList := strings.Split(tags, ",")
+		quotedTags := make([]string, len(tagList))
+		for i, tag := range tagList {
+			quotedTags[i] = fmt.Sprintf("%q", tag)
+		}
+		cftags = ", CF_TAGS(" + strings.Join(quotedTags, ", ") + ")"
+	}
+
 	switch rec.Type { // #rtype_variations
 	case "CAA":
 		return makeCaa(rec, ttlop)
@@ -427,7 +471,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

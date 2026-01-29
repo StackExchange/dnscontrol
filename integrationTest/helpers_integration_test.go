@@ -51,6 +51,7 @@ func CfFlattenOn() *TestCase {
 	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
 }
 
+
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
@@ -116,11 +117,22 @@ func testPermitted(p string, f TestGroup) error {
 }
 
 // makeChanges runs one set of DNS record tests. Returns true on success.
-func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
+func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, domainMeta map[string]string) bool {
 	domainName := dc.Name
 
 	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
 		dom, _ := dc.Copy()
+
+		// Apply domain-level metadata if provided (e.g., for Cloudflare comments/tags management)
+		if domainMeta != nil {
+			if dom.Metadata == nil {
+				dom.Metadata = make(map[string]string)
+			}
+			for k, v := range domainMeta {
+				dom.Metadata[k] = v
+			}
+		}
+
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
 
@@ -240,12 +252,12 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		// fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
 		if err := testPermitted(*profileFlag, *group); err != nil {
 			// t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
-			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
+			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig, nil)
 			continue
 		}
 
 		// Start the testgroup with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil, nil)
 
 		// Run the tests.
 		start := time.Now()
@@ -259,7 +271,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			//      if t.Failed() {
 			//        break
 			//      }
-			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig); !ok {
+			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig, group.domainMeta); !ok {
 				break
 			}
 		}
@@ -272,12 +284,13 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 type TestGroup struct {
-	Desc      string
-	required  []providers.Capability
-	only      []string
-	not       []string
-	trueflags []bool
-	tests     []*TestCase
+	Desc       string
+	required   []providers.Capability
+	only       []string
+	not        []string
+	trueflags  []bool
+	domainMeta map[string]string
+	tests      []*TestCase
 }
 
 type TestCase struct {
@@ -354,6 +367,28 @@ func cfFlattenCNAME(name, target, status string) *models.RecordConfig {
 	r := cname(name, target)
 	r.Metadata = make(map[string]string)
 	r.Metadata["cloudflare_cname_flatten"] = status
+	return r
+}
+
+func cfCommentA(name, target, comment string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_comment"] = comment
+	return r
+}
+
+func cfTagsA(name, target, tags string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_tags"] = tags
+	return r
+}
+
+func cfCommentAndTagsA(name, target, comment, tags string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_comment"] = comment
+	r.Metadata["cloudflare_tags"] = tags
 	return r
 }
 
@@ -615,6 +650,17 @@ func testgroup(desc string, items ...any) *TestGroup {
 				os.Exit(1)
 			}
 			group.trueflags = append(group.trueflags, v.flags...)
+		case domainMetaFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: domainMeta() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
+			if group.domainMeta == nil {
+				group.domainMeta = make(map[string]string)
+			}
+			for k, val := range v.meta {
+				group.domainMeta[k] = val
+			}
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -723,4 +769,12 @@ type alltrueFilter struct {
 
 func alltrue(f ...bool) alltrueFilter {
 	return alltrueFilter{flags: f}
+}
+
+type domainMetaFilter struct {
+	meta map[string]string
+}
+
+func domainMeta(m map[string]string) domainMetaFilter {
+	return domainMetaFilter{meta: m}
 }
