@@ -112,3 +112,8 @@ for (i = 0; i < domains.length; i++) {
   D_EXTEND(domains[i], SOA_DEFAULT);
 }
 ```
+
+This will set a default SOA for all zones managed by this dnscontrol
+instance. Note that you might want to have different SOAs for different
+zones, for example a very low `ttl` for kubernetes managed zones, this can
+be handled with an `if`-statement in the for loop. 
