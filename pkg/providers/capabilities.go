@@ -26,38 +26,46 @@ const (
 	CanConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
+	// When using providers.Register(), this is set automatically for you.
 	CanGetZones
 
 	// CanOnlyDiff1Features indicates the provider has not yet been upgraded to
 	// use the "diff2" differencing engine.  Instead, it uses the the backwards
 	// compatibility mode.  The diff2 engine is required to repliably provide
 	// IGNORE(), NO_PURGE, and other features.
-	// This capability is set automatically for the provider during the call to
-	// RegisterDomainServiceProviderType.  It is set to Can() if we detect
-	// compatibility mode is in use. All other values (Unimplemented and Cannot)
-	// are equivalent.
 	CanOnlyDiff1Features
 
 	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseAKAMAICDN
 
+	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
+	CanUseAKAMAITLC
+
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseAlias
 
 	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseAzureAlias
 
 	// CanUseCAA indicates the provider can handle CAA records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseCAA
 
 	// CanUseDHCID indicates the provider can handle DHCID records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDHCID
 
 	// CanUseDNAME indicates the provider can handle DNAME records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDNAME
 
 	// CanUseDS indicates that the provider can handle DS record types. This
 	// implies CanUseDSForChildren without specifying the latter explicitly.
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDS
 
 	// CanUseDSForChildren indicates the provider can handle DS record types, but
@@ -65,58 +73,79 @@ const (
 	CanUseDSForChildren
 
 	// CanUseHTTPS indicates the provider can handle HTTPS records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseHTTPS
 
 	// CanUseLOC indicates whether service provider handles LOC records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseLOC
 
 	// CanUseNAPTR indicates the provider can handle NAPTR records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseNAPTR
 
 	// CanUsePTR indicates the provider can handle PTR records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUsePTR
 
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseRoute53Alias
 
 	// CanUseRP indicates the provider can handle RP records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseRP
 
 	// CanUseSMIMEA indicates the provider can handle SMIMEA records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseSMIMEA
 
 	// CanUseSOA indicates the provider supports full management of a zone's SOA record
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseSOA
 
 	// CanUseSRV indicates the provider can handle SRV records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseSRV
 
 	// CanUseSSHFP indicates the provider can handle SSHFP records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseSSHFP
 
 	// CanUseSVCB indicates the provider can handle SVCB records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseSVCB
 
 	// CanUseTLSA indicates the provider can handle TLSA records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseTLSA
 
 	// CanUseDNSKEY indicates that the provider can handle DNSKEY records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDNSKEY
 
 	// CanUseOPENPGPKEY indicates that the provider can handle OPENPGPKEY records
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseOPENPGPKEY
 
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
+	// When using providers.Register(), this is set automatically for you.
 	DocCreateDomains
 
 	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider
 	DocDualHost
 
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange
+	// When using providers.Register(), this is set automatically for you.
 	DocOfficiallySupported
 
-	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports
-	CanUseAKAMAITLC
+	// IsRegistrar means the provider can update the parent's nameserver delegations.
+	// When using providers.Register(), this is set automatically for you.
+	IsRegistrar
+
+	// IsDnsServiceProvider means the provider can manage DNS zone data.
+	// When using providers.Register(), this is set automatically for you.
+	IsDnsServiceProvider
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
