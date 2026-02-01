@@ -51,12 +51,12 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/oauth2 v0.34.0
-	google.golang.org/api v0.262.0
+	google.golang.org/api v0.264.0
 	gopkg.in/ns1/ns1-go.v2 v2.16.0
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.35
+	codeberg.org/miekg/dns v0.6.40
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
@@ -69,13 +69,13 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hetznercloud/hcloud-go/v2 v2.36.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.185
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.186
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/nicholas-fedor/shoutrrr v0.13.1
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.106.1
+	github.com/oracle/oci-go-sdk/v65 v65.107.0
 	github.com/urfave/cli/v3 v3.6.2
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
@@ -169,7 +169,7 @@ require (
 	golang.org/x/term v0.39.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120174246-409b4a993575 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260122232226-8e98ce8d340d // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
