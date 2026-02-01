@@ -14,6 +14,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -450,6 +451,7 @@ func stats(cfg *models.DNSConfig) string {
 		MemoryInUseStr string `json:"memory_in_use_str"`
 		NumRecords     int    `json:"num_records"`
 		NumZones       int    `json:"num_zones"`
+		RCSize         int    `json:"rc_size"`
 		Benchmark1     int64  `json:"benchmark1"`
 		Benchmark1Str  string `json:"benchmark1str"`
 	}{
@@ -457,6 +459,7 @@ func stats(cfg *models.DNSConfig) string {
 		MemoryInUseStr: humanize.Bytes(memoryInUse),
 		NumRecords:     numRecords,
 		NumZones:       len(cfg.Domains),
+		RCSize:         int(unsafe.Sizeof((models.RecordConfig{}))),
 		Benchmark1:     memPerRecord,
 		Benchmark1Str:  memPerRecordStr,
 	}
