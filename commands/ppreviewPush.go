@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,6 +26,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/dustin/go-humanize"
 	"github.com/nozzle/throttler"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/exp/slices"
@@ -409,8 +411,10 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
 	rfc4183.PrintWarning()
+	out.PrintfIf(fullMode, "Inaccurate statistics: %s\n", stats(cfg))
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
+
 	err = writeReport(report, reportItems)
 	if err != nil {
 		return errors.New("could not write report")
@@ -422,6 +426,54 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return errors.New("there are pending changes")
 	}
 	return nil
+}
+
+// stats returns a JSON string with memory usage statistics.
+// These stats are unofficial and subject to change without notice.
+// "average_mem_per_record" is misleading because it includes all memory overhead.
+func stats(cfg *models.DNSConfig) string {
+
+	// https://www.datadoghq.com/blog/go-memory-metrics/
+	// [T]he following expression accurately reflects the value the runtime attempts to maintain as the limit:
+	// runtime.MemStats.Sys − runtime.MemStats.HeapReleased
+	runtime.GC()
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	memoryInUse := m.Sys - m.HeapReleased
+
+	numRecords := countRecords(cfg)
+	memPerRecord := int64(float64(memoryInUse) / float64(max(1, numRecords)))
+	memPerRecordStr := humanize.IBytes(uint64(memPerRecord)) + " bytes"
+
+	statsInfo := struct {
+		MemoryInUse    uint64 `json:"memory_in_use"`
+		MemoryInUseStr string `json:"memory_in_use_str"`
+		NumRecords     int    `json:"num_records"`
+		NumZones       int    `json:"num_zones"`
+		Benchmark1     int64  `json:"benchmark1"`
+		Benchmark1Str  string `json:"benchmark1str"`
+	}{
+		MemoryInUse:    memoryInUse,
+		MemoryInUseStr: humanize.Bytes(memoryInUse),
+		NumRecords:     numRecords,
+		NumZones:       len(cfg.Domains),
+		Benchmark1:     memPerRecord,
+		Benchmark1Str:  memPerRecordStr,
+	}
+
+	jsonBytes, err := json.Marshal(statsInfo)
+	if err != nil {
+		return fmt.Sprintf("error marshaling stats: %v", err)
+	}
+	return string(jsonBytes)
+}
+
+func countRecords(cfg *models.DNSConfig) int {
+	total := 0
+	for _, domain := range cfg.Domains {
+		total += len(domain.Records)
+	}
+	return total
 }
 
 // whichZonesToProcess takes a list of DomainConfigs and a filter string and
