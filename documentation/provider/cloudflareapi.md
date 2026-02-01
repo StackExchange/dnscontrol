@@ -104,11 +104,15 @@ This provider accepts some optional metadata:
 Record level metadata available:
    * `cloudflare_proxy` ("on", "off", or "full")
    * `cloudflare_cname_flatten` ("on" or "off") - Per-record CNAME flattening (paid plans only)
+   * `cloudflare_comment` - Record comment (requires `CF_MANAGE_COMMENTS` on domain)
+   * `cloudflare_tags` - Comma-separated tags (requires `CF_MANAGE_TAGS` on domain, paid plans only)
 
 Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
    * `cloudflare_universalssl` (unset to leave this setting unmanaged; otherwise use "on" or "off")
      * NOTE: If "universal SSL" isn't working, verify the API key has `Zone → SSL and Certificates → Edit` permissions. See above.
+   * `cloudflare_manage_comments` ("true") - Opt-in to managing record comments
+   * `cloudflare_manage_tags` ("true") - Opt-in to managing record tags (paid plans only)
 
 Provider level metadata available:
    * `ip_conversions`
@@ -144,6 +148,9 @@ var CF_PROXY_ON = {"cloudflare_proxy": "on"};       // Proxy enabled.
 var CF_PROXY_FULL = {"cloudflare_proxy": "full"};   // Proxy+Railgun enabled.
 var CF_CNAME_FLATTEN_OFF = {"cloudflare_cname_flatten": "off"};  // CNAME flattening disabled (default).
 var CF_CNAME_FLATTEN_ON = {"cloudflare_cname_flatten": "on"};    // CNAME flattening enabled (paid plans only).
+// CF_COMMENT(comment) - Set a comment on a record (requires CF_MANAGE_COMMENTS).
+// CF_TAGS(tag1, tag2, ...) - Set tags on a record (requires CF_MANAGE_TAGS, paid plans only).
+
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
 var CF_PROXY_DEFAULT_OFF = {"cloudflare_proxy_default": "off"};
@@ -153,6 +160,10 @@ var CF_PROXY_DEFAULT_ON = {"cloudflare_proxy_default": "on"};
 var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: "off" };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: "on" };
+// Enable comment management for domain (opt-in):
+var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: "true" };
+// Enable tag management for domain (opt-in, paid plans only):
+var CF_MANAGE_TAGS = { cloudflare_manage_tags: "true" };
 ```
 {% endcode %}
 
@@ -235,6 +246,135 @@ D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 {% endhint %}
 
 For more information, see [Cloudflare's CNAME flattening documentation](https://developers.cloudflare.com/dns/cname-flattening/).
+
+## Record comments and tags
+
+Cloudflare supports adding comments and tags to DNS records. Comments are free-text notes visible in the Cloudflare dashboard. Tags are labels that can be used for filtering and organization.
+
+### Enabling comment/tag management
+
+By default, DNSControl does not manage comments or tags. This is an opt-in feature because:
+
+1. You may have existing comments/tags on records that are not in your `dnsconfig.js`
+2. Enabling management without defining comments/tags would wipe out existing ones
+
+To enable management, add the appropriate domain modifier:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
+
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    CF_MANAGE_COMMENTS,  // Enable comment management for this domain
+    CF_MANAGE_TAGS,      // Enable tag management for this domain (paid plans only)
+
+    A("www", "1.2.3.4", CF_COMMENT("Production web server")),
+    A("api", "1.2.3.5", CF_TAGS("production", "api"), CF_COMMENT("API endpoint")),
+);
+```
+{% endcode %}
+
+### Using comments
+
+Comments work on all Cloudflare plans (including free). Use `CF_COMMENT()` to add a comment to any record:
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    CF_MANAGE_COMMENTS,
+
+    A("www", "1.2.3.4", CF_COMMENT("Main website - hosted on AWS")),
+    A("mail", "1.2.3.5", CF_COMMENT("Mail server")),
+    MX("@", 10, "mail.example.com.", CF_COMMENT("Primary MX")),
+);
+```
+{% endcode %}
+
+{% hint style="warning" %}
+If you use `CF_COMMENT()` without enabling `CF_MANAGE_COMMENTS`, DNSControl will return an error. This prevents accidentally ignoring your comments.
+{% endhint %}
+
+### Using tags
+
+Tags require a paid Cloudflare plan (Pro, Business, or Enterprise). Use `CF_TAGS()` to add one or more tags to a record.
+
+Tags can be either:
+- A simple word: `"production"`, `"web"`, `"critical"`
+- A key:value pair: `"env:production"`, `"team:platform"`, `"cost-center:12345"`
+
+In the Cloudflare Dashboard, you can filter DNS records by the presence of a tag or by a specific tag value.
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    CF_MANAGE_TAGS,
+
+    // Simple tags
+    A("www", "1.2.3.4", CF_TAGS("production", "web")),
+    A("staging", "1.2.3.6", CF_TAGS("staging", "web")),
+
+    // Key:value tags
+    A("api", "1.2.3.5", CF_TAGS("env:production", "team:api", "critical")),
+);
+```
+{% endcode %}
+
+{% hint style="warning" %}
+**Paid plans only:** Tags require a Cloudflare paid subscription. Free plans do not support this feature.
+{% endhint %}
+
+{% hint style="warning" %}
+Tags cannot use the reserved `cf-` prefix. Cloudflare reserves this prefix for internal use.
+{% endhint %}
+
+{% hint style="warning" %}
+If you use `CF_TAGS()` without enabling `CF_MANAGE_TAGS`, DNSControl will return an error.
+{% endhint %}
+
+For more information, see [Cloudflare's documentation on DNS record comments and tags](https://developers.cloudflare.com/dns/manage-dns-records/reference/record-attributes/).
+
+### Combining comments and tags
+
+You can use both comments and tags on the same record:
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    CF_MANAGE_COMMENTS,
+    CF_MANAGE_TAGS,
+
+    A("api", "1.2.3.5",
+        CF_COMMENT("Production API endpoint - contact: api-team@example.com"),
+        CF_TAGS("production", "api", "critical")
+    ),
+);
+```
+{% endcode %}
+
+### Viewing existing comments and tags
+
+The `get-zones` command will always display any comments or tags found on records, regardless of whether management is enabled. This helps you see what's currently set before enabling management:
+
+```shell
+dnscontrol get-zones --format=js cloudflare CLOUDFLAREAPI example.com
+```
+
+### Aliases
+
+The following aliases are pre-defined:
+
+{% code title="dnsconfig.js" %}
+```javascript
+// Domain modifiers (opt-in to management):
+var CF_MANAGE_COMMENTS = {"cloudflare_manage_comments": "true"};
+var CF_MANAGE_TAGS = {"cloudflare_manage_tags": "true"};
+
+// Record modifiers:
+// CF_COMMENT(comment) - Set a comment on a record
+// CF_TAGS(tag1, tag2, ...) - Set tags on a record
+```
+{% endcode %}
 
 ## Old-style vs new-style redirects
 
@@ -466,6 +606,23 @@ go test -v -verbose -profile CLOUDFLAREAPI -cfflatten=true
 ```
 
 If you run with `-cfflatten=true` on a free zone, the tests will fail with an error from the Cloudflare API.
+
+### Tag tests
+
+Tests for record comments (`CF_COMMENT`) always run since comments work on all plans.
+Tests for record tags (`CF_TAGS`) are disabled by default because they require a paid plan.
+
+```shell
+cd integrationTest
+# Tags disabled by default:
+go test -v -verbose -profile CLOUDFLAREAPI
+
+# Enable tag tests (requires paid plan):
+go test -v -verbose -profile CLOUDFLAREAPI -cftags=true
+
+# Enable all paid features:
+go test -v -verbose -profile CLOUDFLAREAPI -cfflatten=true -cftags=true
+```
 
 ## Cloudflare special TTLs
 

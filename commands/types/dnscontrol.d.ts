@@ -151,6 +151,14 @@ declare const CF_PROXY_DEFAULT_ON: DomainModifier;
 declare const CF_UNIVERSALSSL_OFF: DomainModifier;
 /** UniversalSSL on for entire domain */
 declare const CF_UNIVERSALSSL_ON: DomainModifier;
+/** Set a comment on a DNS record (works on all Cloudflare plans) */
+declare function CF_COMMENT(comment: string): RecordModifier;
+/** Set tags on a DNS record (requires Cloudflare paid plan) */
+declare function CF_TAGS(...tags: string[]): RecordModifier;
+/** Enable comment management for this domain (opt-in to sync comments) */
+declare const CF_MANAGE_COMMENTS: DomainModifier;
+/** Enable tag management for this domain (opt-in to sync tags, requires paid plan) */
+declare const CF_MANAGE_TAGS: DomainModifier;
 
 /**
  * Set default values for CLI variables. See: https://dnscontrol.org/cli-variables

@@ -145,6 +145,12 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 				comment += " CF_CNAME_FLATTEN_ON"
 			}
 		}
+		if cfComment, ok := rr.Metadata["cloudflare_comment"]; ok && cfComment != "" {
+			comment += fmt.Sprintf(` CF_COMMENT=%q`, cfComment)
+		}
+		if cfTags, ok := rr.Metadata["cloudflare_tags"]; ok && cfTags != "" {
+			comment += fmt.Sprintf(" CF_TAGS=%s", cfTags)
+		}
 		if comment != "" {
 			comment = " ;" + comment
 		}

@@ -1248,6 +1248,27 @@ func makeTests() []*TestGroup {
 			CfFlattenOn(), CfFlattenOff(),
 		),
 
+		// CLOUDFLAREAPI: COMMENTS (works on all plans)
+
+		testgroup("CF_COMMENT create",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			tc("comment_create", cfCommentA("cmnt", "174.136.107.111", "Test comment")),
+			tc("comment_change", cfCommentA("cmnt", "174.136.107.111", "Changed comment")),
+			tc("comment_remove", a("cmnt", "174.136.107.111")),
+		),
+
+		// CLOUDFLAREAPI: TAGS (requires paid plan)
+
+		testgroup("CF_TAGS create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			tc("tags_create", cfTagsA("tags", "174.136.107.111", "tag1,tag2")),
+			tc("tags_change", cfTagsA("tags", "174.136.107.111", "tag2,tag3")),
+			tc("tags_remove", a("tags", "174.136.107.111")),
+		),
+
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
