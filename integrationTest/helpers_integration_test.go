@@ -51,7 +51,6 @@ func CfFlattenOn() *TestCase {
 	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
 }
 
-
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
