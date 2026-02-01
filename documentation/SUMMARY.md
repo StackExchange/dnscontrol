@@ -140,6 +140,7 @@
 * [Fortigate](provider/fortigate.md)
 * [Gandi_v5](provider/gandiv5.md)
 * [Gcore](provider/gcore.md)
+* [Gidinet](provider/gidinet.md)
 * [Google Cloud DNS](provider/gcloud.md)
 * [Hetzner DNS API](provider/hetznerv2.md)
 * [Hetzner DNS Console (legacy)](provider/hetzner.md)

@@ -30,6 +30,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/gcore"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/gidinet"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hetznerv2"
