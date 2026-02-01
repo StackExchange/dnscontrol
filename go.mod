@@ -74,7 +74,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/nicholas-fedor/shoutrrr v0.13.1
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.106.1
+	github.com/oracle/oci-go-sdk/v65 v65.107.0
 	github.com/urfave/cli/v3 v3.6.2
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
