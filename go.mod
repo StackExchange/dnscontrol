@@ -68,7 +68,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hetznercloud/hcloud-go/v2 v2.36.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.185
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.186
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
