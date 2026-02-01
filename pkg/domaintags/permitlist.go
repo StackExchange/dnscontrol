@@ -4,10 +4,14 @@ import (
 	"strings"
 )
 
+// PermitList is a structure that holds a pre-compiled version of the --domains
+// commmand line argument.  "all" means all domains are permitted and the rest
+// of the list is ignored. Otherwise, the list contains each element stored in a
+// variety of ways useful to the matching algorithm.
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
-	items []DomainFixedForms
+	items []*DomainNameVarieties
 }
 
 // CompilePermitList compiles a list of domain strings into a PermitList structure. The
@@ -18,14 +22,14 @@ func CompilePermitList(s string) PermitList {
 	}
 
 	sl := PermitList{}
-	for _, l := range strings.Split(s, ",") {
+	for l := range strings.SplitSeq(s, ",") {
 		l = strings.TrimSpace(l)
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
 		}
-		ff := MakeDomainFixForms(l)
-		if ff.HasBang && ff.NameIDN == "" { // Treat empty name as wildcard.
-			ff.NameIDN = "*"
+		ff := MakeDomainNameVarieties(l)
+		if ff.HasBang && ff.NameASCII == "" { // Treat empty name as wildcard.
+			ff.NameASCII = "*"
 		}
 		sl.items = append(sl.items, ff)
 	}
@@ -33,6 +37,7 @@ func CompilePermitList(s string) PermitList {
 	return sl
 }
 
+// Permitted returns whether a domain is permitted by the PermitList.
 func (pl *PermitList) Permitted(domToCheck string) bool {
 
 	// If the permit list is "all", everything is permitted.
@@ -40,7 +45,7 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		return true
 	}
 
-	domToCheckFF := MakeDomainFixForms(domToCheck)
+	domToCheckFF := MakeDomainNameVarieties(domToCheck)
 
 	for _, filterItem := range pl.items {
 
@@ -65,24 +70,24 @@ func (pl *PermitList) Permitted(domToCheck string) bool {
 		// Now that we know the tag matches, we can focus on the name.
 
 		// `*!tag` or `*` matches everything.
-		if filterItem.NameIDN == "*" {
+		if filterItem.NameASCII == "*" {
 			return true
 		}
 
 		// If the name starts with "*." then match the suffix.
-		if strings.HasPrefix(filterItem.NameIDN, "*.") {
+		if strings.HasPrefix(filterItem.NameASCII, "*.") {
 			// example.com matches *.example.com
-			if domToCheckFF.NameIDN == filterItem.NameIDN[2:] || domToCheckFF.NameUnicode == filterItem.NameUnicode[2:] {
+			if domToCheckFF.NameASCII == filterItem.NameASCII[2:] || domToCheckFF.NameUnicode == filterItem.NameUnicode[2:] {
 				return true
 			}
 			// foo.example.com matches *.example.com
-			if strings.HasSuffix(domToCheckFF.NameIDN, filterItem.NameIDN[1:]) || strings.HasSuffix(domToCheckFF.NameUnicode, filterItem.NameUnicode[1:]) {
+			if strings.HasSuffix(domToCheckFF.NameASCII, filterItem.NameASCII[1:]) || strings.HasSuffix(domToCheckFF.NameUnicode, filterItem.NameUnicode[1:]) {
 				return true
 			}
 		}
 
 		// No wildcards? Exact match.
-		if filterItem.NameIDN == domToCheckFF.NameIDN || filterItem.NameUnicode == domToCheckFF.NameUnicode {
+		if filterItem.NameASCII == domToCheckFF.NameASCII || filterItem.NameUnicode == domToCheckFF.NameUnicode {
 			return true
 		}
 	}

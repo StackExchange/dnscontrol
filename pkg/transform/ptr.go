@@ -2,7 +2,8 @@ package transform
 
 import (
 	"fmt"
-	"net"
+	"net" // Permitted import for using legacy net.CIDRMask and related functions.
+	"net/netip"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,8 +18,8 @@ func PtrNameMagic(name, domain string) (string, error) {
 	// If the name is already in-addr.arpa or ipv6.arpa,
 	// make sure the domain matches.
 	if strings.HasSuffix(name, ".in-addr.arpa.") || strings.HasSuffix(name, ".ip6.arpa.") {
-		if strings.HasSuffix(name, "."+domain+".") {
-			return strings.TrimSuffix(name, "."+domain+"."), nil
+		if before, ok := strings.CutSuffix(name, "."+domain+"."); ok {
+			return before, nil
 		}
 		return name, fmt.Errorf("PTR record %v in wrong domain (%v)", name, domain)
 	}
@@ -35,8 +36,8 @@ func PtrNameMagic(name, domain string) (string, error) {
 
 func ipv4magic(name, domain string) (string, error) {
 	// Not a valid IPv4 address. Leave it alone.
-	ip := net.ParseIP(name)
-	if ip == nil || ip.To4() == nil || !strings.Contains(name, ".") {
+	ip, err := netip.ParseAddr(name)
+	if err != nil || !ip.IsValid() || !ip.Is4() || !strings.Contains(name, ".") {
 		return name, nil
 	}
 
@@ -66,7 +67,14 @@ var isRfc4183Format3 = regexp.MustCompile(`(\d{1,3})-(\d{1,3})\.(\d{1,3})\.in-ad
 
 // ipMatchesClasslessDomain returns true if ip is appropriate for domain.
 // domain is a reverse DNS lookup zone (in-addr.arpa) as described in RFC2317.
-func ipMatchesClasslessDomain(ip net.IP, domain string) int {
+func ipMatchesClasslessDomain(ip_ netip.Addr, domain string) int {
+
+	// Converting netip.Addr to net.IP so we can use the legacy code, which is troublesome to translate.
+	// get Addr as []byte
+	s := ip_.AsSlice()
+	// convert bytes slice to net.IP type (it works as net.IP underlying type is also []byte so net.IP and []byte are identical)
+	ip := net.IP(s)
+
 	// The unofficial but preferred format in RFC2317:
 	m := isRfc2317Format1.FindStringSubmatch(domain)
 	if m != nil {

@@ -6,26 +6,29 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// DomainFixedForms stores the various fixed forms of a domain name and tag.
-type DomainFixedForms struct {
-	NameRaw     string // "originalinput.com" (name as input by the user, lowercased (no tag))
-	NameIDN     string // "punycode.com"
-	NameUnicode string // "unicode.com" (converted to downcase BEFORE unicode conversion)
-	UniqueName  string // "punycode.com!tag"
+// DomainNameVarieties stores the various forms of a domain name and tag.
+type DomainNameVarieties struct {
+	NameRaw     string // "originalinput.com" (name as input by the user (no tag))
+	NameASCII   string // "punycode.com" (converted to punycode and downcase)
+	NameUnicode string // "unicode.com" (converted to unicode, ASCII portions downcased)
+	UniqueName  string // "punycode.com!tag" (canonical unique name with tag)
+	DisplayName string // "canonical" or "canonical (unicode.com)" if unicode
 
 	Tag     string // The tag portion of `example.com!tag`
 	HasBang bool   // Was there a "!" in the input when creating this struct?
+
 }
 
-// MakeDomainFixedForms turns the user-supplied name into the fixed forms.
+// MakeDomainNameVarieties turns the user-supplied name into the varioius forms.
 // * .Tag: the domain tag (of "example.com!tag")
-// * .NameRaw: lowercase version of how the user input the name in dnsconfig.js.
-// * .Name: punycode version, downcased.
+// * .NameRaw: how the user input the name in dnsconfig.js (no tag)
+// * .NameASCII: punycode version, downcased
 // * .NameUnicode: unicode version of the name, downcased.
 // * .UniqueName: "example.com!tag" unique across the entire config.
-func MakeDomainFixForms(n string) DomainFixedForms {
+// * .NameDisplay: "punycode.com!tag" or "punycode.com!tag (unicode.com)" if unicode.
+func MakeDomainNameVarieties(n string) *DomainNameVarieties {
 	var err error
-	var tag, nameRaw, nameIDN, nameUnicode, uniqueName string
+	var tag, nameRaw, nameASCII, nameUnicode, uniqueName string
 	var hasBang bool
 
 	// Split tag from name.
@@ -38,44 +41,62 @@ func MakeDomainFixForms(n string) DomainFixedForms {
 		hasBang = false
 	}
 
-	nameRaw = strings.ToLower(p[0])
+	nameRaw = p[0]
 	if strings.HasPrefix(n, nameRaw) {
 		// Avoid pointless duplication.
 		nameRaw = n[0:len(nameRaw)]
 	}
 
-	nameIDN, err = idna.ToASCII(nameRaw)
+	nameASCII, err = idna.ToASCII(nameRaw)
 	if err != nil {
-		nameIDN = nameRaw // Fallback to raw name on error.
+		nameASCII = nameRaw // Fallback to raw name on error.
 	} else {
+		nameASCII = strings.ToLower(nameASCII)
 		// Avoid pointless duplication.
-		if nameIDN == nameRaw {
-			nameIDN = nameRaw
+		if strings.HasPrefix(n, nameASCII) {
+			// Avoid pointless duplication.
+			nameASCII = n[0:len(nameASCII)]
 		}
 	}
 
-	nameUnicode, err = idna.ToUnicode(nameRaw)
+	nameUnicode, err = idna.ToUnicode(nameASCII) // We use nameASCII since it is already lowercased.
 	if err != nil {
 		nameUnicode = nameRaw // Fallback to raw name on error.
 	} else {
 		// Avoid pointless duplication.
-		if nameUnicode == nameRaw {
-			nameUnicode = nameRaw
+		if strings.HasPrefix(n, nameUnicode) {
+			// Avoid pointless duplication.
+			nameUnicode = n[0:len(nameUnicode)]
 		}
 	}
 
 	if hasBang {
-		uniqueName = nameIDN + "!" + tag
+		uniqueName = nameASCII + "!" + tag
 	} else {
-		uniqueName = nameIDN
+		uniqueName = nameASCII
 	}
 
-	return DomainFixedForms{
-		Tag:         tag,
+	// Display this as "example.com" or "punycode.com (unicode.com)"
+	display := Display(uniqueName, nameASCII, nameUnicode)
+
+	return &DomainNameVarieties{
 		NameRaw:     nameRaw,
-		NameIDN:     nameIDN,
+		NameASCII:   nameASCII,
 		NameUnicode: nameUnicode,
 		UniqueName:  uniqueName,
-		HasBang:     hasBang,
+		DisplayName: display,
+
+		Tag:     tag,
+		HasBang: hasBang,
 	}
+}
+
+// Display constructs the string suitable for displaying to the user
+// "example.com" or "punycode.com (unicode.com)"
+// If we add a user-configurable display format, it will be implemented here.
+func Display(canonical, nameASCII, nameUnicode string) string {
+	if nameUnicode != nameASCII {
+		return canonical + " (" + nameUnicode + ")"
+	}
+	return canonical
 }

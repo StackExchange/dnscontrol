@@ -19,6 +19,8 @@
         "otherconfig": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -38,13 +40,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.com"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_tag": "inside",
         "dnscontrol_uniquename": "example.com!inside"
       },
@@ -66,13 +71,16 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "inside"
+      "tag": "inside",
+      "uniquename": "example.com!inside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_tag": "outside",
         "dnscontrol_uniquename": "example.com!outside"
       },
@@ -87,13 +95,16 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "outside"
+      "tag": "outside",
+      "uniquename": "example.com!outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_uniquename": "example.net"
       },
       "name": "example.net",
@@ -113,13 +124,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example.net"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_tag": "inside",
         "dnscontrol_uniquename": "example.net!inside"
       },
@@ -148,13 +162,16 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "inside"
+      "tag": "inside",
+      "uniquename": "example.net!inside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.net",
+        "dnscontrol_nameunicode": "example.net",
         "dnscontrol_tag": "outside",
         "dnscontrol_uniquename": "example.net!outside"
       },
@@ -183,13 +200,16 @@
         }
       ],
       "registrar": "Third-Party",
-      "tag": "outside"
+      "tag": "outside",
+      "uniquename": "example.net!outside"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "empty.example.net",
+        "dnscontrol_nameunicode": "empty.example.net",
         "dnscontrol_uniquename": "empty.example.net"
       },
       "name": "empty.example.net",
@@ -209,13 +229,16 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "empty.example.net"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example-b.net",
+        "dnscontrol_nameunicode": "example-b.net",
         "dnscontrol_uniquename": "example-b.net!"
       },
       "name": "example-b.net",
@@ -235,7 +258,8 @@
           "type": "A"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "example-b.net!"
     }
   ],
   "registrars": [

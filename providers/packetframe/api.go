@@ -143,7 +143,7 @@ func (api *packetframeProvider) deleteRecord(zoneID string, recordID string) err
 	return nil
 }
 
-func (api *packetframeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
+func (api *packetframeProvider) newRequest(method, endpoint string, body any) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
@@ -170,7 +170,7 @@ func (api *packetframeProvider) newRequest(method, endpoint string, body interfa
 	return req, nil
 }
 
-func (api *packetframeProvider) get(endpoint string, target interface{}) error {
+func (api *packetframeProvider) get(endpoint string, target any) error {
 	req, err := api.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err

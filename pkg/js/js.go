@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
@@ -69,7 +70,7 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 	}
 
 	// add functions to otto
-	functions := map[string]interface{}{
+	functions := map[string]any{
 		"require":   require,
 		"REV":       reverse,
 		"REVCOMPAT": reverseCompat,
@@ -122,6 +123,11 @@ func ExecuteJavascriptString(script []byte, devMode bool, variables map[string]s
 
 	err = conf.PostProcess()
 	if err != nil {
+		return nil, err
+	}
+	// No need to call FixLegacyDC here. These records were created from dnsconfig.js, not from a provider.
+
+	if err := rtypecontrol.ImportRawRecords(conf.Domains); err != nil {
 		return nil, err
 	}
 

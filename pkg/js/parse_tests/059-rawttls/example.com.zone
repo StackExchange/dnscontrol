@@ -1,0 +1,9 @@
+$TTL 300
+@                IN RP    user.example.com. mytxt.example.com.
+                 IN RP    user2.example.com. mytxt.example.com.
+aaa300           IN RP    user.example.com. mytxt.example.com.
+bbb1       1111  IN RP    user.example.com. mytxt.example.com.
+ccc2       2222  IN RP    user.example.com. mytxt.example.com.
+ddd1       1111  IN RP    user.example.com. mytxt.example.com.
+eee3       3333  IN RP    user.example.com. mytxt.example.com.
+mytxt            IN TXT   "Do not call me on my phone"

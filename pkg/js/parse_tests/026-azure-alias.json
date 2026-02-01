@@ -4,6 +4,8 @@
     {
       "dnsProviders": {},
       "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com"
       },
       "name": "foo.com",
@@ -48,7 +50,8 @@
           "type": "AZURE_ALIAS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "foo.com"
     }
   ],
   "registrars": []

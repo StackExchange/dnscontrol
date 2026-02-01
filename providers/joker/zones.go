@@ -36,8 +36,8 @@ func (api *jokerProvider) ListZones() ([]string, error) {
 	}
 
 	var zones []string
-	lines := strings.Split(strings.TrimSpace(body), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(strings.TrimSpace(body), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line != "" && !strings.HasPrefix(line, "#") {
 			// dns-zone-list returns domains with expiration dates: "domain.com 2025-12-31"

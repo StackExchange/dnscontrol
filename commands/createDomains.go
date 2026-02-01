@@ -1,11 +1,12 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/urfave/cli/v2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -13,14 +14,14 @@ var _ = cmd(catUtils, func() *cli.Command {
 	return &cli.Command{
 		Name:  "create-domains",
 		Usage: "DEPRECATED: Ensures that all domains in your configuration are activated at their Domain Service Provider (This does not purchase the domain or otherwise interact with Registrars.)",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(CreateDomains(args))
 		},
 		Flags: args.flags(),
-		Before: func(context *cli.Context) error {
+		Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
 			fmt.Println("DEPRECATED: This command is deprecated. The domain is automatically created at the Domain Service Provider during the push command.")
 			fmt.Println("DEPRECATED: To prevent disable auto-creating, use --no-populate with the push command.")
-			return nil
+			return ctx, nil
 		},
 	}
 }())

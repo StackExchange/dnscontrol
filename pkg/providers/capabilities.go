@@ -7,7 +7,7 @@ import (
 )
 
 // Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
-type Capability uint32
+type Capability int
 
 const (
 	// Keep this list sorted.
@@ -79,6 +79,9 @@ const (
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
 
+	// CanUseRP indicates the provider can handle RP records
+	CanUseRP
+
 	// CanUseSMIMEA indicates the provider can handle SMIMEA records
 	CanUseSMIMEA
 
@@ -138,7 +141,7 @@ type DocumentationNote struct {
 type DocumentationNotes map[Capability]*DocumentationNote
 
 // ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangeably
-type ProviderMetadata interface{}
+type ProviderMetadata any
 
 // Notes is a collection of all documentation notes, keyed by provider type
 var Notes = map[string]DocumentationNotes{}

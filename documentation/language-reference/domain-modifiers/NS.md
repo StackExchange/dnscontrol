@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-NS adds a NS record to the domain. The name should be the relative label for the domain.
+`NS` adds a [Name server record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
 
 The name may not be `@` (the bare domain), as that is controlled via [`NAMESERVER()`](NAMESERVER.md).
 The difference between `NS()` and [`NAMESERVER()`](NAMESERVER.md) is explained in the [`NAMESERVER()` description](NAMESERVER.md).

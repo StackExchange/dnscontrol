@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,8 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
 	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypes"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catDebug, func() *cli.Command {
@@ -21,7 +21,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 	return &cli.Command{
 		Name:  "print-ir",
 		Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return exit(PrintIR(args))
 		},
 		Flags: args.flags(),
@@ -42,7 +42,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 	return &cli.Command{
 		Name:  "check",
 		Usage: "Check and validate dnsconfig.js. Output to stdout.  Do not access providers.",
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			// Create a PrintIRArgs struct and copy our args to the
 			// appropriate fields.
 			var pargs PrintIRArgs
@@ -130,11 +130,6 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
 
-	err = rtypes.PostProcess(dnsConfig.Domains)
-	if err != nil {
-		return nil, err
-	}
-
 	return dnsConfig, nil
 }
 
@@ -170,9 +165,9 @@ func exit(err error) error {
 }
 
 // stringSliceToMap converts cli.StringSlice to map[string]string for further processing
-func stringSliceToMap(stringSlice cli.StringSlice) map[string]string {
-	mapString := make(map[string]string, len(stringSlice.Value()))
-	for _, values := range stringSlice.Value() {
+func stringSliceToMap(stringSlice []string) map[string]string {
+	mapString := make(map[string]string, len(stringSlice))
+	for _, values := range stringSlice {
 		parts := strings.SplitN(values, "=", 2)
 		if len(parts) == 2 {
 			mapString[parts[0]] = parts[1]

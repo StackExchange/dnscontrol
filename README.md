@@ -17,6 +17,7 @@ Currently supported DNS providers:
 
 - AdGuard Home
 - Akamai Edge DNS
+- Alibaba Cloud DNS (ALIDNS)
 - AutoDNS
 - AWS Route 53
 - AXFR+DDNS
@@ -31,6 +32,7 @@ Currently supported DNS providers:
 - deSEC
 - DigitalOcean
 - DNS Made Easy
+- DNScale
 - DNSimple
 - Domainnameshop (Domeneshop)
 - Exoscale

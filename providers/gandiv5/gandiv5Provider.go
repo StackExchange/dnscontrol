@@ -26,11 +26,11 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
 	"github.com/go-gandi/go-gandi/livedns"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Section 1: Register this provider in the system.
@@ -60,6 +60,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRP:               providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -235,7 +236,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 				label := inst.Key.NameFQDN
 				rtype := n.RrsetType
 				domain := dc.Name
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				shortname := dnsutilv1.TrimDomainName(label, dc.Name)
 				ttl := n.RrsetTTL
 				values := n.RrsetValues
 				key := models.RecordKey{NameFQDN: label, Type: rtype}
@@ -286,7 +287,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
 			label := inst.Key.NameFQDN
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			shortname := dnsutilv1.TrimDomainName(label, dc.Name)
 			corrections = append(corrections,
 				&models.Correction{
 					Msg: msgs,

@@ -3,33 +3,34 @@ package transform
 import (
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 )
 
 // IPConversion describes an IP conversion.
 type IPConversion struct {
-	Low, High net.IP
-	NewBases  []net.IP
-	NewIPs    []net.IP
+	Low, High netip.Addr
+	NewBases  []netip.Addr
+	NewIPs    []netip.Addr
 }
 
-func ipToUint(i net.IP) (uint32, error) {
-	parts := i.To4()
-	if parts == nil || len(parts) != 4 {
-		return 0, fmt.Errorf("%s is not an ipv4 address", parts.String())
+func ipToUint(i netip.Addr) (uint32, error) {
+	if !i.Is4() {
+		return 0, fmt.Errorf("%s is not an ipv4 address", i.String())
 	}
+	parts := i.AsSlice()
 	r := uint32(parts[0])<<24 | uint32(parts[1])<<16 | uint32(parts[2])<<8 | uint32(parts[3])
 	return r, nil
 }
 
-// UintToIP convert a 32-bit into a net.IP.
-func UintToIP(u uint32) net.IP {
-	return net.IPv4(
-		byte((u>>24)&255),
-		byte((u>>16)&255),
-		byte((u>>8)&255),
-		byte((u)&255))
+// UintToIP convert a 32-bit into a netip.Addr.
+func UintToIP(u uint32) netip.Addr {
+	return netip.AddrFrom4([4]byte{
+		byte((u >> 24) & 255),
+		byte((u >> 16) & 255),
+		byte((u >> 8) & 255),
+		byte((u) & 255),
+	})
 }
 
 // DecodeTransformTable turns a string-encoded table into a list of conversions.
@@ -45,25 +46,36 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 			items[i] = strings.TrimSpace(item)
 		}
 
-		con := IPConversion{
-			Low:  net.ParseIP(items[0]),
-			High: net.ParseIP(items[1]),
+		var err error
+		var tLow, tHigh netip.Addr
+		tLow, err = netip.ParseAddr(items[0])
+		if err != nil {
+			return nil, err
 		}
-		parseList := func(s string) ([]net.IP, error) {
-			ips := []net.IP{}
-			for _, ip := range strings.Split(s, ",") {
+		tHigh, err = netip.ParseAddr(items[1])
+		if err != nil {
+			return nil, err
+		}
+
+		con := IPConversion{
+			Low:  tLow,
+			High: tHigh,
+		}
+		parseList := func(s string) ([]netip.Addr, error) {
+			ips := []netip.Addr{}
+			for ip := range strings.SplitSeq(s, ",") {
 				if ip == "" {
 					continue
 				}
-				addr := net.ParseIP(ip)
-				if addr == nil {
-					return nil, fmt.Errorf("%s is not a valid ip address", ip)
+				addr, err := netip.ParseAddr(ip)
+				if err != nil {
+					return nil, err
 				}
 				ips = append(ips, addr)
 			}
 			return ips, nil
 		}
-		var err error
+		//var err error
 		if con.NewBases, err = parseList(items[2]); err != nil {
 			return nil, err
 		}
@@ -86,46 +98,46 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 }
 
 // IP transforms a single ip address. If the transform results in multiple new targets, an error will be returned.
-func IP(address net.IP, transforms []IPConversion) (net.IP, error) {
+func IP(address netip.Addr, transforms []IPConversion) (netip.Addr, error) {
 	ips, err := IPToList(address, transforms)
 	if err != nil {
-		return nil, err
+		return netip.Addr{}, err
 	}
 	if len(ips) != 1 {
-		return nil, fmt.Errorf("exactly one IP expected. Got: %s", ips)
+		return netip.Addr{}, fmt.Errorf("exactly one IP expected. Got: %s", ips)
 	}
 	return ips[0], err
 }
 
 // IPToList manipulates an net.IP based on a list of IPConversions. It can potentially expand one ip address into multiple addresses.
-func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
+func IPToList(address netip.Addr, transforms []IPConversion) ([]netip.Addr, error) {
 	thisIP, err := ipToUint(address)
 	if err != nil {
 		return nil, err
 	}
 	for _, conv := range transforms {
-		min_, err := ipToUint(conv.Low)
+		minIP, err := ipToUint(conv.Low)
 		if err != nil {
 			return nil, err
 		}
-		max_, err := ipToUint(conv.High)
+		maxIP, err := ipToUint(conv.High)
 		if err != nil {
 			return nil, err
 		}
-		if (thisIP >= min_) && (thisIP <= max_) {
+		if (thisIP >= minIP) && (thisIP <= maxIP) {
 			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
-			list := []net.IP{}
+			list := []netip.Addr{}
 			for _, nb := range conv.NewBases {
 				newbase, err := ipToUint(nb)
 				if err != nil {
 					return nil, err
 				}
-				list = append(list, UintToIP(newbase+(thisIP-min_)))
+				list = append(list, UintToIP(newbase+(thisIP-minIP)))
 			}
 			return list, nil
 		}
 	}
-	return []net.IP{address}, nil
+	return []netip.Addr{address}, nil
 }

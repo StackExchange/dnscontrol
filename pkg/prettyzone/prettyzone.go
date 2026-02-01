@@ -12,7 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // MostCommonTTL returns the most common TTL in a set of records. If there is
@@ -96,7 +96,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 	}
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for _, comment := range z.Comments {
-		for _, line := range strings.Split(comment, "\n") {
+		for line := range strings.SplitSeq(comment, "\n") {
 			if line != "" {
 				fmt.Fprintln(w, ";", line)
 			}
@@ -105,7 +105,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 	for i, rr := range z.Records {
 		// Fake types are commented out.
 		prefix := ""
-		_, ok := dns.StringToType[rr.Type]
+		_, ok := dnsv1.StringToType[rr.Type]
 		if !ok {
 			prefix = ";"
 		}
@@ -137,8 +137,22 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		comment := ""
 		if cp, ok := rr.Metadata["cloudflare_proxy"]; ok {
 			if cp == "true" {
-				comment = " ; CF_PROXY_ON"
+				comment += " CF_PROXY_ON"
 			}
+		}
+		if cf, ok := rr.Metadata["cloudflare_cname_flatten"]; ok {
+			if cf == "on" {
+				comment += " CF_CNAME_FLATTEN_ON"
+			}
+		}
+		if cfComment, ok := rr.Metadata["cloudflare_comment"]; ok && cfComment != "" {
+			comment += fmt.Sprintf(` CF_COMMENT=%q`, cfComment)
+		}
+		if cfTags, ok := rr.Metadata["cloudflare_tags"]; ok && cfTags != "" {
+			comment += fmt.Sprintf(" CF_TAGS=%s", cfTags)
+		}
+		if comment != "" {
+			comment = " ;" + comment
 		}
 
 		fmt.Fprintf(w, "%s%s%s\n",

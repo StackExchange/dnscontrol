@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"os"
 	"strconv"
 	"strings"
@@ -17,9 +17,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
@@ -73,20 +74,17 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("CF_REDIRECT", providerName, "")
-	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", providerName, "")
 	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	ipConversions   []transform.IPConversion
-	ignoredLabels   []string
-	manageRedirects bool // Old "Page Rule"-style redirects.
-	manageWorkers   bool
-	accountID       string
-	cfClient        *cloudflare.API
+	ipConversions []transform.IPConversion
+	ignoredLabels []string
+	manageWorkers bool
+	accountID     string
+	cfClient      *cloudflare.API
 	//
 	manageSingleRedirects bool // New "Single Redirects"-style redirects.
 	//
@@ -135,14 +133,6 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 			}
 			rec.Metadata["cloudflare_proxy"] = p
 		}
-	}
-
-	if c.manageRedirects { // if old
-		prs, err := c.getPageRules(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
 	}
 
 	if c.manageSingleRedirects { // if new xor old
@@ -209,8 +199,17 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	var corrections []*models.Correction
 
+	// Check if comment/tag management is enabled for this domain
+	manageComments := dc.Metadata[metaManageComments] == "true"
+	manageTags := dc.Metadata[metaManageTags] == "true"
+
+	// Create a comparable function that includes comments/tags only if management is enabled
+	comparableFunc := func(rec *models.RecordConfig) string {
+		return genComparableWithMgmt(rec, manageComments, manageTags)
+	}
+
 	// Cloudflare is a "ByRecord" API.
-	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, genComparable)
+	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, comparableFunc)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -266,7 +265,8 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	return corrections, actualChangeCount, nil
 }
 
-func genComparable(rec *models.RecordConfig) string {
+func genComparableWithMgmt(rec *models.RecordConfig, manageComments, manageTags bool) string {
+	var parts []string
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
@@ -276,29 +276,42 @@ func genComparable(rec *models.RecordConfig) string {
 			if proxy == "off" {
 				proxy = "false"
 			}
-			return "proxy=" + proxy
+			parts = append(parts, "proxy="+proxy)
 		}
 	}
-	return ""
+	if rec.Type == "CNAME" {
+		flatten := rec.Metadata[metaCNAMEFlatten]
+		if flatten == "on" {
+			parts = append(parts, "flatten=true")
+		} else {
+			parts = append(parts, "flatten=false")
+		}
+	}
+	// Include comment in comparison only if comment management is enabled
+	if manageComments {
+		comment := rec.Metadata[metaComment]
+		parts = append(parts, "comment="+comment)
+	}
+	// Include tags in comparison only if tag management is enabled
+	if manageTags {
+		tags := rec.Metadata[metaTags]
+		parts = append(parts, "tags="+tags)
+	}
+	return strings.Join(parts, ",")
 }
 
 func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
 	switch newrec.Type {
-	case "PAGE_RULE":
-		return []*models.Correction{{
-			Msg: msg,
-			F:   func() error { return c.createPageRule(domainID, *newrec.CloudflareRedirect) },
-		}}
 	case "WORKER_ROUTE":
 		return []*models.Correction{{
 			Msg: msg,
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
-				return c.createSingleRedirect(domainID, *newrec.CloudflareRedirect)
+				return c.createSingleRedirect(domainID, *newrec.F.(*cfsingleredirect.SingleRedirectConfig))
 			},
 		}}
 	default:
@@ -309,26 +322,17 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
 	var idTxt string
 	switch oldrec.Type {
-	case "PAGE_RULE":
-		idTxt = oldrec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.SINGLEREDIRECT:
-		idTxt = oldrec.CloudflareRedirect.SRRRulesetID
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+		idTxt = oldrec.F.(*cfsingleredirect.SingleRedirectConfig).SRRRulesetID
 	default:
 		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
 	}
 	msg = msg + color.YellowString(" id=%v", idTxt)
 
 	switch newrec.Type {
-	case "PAGE_RULE":
-		return []*models.Correction{{
-			Msg: msg,
-			F: func() error {
-				return c.updatePageRule(idTxt, domainID, *newrec.CloudflareRedirect)
-			},
-		}}
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		return []*models.Correction{{
 			Msg: msg,
 			F: func() error {
@@ -360,7 +364,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		idTxt = origRec.Original.(cloudflare.PageRule).ID
 	case "WORKER_ROUTE":
 		idTxt = origRec.Original.(cloudflare.WorkerRoute).ID
-	case cfsingleredirect.SINGLEREDIRECT:
+	case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 		idTxt = origRec.Original.(cloudflare.RulesetRule).ID
 	default:
 		idTxt = origRec.Original.(cloudflare.DNSRecord).ID
@@ -371,12 +375,12 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec *models.
 		Msg: msg,
 		F: func() error {
 			switch recType {
-			case "PAGE_RULE":
-				return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
+			// case "PAGE_RULE":
+			// 	return c.deletePageRule(origRec.Original.(cloudflare.PageRule).ID, domainID)
 			case "WORKER_ROUTE":
 				return c.deleteWorkerRoute(origRec.Original.(cloudflare.WorkerRoute).ID, domainID)
-			case cfsingleredirect.SINGLEREDIRECT:
-				return c.deleteSingleRedirects(domainID, *origRec.CloudflareRedirect)
+			case "CLOUDFLAREAPI_SINGLE_REDIRECT":
+				return c.deleteSingleRedirects(domainID, *origRec.F.(*cfsingleredirect.SingleRedirectConfig))
 			default:
 				return c.deleteDNSRecord(origRec.Original.(cloudflare.DNSRecord), domainID)
 			}
@@ -428,17 +432,29 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 }
 
 const (
-	metaProxy         = "cloudflare_proxy"
-	metaProxyDefault  = metaProxy + "_default"
-	metaOriginalIP    = "original_ip" // TODO(tlim): Unclear what this means.
-	metaUniversalSSL  = "cloudflare_universalssl"
-	metaIPConversions = "ip_conversions" // TODO(tlim): Rename to obscure_rules.
+	metaProxy          = "cloudflare_proxy"
+	metaProxyDefault   = metaProxy + "_default"
+	metaOriginalIP     = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL   = "cloudflare_universalssl"
+	metaCNAMEFlatten   = "cloudflare_cname_flatten"
+	metaComment        = "cloudflare_comment"
+	metaTags           = "cloudflare_tags"
+	metaManageComments = "cloudflare_manage_comments"
+	metaManageTags     = "cloudflare_manage_tags"
 )
 
 func checkProxyVal(v string) (string, error) {
 	v = strings.ToLower(v)
 	if v != "on" && v != "off" && v != "full" {
 		return "", fmt.Errorf("bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
+	}
+	return v, nil
+}
+
+func checkCNAMEFlattenVal(v string) (string, error) {
+	v = strings.ToLower(v)
+	if v != "on" && v != "off" {
+		return "", fmt.Errorf("bad metadata value for cloudflare_cname_flatten: '%s'. Use on/off", v)
 	}
 	return v, nil
 }
@@ -475,7 +491,6 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	// iterate backwards so first defined page rules have highest priority
-	prPriority := 0
 	for i := len(dc.Records) - 1; i >= 0; i-- {
 		rec := dc.Records[i]
 		if rec.Metadata == nil {
@@ -509,61 +524,46 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			}
 		}
 
-		// CF_REDIRECT record types:
-		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
-			if !c.manageRedirects && !c.manageSingleRedirects {
-				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_REDIRECT/CF_TEMP_REDIRECT records")
+		// Validate CNAME flattening metadata (only valid on CNAME records)
+		if val := rec.Metadata[metaCNAMEFlatten]; val != "" {
+			if rec.Type != "CNAME" {
+				return fmt.Errorf("cloudflare_cname_flatten set on %v record: %#v (only valid on CNAME records)", rec.Type, rec.GetLabel())
 			}
-			code := uint16(301)
-			if rec.Type == "CF_TEMP_REDIRECT" {
-				code = 302
-			}
-
-			part := strings.SplitN(rec.GetTargetField(), ",", 2)
-			prWhen, prThen := part[0], part[1]
-			prPriority++
-
-			// Convert this record to a PAGE_RULE.
-			if err := cfsingleredirect.MakePageRule(rec, prPriority, code, prWhen, prThen); err != nil {
+			val, err := checkCNAMEFlattenVal(val)
+			if err != nil {
 				return err
 			}
-			rec.SetLabel("@", dc.Name)
+			rec.Metadata[metaCNAMEFlatten] = val
+		}
 
-			if c.manageRedirects && !c.manageSingleRedirects {
-				// Old-Style only.  No additional work needed.
-			} else if !c.manageRedirects && c.manageSingleRedirects {
-				// New-Style only.  Convert PAGE_RULE to SINGLEREDIRECT.
-				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-					return err
+		// Validate tags (check for reserved cf- prefix)
+		if tags := rec.Metadata[metaTags]; tags != "" {
+			for _, tag := range strings.Split(tags, ",") {
+				if strings.HasPrefix(strings.ToLower(tag), "cf-") {
+					return fmt.Errorf("cloudflare_tags on %v record %#v contains reserved tag prefix 'cf-': %q", rec.Type, rec.GetLabel(), tag)
 				}
-				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-					return err
-				}
-			} else {
-				// Both old-style and new-style enabled!
-				// Retain the PAGE_RULE and append an additional SINGLEREDIRECT.
-
-				// make a copy:
-				newRec, err := rec.Copy()
-				if err != nil {
-					return err
-				}
-				// The copy becomes the CF SingleRedirect
-				if err := cfsingleredirect.TranscodePRtoSR(rec); err != nil {
-					return err
-				}
-				if err := c.LogTranscode(dc.Name, rec.CloudflareRedirect); err != nil {
-					return err
-				}
-				// Append the copy to the end of the list.
-				dc.Records = append(dc.Records, newRec)
-
-				// The original PAGE_RULE remains untouched.
 			}
-		} else if rec.Type == cfsingleredirect.SINGLEREDIRECT {
+		}
+
+		// Validate that CF_COMMENT is only used when CF_MANAGE_COMMENTS is enabled
+		if rec.Metadata[metaComment] != "" && dc.Metadata[metaManageComments] != "true" {
+			return fmt.Errorf("CF_COMMENT used on %v record %#v but CF_MANAGE_COMMENTS is not enabled for this domain", rec.Type, rec.GetLabel())
+		}
+
+		// Validate that CF_TAGS is only used when CF_MANAGE_TAGS is enabled
+		if rec.Metadata[metaTags] != "" && dc.Metadata[metaManageTags] != "true" {
+			return fmt.Errorf("CF_TAGS used on %v record %#v but CF_MANAGE_TAGS is not enabled for this domain", rec.Type, rec.GetLabel())
+      
+		// CNAME flattening and proxy are mutually exclusive (Opinion 6: if ambiguous, forbid it)
+		// Cloudflare silently disables flattening when proxy is enabled, which leads to confusing behavior
+		if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" && rec.Metadata[metaProxy] == "on" {
+			return fmt.Errorf("CNAME record %#v has both CF_PROXY_ON and CF_CNAME_FLATTEN_ON set, but these are mutually exclusive; Cloudflare ignores CNAME flattening when proxy is enabled", rec.GetLabel())
+		}
+
+		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
-				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CF_SINGLE__REDIRECT records")
+				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CLOUDFLAREAPI_SINGLE_REDIRECT records")
 			}
 		} else if rec.Type == "CF_WORKER_ROUTE" {
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
@@ -586,8 +586,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
-		ip := net.ParseIP(rec.GetTargetField())
-		if ip == nil {
+		ip, err := netip.ParseAddr(rec.GetTargetField())
+		if err != nil {
 			return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
 		}
 		newIP, err := transform.IP(ip, c.ipConversions)
@@ -603,7 +603,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
-func (c *cloudflareProvider) LogTranscode(zone string, redirect *models.CloudflareSingleRedirectConfig) error {
+func (c *cloudflareProvider) LogTranscode(zone string, redirect *cfsingleredirect.SingleRedirectConfig) error {
 	// No filename? Don't log anything.
 	filename := c.tcLogFilename
 	if filename == "" {
@@ -674,10 +674,9 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions   string   `json:"ip_conversions"`
-			IgnoredLabels   []string `json:"ignored_labels"`
-			ManageRedirects bool     `json:"manage_redirects"` // Old-style PAGE_RULE-based redirects
-			ManageWorkers   bool     `json:"manage_workers"`
+			IPConversions string   `json:"ip_conversions"`
+			IgnoredLabels []string `json:"ignored_labels"`
+			ManageWorkers bool     `json:"manage_workers"`
 			//
 			ManageSingleRedirects bool   `json:"manage_single_redirects"` // New-style Dynamic "Single Redirects"
 			TranscodeLogFilename  string `json:"transcode_log"`           // Log the PAGE_RULE conversions.
@@ -687,7 +686,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			return nil, err
 		}
 		api.manageSingleRedirects = parsedMeta.ManageSingleRedirects
-		api.manageRedirects = parsedMeta.ManageRedirects
 		api.tcLogFilename = parsedMeta.TranscodeLogFilename
 		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
@@ -752,7 +750,7 @@ type cfTarget string
 // represented by a false boolean or a dot. Domain names are FQDNs without a
 // trailing period (as of 2019-11-05).
 func (c *cfTarget) UnmarshalJSON(data []byte) error {
-	var obj interface{}
+	var obj any
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return err
 	}
@@ -797,7 +795,7 @@ type cfNaptrRecData struct {
 }
 
 // uint16Zero converts value to uint16 or returns 0.
-func uint16Zero(value interface{}) uint16 {
+func uint16Zero(value any) uint16 {
 	switch v := value.(type) {
 	case float64:
 		return uint16(v)
@@ -808,20 +806,8 @@ func uint16Zero(value interface{}) uint16 {
 	return 0
 }
 
-// intZero converts value to uint16 or returns 0.
-func intZero(value interface{}) uint16 {
-	switch v := value.(type) {
-	case float64:
-		return uint16(v)
-	case int:
-		return uint16(v)
-	case nil:
-	}
-	return 0
-}
-
 // stringDefault returns the value as a string or returns the default value if nil.
-func stringDefault(value interface{}, def string) string {
+func stringDefault(value any, def string) string {
 	switch v := value.(type) {
 	case string:
 		return v
@@ -834,7 +820,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	// Check for read_only metadata
 	// https://github.com/StackExchange/dnscontrol/issues/3850
 	if cr.Meta != nil {
-		if metaMap, ok := cr.Meta.(map[string]interface{}); ok {
+		if metaMap, ok := cr.Meta.(map[string]any); ok {
 			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
 				return nil, nil
 			}
@@ -875,13 +861,30 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		}
 	}
 
+	// Check for CNAME flattening setting
+	if cr.Type == "CNAME" {
+		if cr.Settings.FlattenCNAME != nil && *cr.Settings.FlattenCNAME {
+			rc.Metadata[metaCNAMEFlatten] = "on"
+		} else {
+			rc.Metadata[metaCNAMEFlatten] = "off"
+		}
+	}
+
+	// Read comment and tags from API response
+	if cr.Comment != "" {
+		rc.Metadata[metaComment] = cr.Comment
+	}
+	if len(cr.Tags) > 0 {
+		rc.Metadata[metaTags] = strings.Join(cr.Tags, ",")
+	}
+
 	switch rType := cr.Type; rType { // #rtype_variations
 	case "MX":
 		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := cr.Data.(map[string]interface{})
+		data := cr.Data.(map[string]any)
 
 		target := stringDefault(data["target"], "MISSING.TARGET")
 		if target != "." {
@@ -892,7 +895,11 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	case "TXT":
-		err := rc.SetTargetTXT(cr.Content)
+		s, err := parseCfTxtContent(cr.Content)
+		if err != nil {
+			return rc, err
+		}
+		err = rc.SetTargetTXT(s)
 		return rc, err
 	default:
 		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
@@ -901,6 +908,55 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	}
 
 	return rc, nil
+}
+
+func parseCfTxtContent(s string) (string, error) {
+	// Cloudflare encodes TXT records in a mystery format. They tell you when
+	// you've done something wrong, but won't document what they do want.
+	// If you use their web dashboard and enter the string as any normal human
+	// would, they display a warning that you're a bad person and should feel
+	// bad for doing that.  However, they accept it just fine, and present it in
+	// their API as a string like any person on this planet would expect.  If
+	// you enter the string with quotes, they accept that like a BIND zonefile.
+
+	// There is a difference between what you enter in their web dashboard, how
+	// it is rewritten by the UI, and what you get in the JSON. Examples:
+
+	// dashboard: i love dns it is great
+	// rewritten: "i love dns it is great"
+	// seen json: "i love dns it is great"
+
+	// dashboard: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+	// rewritten: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	// seen json: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+	// dashboard: "i love dns" "it is great"
+	// rewritten: "i love dns" "it is great"
+	// seen json: "i love dns" "it is great"
+
+	// dashboard: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	// rewritten: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	// seen json: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+	// dashboard: "xxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	// rewritten: "xxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	// seen json: "xxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+	// From this we conclude:
+	// If it begins and ends with a quote, use ParseQuoted() to decode it.
+	// Otherwise, it is a raw string. They could just fucking tell us that in
+	// the documenation, but where's the fun in that?
+
+	if s == "" {
+		return "", nil
+	}
+	if s == `"` {
+		return "", errors.New("invalid TXT record content: one double quote")
+	}
+	if s[0] == '"' && s[len(s)-1] == '"' {
+		return txtutil.ParseQuoted(s)
+	}
+	return s, nil
 }
 
 func getProxyMetadata(r *models.RecordConfig) map[string]string {

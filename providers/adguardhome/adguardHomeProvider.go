@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -162,7 +162,7 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 
 	case "CNAME", "ALIAS":
 		re.Answer = rc.GetTargetField()
-		re.Answer = dnsutil.TrimDomainName(re.Answer, domain)
+		re.Answer = dnsutilv1.TrimDomainName(re.Answer, domain)
 
 	case "ADGUARDHOME_A_PASSTHROUGH":
 		re.Answer = "A"
@@ -184,10 +184,10 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	}
 	rc.SetLabelFromFQDN(r.Domain, domain)
 
-	addr := net.ParseIP(r.Answer)
-	if addr != nil {
+	addr, err := netip.ParseAddr(r.Answer)
+	if err != nil {
 		rc.SetTargetIP(addr)
-		if addr.To4() != nil {
+		if addr.Is4() {
 			rc.Type = "A"
 		} else {
 			rc.Type = "AAAA"
@@ -197,7 +197,7 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	} else if r.Answer == "AAAA" {
 		rc.Type = "ADGUARDHOME_AAAA_PASSTHROUGH"
 	} else {
-		answer := dnsutil.TrimDomainName(r.Answer, domain)
+		answer := dnsutilv1.TrimDomainName(r.Answer, domain)
 		rc.SetTarget(answer)
 
 		if r.Domain == domain {

@@ -11,8 +11,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -220,13 +220,13 @@ func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 	case "TXT":
 		_ = recordConfig.SetTargetTXT(removeEscapeChars(record.Content))
 	case "NS", "ALIAS", "CNAME":
-		_ = recordConfig.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
+		_ = recordConfig.SetTarget(dnsutilv1.AddOrigin(addTrailingDot(record.Content), domain))
 	case "MX":
 		content := record.Content
 		if content != "." {
 			content = addTrailingDot(content)
 		}
-		_ = recordConfig.SetTarget(dnsutil.AddOrigin(content, domain))
+		_ = recordConfig.SetTarget(dnsutilv1.AddOrigin(content, domain))
 	case "NAPTR":
 		_ = recordConfig.SetTargetNAPTRString(record.Content)
 	case "SRV":

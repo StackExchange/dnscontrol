@@ -12,6 +12,8 @@ Notifications are configured in the `creds.json` file, since they often contain 
   "r53": {},
   "gcloud": {},
   "notifications": {
+    "notify_on_push": false,
+    "notify_on_preview": false,
     "slack_url": "https://api.slack.com/apps/0XXX0X0XX0/incoming-webhooks",
     "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000",
     "shoutrrr_url": "discover://token@id"
@@ -22,7 +24,49 @@ Notifications are configured in the `creds.json` file, since they often contain 
 
 ## Usage
 
-If you want to send a notification, add the `--notify` flag to the `dnscontrol preview` or `dnscontrol push` commands.
+There are two ways to enable notifications:
+
+1. **On-demand**: Add the `--notify` flag to `dnscontrol preview` or `dnscontrol push` commands
+2. **Automatic**: Enable `notify_on_push` or `notify_on_preview` in your `creds.json`
+
+### Automatic notifications
+
+To automatically send notifications without using the `--notify` flag, configure these options in your `creds.json`:
+
+- `notify_on_push`: Set to `true` to send notifications during `dnscontrol push` (when changes are applied)
+- `notify_on_preview`: Set to `true` to send notifications during `dnscontrol preview` (dry-run mode)
+
+**Example: Notifications only for actual changes (push)**
+
+{% code title="creds.json" %}
+```json
+{
+  "notifications": {
+    "notify_on_push": true,
+    "notify_on_preview": false,
+    "slack_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+  }
+}
+```
+{% endcode %}
+
+**Example: Notifications for both preview and push**
+
+{% code title="creds.json" %}
+```json
+{
+  "notifications": {
+    "notify_on_push": true,
+    "notify_on_preview": true,
+    "teams_url": "https://outlook.office.com/webhook/..."
+  }
+}
+```
+{% endcode %}
+
+With automatic notifications enabled, you don't need to use the `--notify` flag. The `--notify` flag will still work to send notifications on-demand regardless of these settings.
+
+### Example DNS change
 
 Below is an example where we add [the A record](../language-reference/domain-modifiers/A.md) `foo` and display the notification output.
 
@@ -36,11 +80,24 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 
 ### Preview example
 
-In case of `dnscontrol preview`:
+Preview notifications show what changes would be made without applying them:
 
+{% tabs %}
+
+{% tab title="With --notify flag" %}
 ```shell
 dnscontrol preview --notify
 ```
+{% endtab %}
+
+{% tab title="Automatically" %}
+```shell
+# Requires notify_on_preview: true in creds.json
+dnscontrol preview
+```
+{% endtab %}
+
+{% endtabs %}
 
 **The notification output**
 
@@ -50,11 +107,24 @@ dnscontrol preview --notify
 
 ### Push example
 
-In case of `dnscontrol push`:
+Push notifications show the actual changes being applied:
 
+{% tabs %}
+
+{% tab title="With --notify flag" %}
 ```shell
 dnscontrol push --notify
 ```
+{% endtab %}
+
+{% tab title="Automatically" %}
+```shell
+# Requires notify_on_push: true in creds.json
+dnscontrol push
+```
+{% endtab %}
+
+{% endtabs %}
 
 **The notification output**
 

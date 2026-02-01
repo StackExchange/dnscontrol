@@ -11,6 +11,8 @@
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "domain.tld",
+        "dnscontrol_nameunicode": "domain.tld",
         "dnscontrol_uniquename": "domain.tld"
       },
       "name": "domain.tld",
@@ -106,13 +108,16 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "domain.tld"
     },
     {
       "dnsProviders": {
         "Cloudflare": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "sub.domain.tld",
+        "dnscontrol_nameunicode": "sub.domain.tld",
         "dnscontrol_uniquename": "sub.domain.tld"
       },
       "name": "sub.domain.tld",
@@ -160,7 +165,8 @@
           "type": "CNAME"
         }
       ],
-      "registrar": "Third-Party"
+      "registrar": "Third-Party",
+      "uniquename": "sub.domain.tld"
     }
   ],
   "registrars": [

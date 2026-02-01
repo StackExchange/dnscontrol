@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 	"net/http"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 /*

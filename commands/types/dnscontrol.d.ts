@@ -138,6 +138,10 @@ declare const CF_PROXY_OFF: RecordModifier;
 declare const CF_PROXY_ON: RecordModifier;
 /** Proxy+Railgun enabled. */
 declare const CF_PROXY_FULL: RecordModifier;
+/** Per-record CNAME flattening disabled (default) */
+declare const CF_CNAME_FLATTEN_OFF: RecordModifier;
+/** Per-record CNAME flattening enabled (requires Cloudflare paid plan) */
+declare const CF_CNAME_FLATTEN_ON: RecordModifier;
 
 /** Proxy default off for entire domain (the default) */
 declare const CF_PROXY_DEFAULT_OFF: DomainModifier;
@@ -147,6 +151,14 @@ declare const CF_PROXY_DEFAULT_ON: DomainModifier;
 declare const CF_UNIVERSALSSL_OFF: DomainModifier;
 /** UniversalSSL on for entire domain */
 declare const CF_UNIVERSALSSL_ON: DomainModifier;
+/** Set a comment on a DNS record (works on all Cloudflare plans) */
+declare function CF_COMMENT(comment: string): RecordModifier;
+/** Set tags on a DNS record (requires Cloudflare paid plan) */
+declare function CF_TAGS(...tags: string[]): RecordModifier;
+/** Enable comment management for this domain (opt-in to sync comments) */
+declare const CF_MANAGE_COMMENTS: DomainModifier;
+/** Enable tag management for this domain (opt-in to sync tags, requires paid plan) */
+declare const CF_MANAGE_TAGS: DomainModifier;
 
 /**
  * Set default values for CLI variables. See: https://dnscontrol.org/cli-variables
@@ -179,9 +191,9 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
 
 
 /**
- * A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `A` adds an [IPv4 Address record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
- * The address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
+ * The address should be an IP address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
  *
  * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
  *
@@ -199,7 +211,7 @@ declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
 declare function A(name: string, address: string | number, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * AAAA adds an AAAA record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `AAAA` adds an [IPv6 Address record](https://www.rfc-editor.org/rfc/rfc3596) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * The address should be an IPv6 address as a string.
  *
@@ -410,7 +422,7 @@ declare const AUTODNSSEC_ON: DomainModifier;
 declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `CAA()` adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `CAA` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * Tag can be one of
  * 1. `"issue"`
@@ -445,8 +457,9 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
 declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "contactemail" | "contactphone" | "issuemail" | "issuevmc", value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * DNSControl contains a `CAA_BUILDER` which can be used to simply create
- * [`CAA()`](../domain-modifiers/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain-modifiers/CAA.md) record
+ * `CAA_BUILDER` adds a [Certification Authority Authorization record](https://www.rfc-editor.org/rfc/rfc8659) to a domain.
+ *
+ * `CAA_BUILDER` eases the creation of [`CAA`](CAA.md) records. Instead of creating each [`CAA`](CAA.md) record
  * individually, you can simply configure your report mail address, the
  * authorized certificate authorities and the builder cares about the rest.
  *
@@ -469,7 +482,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
  * );
  * ```
  *
- * `CAA_BUILDER()` builds multiple records:
+ * `CAA_BUILDER` builds multiple records:
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -510,7 +523,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
  * );
  * ```
  *
- * `CAA_BUILDER()` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
+ * `CAA_BUILDER` then builds (the same) multiple records - all with CAA_CRITICAL flag set:
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -550,13 +563,13 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef" | "conta
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]|string; issue_critical?: boolean; issuewild: string[]|string; issuewild_critical?: boolean; issuevmc: string[]|string; issuevmc_critical?: boolean; issuemail: string[]|string; issuemail_critical?: boolean; ttl?: Duration }): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
- * generate a HTTP 301 permanent redirect.
+ * `CF_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
+ * Rules) to generate a HTTP 301 permanent redirect.
  *
  * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
@@ -586,47 +599,61 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
 declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
- * Typically one uses 302 (temporary) or (less likely) 301 (permanent).
+ * `CF_SINGLE_REDIRECT` is a [Cloudflare](../../provider/cloudflareapi.md)-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
+ * Typically one uses 302 (temporary) or 301 (permanent).
  *
  * This feature manages dynamic "Single Redirects". (Single Redirects can be
  * static or dynamic but DNSControl only maintains dynamic redirects).
+ *
+ * DNSControl will delete any "single redirects" it doesn't recognize (i.e. ones created via the web UI) so please be careful.
  *
  * Cloudflare documentation: <https://developers.cloudflare.com/rules/url-forwarding/single-redirects/>
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_SINGLE_REDIRECT("name", 302, "when", "then"),
  *   CF_SINGLE_REDIRECT('redirect www.example.com', 302, 'http.host eq "www.example.com"', 'concat("https://otherplace.com", http.request.uri.path)'),
  *   CF_SINGLE_REDIRECT('redirect yyy.example.com', 302, 'http.host eq "yyy.example.com"', 'concat("https://survey.stackoverflow.co", "")'),
+ *   CF_TEMP_REDIRECT("*example.com/*", "https://contests.otherexample.com/$2"),
  * );
  * ```
  *
  * The fields are:
  *
- * * name: The name (basically a comment, but it must be unique)
+ * * name: The name (basically a comment)
  * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * NOTE: The features [`CF_REDIRECT`](CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) generate `CF_SINGLE_REDIRECT` if enabled in [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md).
+ * DNSControl does not currently choose the order of the rules.  New rules are
+ * added to the end of the list. Use Cloudflare's dashboard to re-order the rule,
+ * DNSControl should not change them.  (In the future we hope to add a feature
+ * where the order the rules appear in dnsconfig.js is maintained in the
+ * dashboard.)
+ *
+ * ## `CF_REDIRECT` and `CF_TEMP_REDIRECT`
+ *
+ * `CF_REDIRECT` and `CF_TEMP_REDIRECT` used to manage Cloudflare Page Rules.
+ * However that feature is going away.  To help with the migration, DNSControl now
+ * translates those commands into CF_SINGLE_REDIRECT equivalents.  The conversion
+ * process is a transpiler that only understands certain formats. Please submit
+ * a Github issue if you find something it can't handle.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
 declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, then: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * WARNING: Cloudflare is removing this feature and replacing it with a new
+ * **WARNING:** Cloudflare is removing this feature and replacing it with a new
  * feature called "Dynamic Single Redirect". DNSControl will automatically
  * generate "Dynamic Single Redirects" for a limited number of use cases. See
  * [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
  *
- * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+ * `CF_TEMP_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  *
- * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
- * Page Rule types other than "Forwarding URL” will be left alone.
+ * Page Rule types other than "Forwarding URL" will be left alone.
  *
  * WARNING: Cloudflare does not currently fully document the Page Rules API and
  * this interface is not extensively tested. Take precautions such as making
@@ -634,9 +661,12 @@ declare function CF_SINGLE_REDIRECT(name: string, code: number, when: string, th
  * `dnscontrol push`. This is especially true when mixing Page Rules that are
  * managed by DNSControl and those that aren't.
  *
+ * This example redirects the bare (aka apex, or naked) domain to www:
+ *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   CF_TEMP_REDIRECT("example.example.com/*", "https://otherplace.yourdomain.com/$1"),
+ *   CF_TEMP_REDIRECT("example.com/*", "https://www.example.com/$1"),
+ *
  * );
  * ```
  *
@@ -678,7 +708,7 @@ declare function CF_WORKER_ROUTE(pattern: string, script: string): DomainModifie
 declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * CNAME adds a CNAME record to the domain. The name should be the relative label for the domain.
+ * `CNAME` adds a [Canonical name record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
  * Using `@` or `*` for CNAME records is not recommended, as different providers support them differently.
  *
  * Target should be a string representing the CNAME target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
@@ -709,7 +739,8 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * ```javascript
  * // simple domain
- * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ * D("example.com", REG_MY_PROVIDER,
+ *   DnsProvider(DSP_MY_PROVIDER),
  *   A("@","1.2.3.4"),           // "@" means the apex domain. In this case, "example.com" itself.
  *   CNAME("test", "foo.example2.com."),
  * );
@@ -735,6 +766,35 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * In other words, if you want to put a DNS record at the apex of a domain, use an `"@"` for the label, not an empty string (`""`).
  * In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain.
  *
+ * # `no_ns`
+ *
+ * To prevent DNSControl from accidentally deleting your nameservers (at the
+ * parent domain), registrar updates are disabled if the list of nameservers for a
+ * zone (as computed from `dnsconfig.js`) is empty.
+ *
+ * This can happen when a provider doesn't give any control over the apex NS
+ * records, there are no default nameservers, there are no `NAMESERVER()`
+ * statements, and the provider returns an empty list of nameservers (such as
+ * Gandi and Vercel).
+ *
+ * In this situation, you will see an error message such as:
+ *
+ * ```
+ * Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns:'true'} to force
+ * ```
+ *
+ * To add this, add the meta data to the zone immediately following the registrar.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
+ *   ...
+ *   ...
+ *   ...
+ * );
+ * ```
+ *
+ * NOTE: The value `true` of `no_ns` is a string.
+ *
  * # Split Horizon DNS
  *
  * DNSControl supports Split Horizon DNS. Simply
@@ -746,15 +806,15 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  * `example.com!outside`.
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
+ * var REG_NONE = NewRegistrar("none");
  * var DNS_INSIDE = NewDnsProvider("Cloudflare");
  * var DNS_OUTSIDE = NewDnsProvider("bind");
  *
- * D("example.com!inside", REG_THIRDPARTY, DnsProvider(DNS_INSIDE),
+ * D("example.com!inside", REG_NONE, DnsProvider(DNS_INSIDE),
  *   A("www", "10.10.10.10"),
  * );
  *
- * D("example.com!outside", REG_THIRDPARTY, DnsProvider(DNS_OUTSIDE),
+ * D("example.com!outside", REG_NONE, DnsProvider(DNS_OUTSIDE),
  *   A("www", "20.20.20.20"),
  * );
  *
@@ -825,7 +885,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
 declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 
 /**
- * DHCID adds a DHCID record to the domain.
+ * `DHCID` adds a [DHCP identifier record](https://www.rfc-editor.org/rfc/rfc4701) to the domain.
  *
  * Digest should be a string.
  *
@@ -840,14 +900,14 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 declare function DHCID(name: string, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `DISABLE_IGNORE_SAFETY_CHECK()` disables the safety check. Normally it is an
- * error to insert records that match an `IGNORE()` pattern. This disables that
+ * `DISABLE_IGNORE_SAFETY_CHECK` disables the safety check. Normally it is an
+ * error to insert records that match an `IGNORE` pattern. This disables that
  * safety check for the entire domain.
  *
- * It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK()` which is
+ * It replaces the per-record `IGNORE_NAME_DISABLE_SAFETY_CHECK` which is
  * deprecated as of DNSControl v4.0.0.0.
  *
- * See [`IGNORE()`](../domain-modifiers/IGNORE.md) for more information.
+ * See [`IGNORE`](../domain-modifiers/IGNORE.md) for more information.
  *
  * ## Syntax
  *
@@ -926,9 +986,9 @@ declare const DISABLE_IGNORE_SAFETY_CHECK: DomainModifier;
  * * `keytype` (string, optional): Key algorithm type. Maps to the `k=` tag. Default: `rsa`. Supported values:
  *    * `rsa`
  *    * `ed25519`
- * * `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
+ * * `note` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
  * * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
- *   * `*`: explicity allows all service types
+ *   * `*`: explicitly allows all service types
  *   * `email`: restricts key to email service only
  * * `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
  *   * `y`: Testing mode.
@@ -1042,7 +1102,7 @@ declare function DKIM_BUILDER(opts: { selector: string; pubkey?: string; label?:
 declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): DomainModifier;
 
 /**
- * DNAME adds a DNAME record to the domain.
+ * `DNAME` adds a [Delegation name record](https://www.rfc-editor.org/rfc/rfc6672) to the domain.
  *
  * Target should be a string.
  *
@@ -1145,7 +1205,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
 declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: string, dnsProvider: string): void;
 
 /**
- * DS adds a DS record to the domain.
+ * `DS` adds a [Delegation signer record](https://www.rfc-editor.org/rfc/rfc4034) to the domain.
  *
  * Key Tag should be a number.
  *
@@ -1250,7 +1310,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
 declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
 
 /**
- * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record-modifiers/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
+ * DefaultTTL sets the Time To Live (TTL) for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record-modifiers/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
  * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../top-level-functions/DEFAULTS.md) to override the internal defaults.
  *
  * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain-modifiers/NAMESERVER_TTL.md) to set a default TTL for all NS records.
@@ -1672,6 +1732,196 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
 declare function IGNORE(labelSpec: string, typeSpec?: string, targetSpec?: string): DomainModifier;
 
 /**
+ * `IGNORE_EXTERNAL_DNS` makes DNSControl automatically detect and ignore DNS records
+ * managed by Kubernetes external-dns.
+ *
+ * ## Background
+ *
+ * [External-dns](https://github.com/kubernetes-sigs/external-dns) is a popular
+ * Kubernetes controller that synchronizes exposed Kubernetes Services and Ingresses
+ * with DNS providers. It creates DNS records automatically based on annotations on
+ * your Kubernetes resources.
+ *
+ * External-dns uses TXT records to track ownership of the DNS records it manages.
+ * These TXT records contain metadata in this format:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * When you have both DNSControl and external-dns managing the same DNS zone, conflicts
+ * can occur. DNSControl will try to delete records created by external-dns, and
+ * external-dns will recreate them, leading to an endless update cycle.
+ *
+ * ## How it works
+ *
+ * When `IGNORE_EXTERNAL_DNS` is enabled, DNSControl will:
+ *
+ * 1. Scan existing TXT records for the external-dns heritage marker (`heritage=external-dns`)
+ * 2. Parse the TXT record name to determine which DNS record it manages
+ * 3. Automatically ignore both the TXT ownership record and the corresponding DNS record
+ *
+ * External-dns creates TXT records with prefixes based on record type:
+ * - `a-<name>` for A records
+ * - `aaaa-<name>` for AAAA records
+ * - `cname-<name>` for CNAME records
+ * - `ns-<name>` for NS records
+ * - `mx-<name>` for MX records
+ * - `srv-<name>` for SRV records
+ * - `txt-<name>` for TXT records (when external-dns manages TXT records)
+ *
+ * For example, if external-dns creates an A record at `myapp.example.com`, it will
+ * also create a TXT record at `a-myapp.example.com` containing the heritage information.
+ *
+ * ## Usage
+ *
+ * ```javascript
+ * // Default: detect standard external-dns prefixes (a-, cname-, etc.)
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS(),
+ *   // Your static DNS records managed by DNSControl
+ *   A("www", "1.2.3.4"),
+ *   A("mail", "1.2.3.5"),
+ *   MX("@", 10, "mail"),
+ *   // Records created by external-dns (from Kubernetes Ingresses/Services)
+ *   // will be automatically detected and ignored
+ * );
+ * ```
+ *
+ * ## Custom Prefix Support
+ *
+ * If your external-dns is configured with a custom `--txt-prefix` (as documented in the
+ * [external-dns TXT registry docs](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md#prefixes-and-suffixes)),
+ * pass that prefix to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns is configured with --txt-prefix="extdns-"
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   IGNORE_EXTERNAL_DNS("extdns-"),
+ *   A("www", "1.2.3.4"),
+ * );
+ * ```
+ *
+ * This will match TXT records like `extdns-www`, `extdns-api`, etc.
+ *
+ * Without a prefix argument, it detects:
+ * - The default `%{record_type}-` format (prefixes like `a-`, `cname-`, etc.)
+ * - Legacy format (TXT record with same name as managed record)
+ *
+ * ## Example scenario
+ *
+ * Suppose you have:
+ * - A Kubernetes cluster running external-dns with `--txt-owner-id=my-cluster`
+ * - An Ingress resource that creates an A record for `myapp.example.com` pointing to `10.0.0.1`
+ *
+ * External-dns will create:
+ * 1. An A record: `myapp.example.com` → `10.0.0.1`
+ * 2. A TXT record: `a-myapp.example.com` → `"heritage=external-dns,external-dns/owner=my-cluster,external-dns/resource=ingress/default/myapp"`
+ *
+ * With `IGNORE_EXTERNAL_DNS` enabled, DNSControl will:
+ * - Detect the TXT record at `a-myapp.example.com` as an external-dns ownership record
+ * - Ignore both the TXT record and the A record at `myapp.example.com`
+ * - Only manage the records you explicitly define in your `dnsconfig.js`
+ *
+ * ## Comparison with other options
+ *
+ * | Feature | Use case |
+ * |---------|----------|
+ * | `IGNORE_EXTERNAL_DNS` | Automatically ignore all external-dns managed records |
+ * | `IGNORE("*.k8s", "A,AAAA,CNAME,TXT")` | Ignore records under a specific subdomain pattern |
+ * | `NO_PURGE` | Don't delete any records (less precise, records may accumulate) |
+ *
+ * ## Caveats
+ *
+ * ### One per domain
+ *
+ * Only one `IGNORE_EXTERNAL_DNS()` should be used per domain. If you call it multiple
+ * times, the last prefix wins. If you have multiple external-dns instances with
+ * different prefixes managing the same zone, use `IGNORE()` patterns for additional
+ * prefixes.
+ *
+ * ### TXT Registry Format
+ *
+ * This feature relies on external-dns's [TXT registry](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/txt.md),
+ * which is the default registry type. The TXT record content format is well-documented:
+ *
+ * ```
+ * "heritage=external-dns,external-dns/owner=<owner-id>,external-dns/resource=<resource>"
+ * ```
+ *
+ * This feature detects the `heritage=external-dns` marker in TXT records to identify
+ * external-dns managed records.
+ *
+ * ### Custom Prefix Support
+ *
+ * This feature supports custom prefixes configured via external-dns's `--txt-prefix` flag.
+ * If you're using a custom prefix, pass it to `IGNORE_EXTERNAL_DNS()`:
+ *
+ * ```javascript
+ * // If external-dns uses --txt-prefix="extdns-"
+ * IGNORE_EXTERNAL_DNS("extdns-")
+ *
+ * // If external-dns uses --txt-prefix="myprefix-%{record_type}-"
+ * IGNORE_EXTERNAL_DNS("myprefix-")  // The record type part is handled automatically
+ *
+ * // If external-dns uses --txt-prefix="extdns-%{record_type}." (period format)
+ * // This is recommended for apex domain support per external-dns docs
+ * IGNORE_EXTERNAL_DNS("extdns-")  // Works with both hyphen and period format
+ * ```
+ *
+ * Without a prefix argument, it detects:
+ * - Default format: `%{record_type}-` prefix (e.g., `a-`, `cname-`)
+ * - Legacy format: Same name as managed record (no prefix)
+ *
+ * #### Period Format for Apex Domains
+ *
+ * If you need external-dns to manage apex (root) domain records, the external-dns
+ * documentation recommends using a prefix with `%{record_type}` followed by a period:
+ *
+ * ```yaml
+ * # external-dns deployment args
+ * args:
+ *   - --txt-prefix=extdns-%{record_type}.
+ * ```
+ *
+ * This creates TXT records like `extdns-a.www` for the `www` A record, and `extdns-a`
+ * for the apex A record. DNSControl's `IGNORE_EXTERNAL_DNS` supports both formats:
+ *
+ * - Hyphen format: `extdns-a-www` (from `--txt-prefix=extdns-` with default `%{record_type}-`)
+ * - Period format: `extdns-a.www` (from `--txt-prefix=extdns-%{record_type}.`)
+ *
+ * **Note:** Suffix-based naming (`--txt-suffix`) is not currently supported.
+ *
+ * ### Unsupported Registries
+ *
+ * External-dns supports multiple registry types. This feature **only** supports:
+ *
+ * - ✅ **TXT registry** (default) - Stores metadata in TXT records
+ *
+ * The following registries are **not supported**:
+ *
+ * - ❌ **DynamoDB registry** - Stores metadata in AWS DynamoDB
+ * - ❌ **AWS-SD registry** - Stores metadata in AWS Service Discovery
+ * - ❌ **noop registry** - No metadata persistence
+ *
+ * ### Legacy TXT Format
+ *
+ * External-dns versions prior to v0.16 created TXT records without the record type
+ * prefix (e.g., `myapp.example.com` instead of `a-myapp.example.com`). This legacy
+ * format is supported but may match more records than intended since the record type
+ * cannot be determined.
+ *
+ * ## See also
+ *
+ * * [`IGNORE`](IGNORE.md) for manually ignoring specific records with glob patterns
+ * * [`NO_PURGE`](NO_PURGE.md) for preventing deletion of all unmanaged records
+ * * [External-dns documentation](https://github.com/kubernetes-sigs/external-dns)
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/ignore_external_dns
+ */
+declare function IGNORE_EXTERNAL_DNS(prefix?: string): DomainModifier;
+
+/**
  * `IGNORE_NAME(a)` is the same as `IGNORE(a, "*", "*")`.
  *
  * `IGNORE_NAME(a, b)` is the same as `IGNORE(a, b, "*")`.
@@ -1732,6 +1982,8 @@ declare function INCLUDE(domain: string): DomainModifier;
 declare function IP(ip: string): number;
 
 /**
+ * `LOC` add a [Location record](https://www.rfc-editor.org/rfc/rfc1876) to the domain.
+ *
  * The parameter number types ingested are as follows:
  *
  * ```
@@ -2170,7 +2422,7 @@ declare function LUA(name: string, rtype: string, contents: string | string[], .
 declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): DomainModifier;
 
 /**
- * MX adds an MX record to the domain.
+ * `MX` adds a [Mail exchange record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
  *
  * Priority should be a number.
  *
@@ -2259,8 +2511,8 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * It looks like this:
  *
  * ```javascript
- * var REG_THIRDPARTY = NewRegistrar("ThirdParty");
- * D("example.com", REG_THIRDPARTY,
+ * var REG_NONE = NewRegistrar("none");
+ * D("example.com", REG_NONE,
  *   ...
  * );
  * ```
@@ -2547,7 +2799,7 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
 declare const NO_PURGE: DomainModifier;
 
 /**
- * NS adds a NS record to the domain. The name should be the relative label for the domain.
+ * `NS` adds a [Name server record](https://www.rfc-editor.org/rfc/rfc1035) to the domain. The name should be the relative label for the domain.
  *
  * The name may not be `@` (the bare domain), as that is controlled via [`NAMESERVER()`](NAMESERVER.md).
  * The difference between `NS()` and [`NAMESERVER()`](NAMESERVER.md) is explained in the [`NAMESERVER()` description](NAMESERVER.md).
@@ -2604,7 +2856,7 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/newdnsprovider
  */
-declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
+declare function NewDnsProvider(name: string, meta?: object): string;
 
 /**
  * NewRegistrar activates a Registrar Provider specified in `creds.json`.
@@ -2646,7 +2898,7 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
 declare function NewRegistrar(name: string, type?: string, meta?: object): string;
 
 /**
- * OPENPGPKEY adds a OPENPGPKEY record to the domain.
+ * `OPENPGPKEY` adds an [OpenPGP public key record](https://www.rfc-editor.org/rfc/rfc7929) to the domain.
  *
  * So far, no transformation is applied to the parameters. The data will be passed to the DNS server as-is.
  * Reference RFC 7929 for details.
@@ -2673,7 +2925,9 @@ declare function OPENPGPKEY(name: string, target: string, ...modifiers: RecordMo
 declare function PANIC(message: string): never;
 
 /**
- * `PORKBUN_URLFWD` is a Porkbun-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
+ * **DEPRECATED**: This record type is deprecated. Please use `URL` (for temporary redirects) or `URL301` (for permanent redirects) instead. PORKBUN_URLFWD will continue to work but is no longer recommended for new configurations.
+ *
+ * `PORKBUN_URLFWD` is a [Porkbun](../../provider/porkbun.md)-specific feature that maps to Porkbun's URL forwarding feature, which creates HTTP 301 (permanent) or 302 (temporary) redirects.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -2694,7 +2948,7 @@ declare function PANIC(message: string): never;
 declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * PTR adds a PTR record to the domain.
+ * `PTR` adds a [PTR Resource record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
  *
  * The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
  * saving the user from having to reverse the IP address manually.
@@ -3016,7 +3270,24 @@ declare function REV(address: string): string;
 declare function REVCOMPAT(rfc: string): string;
 
 /**
- * `SMIMEA` adds a `SMIMEA` record to a domain. The name should be the hashed and stripped local part of the e-mail.
+ * `RP` adds an [Responsible Person record](https://www.rfc-editor.org/rfc/rfc1183) to a domain.
+ *
+ * An RP record contains contact details for the domain. Usually an email address with the `@` replaced by a `.`.
+ *
+ * The RP implementation in DNSControl is still experimental and may change.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   RP("@", "user.example.com.", "example.com."),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/rp
+ */
+declare function RP(name: string, mbox: string, txt: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `SMIMEA` adds an [S/MIME cert association record](https://www.rfc-editor.org/rfc/rfc8162) to a domain. The name should be the hashed and stripped local part of the e-mail.
  *
  * To create the name, you can the following command:
  *
@@ -3048,7 +3319,7 @@ declare function REVCOMPAT(rfc: string): string;
 declare function SMIMEA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
+ * `SOA` adds a [Start of Authority record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
@@ -3057,8 +3328,8 @@ declare function SMIMEA(name: string, usage: number, selector: number, type: num
  * ```
  *
  * ## Notes
- * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
- * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
+ * * The serial number is managed automatically.  It isn't even a field in `SOA`.
+ * * Most providers automatically generate SOA records.  They will ignore any `SOA` statements.
  * * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
  *
  * There is more info about `SOA` in the documentation for the [BIND provider](../../provider/bind.md).
@@ -3320,7 +3591,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ## Advanced Technique: Define once, use many
  *
- * In some situations we define an SPF setting once and want to re-use
+ * In some situations we define an SPF setting once and want to reuse
  * it on many domains. Here's how to do this:
  *
  * ```javascript
@@ -3352,7 +3623,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
 declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize?: number; parts: string[]; flatten?: string[] }): DomainModifier;
 
 /**
- * `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
+ * `SRV` adds a [Service locator record](https://www.rfc-editor.org/rfc/rfc2782) to a domain. The name should be the relative label for the record.
  *
  * Priority, weight, and port are ints.
  *
@@ -3370,7 +3641,7 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
 declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+ * `SSHFP` adds a [SSH Public Key Fingerprint record](https://www.rfc-editor.org/rfc/rfc4255) to the domain. The record contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
  *
  * **Algorithm** (type of the key)
  *
@@ -3403,7 +3674,7 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * SVCB adds an SVCB record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+ * `SVCB` adds a [Service Binding record](https://www.rfc-editor.org/rfc/rfc9460) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
  * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).
  *
@@ -3422,7 +3693,7 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
 declare function SVCB(name: string, priority: number, target: string, params: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
+ * `TLSA` adds a [TLSA certificate association record](https://www.rfc-editor.org/rfc/rfc6698) to a domain. The name should be the relative label for the record.
  *
  * Usage, selector, and type are ints.
  *
@@ -3473,7 +3744,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
 declare function TTL(ttl: Duration): RecordModifier;
 
 /**
- * `TXT` adds an `TXT` record To a domain. The name should be the relative
+ * `TXT` adds a [Text record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative
  * label for the record. Use `@` for the domain apex.
  *
  * The contents is either a single or multiple strings.  To
@@ -3583,6 +3854,18 @@ declare function TXT(name: string, contents: string, ...modifiers: RecordModifie
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/)
  *
+ * ### Porkbun
+ *
+ * This creates a temporary (HTTP 302) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL("redirect", "https://example.org"),
+ * );
+ * ```
+ *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url
  */
 declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
@@ -3595,6 +3878,18 @@ declare function URL(name: string, target: string, ...modifiers: RecordModifier[
  * This is a URL Redirect record with a type of "Permanent", it creates a 301 redirect to the target.
  *
  * You can read more at the [Namecheap documentation](https://www.namecheap.com/support/knowledgebase/article.aspx/385/2237/how-to-set-up-a-url-redirect-for-a-domain/).
+ *
+ * ### Porkbun
+ *
+ * This creates a permanent (HTTP 301) redirect to the target URL. By default, it includes wildcard subdomains but does not include the URI path in redirection.
+ *
+ * Example:
+ *
+ * ```javascript
+ * D("example.com", REG_PORKBUN, DnsProvider(DSP_PORKBUN),
+ *     URL301("redirect", "https://example.org"),
+ * );
+ * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/url301
  */

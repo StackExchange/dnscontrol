@@ -1,5 +1,6 @@
 providers/adguardhome @ishanjain28
 providers/akamaiedgedns @edglynes
+providers/alidns @bytemain
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
@@ -12,6 +13,7 @@ providers/cnr @KaiSchwarz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @chicks-net
+providers/dnscale @dnscale-ops
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz

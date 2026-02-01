@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 // Feature Declaration
@@ -45,8 +45,7 @@ type fortigateProvider struct {
 	client   *apiClient
 }
 
-// Constructor
-
+// NewFortiGate creates a new instance of the FortiGate DNS provider.
 func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	host, vdom, apiKey := m["host"], m["vdom"], m["apiKey"]
 
@@ -219,8 +218,8 @@ func buildZonePayload(dc *models.DomainConfig, resourceRecords []*fgDNSRecord) (
 	payload["authoritative"] = "enable"
 
 	if v, ok := dc.Metadata["forwarder"]; ok {
-		ip := net.ParseIP(v)
-		if ip == nil || ip.To4() == nil {
+		ip, err := netip.ParseAddr(v)
+		if err != nil || !ip.Is4() {
 			return nil, fmt.Errorf("[FORTIGATE] Invalid forwarder IP: %q", v)
 		}
 		payload["forwarder"] = []string{v}

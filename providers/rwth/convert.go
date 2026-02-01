@@ -8,7 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // Print the generateZoneFileHelper
@@ -16,7 +16,7 @@ func (api *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 	// Similar to prettyzone
 	// Fake types are commented out.
 	prefix := ""
-	_, ok := dns.StringToType[rr.Type]
+	_, ok := dnsv1.StringToType[rr.Type]
 	if !ok {
 		prefix = ";"
 	}
@@ -41,7 +41,7 @@ func (api *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 }
 
 // NewRR returns custom dns.NewRR with RWTH default TTL
-func NewRR(s string) (dns.RR, error) {
+func NewRR(s string) (dnsv1.RR, error) {
 	if len(s) > 0 && s[len(s)-1] != '\n' { // We need a closing newline
 		return ReadRR(strings.NewReader(s + "\n"))
 	}
@@ -49,8 +49,8 @@ func NewRR(s string) (dns.RR, error) {
 }
 
 // ReadRR reads an RR from r.
-func ReadRR(r io.Reader) (dns.RR, error) {
-	zp := dns.NewZoneParser(r, ".", "")
+func ReadRR(r io.Reader) (dnsv1.RR, error) {
+	zp := dnsv1.NewZoneParser(r, ".", "")
 	zp.SetDefaultTTL(172800)
 	zp.SetIncludeAllowed(true)
 	rr, _ := zp.Next()

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 )
 
 func Test_whichZonesToProcess(t *testing.T) {
@@ -22,8 +23,10 @@ func Test_whichZonesToProcess(t *testing.T) {
 		dcTaggedEmpty,
 	}
 
+	// This is needed since we aren't calling js.ExecuteJavaScript().
 	for _, dc := range allDC {
 		dc.PostProcess()
+		rtypecontrol.FixLegacyDC(dc)
 	}
 
 	type args struct {

@@ -11,6 +11,8 @@
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "8.9.in-addr.arpa",
+        "dnscontrol_nameunicode": "8.9.in-addr.arpa",
         "dnscontrol_uniquename": "8.9.in-addr.arpa"
       },
       "name": "8.9.in-addr.arpa",
@@ -31,13 +33,16 @@
           "type": "NS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "8.9.in-addr.arpa"
     },
     {
       "dnsProviders": {
         "bind": -1
       },
       "meta": {
+        "dnscontrol_nameraw": "example.com",
+        "dnscontrol_nameunicode": "example.com",
         "dnscontrol_uniquename": "example.com"
       },
       "name": "example.com",
@@ -66,7 +71,8 @@
           "type": "NS"
         }
       ],
-      "registrar": "none"
+      "registrar": "none",
+      "uniquename": "example.com"
     }
   ],
   "registrars": [

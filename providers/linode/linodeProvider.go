@@ -12,8 +12,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -268,7 +268,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "CNAME", "MX", "NS", "SRV":
-		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		err = rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		// Linode doesn't support CAA flags and just returns the tag and value separately
 		err = rc.SetTarget(r.Target)

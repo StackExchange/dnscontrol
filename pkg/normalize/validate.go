@@ -3,22 +3,22 @@ package normalize
 import (
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Returns false if target does not validate.
 func checkIPv4(label string) error {
-	if net.ParseIP(label).To4() == nil {
+	if addr, err := netip.ParseAddr(label); err != nil || !addr.Is4() {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv4 address", label)
 	}
 	return nil
@@ -26,7 +26,7 @@ func checkIPv4(label string) error {
 
 // Returns false if target does not validate.
 func checkIPv6(label string) error {
-	if net.ParseIP(label).To16() == nil {
+	if addr, err := netip.ParseAddr(label); err != nil || !addr.Is6() {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv6 address", label)
 	}
 	return nil
@@ -55,6 +55,11 @@ func checkTarget(target string) error {
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	// #rtype_variations
 	validTypes := map[string]bool{
 		"A":                true,
@@ -132,10 +137,8 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
-	for _, ex := range []string{"SRV", "TLSA", "TXT", "LUA"} {
-		if rType == ex {
-			return nil
-		}
+	if slices.Contains([]string{"SRV", "TLSA", "TXT", "LUA"}, rType) {
+		return nil
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829
@@ -175,6 +178,11 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox s
 
 // checkTargets returns true if rec.Target is valid for the rec.Type.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
+	if rec.IsModernType() {
+		// Modern types do their own validation.
+		return nil
+	}
+
 	label := rec.GetLabel()
 	target := rec.GetTargetField()
 	check := func(e error) {
@@ -198,8 +206,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(errors.New("cannot create CNAME record for bare domain"))
 		}
-		labelFQDN := dnsutil.AddOrigin(label, domain)
-		targetFQDN := dnsutil.AddOrigin(target, domain)
+		labelFQDN := dnsutilv1.AddOrigin(label, domain)
+		targetFQDN := dnsutilv1.AddOrigin(target, domain)
 		if labelFQDN == targetFQDN {
 			check(errors.New("CNAME loop (target points at itself)"))
 		}
@@ -233,7 +241,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(errors.New("LUA records must specify an emitted rtype"))
 			break
 		}
-		if _, ok := dns.StringToType[upper]; !ok {
+		if _, ok := dnsv1.StringToType[upper]; !ok {
 			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", rec.LuaRType))
 		}
 		rec.LuaRType = upper
@@ -257,7 +265,7 @@ func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
 	if strings.HasSuffix(target, ".") {
 		return target + nd + "."
 	}
-	return dnsutil.AddOrigin(target, oldDomain) + "." + nd + "."
+	return dnsutilv1.AddOrigin(target, oldDomain) + "." + nd + "."
 }
 
 func newRec(rec *models.RecordConfig, ttl uint32) *models.RecordConfig {
@@ -300,7 +308,8 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig,
 		}
 		switch rec.Type {
 		case "A":
-			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
+			addr, _ := netip.ParseAddr(rec.GetTargetField())
+			trs, err := transform.IPToList(addr, transforms)
 			if err != nil {
 				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%w", rec.GetTargetField(), transforms, err)
 			}
@@ -385,12 +394,13 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				errs = append(errs, err)
 			}
 			// Unlike any other FQDN in this system, it is stored as a FQDN without the trailing dot.
-			n := dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			n := dnsutilv1.AddOrigin(ns.Name, domain.Name+".")
 			ns.Name = strings.TrimSuffix(n, ".")
 		}
 
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
+		// No need to call FixLegacyDC here. These records were created from dnsconfig.js, not from a provider.
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
@@ -440,11 +450,11 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.SubDomain != "" {
 					origin = rec.SubDomain + "." + origin
 				}
-				if err := rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin)); err != nil {
+				if err := rec.SetTarget(dnsutilv1.AddOrigin(rec.GetTargetField(), origin)); err != nil {
 					errs = append(errs, err)
 				}
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
-				if err := rec.SetTarget(net.ParseIP(rec.GetTargetField()).String()); err != nil {
+				if err := rec.SetTargetIP(rec.GetTargetIP()); err != nil {
 					errs = append(errs, err)
 				}
 			} else if rec.Type == "PTR" {
@@ -753,6 +763,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("RP", providers.CanUseRP),
 	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
@@ -879,13 +890,13 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		ip := net.ParseIP(rec.GetTargetField()) // ip already validated above
-		newIPs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), table)
+		ip := rec.GetTargetIP()
+		newIPs, err := transform.IPToList(rec.GetTargetIP(), table)
 		if err != nil {
 			return err
 		}
 		for i, newIP := range newIPs {
-			if i == 0 && !newIP.Equal(ip) {
+			if i == 0 && newIP.Compare(ip) != 0 {
 				// replace target of first record if different
 				if err := rec.SetTarget(newIP.String()); err != nil {
 					return err

@@ -27,6 +27,7 @@ Jump to a table:
 | ------------- | ---------------- | ------------ | --------- |
 | [`ADGUARDHOME`](adguardhome.md) | ❌ | ✅ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❌ | ✅ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ❌ |
@@ -34,11 +35,12 @@ Jump to a table:
 | [`BIND`](bind.md) | ✅ | ✅ | ❌ |
 | [`BUNNY_DNS`](bunny_dns.md) | ❌ | ✅ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ |
-| [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ❌ |
+| [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ✅ | ✅ |
 | [`DESEC`](desec.md) | ❌ | ✅ | ❌ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ✅ | ❌ |
+| [`DNSCALE`](dnscale.md) | ❌ | ✅ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ❌ | ✅ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❌ | ✅ | ❌ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❌ | ❌ | ✅ |
@@ -91,6 +93,7 @@ Jump to a table:
 | ------------- | -------------------------------------------------------------------- | ---------------------------------------------- | -------------- | --------- |
 | [`ADGUARDHOME`](adguardhome.md) | ❔ | ❔ | ❌ | ❌ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`ALIDNS`](alidns.md) | ✅ | ✅ | ❌ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ✅ | ✅ |
@@ -103,6 +106,7 @@ Jump to a table:
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❌ | ✅ |
 | [`DESEC`](desec.md) | ✅ | ❔ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ✅ | ✅ | ✅ |
+| [`DNSCALE`](dnscale.md) | ❌ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❌ | ❌ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
@@ -154,6 +158,7 @@ Jump to a table:
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
 | [`ADGUARDHOME`](adguardhome.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
 | [`AZURE_DNS`](azure_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
@@ -163,8 +168,9 @@ Jump to a table:
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❔ | ✅ | ✅ | ❔ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
+| [`DESEC`](desec.md) | ❔ | ❔ | ✅ | ✅ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| [`DNSCALE`](dnscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
@@ -211,18 +217,20 @@ Jump to a table:
 | Provider name | [`DHCID`](../language-reference/domain-modifiers/DHCID.md) | [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md) | [`SRV`](../language-reference/domain-modifiers/SRV.md) | [`SVCB`](../language-reference/domain-modifiers/SVCB.md) |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ❔ | ✅ | ✅ | ❔ |
+| [`ALIDNS`](alidns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`AZURE_DNS`](azure_dns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ❔ |
+| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ❔ | ❔ | ✅ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
+| [`DNSCALE`](dnscale.md) | ❔ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
@@ -267,18 +275,20 @@ Jump to a table:
 | Provider name | [`CAA`](../language-reference/domain-modifiers/CAA.md) | [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md) | [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md) | [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md) | [`TLSA`](../language-reference/domain-modifiers/TLSA.md) |
 | ------------- | ------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
+| [`ALIDNS`](alidns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`AZURE_DNS`](azure_dns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
+| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
+| [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| [`DNSCALE`](dnscale.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❔ | ❌ | ❔ |
@@ -305,7 +315,7 @@ Jump to a table:
 | [`NS1`](ns1.md) | ✅ | ✅ | ❔ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`OVH`](ovh.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
-| [`PORKBUN`](porkbun.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
+| [`PORKBUN`](porkbun.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`POWERDNS`](powerdns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`ROUTE53`](route53.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
@@ -321,6 +331,7 @@ Jump to a table:
 | Provider name | [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md) | [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md) | [`DS`](../language-reference/domain-modifiers/DS.md) |
 | ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❌ |
+| [`ALIDNS`](alidns.md) | ❌ | ❔ | ❔ |
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ |
@@ -328,6 +339,7 @@ Jump to a table:
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ❌ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❌ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ |
+| [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
@@ -397,6 +409,7 @@ Providers in this category and their maintainers are:
 |Name|Maintainer|
 |---|---|
 |[`ADGUARDHOME`](adguardhome.md)|@ishanjain28|
+|[`ALIDNS`](alidns.md)|@bytemain|
 |[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
 |[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|
@@ -406,7 +419,8 @@ Providers in this category and their maintainers are:
 |[`CNR`](cnr.md)|@KaiSchwarz-cnic|
 |[`CSCGLOBAL`](cscglobal.md)|@Air-New-Zealand|
 |[`DESEC`](desec.md)|@D3luxee|
-|[`DIGITALOCEAN`](digitalocean.md)|@Deraen|
+|[`DIGITALOCEAN`](digitalocean.md)|@chicks-net|
+|[`DNSCALE`](dnscale.md)|@dnscale-ops|
 |[`DNSIMPLE`](dnsimple.md)|@onlyhavecans|
 |[`DNSMADEEASY`](dnsmadeeasy.md)|@vojtad|
 |[`DNSOVERHTTPS`](dnsoverhttps.md)|@mikenz|
@@ -452,7 +466,6 @@ code to support this provider, we'd be glad to help in any way.
 *(The list below is sorted alphabetically.)*
 
 * [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
-* [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
 * [BookMyName](https://github.com/StackExchange/dnscontrol/issues/3451) (#3451)
 * [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
 * [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)

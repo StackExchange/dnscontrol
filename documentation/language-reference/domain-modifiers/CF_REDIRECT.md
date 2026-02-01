@@ -12,14 +12,14 @@ parameter_types:
 ---
 
 {% hint style="warning" %}
-WARNING: Cloudflare is removing this feature and replacing it with a new
+**WARNING:** Cloudflare is removing this feature and replacing it with a new
 feature called "Dynamic Single Redirect". DNSControl will automatically
 generate "Dynamic Single Redirects" for a limited number of use cases. See
 [`CLOUDFLAREAPI`](../../provider/cloudflareapi.md) for details.
 {% endhint %}
 
-`CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
-generate a HTTP 301 permanent redirect.
+`CF_REDIRECT` uses [Cloudflare](../../provider/cloudflareapi.md)-specific features ("Forwarding URL" Page
+Rules) to generate a HTTP 301 permanent redirect.
 
 If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
 `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
