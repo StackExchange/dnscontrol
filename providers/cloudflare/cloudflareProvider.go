@@ -43,40 +43,86 @@ Domain level metadata available:
    - ip_conversions
 */
 
-var features = providers.DocumentationNotes{
-	// The default for unlisted capabilities is 'Cannot'.
-	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Can(),
-	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDNSKEY:           providers.Cannot(),
-	providers.CanUseDS:               providers.Can(),
-	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseHTTPS:            providers.Can(),
-	providers.CanUseLOC:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseSVCB:             providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-	providers.DocOfficiallySupported: providers.Can(),
+func init() {
+	providers.Register(
+		providers.RegisterOpts{
+			Name:               "CLOUDFLAREAPI",
+			NameAliases:        []string{"CLOUDFLARE"},
+			MaintainerGithubID: "@tresni",
+			SupportLevel:       providers.SupportLevelOfficial,
+			ProviderHandle:     &cloudflareProvider{},
+
+			// Legacy functions:
+			//RegistrarInitializer:          newReg,
+			DNSServiceProviderInitializer: newCloudflare,
+			RecordAuditor:                 AuditRecords,
+
+			// Fields in the creds.json file:
+			CredsFields: []string{
+				"apitoken",
+				"apikey", "apiuser",
+				"accountid",
+			},
+
+			// Fields in the REGISTRAR("credkey", { metafield: "foo" })
+			MetadataFields: []string{
+				"ip_conversions:string",
+				"ignored_labels:string",
+				"transcode_log:string",
+				"manage_redirects:bool",
+				"manage_workers:bool",
+				"manage_single_redirects:bool",
+			},
+
+			// DNS RecordTypes supported:
+			RecordTypes: []string{
+				"A",
+				"AAAA",
+				"ALIAS:note:CF automatically flattens CNAME records into A records dynamically",
+				"CAA",
+				"CNAME",
+				//"DNSKEY",
+				"DS",
+				"HTTPS",
+				"LOC",
+				"MX",
+				"NAPTR",
+				"OPENPGPKEY",
+				"PTR",
+				//"SMIMEA",
+				"SPF",
+				"SRV",
+				"SSHFP",
+				"SVCB",
+				"TLSA",
+				"TXT",
+
+				// Custom Types
+				"CLOUDFLAREAPI_SINGLE_REDIRECT",
+				"CF_WORKER_ROUTE",
+			},
+
+			Features: providers.DocumentationNotes{
+				// The default for unlisted capabilities is 'Cannot'.
+				// See providers/capabilities.go for the entire list of capabilities.
+				providers.CanConcur:           providers.Can(),
+				providers.CanUseDSForChildren: providers.Can(),
+				//providers.CanAutoDNSSEC:       providers.Can(),
+				providers.DocDualHost: providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+			},
+		})
 }
 
-func init() {
-	const providerName = "CLOUDFLAREAPI"
-	const providerMaintainer = "@tresni"
-	fns := providers.DspFuncs{
-		Initializer:   newCloudflare,
-		RecordAuditor: AuditRecords,
-	}
-	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", providerName, "")
-	providers.RegisterMaintainer(providerName, providerMaintainer)
-}
+/*
+    client := providers.NewClient("credKey") // Get an API handle
+  rtypeMap := providers.GetSupportedRecordTypes("CLOUDFLARE") // List supported record types
+  b := providers.IsRTypeSupported("CLOUDFLARE", "TXT") // Is TXT supported?
+  b := providers.IsFeatureSupported("CLOUDFLARE", "feature_name") // Is feature_name supported?
+
+Signature for the initializer (called any time an API client handle is needed):
+  func clientFactory(m map[string]string, metadata map[string]string) (providers.DNSServiceProvider, error) {}
+
+*/
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
