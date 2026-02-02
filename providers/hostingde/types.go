@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
+	"net" // Needed for communicating with provider API.
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"

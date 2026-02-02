@@ -31,7 +31,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -207,7 +207,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
@@ -216,7 +216,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var err error
 
 		rtype := rr.Header().Rrtype
-		rtypeStr := dns.TypeToString[rtype]
+		rtypeStr := dnsv1.TypeToString[rtype]
 		if rtypeinfo.IsModernType(rtypeStr) {
 			// Modern types:
 			name := rr.Header().Name

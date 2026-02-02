@@ -15,7 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -409,7 +409,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "TXT":
 		err = rc.SetTargetTXT(r.Target)
 	case "CNAME", "DNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
-		if err := rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain)); err != nil {
+		if err := rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain)); err != nil {
 			return nil, err
 		}
 	case "CAA":
@@ -452,7 +452,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "NAPTR":
 		naptrOrder, _ := strconv.ParseUint(r.NaptrOrder, 10, 16)
 		naptrPreference, _ := strconv.ParseUint(r.NaptrPreference, 10, 16)
-		target := dnsutil.AddOrigin(r.NaptrReplacement+".", domain)
+		target := dnsutilv1.AddOrigin(r.NaptrReplacement+".", domain)
 		err = rc.SetTargetNAPTR(uint16(naptrOrder), uint16(naptrPreference), r.NaptrFlags, r.NaptrService, r.NaptrRegexp, target)
 	default:
 		err = rc.SetTarget(r.Target)
@@ -489,7 +489,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	// but you can ask the support for others type of record and they enable it
 	// for your ClouDNS account.
 	geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := rc.Metadata[metaGeodnsCode]
-	if geodnsCodeFromMetadataExist == true {
+	if geodnsCodeFromMetadataExist {
 		req["geodns-code"] = geodnsCodeFromMetadataValue
 	}
 
@@ -552,7 +552,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	if existingRc == nil {
 		if desiredRc.Metadata != nil {
 			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := desiredRc.Metadata[metaGeodnsCode]
-			if geodnsCodeFromMetadataExist == true {
+			if geodnsCodeFromMetadataExist {
 				return color.GreenString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
 			}
 		}
@@ -562,7 +562,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	if desiredRc == nil {
 		if existingRc.Metadata != nil {
 			geodnsCodeFromMetadataValue, geodnsCodeFromMetadataExist := existingRc.Metadata[metaGeodnsCode]
-			if geodnsCodeFromMetadataExist == true {
+			if geodnsCodeFromMetadataExist {
 				return color.RedString(fmt.Sprintf(" location=%s", geodnsCodeFromMetadataValue))
 			}
 		}
@@ -582,11 +582,11 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 	geodnsCodeFromExistingRcMetadataValue, geodnsCodeFromExistingRcMetadataExist := existingRc.Metadata[metaGeodnsCode]
 	geodnsCodeFromDesiredRcMetadataValue, geodnsCodeFromDesiredRcMetadataExist := desiredRc.Metadata[metaGeodnsCode]
 
-	if geodnsCodeFromExistingRcMetadataExist == false {
+	if !geodnsCodeFromExistingRcMetadataExist {
 		geodnsCodeFromExistingRcMetadataValue = "DEFAULT"
 	}
 
-	if geodnsCodeFromDesiredRcMetadataExist == false {
+	if !geodnsCodeFromDesiredRcMetadataExist {
 		geodnsCodeFromDesiredRcMetadataValue = "DEFAULT"
 	}
 
@@ -594,7 +594,7 @@ func addMetadataCorrection(existingRc *models.RecordConfig, desiredRc *models.Re
 }
 
 func compareMetadata(rc *models.RecordConfig) string {
-	if rc.Metadata == nil || len(rc.Metadata) == 0 {
+	if len(rc.Metadata) == 0 {
 		return ""
 	}
 
@@ -602,7 +602,7 @@ func compareMetadata(rc *models.RecordConfig) string {
 	// - DNS record without GeoDNS return ""
 	// - DNS record with GeoDNS return "DEFAULT" as empty value
 	val, exist := rc.Metadata[metaGeodnsCode]
-	if exist == true && val == "DEFAULT" {
+	if exist && val == "DEFAULT" {
 		delete(rc.Metadata, metaGeodnsCode)
 	}
 
@@ -622,7 +622,7 @@ func compareMetadata(rc *models.RecordConfig) string {
 	}
 
 	// Restore the metadata value
-	if exist == true && val == "DEFAULT" {
+	if exist && val == "DEFAULT" {
 		rc.Metadata[metaGeodnsCode] = "DEFAULT"
 	}
 

@@ -2,7 +2,7 @@ package cfsingleredirect
 
 import (
 	"fmt"
-	"net"
+	"net" // Used for host:port parsing.
 	"net/url"
 	"strings"
 )

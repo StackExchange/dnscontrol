@@ -470,25 +470,6 @@ var CAA = recordBuilder('CAA', {
 // CNAME(name,target, recordModifiers...)
 var CNAME = recordBuilder('CNAME');
 
-// DS(name, keytag, algorithm, digestype, digest)
-var DS = recordBuilder('DS', {
-    args: [
-        ['name', _.isString],
-        ['keytag', _.isNumber],
-        ['algorithm', _.isNumber],
-        ['digesttype', _.isNumber],
-        ['digest', _.isString],
-    ],
-    transform: function (record, args, modifiers) {
-        record.name = args.name;
-        record.dskeytag = args.keytag;
-        record.dsalgorithm = args.algorithm;
-        record.dsdigesttype = args.digesttype;
-        record.dsdigest = args.digest;
-        record.target = args.target;
-    },
-});
-
 // DHCID(name,target, recordModifiers...)
 var DHCID = recordBuilder('DHCID');
 
@@ -1471,6 +1452,8 @@ function num2dot(num) {
 var CF_PROXY_OFF = { cloudflare_proxy: 'off' }; // Proxy disabled.
 var CF_PROXY_ON = { cloudflare_proxy: 'on' }; // Proxy enabled.
 var CF_PROXY_FULL = { cloudflare_proxy: 'full' }; // Proxy+Railgun enabled.
+var CF_CNAME_FLATTEN_OFF = { cloudflare_cname_flatten: 'off' }; // CNAME flattening disabled (default).
+var CF_CNAME_FLATTEN_ON = { cloudflare_cname_flatten: 'on' }; // CNAME flattening enabled (paid plans only).
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
 var CF_PROXY_DEFAULT_OFF = { cloudflare_proxy_default: 'off' };
@@ -1480,6 +1463,14 @@ var CF_PROXY_DEFAULT_ON = { cloudflare_proxy_default: 'on' };
 var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
+// Per-record comment (works on all plans):
+function CF_COMMENT(comment) { return { cloudflare_comment: comment }; }
+// Per-record tags (requires paid plan):
+function CF_TAGS() { return { cloudflare_tags: Array.prototype.slice.call(arguments).join(',') }; }
+// Enable comment management for domain (opt-in to sync comments):
+var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: 'true' };
+// Enable tag management for domain (opt-in to sync tags, requires paid plan):
+var CF_MANAGE_TAGS = { cloudflare_manage_tags: 'true' };
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
@@ -2499,4 +2490,5 @@ function rawrecordBuilder(type) {
 var CF_REDIRECT = rawrecordBuilder('CF_REDIRECT');
 var CF_SINGLE_REDIRECT = rawrecordBuilder('CLOUDFLAREAPI_SINGLE_REDIRECT');
 var CF_TEMP_REDIRECT = rawrecordBuilder('CF_TEMP_REDIRECT');
+var DS = rawrecordBuilder('DS');
 var RP = rawrecordBuilder('RP');

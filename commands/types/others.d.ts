@@ -27,6 +27,10 @@ declare const CF_PROXY_OFF: RecordModifier;
 declare const CF_PROXY_ON: RecordModifier;
 /** Proxy+Railgun enabled. */
 declare const CF_PROXY_FULL: RecordModifier;
+/** Per-record CNAME flattening disabled (default) */
+declare const CF_CNAME_FLATTEN_OFF: RecordModifier;
+/** Per-record CNAME flattening enabled (requires Cloudflare paid plan) */
+declare const CF_CNAME_FLATTEN_ON: RecordModifier;
 
 /** Proxy default off for entire domain (the default) */
 declare const CF_PROXY_DEFAULT_OFF: DomainModifier;
@@ -36,6 +40,14 @@ declare const CF_PROXY_DEFAULT_ON: DomainModifier;
 declare const CF_UNIVERSALSSL_OFF: DomainModifier;
 /** UniversalSSL on for entire domain */
 declare const CF_UNIVERSALSSL_ON: DomainModifier;
+/** Set a comment on a DNS record (works on all Cloudflare plans) */
+declare function CF_COMMENT(comment: string): RecordModifier;
+/** Set tags on a DNS record (requires Cloudflare paid plan) */
+declare function CF_TAGS(...tags: string[]): RecordModifier;
+/** Enable comment management for this domain (opt-in to sync comments) */
+declare const CF_MANAGE_COMMENTS: DomainModifier;
+/** Enable tag management for this domain (opt-in to sync tags, requires paid plan) */
+declare const CF_MANAGE_TAGS: DomainModifier;
 
 /**
  * Set default values for CLI variables. See: https://dnscontrol.org/cli-variables

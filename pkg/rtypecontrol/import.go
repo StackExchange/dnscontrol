@@ -6,7 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // ImportRawRecords imports the RawRecordConfigs into RecordConfigs.
@@ -37,7 +37,7 @@ func ImportRawRecords(domains []*models.DomainConfig) error {
 					shortname = strings.TrimSuffix(rec.Name, "."+dc.Name)
 				}
 				return fmt.Errorf(
-					"The name %q is an error (repeats the domain). Maybe instead of %q you intended %q? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to disable this check",
+					"name %q is an error (repeats the domain): Hint: Maybe instead of %q you intended %q? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to disable this check",
 					rec.NameFQDNRaw,
 					rec.NameRaw,
 					shortname,
@@ -146,7 +146,7 @@ func NewRecordConfigFromString(name string, ttl uint32, t string, s string, dcn 
 		panic("rtypecontrol: NewRecordConfigFromStruct: empty record type")
 	}
 
-	rec, err := dns.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
+	rec, err := dnsv1.NewRR(fmt.Sprintf("$ORIGIN .\n. %d IN %s %s", ttl, t, s))
 	if err != nil {
 		return nil, err
 	}

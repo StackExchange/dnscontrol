@@ -57,8 +57,10 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	for _, providerName := range allProviderNames() {
 		featureMap := matrix.Providers[providerName]
 
+		var providerLink string = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
+
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+providerLink+".md)")
 		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}

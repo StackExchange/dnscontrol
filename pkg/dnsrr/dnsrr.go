@@ -8,86 +8,86 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // RRtoRC converts dns.RR to models.RecordConfig
-func RRtoRC(rr dns.RR, origin string) (models.RecordConfig, error) {
+func RRtoRC(rr dnsv1.RR, origin string) (models.RecordConfig, error) {
 	return helperRRtoRC(rr, origin, false)
 }
 
 // RRtoRCTxtBug converts dns.RR to models.RecordConfig. Compensates for the backslash bug in github.com/miekg/dns/issues/1384.
-func RRtoRCTxtBug(rr dns.RR, origin string) (models.RecordConfig, error) {
+func RRtoRCTxtBug(rr dnsv1.RR, origin string) (models.RecordConfig, error) {
 	return helperRRtoRC(rr, origin, true)
 }
 
 // helperRRtoRC converts dns.RR to models.RecordConfig. If fixBug is true, replaces `\\` to `\` in TXT records to compensate for github.com/miekg/dns/issues/1384.
-func helperRRtoRC(rr dns.RR, origin string, fixBug bool) (models.RecordConfig, error) {
+func helperRRtoRC(rr dnsv1.RR, origin string, fixBug bool) (models.RecordConfig, error) {
 	// Convert's dns.RR into DNSControl's models.RecordConfig struct.
 
 	header := rr.Header()
-	ty := dns.TypeToString[header.Rrtype]
+	ty := dnsv1.TypeToString[header.Rrtype]
 
 	if rtypeinfo.IsModernType(ty) {
 		switch v := rr.(type) {
 		default:
-			rec, err := rtypecontrol.NewRecordConfigFromStruct(strings.TrimSuffix(header.Name, origin), header.Ttl, dns.TypeToString[header.Rrtype], v, domaintags.MakeDomainNameVarieties(origin))
+			rec, err := rtypecontrol.NewRecordConfigFromStruct(strings.TrimSuffix(header.Name, origin), header.Ttl, dnsv1.TypeToString[header.Rrtype], v, domaintags.MakeDomainNameVarieties(origin))
 			return *rec, err
 		}
 	}
 
 	rc := new(models.RecordConfig)
-	rc.Type = dns.TypeToString[header.Rrtype]
+	rc.Type = dnsv1.TypeToString[header.Rrtype]
 	rc.TTL = header.Ttl
 	rc.Original = rr
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	var err error
 	switch v := rr.(type) { // #rtype_variations
-	case *dns.A:
+	case *dnsv1.A:
 		err = rc.SetTarget(v.A.String())
-	case *dns.AAAA:
+	case *dnsv1.AAAA:
 		err = rc.SetTarget(v.AAAA.String())
-	case *dns.CAA:
+	case *dnsv1.CAA:
 		err = rc.SetTargetCAA(v.Flag, v.Tag, v.Value)
-	case *dns.CNAME:
+	case *dnsv1.CNAME:
 		err = rc.SetTarget(v.Target)
-	case *dns.DHCID:
+	case *dnsv1.DHCID:
 		err = rc.SetTarget(v.Digest)
-	case *dns.DNAME:
+	case *dnsv1.DNAME:
 		err = rc.SetTarget(v.Target)
-	case *dns.DS:
-		err = rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest)
-	case *dns.DNSKEY:
+	case *dnsv1.DS:
+		panic("DS should be handled as modern type")
+	case *dnsv1.DNSKEY:
 		err = rc.SetTargetDNSKEY(v.Flags, v.Protocol, v.Algorithm, v.PublicKey)
-	case *dns.HTTPS:
+	case *dnsv1.HTTPS:
 		err = rc.SetTargetSVCB(v.Priority, v.Target, v.Value)
-	case *dns.LOC:
+	case *dnsv1.LOC:
 		err = rc.SetTargetLOC(v.Version, v.Latitude, v.Longitude, v.Altitude, v.Size, v.HorizPre, v.VertPre)
-	case *dns.MX:
+	case *dnsv1.MX:
 		err = rc.SetTargetMX(v.Preference, v.Mx)
-	case *dns.NAPTR:
+	case *dnsv1.NAPTR:
 		err = rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement)
-	case *dns.OPENPGPKEY:
+	case *dnsv1.OPENPGPKEY:
 		err = rc.SetTarget(v.PublicKey)
-	case *dns.NS:
+	case *dnsv1.NS:
 		err = rc.SetTarget(v.Ns)
-	case *dns.PTR:
+	case *dnsv1.PTR:
 		err = rc.SetTarget(v.Ptr)
-	case *dns.RP:
+	case *dnsv1.RP:
 		panic("RP should be handled as modern type")
-	case *dns.SMIMEA:
+	case *dnsv1.SMIMEA:
 		err = rc.SetTargetSMIMEA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
-	case *dns.SOA:
+	case *dnsv1.SOA:
 		err = rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
-	case *dns.SRV:
+	case *dnsv1.SRV:
 		err = rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target)
-	case *dns.SSHFP:
+	case *dnsv1.SSHFP:
 		err = rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint)
-	case *dns.SVCB:
+	case *dnsv1.SVCB:
 		err = rc.SetTargetSVCB(v.Priority, v.Target, v.Value)
-	case *dns.TLSA:
+	case *dnsv1.TLSA:
 		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
-	case *dns.TXT:
+	case *dnsv1.TXT:
 		if fixBug {
 			t := strings.Join(v.Txt, "")
 			te := t

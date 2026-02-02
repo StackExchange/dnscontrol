@@ -30,10 +30,10 @@ Jump to a table:
 | [`ALIDNS`](alidns.md) | ❌ | ✅ | ❌ |
 | [`AUTODNS`](autodns.md) | ❌ | ✅ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ❌ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ✅ | ✅ | ❌ |
+| [`AZURE_DNS`](azuredns.md) | ✅ | ✅ | ❌ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ✅ | ✅ | ❌ |
 | [`BIND`](bind.md) | ✅ | ✅ | ❌ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ✅ | ❌ |
+| [`BUNNY_DNS`](bunnydns.md) | ❌ | ✅ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❌ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ |
@@ -49,13 +49,13 @@ Jump to a table:
 | [`EASYNAME`](easyname.md) | ❌ | ❌ | ✅ |
 | [`EXOSCALE`](exoscale.md) | ❌ | ✅ | ❌ |
 | [`FORTIGATE`](fortigate.md) | ❌ | ✅ | ❌ |
-| [`GANDI_V5`](gandi_v5.md) | ❌ | ✅ | ✅ |
+| [`GANDI_V5`](gandiv5.md) | ❌ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
 | [`GIDINET`](gidinet.md) | ❌ | ✅ | ✅ |
 | [`HEDNS`](hedns.md) | ❌ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ✅ | ❌ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ✅ | ❌ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ✅ | ❌ |
 | [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
@@ -96,10 +96,10 @@ Jump to a table:
 | [`ALIDNS`](alidns.md) | ✅ | ✅ | ❌ | ✅ |
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`AZURE_DNS`](azuredns.md) | ✅ | ✅ | ✅ | ✅ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❔ | ❌ | ✅ | ✅ |
+| [`BUNNY_DNS`](bunnydns.md) | ❔ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❌ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ |
@@ -114,13 +114,13 @@ Jump to a table:
 | [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
 | [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ |
+| [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GIDINET`](gidinet.md) | ❌ | ✅ | ❌ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ✅ | ✅ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
@@ -161,14 +161,14 @@ Jump to a table:
 | [`ALIDNS`](alidns.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ❌ | ✅ | ✅ | ✅ | ❌ |
-| [`AZURE_DNS`](azure_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
+| [`AZURE_DNS`](azuredns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`BIND`](bind.md) | ❔ | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❌ | ✅ | ❌ |
+| [`BUNNY_DNS`](bunnydns.md) | ✅ | ❔ | ❌ | ✅ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❔ | ✅ | ✅ | ❔ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| [`DESEC`](desec.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
+| [`DESEC`](desec.md) | ❔ | ❔ | ✅ | ✅ | ❔ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`DNSCALE`](dnscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
@@ -176,13 +176,13 @@ Jump to a table:
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❔ | ❌ | ❌ | ❌ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
 | [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
@@ -220,10 +220,10 @@ Jump to a table:
 | [`ALIDNS`](alidns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_DNS`](azure_dns.md) | ❔ | ❌ | ✅ | ❔ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❔ | ❌ | ✅ | ❔ |
+| [`AZURE_DNS`](azuredns.md) | ❔ | ❌ | ✅ | ❔ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❔ | ❌ | ✅ | ❔ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ❌ | ❌ | ✅ | ✅ |
+| [`BUNNY_DNS`](bunnydns.md) | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ | ❌ |
 | [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
@@ -235,13 +235,13 @@ Jump to a table:
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❔ | ✅ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ❔ | ❔ | ✅ | ❔ |
+| [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
 | [`GIDINET`](gidinet.md) | ❌ | ❌ | ✅ | ❌ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❔ | ❌ | ✅ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
@@ -278,10 +278,10 @@ Jump to a table:
 | [`ALIDNS`](alidns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
-| [`AZURE_DNS`](azure_dns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
-| [`AZURE_PRIVATE_DNS`](azure_private_dns.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
+| [`AZURE_DNS`](azuredns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
+| [`BUNNY_DNS`](bunnydns.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`CNR`](cnr.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
@@ -293,13 +293,13 @@ Jump to a table:
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❔ | ❔ | ❌ |
-| [`GANDI_V5`](gandi_v5.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
+| [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`GIDINET`](gidinet.md) | ❌ | ❌ | ❔ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ✅ | ❔ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
 | [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
@@ -335,7 +335,7 @@ Jump to a table:
 | [`AUTODNS`](autodns.md) | ❔ | ❔ | ❌ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ |
-| [`BUNNY_DNS`](bunny_dns.md) | ✅ | ❔ | ❌ |
+| [`BUNNY_DNS`](bunnydns.md) | ✅ | ❔ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ❌ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ❌ | ❌ |
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ |
@@ -343,12 +343,12 @@ Jump to a table:
 | [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❌ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
-| [`GANDI_V5`](gandi_v5.md) | ❔ | ❔ | ❌ |
+| [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ❌ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ |
 | [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ❌ | ❔ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ✅ |
-| [`HETZNER_V2`](hetzner_v2.md) | ❌ | ❔ | ✅ |
+| [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |

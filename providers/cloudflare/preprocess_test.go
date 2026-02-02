@@ -1,7 +1,7 @@
 package cloudflare
 
 import (
-	"net"
+	"net/netip"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -87,6 +87,22 @@ func TestPreprocess_DefaultProxy_Validation(t *testing.T) {
 	}
 }
 
+func TestPreprocess_CNAMEFlattenProxyMutualExclusion(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	rec := &models.RecordConfig{
+		Type:     "CNAME",
+		Metadata: map[string]string{metaCNAMEFlatten: "on", metaProxy: "on"},
+	}
+	rec.SetLabel("foo", "test.com")
+	rec.MustSetTarget("example.com.")
+	domain.Records = append(domain.Records, rec)
+	err := cf.preprocessConfig(domain)
+	if err == nil {
+		t.Fatal("Expected validation error for CNAME with both flatten and proxy, but got none")
+	}
+}
+
 func TestIpRewriting(t *testing.T) {
 	tests := []struct {
 		Given, Expected string
@@ -103,9 +119,9 @@ func TestIpRewriting(t *testing.T) {
 	cf := &cloudflareProvider{}
 	domain := newDomainConfig()
 	cf.ipConversions = []transform.IPConversion{{
-		Low:      net.ParseIP("1.2.3.0"),
-		High:     net.ParseIP("1.2.3.40"),
-		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
+		Low:      netip.MustParseAddr("1.2.3.0"),
+		High:     netip.MustParseAddr("1.2.3.40"),
+		NewBases: []netip.Addr{netip.MustParseAddr("255.255.255.0")},
 		NewIPs:   nil,
 	}}
 	for _, tst := range tests {

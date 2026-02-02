@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/net/idna"
 )
 
@@ -43,7 +43,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDNSKEY:           providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSMIMEA:           providers.Can(),
@@ -204,7 +204,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					rc.Type = label.Type
 					rc.Records = make([]string, 0) // empty array of records should delete this rrset
 					rc.TTL = 3600
-					shortname := dnsutil.TrimDomainName(label.NameFQDN, punycodeName)
+					shortname := dnsutilv1.TrimDomainName(label.NameFQDN, punycodeName)
 					if shortname == "@" {
 						shortname = ""
 					}
