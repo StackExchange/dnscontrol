@@ -1464,9 +1464,13 @@ var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
 // Per-record comment (works on all plans):
-function CF_COMMENT(comment) { return { cloudflare_comment: comment }; }
+function CF_COMMENT(comment) {
+    return { cloudflare_comment: comment };
+}
 // Per-record tags (requires paid plan):
-function CF_TAGS() { return { cloudflare_tags: Array.prototype.slice.call(arguments).join(',') }; }
+function CF_TAGS() {
+    return { cloudflare_tags: Array.prototype.slice.call(arguments).join(',') };
+}
 // Enable comment management for domain (opt-in to sync comments):
 var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: 'true' };
 // Enable tag management for domain (opt-in to sync tags, requires paid plan):
