@@ -8,6 +8,7 @@ import (
 )
 
 // Supported record types for UniFi Network
+// Note: NS records are supported but only with IP addresses, not hostnames
 var supportedRTypes = map[string]struct{}{
 	"A":     {},
 	"AAAA":  {},
@@ -15,7 +16,6 @@ var supportedRTypes = map[string]struct{}{
 	"MX":    {},
 	"TXT":   {},
 	"SRV":   {},
-	"NS":    {},
 }
 
 // AuditRecords returns a list of errors corresponding to the records
@@ -26,9 +26,16 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	// TXT records have limitations
 	a.Add("TXT", rejectif.TxtIsEmpty)
+	a.Add("TXT", rejectif.TxtLongerThan(255)) // UniFi limits TXT to 255 chars per record
+
+	// MX records cannot have null/empty target
+	a.Add("MX", rejectif.MxNull)
+
+	// SRV records cannot have null target
+	a.Add("SRV", rejectif.SrvHasNullTarget)
 
 	// Start with auditor errors
-	errors := []error{}
+	var errors []error
 	errors = append(errors, a.Audit(records)...)
 
 	// Check for unsupported record types
@@ -43,5 +50,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 		}
 	}
 
+	if len(errors) == 0 {
+		return nil
+	}
 	return errors
 }
