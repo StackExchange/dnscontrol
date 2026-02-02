@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"net/netip"
+	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -100,6 +101,178 @@ func TestPreprocess_CNAMEFlattenProxyMutualExclusion(t *testing.T) {
 	err := cf.preprocessConfig(domain)
 	if err == nil {
 		t.Fatal("Expected validation error for CNAME with both flatten and proxy, but got none")
+	}
+}
+
+// When CF_MANAGE_COMMENTS is enabled, preprocessConfig should ensure every
+// record has the metaComment key in its metadata (empty string if not set).
+// This is critical for modifyRecord, where the "ok" check on the metadata key
+// determines whether to send the comment field to the API.
+func TestPreprocess_ManageComments_SetsEmptyKey(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	domain.Metadata[metaManageComments] = "true"
+
+	// Record without any comment
+	recNoComment := makeRCmeta(map[string]string{})
+	// Record with a comment
+	recWithComment := makeRCmeta(map[string]string{metaComment: "hello"})
+
+	domain.Records = append(domain.Records, recNoComment, recWithComment)
+	err := cf.preprocessConfig(domain)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Both records should have the metaComment key
+	if _, ok := domain.Records[0].Metadata[metaComment]; !ok {
+		t.Fatal("Expected metaComment key to exist on record without comment")
+	}
+	if domain.Records[0].Metadata[metaComment] != "" {
+		t.Fatalf("Expected empty comment, got %q", domain.Records[0].Metadata[metaComment])
+	}
+	if domain.Records[1].Metadata[metaComment] != "hello" {
+		t.Fatalf("Expected comment 'hello', got %q", domain.Records[1].Metadata[metaComment])
+	}
+}
+
+// When CF_MANAGE_COMMENTS is NOT enabled, preprocessConfig should NOT add
+// the metaComment key to records.
+func TestPreprocess_NoManageComments_NoKey(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	// No CF_MANAGE_COMMENTS
+
+	rec := makeRCmeta(map[string]string{})
+	domain.Records = append(domain.Records, rec)
+	err := cf.preprocessConfig(domain)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, ok := domain.Records[0].Metadata[metaComment]; ok {
+		t.Fatal("Expected metaComment key to NOT exist when management is disabled")
+	}
+}
+
+// When CF_MANAGE_TAGS is enabled, preprocessConfig should ensure every
+// record has the metaTags key in its metadata (empty string if not set).
+func TestPreprocess_ManageTags_SetsEmptyKey(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	domain.Metadata[metaManageTags] = "true"
+
+	// Record without any tags
+	recNoTags := makeRCmeta(map[string]string{})
+	// Record with tags
+	recWithTags := makeRCmeta(map[string]string{metaTags: "tag1,tag2"})
+
+	domain.Records = append(domain.Records, recNoTags, recWithTags)
+	err := cf.preprocessConfig(domain)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Both records should have the metaTags key
+	if _, ok := domain.Records[0].Metadata[metaTags]; !ok {
+		t.Fatal("Expected metaTags key to exist on record without tags")
+	}
+	if domain.Records[0].Metadata[metaTags] != "" {
+		t.Fatalf("Expected empty tags, got %q", domain.Records[0].Metadata[metaTags])
+	}
+	if domain.Records[1].Metadata[metaTags] != "tag1,tag2" {
+		t.Fatalf("Expected tags 'tag1,tag2', got %q", domain.Records[1].Metadata[metaTags])
+	}
+}
+
+// When CF_MANAGE_TAGS is NOT enabled, preprocessConfig should NOT add
+// the metaTags key to records.
+func TestPreprocess_NoManageTags_NoKey(t *testing.T) {
+	cf := &cloudflareProvider{}
+	domain := newDomainConfig()
+	// No CF_MANAGE_TAGS
+
+	rec := makeRCmeta(map[string]string{})
+	domain.Records = append(domain.Records, rec)
+	err := cf.preprocessConfig(domain)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, ok := domain.Records[0].Metadata[metaTags]; ok {
+		t.Fatal("Expected metaTags key to NOT exist when management is disabled")
+	}
+}
+
+// genComparableWithMgmt: when management is enabled, records with no
+// comment/tags should produce "comment=" / "tags=" (empty values), and
+// records with values should include them.
+func TestGenComparableWithMgmt(t *testing.T) {
+	tests := []struct {
+		name           string
+		meta           map[string]string
+		manageComments bool
+		manageTags     bool
+		wantContains   []string
+		wantNotContain []string
+	}{
+		{
+			name:           "comments enabled, no comment on record",
+			meta:           map[string]string{metaProxy: "off"},
+			manageComments: true,
+			wantContains:   []string{"comment="},
+			wantNotContain: []string{"tags="},
+		},
+		{
+			name:           "comments enabled, with comment",
+			meta:           map[string]string{metaProxy: "off", metaComment: "hello"},
+			manageComments: true,
+			wantContains:   []string{"comment=hello"},
+		},
+		{
+			name:       "tags enabled, no tags on record",
+			meta:       map[string]string{metaProxy: "off"},
+			manageTags: true,
+			wantContains:   []string{"tags="},
+			wantNotContain: []string{"comment="},
+		},
+		{
+			name:       "tags enabled, with tags",
+			meta:       map[string]string{metaProxy: "off", metaTags: "a,b"},
+			manageTags: true,
+			wantContains: []string{"tags=a,b"},
+		},
+		{
+			name:           "both enabled, both empty",
+			meta:           map[string]string{metaProxy: "off"},
+			manageComments: true,
+			manageTags:     true,
+			wantContains:   []string{"comment=", "tags="},
+		},
+		{
+			name:           "neither enabled",
+			meta:           map[string]string{metaProxy: "off"},
+			manageComments: false,
+			manageTags:     false,
+			wantNotContain: []string{"comment=", "tags="},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := makeRCmeta(tt.meta)
+			got := genComparableWithMgmt(rec, tt.manageComments, tt.manageTags)
+			for _, want := range tt.wantContains {
+				if !strings.Contains(got, want) {
+					t.Errorf("expected comparable to contain %q, got %q", want, got)
+				}
+			}
+			for _, notWant := range tt.wantNotContain {
+				if strings.Contains(got, notWant) {
+					t.Errorf("expected comparable to NOT contain %q, got %q", notWant, got)
+				}
+			}
+		})
 	}
 }
 

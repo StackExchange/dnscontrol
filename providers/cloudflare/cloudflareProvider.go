@@ -555,6 +555,21 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			return fmt.Errorf("CF_TAGS used on %v record %#v but CF_MANAGE_TAGS is not enabled for this domain", rec.Type, rec.GetLabel())
 		}
 
+		// Ensure metadata keys exist when management is enabled, even if empty.
+		// This is needed so that modifyRecord sends an explicit empty value to
+		// the API to clear comments/tags, rather than omitting the field (which
+		// tells Cloudflare to keep the existing value).
+		if dc.Metadata[metaManageComments] == "true" {
+			if _, ok := rec.Metadata[metaComment]; !ok {
+				rec.Metadata[metaComment] = ""
+			}
+		}
+		if dc.Metadata[metaManageTags] == "true" {
+			if _, ok := rec.Metadata[metaTags]; !ok {
+				rec.Metadata[metaTags] = ""
+			}
+		}
+
 		// CNAME flattening and proxy are mutually exclusive (Opinion 6: if ambiguous, forbid it)
 		// Cloudflare silently disables flattening when proxy is enabled, which leads to confusing behavior
 		if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" && rec.Metadata[metaProxy] == "on" {

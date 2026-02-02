@@ -289,9 +289,13 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	if comment, ok := rec.Metadata[metaComment]; ok {
 		r.Comment = &comment
 	}
-	// Set tags if specified
-	if tags := rec.Metadata[metaTags]; tags != "" {
-		r.Tags = strings.Split(tags, ",")
+	// Set tags if specified (empty key means clear all tags)
+	if tags, ok := rec.Metadata[metaTags]; ok {
+		if tags != "" {
+			r.Tags = strings.Split(tags, ",")
+		} else {
+			r.Tags = []string{}
+		}
 	}
 
 	switch rec.Type {
