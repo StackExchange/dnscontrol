@@ -213,6 +213,11 @@
     "TYPE": "HUAWEICLOUD",
     "domain": "$HUAWEICLOUD_DOMAIN"
   },
+  "INFOMANIAK": {
+    "TYPE": "INFOMANIAK",
+    "domain": "$INFOMANIAK_DOMAIN",
+    "token": "$INFOMANIAK_TOKEN"
+  },
   "INWX": {
     "TYPE": "INWX",
     "domain": "$INWX_DOMAIN",

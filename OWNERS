@@ -31,6 +31,7 @@ providers/hetznerv2 @das7pad
 providers/hexonet @KaiSchwarz-cnic
 providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
+providers/infomaniak @jbelien
 providers/internetbs @pragmaton
 providers/inwx @patschi
 providers/joker @atrull
