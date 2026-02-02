@@ -118,14 +118,14 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
-| [`GIDINET`](gidinet.md) | ❌ | ✅ | ❌ | ✅ |
+| [`GIDINET`](gidinet.md) | ✅ | ✅ | ❌ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
-| [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ❌ | ✅ |
+| [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ❌ | ❔ |
 | [`INTERNETBS`](internetbs.md) | ❔ | ❔ | ❌ | ❔ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❌ | ❌ | ✅ | ✅ |
@@ -188,7 +188,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
-| [`INFOMANIAK`](infomaniak.md) | ❌ | ✅ | ❌ | ❌ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❔ | ✅ | ❔ | ❔ | ❔ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`JOKER`](joker.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
@@ -241,14 +241,14 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
-| [`GIDINET`](gidinet.md) | ❌ | ❌ | ✅ | ❌ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
 | [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
-| [`INFOMANIAK`](infomaniak.md) | ❌ | ❌ | ✅ | ❌ |
+| [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ✅ | ❔ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
@@ -307,7 +307,7 @@ Jump to a table:
 | [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
-| [`INFOMANIAK`](infomaniak.md) | ✅ | ❌ | ❌ | ✅ | ✅ |
+| [`INFOMANIAK`](infomaniak.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`INWX`](inwx.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
@@ -356,7 +356,7 @@ Jump to a table:
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
-| [`INFOMANIAK`](infomaniak.md) | ❌ | ❌ | ✅ |
+| [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ✅ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
 | [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
