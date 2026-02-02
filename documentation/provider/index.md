@@ -52,6 +52,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ❌ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❌ |
 | [`GCORE`](gcore.md) | ❌ | ✅ | ❌ |
+| [`GIDINET`](gidinet.md) | ❌ | ✅ | ✅ |
 | [`HEDNS`](hedns.md) | ❌ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ✅ | ❌ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ✅ | ❌ |
@@ -117,6 +118,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ✅ | ✅ |
+| [`GIDINET`](gidinet.md) | ❌ | ✅ | ❌ | ✅ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ✅ | ✅ |
@@ -179,6 +181,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
@@ -238,6 +241,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ✅ | ❌ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
@@ -296,6 +300,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ❔ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ✅ | ✅ | ❔ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
@@ -345,6 +350,7 @@ Jump to a table:
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
 | [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ❌ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ❌ | ❔ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ✅ |
@@ -429,6 +435,7 @@ Providers in this category and their maintainers are:
 |[`EXOSCALE`](exoscale.md)|@pierre-emmanuelJ|
 |[`GANDI_V5`](gandi_v5.md)|@TomOnTime|
 |[`GCORE`](gcore.md)|@xddxdd|
+|[`GIDINET`](gidinet.md)|@zupolgec|
 |[`HEDNS`](hedns.md)|@rblenkinsopp|
 |[`HETZNER`](hetzner.md)|@das7pad|
 |[`HEXONET`](hexonet.md)|@KaiSchwarz-cnic|
