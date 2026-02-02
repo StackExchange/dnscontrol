@@ -1330,6 +1330,9 @@ func makeTests() []*TestGroup {
 		// them anyway because one never knows.  Ready?  Let's go!
 
 		testgroup("IGNORE main",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
+
 			tc("Create some records",
 				a("foo", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
@@ -1474,6 +1477,9 @@ func makeTests() []*TestGroup {
 
 		// Same as "main" but with an apex ("@") record.
 		testgroup("IGNORE apex",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
+
 			tc("Create some records",
 				a("@", "1.2.3.4"),
 				a("@", "2.3.4.5"),
@@ -1609,6 +1615,9 @@ func makeTests() []*TestGroup {
 		// IGNORE with unsafe notation
 
 		testgroup("IGNORE unsafe",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
+
 			tc("Create some records",
 				txt("foo", "simple"),
 				a("foo", "1.2.3.4"),
@@ -1648,6 +1657,9 @@ func makeTests() []*TestGroup {
 		// IGNORE with wildcards
 
 		testgroup("IGNORE wilds",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
+
 			tc("Create some records",
 				a("foo.bat", "1.2.3.4"),
 				a("foo.bat", "2.3.4.5"),
@@ -1707,7 +1719,10 @@ func makeTests() []*TestGroup {
 
 		// IGNORE with changes
 		testgroup("IGNORE with modify",
-			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
+			not(
+				"NAMECHEAP", // Will fail until converted to use diff2 module.
+				"VERCEL",    // Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			),
 			tc("Create some records",
 				a("foo", "1.1.1.1"),
 				a("foo", "10.10.10.10"),
@@ -1816,6 +1831,8 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/2285
 		testgroup("IGNORE_TARGET b2285",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),
 				cname("bar", "redact2.acm-validations.aws."),
@@ -1835,6 +1852,8 @@ func makeTests() []*TestGroup {
 		// changes. This resulted in the deSEC provider generating an
 		// empty upsert, which the API rejected.
 		testgroup("IGNORE everything b2822",
+			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			not("VERCEL"),
 			tc("Create some records",
 				a("dyndns-city1", "91.42.1.1"),
 				a("dyndns-city2", "91.42.1.2"),
@@ -1859,7 +1878,10 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/StackExchange/dnscontrol/issues/3227
 		testgroup("IGNORE w/change b3227",
-			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
+			not(
+				"NAMECHEAP", // Will fail until converted to use diff2 module.
+				"VERCEL",    // Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
+			),
 			tc("Create some records",
 				a("testignore", "8.8.8.8"),
 				a("testdefined", "9.9.9.9"),
