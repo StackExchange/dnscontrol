@@ -56,3 +56,5 @@ Linode does not allow all TTLs, but only a specific subset of TTLs. The followin
 
 The provider will automatically round up your TTL to one of these values. For example, 600 seconds would become 3600
 seconds, but 300 seconds would stay 300 seconds.
+
+Linode requires [`SRV`](../language-reference/domain-modifiers/SRV.md) records to have a non-zero priority.

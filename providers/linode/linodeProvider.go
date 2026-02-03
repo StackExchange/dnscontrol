@@ -95,6 +95,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
+	providers.CanUseSRV:              providers.Can("Linode requires non-zero priority"),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
