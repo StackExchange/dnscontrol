@@ -456,32 +456,26 @@ func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
 func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	regNameservers := api.fetchRegistrationNSSet(dc.Name)
-	combined := map[string]bool{}
-	for _, ns := range dc.Nameservers {
-		combined[ns.Name] = true
-	}
-	for _, rs := range regNameservers {
-		combined[rs] = true
-	}
-	var expected []string
-	for k := range combined {
-		expected = append(expected, k)
+    regNameservers := api.fetchRegistrationNSSet(dc.Name)
+    
+    var expected []string
+    for _, ns := range dc.Nameservers {
+        expected = append(expected, ns.Name)
+    }
+    sort.Strings(expected)
+    
+    foundNameservers := strings.Join(regNameservers, ",")
+    expectedNameservers := strings.Join(expected, ",")
 
-	}
-	sort.Strings(expected)
-	foundNameservers := strings.Join(regNameservers, ",")
-	expectedNameservers := strings.Join(expected, ",")
-
-	if foundNameservers != expectedNameservers {
-		return []*models.Correction{
-			{
-				Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
-				F:   api.updateNameservers(expected, dc.Name),
-			},
-		}, nil
-	}
-	return nil, nil
+    if foundNameservers != expectedNameservers {
+        return []*models.Correction{
+            {
+                Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
+                F:   api.updateNameservers(expected, dc.Name),
+            },
+        }, nil
+    }
+    return nil, nil
 }
 
 // fetchNameserverDomains returns the domains configured in INWX nameservers
