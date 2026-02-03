@@ -251,6 +251,7 @@ Jump to a table:
 | [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ✅ | ❔ |
 | [`INWX`](inwx.md) | ❔ | ✅ | ✅ | ✅ |
 | [`JOKER`](joker.md) | ❔ | ✅ | ✅ | ❌ |
+| [`LINODE`](linode.md) | ❔ | ❔ | ✅ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
