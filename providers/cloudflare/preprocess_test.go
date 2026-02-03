@@ -230,16 +230,16 @@ func TestGenComparableWithMgmt(t *testing.T) {
 			wantContains:   []string{"comment=hello"},
 		},
 		{
-			name:       "tags enabled, no tags on record",
-			meta:       map[string]string{metaProxy: "off"},
-			manageTags: true,
+			name:           "tags enabled, no tags on record",
+			meta:           map[string]string{metaProxy: "off"},
+			manageTags:     true,
 			wantContains:   []string{"tags="},
 			wantNotContain: []string{"comment="},
 		},
 		{
-			name:       "tags enabled, with tags",
-			meta:       map[string]string{metaProxy: "off", metaTags: "a,b"},
-			manageTags: true,
+			name:         "tags enabled, with tags",
+			meta:         map[string]string{metaProxy: "off", metaTags: "a,b"},
+			manageTags:   true,
 			wantContains: []string{"tags=a,b"},
 		},
 		{
