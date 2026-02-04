@@ -42,7 +42,7 @@ type record struct {
 	Weight     uint16     `json:"Weight"`
 	Port       uint16     `json:"Port"`
 	Tag        string     `json:"Tag"`
-	PullZoneID int64      `json:"PullZoneId,omitempty"`
+	PullZoneId int64      `json:"PullZoneId,omitempty"`
 	LinkName   string     `json:"LinkName,omitempty"`
 }
 

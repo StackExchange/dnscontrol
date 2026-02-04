@@ -411,8 +411,8 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	return r
 }
 
-func bunnyPullZone(name, pullZoneID string) *models.RecordConfig {
-	return makeRec(name, pullZoneID, "BUNNY_DNS_PZ")
+func bunnyPullZone(name, pullZoneId string) *models.RecordConfig {
+	return makeRec(name, pullZoneId, "BUNNY_DNS_PZ")
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
