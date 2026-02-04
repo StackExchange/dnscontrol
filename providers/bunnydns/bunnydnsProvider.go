@@ -49,6 +49,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 
 	providers.RegisterCustomRecordType("BUNNY_DNS_RDR", providerName, "")
+	providers.RegisterCustomRecordType("BUNNY_DNS_PZ", providerName, "")
 }
 
 func newBunnydns(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {

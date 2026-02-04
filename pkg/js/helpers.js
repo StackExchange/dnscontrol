@@ -1511,6 +1511,13 @@ var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
  */
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
+var BUNNY_DNS_PZ = recordBuilder('BUNNY_DNS_PZ', {
+    args: [['name', _.isString], ['pullZoneId']],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = String(args.pullZoneId);
+    },
+});
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')
 // x: Decimal X coordinate.
