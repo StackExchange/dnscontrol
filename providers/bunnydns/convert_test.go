@@ -17,8 +17,8 @@ func TestFromRecordConfigPullZone(t *testing.T) {
 	if err != nil {
 		t.Fatalf("fromRecordConfig returned error: %v", err)
 	}
-	if rec.PullZoneId != 12345 {
-		t.Fatalf("expected PullZoneId=12345; got=%d", rec.PullZoneId)
+	if rec.PullZoneID != 12345 {
+		t.Fatalf("expected PullZoneID=12345; got=%d", rec.PullZoneID)
 	}
 }
 

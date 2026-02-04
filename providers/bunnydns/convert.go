@@ -40,13 +40,13 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 	case recordTypeTLSA:
 		r.Value = fmt.Sprintf("%d %d %d %s", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case recordTypePullZone:
-		// When creating Pull Zone records, the API expects an integer PullZoneId field,
+		// When creating Pull Zone records, the API expects an integer PullZoneID field,
 		// while the Value field should be empty.
-		pullZoneId, err := strconv.ParseInt(rc.GetTargetField(), 10, 64)
+		pullZoneID, err := strconv.ParseInt(rc.GetTargetField(), 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid Pull Zone ID for BUNNY_DNS_PZ: %w", err)
 		}
-		r.PullZoneId = pullZoneId
+		r.PullZoneID = pullZoneID
 		r.Value = ""
 	}
 
@@ -95,7 +95,7 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	var err error
 	switch rc.Type {
 	case "BUNNY_DNS_PZ":
-		// When reading Pull Zone records, the API provides the PullZoneId in the LinkName field as string.
+		// When reading Pull Zone records, the API provides the PullZoneID in the LinkName field as string.
 		if r.LinkName == "" {
 			return nil, fmt.Errorf("missing Pull Zone ID (LinkName) for BUNNY_DNS_PZ")
 		}
