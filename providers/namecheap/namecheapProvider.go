@@ -383,12 +383,14 @@ func (n *namecheapProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]
 	}
 	sort.Strings(info.DNSDetails.Nameservers)
 	found := strings.Join(info.DNSDetails.Nameservers, ",")
+
 	desiredNs := []string{}
 	for _, d := range dc.Nameservers {
 		desiredNs = append(desiredNs, d.Name)
 	}
 	sort.Strings(desiredNs)
 	desired := strings.Join(desiredNs, ",")
+
 	if found != desired {
 		parts := strings.SplitN(dc.Name, ".", 2)
 		sld, tld := parts[0], parts[1]

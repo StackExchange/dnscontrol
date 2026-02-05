@@ -325,11 +325,6 @@ func firstNonZero(items ...uint32) uint32 {
 }
 
 func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	// err := dc.Punycode()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	found, err := hp.getNameservers(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting nameservers: %w", err)
