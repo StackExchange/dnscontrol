@@ -1,6 +1,9 @@
 package gidinet
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestFixTTL(t *testing.T) {
 	tests := []struct {
@@ -92,26 +95,7 @@ func TestChunkTXT(t *testing.T) {
 		{"short string unchanged", "hello world", "hello world"},
 		{"exactly 250 chars unchanged", string(make([]byte, 250)), string(make([]byte, 250))},
 		{"251 chars gets chunked", "A" + string(make([]byte, 250)), `"A` + string(make([]byte, 249)) + `" "` + string(make([]byte, 1)) + `"`},
-		{"500 chars splits into two", func() string {
-			// Create 500 char string that splits into two 250-char chunks
-			s := ""
-			for i := 0; i < 500; i++ {
-				s += "A"
-			}
-			return s
-		}(), `"` + func() string {
-			s := ""
-			for i := 0; i < 250; i++ {
-				s += "A"
-			}
-			return s
-		}() + `" "` + func() string {
-			s := ""
-			for i := 0; i < 250; i++ {
-				s += "A"
-			}
-			return s
-		}() + `"`},
+		{"500 chars splits into two", strings.Repeat("A", 500), `"` + strings.Repeat("A", 250) + `" "` + strings.Repeat("A", 250) + `"`},
 	}
 
 	for _, tt := range tests {
@@ -187,20 +171,8 @@ func TestChunkUnchunkRoundTrip(t *testing.T) {
 		input string
 	}{
 		{"short string", "v=spf1 include:example.com ~all"},
-		{"250 chars", func() string {
-			s := ""
-			for i := 0; i < 250; i++ {
-				s += "X"
-			}
-			return s
-		}()},
-		{"500 chars", func() string {
-			s := ""
-			for i := 0; i < 500; i++ {
-				s += "Y"
-			}
-			return s
-		}()},
+		{"250 chars", strings.Repeat("X", 250)},
+		{"500 chars", strings.Repeat("Y", 500)},
 		{"DKIM key", "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmiIdsXY9mqIoAj52xijzQXnKU/qoQZUL5T8bitQrCDpPWQSxBlABwoXs33i+VIMVyK4cLSDiIVG5GWZD2JZHzhW65ALcZg+jvLI7Qloa02VkpJPXePjMasnWHXQfSiImVITh7vLrENRDqKZ29H628kkek7hpvRDj4thBAdlKgkBLiUd6"},
 	}
 
