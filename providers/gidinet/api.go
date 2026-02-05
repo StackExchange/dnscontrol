@@ -328,10 +328,7 @@ func chunkTXT(value string) string {
 
 	var chunks []string
 	for len(value) > 0 {
-		end := maxTXTChunkLen
-		if end > len(value) {
-			end = len(value)
-		}
+		end := min(maxTXTChunkLen, len(value))
 		chunks = append(chunks, `"`+value[:end]+`"`)
 		value = value[end:]
 	}

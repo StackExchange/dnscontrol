@@ -20,31 +20,31 @@ type errorRecord struct {
 
 type dnsZoneResponse struct {
 	Result string      `json:"result"`
-	Data   dnsZone     `json:"data,omitempty"`
-	Error  errorRecord `json:"error,omitempty"`
+	Data   dnsZone     `json:"data"`
+	Error  errorRecord `json:"error"`
 }
 
 type dnsRecordsResponse struct {
 	Result string      `json:"result"`
 	Data   []dnsRecord `json:"data,omitempty"`
-	Error  errorRecord `json:"error,omitempty"`
+	Error  errorRecord `json:"error"`
 }
 
 type dnsRecordResponse struct {
 	Result string      `json:"result"`
-	Data   dnsRecord   `json:"data,omitempty"`
-	Error  errorRecord `json:"error,omitempty"`
+	Data   dnsRecord   `json:"data"`
+	Error  errorRecord `json:"error"`
 }
 
 type boolResponse struct {
 	Result string      `json:"result"`
 	Data   bool        `json:"data,omitempty"`
-	Error  errorRecord `json:"error,omitempty"`
+	Error  errorRecord `json:"error"`
 }
 type dnsZone struct {
 	ID          int64        `json:"id,omitempty"`
 	FQDN        string       `json:"fqdn,omitempty"`
-	DNSSEC      dnssecRecord `json:"dnssec,omitempty"`
+	DNSSEC      dnssecRecord `json:"dnssec"`
 	Nameservers []string     `json:"nameservers,omitempty"`
 }
 
