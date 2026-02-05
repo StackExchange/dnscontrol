@@ -457,19 +457,13 @@ func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
 func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	regNameservers := api.fetchRegistrationNSSet(dc.Name)
-	combined := map[string]bool{}
-	for _, ns := range dc.Nameservers {
-		combined[ns.Name] = true
-	}
-	for _, rs := range regNameservers {
-		combined[rs] = true
-	}
-	var expected []string
-	for k := range combined {
-		expected = append(expected, k)
 
+	var expected []string
+	for _, ns := range dc.Nameservers {
+		expected = append(expected, ns.Name)
 	}
 	sort.Strings(expected)
+
 	foundNameservers := strings.Join(regNameservers, ",")
 	expectedNameservers := strings.Join(expected, ",")
 
