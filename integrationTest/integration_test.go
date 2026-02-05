@@ -2021,6 +2021,12 @@ func makeTests() []*TestGroup {
 			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
 		),
 
+		testgroup("Bunny DNS Pull Zone",
+			only("BUNNY_DNS"),
+			tc("Create PZ", bunnyPullZone("@", "5269987")),
+			tc("Change PZ", bunnyPullZone("@", "5269992")),
+		),
+
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),

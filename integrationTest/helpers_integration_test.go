@@ -411,6 +411,10 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func bunnyPullZone(name, pullZoneId string) *models.RecordConfig {
+	return makeRec(name, pullZoneId, "BUNNY_DNS_PZ")
+}
+
 func cfRedir(pattern, target string) *models.RecordConfig {
 	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
 		Type: "CF_REDIRECT",
