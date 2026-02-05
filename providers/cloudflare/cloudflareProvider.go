@@ -538,7 +538,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 		// Validate tags (check for reserved cf- prefix)
 		if tags := rec.Metadata[metaTags]; tags != "" {
-			for _, tag := range strings.Split(tags, ",") {
+			for tag := range strings.SplitSeq(tags, ",") {
 				if strings.HasPrefix(strings.ToLower(tag), "cf-") {
 					return fmt.Errorf("cloudflare_tags on %v record %#v contains reserved tag prefix 'cf-': %q", rec.Type, rec.GetLabel(), tag)
 				}

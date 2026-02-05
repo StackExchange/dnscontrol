@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -127,9 +128,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if dom.Metadata == nil {
 				dom.Metadata = make(map[string]string)
 			}
-			for k, v := range domainMeta {
-				dom.Metadata[k] = v
-			}
+			maps.Copy(dom.Metadata, domainMeta)
 		}
 
 		for _, r := range tst.Records {
@@ -657,9 +656,7 @@ func testgroup(desc string, items ...any) *TestGroup {
 			if group.domainMeta == nil {
 				group.domainMeta = make(map[string]string)
 			}
-			for k, val := range v.meta {
-				group.domainMeta[k] = val
-			}
+			maps.Copy(group.domainMeta, v.meta)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
