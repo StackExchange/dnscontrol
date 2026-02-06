@@ -166,8 +166,6 @@ homebrew_casks:
     homepage: "https://docs.dnscontrol.org/"
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     license: "MIT"
-    conflicts:
-      - formula: dnscontrol
     repository:
       owner: StackExchange
       name: homebrew-tap
