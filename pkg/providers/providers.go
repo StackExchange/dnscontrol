@@ -193,11 +193,6 @@ func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.
 	return nil, 0, nil
 }
 
-// GetDomainCorrections returns corrections to update a domain.
-func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	return nil, nil
-}
-
 var featuresNone = DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.

@@ -77,29 +77,6 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-// func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	if dc.AutoDNSSEC == "off" {
-// 		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
-// 	}
-
-// 	existing, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	models.PostProcessRecords(existing)
-// 	clean := PrepFoundRecords(existing)
-// 	var minTTL uint32
-// 	c.mutex.Lock()
-// 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
-// 		minTTL = 3600
-// 	} else {
-// 		minTTL = ttl
-// 	}
-// 	c.mutex.Unlock()
-// 	PrepDesiredRecords(dc, minTTL)
-// 	return c.GetZoneRecordsCorrections(dc, clean)
-// }
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	punycodeDomain, err := idna.ToASCII(domain)

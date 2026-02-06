@@ -58,7 +58,7 @@ func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
 	return ns, nil
 }
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (n *HXClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := n.getNameserversRaw(dc.Name)
 	if err != nil {

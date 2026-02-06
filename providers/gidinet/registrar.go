@@ -35,6 +35,7 @@ func (c *gidinetProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*m
 		desired[i] = strings.ToLower(strings.TrimSuffix(ns, "."))
 	}
 	// Deduplicate nameservers (can happen when NAMESERVER() and DNS provider both add them)
+	// FUTURE(tlim): Remove deduplication logic.  The "existing" and "desired" lists are not merged, and "desired" is authoritative.
 	seen := make(map[string]bool)
 	var uniqueDesired []string
 	for _, ns := range desired {

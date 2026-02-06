@@ -68,42 +68,6 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// // GetDomainCorrections returns the corrections for a domain.
-// func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	err = dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	for _, rec := range dc.Records {
-// 		if rec.Type == "ALIAS" {
-// 			// ALIAS is called ANAME on DNS Made Easy
-// 			rec.Type = "ANAME"
-// 		} else if rec.Type == "NS" {
-// 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
-// 			rec.TTL = fixedNameServerRecordTTL
-// 		}
-// 	}
-
-// 	domainName := dc.Name
-
-// 	// Get existing records
-// 	existingRecords, err := api.GetZoneRecords(domainName)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
-// }
-
 func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domainName := dc.Name
 	domainID, err := api.findDomainID(domainName)

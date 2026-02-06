@@ -235,7 +235,6 @@ func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*
 		return nil, err
 	}
 	sort.Strings(nameServers)
-
 	actual := strings.Join(nameServers, ",")
 
 	var expectedSet []string
