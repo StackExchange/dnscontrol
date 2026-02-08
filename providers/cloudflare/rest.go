@@ -37,7 +37,7 @@ func (c *cloudflareProvider) fetchAllZones() (map[string]cloudflare.Zone, error)
 	return m, nil
 }
 
-// get all records for a domain
+// get all records for a domain.
 func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
 	records := []*models.RecordConfig{}
 	rrs, _, err := c.cfClient.ListDNSRecords(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListDNSRecordsParams{})
@@ -332,13 +332,13 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	return err
 }
 
-// change universal ssl state
+// change universal ssl state.
 func (c *cloudflareProvider) changeUniversalSSL(domainID string, state bool) error {
 	_, err := c.cfClient.EditUniversalSSLSetting(context.Background(), domainID, cloudflare.UniversalSSLSetting{Enabled: state})
 	return err
 }
 
-// get universal ssl state
+// get universal ssl state.
 func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 	result, err := c.cfClient.UniversalSSLSettingDetails(context.Background(), domainID)
 	return result.Enabled, err

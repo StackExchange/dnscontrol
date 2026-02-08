@@ -12,23 +12,23 @@ import (
 )
 
 const (
-	// DNS API endpoint
+	// DNS API endpoint.
 	dnsAPIURL     = "https://api.quickservicebox.com/API/Beta/DNSAPI.asmx"
 	dnsSoapAction = "https://api.quickservicebox.com/DNS/DNSAPI/"
 
-	// Core API endpoint (for domain listing)
+	// Core API endpoint (for domain listing).
 	coreAPIURL     = "https://api.quickservicebox.com/API/Beta/CoreAPI.asmx"
 	coreSoapAction = "http://api.quickservicebox.com/API/Beta/CoreAPI/"
 )
 
-// gidinetProvider holds the API credentials and HTTP client
+// gidinetProvider holds the API credentials and HTTP client.
 type gidinetProvider struct {
 	username    string
 	passwordB64 string
 	client      *http.Client
 }
 
-// newClient creates a new Gidinet API client
+// newClient creates a new Gidinet API client.
 func newClient(username, password string) *gidinetProvider {
 	return &gidinetProvider{
 		username:    username,
@@ -37,7 +37,7 @@ func newClient(username, password string) *gidinetProvider {
 	}
 }
 
-// buildSOAPRequest creates a SOAP envelope with the given body content
+// buildSOAPRequest creates a SOAP envelope with the given body content.
 func buildSOAPRequest(body any) ([]byte, error) {
 	// Build XML manually to handle namespaces properly
 	bodyXML, err := xml.MarshalIndent(body, "    ", "  ")
@@ -55,17 +55,17 @@ func buildSOAPRequest(body any) ([]byte, error) {
 	return []byte(soapEnvelope), nil
 }
 
-// doSOAPRequest sends a SOAP request to the DNS API and returns the response body
+// doSOAPRequest sends a SOAP request to the DNS API and returns the response body.
 func (c *gidinetProvider) doSOAPRequest(action string, requestBody any) ([]byte, error) {
 	return c.doSOAPRequestToURL(dnsAPIURL, dnsSoapAction+action, requestBody)
 }
 
-// doCoreAPIRequest sends a SOAP request to the Core API and returns the response body
+// doCoreAPIRequest sends a SOAP request to the Core API and returns the response body.
 func (c *gidinetProvider) doCoreAPIRequest(action string, requestBody any) ([]byte, error) {
 	return c.doSOAPRequestToURL(coreAPIURL, coreSoapAction+action, requestBody)
 }
 
-// doSOAPRequestToURL sends a SOAP request to the specified URL and returns the response body
+// doSOAPRequestToURL sends a SOAP request to the specified URL and returns the response body.
 func (c *gidinetProvider) doSOAPRequestToURL(url, soapAction string, requestBody any) ([]byte, error) {
 	soapData, err := buildSOAPRequest(requestBody)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *gidinetProvider) doSOAPRequestToURL(url, soapAction string, requestBody
 	return body, nil
 }
 
-// parseSOAPResponse extracts the response from a SOAP envelope
+// parseSOAPResponse extracts the response from a SOAP envelope.
 func parseSOAPResponse(data []byte, response any) error {
 	// Find the Body content and unmarshal it
 	// We need to handle the SOAP envelope wrapper
@@ -120,7 +120,7 @@ func parseSOAPResponse(data []byte, response any) error {
 	return nil
 }
 
-// recordGetList fetches all DNS records for a domain
+// recordGetList fetches all DNS records for a domain.
 func (c *gidinetProvider) recordGetList(domainName string) ([]*DNSRecordListItem, error) {
 	request := &RecordGetListRequest{
 		AccountUsername:    c.username,
@@ -145,7 +145,7 @@ func (c *gidinetProvider) recordGetList(domainName string) ([]*DNSRecordListItem
 	return response.ResultItems, nil
 }
 
-// recordAdd creates a new DNS record
+// recordAdd creates a new DNS record.
 func (c *gidinetProvider) recordAdd(record *DNSRecord) error {
 	request := &RecordAddRequest{
 		AccountUsername:    c.username,
@@ -170,7 +170,7 @@ func (c *gidinetProvider) recordAdd(record *DNSRecord) error {
 	return nil
 }
 
-// recordUpdate modifies an existing DNS record
+// recordUpdate modifies an existing DNS record.
 func (c *gidinetProvider) recordUpdate(oldRecord, newRecord *DNSRecord) error {
 	request := &RecordUpdateRequest{
 		AccountUsername:    c.username,
@@ -196,7 +196,7 @@ func (c *gidinetProvider) recordUpdate(oldRecord, newRecord *DNSRecord) error {
 	return nil
 }
 
-// recordDelete removes a DNS record
+// recordDelete removes a DNS record.
 func (c *gidinetProvider) recordDelete(record *DNSRecord) error {
 	request := &RecordDeleteRequest{
 		AccountUsername:    c.username,
@@ -221,7 +221,7 @@ func (c *gidinetProvider) recordDelete(record *DNSRecord) error {
 	return nil
 }
 
-// domainGetList fetches all domains from the account
+// domainGetList fetches all domains from the account.
 func (c *gidinetProvider) domainGetList() ([]*domainListItem, error) {
 	var allDomains []*domainListItem
 	pageNumber := 1
@@ -273,7 +273,7 @@ func (c *gidinetProvider) domainGetList() ([]*domainListItem, error) {
 	return allDomains, nil
 }
 
-// fixTTL snaps a TTL value to the nearest allowed value
+// fixTTL snaps a TTL value to the nearest allowed value.
 func fixTTL(ttl uint32) uint32 {
 	// If TTL is larger than the largest allowed value, return the largest
 	if ttl > allowedTTLValues[len(allowedTTLValues)-1] {
@@ -289,7 +289,7 @@ func fixTTL(ttl uint32) uint32 {
 	return allowedTTLValues[0]
 }
 
-// toFQDN converts a hostname to FQDN if needed
+// toFQDN converts a hostname to FQDN if needed.
 func toFQDN(hostname, domain string) string {
 	if hostname == "@" || hostname == "" {
 		return domain
@@ -303,7 +303,7 @@ func toFQDN(hostname, domain string) string {
 	return hostname + "." + domain
 }
 
-// fromFQDN converts a FQDN to a relative hostname
+// fromFQDN converts a FQDN to a relative hostname.
 func fromFQDN(fqdn, domain string) string {
 	if fqdn == domain || fqdn == domain+"." {
 		return "@"
@@ -314,7 +314,7 @@ func fromFQDN(fqdn, domain string) string {
 	return fqdn
 }
 
-// Maximum length for a single TXT chunk in the Gidinet API
+// Maximum length for a single TXT chunk in the Gidinet API.
 const maxTXTChunkLen = 250
 
 // chunkTXT splits a long TXT value into quoted chunks for the Gidinet API.
@@ -336,7 +336,7 @@ func chunkTXT(value string) string {
 }
 
 // unchunkTXT parses a TXT value that may be in chunked format back to a single string.
-// Handles formats like: "chunk1" "chunk2" or just: plain value
+// Handles formats like: "chunk1" "chunk2" or just: plain value.
 func unchunkTXT(data string) string {
 	data = strings.TrimSpace(data)
 
@@ -382,7 +382,7 @@ func unchunkTXT(data string) string {
 
 // --- Registrar API methods ---
 
-// getNameserversForDomain fetches the current nameservers for a specific domain
+// getNameserversForDomain fetches the current nameservers for a specific domain.
 func (c *gidinetProvider) getNameserversForDomain(domainName string) ([]string, error) {
 	// Fetch all domains and find the one we're looking for
 	allDomains, err := c.domainGetList()
@@ -409,7 +409,7 @@ func (c *gidinetProvider) getNameserversForDomain(domainName string) ([]string, 
 	return nil, fmt.Errorf("domain %s not found in account", domainName)
 }
 
-// setNameservers updates the nameservers for a domain at the registrar level
+// setNameservers updates the nameservers for a domain at the registrar level.
 func (c *gidinetProvider) setNameservers(domainName string, nameservers []string) error {
 	// Join nameservers with comma, no spaces
 	nsString := strings.Join(nameservers, ",")

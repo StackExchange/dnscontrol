@@ -168,7 +168,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	return corrections, actualChangeCount, nil
 }
 
-// Zone Existence Check & Creation
+// Zone Existence Check & Creation.
 func (p *fortigateProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	var probe struct{ Results []any }
 

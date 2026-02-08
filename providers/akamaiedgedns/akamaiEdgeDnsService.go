@@ -19,7 +19,7 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
 )
 
-// initialize initializes the "Akamai OPEN EdgeGrid" library
+// initialize initializes the "Akamai OPEN EdgeGrid" library.
 func initialize(clientSecret string, host string, accessToken string, clientToken string) {
 	eg := edgegrid.Config{
 		ClientSecret: clientSecret,

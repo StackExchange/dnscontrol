@@ -108,7 +108,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *digitaloceanProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 retry:
 	ctx := context.Background()

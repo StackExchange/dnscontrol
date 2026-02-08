@@ -332,7 +332,7 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // RecordConfigs, you can simply compare the string returned by this function.
 // The comparison includes all fields except TTL and any provider-specific
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
-// pseudo-records like ANAME or R53_ALIAS
+// pseudo-records like ANAME or R53_ALIAS.
 func (rc *RecordConfig) ToComparableNoTTL() string {
 	if rc.IsModernType() {
 		return rc.Comparable
@@ -488,7 +488,7 @@ func (rc *RecordConfig) ToRR() dnsv1.RR {
 	return rr
 }
 
-// GetDependencies returns the FQDNs on which this record dependents
+// GetDependencies returns the FQDNs on which this record dependents.
 func (rc *RecordConfig) GetDependencies() []string {
 	switch rc.Type {
 	// #rtype_variations
@@ -614,7 +614,7 @@ func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 	return order, groups
 }
 
-// GetAllDependencies concatinates all dependencies of all records
+// GetAllDependencies concatinates all dependencies of all records.
 func (recs Records) GetAllDependencies() []string {
 	var dependencies []string
 	for _, rec := range recs {
@@ -659,7 +659,7 @@ func Downcase(recs []*RecordConfig) {
 	}
 }
 
-// CanonicalizeTargets turns Targets into FQDNs
+// CanonicalizeTargets turns Targets into FQDNs.
 func CanonicalizeTargets(recs []*RecordConfig, origin string) {
 	originFQDN := origin + "."
 

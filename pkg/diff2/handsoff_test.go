@@ -331,7 +331,7 @@ func Test_ignore_external_dns(t *testing.T) {
 	}
 }
 
-// Test_ignore_external_dns_custom_prefix tests IGNORE_EXTERNAL_DNS with custom prefix
+// Test_ignore_external_dns_custom_prefix tests IGNORE_EXTERNAL_DNS with custom prefix.
 func Test_ignore_external_dns_custom_prefix(t *testing.T) {
 	domain := "f.com"
 
@@ -387,7 +387,7 @@ func Test_ignore_external_dns_custom_prefix(t *testing.T) {
 	}
 }
 
-// Test_ignore_external_dns_conflict tests conflict detection
+// Test_ignore_external_dns_conflict tests conflict detection.
 func Test_ignore_external_dns_conflict(t *testing.T) {
 	domain := "f.com"
 

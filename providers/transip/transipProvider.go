@@ -155,7 +155,7 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 	return corrections, result.ActualChangeCount, err
 }
 
-// GetZoneRecords returns all records within given zone
+// GetZoneRecords returns all records within given zone.
 func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
 retry:
 	entries, err := n.domains.GetDNSEntries(domainName)
@@ -178,7 +178,7 @@ retry:
 	return existingRecords, nil
 }
 
-// GetNameservers returns the nameservers of the given zone
+// GetNameservers returns the nameservers of the given zone.
 func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	var nss []string
 
@@ -237,7 +237,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 	return rc, nil
 }
 
-// removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers
+// removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers.
 func removeDomainNameserversFromDomainRecords(dc *models.DomainConfig) {
 	nameserverLookup := map[string]any{}
 	for _, nameserver := range dc.Nameservers {

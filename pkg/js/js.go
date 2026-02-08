@@ -34,7 +34,7 @@ var helpersJsFileName = "pkg/js/helpers.js"
 // far as require() is concerned, not the actual os.Getwd().
 var currentDirectory string
 
-// EnableFetch sets whether to enable fetch() in JS execution environment
+// EnableFetch sets whether to enable fetch() in JS execution environment.
 var EnableFetch bool = false
 
 // ExecuteJavaScript accepts a javascript file and runs it, returning the resulting dnsConfig.

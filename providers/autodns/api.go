@@ -30,7 +30,7 @@ type ZoneListRequest struct {
 }
 
 var (
-	// Default retry configuration
+	// Default retry configuration.
 	defaultRetryWait = 3 * time.Second
 	defaultRetryMax  = 4
 )

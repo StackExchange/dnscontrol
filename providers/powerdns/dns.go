@@ -63,7 +63,7 @@ func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	return append(corrections, dnssecCorrections...), actualChangeCount, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (dsp *powerdnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	domainVariant := dsp.zoneName(domain, metadata[models.DomainTag])
 	if _, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domainVariant); err != nil {

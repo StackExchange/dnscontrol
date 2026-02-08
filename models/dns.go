@@ -91,7 +91,7 @@ func ToNameserversStripTD(nss []string) ([]*Nameserver, error) {
 	return nservers, nil
 }
 
-// NameserversToStrings constructs a list of strings from *Nameserver structs
+// NameserversToStrings constructs a list of strings from *Nameserver structs.
 func NameserversToStrings(nss []*Nameserver) (s []string) {
 	for _, ns := range nss {
 		s = append(s, ns.Name)

@@ -63,7 +63,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// DnsServiceProvider
+// DnsServiceProvider.
 func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	clientSecret := config["client_secret"]
 	host := config["host"]
@@ -100,7 +100,7 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 	return api, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (a *edgeDNSProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if zoneDoesExist(domain) {
 		printer.Debugf("Zone %s already exists\n", domain)

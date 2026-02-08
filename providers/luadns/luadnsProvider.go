@@ -209,7 +209,7 @@ func (l *luadnsProvider) makeDeleteCorrection(deleterec *models.RecordConfig, zo
 	}}
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (l *luadnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if l.zones == nil {
 		if err := l.fetchDomainList(); err != nil {

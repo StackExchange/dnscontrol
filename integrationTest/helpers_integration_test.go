@@ -34,17 +34,17 @@ var globalDCN *domaintags.DomainNameVarieties
 
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-// A-record proxy off/on
+// A-record proxy off/on.
 func CfProxyOff() *TestCase { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
 func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
 
-// CNAME-record proxy off/on
+// CNAME-record proxy off/on.
 func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
 func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
 
 // Helper constants/funcs for the CLOUDFLARE CNAME flattening testing:
 
-// CNAME flattening off/on (requires paid plan)
+// CNAME flattening off/on (requires paid plan).
 func CfFlattenOff() *TestCase {
 	return tc("flattenoff", cfFlattenCNAME("cflatten", "example.com.", "off"))
 }
@@ -305,7 +305,7 @@ func (tc *TestCase) ExpectNoChanges() *TestCase {
 	return tc
 }
 
-// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK
+// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK.
 func (tc *TestCase) UnsafeIgnore() *TestCase {
 	tc.UnmanagedUnsafe = true
 	return tc
@@ -381,7 +381,6 @@ func cfTagsA(name, target, tags string) *models.RecordConfig {
 	r.Metadata["cloudflare_tags"] = tags
 	return r
 }
-
 
 func cfSingleRedirectEnabled() bool {
 	return (*enableCFRedirectMode)
@@ -695,7 +694,7 @@ func txt(name, target string) *models.RecordConfig {
 	return r
 }
 
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
+// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {.
 func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	r.TTL = t
 	return r

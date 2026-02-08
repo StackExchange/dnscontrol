@@ -80,7 +80,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain '%s' not found in gcloud account", e.domain)
 }
 
-// New creates a new gcloud provider
+// New creates a new gcloud provider.
 func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	// the key as downloaded is json encoded with literal "\n" instead of newlines.
 	// in some cases (round-tripping through env vars) this tends to get messed up.
@@ -307,7 +307,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	return corrections, actualChangeCount, nil
 }
 
-// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
+// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs.
 func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
 	if len(recs) == 0 { // NB(tlim): This is defensive. mkRRSs is never called with an empty list.
 		return nil

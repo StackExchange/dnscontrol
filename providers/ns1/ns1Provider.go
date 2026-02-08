@@ -33,7 +33,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// clientRetries is the number of retries for API backend requests in case of StatusTooManyRequests responses
+// clientRetries is the number of retries for API backend requests in case of StatusTooManyRequests responses.
 const clientRetries = 10
 
 func init() {

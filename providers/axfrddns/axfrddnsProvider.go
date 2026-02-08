@@ -406,7 +406,7 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 	}
 }
 
-// hasNSDeletion returns true if there exist a correction that deletes or changes an NS record
+// hasNSDeletion returns true if there exist a correction that deletes or changes an NS record.
 func hasNSDeletion(changes diff2.ChangeList) bool {
 	for _, change := range changes {
 		switch change.Type {

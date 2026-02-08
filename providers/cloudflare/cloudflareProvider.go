@@ -991,7 +991,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *cloudflareProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := c.zoneCache.HasZone(domain); err != nil || ok {
 		return err

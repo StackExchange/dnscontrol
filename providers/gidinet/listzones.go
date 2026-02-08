@@ -1,6 +1,6 @@
 package gidinet
 
-// ListZones returns all the zones in the account
+// ListZones returns all the zones in the account.
 func (c *gidinetProvider) ListZones() ([]string, error) {
 	domains, err := c.domainGetList()
 	if err != nil {

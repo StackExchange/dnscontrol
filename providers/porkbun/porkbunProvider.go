@@ -299,7 +299,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// parses the porkbun format into our standard RecordConfig
+// parses the porkbun format into our standard RecordConfig.
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)

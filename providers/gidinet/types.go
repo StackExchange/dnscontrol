@@ -4,13 +4,13 @@ import "encoding/xml"
 
 // SOAP envelope structures for Gidinet DNS API
 
-// SOAPEnvelope represents the SOAP envelope wrapper
+// SOAPEnvelope represents the SOAP envelope wrapper.
 type SOAPEnvelope struct {
 	XMLName xml.Name  `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
 	Body    *SOAPBody `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
 }
 
-// SOAPBody represents the SOAP body
+// SOAPBody represents the SOAP body.
 type SOAPBody struct {
 	XMLName  xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
 	Content  any
@@ -18,7 +18,7 @@ type SOAPBody struct {
 	InnerXML []byte     `xml:",innerxml"`
 }
 
-// SOAPFault represents a SOAP fault
+// SOAPFault represents a SOAP fault.
 type SOAPFault struct {
 	XMLName     xml.Name `xml:"Fault"`
 	FaultCode   string   `xml:"faultcode"`
@@ -26,7 +26,7 @@ type SOAPFault struct {
 	Detail      string   `xml:"detail,omitempty"`
 }
 
-// DNSRecord represents a DNS record in the Gidinet API
+// DNSRecord represents a DNS record in the Gidinet API.
 type DNSRecord struct {
 	DomainName string `xml:"DomainName"`
 	HostName   string `xml:"HostName"`
@@ -36,7 +36,7 @@ type DNSRecord struct {
 	Priority   int    `xml:"Priority"`
 }
 
-// DNSRecordListItem represents a DNS record returned from recordGetList
+// DNSRecordListItem represents a DNS record returned from recordGetList.
 type DNSRecordListItem struct {
 	DomainName       string `xml:"DomainName"`
 	HostName         string `xml:"HostName"`
@@ -51,7 +51,7 @@ type DNSRecordListItem struct {
 
 // --- Request structures ---
 
-// RecordGetListRequest is the request for recordGetList
+// RecordGetListRequest is the request for recordGetList.
 type RecordGetListRequest struct {
 	XMLName            xml.Name `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordGetList"`
 	AccountUsername    string   `xml:"accountUsername"`
@@ -59,7 +59,7 @@ type RecordGetListRequest struct {
 	DomainName         string   `xml:"domainName"`
 }
 
-// RecordAddRequest is the request for recordAdd
+// RecordAddRequest is the request for recordAdd.
 type RecordAddRequest struct {
 	XMLName            xml.Name   `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordAdd"`
 	AccountUsername    string     `xml:"accountUsername"`
@@ -67,7 +67,7 @@ type RecordAddRequest struct {
 	Record             *DNSRecord `xml:"record"`
 }
 
-// RecordUpdateRequest is the request for recordUpdate
+// RecordUpdateRequest is the request for recordUpdate.
 type RecordUpdateRequest struct {
 	XMLName            xml.Name   `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordUpdate"`
 	AccountUsername    string     `xml:"accountUsername"`
@@ -76,7 +76,7 @@ type RecordUpdateRequest struct {
 	NewRecord          *DNSRecord `xml:"newRecord"`
 }
 
-// RecordDeleteRequest is the request for recordDelete
+// RecordDeleteRequest is the request for recordDelete.
 type RecordDeleteRequest struct {
 	XMLName            xml.Name   `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordDelete"`
 	AccountUsername    string     `xml:"accountUsername"`
@@ -86,14 +86,14 @@ type RecordDeleteRequest struct {
 
 // --- Response structures ---
 
-// BaseResponse contains the common response fields
+// BaseResponse contains the common response fields.
 type BaseResponse struct {
 	ResultCode    int    `xml:"resultCode"`
 	ResultSubCode int    `xml:"resultSubCode"`
 	ResultText    string `xml:"resultText"`
 }
 
-// RecordGetListResponse is the response from recordGetList
+// RecordGetListResponse is the response from recordGetList.
 type RecordGetListResponse struct {
 	XMLName       xml.Name             `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordGetListResponse"`
 	ResultCode    int                  `xml:"recordGetListResult>resultCode"`
@@ -102,7 +102,7 @@ type RecordGetListResponse struct {
 	ResultItems   []*DNSRecordListItem `xml:"recordGetListResult>resultItems>DNSRecordListItem"`
 }
 
-// RecordAddResponse is the response from recordAdd
+// RecordAddResponse is the response from recordAdd.
 type RecordAddResponse struct {
 	XMLName       xml.Name `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordAddResponse"`
 	ResultCode    int      `xml:"recordAddResult>resultCode"`
@@ -110,7 +110,7 @@ type RecordAddResponse struct {
 	ResultText    string   `xml:"recordAddResult>resultText"`
 }
 
-// RecordUpdateResponse is the response from recordUpdate
+// RecordUpdateResponse is the response from recordUpdate.
 type RecordUpdateResponse struct {
 	XMLName       xml.Name `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordUpdateResponse"`
 	ResultCode    int      `xml:"recordUpdateResult>resultCode"`
@@ -118,7 +118,7 @@ type RecordUpdateResponse struct {
 	ResultText    string   `xml:"recordUpdateResult>resultText"`
 }
 
-// RecordDeleteResponse is the response from recordDelete
+// RecordDeleteResponse is the response from recordDelete.
 type RecordDeleteResponse struct {
 	XMLName       xml.Name `xml:"https://api.quickservicebox.com/DNS/DNSAPI recordDeleteResponse"`
 	ResultCode    int      `xml:"recordDeleteResult>resultCode"`
@@ -126,7 +126,7 @@ type RecordDeleteResponse struct {
 	ResultText    string   `xml:"recordDeleteResult>resultText"`
 }
 
-// Result codes from Gidinet API
+// Result codes from Gidinet API.
 const (
 	ResultCodeSuccess        = 0 // Operation succeeded
 	ResultCodeAuthFailed     = 1 // Authentication failed
@@ -137,7 +137,7 @@ const (
 	ResultCodeInUse          = 6 // Object in use
 )
 
-// allowedTTLValues lists the TTL values supported by the Gidinet API
+// allowedTTLValues lists the TTL values supported by the Gidinet API.
 var allowedTTLValues = []uint32{
 	60,     // 60 seconds
 	300,    // 5 minutes
@@ -157,7 +157,7 @@ var allowedTTLValues = []uint32{
 
 // --- CoreAPI structures for domain listing ---
 
-// domainGetListRequest is the request for domainGetList (CoreAPI)
+// domainGetListRequest is the request for domainGetList (CoreAPI).
 type domainGetListRequest struct {
 	XMLName             xml.Name `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainGetList"`
 	AccountUsername     string   `xml:"accountUsername"`
@@ -173,7 +173,7 @@ type domainGetListRequest struct {
 	TechContactID       int64    `xml:"techContactID"`
 }
 
-// domainListItem represents a domain in the domainGetList response
+// domainListItem represents a domain in the domainGetList response.
 type domainListItem struct {
 	DomainID            int64  `xml:"domainId"`
 	DomainName          string `xml:"domainName"`
@@ -190,7 +190,7 @@ type domainListItem struct {
 	ServiceType         int    `xml:"serviceType"`
 }
 
-// domainGetListResponse is the response from domainGetList (CoreAPI)
+// domainGetListResponse is the response from domainGetList (CoreAPI).
 type domainGetListResponse struct {
 	XMLName           xml.Name          `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainGetListResponse"`
 	ResultCode        int               `xml:"domainGetListResult>resultCode"`
@@ -203,7 +203,7 @@ type domainGetListResponse struct {
 	ResultItems       []*domainListItem `xml:"domainGetListResult>resultItems>DomainListItem"`
 }
 
-// Domain status codes
+// Domain status codes.
 const (
 	DomainStatusActive           = 0   // Active
 	DomainStatusRegistering      = 1   // In registration
@@ -218,7 +218,7 @@ const (
 
 // --- Registrar API structures ---
 
-// domainNameServersChangeRequest is the request for domainNameServersChange (CoreAPI)
+// domainNameServersChangeRequest is the request for domainNameServersChange (CoreAPI).
 type domainNameServersChangeRequest struct {
 	XMLName              xml.Name `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainNameServersChange"`
 	AccountUsername      string   `xml:"accountUsername"`
@@ -228,7 +228,7 @@ type domainNameServersChangeRequest struct {
 	AdditionalParameters []string `xml:"additionalParameters"` // Not used in current version
 }
 
-// opResultItem represents an operation result item
+// opResultItem represents an operation result item.
 type opResultItem struct {
 	ServiceKey        string `xml:"serviceKey"`
 	ServiceHostname   string `xml:"serviceHostname"`
@@ -237,7 +237,7 @@ type opResultItem struct {
 	ResultItemID      int64  `xml:"resultItemId"`
 }
 
-// domainNameServersChangeResponse is the response from domainNameServersChange (CoreAPI)
+// domainNameServersChangeResponse is the response from domainNameServersChange (CoreAPI).
 type domainNameServersChangeResponse struct {
 	XMLName       xml.Name        `xml:"http://api.quickservicebox.com/API/Beta/CoreAPI domainNameServersChangeResponse"`
 	ResultCode    int             `xml:"domainNameServersChangeResult>resultCode"`

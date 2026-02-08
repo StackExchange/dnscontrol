@@ -175,12 +175,12 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 	return corrections, actualChangeCount, nil
 }
 
-// GetNameservers gets the Vultr nameservers for a domain
+// GetNameservers gets the Vultr nameservers for a domain.
 func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNS)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *vultrProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
@@ -219,7 +219,7 @@ func (api *vultrProvider) isDomainInAccount(domain string) (bool, error) {
 	return false, nil
 }
 
-// toRecordConfig converts a Vultr DomainRecord to a RecordConfig. #rtype_variations
+// toRecordConfig converts a Vultr DomainRecord to a RecordConfig. #rtype_variations.
 func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig, error) {
 	origin, data := domain, r.Data
 
@@ -276,7 +276,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 	}
 }
 
-// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DomainRecordReq. #rtype_variations
+// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DomainRecordReq. #rtype_variations.
 func toVultrRecord(rc *models.RecordConfig, vultrID string) *govultr.DomainRecord {
 	name := rc.GetLabel()
 	// Vultr uses a blank string to represent the apex domain.

@@ -98,7 +98,7 @@ const (
 	errorImproperDelegation = "This zone does not appear to be properly delegated to our nameservers."
 )
 
-// hednsProvider stores login credentials and represents and API connection
+// hednsProvider stores login credentials and represents and API connection.
 type hednsProvider struct {
 	Username        string
 	Password        string
@@ -109,7 +109,7 @@ type hednsProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HEDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs.
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -167,7 +167,7 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 	return domains, err
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *hednsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	domains, err := c.ListZones()
 	if err != nil {
@@ -246,7 +246,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 	return corrections, actualChangeCount, nil
 }
 
-// GetZoneRecords returns all the records for the given domain
+// GetZoneRecords returns all the records for the given domain.
 func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 

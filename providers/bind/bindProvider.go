@@ -144,7 +144,7 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(r)
 }
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)

@@ -63,7 +63,7 @@ func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
 	_ = rec.SetTargetDS(ds.KeyTag, ds.Algorithm, ds.DigestType, ds.Digest)
 }
 
-// CopyFromLegacyFields uses the the legacy fields to populate .F
+// CopyFromLegacyFields uses the the legacy fields to populate .F.
 func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
 	// Copy fields:
 	rec.F = &DS{

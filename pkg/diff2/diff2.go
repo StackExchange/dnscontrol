@@ -25,7 +25,7 @@ const (
 	REPORT             // No change, but I have something to say!
 )
 
-// ChangeList is a list of Change
+// ChangeList is a list of Change.
 type ChangeList []Change
 
 // Change is an instruction to the provider. Generally if one properly executes
@@ -115,7 +115,7 @@ General instructions:
 */
 
 // CreateCorrection creates a new Correction based on the given
-// function and prefills it with the Msg of the current Change
+// function and prefills it with the Msg of the current Change.
 func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
@@ -124,7 +124,7 @@ func (c *Change) CreateCorrection(correctionFunction func() error) *models.Corre
 }
 
 // CreateMessage creates a new correction with only the message.
-// Used for diff2.Report corrections
+// Used for diff2.Report corrections.
 func (c *Change) CreateMessage() *models.Correction {
 	return &models.Correction{
 		Msg: c.MsgsJoined,
@@ -133,7 +133,7 @@ func (c *Change) CreateMessage() *models.Correction {
 
 // CreateCorrectionWithMessage creates a new Correction based on the
 // given function and prefixes given function with the Msg of the
-// current change
+// current change.
 func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
@@ -150,7 +150,7 @@ func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func
 // record, if A records are added, changed, or removed, the API takes
 // www.example.com, A, and a list of all the desired IP addresses.
 //
-// Examples include: AZURE_DNS, GCORE, NS1, ROUTE53
+// Examples include: AZURE_DNS, GCORE, NS1, ROUTE53.
 func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByRecordSet, existing, dc, compFunc)
 }
@@ -162,7 +162,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 // time. That is, updates are done by sending a list of DNS records
 // to be served at a particular label, or the label itself is deleted.
 //
-// Examples include: GANDI_V5
+// Examples include: GANDI_V5.
 func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByLabel, existing, dc, compFunc)
 }
@@ -178,7 +178,7 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 // A change always has exactly 1 old and 1 new: .Old[0] and .New[0]
 // A delete always has exactly 1 old: .Old[0]
 //
-// Examples include: CLOUDFLAREAPI, HEDNS, INWX, MSDNS, OVH, PORKBUN, VULTR
+// Examples include: CLOUDFLAREAPI, HEDNS, INWX, MSDNS, OVH, PORKBUN, VULTR.
 func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, int, error) {
 	return byHelper(analyzeByRecord, existing, dc, compFunc)
 }
@@ -204,7 +204,7 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //		// (result.DesiredPlus are the new records for the zone).
 //	}
 //
-// Example providers include: BIND, AUTODNS
+// Example providers include: BIND, AUTODNS.
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ByResults, error) {
 	// Only return the messages and a list of records needed to build the new zone.
 	result, err := byHelperStruct(analyzeByRecord, existing, dc, compFunc)

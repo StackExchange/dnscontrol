@@ -127,7 +127,7 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // It will encode:
 // - Name
 // - NameFQDN
-// - Target (CNAME and MX only)
+// - Target (CNAME and MX only).
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
 		if rec.IsModernType() {

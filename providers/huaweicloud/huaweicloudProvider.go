@@ -122,7 +122,7 @@ func init() {
 }
 
 // huaweicloud has request limiting like above.
-// "The throttling threshold has been reached: policy user over ratelimit,limit:100,time:1 minute"
+// "The throttling threshold has been reached: policy user over ratelimit,limit:100,time:1 minute".
 func withRetry(f func() error) {
 	const maxRetries = 23
 	const sleepTime = 5 * time.Second

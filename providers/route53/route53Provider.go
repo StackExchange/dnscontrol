@@ -538,7 +538,7 @@ func getZoneID(zone r53Types.HostedZone, r *models.RecordConfig) string {
 	return parseZoneID(zoneID)
 }
 
-/** Removes "/hostedzone/"" prefix from AWS ZoneId */
+/** Removes "/hostedzone/"" prefix from AWS ZoneId. */
 func parseZoneID(zoneID string) string {
 	return strings.TrimPrefix(zoneID, "/hostedzone/")
 }
@@ -649,7 +649,7 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]r53Types.ResourceRe
 	return records, nil
 }
 
-// we have to process names from route53 to match what we expect and to remove their odd octal encoding
+// we have to process names from route53 to match what we expect and to remove their odd octal encoding.
 func unescape(s *string) string {
 	if s == nil {
 		return ""

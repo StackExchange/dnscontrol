@@ -80,7 +80,7 @@ EXAMPLES:
 
 // check-creds foo bar
 // is the same as
-// get-zones --format=nameonly foo bar all
+// get-zones --format=nameonly foo bar all.
 var _ = cmd(catUtils, func() *cli.Command {
 	var args GetZoneArgs
 	return &cli.Command{

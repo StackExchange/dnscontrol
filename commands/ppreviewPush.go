@@ -51,7 +51,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
-// PPreviewArgs contains all data/flags needed to run preview, independently of CLI
+// PPreviewArgs contains all data/flags needed to run preview, independently of CLI.
 type PPreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
@@ -164,7 +164,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
-// PPushArgs contains all data/flags needed to run push, independently of CLI
+// PPushArgs contains all data/flags needed to run push, independently of CLI.
 type PPushArgs struct {
 	PPreviewArgs
 	Interactive bool
@@ -192,7 +192,7 @@ func PPush(args PPushArgs) error {
 
 var pobsoleteDiff2FlagUsed = false
 
-// run is the main routine common to preview/push
+// run is the main routine common to preview/push.
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report string) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
