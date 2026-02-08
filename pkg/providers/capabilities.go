@@ -38,16 +38,16 @@ const (
 	// are equivalent.
 	CanOnlyDiff1Features
 
-	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
+	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAICDN
 
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
 	CanUseAlias
 
-	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports.
 	CanUseAzureAlias
 
-	// CanUseCAA indicates the provider can handle CAA records
+	// CanUseCAA indicates the provider can handle CAA records.
 	CanUseCAA
 
 	// CanUseDHCID indicates the provider can handle DHCID records

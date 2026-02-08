@@ -38,7 +38,7 @@ func createNode[T any](name string) *domainNode[T] {
 
 // Set adds given data to the given fqdn.
 // The FQDN can contain a wildcard on the start.
-// example fqdn: *.example.com
+// Example fqdn: *.example.com.
 func (tree *DomainTree[T]) Set(fqdn string, data T) {
 	domainParts := splitFQDN(fqdn)
 
@@ -63,7 +63,7 @@ func (tree *DomainTree[T]) Set(fqdn string, data T) {
 // tree.Set("a.example.com", 2)
 // tree.Get("a.example.com") // 2
 // tree.Get("a.a.example.com") // 1
-// tree.Get("other.com") // 0
+// tree.Get("other.com") // 0.
 func (tree *DomainTree[T]) Get(fqdn string) T {
 	domainParts := splitFQDN(fqdn)
 
