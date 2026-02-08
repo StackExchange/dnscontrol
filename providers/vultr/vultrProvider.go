@@ -265,7 +265,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		// TXT records from Vultr are always surrounded by quotes.
 		// They don't permit quotes within the string, therefore there is no
 		// need to resolve \" or other quoting.
-		if !(strings.HasPrefix(data, `"`) && strings.HasSuffix(data, `"`)) {
+		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
 			// Give an error if Vultr changes their protocol. We'd rather break
 			// than do the wrong thing.
 			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")

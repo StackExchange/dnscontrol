@@ -754,7 +754,7 @@ func Test_removeCommon(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("removeCommon() got  = %v, want %v", got, tt.want)
 			}
-			if (!(got1 == nil && tt.want1 == nil)) && !reflect.DeepEqual(got1, tt.want1) {
+			if (got1 != nil || tt.want1 != nil) && !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("removeCommon() got1 = %v, want %v", got1, tt.want1)
 			}
 		})

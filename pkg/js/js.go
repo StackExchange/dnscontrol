@@ -198,15 +198,15 @@ func require(call otto.FunctionCall) otto.Value {
 
 func listFiles(call otto.FunctionCall) otto.Value {
 	// Check amount of arguments provided
-	if !(len(call.ArgumentList) >= 1 && len(call.ArgumentList) <= 3) {
+	if len(call.ArgumentList) < 1 || len(call.ArgumentList) > 3 {
 		throw(call.Otto, "glob requires at least one argument: folder (string). "+
 			"Optional: recursive (bool) [true], fileExtension (string) [.js]")
 	}
 
 	// Check if provided parameters are valid
 	// First: Let's check dir.
-	if !(call.Argument(0).IsDefined() && call.Argument(0).IsString() &&
-		len(call.Argument(0).String()) > 0) {
+	if !call.Argument(0).IsDefined() || !call.Argument(0).IsString() ||
+		len(call.Argument(0).String()) == 0 {
 		throw(call.Otto, "glob: first argument needs to be a path, provided as string.")
 	}
 	dir := call.Argument(0).String() // Path where to start listing
