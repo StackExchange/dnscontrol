@@ -89,7 +89,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	ctx := context.Background()
 	var opt option.ClientOption
 	if key, ok := cfg["private_key"]; ok {
-		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
+		cfg["private_key"] = strings.ReplaceAll(key, "\\n", "\n")
 		raw, err := json.Marshal(cfg)
 		if err != nil {
 			return nil, err
@@ -460,7 +460,7 @@ func (g *gcloudProvider) EnsureZoneExists(domain string, metadata map[string]str
 	printer.Printf("Adding zone for %s to gcloud account ", domain)
 	mz = &gdns.ManagedZone{
 		DnsName:     domain + ".",
-		Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
+		Name:        "zone-" + strings.ReplaceAll(domain, ".", "-"),
 		Description: "zone added by dnscontrol",
 	}
 	if g.nameServerSet != nil {

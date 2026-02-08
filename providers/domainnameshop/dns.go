@@ -65,7 +65,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	// Create records
 	for _, r := range toCreate {
 		// Retrieve the domain name that is targeted. I.e. example.com instead of sub.example.com
-		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+		domainName := strings.ReplaceAll(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "")
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
 		if err != nil {
@@ -81,7 +81,7 @@ func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainCo
 	}
 
 	for _, r := range toModify {
-		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+		domainName := strings.ReplaceAll(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "")
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
 		if err != nil {

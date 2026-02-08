@@ -335,11 +335,11 @@ func addTrailingDot(record string) string {
 }
 
 func removeEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\\"", "\"", -1), "\\\\", "\\", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\\"", "\""), "\\\\", "\\")
 }
 
 func addEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\", "\\\\", -1), "\"", "\\\"", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\", "\\\\"), "\"", "\\\"")
 }
 
 func getEndpoint(sandbox bool) string {

@@ -655,7 +655,7 @@ func unescape(s *string) string {
 		return ""
 	}
 	name := strings.TrimSuffix(*s, ".")
-	name = strings.Replace(name, `\052`, "*", -1) // TODO: escape all octal sequences
+	name = strings.ReplaceAll(name, `\052`, "*") // TODO: escape all octal sequences
 	return name
 }
 

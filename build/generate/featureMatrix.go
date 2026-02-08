@@ -21,7 +21,7 @@ func generateFeatureMatrix() error {
 		var jumptotableContent = ""
 
 		var anchor = strings.ToLower(tableTitle)
-		anchor = strings.Replace(anchor, " ", "-", -1)
+		anchor = strings.ReplaceAll(anchor, " ", "-")
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
 		replacementContent.WriteString(jumptotableContent)
