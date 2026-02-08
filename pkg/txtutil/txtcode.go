@@ -90,11 +90,12 @@ func txtDecode(s string) (string, error) {
 
 		switch state {
 		case StateStart:
-			if c == ' ' {
+			switch c {
+			case ' ':
 				// skip whitespace
-			} else if c == '"' {
+			case '"':
 				state = StateQuoted
-			} else {
+			default:
 				state = StateUnquoted
 				b.WriteRune(c)
 			}
@@ -108,16 +109,16 @@ func txtDecode(s string) (string, error) {
 			}
 
 		case StateQuoted:
-
-			if c == '\\' {
+			switch c {
+			case '\\':
 				if isRemaining(s, i, 1) {
 					state = StateBackslash
 				} else {
 					return "", fmt.Errorf("txtDecode quoted string ends with backslash q(%q)", s)
 				}
-			} else if c == '"' {
+			case '"':
 				state = StateWantSpace
-			} else {
+			default:
 				b.WriteRune(c)
 			}
 

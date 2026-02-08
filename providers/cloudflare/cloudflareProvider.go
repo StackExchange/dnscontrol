@@ -576,12 +576,13 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			return fmt.Errorf("CNAME record %#v has both CF_PROXY_ON and CF_CNAME_FLATTEN_ON set, but these are mutually exclusive; Cloudflare ignores CNAME flattening when proxy is enabled", rec.GetLabel())
 		}
 
-		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
+		switch rec.Type {
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
 				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CLOUDFLAREAPI_SINGLE_REDIRECT records")
 			}
-		} else if rec.Type == "CF_WORKER_ROUTE" {
+		case "CF_WORKER_ROUTE":
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {

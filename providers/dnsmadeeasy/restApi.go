@@ -186,11 +186,12 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 	var req *http.Request
 	var err error
 
-	if request.method == "PUT" || request.method == "POST" {
+	switch request.method {
+	case "PUT", "POST":
 		req, err = http.NewRequest(request.method, url, bytes.NewBuffer([]byte(request.data)))
-	} else if request.method == "GET" || request.method == "DELETE" {
+	case "GET", "DELETE":
 		req, err = http.NewRequest(request.method, url, nil)
-	} else {
+	default:
 		return nil, fmt.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
 	}
 

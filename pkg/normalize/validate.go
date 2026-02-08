@@ -441,7 +441,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "ALIAS" || rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
+			switch rec.Type {
+			case "ALIAS", "CNAME", "MX", "NS", "SRV":
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
@@ -453,24 +454,24 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if err := rec.SetTarget(dnsutilv1.AddOrigin(rec.GetTargetField(), origin)); err != nil {
 					errs = append(errs, err)
 				}
-			} else if rec.Type == "A" || rec.Type == "AAAA" {
+			case "A", "AAAA":
 				if err := rec.SetTargetIP(rec.GetTargetIP()); err != nil {
 					errs = append(errs, err)
 				}
-			} else if rec.Type == "PTR" {
+			case "PTR":
 				var err error
 				var name string
 				if name, err = transform.PtrNameMagic(rec.GetLabel(), domain.Name); err != nil {
 					errs = append(errs, err)
 				}
 				rec.SetLabel(name, domain.Name)
-			} else if rec.Type == "CAA" {
+			case "CAA":
 				// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
 				allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
 				if !slices.Contains(allowedTags, rec.CaaTag) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
-			} else if rec.Type == "TLSA" {
+			case "TLSA":
 				if rec.TlsaUsage > 3 {
 					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
 						rec.TlsaUsage, rec.GetLabel(), domain.Name))
@@ -483,7 +484,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
-			} else if rec.Type == "SMIMEA" {
+			case "SMIMEA":
 				if rec.SmimeaUsage > 3 {
 					errs = append(errs, fmt.Errorf("SMIMEA Usage %d is invalid in record %s (domain %s)",
 						rec.SmimeaUsage, rec.GetLabel(), domain.Name))

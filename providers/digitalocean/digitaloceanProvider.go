@@ -298,9 +298,10 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		// If target is the domainname, e.g. cname foo.example.com -> example.com,
 		// DO returns "@" on read even if fqdn was written.
-		if target == "@" {
+		switch target {
+		case "@":
 			target = domain
-		} else if target == "." {
+		case ".":
 			target = ""
 		}
 		target = target + "."
