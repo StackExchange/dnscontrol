@@ -373,7 +373,7 @@ var backoff = time.Second * 5
 const maxBackoff = time.Minute * 3
 
 func pauseAndRetry(resp *godo.Response) bool {
-	statusCode := resp.Response.StatusCode
+	statusCode := resp.StatusCode
 	if statusCode != 429 && statusCode != 504 {
 		backoff = time.Second * 5
 		return false

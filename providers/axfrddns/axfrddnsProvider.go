@@ -394,10 +394,10 @@ func (c *axfrddnsProvider) BuildCorrection(dc *models.DomainConfig, msgs []strin
 				if err != nil {
 					return err
 				}
-				if msg.MsgHdr.Rcode != 0 {
+				if msg.Rcode != 0 {
 					return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
-						dnsv1.RcodeToString[msg.MsgHdr.Rcode],
-						msg.MsgHdr.Rcode)
+						dnsv1.RcodeToString[msg.Rcode],
+						msg.Rcode)
 				}
 			}
 

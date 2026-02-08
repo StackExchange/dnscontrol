@@ -168,8 +168,8 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]string, len(getResp.Zone.Nameservers))
-	for i, ns := range getResp.Zone.Nameservers {
+	nss := make([]string, len(getResp.Nameservers))
+	for i, ns := range getResp.Nameservers {
 		nss[i] = *ns.Hostname
 	}
 

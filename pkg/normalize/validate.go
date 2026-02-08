@@ -572,7 +572,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			if provider.ProviderBase.ProviderType == "-" {
+			if provider.ProviderType == "-" {
 				// "-" indicates that we don't yet know who the provider type
 				// is.  This is probably due to the fact that `dnscontrol
 				// check` doesn't read creds.json, which is where the TYPE is
@@ -581,9 +581,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// be performed.
 				continue
 			}
-			if es := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); len(es) != 0 {
+			if es := providers.AuditRecords(provider.ProviderType, domain.Records); len(es) != 0 {
 				for _, e := range es {
-					errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderBase.ProviderType, domain.Name, e))
+					errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderType, domain.Name, e))
 				}
 			}
 		}
