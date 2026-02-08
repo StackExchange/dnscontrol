@@ -53,15 +53,9 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, errors.New("missing DNSMADEEASY secret_key")
 	}
 
-	sandbox := false
-	if settings["sandbox"] != "" {
-		sandbox = true
-	}
+	sandbox := settings["sandbox"] != ""
 
-	debug := false
-	if os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1" {
-		debug = true
-	}
+	debug := os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1"
 
 	api := newProvider(settings["api_key"], settings["secret_key"], sandbox, debug)
 

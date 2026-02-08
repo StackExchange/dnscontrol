@@ -107,10 +107,7 @@ func (c ConsolePrinter) PrintReport(i int, correction *models.Correction) {
 func (c ConsolePrinter) PromptToRun() bool {
 	fmt.Fprint(c.Writer, "Run? (y/N): ")
 	txt, err := c.Reader.ReadString('\n')
-	run := true
-	if err != nil {
-		run = false
-	}
+	run := err == nil
 	txt = strings.ToLower(strings.TrimSpace(txt))
 	if txt != "y" {
 		run = false
