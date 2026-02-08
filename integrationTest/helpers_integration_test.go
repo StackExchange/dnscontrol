@@ -382,13 +382,6 @@ func cfTagsA(name, target, tags string) *models.RecordConfig {
 	return r
 }
 
-func cfCommentAndTagsA(name, target, comment, tags string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_comment"] = comment
-	r.Metadata["cloudflare_tags"] = tags
-	return r
-}
 
 func cfSingleRedirectEnabled() bool {
 	return (*enableCFRedirectMode)
