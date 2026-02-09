@@ -166,11 +166,11 @@ Done. 1 corrections.
 completed with errors
 ```
 
-**Note:** If the zone does not exist and you want to see the changes which will be made by dnscontrol push then use **dnscontrol preview** with the **--populate-on-preview** flag set to **true**. This automatically creates the zone with SOA and NS records.
+**Note:** If the zone does not exist and you want to see the changes which will be made by dnscontrol push then use **dnscontrol preview** with the **--populate-on-preview** flag set. This automatically creates the zone with SOA and NS records.
 
 Command:
 ```
-dnscontrol preview --populate-on-preview=true
+dnscontrol preview --populate-on-preview
 ```
 
 
