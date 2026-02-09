@@ -637,6 +637,10 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
+			// Allow AKAMAICDN and CNAME to have same name
+			if r.Type == "AKAMAICDN" {
+				continue
+			}
 			errs = append(errs, fmt.Errorf("%s: cannot have CNAME and %s record with same name: %s", r.FilePos, r.Type, r.GetLabelFQDN()))
 		}
 	}
