@@ -196,7 +196,7 @@ Serially Gathering: "example.com"
 #2: + CREATE A foo.example.com 1.2.3.4 ttl=300
 #3: Enable AutoDnsSec
 ```
-In the above example since, the zone **example.com** did not exist, running **dnscontrol preview** with the **--populate-on-preview** flag set to **true** created a zone named example.com with only the NS and SOA records and showed what changes will be applied by **dnscontrol push**.
+In the above example since, the zone **example.com** did not exist, running **dnscontrol preview** with the **--populate-on-preview** flag set created a zone named example.com with only the NS and SOA records and showed what changes will be applied by **dnscontrol push**.
 
 
 ### dnscontrol push command
