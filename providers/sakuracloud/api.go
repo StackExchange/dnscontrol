@@ -269,8 +269,8 @@ type sakuracloudAPI struct {
 	commonServiceItemMap map[string]*commonServiceItem
 }
 
-// NewSakuracloudAPI creates and returns a sakuracloudAPI instance.
-func NewSakuracloudAPI(accessToken, accessTokenSecret, endpoint string) (*sakuracloudAPI, error) {
+// newSakuracloudAPI creates and returns a sakuracloudAPI instance.
+func newSakuracloudAPI(accessToken, accessTokenSecret, endpoint string) (*sakuracloudAPI, error) {
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("endpoint_url parse error: %w", err)

@@ -7,11 +7,11 @@ import "github.com/StackExchange/dnscontrol/v4/pkg/providers"
 // "cmd" or "Cmd" to various labels too.
 
 // NewCmdZoneCache creates a zoneCache.
-func NewCmdZoneCache() *cmdZoneCache {
-	return &cmdZoneCache{}
+func NewCmdZoneCache() *CmdZoneCache {
+	return &CmdZoneCache{}
 }
 
-func (zc *cmdZoneCache) zoneList(name string, lister providers.ZoneLister) (*[]string, error) {
+func (zc *CmdZoneCache) zoneList(name string, lister providers.ZoneLister) (*[]string, error) {
 	zc.Lock()
 	defer zc.Unlock()
 

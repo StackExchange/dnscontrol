@@ -14,7 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
-// Api layer for ClouDNS.
+// cloudnsProvider is the handle for the ClouDNS API.
 type cloudnsProvider struct {
 	creds struct {
 		id       string
