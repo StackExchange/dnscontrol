@@ -29,7 +29,7 @@ func (n *nsone) ListZones() ([]string, error) {
 }
 
 // A wrapper around rest.Client's Zones.Get() implementing retries
-// no explicit sleep is needed, it is implemented in NS1 client's RateLimitStrategy we used
+// no explicit sleep is needed, it is implemented in NS1 client's RateLimitStrategy we used.
 func (n *nsone) GetZone(domain string) (*dns.Zone, error) {
 	for rtr := 0; ; rtr++ {
 		z, httpResp, err := n.Zones.Get(domain, true)

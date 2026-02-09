@@ -140,7 +140,7 @@ func (c *vercelProvider) processResponse(resp *http.Response, v any, errorOnNoCo
 	return nil
 }
 
-// rateLimiter handles Vercel's rate limits
+// rateLimiter handles Vercel's rate limits.
 type rateLimiter struct {
 	mu            sync.Mutex
 	delay         time.Duration

@@ -15,7 +15,7 @@ func init() {
 	})
 }
 
-// bonfire notifier for stack exchange internal chat. String is just url with room and token in it
+// bonfire notifier for stack exchange internal chat. String is just url with room and token in it.
 type bonfireNotifier string
 
 func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview bool) error {

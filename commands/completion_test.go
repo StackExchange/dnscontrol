@@ -222,7 +222,7 @@ func TestShellCompletionCommand(t *testing.T) {
 
 // testHelperGetShellsAndCompletionScripts collects all supported shells and their completion scripts and returns them
 // as a slice of shellTestDataItem.
-// The completion scripts are sourced with getCompletionSupportedShells
+// The completion scripts are sourced with getCompletionSupportedShells.
 func testHelperGetShellsAndCompletionScripts() ([]shellTestDataItem, error) {
 	shells, templates, err := getCompletionSupportedShells()
 	if err != nil {

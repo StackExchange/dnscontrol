@@ -240,7 +240,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	return corrections, actualChangeCount, nil
 }
 
-// GetRegistrarCorrections returns corrections to update domain nameserver delegation
+// GetRegistrarCorrections returns corrections to update domain nameserver delegation.
 func (c *cloudnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	// 1. Get current nameservers from registrar
 	existing, err := c.getNameservers(dc.Name)
@@ -314,7 +314,7 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if _, ok, err := c.idForDomain(domain); err != nil {
 		return err
@@ -338,7 +338,7 @@ func (c *cloudnsProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// parses the ClouDNS format into our standard RecordConfig
+// parses the ClouDNS format into our standard RecordConfig.
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)

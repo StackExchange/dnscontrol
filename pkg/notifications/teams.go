@@ -22,7 +22,7 @@ func init() {
 	})
 }
 
-// teamsNotifier sends notifications to teams or mattermost
+// teamsNotifier sends notifications to teams or mattermost.
 type teamsNotifier struct {
 	URL string
 }

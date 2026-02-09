@@ -56,7 +56,7 @@ func rrstoRCs(rrs []dnsv1.RR, origin string) (models.Records, error) {
 	return rcs, nil
 }
 
-// writeZoneFileRR is a helper for when you have []dns.RR instead of models.Records
+// writeZoneFileRR is a helper for when you have []dns.RR instead of models.Records.
 func writeZoneFileRR(w io.Writer, records []dnsv1.RR, origin string) error {
 	rcs, err := rrstoRCs(records, origin)
 	if err != nil {
@@ -288,7 +288,7 @@ var testdataZFCAA = `$TTL 300
                  IN CAA   0 issuewild ";"
 `
 
-// r is shorthand for strings.Repeat()
+// r is shorthand for strings.Repeat().
 func r(s string, c int) string { return strings.Repeat(s, c) }
 
 func TestWriteZoneFileTxt(t *testing.T) {

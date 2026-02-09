@@ -478,7 +478,7 @@ func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 	return nil, nil
 }
 
-// fetchNameserverDomains returns the domains configured in INWX nameservers
+// fetchNameserverDomains returns the domains configured in INWX nameservers.
 func (api *inwxAPI) fetchNameserverDomains() error {
 	zones := map[string]int{}
 	request := &goinwx.NameserverListRequest{}
@@ -517,7 +517,7 @@ func (api *inwxAPI) fetchRegistrationNSSet(domain string) []string {
 	return info.Nameservers
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *inwxAPI) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if api.domainIndex == nil { // only pull the data once.
 		if err := api.fetchNameserverDomains(); err != nil {

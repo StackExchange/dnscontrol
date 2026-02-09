@@ -614,7 +614,7 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 	}
 }
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (c *dnsimpleProvider) ListZones() ([]string, error) {
 	client := c.getClient()
 	accountID, err := c.getAccountID()
@@ -699,7 +699,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 }
 
 // Returns the correct combined content for all special record types, Target for everything else
-// Using RecordConfig.GetTargetCombined returns priority in the string, which we do not allow
+// Using RecordConfig.GetTargetCombined returns priority in the string, which we do not allow.
 func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
@@ -721,7 +721,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	}
 }
 
-// Returns the correct priority for the record type, 0 for records without priority
+// Returns the correct priority for the record type, 0 for records without priority.
 func getTargetRecordPriority(rc *models.RecordConfig) int {
 	switch rtype := rc.Type; rtype {
 	case "MX":
@@ -736,7 +736,7 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	}
 }
 
-// Compile the error messages returned by DNSimple's API into a single error message
+// Compile the error messages returned by DNSimple's API into a single error message.
 func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 	var message strings.Builder
 	message.WriteString(fmt.Sprintf("%d %s", err.HTTPResponse.StatusCode, err.Message))
@@ -748,7 +748,7 @@ func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 }
 
 // Return true if the string ends in one of DNSimple's name server domains
-// False if anything else
+// False if anything else.
 func isDnsimpleNameServerDomain(name string) bool {
 	for _, i := range nameServerSuffixes {
 		if strings.HasSuffix(name, i) {

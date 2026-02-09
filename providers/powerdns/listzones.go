@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (dsp *powerdnsProvider) ListZones() ([]string, error) {
 	var result []string
 	myZones, err := dsp.client.Zones().ListZones(context.Background(), dsp.ServerName)

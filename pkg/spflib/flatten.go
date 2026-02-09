@@ -45,7 +45,7 @@ func (s *SPFRecord) TXT() string {
 
 // Maximum length of a single TXT string. Anything
 // bigger than this will be split into multiple strings
-// if the user has set a txtMaxSize length greater than 255
+// if the user has set a txtMaxSize length greater than 255.
 const txtStringLength = 255
 
 // TXTSplit returns a set of txt records to use for SPF.

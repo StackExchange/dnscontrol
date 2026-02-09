@@ -33,7 +33,7 @@ type listResponse struct {
 	Pagination pagination  `json:"pagination"`
 }
 
-// Vercel API limit is max 100
+// Vercel API limit is max 100.
 const vercelAPIPaginationLimit = 100
 
 // ListDNSRecords retrieves all DNS records for a domain, handling pagination.
@@ -85,14 +85,14 @@ func (c *vercelProvider) ListDNSRecords(ctx context.Context, domain string) ([]D
 	return allRecords, nil
 }
 
-// httpsRecord structure for Vercel API
+// httpsRecord structure for Vercel API.
 type httpsRecord struct {
 	Priority int64  `json:"priority"`
 	Target   string `json:"target"`
 	Params   string `json:"params"`
 }
 
-// createDNSRecordRequest embeds the official SDK request but adds HTTPS support
+// createDNSRecordRequest embeds the official SDK request but adds HTTPS support.
 type createDNSRecordRequest struct {
 	vercelClient.CreateDNSRecordRequest
 	Value *string      `json:"value,omitempty"`
@@ -128,7 +128,7 @@ func (c *vercelProvider) CreateDNSRecord(ctx context.Context, req createDNSRecor
 	return &vercelClient.DNSRecord{ID: response.RecordID}, nil
 }
 
-// updateDNSRecordRequest embeds the official SDK request but adds HTTPS support
+// updateDNSRecordRequest embeds the official SDK request but adds HTTPS support.
 type updateDNSRecordRequest struct {
 	vercelClient.UpdateDNSRecordRequest
 	HTTPS *httpsRecord `json:"https,omitempty"`

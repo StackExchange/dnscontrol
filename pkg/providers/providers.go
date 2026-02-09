@@ -20,7 +20,7 @@ type DNSServiceProvider interface {
 }
 
 // ZoneCreator should be implemented by providers that have the ability to create zones
-// (used for automatically creating zones if they don't exist)
+// (used for automatically creating zones if they don't exist).
 type ZoneCreator interface {
 	EnsureZoneExists(domain string, metadata map[string]string) error
 }
@@ -129,7 +129,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 	return p.Initializer(config, meta)
 }
 
-// beCompatible looks up
+// beCompatible looks up.
 func beCompatible(n string, config map[string]string) (string, error) {
 	// Pre 4.0: If n is a placeholder, substitute the TYPE from creds.json.
 	// 4.0: Require TYPE from creds.json.
@@ -215,12 +215,12 @@ type CustomRType struct {
 // RegisterCustomRecordType registers a record type that is only valid for one provider.
 // provider is the registered type of provider this is valid with
 // name is the record type as it will appear in the js. (should be something like $PROVIDER_FOO)
-// realType is the record type it will be replaced with after validation
+// realType is the record type it will be replaced with after validation.
 func RegisterCustomRecordType(name, provider, realType string) {
 	customRecordTypes[name] = &CustomRType{Name: name, Provider: provider, RealType: realType}
 }
 
-// GetCustomRecordType returns a registered custom record type, or nil if none
+// GetCustomRecordType returns a registered custom record type, or nil if none.
 func GetCustomRecordType(rType string) *CustomRType {
 	return customRecordTypes[rType]
 }

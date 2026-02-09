@@ -29,7 +29,7 @@ func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint
 
 // SetLOCParams is an intermediate function which passes the 12 input parameters
 // for further processing to the LOC native 7 input binary format:
-// LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre
+// LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre.
 func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
 	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
 ) error {
@@ -40,7 +40,7 @@ func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
 
 // SetTargetLOCString is like SetTargetLOC but accepts one big string and origin
 // Normally this is used when we receive a record string from provider records
-// because e.g. the provider API passed rc.PopulateFromString()
+// because e.g. the provider API passed rc.PopulateFromString().
 func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error {
 	// This is where text from provider records ingresses into the target field.
 	// Fill the other fields derived from the TEXT here. LOC is special, and
@@ -93,7 +93,7 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 	return rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 }
 
-// calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields
+// calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields.
 func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns string,
 	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
 ) error {
@@ -144,7 +144,7 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 	return nil
 }
 
-// getENotationInt produces a mantissa_exponent 4bits:4bits into a uint8
+// getENotationInt produces a mantissa_exponent 4bits:4bits into a uint8.
 func getENotationInt(x float32) (uint8, error) {
 	/*
 	   9000000000cm = 9e9 == 153 (9^4 + 9) or 9<<4 + 9
@@ -240,7 +240,7 @@ func ReverseAltitude(packedAltitude uint32) float64 {
 	return float64(packedAltitude)/100 - 100000
 }
 
-// ReverseENotationInt produces a number from a mantissa_exponent 4bits:4bits uint8
+// ReverseENotationInt produces a number from a mantissa_exponent 4bits:4bits uint8.
 func ReverseENotationInt(packedValue uint8) float64 {
 	mantissa := float64((packedValue >> 4) & 0x0F)
 	exponent := int(packedValue & 0x0F)

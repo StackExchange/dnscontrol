@@ -108,7 +108,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *digitaloceanProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 retry:
 	ctx := context.Background()
@@ -298,9 +298,10 @@ func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		// If target is the domainname, e.g. cname foo.example.com -> example.com,
 		// DO returns "@" on read even if fqdn was written.
-		if target == "@" {
+		switch target {
+		case "@":
 			target = domain
-		} else if target == "." {
+		case ".":
 			target = ""
 		}
 		target = target + "."
@@ -373,7 +374,7 @@ var backoff = time.Second * 5
 const maxBackoff = time.Minute * 3
 
 func pauseAndRetry(resp *godo.Response) bool {
-	statusCode := resp.Response.StatusCode
+	statusCode := resp.StatusCode
 	if statusCode != 429 && statusCode != 504 {
 		backoff = time.Second * 5
 		return false

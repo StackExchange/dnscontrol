@@ -318,7 +318,7 @@ func (api *sakuracloudAPI) request(method, path string, data []byte) ([]byte, er
 	return respBody, nil
 }
 
-// getCommonServiceItems return all the zones in the account
+// getCommonServiceItems return all the zones in the account.
 func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error) {
 	var items []*commonServiceItem
 
@@ -363,7 +363,7 @@ func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error)
 	return items, nil
 }
 
-// GetCommonServiceItemMap return all the zones in the account
+// GetCommonServiceItemMap return all the zones in the account.
 func (api *sakuracloudAPI) GetCommonServiceItemMap() (map[string]*commonServiceItem, error) {
 	if api.commonServiceItemMap != nil {
 		return api.commonServiceItemMap, nil

@@ -1,0 +1,19 @@
+name: "PR: Lint"
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'tlim_testpr'
+
+jobs:
+  golangci-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest

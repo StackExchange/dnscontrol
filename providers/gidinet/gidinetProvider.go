@@ -73,7 +73,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// newRegistrar creates a new Gidinet registrar instance
+// newRegistrar creates a new Gidinet registrar instance.
 func newRegistrar(m map[string]string) (providers.Registrar, error) {
 	if m["username"] == "" {
 		return nil, errors.New("missing Gidinet username")
@@ -84,7 +84,7 @@ func newRegistrar(m map[string]string) (providers.Registrar, error) {
 	return newClient(m["username"], m["password"]), nil
 }
 
-// NewGidinet creates a new Gidinet DNS provider
+// NewGidinet creates a new Gidinet DNS provider.
 func NewGidinet(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["username"] == "" {
 		return nil, errors.New("missing Gidinet username")
@@ -104,7 +104,7 @@ func (c *gidinetProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return nil, nil
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *gidinetProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	records, err := c.recordGetList(domain)
 	if err != nil {
@@ -132,7 +132,7 @@ func (c *gidinetProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records
+// GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *gidinetProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
 
@@ -214,7 +214,7 @@ func (c *gidinetProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	return corrections, actualChangeCount, nil
 }
 
-// toRecordConfig converts a Gidinet DNS record to a RecordConfig
+// toRecordConfig converts a Gidinet DNS record to a RecordConfig.
 func toRecordConfig(domain string, r *DNSRecordListItem) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     r.RecordType,
@@ -296,7 +296,7 @@ func toRecordConfig(domain string, r *DNSRecordListItem) (*models.RecordConfig, 
 	return rc, nil
 }
 
-// toGidinetRecord converts a RecordConfig to a Gidinet DNS record
+// toGidinetRecord converts a RecordConfig to a Gidinet DNS record.
 func toGidinetRecord(domain string, rc *models.RecordConfig) *DNSRecord {
 	rec := &DNSRecord{
 		DomainName: domain,

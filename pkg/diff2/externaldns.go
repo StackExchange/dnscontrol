@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	// externalDNSHeritage is the heritage value that external-dns uses in its TXT records
+	// externalDNSHeritage is the heritage value that external-dns uses in its TXT records.
 	externalDNSHeritage = "heritage=external-dns"
 )
 
-// externalDNSManagedRecord represents a record managed by external-dns
+// externalDNSManagedRecord represents a record managed by external-dns.
 type externalDNSManagedRecord struct {
 	Label      string // The label of the managed record (without domain suffix)
 	RecordType string // The type of the managed record (A, AAAA, CNAME, etc.)

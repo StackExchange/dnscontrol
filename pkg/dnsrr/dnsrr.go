@@ -11,7 +11,7 @@ import (
 	dnsv1 "github.com/miekg/dns"
 )
 
-// RRtoRC converts dns.RR to models.RecordConfig
+// RRtoRC converts dns.RR to models.RecordConfig.
 func RRtoRC(rr dnsv1.RR, origin string) (models.RecordConfig, error) {
 	return helperRRtoRC(rr, origin, false)
 }

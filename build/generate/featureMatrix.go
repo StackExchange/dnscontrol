@@ -21,7 +21,7 @@ func generateFeatureMatrix() error {
 		var jumptotableContent = ""
 
 		var anchor = strings.ToLower(tableTitle)
-		anchor = strings.Replace(anchor, " ", "-", -1)
+		anchor = strings.ReplaceAll(anchor, " ", "-")
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
 		replacementContent.WriteString(jumptotableContent)
@@ -57,7 +57,7 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	for _, providerName := range allProviderNames() {
 		featureMap := matrix.Providers[providerName]
 
-		var providerLink string = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
+		var providerLink = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
 
 		var tableDataRow []string
 		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+providerLink+".md)")

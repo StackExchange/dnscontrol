@@ -164,7 +164,7 @@ func exit(err error) error {
 	return cli.Exit(err, 1)
 }
 
-// stringSliceToMap converts cli.StringSlice to map[string]string for further processing
+// stringSliceToMap converts cli.StringSlice to map[string]string for further processing.
 func stringSliceToMap(stringSlice []string) map[string]string {
 	mapString := make(map[string]string, len(stringSlice))
 	for _, values := range stringSlice {

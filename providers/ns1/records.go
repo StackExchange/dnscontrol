@@ -126,11 +126,12 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		Filters: []*filter.Filter{}, // Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type array)
 	}
 	for _, r := range recs {
-		if r.Type == "MX" {
+		switch r.Type {
+		case "MX":
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()))})
-		} else if r.Type == "TXT" {
+		case "TXT":
 			rec.AddAnswer(&dns.Answer{Rdata: []string{r.GetTargetTXTJoined()}})
-		} else if r.Type == "CAA" {
+		case "CAA":
 			rec.AddAnswer(&dns.Answer{
 				Rdata: []string{
 					strconv.FormatUint(uint64(r.CaaFlag), 10),
@@ -138,9 +139,9 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 					r.GetTargetField(),
 				},
 			})
-		} else if r.Type == "SRV" {
+		case "SRV":
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()))})
-		} else if r.Type == "NAPTR" {
+		case "NAPTR":
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.NaptrOrder)),
 				strconv.Itoa(int(r.NaptrPreference)),
@@ -149,27 +150,27 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				r.NaptrRegexp,
 				r.GetTargetField(),
 			}})
-		} else if r.Type == "DS" {
+		case "DS":
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.DsKeyTag)),
 				strconv.Itoa(int(r.DsAlgorithm)),
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest,
 			}})
-		} else if r.Type == "SVCB" || r.Type == "HTTPS" {
+		case "SVCB", "HTTPS":
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.SvcPriority)),
 				r.GetTargetField(),
 				r.SvcParams,
 			}})
-		} else if r.Type == "TLSA" {
+		case "TLSA":
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.TlsaUsage)),
 				strconv.Itoa(int(r.TlsaSelector)),
 				strconv.Itoa(int(r.TlsaMatchingType)),
 				r.GetTargetField(),
 			}})
-		} else {
+		default:
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
 	}

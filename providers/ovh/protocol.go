@@ -13,7 +13,7 @@ import (
 // Void an empty structure.
 type Void struct{}
 
-// fetchDomainList gets list of zones for account
+// fetchDomainList gets list of zones for account.
 func (c *ovhProvider) fetchZones() error {
 	if c.zones != nil {
 		return nil
@@ -178,7 +178,7 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 	}
 }
 
-// adaptNativeRecord adapts the record for native OVH types such as DMARC or DKIM
+// adaptNativeRecord adapts the record for native OVH types such as DMARC or DKIM.
 func adaptNativeRecord(r *Record) error {
 	// OVH needs DMARC and DKIM to be "unquoted"
 	if r.FieldType == "DMARC" || r.FieldType == "DKIM" {
@@ -192,13 +192,13 @@ func adaptNativeRecord(r *Record) error {
 	return nil
 }
 
-// refreshZone initiates a refresh task on OVHs backend
+// refreshZone initiates a refresh task on OVHs backend.
 func (c *ovhProvider) refreshZone(fqdn string) error {
 	return c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{}, true)
 }
 
 // fetch the NS OVH attributed to this zone (which is distinct from fetchRealNS which
-// get the exact NS stored at the registrar
+// get the exact NS stored at the registrar.
 func (c *ovhProvider) fetchZoneNS(fqdn string) ([]string, error) {
 	zone, err := c.fetchZone(fqdn)
 	if err != nil {
@@ -208,7 +208,7 @@ func (c *ovhProvider) fetchZoneNS(fqdn string) ([]string, error) {
 	return zone.NameServers, nil
 }
 
-// Fetch first the registrar NS, if none found, return the zone defined NS
+// Fetch first the registrar NS, if none found, return the zone defined NS.
 func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
 	ns, err := c.fetchRegistrarNS(fqdn)
 	if err != nil {
@@ -233,7 +233,7 @@ type CurrentNameServer struct {
 	Host     string `json:"host,omitempty"`
 }
 
-// Retrieve the NS currently being deployed to the registrar
+// Retrieve the NS currently being deployed to the registrar.
 func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
 	var nameServersID []int
 	err := c.client.CallAPI("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersID, true)

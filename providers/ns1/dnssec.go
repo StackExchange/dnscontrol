@@ -33,7 +33,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 	}
 }
 
-// getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
+// getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference.
 func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.Correction {
 	// get dnssec status from NS1 for domain
 	// if errors are returned, we bail out without any DNSSEC corrections

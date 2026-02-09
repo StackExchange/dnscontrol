@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Set by GoReleaser
+// Set by GoReleaser.
 var version string
 
 // VCSVersion retrieves the version information from git.

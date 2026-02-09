@@ -22,7 +22,7 @@ func NewRecordDBFromRecords(recs Records, zone string) *RecordDB {
 }
 
 // ContainsLT returns true if recdb contains rec. Matching is done
-// on the record's label and type (i.e. the RecordKey)
+// on the record's label and type (i.e. the RecordKey).
 func (recdb *RecordDB) ContainsLT(rec *RecordConfig) bool {
 	_, ok := recdb.labelAndTypeMap[rec.Key()]
 	return ok

@@ -88,7 +88,7 @@ func newRtrReg(config map[string]string) (providers.Registrar, error) {
 	return newRtr(config, nil)
 }
 
-// GetNameservers Default name servers should not be included in the update
+// GetNameservers Default name servers should not be included in the update.
 func (api *realtimeregisterAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
@@ -335,11 +335,11 @@ func addTrailingDot(record string) string {
 }
 
 func removeEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\\"", "\"", -1), "\\\\", "\\", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\\"", "\""), "\\\\", "\\")
 }
 
 func addEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\", "\\\\", -1), "\"", "\\\"", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\", "\\\\"), "\"", "\\\"")
 }
 
 func getEndpoint(sandbox bool) string {

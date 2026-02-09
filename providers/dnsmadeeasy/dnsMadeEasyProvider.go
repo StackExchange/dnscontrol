@@ -53,15 +53,9 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, errors.New("missing DNSMADEEASY secret_key")
 	}
 
-	sandbox := false
-	if settings["sandbox"] != "" {
-		sandbox = true
-	}
+	sandbox := settings["sandbox"] != ""
 
-	debug := false
-	if os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1" {
-		debug = true
-	}
+	debug := os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1"
 
 	api := newProvider(settings["api_key"], settings["secret_key"], sandbox, debug)
 
@@ -76,10 +70,11 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	}
 
 	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
+		switch rec.Type {
+		case "ALIAS":
 			// ALIAS is called ANAME on DNS Made Easy
 			rec.ChangeType("ANAME", dc.Name)
-		} else if rec.Type == "NS" {
+		case "NS":
 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
 			rec.TTL = fixedNameServerRecordTTL
 		}
@@ -154,7 +149,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	return corrections, actualChangeCount, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.domainExists(domain)
 	if err != nil {

@@ -80,7 +80,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *exoscaleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := c.findDomainByName(domain)
 
@@ -361,7 +361,7 @@ func defaultNSSUffix(defNS string) bool {
 }
 
 // remove all non-exoscale NS records from our desired state.
-// if any are found, print a warning
+// if any are found, print a warning.
 func removeOtherNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {

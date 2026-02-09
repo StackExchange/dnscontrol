@@ -23,7 +23,7 @@ func init() {
 	})
 }
 
-// telegramNotifier sends notifications to Telegram
+// telegramNotifier sends notifications to Telegram.
 type telegramNotifier struct {
 	BotToken string
 	ChatID   string

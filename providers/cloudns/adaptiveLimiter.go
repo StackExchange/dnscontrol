@@ -21,7 +21,7 @@ func (al *AdaptiveLimiter) Wait(ctx context.Context) error {
 	return al.limiter.Wait(ctx)
 }
 
-// NotifyRateLimited reserves enough tokens to pause for a period of time
+// NotifyRateLimited reserves enough tokens to pause for a period of time.
 func (al *AdaptiveLimiter) NotifyRateLimited() {
 	tokensToReserve := max(int(float64(al.limiter.Limit())*0.5), 1)
 	al.limiter.ReserveN(time.Now(), tokensToReserve)

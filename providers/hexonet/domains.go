@@ -2,7 +2,7 @@ package hexonet
 
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
-// * if it doesn't exist and creating it fails
+// * if it doesn't exist and creating it fails.
 func (n *HXClient) EnsureZoneExists(domain string, metadata map[string]string) error {
 	r := n.client.Request(map[string]any{
 		"COMMAND": "StatusDNSZone",
@@ -25,7 +25,7 @@ func (n *HXClient) EnsureZoneExists(domain string, metadata map[string]string) e
 	return nil
 }
 
-// ListZones lists all the
+// ListZones lists all the.
 func (n *HXClient) ListZones() ([]string, error) {
 	var zones []string
 

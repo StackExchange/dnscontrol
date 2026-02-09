@@ -273,7 +273,7 @@ func (n *Client) getRecords(domain string) ([]*Record, error) {
 	return records, nil
 }
 
-// Function to create record string from given RecordConfig for the ADDRR# API parameter
+// Function to create record string from given RecordConfig for the ADDRR# API parameter.
 func (n *Client) createRecordString(rc *models.RecordConfig, domain string) (string, error) {
 	host := rc.GetLabel()
 	answer := ""
@@ -352,12 +352,12 @@ func (n *Client) deleteRecordString(record *Record) string {
 	return strings.Join(values, " ")
 }
 
-// Function to check the no-populate argument
+// Function to check the no-populate argument.
 func isNoPopulate() bool {
 	return slices.Contains(os.Args, "--no-populate")
 }
 
-// Function to check if debug mode is enabled
+// Function to check if debug mode is enabled.
 func (n *Client) isDebugOn() bool {
 	debugMode, exists := n.conf["debugmode"]
 	return exists && (debugMode == "1" || debugMode == "2")

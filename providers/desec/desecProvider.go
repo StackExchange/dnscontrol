@@ -99,7 +99,7 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *desecProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, ok, err := c.searchDomainIndex(domain)
 	if err != nil {
@@ -239,7 +239,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	return corrections, actualChangeCount, nil
 }
 
-// ListZones return all the zones in the account
+// ListZones return all the zones in the account.
 func (c *desecProvider) ListZones() ([]string, error) {
 	return c.listDomainIndex()
 }
