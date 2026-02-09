@@ -153,6 +153,25 @@ checksum:
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
+homebrew_casks:
+  -
+    name: dnscontrol
+    url:
+      template: "https://github.com/StackExchange/dnscontrol/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Casks
+    homepage: "https://docs.dnscontrol.org/"
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    license: "MIT"
+    repository:
+      owner: StackExchange
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+
 release:
   draft: true
   prerelease: auto
@@ -184,7 +203,7 @@ release:
     ##### Install with [Homebrew](https://brew.sh) (recommended)
 
     ```shell
-    brew install dnscontrol
+    brew install StackExchange/tap/dnscontrol
     ```
 
     ##### Using with [Docker](https://www.docker.com)
@@ -212,7 +231,7 @@ release:
     #### Update with [Homebrew](https://brew.sh)
 
     ```shell
-    brew upgrade dnscontrol
+    brew upgrade StackExchange/tap/dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.
