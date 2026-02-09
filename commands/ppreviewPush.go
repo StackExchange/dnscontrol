@@ -34,7 +34,10 @@ import (
 	"golang.org/x/net/idna"
 )
 
-type cmdZoneCache struct {
+// CmdZoneCache is a cache of zone lists for providers.  This is used to
+// optimize the "populate" phase of preview/push, so that we don't have to make
+// multiple calls to the provider to get the list of zones.
+type CmdZoneCache struct {
 	cache map[string]*[]string
 	sync.Mutex
 }
@@ -335,7 +338,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
 	for i, zone := range zonesConcurrent {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.UniqueName)
-		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
+		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *CmdZoneCache) {
 			start := time.Now()
 			err := oneZone(zone, args)
 			if err != nil {
@@ -551,7 +554,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) error {
+func oneZonePopulate(zone *models.DomainConfig, zc *CmdZoneCache) error {
 	var errs []error
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
@@ -741,7 +744,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *cmdZoneCache) ([]*models.Correction, error) {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *CmdZoneCache) ([]*models.Correction, error) {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil, nil // We can't generate a list. No corrections are possible.

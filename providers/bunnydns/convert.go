@@ -42,11 +42,11 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 	case recordTypePullZone:
 		// When creating Pull Zone records, the API expects an integer PullZoneId field,
 		// while the Value field should be empty.
-		pullZoneId, err := strconv.ParseInt(rc.GetTargetField(), 10, 64)
+		pullZoneID, err := strconv.ParseInt(rc.GetTargetField(), 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid Pull Zone ID for BUNNY_DNS_PZ: %w", err)
 		}
-		r.PullZoneId = pullZoneId
+		r.PullZoneID = pullZoneID
 		r.Value = ""
 	}
 

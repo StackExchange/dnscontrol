@@ -25,7 +25,7 @@ Info required in `creds.json`:
    - auth-password
 */
 
-func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
+func newCloudns(m map[string]string) (*cloudnsProvider, error) {
 	c := &cloudnsProvider{}
 	c.requestLimit = NewAdaptiveLimiter(10, 10)
 
@@ -38,12 +38,12 @@ func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
 	return c, nil
 }
 
-func NewDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	return NewCloudns(conf)
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newCloudns(conf)
 }
 
-func NewReg(conf map[string]string) (providers.Registrar, error) {
-	return NewCloudns(conf)
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newCloudns(conf)
 }
 
 var features = providers.DocumentationNotes{
@@ -77,11 +77,11 @@ func init() {
 	const providerName = "CLOUDNS"
 	const providerMaintainer = "@pragmaton"
 	fns := providers.DspFuncs{
-		Initializer:   NewDsp,
+		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterRegistrarType(providerName, NewReg)
+	providers.RegisterRegistrarType(providerName, newReg)
 	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -324,7 +324,7 @@ func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]st
 	return c.createDomain(domain)
 }
 
-// returns names of all DNS zones managed by this provider.
+// ListZones returns names of all DNS zones managed by this provider.
 func (c *cloudnsProvider) ListZones() ([]string, error) {
 	if err := c.fetchZones(); err != nil {
 		return nil, err
