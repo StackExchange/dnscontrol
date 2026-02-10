@@ -134,7 +134,7 @@ No errors.
 ```shell
 dnscontrol preview
 ```
-Use **dnscontrol preview** to see which DNS changes would be made by **dnscontrol push**—without applying them.
+Use `dnscontrol preview` to see which DNS changes would be made by `dnscontrol push`—without applying them.
 
 Example:
 
@@ -152,7 +152,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
 ```
 {% endcode %}
 
-**Note:** If the zone does not exist **dnscontrol preview** returns an error:
+**Note:** If the zone does not exist `dnscontrol preview` returns an error:
 ```
 ******************** Domain: example.com
 1 correction (akamaiedgedns)
@@ -166,7 +166,7 @@ Done. 1 corrections.
 completed with errors
 ```
 
-**Note:** If the zone does not exist and you want to see the changes which will be made by dnscontrol push then use **dnscontrol preview** with the **--populate-on-preview** flag set. This automatically creates the zone with SOA and NS records.
+**Note:** If the zone does not exist and you want to see the changes which will be made by dnscontrol push then use `dnscontrol preview` with the `--populate-on-preview` flag specified. This automatically creates the zone with SOA and NS records.
 
 Command:
 ```
@@ -196,14 +196,14 @@ Serially Gathering: "example.com"
 #2: + CREATE A foo.example.com 1.2.3.4 ttl=300
 #3: Enable AutoDnsSec
 ```
-In the above example since, the zone **example.com** did not exist, running **dnscontrol preview** with the **--populate-on-preview** flag set created a zone named example.com with only the NS and SOA records and showed what changes will be applied by **dnscontrol push**.
+In the above example since, the zone `example.com` did not exist, running `dnscontrol preview` with the `--populate-on-preview` flag created a zone named example.com with only the NS and SOA records and showed what changes will be applied by `dnscontrol push`.
 
 
 ### dnscontrol push command
 ```shell
 dnscontrol push
 ```
-Use **dnscontrol push** to create a new zone or update an existing zone. 
+Use `dnscontrol push` to create a new zone or update an existing zone. 
 
 #### Creating a New Zone
 
@@ -246,12 +246,12 @@ SUCCESS!
 SUCCESS!
 #3: Enable AutoDnsSec
 ```
-In the above example since, zone example_2.com did not exist running **dnscontrol push** created a new zone example_2.com with NS, SOA and the other records (In this example, AKAMAICDN and A records).
+In the above example since, zone `example_2.com` did not exist running `dnscontrol push` created a new zone `example_2.com` with NS, SOA and the other records (In this example, AKAMAICDN and A records).
 
 #### Updating an Existing Zone
 
 #### Important Note:
-- When running the **dnscontrol push** command to update an existing DNS zone, the dnsconfig.js file must include all records for that zone—not just the ones being modified.
+- When running the `dnscontrol push` command to update an existing DNS zone, the dnsconfig.js file must include all records for that zone—not just the ones being modified.
 - Any records that exist in Akamai EdgeDNS but are not present in the dnsconfig.js file will be deleted during the push, as dnscontrol treats the file as the authoritative source.
 
 Example 1
@@ -286,7 +286,7 @@ SUCCESS!
 SUCCESS!
 Done. 2 corrections.
 ```
-Since, the zone **example.com** was created with SOA and NS when the command **dnscontrol preview** ran, running **dnscontrol push** adds the AKAMAICDN and A records.
+Since, the zone `example.com` was created with SOA and NS when the command `dnscontrol preview --populate-on-preview` ran, running `dnscontrol push` adds the AKAMAICDN and A records.
 
 Example 2
 
