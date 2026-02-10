@@ -153,7 +153,7 @@ func toRecord(r *Record, origin string) *models.RecordConfig {
 			}
 		}
 	default: // "A", "AAAA", "ANAME", "ALIAS", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
-		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, r.Fqdn, txtutil.ParseQuoted); err != nil {
+		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, fqdn, txtutil.ParseQuoted); err != nil {
 			panic(fmt.Errorf("unparsable record received from centralnic reseller API: %w", err))
 		}
 	}
