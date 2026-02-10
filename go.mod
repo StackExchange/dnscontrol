@@ -6,7 +6,7 @@ retract v4.8.0
 
 require google.golang.org/protobuf v1.36.11 // indirect
 
-require golang.org/x/net v0.49.0
+require golang.org/x/net v0.50.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
@@ -27,7 +27,7 @@ require (
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4 v4.0.7
 	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/digitalocean/godo v1.173.0
+	github.com/digitalocean/godo v1.174.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale v0.102.4
@@ -49,38 +49,38 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/transip/gotransip/v6 v6.26.1
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
-	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/oauth2 v0.34.0
-	google.golang.org/api v0.264.0
+	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/oauth2 v0.35.0
+	google.golang.org/api v0.265.0
 	gopkg.in/ns1/ns1-go.v2 v2.16.0
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.40
+	codeberg.org/miekg/dns v0.6.48
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.6
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.18
 	github.com/dustin/go-humanize v1.0.1
-	github.com/failsafe-go/failsafe-go v0.9.5
+	github.com/failsafe-go/failsafe-go v0.9.6
 	github.com/fatih/color v1.18.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hetznercloud/hcloud-go/v2 v2.36.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.186
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.187
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/nicholas-fedor/shoutrrr v0.13.2
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.107.0
+	github.com/oracle/oci-go-sdk/v65 v65.108.0
 	github.com/urfave/cli/v3 v3.6.2
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
-	golang.org/x/text v0.33.0
+	golang.org/x/exp v0.0.0-20260209203927-2842357ff358
+	golang.org/x/text v0.34.0
 	golang.org/x/time v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -163,13 +163,13 @@ require (
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/mod v0.32.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/term v0.39.0 // indirect
-	golang.org/x/tools v0.41.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/term v0.40.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260122232226-8e98ce8d340d // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
