@@ -369,7 +369,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
   * Post the results as a comment to your PR.
 6. Re-read the [maintainer's responsibilities](../provider/index.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
-## Step 15: Submit a PR
+## Step 16: Submit a PR
 
 At this point you can submit a PR.
 
@@ -379,7 +379,7 @@ Actually you can submit the PR earlier if you just want feedback,
 or have questions.  However if you haven't submitted a PR by now, this is the time to do it.
 
 
-## Step 16: After the PR is merged
+## Step 17: After the PR is merged
 
 1. Close any related GitHub issues.
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
