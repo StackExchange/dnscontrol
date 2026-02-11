@@ -47,7 +47,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Cannot("API returns error for SRV records"),
+	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseSVCB:             providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -241,33 +241,25 @@ func toRecordConfig(domain string, r *DNSRecordListItem) (*models.RecordConfig, 
 		}
 
 	case "SRV":
-		// SRV records in Gidinet have format: priority weight port target
-		// But based on API docs, priority is separate field
-		// Data contains: weight port target
+		// SRV records in Gidinet: Data contains "priority weight port target"
+		// The Priority field is only for MX records, not SRV
 		parts := strings.Fields(r.Data)
-		if len(parts) >= 3 {
-			weight, _ := strconv.ParseUint(parts[0], 10, 16)
-			port, _ := strconv.ParseUint(parts[1], 10, 16)
-			target := parts[2]
+		if len(parts) >= 4 {
+			priority, _ := strconv.ParseUint(parts[0], 10, 16)
+			weight, _ := strconv.ParseUint(parts[1], 10, 16)
+			port, _ := strconv.ParseUint(parts[2], 10, 16)
+			target := parts[3]
 			if !strings.HasSuffix(target, ".") {
 				target = target + "."
 			}
-			rc.SrvPriority = uint16(r.Priority)
+			rc.SrvPriority = uint16(priority)
 			rc.SrvWeight = uint16(weight)
 			rc.SrvPort = uint16(port)
 			if err := rc.SetTarget(target); err != nil {
 				return nil, err
 			}
 		} else {
-			// Fallback: treat Data as target
-			rc.SrvPriority = uint16(r.Priority)
-			target := r.Data
-			if !strings.HasSuffix(target, ".") {
-				target = target + "."
-			}
-			if err := rc.SetTarget(target); err != nil {
-				return nil, err
-			}
+			return nil, fmt.Errorf("invalid SRV data format: %q (expected: priority weight port target)", r.Data)
 		}
 
 	case "CNAME", "NS":
@@ -314,10 +306,14 @@ func toGidinetRecord(domain string, rc *models.RecordConfig) *DNSRecord {
 		rec.Data = strings.TrimSuffix(target, ".")
 
 	case "SRV":
-		rec.Priority = int(rc.SrvPriority)
-		// SRV Data format: weight port target
-		target := strings.TrimSuffix(rc.GetTargetField(), ".")
-		rec.Data = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, target)
+		// SRV Data format: priority weight port target (with trailing dot per Gidinet spec)
+		// The Priority field is only for MX records
+		rec.Priority = 0
+		target := rc.GetTargetField()
+		if !strings.HasSuffix(target, ".") {
+			target = target + "."
+		}
+		rec.Data = fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, target)
 
 	case "CNAME", "NS":
 		// Remove trailing dot from target
