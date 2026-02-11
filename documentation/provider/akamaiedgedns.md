@@ -221,6 +221,7 @@ D("example_2.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   A("foo_2", "1.2.3.5"),
 );
 ```
+{% endcode %}
 
 Output:
 ```

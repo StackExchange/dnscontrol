@@ -20,7 +20,7 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v12/pkg/session"
 )
 
-// initialize initializes the "Akamai OPEN EdgeGrid" library
+// initialize initializes the "Akamai OPEN EdgeGrid" library.
 func NewEdgegridConfig(clientSecret string, host string, accessToken string, clientToken string) *edgegrid.Config {
 	return &edgegrid.Config{
 		ClientSecret: clientSecret,
@@ -171,8 +171,6 @@ func (a *edgeDNSProvider) autoDNSSecEnable(ctx context.Context, enable bool, zon
 		EndCustomerID:         zone.EndCustomerID,
 		ContractID:            zone.ContractID,
 	}
-
-	//queryArgs := dns.ZoneQueryString{}
 
 	err = a.client.UpdateZone(ctx, dns.UpdateZoneRequest{
 		CreateZone: modifiedzone,
