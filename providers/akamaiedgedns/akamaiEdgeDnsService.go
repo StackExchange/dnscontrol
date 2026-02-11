@@ -9,19 +9,20 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 */
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v12/pkg/dns"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v12/pkg/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v12/pkg/session"
 )
 
 // initialize initializes the "Akamai OPEN EdgeGrid" library.
-func initialize(clientSecret string, host string, accessToken string, clientToken string) {
-	eg := edgegrid.Config{
+func NewEdgegridConfig(clientSecret string, host string, accessToken string, clientToken string) *edgegrid.Config {
+	return &edgegrid.Config{
 		ClientSecret: clientSecret,
 		Host:         host,
 		AccessToken:  accessToken,
@@ -29,49 +30,64 @@ func initialize(clientSecret string, host string, accessToken string, clientToke
 		MaxBody:      131072,
 		Debug:        false,
 	}
-	dnsv2.Init(eg)
+}
+
+func initialize(clientSecret string, host string, accessToken string, clientToken string) (dns.DNS, error) {
+	config := NewEdgegridConfig(clientSecret, host, accessToken, clientToken)
+	sess, err := session.New(
+		session.WithSigner(config),
+		session.WithHTTPTracing(true),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create EdgeGrid session: %w", err)
+	}
+
+	return dns.Client(sess), nil
 }
 
 // zoneDoesExist returns true if the zone exists, false otherwise.
-func zoneDoesExist(zonename string) bool {
-	_, err := dnsv2.GetZone(zonename)
+func (a *edgeDNSProvider) zoneDoesExist(ctx context.Context, zonename string) bool {
+	_, err := a.client.GetZone(ctx, dns.GetZoneRequest{Zone: zonename})
 	return err == nil
 }
 
 // createZone create a new zone and creates SOA and NS records for the zone.
 // Akamai assigns a unique set of authoritative nameservers for each contract. These authorities should be
 // used as the NS records on all zones belonging to this contract.
-func createZone(zonename string, contractID string, groupID string) error {
-	zone := &dnsv2.ZoneCreate{
+func (a *edgeDNSProvider) createZone(ctx context.Context, zonename string, contractID string, groupID string) error {
+	zone := &dns.ZoneCreate{
 		Zone:                  zonename,
 		Type:                  "PRIMARY",
 		Comment:               "This zone created by DNSControl (http://dnscontrol.org)",
 		SignAndServe:          false,
 		SignAndServeAlgorithm: "RSA_SHA512",
-		ContractId:            contractID,
+		ContractID:            contractID,
 	}
 
-	queryArgs := &dnsv2.ZoneQueryString{
+	queryArgs := dns.ZoneQueryString{
 		Contract: contractID,
 		Group:    groupID,
 	}
 
-	err := dnsv2.ValidateZone(zone)
+	err := dns.ValidateZone(zone)
 	if err != nil {
 		return fmt.Errorf("invalid value provided for zone. error: %s", err.Error())
 	}
 
-	err = zone.Save(*queryArgs)
+	err = a.client.CreateZone(ctx, dns.CreateZoneRequest{
+		CreateZone:      zone,
+		ZoneQueryString: queryArgs,
+	})
 	if err != nil {
 		return fmt.Errorf("zone create failed. error: %s", err.Error())
 	}
 
 	// Indirectly create NS and SOA records
-	err = zone.SaveChangelist()
+	err = a.client.SaveChangeList(ctx, dns.SaveChangeListRequest{Zone: zonename})
 	if err != nil {
 		return errors.New("zone initialization failed. SOA and NS records need to be created")
 	}
-	err = zone.SubmitChangelist()
+	err = a.client.SubmitChangeList(ctx, dns.SubmitChangeListRequest{Zone: zonename})
 	if err != nil {
 		return fmt.Errorf("zone create failed. error: %s", err.Error())
 	}
@@ -81,20 +97,20 @@ func createZone(zonename string, contractID string, groupID string) error {
 	printer.Printf("  Comment: %s\n", zone.Comment)
 	printer.Printf("  SignAndServe: %v\n", zone.SignAndServe)
 	printer.Printf("  SignAndServeAlgorithm: %s\n", zone.SignAndServeAlgorithm)
-	printer.Printf("  ContractId: %s\n", zone.ContractId)
+	printer.Printf("  ContractId: %s\n", zone.ContractID)
 	printer.Printf("  GroupId: %s\n", queryArgs.Group)
 
 	return nil
 }
 
 // listZones lists all zones associated with this contract.
-func listZones(contractID string) ([]string, error) {
-	queryArgs := dnsv2.ZoneListQueryArgs{
-		ContractIds: contractID,
+func (a *edgeDNSProvider) listZones(ctx context.Context, contractID string) ([]string, error) {
+	queryArgs := dns.ListZonesRequest{
+		ContractIDs: contractID,
 		ShowAll:     true,
 	}
 
-	zoneListResp, err := dnsv2.ListZones(queryArgs)
+	zoneListResp, err := a.client.ListZones(ctx, queryArgs)
 	if err != nil {
 		return nil, fmt.Errorf("zone list retrieval failed. error: %s", err.Error())
 	}
@@ -109,11 +125,15 @@ func listZones(contractID string) ([]string, error) {
 	return zones, nil
 }
 
+type statusCoder interface {
+	StatusCode() int
+}
+
 // isAutoDNSSecEnabled returns true if AutoDNSSEC (SignAndServe) is enabled, false otherwise.
-func isAutoDNSSecEnabled(zonename string) (bool, error) {
-	zone, err := dnsv2.GetZone(zonename)
+func (a *edgeDNSProvider) isAutoDNSSecEnabled(ctx context.Context, zonename string) (bool, error) {
+	zone, err := a.client.GetZone(ctx, dns.GetZoneRequest{Zone: zonename})
 	if err != nil {
-		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
+		if sc, ok := err.(statusCoder); ok && sc.StatusCode() == 404 {
 			return false, fmt.Errorf("zone %s does not exist. error: %s",
 				zonename, err.Error())
 		}
@@ -124,10 +144,10 @@ func isAutoDNSSecEnabled(zonename string) (bool, error) {
 }
 
 // autoDNSSecEnable enables or disables AutoDNSSEC (SignAndServe) for the zone.
-func autoDNSSecEnable(enable bool, zonename string) error {
-	zone, err := dnsv2.GetZone(zonename)
+func (a *edgeDNSProvider) autoDNSSecEnable(ctx context.Context, enable bool, zonename string) error {
+	zone, err := a.client.GetZone(ctx, dns.GetZoneRequest{Zone: zonename})
 	if err != nil {
-		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
+		if sc, ok := err.(statusCoder); ok && sc.StatusCode() == 404 {
 			return fmt.Errorf("zone %s does not exist. error: %s",
 				zonename, err.Error())
 		}
@@ -140,21 +160,21 @@ func autoDNSSecEnable(enable bool, zonename string) error {
 		algorithm = zone.SignAndServeAlgorithm
 	}
 
-	modifiedzone := &dnsv2.ZoneCreate{
+	modifiedzone := &dns.ZoneCreate{
 		Zone:                  zone.Zone,
 		Type:                  zone.Type,
 		Masters:               zone.Masters,
 		Comment:               zone.Comment,
 		SignAndServe:          enable, // AutoDNSSEC
 		SignAndServeAlgorithm: algorithm,
-		TsigKey:               zone.TsigKey,
-		EndCustomerId:         zone.EndCustomerId,
-		ContractId:            zone.ContractId,
+		TSIGKey:               zone.TSIGKey,
+		EndCustomerID:         zone.EndCustomerID,
+		ContractID:            zone.ContractID,
 	}
 
-	queryArgs := dnsv2.ZoneQueryString{}
-
-	err = modifiedzone.Update(queryArgs)
+	err = a.client.UpdateZone(ctx, dns.UpdateZoneRequest{
+		CreateZone: modifiedzone,
+	})
 	if err != nil {
 		return fmt.Errorf("error updating zone %s. error: %s",
 			zonename, err.Error())
@@ -166,8 +186,8 @@ func autoDNSSecEnable(enable bool, zonename string) error {
 // getAuthorities returns the list of authoritative nameservers for the contract.
 // Akamai assigns a unique set of authoritative nameservers for each contract. These authorities should be
 // used as the NS records on all zones belonging to this contract.
-func getAuthorities(contractID string) ([]string, error) {
-	authorityResponse, err := dnsv2.GetAuthorities(contractID)
+func (a *edgeDNSProvider) getAuthorities(ctx context.Context, contractID string) ([]string, error) {
+	authorityResponse, err := a.client.GetAuthorities(ctx, dns.GetAuthoritiesRequest{ContractIDs: contractID})
 	if err != nil {
 		return nil, fmt.Errorf("getAuthorities - contractid %s: authorities retrieval failed. Error: %s",
 			contractID, err.Error())
@@ -187,12 +207,12 @@ func getAuthorities(contractID string) ([]string, error) {
 }
 
 // rcToRs converts DNSControl RecordConfig records to an AkamaiEdgeDNS recordset.
-func rcToRs(records []*models.RecordConfig) (*dnsv2.RecordBody, error) {
+func (a *edgeDNSProvider) rcToRs(records []*models.RecordConfig) (*dns.RecordBody, error) {
 	if len(records) == 0 {
 		return nil, errors.New("no records to replace")
 	}
 
-	akaRecord := &dnsv2.RecordBody{
+	akaRecord := &dns.RecordBody{
 		Name:       records[0].NameFQDN,
 		RecordType: records[0].Type,
 		TTL:        int(records[0].TTL),
@@ -206,13 +226,16 @@ func rcToRs(records []*models.RecordConfig) (*dnsv2.RecordBody, error) {
 }
 
 // createRecordset creates a new AkamaiEdgeDNS recordset in the zone.
-func createRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records)
+func (a *edgeDNSProvider) createRecordset(ctx context.Context, records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := a.rcToRs(records)
 	if err != nil {
 		return err
 	}
 
-	err = akaRecord.Save(zonename, true)
+	err = a.client.CreateRecord(ctx, dns.CreateRecordRequest{
+		Zone:   zonename,
+		Record: akaRecord,
+	})
 	if err != nil {
 		return fmt.Errorf("recordset creation failed. error: %s", err.Error())
 	}
@@ -220,13 +243,16 @@ func createRecordset(records []*models.RecordConfig, zonename string) error {
 }
 
 // replaceRecordset replaces an existing AkamaiEdgeDNS recordset in the zone.
-func replaceRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records)
+func (a *edgeDNSProvider) replaceRecordset(ctx context.Context, records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := a.rcToRs(records)
 	if err != nil {
 		return err
 	}
 
-	err = akaRecord.Update(zonename, true)
+	err = a.client.UpdateRecord(ctx, dns.UpdateRecordRequest{
+		Zone:   zonename,
+		Record: akaRecord,
+	})
 	if err != nil {
 		return fmt.Errorf("recordset update failed. error: %s", err.Error())
 	}
@@ -234,15 +260,19 @@ func replaceRecordset(records []*models.RecordConfig, zonename string) error {
 }
 
 // deleteRecordset deletes an existing AkamaiEdgeDNS recordset in the zone.
-func deleteRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := rcToRs(records)
+func (a *edgeDNSProvider) deleteRecordset(ctx context.Context, records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := a.rcToRs(records)
 	if err != nil {
 		return err
 	}
 
-	err = akaRecord.Delete(zonename, true)
+	err = a.client.DeleteRecord(ctx, dns.DeleteRecordRequest{
+		Zone:       zonename,
+		Name:       akaRecord.Name,
+		RecordType: akaRecord.RecordType,
+	})
 	if err != nil {
-		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
+		if sc, ok := err.(statusCoder); ok && sc.StatusCode() == 404 {
 			return errors.New("recordset not found")
 		}
 		return fmt.Errorf("failed to delete recordset. error: %s", err.Error())
@@ -265,15 +295,18 @@ func deleteRecordset(records []*models.RecordConfig, zonename string) error {
 */
 
 // getRecords returns all RecordConfig records in the zone.
-func getRecords(zonename string) ([]*models.RecordConfig, error) {
-	queryArgs := dnsv2.RecordsetQueryArgs{ShowAll: true}
+func (a *edgeDNSProvider) getRecords(ctx context.Context, zonename string) ([]*models.RecordConfig, error) {
+	queryArgs := dns.RecordSetQueryArgs{ShowAll: true}
 
-	rsetResp, err := dnsv2.GetRecordsets(zonename, queryArgs)
+	rsetResp, err := a.client.GetRecordSets(ctx, dns.GetRecordSetsRequest{
+		Zone:      zonename,
+		QueryArgs: &queryArgs,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("recordset list retrieval failed. error: %s", err.Error())
 	}
 
-	akaRecordsets := rsetResp.Recordsets     // what we have
+	akaRecordsets := rsetResp.RecordSets     // what we have
 	var recordConfigs []*models.RecordConfig // what we return
 
 	// For each AkamaiEdgeDNS recordset...
@@ -294,14 +327,6 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 				TTL:  uint32(akattl),
 			}
 			rc.SetLabelFromFQDN(akaname, zonename)
-			if akatype == "AKAMAITLC" {
-				part := strings.Fields(r)
-				if len(part) != 2 {
-					return nil, fmt.Errorf("AKAMAITLC value does not contain 2 fields: (%#v)", r)
-				}
-				rc.AnswerType = part[0]
-				r = part[1]
-			}
 			err = rc.PopulateFromString(akatype, r, zonename)
 			if err != nil {
 				return nil, err
