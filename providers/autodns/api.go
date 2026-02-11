@@ -27,6 +27,13 @@ type ZoneListFilter struct {
 // ZoneListRequest describes a JSON zone list request.
 type ZoneListRequest struct {
 	Filter []*ZoneListFilter `json:"filters"`
+	View   *ZoneListView     `json:"view,omitempty"`
+}
+
+type ZoneListView struct {
+	Limit    int  `json:"limit"`
+	Offset   int  `json:"offset"`
+	Children bool `json:"children"`
 }
 
 var (
@@ -174,19 +181,49 @@ func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 }
 
 func (api *autoDNSProvider) getZones() ([]string, error) {
-	responseData, err := api.request("POST", "zone/_search", nil)
-	if err != nil {
+	countZoneRequest := &ZoneListRequest{
+		View: &ZoneListView{
+			Limit:    0,
+			Offset:   0,
+			Children: false,
+		},
+	}
+
+	rawCountZoneResponse, _ := api.request("POST", "zone/_search", countZoneRequest)
+
+	var countZoneResponse JSONResponseDataZone
+	if err := json.Unmarshal(rawCountZoneResponse, &countZoneResponse); err != nil {
 		return nil, err
 	}
 
-	var responseObject JSONResponseDataZone
-	if err := json.Unmarshal(responseData, &responseObject); err != nil {
-		return nil, err
-	}
+	i := 0
+	names := make([]string, 0, countZoneResponse.MetaData.ItemCount)
 
-	names := make([]string, 0, len(responseObject.Data))
-	for _, zone := range responseObject.Data {
-		names = append(names, zone.Origin)
+	// stop after a max of 99 iterations or if all zones are fetched
+	for i < 99 && len(names) != countZoneResponse.MetaData.ItemCount {
+		request := &ZoneListRequest{
+			View: &ZoneListView{
+				Limit:    100,
+				Offset:   i * 100,
+				Children: false,
+			},
+		}
+
+		responseData, err := api.request("POST", "zone/_search", request)
+		if err != nil {
+			return nil, err
+		}
+
+		var responseObject JSONResponseDataZone
+		if err := json.Unmarshal(responseData, &responseObject); err != nil {
+			return nil, err
+		}
+
+		for _, zone := range responseObject.Data {
+			names = append(names, zone.Origin)
+		}
+
+		i++
 	}
 
 	return names, nil
