@@ -241,7 +241,7 @@ Jump to a table:
 | [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ✅ | ❔ |
 | [`GCLOUD`](gcloud.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GCORE`](gcore.md) | ❔ | ❌ | ✅ | ✅ |
-| [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ | ❌ |
+| [`GIDINET`](gidinet.md) | ❌ | ❌ | ✅ | ❌ |
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
