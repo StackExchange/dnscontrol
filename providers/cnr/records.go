@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"maps"
 	"os"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -15,6 +14,13 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 )
+
+// dotSuffixTypes lists record types whose content requires a trailing dot
+// to be appended when returned by the API without one.
+var dotSuffixTypes = map[string]bool{
+	"ALIAS": true, "CNAME": true, "DNAME": true,
+	"MX": true, "NS": true, "SRV": true, "PTR": true,
+}
 
 // Record covers an individual DNS resource record.
 type Record struct {
@@ -26,7 +32,7 @@ type Record struct {
 	Host string
 	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".". FQDN is ignored in CreateRecord, specify via the Host field instead.
 	Fqdn string
-	// Type is one of the following: A, AAAA, ANAME, ALIAS, CNAME, MX, NS, SRV, or TXT.
+	// Type is the DNS record type (e.g. A, AAAA, CNAME, MX, LOC, SVCB, etc.).
 	Type string
 	// Answer is either the IP address for A or AAAA records; the target for ANAME, CNAME, MX, or NS records; the text for TXT records.
 	// For SRV records, answer has the following format: "{weight} {port} {target}" e.g. "1 5061 sip.example.org".
@@ -152,6 +158,12 @@ func toRecord(r *Record, origin string) *models.RecordConfig {
 				panic(fmt.Errorf("unparsable SRV record received from centralnic reseller API: %w", err))
 			}
 		}
+	case "LOC", "SVCB":
+		// SetTargetLOCString and SetTargetSVCBString internally format as "%s. TYPE %s",
+		// so we strip the trailing dot from r.Fqdn to avoid a double dot.
+		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, strings.TrimSuffix(r.Fqdn, "."), txtutil.ParseQuoted); err != nil {
+			panic(fmt.Errorf("unparsable %s record received from centralnic reseller API: %w", r.Type, err))
+		}
 	default: // "A", "AAAA", "ANAME", "ALIAS", "CNAME", "NS", "TXT", "CAA", "TLSA", "PTR"
 		if err := rc.PopulateFromStringFunc(r.Type, r.Answer, fqdn, txtutil.ParseQuoted); err != nil {
 			panic(fmt.Errorf("unparsable record received from centralnic reseller API: %w", err))
@@ -175,7 +187,7 @@ func (n *Client) updateZoneBy(params map[string]any, domain string) error {
 	return nil
 }
 
-// deleteRecordString constructs the record string based on the provided Record.
+// getRecords queries the API for all resource records of a zone.
 func (n *Client) getRecords(domain string) ([]*Record, error) {
 	var records []*Record
 
@@ -237,14 +249,9 @@ func (n *Client) getRecords(domain string) ([]*Record, error) {
 		// Parse the TTL string to an unsigned integer
 		priority, _ := strconv.ParseUint(data["PRIO"], 10, 32)
 
-		// Add dot to Answer if supported by the record type
-		pattern := `^ALIAS|CNAME|MX|NS|SRV|PTR$`
-		re, err := regexp.Compile(pattern)
-		if err != nil {
-			return nil, fmt.Errorf("error compiling regex in getRecords: %w", err)
-		}
-		if re.MatchString(data["TYPE"]) && !strings.HasSuffix(data["CONTENT"], ".") {
-			data["CONTENT"] = data["CONTENT"] + "."
+		// Add trailing dot to Answer for record types that require it
+		if dotSuffixTypes[data["TYPE"]] && !strings.HasSuffix(data["CONTENT"], ".") {
+			data["CONTENT"] += "."
 		}
 
 		// Only append domain if it's not already a fully qualified domain name
@@ -279,21 +286,29 @@ func (n *Client) createRecordString(rc *models.RecordConfig, domain string) (str
 	answer := ""
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "ALIAS", "CNAME", "MX", "NS", "PTR":
+	case "A", "AAAA", "ANAME", "ALIAS", "CNAME", "DHCID", "DNAME", "MX", "NS", "PTR":
 		answer = rc.GetTargetField()
-		if domain == host {
-			host = host + "."
+	case "LOC":
+		// Use GetTargetCombined() which returns the properly formatted LOC string
+		// via the dns library (e.g. "52 14 5.000 N 000 08 50.000 E 10.00m 0.00m 0.00m 0.00m")
+		parts := strings.Fields(rc.GetTargetCombined())
+		altitude, _ := strconv.ParseFloat(strings.TrimSuffix(parts[8], "m"), 64)
+		size, _ := strconv.ParseFloat(strings.TrimSuffix(parts[9], "m"), 64)
+		hp, _ := strconv.ParseFloat(strings.TrimSuffix(parts[10], "m"), 64)
+		vp, _ := strconv.ParseFloat(strings.TrimSuffix(parts[11], "m"), 64)
+		answer = fmt.Sprintf("%s %s %s %s %s %s %s %s %.2fm %.2fm %.2fm %.2fm",
+			parts[0], parts[1], parts[2], parts[3],
+			parts[4], parts[5], parts[6], parts[7],
+			altitude, size, hp, vp)
+	case "SVCB":
+		answer = fmt.Sprintf("%d %s", rc.SvcPriority, rc.GetTargetField())
+		if rc.SvcParams != "" {
+			answer += " " + rc.SvcParams
 		}
 	case "SSHFP":
 		answer = fmt.Sprintf(`%v %v %s`, rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
-		if domain == host {
-			host = host + "."
-		}
 	case "NAPTR":
 		answer = fmt.Sprintf(`%v %v "%v" "%v" "%v" %v`, rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.GetTargetField())
-		if domain == host {
-			host = host + "."
-		}
 	case "TLSA":
 		answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case "CAA":
@@ -311,6 +326,11 @@ func (n *Client) createRecordString(rc *models.RecordConfig, domain string) (str
 		panic(fmt.Sprintf("createRecordString rtype %v unimplemented", rc.Type))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
+	}
+
+	// Apex records need a trailing dot on the host to avoid ambiguity
+	if domain == host {
+		host += "."
 	}
 
 	str := host + " " + strconv.FormatUint(uint64(rc.TTL), 10) + " "

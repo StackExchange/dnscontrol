@@ -36,20 +36,20 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias: providers.Can(),
 	// providers.CanUseAzureAlias:		  providers.Cannot(), // can only be supported by Azure provider
 	providers.CanUseCAA:           providers.Can(),
-	providers.CanUseDHCID:         providers.Cannot("Ask for this feature."),
-	providers.CanUseDNAME:         providers.Cannot("Ask for this feature."),
+	providers.CanUseDHCID:         providers.Can(),
+	providers.CanUseDNAME:         providers.Can(),
 	providers.CanUseDNSKEY:        providers.Unimplemented("Ask for this feature."),
 	providers.CanUseDS:            providers.Unimplemented("Ask for this feature."),
 	providers.CanUseDSForChildren: providers.Unimplemented("Ask for this feature."), // CanUseDS implies CanUseDSForChildren
 	providers.CanUseHTTPS:         providers.Cannot("Managed via (Query|Add|Modify|Delete)WebFwd API call. Data not accessible via the resource records list. Hard to integrate this into DNSControl by that."),
-	providers.CanUseLOC:           providers.Cannot("Ask for this feature."),
+	providers.CanUseLOC:           providers.Can(),
 	providers.CanUseNAPTR:         providers.Can(),
 	providers.CanUsePTR:           providers.Can(),
 	// providers.CanUseRoute53Alias:	  providers.Cannot(), // can only be supported by AWS Route53 provider
 	providers.CanUseSOA:   providers.Cannot("The SOA record is managed on the DNSZone directly. Data only accessible via StatusDNSZone Request, not via the resource records list. Hard to integrate this into DNSControl by that."), // supported by bind, honstingde
 	providers.CanUseSRV:   providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseSSHFP: providers.Can(),
-	providers.CanUseSVCB:  providers.Cannot("Ask for this feature."),
+	providers.CanUseSVCB:  providers.Can(),
 	providers.CanUseTLSA:  providers.Can(),
 }
 
