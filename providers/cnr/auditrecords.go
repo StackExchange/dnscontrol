@@ -30,7 +30,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 func dnameHasWildcardLabel(rc *models.RecordConfig) error {
 	label := rc.GetLabel()
 	if label == "*" || strings.HasPrefix(label, "*.") || strings.HasSuffix(label, ".*") || strings.Contains(label, ".*.") {
-		return errors.New("DNAME records with wildcard labels are not supported.")
+		return errors.New("DNAME records with wildcard labels are not supported")
 	}
 	return nil
 }
