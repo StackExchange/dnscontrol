@@ -169,7 +169,7 @@ Jump to a table:
 | [`BUNNY_DNS`](bunnydns.md) | ✅ | ❔ | ❌ | ✅ | ❌ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❔ | ✅ | ✅ | ❔ |
 | [`CLOUDNS`](cloudns.md) | ✅ | ✅ | ✅ | ✅ | ❔ |
-| [`CNR`](cnr.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
+| [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ | ❌ |
 | [`DESEC`](desec.md) | ❔ | ❔ | ✅ | ✅ | ❔ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`DNSCALE`](dnscale.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
@@ -229,7 +229,7 @@ Jump to a table:
 | [`BUNNY_DNS`](bunnydns.md) | ❌ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ❔ | ✅ | ✅ | ✅ |
 | [`CLOUDNS`](cloudns.md) | ❌ | ✅ | ✅ | ❌ |
-| [`CNR`](cnr.md) | ❌ | ✅ | ✅ | ❌ |
+| [`CNR`](cnr.md) | ✅ | ✅ | ✅ | ✅ |
 | [`CSCGLOBAL`](cscglobal.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
