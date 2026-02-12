@@ -21,7 +21,7 @@ import (
 )
 
 // initialize initializes the "Akamai OPEN EdgeGrid" library.
-func NewEdgegridConfig(clientSecret string, host string, accessToken string, clientToken string) *edgegrid.Config {
+func newEdgegridConfig(clientSecret string, host string, accessToken string, clientToken string) *edgegrid.Config {
 	return &edgegrid.Config{
 		ClientSecret: clientSecret,
 		Host:         host,
@@ -33,7 +33,7 @@ func NewEdgegridConfig(clientSecret string, host string, accessToken string, cli
 }
 
 func initialize(clientSecret string, host string, accessToken string, clientToken string) (dns.DNS, error) {
-	config := NewEdgegridConfig(clientSecret, host, accessToken, clientToken)
+	config := newEdgegridConfig(clientSecret, host, accessToken, clientToken)
 	sess, err := session.New(
 		session.WithSigner(config),
 		session.WithHTTPTracing(true),
