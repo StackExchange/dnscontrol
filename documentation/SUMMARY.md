@@ -201,6 +201,7 @@
 * [Code Style Guide](advanced-features/styleguide-code.md)
 * [Documentation Style Guide](advanced-features/styleguide-doc.md)
 * [DNSControl is an opinionated system](advanced-features/opinions.md)
+* [GitHub actions](developer-info/github-actions.md)
 * [Writing new DNS providers](advanced-features/writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](advanced-features/adding-new-rtypes.md)
 * [Integration Tests](advanced-features/integration-tests.md)
