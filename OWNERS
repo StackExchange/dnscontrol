@@ -57,5 +57,6 @@ providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
 providers/transip @blackshadev
+providers/unifi @zupolgec
 providers/vercel @SukkaW
 providers/vultr @pgaskin

@@ -362,6 +362,15 @@
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
   },
+  "UNIFI": {
+    "TYPE": "UNIFI",
+    "api_key": "$UNIFI_API_KEY",
+    "domain": "$UNIFI_DOMAIN",
+    "host": "$UNIFI_HOST",
+    "knownFailures": "26,43",
+    "site": "$UNIFI_SITE",
+    "skip_tls_verify": "$UNIFI_SKIP_TLS_VERIFY"
+  },
   "VERCEL": {
     "TYPE": "VERCEL",
     "api_token": "$VERCEL_API_TOKEN",
