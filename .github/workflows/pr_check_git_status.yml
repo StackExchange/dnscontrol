@@ -7,7 +7,75 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-git-status:
+  go-fmt:
+    name: "Check: go fmt"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-go@v6
+      with:
+        go-version: stable
+    - run: go fmt ./...
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
+
+  prettier:
+    name: "Check: prettier"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - run: npm install
+    - run: node_modules/.bin/prettier --write pkg/js/helpers.js
+    - run: git checkout -- package-lock.json
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
+
+  fmtjson:
+    name: "Check: fmtjson"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-go@v6
+      with:
+        go-version: stable
+    - run: go build -o dnscontrol .
+    - run: bin/fmtjson $(find . -type f -name "*.json" ! -name "package-lock.json" -print)
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
+
+  go-mod-tidy:
+    name: "Check: go mod tidy"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-go@v6
+      with:
+        go-version: stable
+    - run: go mod tidy
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
+
+  go-generate:
+    name: "Check: go generate"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -18,10 +86,23 @@ jobs:
       with:
         go-version: stable
     - run: go install golang.org/x/tools/cmd/stringer@latest
-    - run: go fmt ./...
-    - run: bin/fmtjson $(find . -type f -name "*.json" ! -name "package-lock.json" -print)
-    - run: go mod tidy
     - run: go generate ./...
+    - uses: CatChen/check-git-status-action@v1
+      with:
+        fail-if-not-clean: true
+
+  go-fix:
+    name: "Check: go fix"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+    - uses: actions/setup-go@v6
+      with:
+        go-version: stable
+    - run: go fix ./...
     - uses: CatChen/check-git-status-action@v1
       with:
         fail-if-not-clean: true
