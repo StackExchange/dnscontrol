@@ -51,7 +51,7 @@ D("other-example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 **What is "@"?** The label `@` is a special name that means the domain itself,
 otherwise known as the domain's apex, the bare domain, or the naked domain.  
 In other words, if you want to put a DNS record at the apex of a domain, use an `"@"` for the label, not an empty string (`""`).
-In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain. 
+In the above example, `example.com` has an `A` record with the value `"1.2.3.4"` at the apex of the domain.
 {% endhint %}
 
 # `no_ns`
@@ -68,13 +68,13 @@ Gandi and Vercel).
 In this situation, you will see an error message such as:
 
 ```
-Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns:'true'} to force
+Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns: "true"} to force
 ```
 
 To add this, add the meta data to the zone immediately following the registrar.
 
 ```javascript
-D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
+D("example.com", REG_MY_PROVIDER, {no_ns: "true"},
   ...
   ...
   ...

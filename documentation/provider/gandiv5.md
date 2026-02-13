@@ -105,7 +105,7 @@ If a domain does not exist in your Gandi account, DNSControl will *not* automati
 
 ## Common errors
 
-#### Error getting corrections
+### Error getting corrections
 
 ```text
 Error getting corrections: 401: The server could not verify that you authorized to access the document you requested. Either you supplied the wrong credentials (e.g., bad api key), or your access token has expired
@@ -113,7 +113,7 @@ Error getting corrections: 401: The server could not verify that you authorized 
 
 This is the error you'll see if your `token` (or (deprecated) `apikey`) in `creds.json` is wrong or invalid.
 
-#### Domain does not exist in profile
+### Domain does not exist in profile
 
 ```text
 WARNING: Domain 'example.com' does not exist in the 'secname' profile and will be added automatically.
@@ -122,7 +122,7 @@ WARNING: Domain 'example.com' does not exist in the 'secname' profile and will b
 This error is caused by the internal `ListZones()` functions returning no domain names.  This is usually because your `creds.json` information is pointing at an empty organization or no organization.  The solution is to set
 `sharing_id` in `creds.json`.
 
-#### get-zones "nameonly" returns nothing
+### get-zones "nameonly" returns nothing
 
 If a `dnscontrol get-zones --format=nameonly CredId - all` returns nothing,
 this is usually because your `creds.json`  information is pointing at an empty
