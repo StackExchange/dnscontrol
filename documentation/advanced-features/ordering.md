@@ -9,7 +9,7 @@ Some providers explicitly require the targets of certain records like CNAMEs to 
 
 ```javascript
 D("example.com", REG_NONE, DnsProvider(DNS_BIND),
-    CNAME("foo", "bar")
+    CNAME("foo", "bar"),
     A("bar", "1.2.3.4"),
 );
 ```
@@ -26,7 +26,7 @@ In this (contrived) example, it is impossible to know which CNAME should be crea
 
 ```javascript
 D("example.com", REG_NONE, DnsProvider(DNS_BIND),
-    CNAME("foo", "bar")
+    CNAME("foo", "bar"),
     CNAME("bar", "foo"),
 );
 ```
