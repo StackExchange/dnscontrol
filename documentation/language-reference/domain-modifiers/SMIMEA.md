@@ -1,5 +1,5 @@
 ---
-name: SMIMEA 
+name: SMIMEA
 parameters:
   - name
   - usage
@@ -16,7 +16,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`SMIMEA` adds an [S/MIME cert association record](https://www.rfc-editor.org/rfc/rfc8162) to a domain. The name should be the hashed and stripped local part of the e-mail. 
+`SMIMEA` adds an [S/MIME cert association record](https://www.rfc-editor.org/rfc/rfc8162) to a domain. The name should be the hashed and stripped local part of the e-mail.
 
 To create the name, you can the following command:
 
