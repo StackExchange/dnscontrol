@@ -386,7 +386,7 @@ Providers in this category and their maintainers are:
 
 |Name|Maintainer|
 |---|---|
-|[`AZURE_DNS`](azure_dns.md)|@vatsalyagoel|
+|[`AZURE_DNS`](azuredns.md)|@vatsalyagoel|
 |[`BIND`](bind.md)|@tlimoncelli|
 |[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](cscglobal.md)|@mikenz|
@@ -417,10 +417,10 @@ Providers in this category and their maintainers are:
 |---|---|
 |[`ADGUARDHOME`](adguardhome.md)|@ishanjain28|
 |[`ALIDNS`](alidns.md)|@bytemain|
-|[`AZURE_PRIVATE_DNS`](azure_private_dns.md)|@matthewmgamble|
+|[`AZURE_PRIVATE_DNS`](azureprivatedns.md)|@matthewmgamble|
 |[`AKAMAIEDGEDNS`](akamaiedgedns.md)|@edglynes|
 |[`AXFRDDNS`](axfrddns.md)|@hnrgrgr|
-|[`BUNNY_DNS`](bunny_dns.md)|@ppmathis|
+|[`BUNNY_DNS`](bunnydns.md)|@ppmathis|
 |[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
 |[`CLOUDNS`](cloudns.md)|@pragmaton|
 |[`CNR`](cnr.md)|@KaiSchwarz-cnic|
@@ -434,7 +434,7 @@ Providers in this category and their maintainers are:
 |[`DOMAINNAMESHOP`](domainnameshop.md)|@SimenBai|
 |[`EASYNAME`](easyname.md)|@tresni|
 |[`EXOSCALE`](exoscale.md)|@pierre-emmanuelJ|
-|[`GANDI_V5`](gandi_v5.md)|@TomOnTime|
+|[`GANDI_V5`](gandiv5.md)|@TomOnTime|
 |[`GCORE`](gcore.md)|@xddxdd|
 |[`GIDINET`](gidinet.md)|@zupolgec|
 |[`HEDNS`](hedns.md)|@rblenkinsopp|
