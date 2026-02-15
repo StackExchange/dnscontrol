@@ -98,11 +98,11 @@ func nativeToRecords(nr dnsStaticRecord, origin string) ([]*models.RecordConfig,
 	}
 
 	// Read RouterOS-specific metadata fields applicable to ALL record types.
-	if nr.MatchSubdomain == "true" || nr.Regexp != "" || nr.AddressList != "" || nr.Comment != "" {
+	if nr.MatchSubdomain == "true" || nr.MatchSubdomain == "yes" || nr.Regexp != "" || nr.AddressList != "" || nr.Comment != "" {
 		if rc.Metadata == nil {
 			rc.Metadata = map[string]string{}
 		}
-		if nr.MatchSubdomain == "true" {
+		if nr.MatchSubdomain == "true" || nr.MatchSubdomain == "yes" {
 			rc.Metadata["match_subdomain"] = "true"
 		}
 		if nr.Regexp != "" {
@@ -172,19 +172,18 @@ func recordToNative(rc *models.RecordConfig, origin string) (*dnsStaticRecord, e
 	}
 
 	// Write RouterOS-specific metadata fields applicable to ALL record types.
+	// Always set these fields (even to empty) so the JSON payload explicitly
+	// clears them on RouterOS when they are no longer desired.
+	// match-subdomain is a boolean that RouterOS requires as "yes" or "no".
+	if rc.Metadata != nil && rc.Metadata["match_subdomain"] == "true" {
+		nr.MatchSubdomain = "yes"
+	} else {
+		nr.MatchSubdomain = "no"
+	}
 	if rc.Metadata != nil {
-		if rc.Metadata["match_subdomain"] == "true" {
-			nr.MatchSubdomain = "true"
-		}
-		if v := rc.Metadata["regexp"]; v != "" {
-			nr.Regexp = v
-		}
-		if v := rc.Metadata["address_list"]; v != "" {
-			nr.AddressList = v
-		}
-		if v := rc.Metadata["comment"]; v != "" {
-			nr.Comment = v
-		}
+		nr.Regexp = rc.Metadata["regexp"]
+		nr.AddressList = rc.Metadata["address_list"]
+		nr.Comment = rc.Metadata["comment"]
 	}
 
 	return nr, nil

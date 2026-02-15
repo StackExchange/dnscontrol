@@ -1362,22 +1362,9 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		testgroup("MIKROTIK_FORWARDER",
-			only("MIKROTIK"),
-			tc("create forwarder",
-				mikrotikForwarder("corp.example.com", "10.0.0.53,10.0.0.54"),
-			),
-			tc("change forwarder servers",
-				mikrotikForwarder("corp.example.com", "10.0.0.55"),
-			),
-			tc("multiple forwarders",
-				mikrotikForwarder("corp.example.com", "10.0.0.55"),
-				mikrotikForwarder("vpn.example.com", "172.16.0.53"),
-			),
-			tc("delete one forwarder",
-				mikrotikForwarder("vpn.example.com", "172.16.0.53"),
-			),
-		),
+		// NOTE: MIKROTIK_FORWARDER records live in the synthetic zone
+		// "_forwarders.mikrotik" and cannot be tested through the standard
+		// integration test framework which operates on a single real domain.
 
 		// VERCEL features(?)
 

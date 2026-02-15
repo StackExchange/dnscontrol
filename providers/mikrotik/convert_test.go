@@ -399,7 +399,7 @@ func TestRecordToNative_FWD(t *testing.T) {
 	}
 	assertStr(t, "Type", nr.Type, "FWD")
 	assertStr(t, "ForwardTo", nr.ForwardTo, "8.8.8.8")
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "AddressList", nr.AddressList, "vpn-list")
 	assertStr(t, "Regexp", nr.Regexp, `.*\.test`)
 }
@@ -420,7 +420,7 @@ func TestRecordToNative_NXDOMAIN(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertStr(t, "Type", nr.Type, "NXDOMAIN")
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "Comment", nr.Comment, "blocked")
 }
 
@@ -485,7 +485,7 @@ func TestRecordToNative_MetadataOnStandardTypes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "AddressList", nr.AddressList, "my-list")
 	assertStr(t, "Comment", nr.Comment, "my comment")
 }
@@ -523,7 +523,7 @@ func TestNativeRoundTrip_A(t *testing.T) {
 	assertStr(t, "Address", nr.Address, "192.168.1.1")
 	assertStr(t, "Name", nr.Name, "host.example.com")
 	assertStr(t, "TTL", nr.TTL, "1d")
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "AddressList", nr.AddressList, "my-list")
 	assertStr(t, "Comment", nr.Comment, "round trip")
 }
@@ -545,7 +545,7 @@ func TestNativeRoundTrip_FWD(t *testing.T) {
 
 	assertStr(t, "Type", nr.Type, "FWD")
 	assertStr(t, "ForwardTo", nr.ForwardTo, "8.8.8.8")
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "AddressList", nr.AddressList, "vpn-list")
 	assertStr(t, "Regexp", nr.Regexp, `.*\.test`)
 }
@@ -566,7 +566,7 @@ func TestNativeRoundTrip_NXDOMAIN(t *testing.T) {
 	}
 
 	assertStr(t, "Type", nr.Type, "NXDOMAIN")
-	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "true")
+	assertStr(t, "MatchSubdomain", nr.MatchSubdomain, "yes")
 	assertStr(t, "Comment", nr.Comment, "blocked")
 }
 

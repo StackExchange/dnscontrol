@@ -32,12 +32,12 @@ type dnsStaticRecord struct {
 	SrvWeight      string `json:"srv-weight,omitempty"`
 	Text           string `json:"text,omitempty"`
 	TTL            string `json:"ttl,omitempty"`
-	MatchSubdomain string `json:"match-subdomain,omitempty"`
+	MatchSubdomain string `json:"match-subdomain"`
 	Disabled       string `json:"disabled,omitempty"`
 	Dynamic        string `json:"dynamic,omitempty"`
-	Comment        string `json:"comment,omitempty"`
-	Regexp         string `json:"regexp,omitempty"`
-	AddressList    string `json:"address-list,omitempty"`
+	Comment        string `json:"comment"`
+	Regexp         string `json:"regexp"`
+	AddressList    string `json:"address-list"`
 }
 
 const apiPath = "/rest/ip/dns/static"
