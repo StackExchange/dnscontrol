@@ -1336,7 +1336,8 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE' &&
                 record.type != 'ADGUARDHOME_A_PASSTHROUGH' &&
-                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH'
+                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH' &&
+                record.type != 'MIKROTIK_FWD'
             ) {
                 record.subdomain = d.subdomain;
 
@@ -1511,6 +1512,11 @@ var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
  */
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
+
+// MIKROTIK_FWD(name, target, modifiers...)
+// RouterOS conditional DNS forwarding entry.
+var MIKROTIK_FWD = recordBuilder('MIKROTIK_FWD');
+
 var BUNNY_DNS_PZ = recordBuilder('BUNNY_DNS_PZ', {
     args: [['name', _.isString], ['pullZoneId']],
     transform: function (record, args, modifiers) {

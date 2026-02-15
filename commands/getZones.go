@@ -463,6 +463,23 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 			return fmt.Sprintf(`//NAMESERVER("%s")`, target)
 		}
 		target = `"` + target + `"`
+	case "MIKROTIK_FWD":
+		target = `"` + target + `"`
+		if rec.Metadata != nil {
+			var metaParts []string
+			if v := rec.Metadata["match_subdomain"]; v == "true" {
+				metaParts = append(metaParts, `match_subdomain: "true"`)
+			}
+			if v := rec.Metadata["regexp"]; v != "" {
+				metaParts = append(metaParts, fmt.Sprintf("regexp: %s", jsonQuoted(v)))
+			}
+			if v := rec.Metadata["address_list"]; v != "" {
+				metaParts = append(metaParts, fmt.Sprintf("address_list: %s", jsonQuoted(v)))
+			}
+			if len(metaParts) > 0 {
+				target += ", {" + strings.Join(metaParts, ", ") + "}"
+			}
+		}
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
 	case "UNKNOWN":
