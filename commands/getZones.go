@@ -265,6 +265,13 @@ func GetZone(args GetZoneArgs) error {
 
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
+
+			// If the provider returns no nameservers, emit {no_ns:'true'}
+			// so that preview/push won't skip the domain.
+			if ns, nsErr := provider.GetNameservers(zoneName); nsErr == nil && len(ns) == 0 {
+				o = append(o, `{no_ns:'true'}`)
+			}
+
 			o = append(o, fmt.Sprintf("DnsProvider(%s)", dspVariableName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
