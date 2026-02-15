@@ -55,15 +55,11 @@ func nativeToRecords(nr dnsStaticRecord, origin string) ([]*models.RecordConfig,
 		if err := rc.SetTarget(nr.ForwardTo); err != nil {
 			return nil, fmt.Errorf("invalid FWD target %q: %w", nr.ForwardTo, err)
 		}
-		rc.Metadata = map[string]string{}
-		if nr.MatchSubdomain == "true" {
-			rc.Metadata["match_subdomain"] = "true"
-		}
-		if nr.Regexp != "" {
-			rc.Metadata["regexp"] = nr.Regexp
-		}
-		if nr.AddressList != "" {
-			rc.Metadata["address_list"] = nr.AddressList
+
+	case "NXDOMAIN":
+		rc.Type = "MIKROTIK_NXDOMAIN"
+		if err := rc.SetTarget("NXDOMAIN"); err != nil {
+			return nil, fmt.Errorf("NXDOMAIN SetTarget: %w", err)
 		}
 
 	case "MX":
@@ -101,6 +97,25 @@ func nativeToRecords(nr dnsStaticRecord, origin string) ([]*models.RecordConfig,
 		return nil, fmt.Errorf("unsupported record type %q", nr.Type)
 	}
 
+	// Read RouterOS-specific metadata fields applicable to ALL record types.
+	if nr.MatchSubdomain == "true" || nr.Regexp != "" || nr.AddressList != "" || nr.Comment != "" {
+		if rc.Metadata == nil {
+			rc.Metadata = map[string]string{}
+		}
+		if nr.MatchSubdomain == "true" {
+			rc.Metadata["match_subdomain"] = "true"
+		}
+		if nr.Regexp != "" {
+			rc.Metadata["regexp"] = nr.Regexp
+		}
+		if nr.AddressList != "" {
+			rc.Metadata["address_list"] = nr.AddressList
+		}
+		if nr.Comment != "" {
+			rc.Metadata["comment"] = nr.Comment
+		}
+	}
+
 	return []*models.RecordConfig{rc}, nil
 }
 
@@ -127,17 +142,10 @@ func recordToNative(rc *models.RecordConfig, origin string) (*dnsStaticRecord, e
 	case "MIKROTIK_FWD":
 		nr.Type = "FWD"
 		nr.ForwardTo = rc.GetTargetField()
-		if rc.Metadata != nil {
-			if rc.Metadata["match_subdomain"] == "true" {
-				nr.MatchSubdomain = "true"
-			}
-			if v := rc.Metadata["regexp"]; v != "" {
-				nr.Regexp = v
-			}
-			if v := rc.Metadata["address_list"]; v != "" {
-				nr.AddressList = v
-			}
-		}
+
+	case "MIKROTIK_NXDOMAIN":
+		nr.Type = "NXDOMAIN"
+		// NXDOMAIN has no target field — only name matters.
 
 	case "MX":
 		nr.Type = "MX"
@@ -161,6 +169,22 @@ func recordToNative(rc *models.RecordConfig, origin string) (*dnsStaticRecord, e
 
 	default:
 		return nil, fmt.Errorf("mikrotik: unsupported record type %q", rc.Type)
+	}
+
+	// Write RouterOS-specific metadata fields applicable to ALL record types.
+	if rc.Metadata != nil {
+		if rc.Metadata["match_subdomain"] == "true" {
+			nr.MatchSubdomain = "true"
+		}
+		if v := rc.Metadata["regexp"]; v != "" {
+			nr.Regexp = v
+		}
+		if v := rc.Metadata["address_list"]; v != "" {
+			nr.AddressList = v
+		}
+		if v := rc.Metadata["comment"]; v != "" {
+			nr.Comment = v
+		}
 	}
 
 	return nr, nil
@@ -263,3 +287,42 @@ var (
 	// Matches "1w2d3h4m5s" component format (each part optional but at least one required)
 	reDurationComponents = regexp.MustCompile(`^(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$`)
 )
+
+// ForwarderZone is the synthetic zone name used for managing RouterOS DNS forwarders.
+const ForwarderZone = "_forwarders.mikrotik"
+
+// forwarderToRecord converts a RouterOS DNS forwarder to a RecordConfig.
+func forwarderToRecord(fwd dnsForwarder) *models.RecordConfig {
+	rc := &models.RecordConfig{
+		Original: &fwd,
+	}
+	rc.SetLabel(fwd.Name, ForwarderZone)
+	rc.Type = "MIKROTIK_FORWARDER"
+	_ = rc.SetTarget(fwd.DnsServers)
+	rc.TTL = 300 // Forwarders have no TTL; use dnscontrol's default to avoid spurious diffs.
+	rc.Metadata = map[string]string{}
+	if fwd.DohServers != "" {
+		rc.Metadata["doh_servers"] = fwd.DohServers
+	}
+	if fwd.VerifyDohCert == "true" {
+		rc.Metadata["verify_doh_cert"] = "true"
+	}
+	return rc
+}
+
+// recordToForwarder converts a RecordConfig to a RouterOS DNS forwarder.
+func recordToForwarder(rc *models.RecordConfig) *dnsForwarder {
+	f := &dnsForwarder{
+		Name:       rc.GetLabel(),
+		DnsServers: rc.GetTargetField(),
+	}
+	if rc.Metadata != nil {
+		if v := rc.Metadata["doh_servers"]; v != "" {
+			f.DohServers = v
+		}
+		if rc.Metadata["verify_doh_cert"] == "true" {
+			f.VerifyDohCert = "true"
+		}
+	}
+	return f
+}

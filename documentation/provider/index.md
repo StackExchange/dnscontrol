@@ -66,6 +66,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❌ | ✅ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
+| [`MIKROTIK`](mikrotik.md) | ❌ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ✅ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ✅ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❌ | ✅ | ✅ |
@@ -132,6 +133,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❌ | ❌ | ✅ |
 | [`LOOPIA`](loopia.md) | ❔ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
+| [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❌ | ✅ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ✅ | ❌ | ✅ |
@@ -194,6 +196,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ❔ | ✅ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ✅ | ❔ | ❌ | ✅ | ❔ |
+| [`MIKROTIK`](mikrotik.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
@@ -254,6 +257,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ❔ | ❔ | ✅ | ❔ |
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
 | [`LUADNS`](luadns.md) | ❔ | ❔ | ✅ | ❔ |
+| [`MIKROTIK`](mikrotik.md) | ❔ | ❌ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NAMECHEAP`](namecheap.md) | ❔ | ❔ | ❌ | ❔ |
 | [`NAMEDOTCOM`](namedotcom.md) | ❔ | ❔ | ✅ | ❔ |
@@ -314,6 +318,7 @@ Jump to a table:
 | [`LINODE`](linode.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`LOOPIA`](loopia.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
+| [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❔ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❔ | ❔ | ❔ | ❌ |
 | [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
@@ -361,6 +366,7 @@ Jump to a table:
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
 | [`JOKER`](joker.md) | ❔ | ❌ | ❌ |
 | [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
+| [`MIKROTIK`](mikrotik.md) | ❌ | ❔ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ❔ | ❌ |
@@ -448,6 +454,7 @@ Providers in this category and their maintainers are:
 |[`LINODE`](linode.md)|@koesie10|
 |[`LOOPIA`](loopia.md)|@systemcrash|
 |[`LUADNS`](luadns.md)|@riku22|
+|[`MIKROTIK`](mikrotik.md)|@hedger|
 |[`NAMECHEAP`](namecheap.md)|@willpower232|
 |[`NETCUP`](netcup.md)|@kordianbruck|
 |[`NETLIFY`](netlify.md)|@SphericalKat|

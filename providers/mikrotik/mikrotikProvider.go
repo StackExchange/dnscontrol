@@ -61,6 +61,8 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterCustomRecordType("MIKROTIK_FWD", providerName, "")
+	providers.RegisterCustomRecordType("MIKROTIK_NXDOMAIN", providerName, "")
+	providers.RegisterCustomRecordType("MIKROTIK_FORWARDER", providerName, "")
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -88,12 +90,31 @@ func newMikrotikProvider(cfg map[string]string, _ json.RawMessage) (providers.DN
 		password: password,
 	}
 
+	// Optional comma-separated list of zones to help ListZones() identify
+	// zones with 3+ labels (e.g. "internal.corp.local,home.arpa").
+	if hints := cfg["zonehints"]; hints != "" {
+		for _, h := range strings.Split(hints, ",") {
+			h = strings.TrimSpace(h)
+			if h != "" {
+				p.zoneHints = append(p.zoneHints, h)
+			}
+		}
+		// Sort longest-first so that more specific zones match before shorter ones.
+		sort.Slice(p.zoneHints, func(i, j int) bool {
+			return len(p.zoneHints[i]) > len(p.zoneHints[j])
+		})
+	}
+
 	return p, nil
 }
 
 // ListZones enumerates zones by fetching all static DNS records and grouping
 // their names by effective second-level domain (e.g. "host.example.com" → "example.com").
 // RouterOS has no native zone concept, so this is an approximation.
+//
+// If "zonehints" is configured in creds.json (comma-separated list of zone names),
+// records are first matched against those hints (longest match wins). This enables
+// correct zone detection for multi-label private zones like "internal.corp.local".
 func (p *mikrotikProvider) ListZones() ([]string, error) {
 	nativeRecords, err := p.getAllRecords()
 	if err != nil {
@@ -101,29 +122,33 @@ func (p *mikrotikProvider) ListZones() ([]string, error) {
 	}
 
 	seen := map[string]bool{}
+
+	// Always include all configured zone hints so that new (empty) zones
+	// pass the zone-existence check in the framework.
+	for _, hint := range p.zoneHints {
+		seen[hint] = true
+	}
+
 	for _, nr := range nativeRecords {
 		if nr.Dynamic == "true" || nr.Disabled == "true" {
 			continue
 		}
-		zone, err := publicsuffix.EffectiveTLDPlusOne(nr.Name)
-		if err != nil {
-			// Names like "retracker.local" won't match the public suffix list.
-			// Fall back to taking the last two labels.
-			parts := strings.Split(nr.Name, ".")
-			if len(parts) >= 2 {
-				zone = strings.Join(parts[len(parts)-2:], ".")
-			} else {
-				zone = nr.Name
-			}
-		}
+		zone := p.detectZone(nr.Name)
 		seen[zone] = true
 	}
 
-	zones := make([]string, 0, len(seen))
+	zones := make([]string, 0, len(seen)+1)
 	for z := range seen {
 		zones = append(zones, z)
 	}
 	sort.Strings(zones)
+
+	// Append the synthetic forwarder zone if any forwarders exist.
+	fwds, err := p.getAllForwarders()
+	if err == nil && len(fwds) > 0 {
+		zones = append(zones, ForwarderZone)
+	}
+
 	return zones, nil
 }
 
@@ -132,8 +157,19 @@ func (p *mikrotikProvider) GetNameservers(_ string) ([]*models.Nameserver, error
 	return []*models.Nameserver{}, nil
 }
 
+// EnsureZoneExists is a no-op for RouterOS. Zones are virtual constructs
+// derived from record names — the zone will "exist" once records are pushed.
+func (p *mikrotikProvider) EnsureZoneExists(_ string, _ map[string]string) error {
+	return nil
+}
+
 // GetZoneRecords fetches all static DNS records from RouterOS and filters by domain.
+// For the special zone "_forwarders.mikrotik", it returns DNS forwarder entries instead.
 func (p *mikrotikProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	if domain == ForwarderZone {
+		return p.getForwarderRecords()
+	}
+
 	nativeRecords, err := p.getAllRecords()
 	if err != nil {
 		return nil, fmt.Errorf("mikrotik: failed to list records: %w", err)
@@ -150,6 +186,12 @@ func (p *mikrotikProvider) GetZoneRecords(domain string, meta map[string]string)
 		if !belongsToDomain(nr.Name, domain) {
 			continue
 		}
+		// When zone hints are configured, a record like "host.h.example.com"
+		// matches both "h.example.com" and "example.com" via suffix check. Use
+		// detectZone to assign each record to exactly one zone.
+		if len(p.zoneHints) > 0 && p.detectZone(nr.Name) != domain {
+			continue
+		}
 
 		rcs, err := nativeToRecords(nr, domain)
 		if err != nil {
@@ -162,9 +204,29 @@ func (p *mikrotikProvider) GetZoneRecords(domain string, meta map[string]string)
 	return records, nil
 }
 
+func (p *mikrotikProvider) getForwarderRecords() (models.Records, error) {
+	fwds, err := p.getAllForwarders()
+	if err != nil {
+		return nil, fmt.Errorf("mikrotik: failed to list forwarders: %w", err)
+	}
+
+	var records models.Records
+	for _, fwd := range fwds {
+		if fwd.Disabled == "true" {
+			continue
+		}
+		records = append(records, forwarderToRecord(fwd))
+	}
+	return records, nil
+}
+
 // GetZoneRecordsCorrections computes and returns corrections.
 func (p *mikrotikProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
-	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, fwdCompFunc)
+	if dc.Name == ForwarderZone {
+		return p.getForwarderCorrections(dc, existingRecords)
+	}
+
+	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, metaCompFunc)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -240,17 +302,123 @@ func belongsToDomain(fqdn, domain string) bool {
 	return strings.HasSuffix(fqdn, "."+domain)
 }
 
-// fwdCompFunc returns extra comparison data for MIKROTIK_FWD records so that
-// changes to match_subdomain, regexp, and address_list are detected by the
-// diff engine.
-func fwdCompFunc(rc *models.RecordConfig) string {
-	if rc.Type != "MIKROTIK_FWD" || rc.Metadata == nil {
+// detectZone determines which zone a record name belongs to.
+// It first checks configured zonehints (longest match wins), then falls back
+// to publicsuffix.EffectiveTLDPlusOne, and finally to the last two labels.
+func (p *mikrotikProvider) detectZone(name string) string {
+	// Try zone hints first (already sorted longest-first).
+	for _, hint := range p.zoneHints {
+		if belongsToDomain(name, hint) {
+			return hint
+		}
+	}
+
+	// Public suffix lookup.
+	zone, err := publicsuffix.EffectiveTLDPlusOne(name)
+	if err == nil {
+		return zone
+	}
+
+	// Fallback: take the last two labels.
+	parts := strings.Split(name, ".")
+	if len(parts) >= 2 {
+		return strings.Join(parts[len(parts)-2:], ".")
+	}
+	return name
+}
+
+// forwarderCompFunc returns extra comparison data for forwarder records.
+func forwarderCompFunc(rc *models.RecordConfig) string {
+	if rc.Metadata == nil {
 		return ""
 	}
-	// Include all FWD-specific metadata in a stable order.
-	return fmt.Sprintf("address_list=%s match_subdomain=%s regexp=%s",
+	return fmt.Sprintf("doh_servers=%s verify_doh_cert=%s",
+		rc.Metadata["doh_servers"],
+		rc.Metadata["verify_doh_cert"],
+	)
+}
+
+// getForwarderCorrections computes corrections for the _forwarders.mikrotik zone.
+func (p *mikrotikProvider) getForwarderCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, forwarderCompFunc)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var corrections []*models.Correction
+	for _, change := range changes {
+		var corr *models.Correction
+		switch change.Type {
+		case diff2.REPORT:
+			corr = &models.Correction{Msg: change.MsgsJoined}
+
+		case diff2.CREATE:
+			newRec := change.New[0]
+			msg := change.MsgsJoined
+			corr = &models.Correction{
+				Msg: msg,
+				F: func() error {
+					f := recordToForwarder(newRec)
+					return p.createForwarder(f)
+				},
+			}
+
+		case diff2.CHANGE:
+			oldRec := change.Old[0]
+			newRec := change.New[0]
+			msg := change.MsgsJoined
+			corr = &models.Correction{
+				Msg: msg,
+				F: func() error {
+					oldFwd, ok := oldRec.Original.(*dnsForwarder)
+					if !ok {
+						return fmt.Errorf("mikrotik: missing original forwarder data for update")
+					}
+					f := recordToForwarder(newRec)
+					return p.updateForwarder(oldFwd.ID, f)
+				},
+			}
+
+		case diff2.DELETE:
+			oldRec := change.Old[0]
+			msg := change.MsgsJoined
+			corr = &models.Correction{
+				Msg: msg,
+				F: func() error {
+					oldFwd, ok := oldRec.Original.(*dnsForwarder)
+					if !ok {
+						return fmt.Errorf("mikrotik: missing original forwarder data for delete")
+					}
+					return p.deleteForwarder(oldFwd.ID)
+				},
+			}
+
+		default:
+			panic(fmt.Sprintf("mikrotik: unhandled forwarder change type: %s", change.Type))
+		}
+
+		corrections = append(corrections, corr)
+	}
+
+	return corrections, actualChangeCount, nil
+}
+
+// metaCompFunc returns extra comparison data for RouterOS records so that
+// changes to match_subdomain, regexp, address_list, and comment are detected
+// by the diff engine.
+func metaCompFunc(rc *models.RecordConfig) string {
+	if rc.Metadata == nil {
+		return ""
+	}
+	s := fmt.Sprintf("address_list=%s comment=%s match_subdomain=%s regexp=%s",
 		rc.Metadata["address_list"],
+		rc.Metadata["comment"],
 		rc.Metadata["match_subdomain"],
 		rc.Metadata["regexp"],
 	)
+	// Return empty string if no metadata is actually set (avoid spurious diffs).
+	if s == "address_list= comment= match_subdomain= regexp=" {
+		return ""
+	}
+	return s
 }

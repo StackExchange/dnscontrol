@@ -9,9 +9,10 @@ import (
 )
 
 type mikrotikProvider struct {
-	host     string
-	username string
-	password string
+	host      string
+	username  string
+	password  string
+	zoneHints []string // optional list of zone names from creds.json "zonehints"
 }
 
 // dnsStaticRecord represents a RouterOS /ip/dns/static entry.
@@ -40,6 +41,49 @@ type dnsStaticRecord struct {
 }
 
 const apiPath = "/rest/ip/dns/static"
+const forwardersPath = "/rest/ip/dns/forwarders"
+
+// dnsForwarder represents a RouterOS /ip/dns/forwarders entry.
+type dnsForwarder struct {
+	ID            string `json:".id,omitempty"`
+	Name          string `json:"name,omitempty"`
+	DnsServers    string `json:"dns-servers,omitempty"`
+	DohServers    string `json:"doh-servers,omitempty"`
+	VerifyDohCert string `json:"verify-doh-cert,omitempty"`
+	Disabled      string `json:"disabled,omitempty"`
+}
+
+// getAllForwarders fetches all DNS forwarders from RouterOS.
+func (p *mikrotikProvider) getAllForwarders() ([]dnsForwarder, error) {
+	body, err := p.doRequest(http.MethodGet, forwardersPath, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var fwds []dnsForwarder
+	if err := json.Unmarshal(body, &fwds); err != nil {
+		return nil, fmt.Errorf("mikrotik: failed to parse forwarders: %w", err)
+	}
+	return fwds, nil
+}
+
+// createForwarder creates a new DNS forwarder via PUT.
+func (p *mikrotikProvider) createForwarder(f *dnsForwarder) error {
+	_, err := p.doRequest(http.MethodPut, forwardersPath, f)
+	return err
+}
+
+// updateForwarder updates an existing DNS forwarder via PATCH.
+func (p *mikrotikProvider) updateForwarder(id string, f *dnsForwarder) error {
+	_, err := p.doRequest(http.MethodPatch, forwardersPath+"/"+id, f)
+	return err
+}
+
+// deleteForwarder deletes a DNS forwarder by ID via DELETE.
+func (p *mikrotikProvider) deleteForwarder(id string) error {
+	_, err := p.doRequest(http.MethodDelete, forwardersPath+"/"+id, nil)
+	return err
+}
 
 // getAllRecords fetches all static DNS records from RouterOS.
 func (p *mikrotikProvider) getAllRecords() ([]dnsStaticRecord, error) {

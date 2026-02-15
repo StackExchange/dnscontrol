@@ -419,6 +419,27 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		cftags = ", CF_TAGS(" + strings.Join(quotedTags, ", ") + ")"
 	}
 
+	// Mikrotik RouterOS metadata (match_subdomain, regexp, address_list, comment)
+	mtmeta := ""
+	if rec.Metadata != nil {
+		var mtParts []string
+		if v := rec.Metadata["match_subdomain"]; v == "true" {
+			mtParts = append(mtParts, `match_subdomain: "true"`)
+		}
+		if v := rec.Metadata["regexp"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("regexp: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["address_list"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("address_list: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["comment"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("comment: %s", jsonQuoted(v)))
+		}
+		if len(mtParts) > 0 {
+			mtmeta = ", {" + strings.Join(mtParts, ", ") + "}"
+		}
+	}
+
 	switch rec.Type { // #rtype_variations
 	case "CAA":
 		return makeCaa(rec, ttlop)
@@ -465,19 +486,22 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	case "MIKROTIK_FWD":
 		target = `"` + target + `"`
+	case "MIKROTIK_NXDOMAIN":
+		// NXDOMAIN has no target — emit only name + optional metadata + TTL
+		return fmt.Sprintf(`MIKROTIK_NXDOMAIN("%s"%s%s)`, rec.Name, mtmeta, ttlop)
+	case "MIKROTIK_FORWARDER":
+		// Forwarder: target is dns-servers, metadata has doh_servers/verify_doh_cert
+		target = `"` + target + `"`
 		if rec.Metadata != nil {
-			var metaParts []string
-			if v := rec.Metadata["match_subdomain"]; v == "true" {
-				metaParts = append(metaParts, `match_subdomain: "true"`)
+			var fwdParts []string
+			if v := rec.Metadata["doh_servers"]; v != "" {
+				fwdParts = append(fwdParts, fmt.Sprintf("doh_servers: %s", jsonQuoted(v)))
 			}
-			if v := rec.Metadata["regexp"]; v != "" {
-				metaParts = append(metaParts, fmt.Sprintf("regexp: %s", jsonQuoted(v)))
+			if v := rec.Metadata["verify_doh_cert"]; v == "true" {
+				fwdParts = append(fwdParts, `verify_doh_cert: "true"`)
 			}
-			if v := rec.Metadata["address_list"]; v != "" {
-				metaParts = append(metaParts, fmt.Sprintf("address_list: %s", jsonQuoted(v)))
-			}
-			if len(metaParts) > 0 {
-				target += ", {" + strings.Join(metaParts, ", ") + "}"
+			if len(fwdParts) > 0 {
+				target += ", {" + strings.Join(fwdParts, ", ") + "}"
 			}
 		}
 	case "R53_ALIAS":
@@ -488,7 +512,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, mtmeta, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

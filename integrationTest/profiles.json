@@ -248,6 +248,13 @@
     "password": "$LOOPIA_PASSWORD",
     "username": "$LOOPIA_USERNAME"
   },
+  "MIKROTIK": {
+    "TYPE": "MIKROTIK",
+    "domain": "$MIKROTIK_DOMAIN",
+    "host": "$MIKROTIK_HOST",
+    "username": "$MIKROTIK_USERNAME",
+    "password": "$MIKROTIK_PASSWORD"
+  },
   "LUADNS": {
     "TYPE": "LUADNS",
     "apikey": "$LUADNS_APIKEY",
