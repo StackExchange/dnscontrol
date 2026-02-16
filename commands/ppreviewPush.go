@@ -792,7 +792,7 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	nameservers.AddNSRecords(zone)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
-		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns:'true'} to force",
+		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns: 'true'} to force",
 			zone.RegistrarName,
 			zone.Name,
 		)}}, 0, nil

@@ -68,13 +68,13 @@ Gandi and Vercel).
 In this situation, you will see an error message such as:
 
 ```
-Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns:'true'} to force
+Skipping registrar REGISTRAR: No nameservers declared for domain "example.com". Add {no_ns: "true"} to force
 ```
 
 To add this, add the meta data to the zone immediately following the registrar.
 
 ```javascript
-D("example.com", REG_MY_PROVIDER, {no_ns:'true'},
+D("example.com", REG_MY_PROVIDER, {no_ns: "true"},
   ...
   ...
   ...
