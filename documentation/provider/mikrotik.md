@@ -18,7 +18,7 @@ The provider is configured using entries in `creds.json`:
 - `host`: RouterOS REST API endpoint (e.g. `http://192.168.88.1:8080`)
 - `username`: RouterOS user with API access
 - `password`: Password for the user
-- `zonehints`: (optional) Comma-separated list of zone names to help identify zones with 3+ labels (e.g. `internal.corp.local,home.arpa`)
+- `zonehints`: (optional) Comma-separated list of zone names to help identify zones with 3+ labels (e.g. `internal.corp.local,home.arpa,home.example.com`)
 
 Example `creds.json` entry:
 
@@ -29,7 +29,7 @@ Example `creds.json` entry:
     "host": "http://192.168.88.1:8080",
     "username": "admin",
     "password": "secret",
-    "zonehints": "internal.corp.local,home.arpa"
+    "zonehints": "internal.corp.local,home.arpa,home.example.com"
   }
 }
 ```
