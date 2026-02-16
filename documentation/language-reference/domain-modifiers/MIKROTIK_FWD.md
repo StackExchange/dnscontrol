@@ -15,6 +15,8 @@ provider: MIKROTIK
 
 The `target` can be an IP address (e.g. `8.8.8.8`) or the name of a [`MIKROTIK_FORWARDER`](MIKROTIK_FORWARDER.md) entry (e.g. `my-upstream`).
 
+See the [MikroTik RouterOS provider page](../../provider/mikrotik.md) for full configuration details.
+
 Metadata keys supported:
 
 | Key               | Description                                                        |
@@ -27,7 +29,12 @@ Metadata keys supported:
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+    // Forward all queries for example.com and subdomains to 8.8.8.8,
+    // add resolved addresses to the "vpn-list" address list.
     MIKROTIK_FWD("@", "8.8.8.8", {match_subdomain: "true", address_list: "vpn-list"}),
+
+    // Forward internal.example.com to a named forwarder entry.
+    MIKROTIK_FWD("internal", "corp-dns", {match_subdomain: "true"}),
 );
 ```
 {% endcode %}

@@ -7,9 +7,9 @@ This DNS provider manages DNS static entries on a MikroTik RouterOS device via i
 - `dnscontrol get-zones` is supported. Zones are auto-detected by grouping record names by their effective domain suffix.
 - Supported record types: `A`, `AAAA`, `CNAME`, `MX`, `NS`, `SRV`, `TXT`
 - Custom record types:
-  - `MIKROTIK_FWD` — RouterOS FWD entries for conditional DNS forwarding with address list population.
-  - `MIKROTIK_NXDOMAIN` — RouterOS NXDOMAIN entries (respond with NXDOMAIN for matching queries).
-  - `MIKROTIK_FORWARDER` — RouterOS DNS forwarder entries (managed via the synthetic `_forwarders.mikrotik` zone).
+  - [`MIKROTIK_FWD`](../language-reference/domain-modifiers/MIKROTIK_FWD.md) — RouterOS FWD entries for conditional DNS forwarding with address list population.
+  - [`MIKROTIK_NXDOMAIN`](../language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md) — RouterOS NXDOMAIN entries (respond with NXDOMAIN for matching queries).
+  - [`MIKROTIK_FORWARDER`](../language-reference/domain-modifiers/MIKROTIK_FORWARDER.md) — RouterOS DNS forwarder entries (managed via the synthetic `_forwarders.mikrotik` zone).
 
 ## Configuration
 
@@ -55,46 +55,58 @@ All record types support the following metadata keys:
 | `address_list`    | string | RouterOS address list to populate with resolved addresses.         |
 | `comment`         | string | Comment stored on the RouterOS record.                             |
 
-### MIKROTIK_FWD
+### [`MIKROTIK_FWD`](../language-reference/domain-modifiers/MIKROTIK_FWD.md)
 
-Forward DNS queries to a specified server. Commonly used for conditional forwarding with address list population.
+Forward DNS queries to a specified upstream server. The target can be an IP address or the name of a [`MIKROTIK_FORWARDER`](../language-reference/domain-modifiers/MIKROTIK_FORWARDER.md) entry. Commonly used for conditional forwarding with address list population.
 
 ```javascript
 MIKROTIK_FWD("@", "8.8.8.8", {match_subdomain: "true", address_list: "vpn-list"})
+MIKROTIK_FWD("@", "my-upstream", {match_subdomain: "true"})  // reference a forwarder by name
 ```
 
-### MIKROTIK_NXDOMAIN
+### [`MIKROTIK_NXDOMAIN`](../language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
 
-Return NXDOMAIN for matching queries.
+Return NXDOMAIN for matching queries. Used for DNS-based blocking (e.g. ad blocking).
 
 ```javascript
-MIKROTIK_NXDOMAIN("ads.example.com", "")
+MIKROTIK_NXDOMAIN("ads"),                                  // block ads.example.com
+MIKROTIK_NXDOMAIN("tracking", {match_subdomain: "true"}),   // block tracking.example.com and all subdomains
 ```
 
-### MIKROTIK_FORWARDER
+### [`MIKROTIK_FORWARDER`](../language-reference/domain-modifiers/MIKROTIK_FORWARDER.md)
 
-Manage RouterOS DNS forwarder entries via the synthetic `_forwarders.mikrotik` zone.
+Manage RouterOS DNS forwarder entries via the synthetic `_forwarders.mikrotik` zone. The name can be a domain name or an arbitrary alias.
+
 Additional metadata keys for forwarders:
 
 | Key                | Type   | Description                                        |
 |--------------------|--------|----------------------------------------------------|
 | `doh_servers`      | string | DoH server URLs for this forwarder.                |
 | `verify_doh_cert`  | string | Set to `"true"` to verify DoH certificate.         |
+| `comment`          | string | Comment stored on the RouterOS forwarder entry.    |
 
 ```javascript
 D("_forwarders.mikrotik", REG_CHANGEME,
   DnsProvider(DSP_MIKROTIK),
-  MIKROTIK_FORWARDER("example.com", "1.1.1.1")
+  MIKROTIK_FORWARDER("corp.example.com", "10.0.0.53,10.0.0.54"),
+  MIKROTIK_FORWARDER("my-upstream", "1.1.1.1"),  // arbitrary alias
 )
 ```
 
-**Important:** `MIKROTIK_FWD` records can reference forwarder entries by name (e.g. `MIKROTIK_FWD("@", "my-forwarder", ...)`). When using named forwarders, the `_forwarders.mikrotik` zone must appear **before** any zones that reference its entries in your `dnsconfig.js`. This ensures forwarder entries are created before the FWD records that depend on them. The `get-zones` command automatically outputs `_forwarders.mikrotik` first.
+**Important:** `MIKROTIK_FWD` records can reference forwarder entries by name (e.g. `MIKROTIK_FWD("@", "my-upstream", ...)`). When using named forwarders, the `_forwarders.mikrotik` zone must appear **before** any zones that reference its entries in your `dnsconfig.js`. This ensures forwarder entries are created before the FWD records that depend on them. The `get-zones` command automatically outputs `_forwarders.mikrotik` first.
 
 ## Usage
 
 ```javascript
 var DSP_MIKROTIK = NewDnsProvider("mikrotik", "MIKROTIK");
 var REG_CHANGEME = NewRegistrar("none");
+
+// Define forwarders first so they exist before being referenced.
+D("_forwarders.mikrotik", REG_CHANGEME,
+  DnsProvider(DSP_MIKROTIK),
+  MIKROTIK_FORWARDER("corp.internal", "10.0.0.53,10.0.0.54"),
+  MIKROTIK_FORWARDER("doh-upstream", "1.1.1.1", {doh_servers: "https://cloudflare-dns.com/dns-query", verify_doh_cert: "true"}),
+)
 
 D("example.com", REG_CHANGEME,
   {no_ns: "true"},
@@ -103,7 +115,9 @@ D("example.com", REG_CHANGEME,
   AAAA("www", "2001:db8::1"),
   CNAME("blog", "www.example.com."),
   MX("@", 10, "mail.example.com."),
-  MIKROTIK_FWD("@", "8.8.8.8", {match_subdomain: "true", address_list: "vpn-list"})
+  MIKROTIK_FWD("@", "doh-upstream", {match_subdomain: "true", address_list: "vpn-list"}),
+  MIKROTIK_FWD("internal", "corp.internal", {match_subdomain: "true"}),
+  MIKROTIK_NXDOMAIN("ads", {match_subdomain: "true"}),
 )
 ```
 
