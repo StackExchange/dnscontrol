@@ -1,51 +1,51 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "uniquename": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
       "meta": {
         "dnscontrol_nameraw": "foo.com",
         "dnscontrol_nameunicode": "foo.com",
         "dnscontrol_uniquename": "foo.com"
       },
+      "name": "foo.com",
       "records": [
         {
-          "type": "MIKROTIK_FWD",
-          "ttl": 300,
-          "name": "@",
+          "filepos": "[line:2:5]",
           "meta": {
             "address_list": "vpn-list",
             "match_subdomain": "true",
             "orig_custom_type": "MIKROTIK_FWD"
           },
-          "filepos": "[line:2:5]",
-          "target": "8.8.8.8"
+          "name": "@",
+          "target": "8.8.8.8",
+          "ttl": 300,
+          "type": "MIKROTIK_FWD"
         },
         {
-          "type": "MIKROTIK_NXDOMAIN",
-          "ttl": 300,
-          "name": "blocked",
+          "filepos": "[line:3:5]",
           "meta": {
             "orig_custom_type": "MIKROTIK_NXDOMAIN"
           },
-          "filepos": "[line:3:5]",
-          "target": "NXDOMAIN"
+          "name": "blocked",
+          "target": "NXDOMAIN",
+          "ttl": 300,
+          "type": "MIKROTIK_NXDOMAIN"
         },
         {
-          "type": "MIKROTIK_FORWARDER",
-          "ttl": 300,
-          "name": "corp.example.com",
+          "filepos": "[line:4:5]",
           "meta": {
             "orig_custom_type": "MIKROTIK_FORWARDER"
           },
-          "filepos": "[line:4:5]",
-          "target": "10.0.0.53"
+          "name": "corp.example.com",
+          "target": "10.0.0.53",
+          "ttl": 300,
+          "type": "MIKROTIK_FORWARDER"
         }
-      ]
+      ],
+      "registrar": "none",
+      "uniquename": "foo.com"
     }
-  ]
+  ],
+  "registrars": []
 }
