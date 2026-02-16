@@ -53,6 +53,7 @@ Currently supported DNS providers:
 - Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
+- MikroTik RouterOS
 - Mythic Beasts
 - Name.com
 - Namecheap

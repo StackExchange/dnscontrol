@@ -254,6 +254,13 @@
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
   },
+  "MIKROTIK": {
+    "TYPE": "MIKROTIK",
+    "domain": "$MIKROTIK_DOMAIN",
+    "host": "$MIKROTIK_HOST",
+    "password": "$MIKROTIK_PASSWORD",
+    "username": "$MIKROTIK_USERNAME"
+  },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
     "domain": "$MYTHICBEASTS_DOMAIN",

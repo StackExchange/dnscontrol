@@ -155,6 +155,7 @@
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
+* [MikroTik RouterOS](provider/mikrotik.md)
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)

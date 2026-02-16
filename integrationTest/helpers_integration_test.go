@@ -439,6 +439,14 @@ func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func mikrotikFwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "MIKROTIK_FWD")
+}
+
+func mikrotikNxdomain(name string) *models.RecordConfig {
+	return makeRec(name, "NXDOMAIN", "MIKROTIK_NXDOMAIN")
+}
+
 func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
