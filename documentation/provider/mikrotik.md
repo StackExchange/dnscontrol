@@ -88,6 +88,8 @@ D("_forwarders.mikrotik", REG_CHANGEME,
 )
 ```
 
+**Important:** `MIKROTIK_FWD` records can reference forwarder entries by name (e.g. `MIKROTIK_FWD("@", "my-forwarder", ...)`). When using named forwarders, the `_forwarders.mikrotik` zone must appear **before** any zones that reference its entries in your `dnsconfig.js`. This ensures forwarder entries are created before the FWD records that depend on them. The `get-zones` command automatically outputs `_forwarders.mikrotik` first.
+
 ## Usage
 
 ```javascript
@@ -138,6 +140,7 @@ For read-only preview, use `group=read`.
 ## Caveats
 
 - **No native zone concept.** Zones are inferred from record names. Use `zonehints` for multi-label private zones.
+- **Forwarder ordering.** If `MIKROTIK_FWD` records reference forwarder entries by name, the `_forwarders.mikrotik` zone must be defined before those zones in `dnsconfig.js`.
 - **MX records with target `.` (null MX) are rejected** by the audit system.
 - **Dynamic and disabled records are ignored** during zone enumeration and record fetching.
 - **TTL values** are stored in RouterOS duration format (e.g. `1d`, `1h30m`) and converted automatically.

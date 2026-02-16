@@ -138,16 +138,19 @@ func (p *mikrotikProvider) ListZones() ([]string, error) {
 	}
 
 	zones := make([]string, 0, len(seen)+1)
-	for z := range seen {
-		zones = append(zones, z)
-	}
-	sort.Strings(zones)
 
-	// Append the synthetic forwarder zone if any forwarders exist.
+	// Prepend the synthetic forwarder zone so that get-zones outputs it
+	// before regular zones. This ensures forwarder entries (referenced by
+	// name in MIKROTIK_FWD targets) are created before the zones that use them.
 	fwds, err := p.getAllForwarders()
 	if err == nil && len(fwds) > 0 {
 		zones = append(zones, ForwarderZone)
 	}
+
+	for z := range seen {
+		zones = append(zones, z)
+	}
+	sort.Strings(zones[len(zones)-len(seen):]) // sort only the regular zones
 
 	return zones, nil
 }

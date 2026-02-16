@@ -1362,10 +1362,6 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// NOTE: MIKROTIK_FORWARDER records live in the synthetic zone
-		// "_forwarders.mikrotik" and cannot be tested through the standard
-		// integration test framework which operates on a single real domain.
-
 		// VERCEL features(?)
 
 		// Turns out that Vercel does support whitespace in the CAA record,
