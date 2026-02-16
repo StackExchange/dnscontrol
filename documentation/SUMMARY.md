@@ -100,6 +100,10 @@
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
+        * MikroTik RouterOS
+            * [MIKROTIK_FORWARDER](language-reference/domain-modifiers/MIKROTIK_FORWARDER.md)
+            * [MIKROTIK_FWD](language-reference/domain-modifiers/MIKROTIK_FWD.md)
+            * [MIKROTIK_NXDOMAIN](language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
         * PowerDNS
             * [LUA](language-reference/domain-modifiers/LUA.md)     
 * Record Modifiers

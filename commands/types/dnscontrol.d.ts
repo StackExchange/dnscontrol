@@ -2422,6 +2422,71 @@ declare function LUA(name: string, rtype: string, contents: string | string[], .
 declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): DomainModifier;
 
 /**
+ * `MIKROTIK_FORWARDER` manages a RouterOS DNS forwarder entry (`/ip/dns/forwarders`). These are named forwarding configurations that can be referenced by `MIKROTIK_FWD` records.
+ *
+ * Forwarder records must be placed in the synthetic zone `_forwarders.mikrotik`. This zone should appear **before** any zones that reference its entries by name in `dnsconfig.js` to ensure proper creation order.
+ *
+ * Metadata keys supported:
+ *
+ * | Key                | Description                                        |
+ * |--------------------|----------------------------------------------------|
+ * | `doh_servers`      | DoH server URLs for this forwarder.                |
+ * | `verify_doh_cert`  | Set to `"true"` to verify the DoH certificate.     |
+ *
+ * ```javascript
+ * D("_forwarders.mikrotik", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     MIKROTIK_FORWARDER("corp.example.com", "10.0.0.53,10.0.0.54"),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//mikrotik_forwarder
+ */
+declare function MIKROTIK_FORWARDER(name: string, dns_servers: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `MIKROTIK_FWD` creates a RouterOS FWD (conditional DNS forwarding) static entry. These records instruct the MikroTik router to forward DNS queries matching the name to a specified upstream server, optionally populating a RouterOS address list with resolved addresses.
+ *
+ * Metadata keys supported:
+ *
+ * | Key               | Description                                                        |
+ * |-------------------|--------------------------------------------------------------------|
+ * | `match_subdomain` | Set to `"true"` to also match subdomains of the name.              |
+ * | `regexp`          | RouterOS regexp for query matching.                                |
+ * | `address_list`    | RouterOS address list to populate with resolved addresses.         |
+ * | `comment`         | Comment stored on the RouterOS record.                             |
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     MIKROTIK_FWD("@", "8.8.8.8", {match_subdomain: "true", address_list: "vpn-list"}),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//mikrotik_fwd
+ */
+declare function MIKROTIK_FWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `MIKROTIK_NXDOMAIN` creates a RouterOS NXDOMAIN static entry. The router will respond with NXDOMAIN for any DNS queries matching the specified name. This is commonly used for DNS-based ad blocking or blackholing.
+ *
+ * Metadata keys supported:
+ *
+ * | Key               | Description                                                        |
+ * |-------------------|--------------------------------------------------------------------|
+ * | `match_subdomain` | Set to `"true"` to also match subdomains of the name.              |
+ * | `regexp`          | RouterOS regexp for query matching.                                |
+ * | `comment`         | Comment stored on the RouterOS record.                             |
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *     MIKROTIK_NXDOMAIN("ads"),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific//mikrotik_nxdomain
+ */
+declare function MIKROTIK_NXDOMAIN(name: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `MX` adds a [Mail exchange record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
  *
  * Priority should be a number.

@@ -1,0 +1,33 @@
+---
+name: MIKROTIK_FWD
+parameters:
+  - name
+  - target
+  - modifiers...
+parameter_types:
+  name: string
+  target: string
+  "modifiers...": RecordModifier[]
+provider: MIKROTIK
+---
+
+`MIKROTIK_FWD` creates a RouterOS FWD (conditional DNS forwarding) static entry. These records instruct the MikroTik router to forward DNS queries matching the name to a specified upstream server, optionally populating a RouterOS address list with resolved addresses.
+
+The `target` can be an IP address (e.g. `8.8.8.8`) or the name of a [`MIKROTIK_FORWARDER`](MIKROTIK_FORWARDER.md) entry (e.g. `my-upstream`).
+
+Metadata keys supported:
+
+| Key               | Description                                                        |
+|-------------------|--------------------------------------------------------------------|
+| `match_subdomain` | Set to `"true"` to also match subdomains of the name.              |
+| `regexp`          | RouterOS regexp for query matching.                                |
+| `address_list`    | RouterOS address list to populate with resolved addresses.         |
+| `comment`         | Comment stored on the RouterOS record.                             |
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+    MIKROTIK_FWD("@", "8.8.8.8", {match_subdomain: "true", address_list: "vpn-list"}),
+);
+```
+{% endcode %}
