@@ -93,7 +93,7 @@ func newMikrotikProvider(cfg map[string]string, _ json.RawMessage) (providers.DN
 	// Optional comma-separated list of zones to help ListZones() identify
 	// zones with 3+ labels (e.g. "internal.corp.local,home.arpa").
 	if hints := cfg["zonehints"]; hints != "" {
-		for _, h := range strings.Split(hints, ",") {
+		for h := range strings.SplitSeq(hints, ",") {
 			h = strings.TrimSpace(h)
 			if h != "" {
 				p.zoneHints = append(p.zoneHints, h)

@@ -447,10 +447,6 @@ func mikrotikNxdomain(name string) *models.RecordConfig {
 	return makeRec(name, "NXDOMAIN", "MIKROTIK_NXDOMAIN")
 }
 
-func mikrotikForwarder(name, target string) *models.RecordConfig {
-	return makeRec(name, target, "MIKROTIK_FORWARDER")
-}
-
 func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }

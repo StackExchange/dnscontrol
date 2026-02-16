@@ -215,9 +215,9 @@ func parseMikrotikDuration(s string) (uint32, error) {
 			total += uint32(d) * 86400
 		}
 		h, _ := strconv.ParseUint(m[2], 10, 32)
-		min, _ := strconv.ParseUint(m[3], 10, 32)
+		minute, _ := strconv.ParseUint(m[3], 10, 32)
 		sec, _ := strconv.ParseUint(m[4], 10, 32)
-		total += uint32(h)*3600 + uint32(min)*60 + uint32(sec)
+		total += uint32(h)*3600 + uint32(minute)*60 + uint32(sec)
 		return total, nil
 	}
 
@@ -281,9 +281,9 @@ func formatMikrotikDuration(seconds uint32) string {
 }
 
 var (
-	// Matches "1d00:00:00" or "00:00:00" format
+	// Matches "1d00:00:00" or "00:00:00" format.
 	reDurationHMS = regexp.MustCompile(`^(?:(\d+)d)?(\d{1,2}):(\d{2}):(\d{2})$`)
-	// Matches "1w2d3h4m5s" component format (each part optional but at least one required)
+	// Matches "1w2d3h4m5s" component format (each part optional but at least one required).
 	reDurationComponents = regexp.MustCompile(`^(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$`)
 )
 
