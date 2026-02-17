@@ -41,9 +41,9 @@ Example:
 
 #### AKAMAICDN
 
-The AKAMAICDN target must be an Edge Hostname preconfigured in your Akamai account. 
+The AKAMAICDN target must be an Edge Hostname preconfigured in your Akamai account.
 
-The AKAMAICDN record must have a TTL of 20 seconds. Note that `dnscontrol preview` will not flag an incorrect TTL as an error; the TTL mismatches are only caught during `dnscontrol push`. 
+The AKAMAICDN record must have a TTL of 20 seconds. Note that `dnscontrol preview` will not flag an incorrect TTL as an error; the TTL mismatches are only caught during `dnscontrol push`.
 
 The AKAMAICDN record may only be used at the zone apex (`@`) if an AKAMAITLC record hasn't been used.
 
@@ -54,7 +54,7 @@ The AKAMAITLC record can only be used at the zone apex (`@`).
 The AKAMAITLC record can only be used once per zone.
 
 #### ALIAS
-Akamai Edge DNS does directly support `ALIAS` records. This provider will convert `ALIAS` records used at the 
+Akamai Edge DNS does directly support `ALIAS` records. This provider will convert `ALIAS` records used at the
 zone apex (`@`) to `AKAMAITLC` records, and any other names to `CNAME` records.
 
 ### Secondary zones
@@ -203,7 +203,7 @@ In the above example since, the zone `example.com` did not exist, running `dnsco
 ```shell
 dnscontrol push
 ```
-Use `dnscontrol push` to create a new zone or update an existing zone. 
+Use `dnscontrol push` to create a new zone or update an existing zone.
 
 #### Creating a New Zone
 
@@ -355,9 +355,5 @@ Created zone: example_3.com
   ContractId: X-XXXXXX
   GroupId: NNNNN
 ```
-
-
-
-
 
 

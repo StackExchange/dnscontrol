@@ -105,13 +105,13 @@
             * [MIKROTIK_FWD](language-reference/domain-modifiers/MIKROTIK_FWD.md)
             * [MIKROTIK_NXDOMAIN](language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
         * PowerDNS
-            * [LUA](language-reference/domain-modifiers/LUA.md)     
+            * [LUA](language-reference/domain-modifiers/LUA.md)
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
-            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md)
+            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53_EVALUATE_TARGET_HEALTH.md)
 * [Why CNAME/MX/NS targets require a "dot"](language-reference/why-the-dot.md)
 
 ## Provider
