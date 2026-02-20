@@ -74,7 +74,7 @@ See [PowerDNS documentation on Views](https://doc.powerdns.com/authoritative/vie
 ## Caveats
 
 ### SOA Records
-SOA-support was implemented in version 4.16. Versions earlier than that (e.g., 4.15 and earlier) do not support SOA records and will raise an error if they are present in dnscontrol. However, version 4.16 _requires_ SOA-records to be present in dnscontrol, since dnscontrol will synchronize SOA records as any normal records to PowerDNS (as PowerDNS handles SOA as any other record), and thus remove them if not present in dnscontrol. See below for tips how to handle this.
+SOA-support was implemented in version 4.16. Versions earlier than that (e.g., 4.15 and earlier) do not support SOA records and will raise an error if they are present in DNSControl. However, version 4.16 _requires_ SOA-records to be present in DNSControl, since DNSControl will synchronize SOA records as any normal records to PowerDNS (as PowerDNS handles SOA as any other record), and thus remove them if not present in DNSControl. See below for tips how to handle this.
 
 In version later than 4.16+ the SOA record is supported for use, but behavior is slightly different than expected.
 If the SOA record is used, [PowerDNS will not increase the serial](https://doc.powerdns.com/authoritative/dnsupdate.html#soa-serial-updates) if the SOA record content changes.
