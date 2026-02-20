@@ -91,7 +91,6 @@ If you have a large number of zones it might be useful to handle this via built-
 
 {% code title="dnsconfig.js" %}
 ```javascript
-// Add to bottom of dnsconfig.js or similar
 
 // Default SOA
 var SOA_DEFAULT = [
