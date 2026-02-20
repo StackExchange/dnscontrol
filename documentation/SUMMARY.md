@@ -112,6 +112,10 @@
         * Amazon Route 53
             * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
             * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53_EVALUATE_TARGET_HEALTH.md)
+        * Hurricane Electric DNS
+            * [HEDNS_DYNAMIC_ON](language-reference/record-modifiers/HEDNS_DYNAMIC_ON.md)
+            * [HEDNS_DYNAMIC_OFF](language-reference/record-modifiers/HEDNS_DYNAMIC_OFF.md)
+            * [HEDNS_DDNS_KEY](language-reference/record-modifiers/HEDNS_DDNS_KEY.md)
 * [Why CNAME/MX/NS targets require a "dot"](language-reference/why-the-dot.md)
 
 ## Provider

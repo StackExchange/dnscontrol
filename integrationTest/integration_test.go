@@ -2082,6 +2082,88 @@ func makeTests() []*TestGroup {
 			tc("Change PZ", bunnyPullZone("@", "5269992")),
 		),
 
+		// HEDNS: Dynamic DNS
+
+		testgroup("HEDNS_DYNAMIC A create on",
+			only("HEDNS"),
+			tc("Create dynamic A", hednsDynamicA("hdyn", "1.2.3.4", "on")),
+			tc("Change target preserves dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+		),
+
+		testgroup("HEDNS_DYNAMIC A on to off",
+			only("HEDNS"),
+			HednsDynamicOn(), HednsDynamicOff(),
+		),
+
+		testgroup("HEDNS_DYNAMIC A off to on",
+			only("HEDNS"),
+			HednsDynamicOff(), HednsDynamicOn(),
+		),
+
+		testgroup("HEDNS_DYNAMIC A create off",
+			only("HEDNS"),
+			tc("Create non-dynamic A", hednsDynamicA("hstatic", "1.2.3.4", "off")),
+		),
+
+		testgroup("HEDNS_DYNAMIC AAAA",
+			only("HEDNS"),
+			tc("Create dynamic AAAA", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2006", "on")),
+			tc("Change dynamic AAAA target", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2013", "on")),
+		),
+
+		testgroup("HEDNS_DYNAMIC TXT",
+			only("HEDNS"),
+			tc("Create dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "on")),
+			tc("Turn off dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "off")),
+		),
+
+		testgroup("HEDNS_DYNAMIC inherits on modify",
+			only("HEDNS"),
+			// Start with a dynamic A record. Then change only the target
+			// without specifying hedns_dynamic — it should stay dynamic.
+			tc("Create dynamic A", hednsDynamicA("hpersist", "10.0.0.1", "on")),
+			tc("Change target, inherit dynamic", a("hpersist", "10.0.0.2")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY set",
+			only("HEDNS"),
+			tc("Create A with DDNS key", hednsDdnsKeyA("hkeytest", "1.2.3.4", "initialkey")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY update",
+			only("HEDNS"),
+			tc("Create A with key", hednsDdnsKeyA("hkeyupd", "1.2.3.4", "key1")),
+			tc("Change target + DDNS key", hednsDdnsKeyA("hkeyupd", "5.6.7.8", "key2")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY implicit dynamic",
+			only("HEDNS"),
+			// Setting a DDNS key should implicitly enable dynamic DNS.
+			HednsDynamicImplicit(),
+		),
+
+		testgroup("HEDNS_DDNS_KEY AAAA",
+			only("HEDNS"),
+			tc("Create AAAA with DDNS key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2006", "v6key")),
+			tc("Change AAAA target + DDNS key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2013", "newv6key")),
+		),
+
+		testgroup("HEDNS_DYNAMIC mixed records",
+			only("HEDNS"),
+			tc("Create mix of dynamic and static",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "2.2.2.2"),
+			),
+			tc("Modify only the static record",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "3.3.3.3"),
+			),
+			tc("Modify only the dynamic record",
+				hednsDynamicA("hdmix-dyn", "4.4.4.4", "on"),
+				a("hdmix-static", "3.3.3.3"),
+			),
+		),
+
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),

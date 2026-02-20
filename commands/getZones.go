@@ -340,25 +340,32 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				cfmeta := ""
+				providerMeta := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
-						cfmeta += ",cloudflare_proxy=true"
+						providerMeta += ",cloudflare_proxy=true"
 					}
 				}
 				if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
 					if cf == "on" {
-						cfmeta += ",cloudflare_cname_flatten=on"
+						providerMeta += ",cloudflare_cname_flatten=on"
 					}
 				}
 				if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
-					cfmeta += ",cloudflare_comment=" + comment
+					providerMeta += ",cloudflare_comment=" + comment
 				}
 				if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
-					cfmeta += ",cloudflare_tags=" + tags
+					providerMeta += ",cloudflare_tags=" + tags
 				}
-				if cfmeta != "" {
-					cfmeta = "\t" + cfmeta[1:] // Remove leading comma, add tab
+				// HEDNS metadata
+				if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+					providerMeta += ",hedns_dynamic=on"
+					if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+						providerMeta += ",hedns_ddns_key=" + key
+					}
+				}
+				if providerMeta != "" {
+					providerMeta = "\t" + providerMeta[1:] // Remove leading comma, add tab
 				}
 
 				ty := rec.Type
@@ -366,7 +373,7 @@ func GetZone(args GetZoneArgs) error {
 					ty = rec.UnknownTypeName
 				}
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfmeta)
+					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), providerMeta)
 			}
 
 		default:
@@ -447,6 +454,16 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		}
 	}
 
+	// HEDNS metadata
+	hednsDynamic := ""
+	if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+		hednsDynamic = ", HEDNS_DYNAMIC_ON"
+		if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+			// HEDNS_DDNS_KEY implies dynamic, so use it instead.
+			hednsDynamic = fmt.Sprintf(", HEDNS_DDNS_KEY(%s)", jsonQuoted(key))
+		}
+	}
+
 	switch rec.Type { // #rtype_variations
 	case "CAA":
 		return makeCaa(rec, ttlop)
@@ -519,7 +536,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, mtmeta, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, mtmeta, hednsDynamic, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {
