@@ -301,11 +301,11 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 
 	// Include hedns_dynamic in the comparison so that toggling dynamic
 	// on/off (even without a target change) is detected as a change.
+	// Only emit for "on" — "off" is the default and omitting it keeps
+	// diff output clean for records that don't use Dynamic DNS.
 	comparableFunc := func(rec *models.RecordConfig) string {
-		if rec.Metadata != nil {
-			if v := rec.Metadata[metaDynamic]; v != "" {
-				return metaDynamic + "=" + v
-			}
+		if rec.Metadata != nil && rec.Metadata[metaDynamic] == "on" {
+			return metaDynamic + "=on"
 		}
 		return ""
 	}
