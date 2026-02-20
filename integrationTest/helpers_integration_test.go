@@ -34,16 +34,6 @@ var globalDCN *domaintags.DomainNameVarieties
 
 // Helper constants/funcs for the HEDNS Dynamic DNS testing:
 
-func HednsDynamicOn() *TestCase {
-	return tc("dynamic_on", hednsDynamicA("hdyn", "10.10.10.10", "on"))
-}
-func HednsDynamicOff() *TestCase {
-	return tc("dynamic_off", hednsDynamicA("hdyn", "10.10.10.10", "off"))
-}
-func HednsDynamicImplicit() *TestCase {
-	return tc("dynamic_implicit", hednsDdnsKeyA("hdyn", "10.10.10.10", "testkey123"))
-}
-
 func hednsDynamicA(name, target, status string) *models.RecordConfig {
 	r := a(name, target)
 	r.Metadata = make(map[string]string)
