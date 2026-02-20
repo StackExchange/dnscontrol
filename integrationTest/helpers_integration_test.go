@@ -32,6 +32,45 @@ var (
 // Global variable to hold the current DomainConfig	for use in FromRaw calls.
 var globalDCN *domaintags.DomainNameVarieties
 
+// Helper constants/funcs for the HEDNS Dynamic DNS testing:
+
+func hednsDynamicA(name, target, status string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
+func hednsDdnsKeyA(name, target, key string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = "on"
+	r.Metadata["hedns_ddns_key"] = key
+	return r
+}
+
+func hednsDynamicAAAA(name, target, status string) *models.RecordConfig {
+	r := aaaa(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
+func hednsDdnsKeyAAAA(name, target, key string) *models.RecordConfig {
+	r := aaaa(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = "on"
+	r.Metadata["hedns_ddns_key"] = key
+	return r
+}
+
+func hednsDynamicTXT(name, target, status string) *models.RecordConfig {
+	r := txt(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
 // A-record proxy off/on.

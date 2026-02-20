@@ -23,7 +23,7 @@
           "type": "MIKROTIK_FWD"
         },
         {
-          "filepos": "[line:3:5]",
+          "filepos": "[line:6:5]",
           "meta": {
             "orig_custom_type": "MIKROTIK_NXDOMAIN"
           },
@@ -33,7 +33,7 @@
           "type": "MIKROTIK_NXDOMAIN"
         },
         {
-          "filepos": "[line:4:5]",
+          "filepos": "[line:7:5]",
           "meta": {
             "orig_custom_type": "MIKROTIK_FORWARDER"
           },

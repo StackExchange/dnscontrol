@@ -1479,6 +1479,17 @@ var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: 'true' };
 // Enable tag management for domain (opt-in to sync tags, requires paid plan):
 var CF_MANAGE_TAGS = { cloudflare_manage_tags: 'true' };
 
+// Hurricane Electric DNS (HEDNS) aliases:
+
+// Enable Dynamic DNS on a record (preserves existing DDNS key):
+var HEDNS_DYNAMIC_ON = { hedns_dynamic: 'on' };
+// Disable Dynamic DNS on a record (WARNING: clears the associated DDNS key):
+var HEDNS_DYNAMIC_OFF = { hedns_dynamic: 'off' };
+// Set a specific DDNS key on a dynamic record (implies HEDNS_DYNAMIC_ON):
+function HEDNS_DDNS_KEY(key) {
+    return { hedns_dynamic: 'on', hedns_ddns_key: key };
+}
+
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
 function _validateCloudflareRedirect(value) {

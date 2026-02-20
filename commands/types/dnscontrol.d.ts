@@ -1397,6 +1397,57 @@ declare function FRAME(name: string, target: string, ...modifiers: RecordModifie
 declare function HASH(algorithm: "SHA1" | "SHA256" | "SHA512", value: string): string;
 
 /**
+ * `HEDNS_DDNS_KEY` enables Dynamic DNS on a record managed by the Hurricane Electric DNS provider and sets a specific DDNS key (token). This implies [`HEDNS_DYNAMIC_ON`](HEDNS_DYNAMIC_ON.md).
+ *
+ * The DDNS key can then be used with the HE DDNS update API (`https://dyn.dns.he.net/nic/update`) to update the record's value.
+ *
+ * **Note:** DDNS keys are **write-only**. dnscontrol sets the key on the provider but cannot read back the current key. This means a key-only change (same record data, new key) will not be detected as a difference. To force an update, also change another field such as the TTL.
+ *
+ * ```javascript
+ * D("example.com", REG_NONE, DnsProvider(DSP_HEDNS),
+ *     A("dyn", "0.0.0.0", HEDNS_DDNS_KEY("my-secret-token")),
+ *     AAAA("dyn6", "::1", HEDNS_DDNS_KEY("another-token")),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific//hedns_ddns_key
+ */
+declare function HEDNS_DDNS_KEY(key: string): RecordModifier;
+
+/**
+ * `HEDNS_DYNAMIC_OFF` explicitly disables Dynamic DNS on a record managed by the Hurricane Electric DNS provider. This will clear any DDNS key previously associated with the record.
+ *
+ * Use this modifier when you want to ensure a record that was previously dynamic is returned to a static state.
+ *
+ * ```javascript
+ * D("example.com", REG_NONE, DnsProvider(DSP_HEDNS),
+ *     A("static", "5.6.7.8", HEDNS_DYNAMIC_OFF),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific//hedns_dynamic_off
+ */
+declare const HEDNS_DYNAMIC_OFF: RecordModifier;
+
+/**
+ * `HEDNS_DYNAMIC_ON` enables [Dynamic DNS](https://dns.he.net/) on a record managed by the Hurricane Electric DNS provider. When enabled, HE DNS assigns a DDNS key to the record that can be used with the HE DDNS update API (`https://dyn.dns.he.net/nic/update`).
+ *
+ * If a record is already dynamic, its dynamic state is preserved across modifications even without explicitly specifying this modifier.
+ *
+ * To set a specific DDNS key, use [`HEDNS_DDNS_KEY()`](HEDNS_DDNS_KEY.md) instead.
+ *
+ * ```javascript
+ * D("example.com", REG_NONE, DnsProvider(DSP_HEDNS),
+ *     A("dyn", "0.0.0.0", HEDNS_DYNAMIC_ON),
+ *     AAAA("dyn6", "::1", HEDNS_DYNAMIC_ON),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific//hedns_dynamic_on
+ */
+declare const HEDNS_DYNAMIC_ON: RecordModifier;
+
+/**
  * HTTPS adds an HTTPS record to a domain. The name should be the relative label for the record. Use `@` for the domain apex. The HTTPS record is a special form of the SVCB resource record.
  *
  * The priority must be a positive number, the address should be an ip address, either a string, or a numeric value obtained via [IP](../top-level-functions/IP.md).

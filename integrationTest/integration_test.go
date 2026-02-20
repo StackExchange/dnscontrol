@@ -2082,6 +2082,53 @@ func makeTests() []*TestGroup {
 			tc("Change PZ", bunnyPullZone("@", "5269992")),
 		),
 
+		// HEDNS: Dynamic DNS
+
+		testgroup("HEDNS_DYNAMIC A lifecycle",
+			only("HEDNS"),
+			// Create a dynamic A record and verify target changes preserve the flag.
+			tc("Create dynamic A", hednsDynamicA("hdyn", "1.2.3.4", "on")),
+			tc("Change target preserves dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Toggle dynamic off, then back on.
+			tc("Turn off dynamic", hednsDynamicA("hdyn", "5.6.7.8", "off")),
+			tc("Turn on dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Change target without specifying hedns_dynamic — it should stay dynamic.
+			tc("Inherit dynamic on modify", a("hdyn", "10.0.0.1")),
+			// Create a non-dynamic record alongside.
+			tc("Add static record", a("hdyn", "10.0.0.1"), a("hstatic", "2.2.2.2")),
+		),
+
+		testgroup("HEDNS_DYNAMIC AAAA+TXT",
+			only("HEDNS"),
+			tc("Create dynamic AAAA", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2006", "on")),
+			tc("Change dynamic AAAA target", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2013", "on")),
+			tc("Create dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "on")),
+			tc("Turn off dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "off")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY",
+			only("HEDNS"),
+			// Setting a DDNS key implicitly enables dynamic.
+			tc("Create A with DDNS key (implicit dynamic)", hednsDdnsKeyA("hkey", "1.2.3.4", "key1")),
+			// Change target and key together.
+			tc("Change target + key", hednsDdnsKeyA("hkey", "5.6.7.8", "key2")),
+			// AAAA with DDNS key.
+			tc("Create AAAA with DDNS key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2006", "v6key")),
+			tc("Change AAAA target + key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2013", "newv6key")),
+		),
+
+		testgroup("HEDNS_DYNAMIC mixed records",
+			only("HEDNS"),
+			tc("Create mix of dynamic and static",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "2.2.2.2"),
+			),
+			tc("Modify only the static record",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "3.3.3.3"),
+			),
+		),
+
 		// This MUST be the last test.
 		testgroup("final",
 			tc("final", txt("final", `TestDNSProviders was successful!`)),
