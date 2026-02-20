@@ -346,7 +346,7 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 						return err
 					}
 					if ddnsKey != "" {
-						return c.setRecordDDNSKey(zoneID, oldRecord.RecordID, ddnsKey)
+						return c.setRecordDDNSKey(zoneID, oldRecord.RecordName, ddnsKey)
 					}
 					return nil
 				},
@@ -367,20 +367,9 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 	return corrections, actualChangeCount, nil
 }
 
-// setDDNSKeyForNewRecord re-fetches zone records to obtain the newly created
-// record's ID, then sets the DDNS key on it.
+// setDDNSKeyForNewRecord sets the DDNS key on a newly created record.
 func (c *hednsProvider) setDDNSKeyForNewRecord(zoneID uint64, domain string, record *models.RecordConfig, key string) error {
-	records, err := c.GetZoneRecords(domain, nil)
-	if err != nil {
-		return fmt.Errorf("re-fetching records for DDNS key assignment: %w", err)
-	}
-	for _, r := range records {
-		if r.GetLabel() == record.GetLabel() && r.Type == record.Type {
-			orig := r.Original.(Record)
-			return c.setRecordDDNSKey(orig.ZoneID, orig.RecordID, key)
-		}
-	}
-	return fmt.Errorf("could not find newly created record %s %s to set DDNS key", record.Type, record.GetLabel())
+	return c.setRecordDDNSKey(zoneID, record.GetLabelFQDN(), key)
 }
 
 // GetZoneRecords returns all the records for the given domain.
@@ -762,14 +751,18 @@ func (c *hednsProvider) deleteZoneRecord(zoneID uint64, recordID uint64) error {
 }
 
 // setRecordDDNSKey sets the DDNS key for a dynamic record.
-// If key is empty, this will generate a new key.
-func (c *hednsProvider) setRecordDDNSKey(zoneID uint64, recordID uint64, key string) error {
+// The record is identified by its FQDN.
+func (c *hednsProvider) setRecordDDNSKey(zoneID uint64, recordFQDN string, key string) error {
 	values := url.Values{
+		"account":             {},
 		"menu":                {"edit_zone"},
 		"hosted_dns_zoneid":   {strconv.FormatUint(zoneID, 10)},
-		"hosted_dns_recordid": {strconv.FormatUint(recordID, 10)},
+		"hosted_dns_recordid": {},
 		"hosted_dns_editzone": {"1"},
+		"Name":                {recordFQDN},
 		"Key":                 {key},
+		"Key2":                {key},
+		"generate_key":        {"Submit"},
 	}
 
 	response, err := c.httpClient.PostForm(apiEndpoint, values)
