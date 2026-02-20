@@ -224,6 +224,7 @@
 * [DNS records ordering](advanced-features/ordering.md)
 * [How to add a requested provider](developer-info/provider-request.md)
 * [GoReleaser](developer-info/goreleaser.md)
+* [Documentation MCP Server](developer-info/mcp-server.md)
 
 ## Release
 
