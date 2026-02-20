@@ -739,10 +739,10 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 // Compile the error messages returned by DNSimple's API into a single error message.
 func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 	var message strings.Builder
-	message.WriteString(fmt.Sprintf("%d %s", err.HTTPResponse.StatusCode, err.Message))
+	fmt.Fprintf(&message, "%d %s", err.HTTPResponse.StatusCode, err.Message)
 	for field, errors := range err.AttributeErrors {
 		e := strings.Join(errors, "& ")
-		message.WriteString(fmt.Sprintf(": %s %s", field, e))
+		fmt.Fprintf(&message, ": %s %s", field, e)
 	}
 	return errors.New(message.String())
 }
