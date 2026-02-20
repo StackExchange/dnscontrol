@@ -28,8 +28,7 @@ func generateFeatureMatrix() error {
 	}
 
 	for i, tableTitle := range matrix.FeatureTablesTitles {
-		replacementContent.WriteString(fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
-			tableTitle, i+1, len(matrix.FeatureTablesTitles)))
+		fmt.Fprintf(&replacementContent, "\n### %s <!--(table %d/%d)-->\n\n", tableTitle, i+1, len(matrix.FeatureTablesTitles))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err

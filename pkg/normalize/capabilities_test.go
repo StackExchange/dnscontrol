@@ -21,7 +21,11 @@ func TestCapabilitiesAreFiltered(t *testing.T) {
 	// skipCheckCapabilities["CanUseBlahBlahBlah"] = struct{}{}
 
 	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, providersImportDir, nil, 0) //nolint:staticcheck
+	/* FIXME(tlim):
+	pkg/normalize/capabilities_test.go:24:15: SA1019: parser.ParseDir has been deprecated since Go 1.25 and an alternative has been available since Go 1.11: ParseDir does not consider build tags when associating files with packages. For precise information about the relationship between packages and files, use golang.org/x/tools/go/packages, which can also optionally parse and type-check the files too. (staticcheck)
 	pkgs, err := parser.ParseDir(fset, providersImportDir, nil, 0)
+	*/
 	if err != nil {
 		t.Fatalf("unable to load Go code from providers: %s", err)
 	}
