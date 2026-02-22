@@ -43,13 +43,6 @@ type Change struct {
 	// HintOnlyTTL is true only if (.Type == diff2.CHANGE) && (there is
 	// exactly 1 record being updated) && (the only change is the TTL)
 	HintOnlyTTL bool
-
-	// HintRecordSetLen1 is true only if (.Type == diff2.CHANGE) &&
-	// (there is exactly 1 record at this RecordSet).
-	// For example, MSDNS can use a more efficient command if it knows
-	// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
-	// return exactly one record.
-	HintRecordSetLen1 bool
 }
 
 // GetType returns the type of a change.
@@ -82,6 +75,9 @@ func (c Change) GetDependencies() []dnsgraph.Dependency {
 
 /*
 General instructions:
+
+Every provider updates their zones in one of three granularities: record, recordset, label, or zone.
+Identify which your provider is, and use the appropriate "By*" call. (ByZone is different, see its documentation.)
 
   changes, err := diff2.ByRecord(existing, dc, nil)
   //changes, err := diff2.ByRecordSet(existing, dc, nil)
@@ -199,7 +195,7 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //	if err != nil {
 //	  return nil, err
 //	}
-//	if changes {
+//	if result.HasChanges {
 //		// Generate a "correction" that uploads the entire zone.
 //		// (result.DesiredPlus are the new records for the zone).
 //	}
@@ -213,7 +209,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 }
 
 // ByResults is the results of ByZone() and perhaps someday all the By*() functions.
-// It is partially populated by // byHelperStruct() and partially by the By*()
+// It is partially populated by byHelperStruct() and partially by the By*()
 // functions that use it.
 type ByResults struct {
 	// Fields filled in by byHelperStruct():
