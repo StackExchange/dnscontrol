@@ -6,7 +6,6 @@ builds:
     id: build
     env:
       - CGO_ENABLED=0
-      - GO111MODULE=on
     goos:
       - linux
       - windows
