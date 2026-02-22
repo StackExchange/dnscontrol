@@ -6,7 +6,6 @@ builds:
     id: build
     env:
       - CGO_ENABLED=0
-      - GO111MODULE=on
     goos:
       - linux
       - windows
@@ -96,58 +95,24 @@ nfpms:
     license: MIT
     formats:
     - deb
-dockers:
-  - image_templates:
-    - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
-    - &amd_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
-    goos: linux
-    goarch: amd64
-    use: buildx
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--platform=linux/amd64"
-    - "--label=org.opencontainers.image.created={{ .Date }}"
-    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-    - "--label=org.opencontainers.image.version={{ .Version }}"
-    - "--label=org.opencontainers.image.source={{ .GitURL }}"
-  - image_templates:
-    - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
-    - &arm_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
-    goos: linux
-    goarch: arm64
-    use: buildx
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--platform=linux/arm64"
-    - "--label=org.opencontainers.image.created={{ .Date }}"
-    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-    - "--label=org.opencontainers.image.version={{ .Version }}"
-    - "--label=org.opencontainers.image.source={{ .GitURL }}"
-docker_manifests:
-  - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
-    image_templates:
-      - *amd_image
-      - *arm_image
-  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
-    image_templates:
-      - *amd_image_ghcr
-      - *arm_image_ghcr
-  - name_template: "stackexchange/{{.ProjectName}}:latest"
-    skip_push: auto
-    image_templates:
-      - *amd_image
-      - *arm_image
-  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:latest"
-    skip_push: auto
-    image_templates:
-      - *amd_image_ghcr
-      - *arm_image_ghcr
+dockers_v2:
+  - ids:
+      - build
+    images:
+      - "stackexchange/{{.ProjectName}}"
+      - "ghcr.io/stackexchange/{{.ProjectName}}"
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .IsSnapshot }}latest{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.created": "{{ .Date }}"
+      "org.opencontainers.image.name": "{{ .ProjectName }}"
+      "org.opencontainers.image.revision": "{{ .FullCommit }}"
+      "org.opencontainers.image.version": "{{ .Version }}"
+      "org.opencontainers.image.source": "{{ .GitURL }}"
 notarize:
   macos:
     - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
