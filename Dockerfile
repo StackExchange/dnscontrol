@@ -7,7 +7,8 @@ FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f
 # - ca-certificates: Needed for https to work properly
 RUN apk update && apk add --no-cache tzdata ca-certificates && update-ca-certificates
 
-COPY dnscontrol /usr/local/bin/
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/dnscontrol /usr/local/bin/
 
 WORKDIR /dns
 
