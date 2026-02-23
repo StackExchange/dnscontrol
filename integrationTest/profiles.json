@@ -198,15 +198,6 @@
     "api_token": "$HETZNER_V2_API_TOKEN",
     "domain": "$HETZNER_V2_DOMAIN"
   },
-  "HEXONET": {
-    "TYPE": "HEXONET",
-    "apientity": "$HEXONET_ENTITY",
-    "apilogin": "$HEXONET_UID",
-    "apipassword": "$HEXONET_PW",
-    "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "$HEXONET_DOMAIN",
-    "ipaddress": "$HEXONET_IP"
-  },
   "HOSTINGDE": {
     "TYPE": "HOSTINGDE",
     "authToken": "$HOSTINGDE_AUTHTOKEN",

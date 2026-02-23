@@ -56,7 +56,6 @@ Jump to a table:
 | [`HEDNS`](hedns.md) | ❌ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ✅ | ❌ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ✅ | ❌ |
-| [`HEXONET`](hexonet.md) | ❌ | ✅ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ✅ | ❌ |
 | [`INFOMANIAK`](infomaniak.md) | ❌ | ✅ | ❌ |
@@ -123,7 +122,6 @@ Jump to a table:
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ✅ | ✅ | ✅ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ✅ | ✅ |
-| [`HEXONET`](hexonet.md) | ❔ | ✅ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ✅ | ✅ | ✅ |
 | [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ❌ | ❔ |
@@ -187,7 +185,6 @@ Jump to a table:
 | [`HEDNS`](hedns.md) | ✅ | ❔ | ✅ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ❌ | ✅ | ❌ |
-| [`HEXONET`](hexonet.md) | ❌ | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❌ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❌ | ❔ | ❌ | ❌ | ❌ |
 | [`INFOMANIAK`](infomaniak.md) | ❔ | ✅ | ❔ | ❔ | ❔ |
@@ -248,7 +245,6 @@ Jump to a table:
 | [`HEDNS`](hedns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`HETZNER`](hetzner.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HETZNER_V2`](hetznerv2.md) | ❔ | ❌ | ✅ | ✅ |
-| [`HEXONET`](hexonet.md) | ❔ | ❔ | ✅ | ❔ |
 | [`HOSTINGDE`](hostingde.md) | ❔ | ❌ | ✅ | ❔ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❌ | ✅ | ❌ |
 | [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ✅ | ❔ |
@@ -309,7 +305,6 @@ Jump to a table:
 | [`HEDNS`](hedns.md) | ✅ | ✅ | ❔ | ✅ | ❌ |
 | [`HETZNER`](hetzner.md) | ✅ | ❔ | ❔ | ❌ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ✅ | ✅ | ❔ | ❌ | ✅ |
-| [`HEXONET`](hexonet.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❌ | ❔ | ❌ | ❌ |
 | [`INFOMANIAK`](infomaniak.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
@@ -445,7 +440,6 @@ Providers in this category and their maintainers are:
 |[`GIDINET`](gidinet.md)|@zupolgec|
 |[`HEDNS`](hedns.md)|@rblenkinsopp|
 |[`HETZNER`](hetzner.md)|@das7pad|
-|[`HEXONET`](hexonet.md)|@KaiSchwarz-cnic|
 |[`HOSTINGDE`](hostingde.md)|@membero|
 |[`HUAWEICLOUD`](huaweicloud.md)|@huihuimoe|
 |[`INFOMANIAK`](infomaniak.md)|@jbelien|

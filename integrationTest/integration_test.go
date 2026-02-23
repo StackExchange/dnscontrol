@@ -660,7 +660,6 @@ func makeTests() []*TestGroup {
 				// "CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
-				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
@@ -683,7 +682,6 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
@@ -700,7 +698,6 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),

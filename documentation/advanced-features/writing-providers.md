@@ -322,7 +322,7 @@ The entry looks something like:
 {% code title=".github/workflows/pr_integration_tests.yml" %}
 ```yaml
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
 ```
 {% endcode %}

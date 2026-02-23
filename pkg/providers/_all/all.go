@@ -34,7 +34,6 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hetznerv2"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/hexonet"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/hostingde"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/huaweicloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/infomaniak"

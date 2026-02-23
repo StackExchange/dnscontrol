@@ -52,7 +52,7 @@ jobs:
         Write-Host "Integration test providers: $Providers"
         echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
       env:
-        PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HEXONET','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
         VARS_CONTEXT: ${{ toJson(vars) }}
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -90,7 +90,6 @@ jobs:
       GIDINET_DOMAIN: ${{ vars.GIDINET_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HETZNER_V2_DOMAIN: ${{ vars.HETZNER_V2_DOMAIN }}
-      HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }}
       MIKROTIK_DOMAIN: ${{ vars.MIKROTIK_DOMAIN }}
@@ -165,10 +164,6 @@ jobs:
       HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
       #
       HETZNER_V2_API_TOKEN: ${{ secrets.HETZNER_V2_API_TOKEN }}
-      #
-      HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
-      HEXONET_PW: ${{ secrets.HEXONET_PW }}
-      HEXONET_UID: ${{ secrets.HEXONET_UID }}
       #
       HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
       HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
