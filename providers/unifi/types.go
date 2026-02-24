@@ -136,7 +136,7 @@ func legacyToRecord(domain string, r *legacyDNSRecord) (*models.RecordConfig, er
 
 // recordToLegacyMap converts a dnscontrol RecordConfig to a map for API requests.
 // UniFi is strict about which fields can be set for each record type.
-func recordToLegacyMap(domain string, rc *models.RecordConfig) (map[string]any, error) {
+func recordToLegacyMap(rc *models.RecordConfig) (map[string]any, error) {
 	m := map[string]any{
 		"enabled":     true,
 		"key":         rc.NameFQDN,
@@ -285,7 +285,7 @@ func newToRecord(domain string, r *dnsPolicyRecord) (*models.RecordConfig, error
 }
 
 // recordToNew converts a dnscontrol RecordConfig to a UniFi new API record.
-func recordToNew(domain string, rc *models.RecordConfig) (*dnsPolicyRecord, error) {
+func recordToNew(rc *models.RecordConfig) (*dnsPolicyRecord, error) {
 	r := &dnsPolicyRecord{
 		Enabled: true,
 		Domain:  rc.NameFQDN,

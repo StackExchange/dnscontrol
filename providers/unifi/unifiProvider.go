@@ -175,7 +175,7 @@ func (p *unifiProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 		case diff2.CREATE:
 			newRec := change.New[0]
 			if useNewAPI {
-				newAPIRec, err := recordToNew(dc.Name, newRec)
+				newAPIRec, err := recordToNew(newRec)
 				if err != nil {
 					return nil, 0, fmt.Errorf("failed to convert record for create: %w", err)
 				}
@@ -187,7 +187,7 @@ func (p *unifiProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					},
 				}
 			} else {
-				legacyMap, err := recordToLegacyMap(dc.Name, newRec)
+				legacyMap, err := recordToLegacyMap(newRec)
 				if err != nil {
 					return nil, 0, fmt.Errorf("failed to convert record for create: %w", err)
 				}
@@ -208,7 +208,7 @@ func (p *unifiProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 				return nil, 0, fmt.Errorf("cannot update record without ID: %s", oldRec.NameFQDN)
 			}
 			if useNewAPI {
-				newAPIRec, err := recordToNew(dc.Name, newRec)
+				newAPIRec, err := recordToNew(newRec)
 				if err != nil {
 					return nil, 0, fmt.Errorf("failed to convert record for update: %w", err)
 				}
@@ -220,7 +220,7 @@ func (p *unifiProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					},
 				}
 			} else {
-				legacyMap, err := recordToLegacyMap(dc.Name, newRec)
+				legacyMap, err := recordToLegacyMap(newRec)
 				if err != nil {
 					return nil, 0, fmt.Errorf("failed to convert record for update: %w", err)
 				}
