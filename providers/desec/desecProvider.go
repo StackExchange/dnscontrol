@@ -51,6 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseOPENPGPKEY        providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
