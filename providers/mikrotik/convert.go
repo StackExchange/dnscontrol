@@ -120,7 +120,7 @@ func nativeToRecords(nr dnsStaticRecord, origin string) ([]*models.RecordConfig,
 }
 
 // recordToNative converts a dnscontrol RecordConfig to a RouterOS DNS static record for create/update.
-func recordToNative(rc *models.RecordConfig, origin string) (*dnsStaticRecord, error) {
+func recordToNative(rc *models.RecordConfig) (*dnsStaticRecord, error) {
 	nr := &dnsStaticRecord{
 		Name: rc.GetLabelFQDN(),
 		TTL:  formatMikrotikDuration(rc.TTL),
@@ -297,7 +297,7 @@ func forwarderToRecord(fwd dnsForwarder) *models.RecordConfig {
 	}
 	rc.SetLabel(fwd.Name, ForwarderZone)
 	rc.Type = "MIKROTIK_FORWARDER"
-	_ = rc.SetTarget(fwd.DnsServers)
+	_ = rc.SetTarget(fwd.DNSServers)
 	rc.TTL = 300 // Forwarders have no TTL; use dnscontrol's default to avoid spurious diffs.
 	rc.Metadata = map[string]string{}
 	if fwd.DohServers != "" {
@@ -313,7 +313,7 @@ func forwarderToRecord(fwd dnsForwarder) *models.RecordConfig {
 func recordToForwarder(rc *models.RecordConfig) *dnsForwarder {
 	f := &dnsForwarder{
 		Name:       rc.GetLabel(),
-		DnsServers: rc.GetTargetField(),
+		DNSServers: rc.GetTargetField(),
 	}
 	if rc.Metadata != nil {
 		if v := rc.Metadata["doh_servers"]; v != "" {

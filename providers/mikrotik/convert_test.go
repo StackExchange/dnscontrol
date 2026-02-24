@@ -351,7 +351,7 @@ func TestNativeToRecords_ApexRecord(t *testing.T) {
 func TestRecordToNative_A(t *testing.T) {
 	rc := makeRC("A", "host", "example.com", "10.0.0.1")
 	rc.TTL = 3600
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -363,7 +363,7 @@ func TestRecordToNative_A(t *testing.T) {
 
 func TestRecordToNative_AAAA(t *testing.T) {
 	rc := makeRC("AAAA", "v6", "example.com", "2001:db8::1")
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -373,7 +373,7 @@ func TestRecordToNative_AAAA(t *testing.T) {
 
 func TestRecordToNative_CNAME(t *testing.T) {
 	rc := makeRC("CNAME", "alias", "example.com", "target.example.com.")
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -393,7 +393,7 @@ func TestRecordToNative_FWD(t *testing.T) {
 		"regexp":          `.*\.test`,
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -415,7 +415,7 @@ func TestRecordToNative_NXDOMAIN(t *testing.T) {
 		"comment":         "blocked",
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -431,7 +431,7 @@ func TestRecordToNative_MX(t *testing.T) {
 	_ = rc.SetTargetMX(10, "mail.example.com.")
 	rc.TTL = 86400
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -447,7 +447,7 @@ func TestRecordToNative_SRV(t *testing.T) {
 	_ = rc.SetTargetSRV(10, 20, 5060, "sipserver.example.com.")
 	rc.TTL = 3600
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -465,7 +465,7 @@ func TestRecordToNative_TXT(t *testing.T) {
 	_ = rc.SetTargetTXT("v=spf1 ~all")
 	rc.TTL = 86400
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -481,7 +481,7 @@ func TestRecordToNative_MetadataOnStandardTypes(t *testing.T) {
 		"comment":         "my comment",
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -496,7 +496,7 @@ func TestRecordToNative_UnsupportedType(t *testing.T) {
 	rc.Type = "BOGUS"
 	_ = rc.SetTarget("whatever")
 
-	_, err := recordToNative(rc, "example.com")
+	_, err := recordToNative(rc)
 	if err == nil {
 		t.Error("expected error for unsupported type")
 	}
@@ -514,7 +514,7 @@ func TestNativeRoundTrip_A(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
@@ -538,7 +538,7 @@ func TestNativeRoundTrip_FWD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
@@ -560,7 +560,7 @@ func TestNativeRoundTrip_NXDOMAIN(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
@@ -574,7 +574,7 @@ func TestNativeRoundTrip_NXDOMAIN(t *testing.T) {
 
 func TestForwarderToRecord(t *testing.T) {
 	fwd := dnsForwarder{
-		ID: "*1", Name: "my-forwarder", DnsServers: "1.1.1.1,8.8.8.8",
+		ID: "*1", Name: "my-forwarder", DNSServers: "1.1.1.1,8.8.8.8",
 		DohServers: "https://dns.google/dns-query", VerifyDohCert: "true",
 	}
 
@@ -588,7 +588,7 @@ func TestForwarderToRecord(t *testing.T) {
 }
 
 func TestForwarderToRecord_Minimal(t *testing.T) {
-	fwd := dnsForwarder{Name: "simple", DnsServers: "1.1.1.1"}
+	fwd := dnsForwarder{Name: "simple", DNSServers: "1.1.1.1"}
 	rc := forwarderToRecord(fwd)
 	assertStr(t, "Target", rc.GetTargetField(), "1.1.1.1")
 	if v, ok := rc.Metadata["doh_servers"]; ok {
@@ -611,14 +611,14 @@ func TestRecordToForwarder(t *testing.T) {
 
 	f := recordToForwarder(rc)
 	assertStr(t, "Name", f.Name, "my-fwd")
-	assertStr(t, "DnsServers", f.DnsServers, "1.1.1.1,8.8.8.8")
+	assertStr(t, "DnsServers", f.DNSServers, "1.1.1.1,8.8.8.8")
 	assertStr(t, "DohServers", f.DohServers, "https://dns.google/dns-query")
 	assertStr(t, "VerifyDohCert", f.VerifyDohCert, "true")
 }
 
 func TestForwarderRoundTrip(t *testing.T) {
 	original := dnsForwarder{
-		ID: "*1", Name: "fwd1", DnsServers: "1.1.1.1",
+		ID: "*1", Name: "fwd1", DNSServers: "1.1.1.1",
 		DohServers: "https://dns.google/dns-query", VerifyDohCert: "true",
 	}
 
@@ -626,7 +626,7 @@ func TestForwarderRoundTrip(t *testing.T) {
 	f := recordToForwarder(rc)
 
 	assertStr(t, "Name", f.Name, "fwd1")
-	assertStr(t, "DnsServers", f.DnsServers, "1.1.1.1")
+	assertStr(t, "DnsServers", f.DNSServers, "1.1.1.1")
 	assertStr(t, "DohServers", f.DohServers, "https://dns.google/dns-query")
 	assertStr(t, "VerifyDohCert", f.VerifyDohCert, "true")
 }

@@ -477,7 +477,7 @@ func TestDeleteRecord(t *testing.T) {
 
 func TestGetAllForwarders(t *testing.T) {
 	fwds := []dnsForwarder{
-		{ID: "*1", Name: "fwd1", DnsServers: "1.1.1.1"},
+		{ID: "*1", Name: "fwd1", DNSServers: "1.1.1.1"},
 	}
 	p, srv := newTestProvider(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != forwardersPath {
@@ -508,7 +508,7 @@ func TestCreateForwarder(t *testing.T) {
 	})
 	defer srv.Close()
 
-	err := p.createForwarder(&dnsForwarder{Name: "new-fwd", DnsServers: "8.8.8.8"})
+	err := p.createForwarder(&dnsForwarder{Name: "new-fwd", DNSServers: "8.8.8.8"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -527,7 +527,7 @@ func TestUpdateForwarder(t *testing.T) {
 	})
 	defer srv.Close()
 
-	err := p.updateForwarder("*2", &dnsForwarder{Name: "updated", DnsServers: "8.8.4.4"})
+	err := p.updateForwarder("*2", &dnsForwarder{Name: "updated", DNSServers: "8.8.4.4"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -589,8 +589,8 @@ func TestGetZoneRecords_FiltersAndConverts(t *testing.T) {
 
 func TestGetZoneRecords_ForwarderZone(t *testing.T) {
 	fwds := []dnsForwarder{
-		{ID: "*1", Name: "fwd1", DnsServers: "1.1.1.1"},
-		{ID: "*2", Name: "fwd2", DnsServers: "8.8.8.8", Disabled: "true"},
+		{ID: "*1", Name: "fwd1", DNSServers: "1.1.1.1"},
+		{ID: "*2", Name: "fwd2", DNSServers: "8.8.8.8", Disabled: "true"},
 	}
 
 	p, srv := newTestProvider(t, func(w http.ResponseWriter, r *http.Request) {
