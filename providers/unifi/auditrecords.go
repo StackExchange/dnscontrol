@@ -8,7 +8,7 @@ import (
 )
 
 // Supported record types for UniFi Network
-// Note: NS records are supported but only with IP addresses, not hostnames
+// Note: NS records are supported but only with IP addresses, not hostnames.
 var supportedRTypes = map[string]struct{}{
 	"A":     {},
 	"AAAA":  {},

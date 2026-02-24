@@ -2,7 +2,6 @@ package unifi
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
@@ -22,7 +21,7 @@ type legacyDNSRecord struct {
 	Weight     int    `json:"weight"`      // SRV weight
 }
 
-// New API record types (Network 10.1+)
+// New API record types (Network 10.1+).
 const (
 	NewAPITypeA     = "A_RECORD"
 	NewAPITypeAAAA  = "AAAA_RECORD"
@@ -41,11 +40,11 @@ type dnsPolicyMetadata struct {
 // This API is available in UniFi Network 10.1+.
 // The record is polymorphic - different fields are used depending on the type.
 type dnsPolicyRecord struct {
-	Type     string            `json:"type"`               // A_RECORD, AAAA_RECORD, CNAME_RECORD, MX_RECORD, TXT_RECORD, SRV_RECORD
-	ID       string            `json:"id,omitempty"`       // UUID
-	Enabled  bool              `json:"enabled"`            // Whether the record is enabled
-	Metadata dnsPolicyMetadata `json:"metadata,omitempty"` // Metadata (origin)
-	Domain   string            `json:"domain"`             // FQDN (e.g., "test.example.com")
+	Type     string            `json:"type"`         // A_RECORD, AAAA_RECORD, CNAME_RECORD, MX_RECORD, TXT_RECORD, SRV_RECORD
+	ID       string            `json:"id,omitempty"` // UUID
+	Enabled  bool              `json:"enabled"`      // Whether the record is enabled
+	Metadata dnsPolicyMetadata `json:"metadata"`     // Metadata (origin)
+	Domain   string            `json:"domain"`       // FQDN (e.g., "test.example.com")
 
 	// TTL (optional, 0 = default)
 	TTLSeconds int `json:"ttlSeconds,omitempty"`
@@ -133,43 +132,6 @@ func legacyToRecord(domain string, r *legacyDNSRecord) (*models.RecordConfig, er
 	}
 
 	return rc, err
-}
-
-// recordToLegacy converts a dnscontrol RecordConfig to a UniFi legacy API record.
-// Note: This returns a legacyDNSRecord for reference, but actual API calls use recordToLegacyMap.
-func recordToLegacy(domain string, rc *models.RecordConfig) (*legacyDNSRecord, error) {
-	r := &legacyDNSRecord{
-		Enabled:    true,
-		Key:        rc.NameFQDN,
-		RecordType: rc.Type,
-		TTL:        int(rc.TTL),
-	}
-
-	switch rc.Type {
-	case "A", "AAAA":
-		r.Value = rc.GetTargetField()
-
-	case "CNAME", "NS":
-		r.Value = strings.TrimSuffix(rc.GetTargetField(), ".")
-
-	case "MX":
-		r.Priority = int(rc.MxPreference)
-		r.Value = strings.TrimSuffix(rc.GetTargetField(), ".")
-
-	case "TXT":
-		r.Value = rc.GetTargetTXTJoined()
-
-	case "SRV":
-		r.Priority = int(rc.SrvPriority)
-		r.Weight = int(rc.SrvWeight)
-		r.Port = int(rc.SrvPort)
-		r.Value = strings.TrimSuffix(rc.GetTargetField(), ".")
-
-	default:
-		return nil, fmt.Errorf("unsupported record type: %s", rc.Type)
-	}
-
-	return r, nil
 }
 
 // recordToLegacyMap converts a dnscontrol RecordConfig to a map for API requests.
@@ -371,36 +333,4 @@ func recordToNew(domain string, rc *models.RecordConfig) (*dnsPolicyRecord, erro
 	}
 
 	return r, nil
-}
-
-// recordKey generates a unique key for a record to help with matching.
-func recordKey(rc *models.RecordConfig) string {
-	switch rc.Type {
-	case "SRV":
-		return fmt.Sprintf("%s|%s|%d|%d|%d|%s",
-			rc.NameFQDN, rc.Type, rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
-	case "MX":
-		return fmt.Sprintf("%s|%s|%d|%s",
-			rc.NameFQDN, rc.Type, rc.MxPreference, rc.GetTargetField())
-	case "TXT":
-		return fmt.Sprintf("%s|%s|%s",
-			rc.NameFQDN, rc.Type, rc.GetTargetTXTJoined())
-	default:
-		return fmt.Sprintf("%s|%s|%s",
-			rc.NameFQDN, rc.Type, rc.GetTargetField())
-	}
-}
-
-// parseSRVLabel parses an SRV label like "_sip._tcp" into service and protocol.
-func parseSRVLabel(label string) (service, protocol string) {
-	parts := strings.SplitN(label, ".", 2)
-	if len(parts) == 2 {
-		return parts[0], parts[1]
-	}
-	return label, ""
-}
-
-// formatSRVContent formats SRV record content for display.
-func formatSRVContent(priority, weight, port int, target string) string {
-	return strconv.Itoa(priority) + " " + strconv.Itoa(weight) + " " + strconv.Itoa(port) + " " + target
 }

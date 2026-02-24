@@ -11,13 +11,13 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
-// Provider metadata
+// Provider metadata.
 const (
 	providerName       = "UNIFI"
 	providerMaintainer = "@zupolgec"
 )
 
-// Provider capabilities
+// Provider capabilities.
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	providers.CanGetZones:            providers.Cannot("UniFi stores records flat, not by zone"),

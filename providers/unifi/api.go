@@ -15,7 +15,7 @@ const (
 	cloudAPIBase = "https://api.ui.com"
 )
 
-// API version constants
+// API version constants.
 const (
 	APIVersionAuto   = "auto"
 	APIVersionNew    = "new"
