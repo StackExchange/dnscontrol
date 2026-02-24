@@ -16,7 +16,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
+	dnsimpleapi "github.com/dnsimple/dnsimple-go/v8/dnsimple"
 	"golang.org/x/oauth2"
 )
 
@@ -31,12 +31,14 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseHTTPS:            providers.Can(),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseSVCB:             providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -114,11 +116,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 			r.Content += "."
 		}
 
-		// DNSimple adds TXT records that mirror the alias records.
-		// They manage them on ALIAS updates, so pretend they don't exist
-		if r.Type == "TXT" && strings.HasPrefix(r.Content, `"ALIAS for `) {
-			continue
-		}
 		// This second check is the same of before, but it exists for compatibility purpose.
 		// Until Nov 2023 DNSimple did not normalize TXT records, and they used to store TXT records without quotes.
 		//
@@ -706,6 +703,24 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return rc.GetTargetCombined()
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
+	case "HTTPS", "SVCB":
+		// DNSimple API does not accept FQDN trailing dots in SVCB/HTTPS targets.
+		// Preserve "." for AliasMode (priority 0) self-referencing records.
+		target := rc.GetTargetField()
+		if target != "." {
+			target = strings.TrimSuffix(target, ".")
+		}
+		if rc.SvcParams != "" {
+			return fmt.Sprintf("%d %s %s", rc.SvcPriority, target, rc.SvcParams)
+		}
+		return fmt.Sprintf("%d %s", rc.SvcPriority, target)
+	case "MX":
+		// DNSimple expects empty content with priority 0 for null MX records.
+		target := rc.GetTargetField()
+		if target == "." {
+			return ""
+		}
+		return target
 	case "NAPTR":
 		return fmt.Sprintf(`%d %d "%s" "%s" "%s" %s`,
 			rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp,
@@ -714,6 +729,8 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+	case "TLSA":
+		return fmt.Sprintf("%d %d %d %s", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case "TXT":
 		return rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	default:
