@@ -62,6 +62,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/sakuracloud"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/transip"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/unifi"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/vercel"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/vultr"
 )

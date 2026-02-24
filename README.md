@@ -69,6 +69,7 @@ Currently supported DNS providers:
 - Sakura Cloud
 - SoftLayer
 - TransIP
+- UniFi Network
 - Vercel
 - Vultr
 
