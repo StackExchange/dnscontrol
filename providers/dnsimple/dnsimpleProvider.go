@@ -116,14 +116,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 			r.Content += "."
 		}
 
-		// This second check is the same of before, but it exists for compatibility purpose.
-		// Until Nov 2023 DNSimple did not normalize TXT records, and they used to store TXT records without quotes.
-		//
-		// This is a backward-compatible function to facilitate the TXT transition.
-		if r.Type == "TXT" && strings.HasPrefix(r.Content, `ALIAS for `) {
-			continue
-		}
-
 		rec := &models.RecordConfig{
 			TTL:      uint32(r.TTL),
 			Original: r,
