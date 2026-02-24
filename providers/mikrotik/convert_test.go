@@ -574,7 +574,7 @@ func TestNativeRoundTrip_NXDOMAIN(t *testing.T) {
 
 func TestForwarderToRecord(t *testing.T) {
 	fwd := dnsForwarder{
-		ID: "*1", Name: "my-forwarder", DnsServers: "1.1.1.1,8.8.8.8",
+		ID: "*1", Name: "my-forwarder", DNSServers: "1.1.1.1,8.8.8.8",
 		DohServers: "https://dns.google/dns-query", VerifyDohCert: "true",
 	}
 
@@ -588,7 +588,7 @@ func TestForwarderToRecord(t *testing.T) {
 }
 
 func TestForwarderToRecord_Minimal(t *testing.T) {
-	fwd := dnsForwarder{Name: "simple", DnsServers: "1.1.1.1"}
+	fwd := dnsForwarder{Name: "simple", DNSServers: "1.1.1.1"}
 	rc := forwarderToRecord(fwd)
 	assertStr(t, "Target", rc.GetTargetField(), "1.1.1.1")
 	if v, ok := rc.Metadata["doh_servers"]; ok {
@@ -611,14 +611,14 @@ func TestRecordToForwarder(t *testing.T) {
 
 	f := recordToForwarder(rc)
 	assertStr(t, "Name", f.Name, "my-fwd")
-	assertStr(t, "DnsServers", f.DnsServers, "1.1.1.1,8.8.8.8")
+	assertStr(t, "DnsServers", f.DNSServers, "1.1.1.1,8.8.8.8")
 	assertStr(t, "DohServers", f.DohServers, "https://dns.google/dns-query")
 	assertStr(t, "VerifyDohCert", f.VerifyDohCert, "true")
 }
 
 func TestForwarderRoundTrip(t *testing.T) {
 	original := dnsForwarder{
-		ID: "*1", Name: "fwd1", DnsServers: "1.1.1.1",
+		ID: "*1", Name: "fwd1", DNSServers: "1.1.1.1",
 		DohServers: "https://dns.google/dns-query", VerifyDohCert: "true",
 	}
 
@@ -626,7 +626,7 @@ func TestForwarderRoundTrip(t *testing.T) {
 	f := recordToForwarder(rc)
 
 	assertStr(t, "Name", f.Name, "fwd1")
-	assertStr(t, "DnsServers", f.DnsServers, "1.1.1.1")
+	assertStr(t, "DnsServers", f.DNSServers, "1.1.1.1")
 	assertStr(t, "DohServers", f.DohServers, "https://dns.google/dns-query")
 	assertStr(t, "VerifyDohCert", f.VerifyDohCert, "true")
 }

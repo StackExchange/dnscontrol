@@ -47,7 +47,7 @@ const forwardersPath = "/rest/ip/dns/forwarders"
 type dnsForwarder struct {
 	ID            string `json:".id,omitempty"`
 	Name          string `json:"name,omitempty"`
-	DnsServers    string `json:"dns-servers,omitempty"`
+	DNSServers    string `json:"dns-servers,omitempty"`
 	DohServers    string `json:"doh-servers,omitempty"`
 	VerifyDohCert string `json:"verify-doh-cert,omitempty"`
 	Disabled      string `json:"disabled,omitempty"`
