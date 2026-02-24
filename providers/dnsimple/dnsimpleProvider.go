@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
@@ -26,7 +26,6 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
@@ -136,12 +135,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string, meta map[string]string)
 		case "SRV":
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 		case "TXT":
-			// This is a backward-compatible function to facilitate the TXT transition.
-			if isQuotedTXT(r.Content) {
-				err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
-			} else {
-				err = rec.SetTargetTXT("legacy: " + r.Content)
-			}
+			err = rec.PopulateFromStringFunc(r.Type, r.Content, domain, txtutil.ParseQuoted)
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
@@ -167,38 +161,56 @@ func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ac
 		return nil, 0, err
 	}
 
-	toReport, create, del, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(actual)
+	instructions, actualChangeCount, err := diff2.ByRecord(actual, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
-	// Next dnsSec fixes
-	corrections = append(corrections, dnssecFixes...)
 
-	for _, del := range del {
-		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(rec.ID, dc.Name),
-		})
+	var corrections []*models.Correction
+
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+		case diff2.CREATE:
+			rec := inst.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.MsgsJoined,
+				F:   c.createRecordFunc(rec, dc.Name),
+			})
+		case diff2.CHANGE:
+			old := inst.Old[0].Original.(dnsimpleapi.ZoneRecord)
+			rec := inst.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.MsgsJoined,
+				F:   c.updateRecordFunc(&old, rec, dc.Name),
+			})
+		case diff2.DELETE:
+			rec := inst.Old[0].Original.(dnsimpleapi.ZoneRecord)
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.MsgsJoined,
+				F:   c.deleteRecordFunc(rec.ID, dc.Name),
+			})
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+		}
 	}
 
-	for _, cre := range create {
-		rec := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rec, dc.Name),
-		})
-	}
-
-	for _, mod := range modify {
-		old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
-		rec := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(&old, rec, dc.Name),
-		})
+	// Prepend DNSSEC corrections before record changes but after reports
+	if len(dnssecFixes) > 0 {
+		reportEnd := 0
+		for i, c := range corrections {
+			if c.F != nil {
+				reportEnd = i
+				break
+			}
+			reportEnd = i + 1
+		}
+		result := make([]*models.Correction, 0, len(corrections)+len(dnssecFixes))
+		result = append(result, corrections[:reportEnd]...)
+		result = append(result, dnssecFixes...)
+		result = append(result, corrections[reportEnd:]...)
+		corrections = result
 	}
 
 	return corrections, actualChangeCount, nil
@@ -322,11 +334,7 @@ func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneReco
 
 	accountID, err := c.getAccountID()
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return nil, compileAttributeErrors(errorResponse)
-		}
-		return nil, err
+		return nil, wrapError(err)
 	}
 
 	opts := &dnsimpleapi.ZoneRecordListOptions{}
@@ -336,11 +344,7 @@ func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneReco
 		opts.Page = &page
 		recordsResponse, err := client.Zones.ListRecords(context.Background(), accountID, domainName, opts)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return nil, compileAttributeErrors(errorResponse)
-			}
-			return nil, err
+			return nil, wrapError(err)
 		}
 		recs = append(recs, recordsResponse.Data...)
 		pg := recordsResponse.Pagination
@@ -354,27 +358,15 @@ func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneReco
 }
 
 func (c *dnsimpleProvider) getDnssec(domainName string) (bool, error) {
-	var (
-		client    *dnsimpleapi.Client
-		accountID string
-		err       error
-	)
-	client = c.getClient()
-	if accountID, err = c.getAccountID(); err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+	client := c.getClient()
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return false, wrapError(err)
 	}
 
 	dnssecResponse, err := client.Domains.GetDnssec(context.Background(), accountID, domainName)
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+		return false, wrapError(err)
 	}
 	if dnssecResponse.Data == nil {
 		return false, nil
@@ -383,27 +375,15 @@ func (c *dnsimpleProvider) getDnssec(domainName string) (bool, error) {
 }
 
 func (c *dnsimpleProvider) enableDnssec(domainName string) (bool, error) {
-	var (
-		client    *dnsimpleapi.Client
-		accountID string
-		err       error
-	)
-	client = c.getClient()
-	if accountID, err = c.getAccountID(); err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+	client := c.getClient()
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return false, wrapError(err)
 	}
 
 	dnssecResponse, err := client.Domains.EnableDnssec(context.Background(), accountID, domainName)
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+		return false, wrapError(err)
 	}
 	if dnssecResponse.Data == nil {
 		return false, nil
@@ -412,27 +392,15 @@ func (c *dnsimpleProvider) enableDnssec(domainName string) (bool, error) {
 }
 
 func (c *dnsimpleProvider) disableDnssec(domainName string) (bool, error) {
-	var (
-		client    *dnsimpleapi.Client
-		accountID string
-		err       error
-	)
-	client = c.getClient()
-	if accountID, err = c.getAccountID(); err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+	client := c.getClient()
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return false, wrapError(err)
 	}
 
 	dnssecResponse, err := client.Domains.DisableDnssec(context.Background(), accountID, domainName)
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return false, compileAttributeErrors(errorResponse)
-		}
-		return false, err
+		return false, wrapError(err)
 	}
 	if dnssecResponse.Data == nil {
 		return false, nil
@@ -448,30 +416,18 @@ func (c *dnsimpleProvider) getNameservers(domainName string) ([]string, error) {
 
 	accountID, err := c.getAccountID()
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return nil, compileAttributeErrors(errorResponse)
-		}
-		return nil, err
+		return nil, wrapError(err)
 	}
 
 	domainResponse, err := client.Domains.GetDomain(context.Background(), accountID, domainName)
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return nil, compileAttributeErrors(errorResponse)
-		}
-		return nil, err
+		return nil, wrapError(err)
 	}
 
 	if domainResponse.Data.State == stateRegistered {
 		delegationResponse, err := client.Registrar.GetDomainDelegation(context.Background(), accountID, domainName)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return nil, compileAttributeErrors(errorResponse)
-			}
-			return nil, err
+			return nil, wrapError(err)
 		}
 
 		return *delegationResponse.Data, nil
@@ -486,22 +442,14 @@ func (c *dnsimpleProvider) updateNameserversFunc(nameServerNames []string, domai
 
 		accountID, err := c.getAccountID()
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		nameServers := dnsimpleapi.Delegation(nameServerNames)
 
 		_, err = client.Registrar.ChangeDomainDelegation(context.Background(), accountID, domainName, &nameServers)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		return nil
@@ -515,11 +463,7 @@ func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 
 		accountID, err := c.getAccountID()
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 		record := dnsimpleapi.ZoneRecordAttributes{
 			Name:     dnsimpleapi.String(rc.GetLabel()),
@@ -530,11 +474,7 @@ func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 		}
 		_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		return nil
@@ -548,20 +488,12 @@ func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) f
 
 		accountID, err := c.getAccountID()
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		_, err = client.Zones.DeleteRecord(context.Background(), accountID, domainName, recordID)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		return nil
@@ -587,11 +519,7 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 
 		accountID, err := c.getAccountID()
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		record := dnsimpleapi.ZoneRecordAttributes{
@@ -604,11 +532,7 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 
 		_, err = client.Zones.UpdateRecord(context.Background(), accountID, domainName, old.ID, record)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return compileAttributeErrors(errorResponse)
-			}
-			return err
+			return wrapError(err)
 		}
 
 		return nil
@@ -620,11 +544,7 @@ func (c *dnsimpleProvider) ListZones() ([]string, error) {
 	client := c.getClient()
 	accountID, err := c.getAccountID()
 	if err != nil {
-		var errorResponse *dnsimpleapi.ErrorResponse
-		if errors.As(err, &errorResponse) {
-			return nil, compileAttributeErrors(errorResponse)
-		}
-		return nil, err
+		return nil, wrapError(err)
 	}
 
 	var zones []string
@@ -634,11 +554,7 @@ func (c *dnsimpleProvider) ListZones() ([]string, error) {
 		opts.Page = &page
 		zonesResponse, err := client.Zones.ListZones(context.Background(), accountID, opts)
 		if err != nil {
-			var errorResponse *dnsimpleapi.ErrorResponse
-			if errors.As(err, &errorResponse) {
-				return nil, compileAttributeErrors(errorResponse)
-			}
-			return nil, err
+			return nil, wrapError(err)
 		}
 		for _, zone := range zonesResponse.Data {
 			zones = append(zones, zone.Name)
@@ -752,6 +668,16 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	}
 }
 
+// wrapError converts a DNSimple API ErrorResponse into a compiled error message,
+// or returns the original error if it is not an ErrorResponse.
+func wrapError(err error) error {
+	var errorResponse *dnsimpleapi.ErrorResponse
+	if errors.As(err, &errorResponse) {
+		return compileAttributeErrors(errorResponse)
+	}
+	return err
+}
+
 // Compile the error messages returned by DNSimple's API into a single error message.
 func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 	var message strings.Builder
@@ -772,12 +698,4 @@ func isDnsimpleNameServerDomain(name string) bool {
 		}
 	}
 	return false
-}
-
-// Tests if the content is encoded, performing a naive check on the presence of quotes
-// at the beginning and end of the string.
-//
-// This is a backward-compatible function to facilitate the TXT transition.
-func isQuotedTXT(content string) bool {
-	return content[0:1] == `"` && content[len(content)-1:] == `"`
 }
