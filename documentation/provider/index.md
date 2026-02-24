@@ -237,7 +237,7 @@ Jump to a table:
 | [`DESEC`](desec.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ❌ | ❌ | ✅ | ❌ |
 | [`DNSCALE`](dnscale.md) | ❔ | ❔ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ❔ |
+| [`DNSIMPLE`](dnsimple.md) | ❔ | ✅ | ✅ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ✅ | ❔ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❔ | ❌ | ✅ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ❔ | ❔ | ✅ | ❔ |
@@ -298,7 +298,7 @@ Jump to a table:
 | [`DESEC`](desec.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`DIGITALOCEAN`](digitalocean.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`DNSCALE`](dnscale.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
-| [`DNSIMPLE`](dnsimple.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
+| [`DNSIMPLE`](dnsimple.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ✅ | ❔ | ❔ | ❌ | ❔ |
 | [`EXOSCALE`](exoscale.md) | ✅ | ❔ | ❔ | ❔ | ❌ |
