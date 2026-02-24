@@ -169,48 +169,46 @@ func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ac
 	var corrections []*models.Correction
 
 	for _, inst := range instructions {
+		// Copy loop values to local variables to avoid closure capture issues.
+		msgs := inst.MsgsJoined
+		domainName := dc.Name
+
 		switch inst.Type {
 		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+			corrections = append(corrections, &models.Correction{Msg: msgs})
 		case diff2.CREATE:
 			rec := inst.New[0]
 			corrections = append(corrections, &models.Correction{
-				Msg: inst.MsgsJoined,
-				F:   c.createRecordFunc(rec, dc.Name),
+				Msg: msgs,
+				F: func() error {
+					return c.recordCreate(rec, domainName)
+				},
 			})
 		case diff2.CHANGE:
 			old := inst.Old[0].Original.(dnsimpleapi.ZoneRecord)
 			rec := inst.New[0]
 			corrections = append(corrections, &models.Correction{
-				Msg: inst.MsgsJoined,
-				F:   c.updateRecordFunc(&old, rec, dc.Name),
+				Msg: msgs,
+				F: func() error {
+					return c.recordUpdate(&old, rec, domainName)
+				},
 			})
 		case diff2.DELETE:
-			rec := inst.Old[0].Original.(dnsimpleapi.ZoneRecord)
+			old := inst.Old[0].Original.(dnsimpleapi.ZoneRecord)
 			corrections = append(corrections, &models.Correction{
-				Msg: inst.MsgsJoined,
-				F:   c.deleteRecordFunc(rec.ID, dc.Name),
+				Msg: msgs,
+				F: func() error {
+					return c.recordDelete(old.ID, domainName)
+				},
 			})
 		default:
 			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 	}
 
-	// Prepend DNSSEC corrections before record changes but after reports
+	// Prepend DNSSEC corrections so they run before record changes
 	if len(dnssecFixes) > 0 {
-		reportEnd := 0
-		for i, c := range corrections {
-			if c.F != nil {
-				reportEnd = i
-				break
-			}
-			reportEnd = i + 1
-		}
-		result := make([]*models.Correction, 0, len(corrections)+len(dnssecFixes))
-		result = append(result, corrections[:reportEnd]...)
-		result = append(result, dnssecFixes...)
-		result = append(result, corrections[reportEnd:]...)
-		corrections = result
+		corrections = append(dnssecFixes, corrections...)
 	}
 
 	return corrections, actualChangeCount, nil
@@ -456,87 +454,71 @@ func (c *dnsimpleProvider) updateNameserversFunc(nameServerNames []string, domai
 	}
 }
 
-// Returns a function that can be invoked to create a record in a zone.
-func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName string) func() error {
-	return func() error {
-		client := c.getClient()
+// recordCreate creates a record in a zone.
+func (c *dnsimpleProvider) recordCreate(rc *models.RecordConfig, domainName string) error {
+	client := c.getClient()
 
-		accountID, err := c.getAccountID()
-		if err != nil {
-			return wrapError(err)
-		}
-		record := dnsimpleapi.ZoneRecordAttributes{
-			Name:     dnsimpleapi.String(rc.GetLabel()),
-			Type:     rc.Type,
-			Content:  getTargetRecordContent(rc),
-			TTL:      int(rc.TTL),
-			Priority: getTargetRecordPriority(rc),
-		}
-		_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
-		if err != nil {
-			return wrapError(err)
-		}
-
-		return nil
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return wrapError(err)
 	}
+
+	record := dnsimpleapi.ZoneRecordAttributes{
+		Name:     dnsimpleapi.String(rc.GetLabel()),
+		Type:     rc.Type,
+		Content:  getTargetRecordContent(rc),
+		TTL:      int(rc.TTL),
+		Priority: getTargetRecordPriority(rc),
+	}
+
+	_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
+	return wrapError(err)
 }
 
-// Returns a function that can be invoked to delete a record in a zone.
-func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) func() error {
-	return func() error {
-		client := c.getClient()
+// recordDelete deletes a record in a zone.
+func (c *dnsimpleProvider) recordDelete(recordID int64, domainName string) error {
+	client := c.getClient()
 
-		accountID, err := c.getAccountID()
-		if err != nil {
-			return wrapError(err)
-		}
-
-		_, err = client.Zones.DeleteRecord(context.Background(), accountID, domainName, recordID)
-		if err != nil {
-			return wrapError(err)
-		}
-
-		return nil
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return wrapError(err)
 	}
+
+	_, err = client.Zones.DeleteRecord(context.Background(), accountID, domainName, recordID)
+	return wrapError(err)
 }
 
-// Returns a function that can be invoked to update a record in a zone.
-func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) func() error {
-	return func() error {
-		// For null MX records (priority 0, target "."), the SDK's
-		// ZoneRecordAttributes uses omitempty on Priority which drops
-		// priority:0 from the PATCH payload. Without an explicit priority,
-		// the API keeps the old (non-zero) priority and rejects the update.
-		// Work around this by deleting and recreating the record.
-		if rc.Type == "MX" && rc.GetTargetField() == "." {
-			if err := c.deleteRecordFunc(old.ID, domainName)(); err != nil {
-				return err
-			}
-			return c.createRecordFunc(rc, domainName)()
+// recordUpdate updates a record in a zone.
+func (c *dnsimpleProvider) recordUpdate(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) error {
+	// For null MX records (priority 0, target "."), the SDK's
+	// ZoneRecordAttributes uses omitempty on Priority which drops
+	// priority:0 from the PATCH payload. Without an explicit priority,
+	// the API keeps the old (non-zero) priority and rejects the update.
+	// Work around this by deleting and recreating the record.
+	if rc.Type == "MX" && rc.GetTargetField() == "." {
+		if err := c.recordDelete(old.ID, domainName); err != nil {
+			return err
 		}
-
-		client := c.getClient()
-
-		accountID, err := c.getAccountID()
-		if err != nil {
-			return wrapError(err)
-		}
-
-		record := dnsimpleapi.ZoneRecordAttributes{
-			Name:     dnsimpleapi.String(rc.GetLabel()),
-			Type:     rc.Type,
-			Content:  getTargetRecordContent(rc),
-			TTL:      int(rc.TTL),
-			Priority: getTargetRecordPriority(rc),
-		}
-
-		_, err = client.Zones.UpdateRecord(context.Background(), accountID, domainName, old.ID, record)
-		if err != nil {
-			return wrapError(err)
-		}
-
-		return nil
+		return c.recordCreate(rc, domainName)
 	}
+
+	client := c.getClient()
+
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return wrapError(err)
+	}
+
+	record := dnsimpleapi.ZoneRecordAttributes{
+		Name:     dnsimpleapi.String(rc.GetLabel()),
+		Type:     rc.Type,
+		Content:  getTargetRecordContent(rc),
+		TTL:      int(rc.TTL),
+		Priority: getTargetRecordPriority(rc),
+	}
+
+	_, err = client.Zones.UpdateRecord(context.Background(), accountID, domainName, old.ID, record)
+	return wrapError(err)
 }
 
 // ListZones returns all the zones in an account.
