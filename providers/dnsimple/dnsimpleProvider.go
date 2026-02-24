@@ -579,6 +579,18 @@ func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) f
 // Returns a function that can be invoked to update a record in a zone.
 func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) func() error {
 	return func() error {
+		// For null MX records (priority 0, target "."), the SDK's
+		// ZoneRecordAttributes uses omitempty on Priority which drops
+		// priority:0 from the PATCH payload. Without an explicit priority,
+		// the API keeps the old (non-zero) priority and rejects the update.
+		// Work around this by deleting and recreating the record.
+		if rc.Type == "MX" && rc.GetTargetField() == "." {
+			if err := c.deleteRecordFunc(old.ID, domainName)(); err != nil {
+				return err
+			}
+			return c.createRecordFunc(rc, domainName)()
+		}
+
 		client := c.getClient()
 
 		accountID, err := c.getAccountID()
@@ -715,12 +727,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		}
 		return fmt.Sprintf("%d %s", rc.SvcPriority, target)
 	case "MX":
-		// DNSimple expects empty content with priority 0 for null MX records.
-		target := rc.GetTargetField()
-		if target == "." {
-			return ""
-		}
-		return target
+		return rc.GetTargetField()
 	case "NAPTR":
 		return fmt.Sprintf(`%d %d "%s" "%s" "%s" %s`,
 			rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp,
