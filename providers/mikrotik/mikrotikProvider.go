@@ -247,7 +247,7 @@ func (p *mikrotikProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 			corr = &models.Correction{
 				Msg: msg,
 				F: func() error {
-					native, err := recordToNative(newRec, dc.Name)
+					native, err := recordToNative(newRec)
 					if err != nil {
 						return err
 					}
@@ -266,7 +266,7 @@ func (p *mikrotikProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 					if !ok {
 						return fmt.Errorf("mikrotik: missing original record data for update")
 					}
-					native, err := recordToNative(newRec, dc.Name)
+					native, err := recordToNative(newRec)
 					if err != nil {
 						return err
 					}

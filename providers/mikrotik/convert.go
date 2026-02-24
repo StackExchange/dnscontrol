@@ -120,7 +120,7 @@ func nativeToRecords(nr dnsStaticRecord, origin string) ([]*models.RecordConfig,
 }
 
 // recordToNative converts a dnscontrol RecordConfig to a RouterOS DNS static record for create/update.
-func recordToNative(rc *models.RecordConfig, origin string) (*dnsStaticRecord, error) {
+func recordToNative(rc *models.RecordConfig) (*dnsStaticRecord, error) {
 	nr := &dnsStaticRecord{
 		Name: rc.GetLabelFQDN(),
 		TTL:  formatMikrotikDuration(rc.TTL),

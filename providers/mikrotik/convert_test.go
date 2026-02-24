@@ -351,7 +351,7 @@ func TestNativeToRecords_ApexRecord(t *testing.T) {
 func TestRecordToNative_A(t *testing.T) {
 	rc := makeRC("A", "host", "example.com", "10.0.0.1")
 	rc.TTL = 3600
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -363,7 +363,7 @@ func TestRecordToNative_A(t *testing.T) {
 
 func TestRecordToNative_AAAA(t *testing.T) {
 	rc := makeRC("AAAA", "v6", "example.com", "2001:db8::1")
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -373,7 +373,7 @@ func TestRecordToNative_AAAA(t *testing.T) {
 
 func TestRecordToNative_CNAME(t *testing.T) {
 	rc := makeRC("CNAME", "alias", "example.com", "target.example.com.")
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -393,7 +393,7 @@ func TestRecordToNative_FWD(t *testing.T) {
 		"regexp":          `.*\.test`,
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -415,7 +415,7 @@ func TestRecordToNative_NXDOMAIN(t *testing.T) {
 		"comment":         "blocked",
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -431,7 +431,7 @@ func TestRecordToNative_MX(t *testing.T) {
 	_ = rc.SetTargetMX(10, "mail.example.com.")
 	rc.TTL = 86400
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -447,7 +447,7 @@ func TestRecordToNative_SRV(t *testing.T) {
 	_ = rc.SetTargetSRV(10, 20, 5060, "sipserver.example.com.")
 	rc.TTL = 3600
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -465,7 +465,7 @@ func TestRecordToNative_TXT(t *testing.T) {
 	_ = rc.SetTargetTXT("v=spf1 ~all")
 	rc.TTL = 86400
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -481,7 +481,7 @@ func TestRecordToNative_MetadataOnStandardTypes(t *testing.T) {
 		"comment":         "my comment",
 	}
 
-	nr, err := recordToNative(rc, "example.com")
+	nr, err := recordToNative(rc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -496,7 +496,7 @@ func TestRecordToNative_UnsupportedType(t *testing.T) {
 	rc.Type = "BOGUS"
 	_ = rc.SetTarget("whatever")
 
-	_, err := recordToNative(rc, "example.com")
+	_, err := recordToNative(rc)
 	if err == nil {
 		t.Error("expected error for unsupported type")
 	}
@@ -514,7 +514,7 @@ func TestNativeRoundTrip_A(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
@@ -538,7 +538,7 @@ func TestNativeRoundTrip_FWD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
@@ -560,7 +560,7 @@ func TestNativeRoundTrip_NXDOMAIN(t *testing.T) {
 	if err != nil {
 		t.Fatalf("nativeToRecords: %v", err)
 	}
-	nr, err := recordToNative(rcs[0], "example.com")
+	nr, err := recordToNative(rcs[0])
 	if err != nil {
 		t.Fatalf("recordToNative: %v", err)
 	}
