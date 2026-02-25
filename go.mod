@@ -33,7 +33,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.116.0
 	github.com/digitalocean/godo v1.175.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
-	github.com/dnsimple/dnsimple-go v1.7.0
+	github.com/dnsimple/dnsimple-go/v8 v8.0.0
 	github.com/exoscale/egoscale v0.102.4
 	github.com/go-gandi/go-gandi v0.7.0
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
@@ -124,7 +124,7 @@ require (
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
