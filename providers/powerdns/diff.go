@@ -80,7 +80,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 	return corrections, actualChangeCount, nil
 }
 
-// buildRecordList returns a list of records for the PowerDNS resource record set from a change
+// buildRecordList returns a list of records for the PowerDNS resource record set from a change.
 func buildRecordList(change diff2.Change) (records []zones.Record) {
 	for _, recordContent := range change.New {
 		record := zones.Record{

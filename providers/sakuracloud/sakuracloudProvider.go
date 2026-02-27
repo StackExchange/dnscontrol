@@ -75,7 +75,7 @@ func newSakuracloud(config map[string]string, _ json.RawMessage) (*sakuracloudPr
 		endpoint = defaultEndpoint
 	}
 
-	api, err := NewSakuracloudAPI(accessToken, accessTokenSecret, endpoint)
+	api, err := newSakuracloudAPI(accessToken, accessTokenSecret, endpoint)
 	if err != nil {
 		return nil, err
 	}

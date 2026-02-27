@@ -67,7 +67,7 @@ func (api *netcupProvider) GetZoneRecords(domain string, meta map[string]string)
 
 // GetNameservers returns the nameservers for a domain.
 // As netcup doesn't support setting nameservers over this API, these are static.
-// Domains not managed by netcup DNS will return an error
+// Domains not managed by netcup DNS will return an error.
 func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers([]string{
 		"root-dns.netcup.net",

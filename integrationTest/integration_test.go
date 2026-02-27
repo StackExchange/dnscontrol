@@ -429,12 +429,14 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
+				"DNSCALE",     // Apex NS records are managed by DNScale.
 				"DNSIMPLE",    // Does not support NS records nor subdomains.
 				"EXOSCALE",    // Not supported.
 				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
 				"JOKER",       // Not supported via the Zone API.
 				"NAMEDOTCOM",  // "Ignores @ for NS records"
 				"NETCUP",      // NS records not currently supported.
+				"PORKBUN",     // Record ignored.
 				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
 				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
 				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
@@ -658,7 +660,6 @@ func makeTests() []*TestGroup {
 				// "CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
-				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
@@ -681,7 +682,6 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
@@ -698,7 +698,6 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),
@@ -1225,6 +1224,48 @@ func makeTests() []*TestGroup {
 			CfCProxyOn(), CfCProxyOff(),
 		),
 
+		// CLOUDFLAREAPI: CNAME FLATTENING (requires paid plan)
+
+		testgroup("CF_CNAME_FLATTEN create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), tcEmptyZone(),
+			CfFlattenOn(), tcEmptyZone(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN off to on",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), CfFlattenOn(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN on to off",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOn(), CfFlattenOff(),
+		),
+
+		// CLOUDFLAREAPI: COMMENTS (works on all plans)
+
+		testgroup("CF_COMMENT create",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			tc("comment_create", cfCommentA("cmnt", "174.136.107.111", "Test comment")),
+			tc("comment_change", cfCommentA("cmnt", "174.136.107.111", "Changed comment")),
+			tc("comment_remove", a("cmnt", "174.136.107.111")),
+		),
+
+		// CLOUDFLAREAPI: TAGS (requires paid plan)
+
+		testgroup("CF_TAGS create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			tc("tags_create", cfTagsA("tags", "174.136.107.111", "tag1,tag2")),
+			tc("tags_change", cfTagsA("tags", "174.136.107.111", "tag2,tag3")),
+			tc("tags_remove", a("tags", "174.136.107.111")),
+		),
+
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
@@ -1261,6 +1302,61 @@ func makeTests() []*TestGroup {
 		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAAAAPassthrough("foo", "")),
+		),
+
+		// MikroTik RouterOS features
+
+		testgroup("MIKROTIK_FWD",
+			only("MIKROTIK"),
+			tc("create FWD record",
+				mikrotikFwd("internal", "10.0.0.1"),
+			),
+			tc("change FWD target",
+				mikrotikFwd("internal", "10.0.0.2"),
+			),
+			tc("FWD with match_subdomain",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"match_subdomain": "true"}),
+			),
+			tc("FWD with address_list",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"address_list": "mylist"}),
+			),
+			tc("FWD with comment",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"comment": "test forward"}),
+			),
+			tc("multiple FWD records",
+				mikrotikFwd("internal", "10.0.0.2"),
+				mikrotikFwd("vpn", "192.168.1.1"),
+			),
+			tc("delete one FWD",
+				mikrotikFwd("vpn", "192.168.1.1"),
+			),
+		),
+
+		testgroup("MIKROTIK_NXDOMAIN",
+			only("MIKROTIK"),
+			tc("create NXDOMAIN",
+				mikrotikNxdomain("blocked"),
+			),
+			tc("multiple NXDOMAIN",
+				mikrotikNxdomain("blocked"),
+				mikrotikNxdomain("ads"),
+			),
+			tc("delete one NXDOMAIN",
+				mikrotikNxdomain("ads"),
+			),
+		),
+
+		testgroup("MIKROTIK_METADATA",
+			only("MIKROTIK"),
+			tc("A record with comment",
+				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "test comment"}),
+			),
+			tc("change comment",
+				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "updated comment"}),
+			),
+			tc("A with match_subdomain",
+				withMeta(a("wildmeta", "1.2.3.4"), map[string]string{"match_subdomain": "true"}),
+			),
 		),
 
 		// VERCEL features(?)
@@ -1876,6 +1972,25 @@ func makeTests() []*TestGroup {
 				ovhdmarc("_dmarc", "v=DMARC1; p=none; rua=mailto:dmarc@example.com")),
 		),
 
+		// CLOUDNS features
+
+		testgroup("CLOUDNS geodns tests",
+			only("CLOUDNS"),
+			tc("Add record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "US",
+			})),
+			tc("Update record with default geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})),
+			tc("Update record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "BR",
+			})),
+			tc("Delete metadata from record", a("@", "1.2.3.4")),
+			tc("Update a record with the value DEFAULT after removing the metadata should do nothing", withMeta(a("@", "1.2.3.4"), map[string]string{
+				"cloudns_geodns_code": "DEFAULT",
+			})).ExpectNoChanges(),
+		),
+
 		// PORKBUN features
 
 		testgroup("PORKBUN_URLFWD tests",
@@ -1956,6 +2071,59 @@ func makeTests() []*TestGroup {
 			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
 			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
 			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
+		testgroup("Bunny DNS Pull Zone",
+			only("BUNNY_DNS"),
+			tc("Create PZ", bunnyPullZone("@", "5269987")),
+			tc("Change PZ", bunnyPullZone("@", "5269992")),
+		),
+
+		// HEDNS: Dynamic DNS
+
+		testgroup("HEDNS_DYNAMIC A lifecycle",
+			only("HEDNS"),
+			// Create a dynamic A record and verify target changes preserve the flag.
+			tc("Create dynamic A", hednsDynamicA("hdyn", "1.2.3.4", "on")),
+			tc("Change target preserves dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Toggle dynamic off, then back on.
+			tc("Turn off dynamic", hednsDynamicA("hdyn", "5.6.7.8", "off")),
+			tc("Turn on dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Change target without specifying hedns_dynamic — it should stay dynamic.
+			tc("Inherit dynamic on modify", a("hdyn", "10.0.0.1")),
+			// Create a non-dynamic record alongside.
+			tc("Add static record", a("hdyn", "10.0.0.1"), a("hstatic", "2.2.2.2")),
+		),
+
+		testgroup("HEDNS_DYNAMIC AAAA+TXT",
+			only("HEDNS"),
+			tc("Create dynamic AAAA", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2006", "on")),
+			tc("Change dynamic AAAA target", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2013", "on")),
+			tc("Create dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "on")),
+			tc("Turn off dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "off")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY",
+			only("HEDNS"),
+			// Setting a DDNS key implicitly enables dynamic.
+			tc("Create A with DDNS key (implicit dynamic)", hednsDdnsKeyA("hkey", "1.2.3.4", "key1")),
+			// Change target and key together.
+			tc("Change target + key", hednsDdnsKeyA("hkey", "5.6.7.8", "key2")),
+			// AAAA with DDNS key.
+			tc("Create AAAA with DDNS key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2006", "v6key")),
+			tc("Change AAAA target + key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2013", "newv6key")),
+		),
+
+		testgroup("HEDNS_DYNAMIC mixed records",
+			only("HEDNS"),
+			tc("Create mix of dynamic and static",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "2.2.2.2"),
+			),
+			tc("Modify only the static record",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "3.3.3.3"),
+			),
 		),
 
 		// This MUST be the last test.

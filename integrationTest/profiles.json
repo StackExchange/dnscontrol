@@ -114,6 +114,11 @@
     "domain": "$DIGITALOCEAN_DOMAIN",
     "token": "$DIGITALOCEAN_TOKEN"
   },
+  "DNSCALE": {
+    "TYPE": "DNSCALE",
+    "api_key": "$DNSCALE_API_KEY",
+    "domain": "$DNSCALE_DOMAIN"
+  },
   "DNSIMPLE": {
     "TYPE": "DNSIMPLE",
     "baseurl": "https://api.sandbox.dnsimple.com",
@@ -169,6 +174,12 @@
     "api-key": "$GCORE_API_KEY",
     "domain": "$GCORE_DOMAIN"
   },
+  "GIDINET": {
+    "TYPE": "GIDINET",
+    "domain": "$GIDINET_DOMAIN",
+    "password": "$GIDINET_PASSWORD",
+    "username": "$GIDINET_USERNAME"
+  },
   "HEDNS": {
     "TYPE": "HEDNS",
     "domain": "$HEDNS_DOMAIN",
@@ -187,15 +198,6 @@
     "api_token": "$HETZNER_V2_API_TOKEN",
     "domain": "$HETZNER_V2_DOMAIN"
   },
-  "HEXONET": {
-    "TYPE": "HEXONET",
-    "apientity": "$HEXONET_ENTITY",
-    "apilogin": "$HEXONET_UID",
-    "apipassword": "$HEXONET_PW",
-    "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "$HEXONET_DOMAIN",
-    "ipaddress": "$HEXONET_IP"
-  },
   "HOSTINGDE": {
     "TYPE": "HOSTINGDE",
     "authToken": "$HOSTINGDE_AUTHTOKEN",
@@ -207,6 +209,11 @@
     "SecretKey": "$HUAWEICLOUD_KEY",
     "TYPE": "HUAWEICLOUD",
     "domain": "$HUAWEICLOUD_DOMAIN"
+  },
+  "INFOMANIAK": {
+    "TYPE": "INFOMANIAK",
+    "domain": "$INFOMANIAK_DOMAIN",
+    "token": "$INFOMANIAK_TOKEN"
   },
   "INWX": {
     "TYPE": "INWX",
@@ -237,6 +244,13 @@
     "apikey": "$LUADNS_APIKEY",
     "domain": "$LUADNS_DOMAIN",
     "email": "$LUADNS_EMAIL"
+  },
+  "MIKROTIK": {
+    "TYPE": "MIKROTIK",
+    "domain": "$MIKROTIK_DOMAIN",
+    "host": "$MIKROTIK_HOST",
+    "password": "$MIKROTIK_PASSWORD",
+    "username": "$MIKROTIK_USERNAME"
   },
   "MYTHICBEASTS": {
     "TYPE": "MYTHICBEASTS",
@@ -349,6 +363,15 @@
     "PrivateKey": "$TRANSIP_PRIVATE_KEY",
     "TYPE": "TRANSIP",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "UNIFI": {
+    "TYPE": "UNIFI",
+    "api_key": "$UNIFI_API_KEY",
+    "domain": "$UNIFI_DOMAIN",
+    "host": "$UNIFI_HOST",
+    "knownFailures": "26,43",
+    "site": "$UNIFI_SITE",
+    "skip_tls_verify": "$UNIFI_SKIP_TLS_VERIFY"
   },
   "VERCEL": {
     "TYPE": "VERCEL",

@@ -265,27 +265,38 @@ the documentation.
 
 ## Step 11: Automated code tests
 
-Run `go vet` and [`staticcheck`](https://staticcheck.io/) and clean up any errors found.
+We use a number of automated code-checking systems. Please run your code
+through all of them and fix all warnings and errors.  Some of the automated
+fixes may not alway sbe perfect. Therefore, it is best to commit your code
+before running these and verify that you agree with the changes.
+
+Modernize your code:
+
+```shell
+go run golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest -fix ./...
+```
+
+Vet the code:
 
 ```shell
 go vet ./...
+```
+
+Use golangci-lint: (install [golangci-lint](https://golangci-lint.run/docs/welcome/install/local/))
+
+```shell
+golangci-lint run ./...
 staticcheck ./...
 ```
 
-Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel/release.html#policy).
-
-golint is deprecated and frozen but it is still useful as it does a few checks that haven't been
-re-implemented in staticcheck.
-However golint fails on any file that uses generics, so
-be prepared to ignore errors about `expected '(', found '[' (and 1 more errors)`
-
-How to install and run [golint](https://github.com/golang/lint):
+Use staticcheck:
 
 ```shell
-go get -u golang.org/x/lint/golint
-go install golang.org/x/lint/golint
-golint ./...
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...
 ```
+
+Commit any changes.
 
 ## Step 12: Dependencies
 
@@ -311,7 +322,7 @@ The entry looks something like:
 {% code title=".github/workflows/pr_integration_tests.yml" %}
 ```yaml
       env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HEXONET','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
+        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
         ENV_CONTEXT: ${{ toJson(env) }}
 ```
 {% endcode %}
@@ -369,7 +380,7 @@ These are the things we'll be checking when you submit the PR.  Please try to co
   * Post the results as a comment to your PR.
 6. Re-read the [maintainer's responsibilities](../provider/index.md#providers-with-contributor-support) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, periodically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
-## Step 15: Submit a PR
+## Step 16: Submit a PR
 
 At this point you can submit a PR.
 
@@ -379,7 +390,7 @@ Actually you can submit the PR earlier if you just want feedback,
 or have questions.  However if you haven't submitted a PR by now, this is the time to do it.
 
 
-## Step 16: After the PR is merged
+## Step 17: After the PR is merged
 
 1. Close any related GitHub issues.
 3. Would you like your provider to be tested automatically as part of every PR?  Sure you would!  Follow the instructions in [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)

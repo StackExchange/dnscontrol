@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,7 +12,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/urfave/cli/v2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+
+	"github.com/urfave/cli/v3"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -20,15 +23,15 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Name:    "get-zones",
 		Aliases: []string{"get-zone"},
 		Usage:   "gets a zone from a provider (stand-alone)",
-		Action: func(ctx *cli.Context) error {
-			if ctx.NArg() < 3 {
+		Action: func(ctx context.Context, c *cli.Command) error {
+			if c.NArg() < 3 {
 				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
 			}
-			args.CredName = ctx.Args().Get(0)
-			arg1 := ctx.Args().Get(1)
+			args.CredName = c.Args().Get(0)
+			arg1 := c.Args().Get(1)
 			args.ProviderName = arg1
 			// In v4.0, skip the first args.ZoneNames if it equals "-".
-			args.ZoneNames = ctx.Args().Slice()[2:]
+			args.ZoneNames = c.Args().Slice()[2:]
 
 			if arg1 != "" && arg1 != "-" {
 				// NB(tlim): In v4.0 this "if" can be removed.
@@ -77,23 +80,23 @@ EXAMPLES:
 
 // check-creds foo bar
 // is the same as
-// get-zones --format=nameonly foo bar all
+// get-zones --format=nameonly foo bar all.
 var _ = cmd(catUtils, func() *cli.Command {
 	var args GetZoneArgs
 	return &cli.Command{
 		Name:  "check-creds",
 		Usage: "Do a small operation to verify credentials (stand-alone)",
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			var arg0, arg1 string
 			// This takes one or two command-line args.
 			// Starting in v3.16: Using it with 2 args will generate a warning.
 			// Starting in v4.0: Using it with 2 args might be an error.
-			if ctx.NArg() == 1 {
-				arg0 = ctx.Args().Get(0)
+			if c.NArg() == 1 {
+				arg0 = c.Args().Get(0)
 				arg1 = ""
-			} else if ctx.NArg() == 2 {
-				arg0 = ctx.Args().Get(0)
-				arg1 = ctx.Args().Get(1)
+			} else if c.NArg() == 2 {
+				arg0 = c.Args().Get(0)
+				arg1 = c.Args().Get(1)
 			} else {
 				return cli.Exit("Arguments should be: credskey [providername] (Ex: r53 ROUTE53)", 1)
 			}
@@ -220,6 +223,7 @@ func GetZone(args GetZoneArgs) error {
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
+		rtypecontrol.FixLegacyRecords(&recs) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
 		zoneRecs[i] = recs
 	}
 
@@ -261,6 +265,13 @@ func GetZone(args GetZoneArgs) error {
 
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
+
+			// If the provider returns no nameservers, emit {no_ns: "true"}
+			// so that preview/push won't skip the domain.
+			if ns, nsErr := provider.GetNameservers(zoneName); nsErr == nil && len(ns) == 0 {
+				o = append(o, `{no_ns: "true"}`)
+			}
+
 			o = append(o, fmt.Sprintf("DnsProvider(%s)", dspVariableName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
@@ -276,6 +287,28 @@ func GetZone(args GetZoneArgs) error {
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
+
+			// Check if any records have comments or tags, and add management flags if so
+			hasComments := false
+			hasTags := false
+			for _, rec := range recs {
+				if rec.Metadata["cloudflare_comment"] != "" {
+					hasComments = true
+				}
+				if rec.Metadata["cloudflare_tags"] != "" {
+					hasTags = true
+				}
+				if hasComments && hasTags {
+					break
+				}
+			}
+			if hasComments {
+				o = append(o, "CF_MANAGE_COMMENTS // opt into comments syncing")
+			}
+			if hasTags {
+				o = append(o, "CF_MANAGE_TAGS // opt into tags syncing")
+			}
+
 			for _, rec := range recs {
 				if (rec.Type == "CNAME") && (rec.Name == "@") {
 					o = append(o, "// NOTE: CNAME at apex may require manual editing.")
@@ -307,11 +340,32 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				cfproxy := ""
+				providerMeta := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
-						cfproxy = "\tcloudflare_proxy=true"
+						providerMeta += ",cloudflare_proxy=true"
 					}
+				}
+				if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
+					if cf == "on" {
+						providerMeta += ",cloudflare_cname_flatten=on"
+					}
+				}
+				if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+					providerMeta += ",cloudflare_comment=" + comment
+				}
+				if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+					providerMeta += ",cloudflare_tags=" + tags
+				}
+				// HEDNS metadata
+				if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+					providerMeta += ",hedns_dynamic=on"
+					if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+						providerMeta += ",hedns_ddns_key=" + key
+					}
+				}
+				if providerMeta != "" {
+					providerMeta = "\t" + providerMeta[1:] // Remove leading comma, add tab
 				}
 
 				ty := rec.Type
@@ -319,7 +373,7 @@ func GetZone(args GetZoneArgs) error {
 					ty = rec.UnknownTypeName
 				}
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfproxy)
+					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), providerMeta)
 			}
 
 		default:
@@ -353,6 +407,60 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 		if cp == "true" {
 			cfproxy = ", CF_PROXY_ON"
+		}
+	}
+
+	cfflatten := ""
+	if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
+		if cf == "on" {
+			cfflatten = ", CF_CNAME_FLATTEN_ON"
+		}
+	}
+
+	cfcomment := ""
+	if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+		cfcomment = fmt.Sprintf(", CF_COMMENT(%s)", jsonQuoted(comment))
+	}
+
+	cftags := ""
+	if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+		// Convert comma-separated tags to CF_TAGS("tag1", "tag2", ...)
+		tagList := strings.Split(tags, ",")
+		quotedTags := make([]string, len(tagList))
+		for i, tag := range tagList {
+			quotedTags[i] = fmt.Sprintf("%q", tag)
+		}
+		cftags = ", CF_TAGS(" + strings.Join(quotedTags, ", ") + ")"
+	}
+
+	// Mikrotik RouterOS metadata (match_subdomain, regexp, address_list, comment)
+	mtmeta := ""
+	if rec.Metadata != nil {
+		var mtParts []string
+		if v := rec.Metadata["match_subdomain"]; v == "true" {
+			mtParts = append(mtParts, `match_subdomain: "true"`)
+		}
+		if v := rec.Metadata["regexp"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("regexp: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["address_list"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("address_list: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["comment"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("comment: %s", jsonQuoted(v)))
+		}
+		if len(mtParts) > 0 {
+			mtmeta = ", {" + strings.Join(mtParts, ", ") + "}"
+		}
+	}
+
+	// HEDNS metadata
+	hednsDynamic := ""
+	if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+		hednsDynamic = ", HEDNS_DYNAMIC_ON"
+		if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+			// HEDNS_DDNS_KEY implies dynamic, so use it instead.
+			hednsDynamic = fmt.Sprintf(", HEDNS_DDNS_KEY(%s)", jsonQuoted(key))
 		}
 	}
 
@@ -400,6 +508,26 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 			return fmt.Sprintf(`//NAMESERVER("%s")`, target)
 		}
 		target = `"` + target + `"`
+	case "MIKROTIK_FWD":
+		target = `"` + target + `"`
+	case "MIKROTIK_NXDOMAIN":
+		// NXDOMAIN has no target — emit only name + optional metadata + TTL
+		return fmt.Sprintf(`MIKROTIK_NXDOMAIN("%s"%s%s)`, rec.Name, mtmeta, ttlop)
+	case "MIKROTIK_FORWARDER":
+		// Forwarder: target is dns-servers, metadata has doh_servers/verify_doh_cert
+		target = `"` + target + `"`
+		if rec.Metadata != nil {
+			var fwdParts []string
+			if v := rec.Metadata["doh_servers"]; v != "" {
+				fwdParts = append(fwdParts, fmt.Sprintf("doh_servers: %s", jsonQuoted(v)))
+			}
+			if v := rec.Metadata["verify_doh_cert"]; v == "true" {
+				fwdParts = append(fwdParts, `verify_doh_cert: "true"`)
+			}
+			if len(fwdParts) > 0 {
+				target += ", {" + strings.Join(fwdParts, ", ") + "}"
+			}
+		}
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
 	case "UNKNOWN":
@@ -408,7 +536,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s)`, rec.Type, rec.Name, target, cfproxy, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, mtmeta, hednsDynamic, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

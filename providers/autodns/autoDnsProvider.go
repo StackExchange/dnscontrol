@@ -45,18 +45,18 @@ func init() {
 	const providerMaintainer = "@arnoschoon"
 	fns := providers.DspFuncs{
 		Initializer: func(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-			return new(settings), nil
+			return newAutoDNSProvider(settings), nil
 		},
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterRegistrarType(providerName, func(settings map[string]string) (providers.Registrar, error) {
-		return new(settings), nil
+		return newAutoDNSProvider(settings), nil
 	}, features)
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-func new(settings map[string]string) *autoDNSProvider {
+func newAutoDNSProvider(settings map[string]string) *autoDNSProvider {
 	api := &autoDNSProvider{}
 
 	api.baseURL = url.URL{

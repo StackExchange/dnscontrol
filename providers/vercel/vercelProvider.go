@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"time"
 
+	"codeberg.org/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// vercelProvider stores login credentials and represents and API connection
+// vercelProvider stores login credentials and represents and API connection.
 type vercelProvider struct {
 	client   vercelClient.Client
 	apiToken string
@@ -123,7 +123,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 // GetNameservers returns empty array.
 // Vercel doesn't permit apex NS records. Vercel's API doesn't even include apex NS records in their API response
 // To prevent DNSControl from trying to create default NS records, let' return an empty array here, just like
-// exoscale provider and gandi v5 provider
+// exoscale provider and gandi v5 provider.
 func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
@@ -162,7 +162,7 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 		rc.SetLabel(name, domain)
 
 		if r.Type == "CNAME" || r.Type == "MX" {
-			r.Value = dns.CanonicalName(r.Value)
+			r.Value = dnsutil.Canonical(r.Value)
 		}
 
 		switch rtype := r.RecordType; rtype {
@@ -405,7 +405,7 @@ func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, err
 	return req, nil
 }
 
-// ptrInt64 returns a pointer to an int64
+// ptrInt64 returns a pointer to an int64.
 func ptrInt64(v int64) *int64 {
 	return &v
 }

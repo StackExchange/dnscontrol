@@ -12,7 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -88,7 +88,7 @@ func newRtrReg(config map[string]string) (providers.Registrar, error) {
 	return newRtr(config, nil)
 }
 
-// GetNameservers Default name servers should not be included in the update
+// GetNameservers Default name servers should not be included in the update.
 func (api *realtimeregisterAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
@@ -220,13 +220,13 @@ func toRecordConfig(domain string, record *Record) *models.RecordConfig {
 	case "TXT":
 		_ = recordConfig.SetTargetTXT(removeEscapeChars(record.Content))
 	case "NS", "ALIAS", "CNAME":
-		_ = recordConfig.SetTarget(dnsutil.AddOrigin(addTrailingDot(record.Content), domain))
+		_ = recordConfig.SetTarget(dnsutilv1.AddOrigin(addTrailingDot(record.Content), domain))
 	case "MX":
 		content := record.Content
 		if content != "." {
 			content = addTrailingDot(content)
 		}
-		_ = recordConfig.SetTarget(dnsutil.AddOrigin(content, domain))
+		_ = recordConfig.SetTarget(dnsutilv1.AddOrigin(content, domain))
 	case "NAPTR":
 		_ = recordConfig.SetTargetNAPTRString(record.Content)
 	case "SRV":
@@ -335,11 +335,11 @@ func addTrailingDot(record string) string {
 }
 
 func removeEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\\"", "\"", -1), "\\\\", "\\", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\\"", "\""), "\\\\", "\\")
 }
 
 func addEscapeChars(name string) string {
-	return strings.Replace(strings.Replace(name, "\\", "\\\\", -1), "\"", "\\\"", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(name, "\\", "\\\\"), "\"", "\\\"")
 }
 
 func getEndpoint(sandbox bool) string {

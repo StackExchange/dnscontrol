@@ -20,7 +20,7 @@ type DNSServiceProvider interface {
 }
 
 // ZoneCreator should be implemented by providers that have the ability to create zones
-// (used for automatically creating zones if they don't exist)
+// (used for automatically creating zones if they don't exist).
 type ZoneCreator interface {
 	EnsureZoneExists(domain string, metadata map[string]string) error
 }
@@ -129,7 +129,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 	return p.Initializer(config, meta)
 }
 
-// beCompatible looks up
+// beCompatible looks up.
 func beCompatible(n string, config map[string]string) (string, error) {
 	// Pre 4.0: If n is a placeholder, substitute the TYPE from creds.json.
 	// 4.0: Require TYPE from creds.json.
@@ -170,6 +170,41 @@ func AuditRecords(dType string, rcs models.Records) []error {
 	return p.RecordAuditor(rcs)
 }
 
+// None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
+type None struct{}
+
+// GetRegistrarCorrections returns corrections to update registrars.
+func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	return nil, nil
+}
+
+// GetNameservers returns the current nameservers for a domain.
+func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
+	return nil, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+	return nil, nil
+}
+
+// GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
+func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
+	return nil, 0, nil
+}
+
+var featuresNone = DocumentationNotes{
+	// The default for unlisted capabilities is 'Cannot'.
+	// See providers/capabilities.go for the entire list of capabilities.
+	CanConcur: Can(),
+}
+
+func init() {
+	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
+		return None{}, nil
+	}, featuresNone)
+}
+
 // CustomRType stores an rtype that is only valid for this DSP.
 // NB(tlim): This only applies to providers that don't use the new providers.Register() function.
 type CustomRType struct {
@@ -181,14 +216,12 @@ type CustomRType struct {
 // RegisterCustomRecordType registers a record type that is only valid for one provider.
 // provider is the registered type of provider this is valid with
 // name is the record type as it will appear in the js. (should be something like $PROVIDER_FOO)
-// realType is the record type it will be replaced with after validation
-// NB(tlim): This is only needed by providers that don't use the new providers.Register() function.
+// realType is the record type it will be replaced with after validation.
 func RegisterCustomRecordType(name, provider, realType string) {
 	customRecordTypes[name] = &CustomRType{Name: name, Provider: provider, RealType: realType}
 }
 
-// GetCustomRecordType returns a registered custom record type, or nil if none
-// NB(tlim): This is only needed by providers that don't use the new providers.Register() function.
+// GetCustomRecordType returns a registered custom record type, or nil if none.
 func GetCustomRecordType(rType string) *CustomRType {
 	return customRecordTypes[rType]
 }

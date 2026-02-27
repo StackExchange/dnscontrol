@@ -2,14 +2,16 @@ package bunnydns
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/exp/slices"
 )
 
-var fqdnTypes = []recordType{recordTypeCNAME, recordTypeMX, recordTypeNS, recordTypePTR, recordTypeSRV}
+var fqdnTypes = []recordType{recordTypeCNAME, recordTypeHTTPS, recordTypeMX, recordTypeNS, recordTypePTR, recordTypeSRV, recordTypeSVCB}
+var nullTypes = []recordType{recordTypeHTTPS, recordTypeMX, recordTypeSVCB}
 
 func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 	r := record{
@@ -33,13 +35,38 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		r.Tag = rc.CaaTag
 	case recordTypeMX:
 		r.Priority = rc.MxPreference
+	case recordTypeSVCB, recordTypeHTTPS:
+		r.Priority = rc.SvcPriority
+	case recordTypeTLSA:
+		r.Value = fmt.Sprintf("%d %d %d %s", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
+	case recordTypePullZone:
+		// When creating Pull Zone records, the API expects an integer PullZoneId field,
+		// while the Value field should be empty.
+		pullZoneID, err := strconv.ParseInt(rc.GetTargetField(), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid Pull Zone ID for BUNNY_DNS_PZ: %w", err)
+		}
+		r.PullZoneID = pullZoneID
+		r.Value = ""
 	}
 
 	// While Bunny DNS does not use trailing dots, it still accepts and even preserves them for certain record types.
-	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX record.
-	isNullMX := r.Type == recordTypeMX && r.Priority == 0 && r.Value == "."
-	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullMX {
+	// To avoid confusion, any trailing dots are removed from the record value, except when managing a NullMX or a self-pointing HTTPS/SVCB record.
+	isNullRecord := slices.Contains(nullTypes, r.Type) && r.Value == "."
+	if slices.Contains(fqdnTypes, r.Type) && strings.HasSuffix(r.Value, ".") && !isNullRecord {
 		r.Value = strings.TrimSuffix(r.Value, ".")
+	}
+
+	switch r.Type {
+	case recordTypeSVCB, recordTypeHTTPS:
+		// In the case of SVCB/HTTPS records, the Target is part of the Value.
+		// After removing trailing dots for said target, we can add the params to the value.
+		r.Value = fmt.Sprintf("%s %s", r.Value, rc.SvcParams)
+	case recordTypeSRV:
+		// SRV empty target is represented as "."
+		if r.Value == "" {
+			r.Value = "."
+		}
 	}
 
 	return &r, nil
@@ -56,12 +83,23 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 	// Bunny DNS always operates with fully-qualified names and does not use any trailing dots.
 	// If a record already contains a trailing dot, which the provider UI also accepts, the record value is left as-is.
 	recordValue := r.Value
-	if slices.Contains(fqdnTypes, r.Type) && !strings.HasSuffix(r.Value, ".") {
-		recordValue = dnsutil.AddOrigin(r.Value+".", domain)
+
+	// Bunny DNS has the Target and Params on the same Value, so we have to split them
+	recordParts := strings.SplitN(recordValue, " ", 2)
+
+	if slices.Contains(fqdnTypes, r.Type) && !strings.HasSuffix(recordParts[0], ".") {
+		recordParts[0] = dnsutilv1.AddOrigin(recordParts[0]+".", domain)
+		recordValue = strings.Join(recordParts, " ")
 	}
 
 	var err error
 	switch rc.Type {
+	case "BUNNY_DNS_PZ":
+		// When reading Pull Zone records, the API provides the PullZoneId in the LinkName field as string.
+		if r.LinkName == "" {
+			return nil, fmt.Errorf("missing Pull Zone ID (LinkName) for BUNNY_DNS_PZ")
+		}
+		err = rc.SetTarget(r.LinkName)
 	case "BUNNY_DNS_RDR":
 		err = rc.SetTarget(r.Value)
 	case "CAA":
@@ -70,6 +108,10 @@ func toRecordConfig(domain string, r *record) (*models.RecordConfig, error) {
 		err = rc.SetTargetMX(r.Priority, recordValue)
 	case "SRV":
 		err = rc.SetTargetSRV(r.Priority, r.Weight, r.Port, recordValue)
+	case "SVCB", "HTTPS":
+		err = rc.SetTargetSVCBString(r.Name, fmt.Sprintf("%d %s", r.Priority, recordValue))
+	case "TLSA":
+		err = rc.SetTargetTLSAString(recordValue)
 	default:
 		err = rc.PopulateFromStringFunc(rc.Type, recordValue, domain, nil)
 	}
@@ -96,6 +138,9 @@ const (
 	recordTypePTR      recordType = 10
 	recordTypeScript   recordType = 11
 	recordTypeNS       recordType = 12
+	recordTypeSVCB     recordType = 13
+	recordTypeHTTPS    recordType = 14
+	recordTypeTLSA     recordType = 15
 )
 
 func recordTypeFromString(t string) recordType {
@@ -112,7 +157,7 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeMX
 	case "FLATTEN":
 		return recordTypeFlatten
-	case "PULL_ZONE":
+	case "BUNNY_DNS_PZ":
 		return recordTypePullZone
 	case "SRV":
 		return recordTypeSRV
@@ -124,6 +169,12 @@ func recordTypeFromString(t string) recordType {
 		return recordTypeScript
 	case "NS":
 		return recordTypeNS
+	case "SVCB":
+		return recordTypeSVCB
+	case "HTTPS":
+		return recordTypeHTTPS
+	case "TLSA":
+		return recordTypeTLSA
 	case "BUNNY_DNS_RDR":
 		return recordTypeRedirect
 	default:
@@ -148,7 +199,7 @@ func recordTypeToString(t recordType) string {
 	case recordTypeFlatten:
 		return "FLATTEN"
 	case recordTypePullZone:
-		return "PULL_ZONE"
+		return "BUNNY_DNS_PZ"
 	case recordTypeSRV:
 		return "SRV"
 	case recordTypeCAA:
@@ -159,6 +210,12 @@ func recordTypeToString(t recordType) string {
 		return "SCRIPT"
 	case recordTypeNS:
 		return "NS"
+	case recordTypeSVCB:
+		return "SVCB"
+	case recordTypeHTTPS:
+		return "HTTPS"
+	case recordTypeTLSA:
+		return "TLSA"
 	default:
 		panic(fmt.Errorf("BUNNY_DNS: native rtype %v unimplemented", t))
 	}

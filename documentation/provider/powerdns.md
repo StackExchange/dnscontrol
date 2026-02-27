@@ -25,13 +25,13 @@ Following provider metadata are available:
 {% code title="dnsconfig.js" %}
 ```javascript
 var DSP_POWERDNS = NewDnsProvider("pdns", {
-    'default_ns': [
-        'a.example.com.',
-        'b.example.com.'
+    "default_ns": [
+        "a.example.com.",
+        "b.example.com."
     ],
-    'dnssec_on_create': false,
-    'zone_kind': 'Native',
-    'use_views': true
+    "dnssec_on_create": false,
+    "zone_kind": "Native",
+    "use_views": true
 });
 ```
 {% endcode %}

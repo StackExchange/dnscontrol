@@ -44,7 +44,7 @@ func newEasyname(m map[string]string) (providers.Registrar, error) {
 	return api, nil
 }
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (c *easynameProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	domain, err := c.getDomain(dc.Name)
 	if err != nil {

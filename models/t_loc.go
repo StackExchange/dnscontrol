@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 // SetTargetLOC sets the LOC fields from the rr.LOC type properties.
@@ -29,7 +29,7 @@ func (rc *RecordConfig) SetTargetLOC(ver uint8, lat uint32, lon uint32, alt uint
 
 // SetLOCParams is an intermediate function which passes the 12 input parameters
 // for further processing to the LOC native 7 input binary format:
-// LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre
+// LocVersion (0), LocLatitude, LocLongitude, LocAltitude, LocSize, LocVertPre, LocHorizPre.
 func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
 	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
 ) error {
@@ -40,7 +40,7 @@ func (rc *RecordConfig) SetLOCParams(d1 uint8, m1 uint8, s1 float32, ns string,
 
 // SetTargetLOCString is like SetTargetLOC but accepts one big string and origin
 // Normally this is used when we receive a record string from provider records
-// because e.g. the provider API passed rc.PopulateFromString()
+// because e.g. the provider API passed rc.PopulateFromString().
 func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error {
 	// This is where text from provider records ingresses into the target field.
 	// Fill the other fields derived from the TEXT here. LOC is special, and
@@ -51,7 +51,7 @@ func (rc *RecordConfig) SetTargetLOCString(origin string, contents string) error
 
 	// Build a string with which to init the rr.LOC object:
 	str := fmt.Sprintf("%s. LOC %s\n", origin, contents)
-	loc, err := dns.NewRR(str)
+	loc, err := dnsv1.NewRR(str)
 	if err != nil {
 		return fmt.Errorf("can't parse LOC data: %w", err)
 	}
@@ -93,28 +93,28 @@ func (rc *RecordConfig) extractLOCFieldsFromStringInput(input string) error {
 	return rc.calculateLOCFields(d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
 }
 
-// calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields
+// calculateLOCFields converts from 12 user inputs to the LOC 7 binary fields.
 func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns string,
 	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
 ) error {
 	// Crazy hairy shit happens here.
 	// We already got the useful "string" version earlier. ¯\_(ツ)_/¯ code golf...
-	lat := uint32(d1)*dns.LOC_DEGREES + uint32(m1)*dns.LOC_HOURS + uint32(s1*1000)
-	lon := uint32(d2)*dns.LOC_DEGREES + uint32(m2)*dns.LOC_HOURS + uint32(s2*1000)
+	lat := uint32(d1)*dnsv1.LOC_DEGREES + uint32(m1)*dnsv1.LOC_HOURS + uint32(s1*1000)
+	lon := uint32(d2)*dnsv1.LOC_DEGREES + uint32(m2)*dnsv1.LOC_HOURS + uint32(s2*1000)
 	if strings.ToUpper(ns) == "N" {
-		rc.LocLatitude = dns.LOC_EQUATOR + lat
+		rc.LocLatitude = dnsv1.LOC_EQUATOR + lat
 	} else { // "S"
-		rc.LocLatitude = dns.LOC_EQUATOR - lat
+		rc.LocLatitude = dnsv1.LOC_EQUATOR - lat
 	}
 	if strings.ToUpper(ew) == "E" {
-		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN + lon
+		rc.LocLongitude = dnsv1.LOC_PRIMEMERIDIAN + lon
 	} else { // "W"
-		rc.LocLongitude = dns.LOC_PRIMEMERIDIAN - lon
+		rc.LocLongitude = dnsv1.LOC_PRIMEMERIDIAN - lon
 	}
 	// Altitude
-	altitude := (float64(al) + dns.LOC_ALTITUDEBASE) * 100
+	altitude := (float64(al) + dnsv1.LOC_ALTITUDEBASE) * 100
 	clampedAltitude := math.Min(math.Max(0, altitude), float64(math.MaxUint32))
-	rc.LocAltitude = uint32(clampedAltitude)
+	rc.LocAltitude = uint32(math.Round(clampedAltitude))
 
 	var err error
 	// Size
@@ -144,7 +144,7 @@ func (rc *RecordConfig) calculateLOCFields(d1 uint8, m1 uint8, s1 float32, ns st
 	return nil
 }
 
-// getENotationInt produces a mantissa_exponent 4bits:4bits into a uint8
+// getENotationInt produces a mantissa_exponent 4bits:4bits into a uint8.
 func getENotationInt(x float32) (uint8, error) {
 	/*
 	   9000000000cm = 9e9 == 153 (9^4 + 9) or 9<<4 + 9
@@ -200,17 +200,17 @@ func getENotationInt(x float32) (uint8, error) {
 // ReverseLatitude takes the packed latitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
-	if lat >= dns.LOC_EQUATOR {
+	if lat >= dnsv1.LOC_EQUATOR {
 		hemisphere = "N"
-		lat = lat - dns.LOC_EQUATOR
+		lat = lat - dnsv1.LOC_EQUATOR
 	} else {
 		hemisphere = "S"
-		lat = dns.LOC_EQUATOR - lat
+		lat = dnsv1.LOC_EQUATOR - lat
 	}
-	degrees := uint8(lat / dns.LOC_DEGREES)
-	lat -= uint32(degrees) * dns.LOC_DEGREES
-	minutes := uint8(lat / dns.LOC_HOURS)
-	lat -= uint32(minutes) * dns.LOC_HOURS
+	degrees := uint8(lat / dnsv1.LOC_DEGREES)
+	lat -= uint32(degrees) * dnsv1.LOC_DEGREES
+	minutes := uint8(lat / dnsv1.LOC_HOURS)
+	lat -= uint32(minutes) * dnsv1.LOC_HOURS
 	seconds := float64(lat) / 1000
 
 	return hemisphere, degrees, minutes, seconds
@@ -219,17 +219,17 @@ func ReverseLatitude(lat uint32) (string, uint8, uint8, float64) {
 // ReverseLongitude takes the packed longitude and returns the hemisphere, degrees, minutes, and seconds.
 func ReverseLongitude(lon uint32) (string, uint8, uint8, float64) {
 	var hemisphere string
-	if lon >= dns.LOC_PRIMEMERIDIAN {
+	if lon >= dnsv1.LOC_PRIMEMERIDIAN {
 		hemisphere = "E"
-		lon = lon - dns.LOC_PRIMEMERIDIAN
+		lon = lon - dnsv1.LOC_PRIMEMERIDIAN
 	} else {
 		hemisphere = "W"
-		lon = dns.LOC_PRIMEMERIDIAN - lon
+		lon = dnsv1.LOC_PRIMEMERIDIAN - lon
 	}
-	degrees := uint8(lon / dns.LOC_DEGREES)
-	lon -= uint32(degrees) * dns.LOC_DEGREES
-	minutes := uint8(lon / dns.LOC_HOURS)
-	lon -= uint32(minutes) * dns.LOC_HOURS
+	degrees := uint8(lon / dnsv1.LOC_DEGREES)
+	lon -= uint32(degrees) * dnsv1.LOC_DEGREES
+	minutes := uint8(lon / dnsv1.LOC_HOURS)
+	lon -= uint32(minutes) * dnsv1.LOC_HOURS
 	seconds := float64(lon) / 1000
 
 	return hemisphere, degrees, minutes, seconds
@@ -240,7 +240,7 @@ func ReverseAltitude(packedAltitude uint32) float64 {
 	return float64(packedAltitude)/100 - 100000
 }
 
-// ReverseENotationInt produces a number from a mantissa_exponent 4bits:4bits uint8
+// ReverseENotationInt produces a number from a mantissa_exponent 4bits:4bits uint8.
 func ReverseENotationInt(packedValue uint8) float64 {
 	mantissa := float64((packedValue >> 4) & 0x0F)
 	exponent := int(packedValue & 0x0F)

@@ -36,6 +36,22 @@ func (handle *CfRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
 }
 
+// CopyFromLegacyFields populates rec.F from the legacy RecordType fields.
+func (handle *CfRedirect) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT is built in FromArgs.
+
+	// However, we add some assertions here to catch mistakes.
+	if rec.F == nil {
+		panic("assertion failed: CfRedirect CopyFromLegacyFields called with rec.F == nil")
+	}
+	if rec.ZonefilePartial == "" {
+		panic("assertion failed: CfRedirect CopyFromLegacyFields called with rec.ZonefilePartial == \"\"")
+	}
+	if rec.Comparable == "" {
+		panic("assertion failed: CfRedirect CopyFromLegacyFields called with rec.Comparable == \"\"")
+	}
+}
+
 // CfTempRedirect represents the CF_TEMP_REDIRECT rtype, which is a builder that produces CLOUDFLAREAPI_SINGLE_REDIRECT.
 type CfTempRedirect struct{}
 
@@ -57,6 +73,22 @@ func (handle *CfTempRedirect) FromStruct(dcn *domaintags.DomainNameVarieties, re
 // CopyToLegacyFields copies data from rec.F to the legacy fields in rec.
 func (handle *CfTempRedirect) CopyToLegacyFields(rec *models.RecordConfig) {
 	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT FromArgs copies everything needed.
+}
+
+// CopyFromLegacyFields copies data from rec.F to the legacy fields in rec.
+func (handle *CfTempRedirect) CopyFromLegacyFields(rec *models.RecordConfig) {
+	// Nothing needs to be copied.  The CLOUDFLAREAPI_SINGLE_REDIRECT is built in FromArgs.
+
+	// However, we add some assertions here to catch mistakes.
+	if rec.F == nil {
+		panic("assertion failed: CfTempRedirect CopyFromLegacyFields called with rec.F == nil")
+	}
+	if rec.ZonefilePartial == "" {
+		panic("assertion failed: CfTempRedirect CopyFromLegacyFields called with rec.ZonefilePartial == \"\"")
+	}
+	if rec.Comparable == "" {
+		panic("assertion failed: CfTempRedirect CopyFromLegacyFields called with rec.Comparable == \"\"")
+	}
 }
 
 func fromArgsHelper(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, args []any, code int) error {

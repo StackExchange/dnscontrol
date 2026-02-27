@@ -53,7 +53,7 @@ type oracleProvider struct {
 	compartment string
 }
 
-// New creates a new provider for Oracle Cloud DNS
+// New creates a new provider for Oracle Cloud DNS.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	client, err := dns.NewDnsClientWithConfigurationProvider(common.NewRawConfigurationProvider(
 		settings["tenancy_ocid"],
@@ -113,7 +113,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (o *oracleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -168,8 +168,8 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]string, len(getResp.Zone.Nameservers))
-	for i, ns := range getResp.Zone.Nameservers {
+	nss := make([]string, len(getResp.Nameservers))
+	for i, ns := range getResp.Nameservers {
 		nss[i] = *ns.Hostname
 	}
 

@@ -186,11 +186,12 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 	var req *http.Request
 	var err error
 
-	if request.method == "PUT" || request.method == "POST" {
+	switch request.method {
+	case "PUT", "POST":
 		req, err = http.NewRequest(request.method, url, bytes.NewBuffer([]byte(request.data)))
-	} else if request.method == "GET" || request.method == "DELETE" {
+	case "GET", "DELETE":
 		req, err = http.NewRequest(request.method, url, nil)
-	} else {
+	default:
 		return nil, fmt.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
 	}
 
@@ -211,7 +212,7 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 // DNS Made Easy only allows 150 request / 5 minutes
 // backoff is the amount of time to sleep if a "Rate limit exceeded" error is received
 // It is increased up to maxBackoff after each use
-// It is reset after successful request
+// It is reset after successful request.
 var backoff = initialBackoff
 
 func (restApi *dnsMadeEasyRestAPI) sendRequest(request *apiRequest, response any) (int, error) {

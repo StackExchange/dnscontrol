@@ -117,6 +117,40 @@ func TestParseRedirectOnly(t *testing.T) {
 	t.Log(rec.Print())
 }
 
+func TestParseQualifiedMechanisms(t *testing.T) {
+	// Regression test: SPF mechanisms with qualifiers (+mx, -all, ~all, ?mx)
+	// should be parsed correctly. See https://github.com/StackExchange/dnscontrol/issues/4042
+	dnsres, err := NewCache("testdata-dns1.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		input   string
+		wantErr bool
+		lookups int
+	}{
+		{"v=spf1 +mx -all", false, 1},
+		{"v=spf1 ~mx -all", false, 1},
+		{"v=spf1 ?mx -all", false, 1},
+		{"v=spf1 +a -all", false, 1},
+		{"v=spf1 ~a -all", false, 1},
+		{"v=spf1 +mx +a -all", false, 2},
+		{"v=spf1 +ip4:192.168.0.0/24 -all", false, 0},
+		{"v=spf1 +ip6:2001:db8::/32 -all", false, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			rec, err := Parse(tt.input, dnsres)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("Parse(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
+			}
+			if err == nil && rec.Lookups() != tt.lookups {
+				t.Errorf("Parse(%q) lookups = %d, want %d", tt.input, rec.Lookups(), tt.lookups)
+			}
+		})
+	}
+}
+
 func TestParseRedirectLast(t *testing.T) {
 	dnsres, err := NewCache("testdata-dns1.json")
 	if err != nil {

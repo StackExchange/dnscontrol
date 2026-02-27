@@ -49,18 +49,18 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	switch a.Type { // #rtype_variations
 	case "A":
 		ta2, tb2 := a.GetTargetIP(), b.GetTargetIP()
-		ipa, ipb := ta2.To4(), tb2.To4()
-		if ipa == nil || ipb == nil {
-			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
+		if !ta2.Is4() || !tb2.Is4() {
+			log.Fatalf("should not happen: Invalid IPv4 address: %s %s",
+				a.GetTargetIP().String(), b.GetTargetIP().String())
 		}
-		return bytes.Compare(ipa, ipb) == -1
+		return bytes.Compare(ta2.AsSlice(), tb2.AsSlice()) == -1
 	case "AAAA":
 		ta2, tb2 := a.GetTargetIP(), b.GetTargetIP()
-		ipa, ipb := ta2.To16(), tb2.To16()
-		if ipa == nil || ipb == nil {
-			log.Fatalf("should not happen: IPs are not 16 bytes: %#v %#v", ta2, tb2)
+		if !ta2.Is6() || !tb2.Is6() {
+			log.Fatalf("should not happen: Invalid IPv6 address: %s %s",
+				a.GetTargetIP().String(), b.GetTargetIP().String())
 		}
-		return bytes.Compare(ipa, ipb) == -1
+		return ta2.Compare(tb2) == -1
 	case "MX":
 		// sort by priority. If they are equal, sort by Mx.
 		if a.MxPreference == b.MxPreference {

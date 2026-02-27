@@ -32,7 +32,6 @@ func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string)
 	// Define a list of record types that are currently not supported by this provider.
 	unsupportedTypes := []recordType{
 		recordTypeFlatten,
-		recordTypePullZone,
 		recordTypeScript,
 	}
 

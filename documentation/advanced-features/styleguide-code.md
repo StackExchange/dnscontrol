@@ -69,7 +69,7 @@ DO NOT conditionally add or remove the trailing dot from a string to future-proo
 
 DO call Go's `panic()` function if a protocol changes unexpectedly.
 
-### Why?
+## Why?
 
 It seems like future-proofing to only add a "." if the dot doesn't already exist.  It is the opposite.
 

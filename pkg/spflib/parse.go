@@ -56,13 +56,14 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		if qualifiers[part[0]] {
 			part = part[1:]
 		}
+		lcpart := strings.ToLower(part) // We have seen "Ip4" instead of "ip4".  Let's be gracious and allow it.
 		rec.Parts = append(rec.Parts, p)
 		if part == "all" {
 			// all. nothing else matters.
 			break
-		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
+		} else if strings.HasPrefix(lcpart, "a") || strings.HasPrefix(lcpart, "mx") {
 			p.IsLookup = true
-		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
+		} else if strings.HasPrefix(lcpart, "ip4:") || strings.HasPrefix(lcpart, "ip6:") {
 			// ip address, 0 lookups
 			continue
 		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect=") {

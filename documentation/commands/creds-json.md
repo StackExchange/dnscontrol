@@ -18,12 +18,12 @@ Here's a sample file:
     "directory": "inzones",
     "filenameformat": "db_%T%?_%D"
   },
-  "hexonet": {
-    "TYPE": "HEXONET",
-    "apilogin": "$HEXONET_APILOGIN",
-    "apipassword": "$HEXONET_APIPASSWORD",
-    "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "$HEXONET_DOMAIN"
+  "CNR": {
+    "TYPE": "CNR",
+    "apilogin": "$CNR_APILOGIN",
+    "apipassword": "$CNR_APIPASSWORD",
+    "debugmode": "$CNR_DEBUGMODE",
+    "domain": "$CNR_DOMAIN"
   }
 }
 ```
@@ -31,7 +31,7 @@ Here's a sample file:
 
 ## Format
 
-* Primary keys: (e.g. `cloudflare_tal`, `inside`, `hexonet`)
+* Primary keys: (e.g. `cloudflare_tal`, `inside`, `CNR`)
   * ...refer to the first parameter in the `NewRegistrar()` or `NewDnsProvider()` functions in a `dnsconfig.js` file.
   * ...may include any printable character except colon (`:`)
   * Convention: all lower case, usually the name of the provider or the username at the provider or both.
@@ -41,7 +41,7 @@ Here's a sample file:
   * A missing subkey is not an error. The value is the empty string.
 * Values:
   * ...may include any JSON string value including the empty string.
-  * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$HEXONET_APILOGIN` would be replaced by the value of the environment variable `HEXONET_APILOGIN` or the empty string if no such environment variable exists.
+  * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$CNR_APILOGIN` would be replaced by the value of the environment variable `CNR_APILOGIN` or the empty string if no such environment variable exists.
 
 ## New in v3.16
 
@@ -234,5 +234,5 @@ Anyone with access to your Git repository *or the history* will know your apiuse
 Removing secrets accidentally stored in Git is very difficult because you'll need to rewrite
 the repo history.
 
-A better way is to use environment variables as in the `hexonet` example above.  Use
+A better way is to use environment variables as in the `CNR` example above.  Use
 secure means to distribute the names and values of the environment variables.

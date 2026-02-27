@@ -80,7 +80,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain '%s' not found in gcloud account", e.domain)
 }
 
-// New creates a new gcloud provider
+// New creates a new gcloud provider.
 func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	// the key as downloaded is json encoded with literal "\n" instead of newlines.
 	// in some cases (round-tripping through env vars) this tends to get messed up.
@@ -89,7 +89,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	ctx := context.Background()
 	var opt option.ClientOption
 	if key, ok := cfg["private_key"]; ok {
-		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
+		cfg["private_key"] = strings.ReplaceAll(key, "\\n", "\n")
 		raw, err := json.Marshal(cfg)
 		if err != nil {
 			return nil, err
@@ -307,7 +307,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	return corrections, actualChangeCount, nil
 }
 
-// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
+// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs.
 func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
 	if len(recs) == 0 { // NB(tlim): This is defensive. mkRRSs is never called with an empty list.
 		return nil
@@ -460,7 +460,7 @@ func (g *gcloudProvider) EnsureZoneExists(domain string, metadata map[string]str
 	printer.Printf("Adding zone for %s to gcloud account ", domain)
 	mz = &gdns.ManagedZone{
 		DnsName:     domain + ".",
-		Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
+		Name:        "zone-" + strings.ReplaceAll(domain, ".", "-"),
 		Description: "zone added by dnscontrol",
 	}
 	if g.nameServerSet != nil {

@@ -120,10 +120,10 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 	// should clean that up someday.
 	for _, domain := range cfg.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			pName := provider.ProviderBase.Name
-			pType := provider.ProviderBase.ProviderType
+			pName := provider.Name
+			pType := provider.ProviderType
 			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
-			provider.ProviderBase.ProviderType = nt
+			provider.ProviderType = nt
 			if warnMsg != "" {
 				msgs = append(msgs, warnMsg)
 			}
