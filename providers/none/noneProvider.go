@@ -25,10 +25,13 @@ func init() {
 
 			Features: providers.DocumentationNotes{
 				// The default for unlisted capabilities is 'Cannot'.
-				// See providers/capabilities.go for the entire list of capabilities.
+				// See providers/capabilities.go for the complete list of capabilities.
 				providers.CanConcur:           providers.Can(),
 				providers.CanUseDSForChildren: providers.Can(),
 				providers.DocDualHost:         providers.Can(),
+			},
+			SupportedRecordTypes: []string{
+				"*", // Magic code that means all types are supported.
 			},
 		})
 }

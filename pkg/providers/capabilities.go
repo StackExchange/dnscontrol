@@ -118,8 +118,11 @@ const (
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange.
 	DocOfficiallySupported
 
-	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports.
-	CanUseAKAMAITLC
+	// IsRegistrar is true if this provider manages DNS Domain Nameserver Delegations.
+	IsRegistrar
+
+	// IsDnsServiceProvider is true if this provider manages DNS zones.
+	IsDnsServiceProvider
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
