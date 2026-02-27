@@ -286,7 +286,7 @@ Jump to a table:
 | [`AKAMAIEDGEDNS`](akamaiedgedns.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`ALIDNS`](alidns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AUTODNS`](autodns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
-| [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
+| [`AXFRDDNS`](axfrddns.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [`AZURE_DNS`](azuredns.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
 | [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ | ✅ |
