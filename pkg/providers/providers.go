@@ -206,6 +206,7 @@ func init() {
 }
 
 // CustomRType stores an rtype that is only valid for this DSP.
+// NB(tlim): This only applies to providers that don't use the new providers.Register() function.
 type CustomRType struct {
 	Name     string
 	Provider string
