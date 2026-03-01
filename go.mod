@@ -12,7 +12,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-require golang.org/x/net v0.50.0
+require golang.org/x/net v0.51.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
