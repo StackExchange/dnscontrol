@@ -12,7 +12,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-require golang.org/x/net v0.50.0
+require golang.org/x/net v0.51.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
@@ -60,7 +60,7 @@ require (
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.62
+	codeberg.org/miekg/dns v0.6.64
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
@@ -150,7 +150,7 @@ require (
 	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
-	github.com/prometheus/procfs v0.19.2 // indirect
+	github.com/prometheus/procfs v0.20.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
