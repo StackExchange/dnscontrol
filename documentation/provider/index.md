@@ -355,6 +355,7 @@ Jump to a table:
 | [`DNSMADEEASY`](dnsmadeeasy.md) | ❔ | ❔ | ❌ |
 | [`DOMAINNAMESHOP`](domainnameshop.md) | ❌ | ❔ | ❔ |
 | [`GANDI_V5`](gandiv5.md) | ❔ | ❔ | ❌ |
+| [`GCLOUD`](gcloud.md) | ✅ | ❔ | ❔ |
 | [`GCORE`](gcore.md) | ✅ | ❔ | ❌ |
 | [`GIDINET`](gidinet.md) | ❌ | ❌ | ❌ |
 | [`HEDNS`](hedns.md) | ❌ | ❔ | ❌ |
