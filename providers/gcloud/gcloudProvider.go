@@ -44,7 +44,7 @@ var features = providers.DocumentationNotes{
 
 var (
 	visibilityCheck  = regexp.MustCompile("^(public|private)$")
-	networkURLCheck  = regexp.MustCompile("^" + selfLinkBasePath + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
+	networkURLCheck  = regexp.MustCompile("^" + regexp.QuoteMeta(selfLinkBasePath) + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 )
 
