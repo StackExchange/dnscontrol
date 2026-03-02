@@ -14,6 +14,9 @@ on:
     branches:
       - 'tlim_testpr'
 
+permissions:
+  contents: read
+
 # Environment Variables
 env:
   # cache-key: Change to force cache reset `pwsh > Get-Date -UFormat %s`
