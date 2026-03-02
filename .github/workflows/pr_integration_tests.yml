@@ -1,5 +1,8 @@
 name: "PR: Run INTEGRATION tests"
 
+permissions:
+  contents: read
+
 # When will this pipeline be activated?
 # 1. On any pull-request, or if someone pushes to a branch called
 # "tlim_testpr".
