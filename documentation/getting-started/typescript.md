@@ -60,7 +60,59 @@ If your editor requires extra steps, please [file a bug](https://github.com/Stac
 **NOTE**: This feature is currently experimental. We might change the installation instructions as we find better ways to enable this.
 {% endhint %}
 
-## Known bugs/issue
+## Recommended: use a `tsconfig.json`
+
+For the best experience, create a `tsconfig.json` file in the same directory as your `dnsconfig.js`. This gives TypeScript the correct context for DNSControl's JavaScript DSL and avoids issues with `require` (see [known issues](#known-issue-require-causes-typescript-errors) below).
+
+{% code title="tsconfig.json" %}
+```json
+{
+  "compilerOptions": {
+    "lib": ["es5"],
+    "allowJs": true,
+    "checkJs": true,
+    "module": "None",
+    "strict": true,
+    "noEmit": true
+  },
+  "include": [
+    "dnsconfig.js",
+    "types-dnscontrol.d.ts"
+  ]
+}
+```
+{% endcode %}
+
+{% hint style="info" %}
+**NOTE**: If you split your configuration across multiple files (e.g. a `zones/` directory), add them to the `include` array:
+
+```json
+"include": [
+    "zones/**/*.js",
+    "dnsconfig.js",
+    "types-dnscontrol.d.ts"
+]
+```
+{% endhint %}
+
+When using a `tsconfig.json`, you no longer need the `// @ts-check` and `/// <reference>` comments at the top of your `dnsconfig.js`.
+
+## Known bugs/issues
+
+### Known issue: `require` causes TypeScript errors
+
+TypeScript treats `require()` as a special keyword that indicates a CommonJS module. When you use `require()` in `dnsconfig.js`, TypeScript may switch to module mode and stop recognizing global variables like `D`, `A`, `MX`, etc.
+
+**Solution**: Use a `tsconfig.json` with `"module": "None"` as described [above](#recommended-use-a-tsconfigjson). This prevents TypeScript from inferring module mode.
+
+**Alternative workaround**: If you cannot use a `tsconfig.json`, you can work around this by assigning `require` to a different `include` variable:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var include = require;
+include("./zones/example.com.js");
+```
+{% endcode %}
 
 ### Bug: `CLI_DEFAULTS` not implemented
 
