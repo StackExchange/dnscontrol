@@ -116,10 +116,59 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.getRecordsForDomain(domainID, domain)
-	if err != nil {
-		return nil, err
+
+	type result struct {
+		records models.Records
+		err     error
 	}
+
+	// Prepare channels for concurrent fetching
+	mainCh := make(chan result, 1)
+	redirectCh := make(chan result, 1)
+	workerCh := make(chan result, 1)
+
+	// Fetch DNS records concurrently
+	go func() {
+		recs, err := c.getRecordsForDomain(domainID, domain)
+		mainCh <- result{records: recs, err: err}
+	}()
+
+	// Fetch Single Redirects concurrently if enabled
+	if c.manageSingleRedirects {
+		go func() {
+			prs, err := c.getSingleRedirects(domainID, domain)
+			redirectCh <- result{records: prs, err: err}
+		}()
+	} else {
+		redirectCh <- result{records: nil, err: nil}
+	}
+
+	// Fetch Worker Routes concurrently if enabled
+	if c.manageWorkers {
+		go func() {
+			wrs, err := c.getWorkerRoutes(domainID, domain)
+			workerCh <- result{records: wrs, err: err}
+		}()
+	} else {
+		workerCh <- result{records: nil, err: nil}
+	}
+
+	// Collect results
+	mainRes := <-mainCh
+	redirectRes := <-redirectCh
+	workerRes := <-workerCh
+
+	if mainRes.err != nil {
+		return nil, mainRes.err
+	}
+	if redirectRes.err != nil {
+		return nil, redirectRes.err
+	}
+	if workerRes.err != nil {
+		return nil, workerRes.err
+	}
+
+	records := mainRes.records
 
 	for _, rec := range records {
 		if rec.TTL == 0 {
@@ -135,23 +184,8 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 	}
 
-	if c.manageSingleRedirects { // if new xor old
-		// Download the list of Single Redirects.
-		// For each one, generate a SINGLEREDIRECT record
-		prs, err := c.getSingleRedirects(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
-	}
-
-	if c.manageWorkers {
-		wrs, err := c.getWorkerRoutes(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, wrs...)
-	}
+	records = append(records, redirectRes.records...)
+	records = append(records, workerRes.records...)
 
 	// Normalize
 	models.PostProcessRecords(records)
