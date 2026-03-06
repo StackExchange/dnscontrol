@@ -60,7 +60,7 @@ require (
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.66
+	codeberg.org/miekg/dns v0.6.67
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
