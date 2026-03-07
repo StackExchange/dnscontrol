@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v4
 
-go 1.25.0
+go 1.26.1
 
 retract v4.8.0
 
@@ -8,6 +8,7 @@ require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
+	github.com/maxatome/go-testdeep v1.14.0 // indirect
 	go.uber.org/ratelimit v0.3.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
@@ -120,7 +121,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/goccy/go-yaml v1.9.8 // indirect
+	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
@@ -171,7 +172,6 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260217215200-42d3e9bedb6d // indirect
 	google.golang.org/grpc v1.79.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
