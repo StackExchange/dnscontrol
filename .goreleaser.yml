@@ -3,7 +3,6 @@ project_name: dnscontrol
 version: 2
 builds:
   -
-    id: build
     env:
       - CGO_ENABLED=0
     goos:
@@ -67,7 +66,6 @@ archives:
 universal_binaries:
   -
     replace: true
-    id: build
 
 nfpms:
   - id: packages_rpm
@@ -96,9 +94,7 @@ nfpms:
     formats:
     - deb
 dockers_v2:
-  - ids:
-      - build
-    images:
+  - images:
       - "stackexchange/{{.ProjectName}}"
       - "ghcr.io/stackexchange/{{.ProjectName}}"
     tags:
