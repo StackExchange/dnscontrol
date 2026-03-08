@@ -441,7 +441,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			switch rec.Type {
+			switch rec.Type { // #rtype_variations
 			case "ALIAS", "CNAME", "MX", "NS", "SRV":
 				// #rtype_variations
 				// These record types have a target that is a hostname.
@@ -470,6 +470,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
 				if !slices.Contains(allowedTags, rec.CaaTag) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
+				}
+			case "OPENPGPKEY":
+				target := rec.GetTargetField()
+				if target, err = transform.OPENPGPKEY(target); err != nil {
+					errs = append(errs, err)
+				} else {
+					if err := rec.SetTarget(target); err != nil {
+						errs = append(errs, err)
+					}
 				}
 			case "TLSA":
 				if rec.TlsaUsage > 3 {

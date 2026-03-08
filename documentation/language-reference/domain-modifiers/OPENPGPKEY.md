@@ -10,15 +10,114 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`OPENPGPKEY` adds an [OpenPGP public key record](https://www.rfc-editor.org/rfc/rfc7929) to the domain.
+`OPENPGPKEY` adds an [OpenPGP public key
+record](https://datatracker.ietf.org/doc/html/rfc7929) to the domain.
 
-So far, no transformation is applied to the parameters. The data will be passed to the DNS server as-is.
-Reference RFC 7929 for details.
+So far, no transformation is applied to the parameters. The data will be
+passed to the DNS server as-is. DNSControl supports both hex-encoded and
+base64-encoded input for the public key portion of the record.
 
-{% code title="dnsconfig.js" %}
-```javascript
-D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  OPENPGPKEY("9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15._openpgpkey", "9901a204447450b7110400d9bef554b145128ccc90d9f52df14bb878626e3db32112d47fbc5ee9cc5ffcbbd06bee487a580481674d9d31e368a85ccf4d4ef3bfa3e23fdde238bc32d8c40d39204b912f8cb1c47a7f34ba64bf3598dafe0f080e17facb678b6e700b0163d677960471d265a197e5ee9d53d71e1911f47f518a0e303abaf3c01b188e37d7bf00a0b90d4f43af944202fc49356a35a367955633cd4503ff7dfa21fb70a201ffb4aa7a755fc560ffd5a4b1d7b7015e7b4bdc0a1e45c1c28fd2f628f4d21f07a091da0d29c98b070566e178c5974554e509a5153a16b271df835e8c8a97715cc4beb5383d05fdf7a0d9412a1fb9f572c195d8c0c696a5ec179bab29d3d8701446e7aca79565ecdd6ec3ceef4937cb248564a75ddb4115adc10400a8f820174b32c99c5ac6ee483c0184fed24fa44d2fd4c9dc00af9ed048b51cfdb95747ab1e35df933382b08f8223da934bfcba59cb356b0d2f4158d647ab76d09c444fadf5e92b95d65f4aae667f33835226170c6625db872a6b72cb13638cf4754941730f5117a4f7c262044bea453839f95b806a0bd98a668073ba2d0fce1ab4326f70656e53555345204275696c642053657276696365203c6275696c6473657276696365406f70656e737573652e6f72673e8864041311020024021b03060b09080703020315020303160201021e01021780050253674e3b050921bf0084000a09103b3011b76b9d65234a5b00a095c38bcfaa29f80adefc0cf9ba2abf3a3e9b516b009e367296e1a96af211f8cded2493f7f6ac09de41"),
-);
-```
-{% endcode %}
+There are multiple ways to generate the appropriately-formatted record
+values:
+
+1.  By using `gpg --export-options=export-dane`:
+
+    {% code title="Shell Transcript" %}
+    ```shell-session
+    $ gpg --export --export-options=export-dane example-1@dnscontrol.org
+    $ORIGIN _openpgpkey.dnscontrol.org.
+    ; 9305F15FF783096D39427E6D048E36367E3E3AE2
+    ; Example 1 <example-1@dnscontrol.org>
+    bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d TYPE61 \# 219 (
+        9833040000000116092b06010401da470f010107401471ec1d5cc4d6bbd87029
+        97ed29f95f7a7bd5e179aa8d3698efc8b942eb08f5b4244578616d706c652031
+        203c6578616d706c652d3140646e73636f6e74726f6c2e6f72673e887e041316
+        0a00261621049305f15ff783096d39427e6d048e36367e3e3ae2050200000001
+        021b01021e05021780000a0910048e36367e3e3ae2ffaa00ff4b6ad99b62da7e
+        9d759abe6ae232016780c24bf5e5f869b8003be83c6a73933c0100b66ac65093
+        a0fe0a434448d9996ab46412cbe7c70d5c5ab74abba4566c468d0a
+    )
+    ```
+    {% endcode %}
+
+    {% code title="dnsconfig.js" %}
+    ```javascript
+    D("dnscontrol.org", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+      OPENPGPKEY(
+        "bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey",
+        "9833040000000116092b06010401da470f010107401471ec1d5cc4d6bbd87029" +
+        "97ed29f95f7a7bd5e179aa8d3698efc8b942eb08f5b4244578616d706c652031" +
+        "203c6578616d706c652d3140646e73636f6e74726f6c2e6f72673e887e041316" +
+        "0a00261621049305f15ff783096d39427e6d048e36367e3e3ae2050200000001" +
+        "021b01021e05021780000a0910048e36367e3e3ae2ffaa00ff4b6ad99b62da7e" +
+        "9d759abe6ae232016780c24bf5e5f869b8003be83c6a73933c0100b66ac65093" +
+        "a0fe0a434448d9996ab46412cbe7c70d5c5ab74abba4566c468d0a",
+      ),
+    );
+    ```
+    {% endcode %}
+
+2.  By using `gpg --armor` and `sha256sum`:
+
+    {% code title="Shell Transcript" %}
+    ```shell-session
+    $ gpg --armor --export example-1@dnscontrol.org
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/I
+    uULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMW
+    CgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42
+    Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCT
+    oP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K
+    =JavT
+    -----END PGP PUBLIC KEY BLOCK-----
+
+    echo $(printf 'example-1' | sha256sum | head --bytes=66)
+    bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883dd429ba83
+    ```
+    {% endcode %}
+
+    {% code title="dnsconfig.js" %}
+    ```javascript
+    D("dnscontrol.org", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+      OPENPGPKEY(
+        "bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey",
+        "mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/I" +
+        "uULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMW" +
+        "CgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42" +
+        "Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCT" +
+        "oP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K",
+      ),
+    );
+    ```
+    {% endcode %}
+
+3.  By using the [`hash-slinger`
+    package](https://github.com/letoams/hash-slinger/) (which is
+    available in most Linux distro package repositories):
+
+    {% code title="Shell Transcript" %}
+    ```shell-session
+    $ openpgpkey --create example-1@dnscontrol.org  # --output=rfc is the default and returns a base64-encoded key
+    ; keyid: 048E36367E3E3AE2
+    bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey.dnscontrol.org. IN OPENPGPKEY mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/IuULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCToP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K
+
+    $ openpgpkey --create --output=generic example-2@dnscontrol.org  # --output=generic returns a hex-encoded key
+    ; keyid: 4CDE32253EDE7C0B
+    6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey.dnscontrol.org. IN TYPE61 \# 219 9833040000000116092b06010401da470f01010740416889e205cfeb00b6c10ee1ee875c2e9654fa6403dab1e2aad4e08fed5eea8bb4244578616d706c652032203c6578616d706c652d3240646e73636f6e74726f6c2e6f72673e887e0413160a0026162104fedb8dd6d3ff8e92a4a3f12f4cde32253ede7c0b050200000001021b01021e05021780000a09104cde32253ede7c0bb13d00ff68486b25a097f450f52248c0ffc5262b49e8923b49372e3a22ddc8593193e0440100923a82879140126abbf5271e68efd0e7ea050402b7cedff735ea6712e388840d
+    ```
+    {% endcode %}
+
+    {% code title="dnsconfig.js" %}
+    ```javascript
+    D("dnscontrol.org", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+      OPENPGPKEY(
+        "bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey",
+        "mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/IuULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCToP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K",
+      ),
+      OPENPGPKEY(
+        "6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey",
+        "9833040000000116092b06010401da470f01010740416889e205cfeb00b6c10ee1ee875c2e9654fa6403dab1e2aad4e08fed5eea8bb4244578616d706c652032203c6578616d706c652d3240646e73636f6e74726f6c2e6f72673e887e0413160a0026162104fedb8dd6d3ff8e92a4a3f12f4cde32253ede7c0b050200000001021b01021e05021780000a09104cde32253ede7c0bb13d00ff68486b25a097f450f52248c0ffc5262b49e8923b49372e3a22ddc8593193e0440100923a82879140126abbf5271e68efd0e7ea050402b7cedff735ea6712e388840d",
+      ),
+    );
+    {% endcode %}
