@@ -57,7 +57,6 @@ func Run(v string) int {
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "debug",
-			Aliases:     []string{"v"},
 			Usage:       "Enable debug logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},
