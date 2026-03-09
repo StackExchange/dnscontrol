@@ -3054,7 +3054,7 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
  * 1.  By using `gpg --export-options=export-dane`:
  *
  *     {% code title="Shell Transcript" %}
- *     ```console
+ *     ```shell-session
  *     $ gpg --export --export-options=export-dane example-1@dnscontrol.org
  *     $ORIGIN _openpgpkey.dnscontrol.org.
  *     ; 9305F15FF783096D39427E6D048E36367E3E3AE2
@@ -3091,7 +3091,7 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
  * 2.  By using `gpg --armor` and `sha256sum`:
  *
  *     {% code title="Shell Transcript" %}
- *     ```console
+ *     ```shell-session
  *     $ gpg --armor --export example-1@dnscontrol.org
  *     -----BEGIN PGP PUBLIC KEY BLOCK-----
  *
@@ -3128,7 +3128,7 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
  *     available in most Linux distro package repositories):
  *
  *     {% code title="Shell Transcript" %}
- *     ```console
+ *     ```shell-session
  *     $ openpgpkey --create example-1@dnscontrol.org  # --output=rfc is the default and returns a base64-encoded key
  *     ; keyid: 048E36367E3E3AE2
  *     bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey.dnscontrol.org. IN OPENPGPKEY mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/IuULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCToP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K
