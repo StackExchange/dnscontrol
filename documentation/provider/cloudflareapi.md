@@ -4,6 +4,7 @@ This is the provider for [Cloudflare](https://www.cloudflare.com/).
 
 * SPF records are silently converted to RecordType `TXT` as Cloudflare API fails otherwise. See [StackExchange/dnscontrol#446](https://github.com/StackExchange/dnscontrol/issues/446).
 * This provider currently fails if there are more than 1000 corrections on one domain. This only affects "push". This usually when moving a domain with many records to Cloudflare.  Try commenting out most records, then uncomment groups of 999. Typical updates are less than 1000 corrections and will not trigger this bug. See [StackExchange/dnscontrol#1440](https://github.com/StackExchange/dnscontrol/issues/1440).
+* DNS records that Cloudflare injects and maintains are ignored. That includes SOA records, NS records at the domain's apex, and the MX/DKIM records created as part of Cloudflare mail routing.
 
 ## Configuration
 
@@ -28,13 +29,22 @@ Example:
 ```
 {% endcode %}
 
-# Authentication
+### Debugging
+
+Setting the envvar CLOUDFLAREAPI_DEBUG will output all HTTP requests and
+replies.
+
+```shell
+export CLOUDFLAREAPI_DEBUG=1
+```
+
+### Authentication
 
 The Cloudflare API supports two different authentication methods.
 
 NOTE: You can not mix the two authentication methods.  If you try, DNSControl will report an error.
 
-## API Tokens (recommended)
+### API Tokens (recommended)
 
 The recommended (newer) method is to
 provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens).
@@ -71,7 +81,7 @@ DNSControl requires the token to have the following permissions:
 
 ![Example permissions configuration](../assets/providers/cloudflareapi/example-permissions-configuration.png)
 
-## Username+Key (not recommended)
+### Username+Key (not recommended)
 
 The other (older, not recommended) method is to
 provide your Cloudflare API username and access key.
@@ -182,7 +192,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 ```
 {% endcode %}
 
-## Usage
+### Usage
 An example configuration:
 
 {% code title="dnsconfig.js" %}
@@ -211,7 +221,7 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 ```
 {% endcode %}
 
-## New domains
+## Populating new domains at Cloudflare
 If a domain does not exist in your Cloudflare account, DNSControl
 will automatically add it when `dnscontrol push` is executed.
 
