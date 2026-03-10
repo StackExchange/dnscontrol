@@ -177,6 +177,31 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	return content
 }
 
+// GetTargetJS returns the target as a JavaScript literal, as documented in
+// documentation/language-reference/domain-modifiers/*.md. Each parameter is
+// quoted, unless it is an integer or boolean.  We can't use GetTargetCombined()
+// because it is not designed for JavaScript and may include unquoted
+// parameters, which would break the JavaScript.  Instead, we must quote each
+// parameter separately.
+// FIXME(tlim): This function doesn't handle all types. Eventually
+// RecordConfigV2 should do better (maybe even using a JSON encoder for each
+// field). In the meantime, add new cases as needed.
+func (rc *RecordConfig) GetTargetJS() string {
+	if rc.Type == "TXT" || rc.Type == "LUA" {
+		return fmt.Sprintf("%q", rc.target)
+	}
+	switch rc.Type {
+	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "OPENPGPKEY", "PTR":
+		return fmt.Sprintf("%q", rc.target)
+	case "SOA":
+		return fmt.Sprintf("%q %q %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+	case "SRV":
+		return fmt.Sprintf("%q %d %d %d", rc.target, rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+	default:
+		return fmt.Sprintf("%q", rc.GetTargetCombined())
+	}
+}
+
 // SetTarget sets the target, assuming that the rtype is appropriate.
 func (rc *RecordConfig) SetTarget(target string) error {
 	rc.target = target
