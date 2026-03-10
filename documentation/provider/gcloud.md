@@ -121,6 +121,37 @@ D("example.tld", REG_NAMECOM, DnsProvider(DSP_GCLOUD),
 
 > split horizon zones using the `GCLOUD` provider are currently only supported when the providers' credentials target separate `project_id` values
 
+## DNSSEC
+
+DNSSEC can be enabled using one of two different methods. Either you can toggle it with AUTODNSSEC_ON/AUTODNSSEC_OFF or if you want more control over internal settings you can use a Metadata-field on the zone called `DnssecConfig` with a JSON-string matching the [ManagedZoneDnsSecConfig struct](https://pkg.go.dev/google.golang.org/api/dns/v1#ManagedZoneDnsSecConfig) from the Google Cloud DNS API.
+
+Example:
+
+{% code title="dnsconfig.js" %}
+```javascript
+D("example.com", REG_NONE, DnsProvider(GCLOUD),
+  {
+    DnssecConfig: JSON.stringify(
+    {
+      "state": "on",
+      "nonExistence": "nsec3",
+      "defaultKeySpecs": [
+        {
+          "algorithm": "ecdsap256sha256",
+          "keyLength": 256,
+          "keyType": "keySigning"
+        },
+        {
+          "algorithm": "ecdsap256sha256",
+          "keyLength": 256,
+          "keyType": "zoneSigning"
+        }
+      ]
+    }),
+  },
+```
+{% endcode %}
+
 # Debugging credentials
 
 You can test your `creds.json` entry with the command: `dnscontrol check-creds foo GCLOUD` where `foo` is the name of key used in `creds.json`.  Error messages you might see:
