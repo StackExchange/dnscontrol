@@ -15,7 +15,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`CF_SINGLE_REDIRECT` is a Cloudflare-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
+`CF_SINGLE_REDIRECT` is a [Cloudflare](../../provider/cloudflareapi.md)-specific feature for creating HTTP redirects.  301, 302, 303, 307, 308 are supported.
 Typically one uses 302 (temporary) or 301 (permanent).
 
 This feature manages dynamic "Single Redirects". (Single Redirects can be

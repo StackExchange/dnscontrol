@@ -45,7 +45,7 @@ func (n *namedotcomProvider) getNameserversRaw(domain string) ([]string, error) 
 	return response.Nameservers, nil
 }
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (n *namedotcomProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := n.getNameserversRaw(dc.Name)
 	if err != nil {

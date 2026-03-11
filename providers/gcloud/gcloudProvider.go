@@ -24,6 +24,7 @@ const selfLinkBasePath = "https://www.googleapis.com/compute/v1/projects/"
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
@@ -43,7 +44,7 @@ var features = providers.DocumentationNotes{
 
 var (
 	visibilityCheck  = regexp.MustCompile("^(public|private)$")
-	networkURLCheck  = regexp.MustCompile("^" + selfLinkBasePath + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
+	networkURLCheck  = regexp.MustCompile("^" + regexp.QuoteMeta(selfLinkBasePath) + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 )
 
@@ -80,7 +81,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain '%s' not found in gcloud account", e.domain)
 }
 
-// New creates a new gcloud provider
+// New creates a new gcloud provider.
 func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	// the key as downloaded is json encoded with literal "\n" instead of newlines.
 	// in some cases (round-tripping through env vars) this tends to get messed up.
@@ -89,7 +90,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	ctx := context.Background()
 	var opt option.ClientOption
 	if key, ok := cfg["private_key"]; ok {
-		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
+		cfg["private_key"] = strings.ReplaceAll(key, "\\n", "\n")
 		raw, err := json.Marshal(cfg)
 		if err != nil {
 			return nil, err
@@ -241,15 +242,25 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	dnssecFixes, err := g.getDnssecCorrections(dc)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(changes) == 0 {
+	if len(changes) == 0 && len(dnssecFixes) == 0 {
 		return nil, 0, nil
 	}
 
 	var corrections []*models.Correction
+	// Inject the dnssec correction if we have one
+	if len(dnssecFixes) != 0 {
+		actualChangeCount += len(dnssecFixes)
+		corrections = append(corrections, dnssecFixes...)
+	}
 	batch := &gdns.Change{Kind: "dns#change"}
 	var accumlatedMsgs []string
 	var newMsgs []string
@@ -307,7 +318,7 @@ func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	return corrections, actualChangeCount, nil
 }
 
-// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs
+// mkRRSs returns a gdns.ResourceRecordSet using the name, rType, and recs.
 func mkRRSs(name, rType string, recs models.Records) *gdns.ResourceRecordSet {
 	if len(recs) == 0 { // NB(tlim): This is defensive. mkRRSs is never called with an empty list.
 		return nil
@@ -460,7 +471,7 @@ func (g *gcloudProvider) EnsureZoneExists(domain string, metadata map[string]str
 	printer.Printf("Adding zone for %s to gcloud account ", domain)
 	mz = &gdns.ManagedZone{
 		DnsName:     domain + ".",
-		Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
+		Name:        "zone-" + strings.ReplaceAll(domain, ".", "-"),
 		Description: "zone added by dnscontrol",
 	}
 	if g.nameServerSet != nil {

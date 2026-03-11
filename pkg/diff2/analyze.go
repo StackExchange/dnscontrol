@@ -222,11 +222,6 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 			i++
 		}
 	}
-	// // Prevent memory leak by erasing truncated values
-	// // (not needed if values don't contain pointers, directly or indirectly)
-	// for j := i; j < len(s); j++ {
-	// 	s[j] = nil
-	// }
 	s = s[:i]
 	return s
 }
@@ -234,7 +229,7 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 // humanDiff returns a human-friendly string showing what changed
 // between a and b.
 func humanDiff(a, b targetConfig) string {
-	// TODO(tlim): Records like MX and SRV should have more clever output.
+	// FUTURE(tlim): Records like MX and SRV should have more clever output.
 	// For example if only the MX priority changes, show just that.
 
 	if a.comparableNoTTL != b.comparableNoTTL {
@@ -250,6 +245,8 @@ func humanDiff(a, b targetConfig) string {
 
 var echRe = regexp.MustCompile(`ech="?([\w+/=]+)"?`)
 
+// diffTargets is the real workhorse of the diff2 system.  All the setup has been complete,
+// now we can find the differences between two zones.
 func diffTargets(existing, desired []targetConfig) ChangeList {
 	// fmt.Printf("DEBUG: diffTargets(\nexisting=%v\ndesired=%v\nDEBUG.\n", existing, desired)
 
@@ -307,13 +304,6 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		m := color.YellowString("± MODIFY %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[i], desired[i]))
 
 		mkc := mkChange(dr.NameFQDN, dr.Type, []string{m}, models.Records{er}, models.Records{dr})
-		if len(existing) == 1 && len(desired) == 1 {
-			// If the tdata has exactly 1 item, drop a hint to the providers.
-			// For example, MSDNS can use a more efficient command if it knows
-			// that `Get-DnsServerResourceRecord -Name FOO -RRType A` will
-			// return exactly one record.
-			mkc.HintRecordSetLen1 = true
-		}
 		instructions = append(instructions, mkc)
 	}
 

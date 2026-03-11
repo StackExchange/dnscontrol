@@ -18,7 +18,7 @@ import (
 
 const apiBase = "https://desec.io/api/v1"
 
-// Api layer for desec
+// Api layer for desec.
 type desecProvider struct {
 	domainIndex     map[string]uint32 // stores the minimum ttl of each domain. (key = domain and value = ttl)
 	domainIndexLock sync.Mutex
@@ -84,7 +84,7 @@ func (c *desecProvider) withDomainIndex(readFn func(domainIndex map[string]uint3
 	return nil
 }
 
-// listDomainIndex lists all the available domains in the domain index
+// listDomainIndex lists all the available domains in the domain index.
 func (c *desecProvider) listDomainIndex() (domains []string, err error) {
 	err = c.withDomainIndex(func(domainIndex map[string]uint32) {
 		domains = make([]string, 0, len(domainIndex))
@@ -95,7 +95,7 @@ func (c *desecProvider) listDomainIndex() (domains []string, err error) {
 	return
 }
 
-// searchDomainIndex performs a lookup to the domain index for the TTL of the domain
+// searchDomainIndex performs a lookup to the domain index for the TTL of the domain.
 func (c *desecProvider) searchDomainIndex(domain string) (ttl uint32, found bool, err error) {
 	err = c.withDomainIndex(func(domainIndex map[string]uint32) {
 		ttl, found = domainIndex[domain]
@@ -224,7 +224,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	return rrsNew, nil
 }
 
-// generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord
+// generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord.
 func generateRRSETfromResponse(bodyString []byte) ([]resourceRecord, error) {
 	var rrs []rrResponse
 	var rrsNew []resourceRecord

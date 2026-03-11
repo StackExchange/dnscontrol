@@ -25,7 +25,7 @@ type gcoreRRSets struct {
 	RRSets []gcoreRRSetExtended `json:"rrsets"`
 }
 
-// Extended attributes over dnssdk.RRSet
+// Extended attributes over dnssdk.RRSet.
 type gcoreRRSetExtended struct {
 	Name string `json:"name"`
 	Type string `json:"type"`

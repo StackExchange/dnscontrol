@@ -13,7 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -95,6 +95,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
+	providers.CanUseSRV:              providers.Can("Linode requires non-zero priority"),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -268,7 +269,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "CNAME", "MX", "NS", "SRV":
-		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		err = rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		// Linode doesn't support CAA flags and just returns the tag and value separately
 		err = rc.SetTarget(r.Target)

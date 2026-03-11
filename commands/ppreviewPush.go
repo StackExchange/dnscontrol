@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
@@ -25,13 +27,17 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/dustin/go-humanize"
 	"github.com/nozzle/throttler"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
 )
 
-type cmdZoneCache struct {
+// CmdZoneCache is a cache of zone lists for providers.  This is used to
+// optimize the "populate" phase of preview/push, so that we don't have to make
+// multiple calls to the provider to get the list of zones.
+type CmdZoneCache struct {
 	cache map[string]*[]string
 	sync.Mutex
 }
@@ -48,7 +54,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
-// PPreviewArgs contains all data/flags needed to run preview, independently of CLI
+// PPreviewArgs contains all data/flags needed to run preview, independently of CLI.
 type PPreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
@@ -101,7 +107,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.IntFlag{
 		Name:        "cmax",
 		Destination: &args.ConcurMax,
-		Value:       999,
+		Value:       100,
 		Usage:       `Maximum number of concurrent connections`,
 		Action: func(ctx context.Context, c *cli.Command, v int) error {
 			if v < 1 {
@@ -161,7 +167,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
-// PPushArgs contains all data/flags needed to run push, independently of CLI
+// PPushArgs contains all data/flags needed to run push, independently of CLI.
 type PPushArgs struct {
 	PPreviewArgs
 	Interactive bool
@@ -189,7 +195,7 @@ func PPush(args PPushArgs) error {
 
 var pobsoleteDiff2FlagUsed = false
 
-// run is the main routine common to preview/push
+// run is the main routine common to preview/push.
 func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, report string) error {
 	// This is a hack until we have the new printer replacement.
 	printer.SkinnyReport = !args.Full
@@ -332,7 +338,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	out.Printf("CONCURRENTLY gathering records of %d zone(s)\n", len(zonesConcurrent))
 	for i, zone := range zonesConcurrent {
 		out.PrintfIf(fullMode, "Concurrently gathering: %q\n", zone.UniqueName)
-		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *cmdZoneCache) {
+		go func(zone *models.DomainConfig, args PPreviewArgs, zcache *CmdZoneCache) {
 			start := time.Now()
 			err := oneZone(zone, args)
 			if err != nil {
@@ -409,8 +415,10 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
 	rfc4183.PrintWarning()
+	out.PrintfIf(fullMode, "Inaccurate statistics: %s\n", stats(cfg))
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
+
 	err = writeReport(report, reportItems)
 	if err != nil {
 		return errors.New("could not write report")
@@ -422,6 +430,56 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 		return errors.New("there are pending changes")
 	}
 	return nil
+}
+
+// stats returns a JSON string with memory usage statistics.
+// These stats are unofficial and subject to change without notice.
+// "average_mem_per_record" is misleading because it includes all memory overhead.
+func stats(cfg *models.DNSConfig) string {
+
+	// https://www.datadoghq.com/blog/go-memory-metrics/
+	// [T]he following expression accurately reflects the value the runtime attempts to maintain as the limit:
+	// runtime.MemStats.Sys − runtime.MemStats.HeapReleased
+	runtime.GC()
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	memoryInUse := m.Sys - m.HeapReleased
+
+	numRecords := countRecords(cfg)
+	memPerRecord := int64(float64(memoryInUse) / float64(max(1, numRecords)))
+	memPerRecordStr := humanize.IBytes(uint64(memPerRecord)) + " bytes"
+
+	statsInfo := struct {
+		MemoryInUse    uint64 `json:"memory_in_use"`
+		MemoryInUseStr string `json:"memory_in_use_str"`
+		NumRecords     int    `json:"num_records"`
+		NumZones       int    `json:"num_zones"`
+		RCSize         int    `json:"rc_size"`
+		Benchmark1     int64  `json:"benchmark1"`
+		Benchmark1Str  string `json:"benchmark1str"`
+	}{
+		MemoryInUse:    memoryInUse,
+		MemoryInUseStr: humanize.Bytes(memoryInUse),
+		NumRecords:     numRecords,
+		NumZones:       len(cfg.Domains),
+		RCSize:         int(unsafe.Sizeof((models.RecordConfig{}))),
+		Benchmark1:     memPerRecord,
+		Benchmark1Str:  memPerRecordStr,
+	}
+
+	jsonBytes, err := json.Marshal(statsInfo)
+	if err != nil {
+		return fmt.Sprintf("error marshaling stats: %v", err)
+	}
+	return string(jsonBytes)
+}
+
+func countRecords(cfg *models.DNSConfig) int {
+	total := 0
+	for _, domain := range cfg.Domains {
+		total += len(domain.Records)
+	}
+	return total
 }
 
 // whichZonesToProcess takes a list of DomainConfigs and a filter string and
@@ -496,7 +554,7 @@ func optimizeOrder(zones []*models.DomainConfig) []*models.DomainConfig {
 	return zones
 }
 
-func oneZonePopulate(zone *models.DomainConfig, zc *cmdZoneCache) error {
+func oneZonePopulate(zone *models.DomainConfig, zc *CmdZoneCache) error {
 	var errs []error
 	// Loop over all the providers configured for that zone:
 	for _, provider := range zone.DNSProviderInstances {
@@ -686,7 +744,7 @@ func writeReport(report string, reportItems []*ReportItem) error {
 	return nil
 }
 
-func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *cmdZoneCache) ([]*models.Correction, error) {
+func generatePopulateCorrections(provider *models.DNSProviderInstance, zone *models.DomainConfig, zcache *CmdZoneCache) ([]*models.Correction, error) {
 	lister, ok := provider.Driver.(providers.ZoneLister)
 	if !ok {
 		return nil, nil // We can't generate a list. No corrections are possible.
@@ -734,7 +792,7 @@ func generateDelegationCorrections(zone *models.DomainConfig, providers []*model
 	nameservers.AddNSRecords(zone)
 
 	if len(zone.Nameservers) == 0 && zone.Metadata["no_ns"] != "true" {
-		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns:'true'} to force",
+		return []*models.Correction{{Msg: fmt.Sprintf("Skipping registrar %q: No nameservers declared for domain %q. Add {no_ns: 'true'} to force",
 			zone.RegistrarName,
 			zone.Name,
 		)}}, 0, nil
@@ -853,10 +911,10 @@ func ppopulateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]ma
 	// should clean that up someday.
 	for _, domain := range cfg.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			pName := provider.ProviderBase.Name
-			pType := provider.ProviderBase.ProviderType
+			pName := provider.Name
+			pType := provider.ProviderType
 			nt, warnMsg, err := prefineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
-			provider.ProviderBase.ProviderType = nt
+			provider.ProviderType = nt
 			if warnMsg != "" {
 				msgs = append(msgs, warnMsg)
 			}

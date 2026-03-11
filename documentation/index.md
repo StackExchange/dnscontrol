@@ -4,7 +4,7 @@
 
 # Try It
 
-Want to jump right in? Follow our [quick start tutorial](getting-started/getting-started.md) on a new domain or [migrate](getting-started/migrating.md) an existing one. Read the [language spec](language-reference/js.md) for more info.
+Want to jump right in? Follow our [quick start tutorial](getting-started/getting-started.md) on a new domain or [migrate](getting-started/migrating.md) an existing one. Read the [JavaScript DSL reference](language-reference/js.md) for more info.
 
 # Use It
 
@@ -15,7 +15,7 @@ Take advantage of the advanced features. Use macros and variables for easier upd
 * Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!
 * Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.
 * Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.
-* Supports 35+ [DNS Providers](provider/index.md) including [BIND](provider/bind.md), [AWS Route 53](provider/route53.md), [Google DNS](provider/gcloud.md), and [name.com](provider/namedotcom.md).
+* Supports 60+ [DNS Providers](provider/index.md) including [BIND](provider/bind.md), [AWS Route 53](provider/route53.md), [Google DNS](provider/gcloud.md), and [name.com](provider/namedotcom.md).
 * [Apply CI/CD principles](advanced-features/ci-cd-gitlab.md) to DNS: Unit-tests, system-tests, automated deployment.
 * All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.
 * Optimize DNS with [SPF optimizer](language-reference/domain-modifiers/SPF_BUILDER.md). Detect too many lookups. Flatten includes.

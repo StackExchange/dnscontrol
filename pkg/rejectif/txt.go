@@ -20,7 +20,7 @@ func TxtHasBackslash(rc *models.RecordConfig) error {
 
 // TxtHasUnpairedBackslash audits TXT records for strings that contain an odd number of consecutive backslashes.
 // Some providers strip single backslashes or convert odd consecutive backslashes to even.
-// e.g., "1back\slash" -> "1backslash", "3back\\\slash" -> "3back\\slash"
+// e.g., "1back\slash" -> "1backslash", "3back\\\slash" -> "3back\\slash".
 func TxtHasUnpairedBackslash(rc *models.RecordConfig) error {
 	txt := rc.GetTargetTXTJoined()
 	i := 0
@@ -110,7 +110,7 @@ func TxtLongerThan(maxLength int) func(rc *models.RecordConfig) error {
 	}
 }
 
-// TxtStartsOrEndsWithSpaces audits TXT records that starts or ends with spaces
+// TxtStartsOrEndsWithSpaces audits TXT records that starts or ends with spaces.
 func TxtStartsOrEndsWithSpaces(rc *models.RecordConfig) error {
 	txt := rc.GetTargetTXTJoined()
 	if len(txt) > 0 && (txt[0] == ' ' || txt[len(txt)-1] == ' ') {

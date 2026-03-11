@@ -19,7 +19,7 @@ func init() {
 	})
 }
 
-// slackNotifier sends notifications to slack or mattermost
+// slackNotifier sends notifications to slack or mattermost.
 type slackNotifier struct {
 	URL string
 }

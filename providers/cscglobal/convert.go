@@ -3,7 +3,7 @@ package cscglobal
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
-	"net"
+	"net/netip"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
@@ -19,7 +19,7 @@ func nativeToRecordA(nr nativeRecordA, origin string, defaultTTL uint32) *models
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	if err := rc.SetTargetIP(net.ParseIP(nr.Value).To4()); err != nil {
+	if err := rc.SetTargetIP(netip.MustParseAddr(nr.Value)); err != nil {
 		panic(err) // Should never happen.
 	}
 	return rc
@@ -53,7 +53,7 @@ func nativeToRecordAAAA(nr nativeRecordAAAA, origin string, defaultTTL uint32) *
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	if err := rc.SetTargetIP(net.ParseIP(nr.Value).To16()); err != nil {
+	if err := rc.SetTargetIP(netip.MustParseAddr(nr.Value)); err != nil {
 		panic(err) // Should never happen.
 	}
 	return rc

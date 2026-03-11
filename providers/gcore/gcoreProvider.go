@@ -112,7 +112,7 @@ func (c *gcoreProvider) GetZoneRecords(domain string, meta map[string]string) (m
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *gcoreProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {
@@ -229,7 +229,7 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	return result, actualChangeCount, nil
 }
 
-// ListZones return all the zones in the account
+// ListZones return all the zones in the account.
 func (c *gcoreProvider) ListZones() ([]string, error) {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {

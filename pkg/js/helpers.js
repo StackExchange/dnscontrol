@@ -1434,7 +1434,10 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE' &&
                 record.type != 'ADGUARDHOME_A_PASSTHROUGH' &&
-                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH'
+                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH' &&
+                record.type != 'MIKROTIK_FWD' &&
+                record.type != 'MIKROTIK_NXDOMAIN' &&
+                record.type != 'MIKROTIK_FORWARDER'
             ) {
                 record.subdomain = d.subdomain;
 
@@ -1550,6 +1553,8 @@ function num2dot(num) {
 var CF_PROXY_OFF = { cloudflare_proxy: 'off' }; // Proxy disabled.
 var CF_PROXY_ON = { cloudflare_proxy: 'on' }; // Proxy enabled.
 var CF_PROXY_FULL = { cloudflare_proxy: 'full' }; // Proxy+Railgun enabled.
+var CF_CNAME_FLATTEN_OFF = { cloudflare_cname_flatten: 'off' }; // CNAME flattening disabled (default).
+var CF_CNAME_FLATTEN_ON = { cloudflare_cname_flatten: 'on' }; // CNAME flattening enabled (paid plans only).
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
 var CF_PROXY_DEFAULT_OFF = { cloudflare_proxy_default: 'off' };
@@ -1559,6 +1564,29 @@ var CF_PROXY_DEFAULT_ON = { cloudflare_proxy_default: 'on' };
 var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
+// Per-record comment (works on all plans):
+function CF_COMMENT(comment) {
+    return { cloudflare_comment: comment };
+}
+// Per-record tags (requires paid plan):
+function CF_TAGS() {
+    return { cloudflare_tags: Array.prototype.slice.call(arguments).join(',') };
+}
+// Enable comment management for domain (opt-in to sync comments):
+var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: 'true' };
+// Enable tag management for domain (opt-in to sync tags, requires paid plan):
+var CF_MANAGE_TAGS = { cloudflare_manage_tags: 'true' };
+
+// Hurricane Electric DNS (HEDNS) aliases:
+
+// Enable Dynamic DNS on a record (preserves existing DDNS key):
+var HEDNS_DYNAMIC_ON = { hedns_dynamic: 'on' };
+// Disable Dynamic DNS on a record (WARNING: clears the associated DDNS key):
+var HEDNS_DYNAMIC_OFF = { hedns_dynamic: 'off' };
+// Set a specific DDNS key on a dynamic record (implies HEDNS_DYNAMIC_ON):
+function HEDNS_DDNS_KEY(key) {
+    return { hedns_dynamic: 'on', hedns_ddns_key: key };
+}
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
@@ -1595,6 +1623,33 @@ var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
  */
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
+
+// MIKROTIK_FWD(name, target, modifiers...)
+// RouterOS conditional DNS forwarding entry.
+var MIKROTIK_FWD = recordBuilder('MIKROTIK_FWD');
+
+// MIKROTIK_NXDOMAIN(name, modifiers...)
+// RouterOS NXDOMAIN entry — returns NXDOMAIN for matching queries (DNS blackholing).
+var MIKROTIK_NXDOMAIN = recordBuilder('MIKROTIK_NXDOMAIN', {
+    args: [['name', _.isString]],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = 'NXDOMAIN';
+    },
+});
+
+// MIKROTIK_FORWARDER(name, dns_servers, modifiers...)
+// RouterOS named DNS forwarder (/ip/dns/forwarders).
+// Use in the synthetic zone "_forwarders.mikrotik".
+var MIKROTIK_FORWARDER = recordBuilder('MIKROTIK_FORWARDER');
+
+var BUNNY_DNS_PZ = recordBuilder('BUNNY_DNS_PZ', {
+    args: [['name', _.isString], ['pullZoneId']],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = String(args.pullZoneId);
+    },
+});
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')
 // x: Decimal X coordinate.

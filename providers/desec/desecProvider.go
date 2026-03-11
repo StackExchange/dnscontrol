@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/net/idna"
 )
 
@@ -43,7 +43,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDNSKEY:           providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseHTTPS:            providers.Can(),
-	providers.CanUseLOC:              providers.Unimplemented(),
+	providers.CanUseLOC:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSMIMEA:           providers.Can(),
@@ -51,6 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSVCB:             providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseOPENPGPKEY:       providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -77,29 +78,6 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-// func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	if dc.AutoDNSSEC == "off" {
-// 		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
-// 	}
-
-// 	existing, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	models.PostProcessRecords(existing)
-// 	clean := PrepFoundRecords(existing)
-// 	var minTTL uint32
-// 	c.mutex.Lock()
-// 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
-// 		minTTL = 3600
-// 	} else {
-// 		minTTL = ttl
-// 	}
-// 	c.mutex.Unlock()
-// 	PrepDesiredRecords(dc, minTTL)
-// 	return c.GetZoneRecordsCorrections(dc, clean)
-// }
-
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
 	punycodeDomain, err := idna.ToASCII(domain)
@@ -122,7 +100,7 @@ func (c *desecProvider) GetZoneRecords(domain string, meta map[string]string) (m
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *desecProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, ok, err := c.searchDomainIndex(domain)
 	if err != nil {
@@ -204,7 +182,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 					rc.Type = label.Type
 					rc.Records = make([]string, 0) // empty array of records should delete this rrset
 					rc.TTL = 3600
-					shortname := dnsutil.TrimDomainName(label.NameFQDN, punycodeName)
+					shortname := dnsutilv1.TrimDomainName(label.NameFQDN, punycodeName)
 					if shortname == "@" {
 						shortname = ""
 					}
@@ -262,7 +240,7 @@ func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	return corrections, actualChangeCount, nil
 }
 
-// ListZones return all the zones in the account
+// ListZones return all the zones in the account.
 func (c *desecProvider) ListZones() ([]string, error) {
 	return c.listDomainIndex()
 }

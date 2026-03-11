@@ -156,7 +156,7 @@ func (api *rwthProvider) getZone(name string) (*zone, error) {
 	return &zone, nil
 }
 
-// Deploy the zone
+// Deploy the zone.
 func (api *rwthProvider) deployZone(domain string) error {
 	zone, err := api.getZone(domain)
 	if err != nil {
@@ -167,7 +167,7 @@ func (api *rwthProvider) deployZone(domain string) error {
 	return api.request("/deploy_zone", "POST", req, nil)
 }
 
-// Send a request
+// Send a request.
 func (api *rwthProvider) request(endpoint string, method string, request url.Values, target any) error {
 	requestBody := strings.NewReader(request.Encode())
 	req, err := http.NewRequest(method, baseURL+endpoint, requestBody)

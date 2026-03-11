@@ -34,7 +34,7 @@ func TestFlatten(t *testing.T) {
 // each test is array of strings.
 // first item is unsplit input
 // next is @ spf record
-// after that is alternating record fqdn and value
+// after that is alternating record fqdn and value.
 var splitTests = [][]string{
 	{
 		"simple",

@@ -10,13 +10,13 @@ const (
 	// testing shows 'AUTO' is what to expect if the domain has automatic
 	// DNSSEC enabled.
 
-	// AutoDNSSECStatus is the status for DNSSEC enabled with automatic management
+	// AutoDNSSECStatus is the status for DNSSEC enabled with automatic management.
 	AutoDNSSECStatus = "AUTO"
-	// ManualDNSSECStatus is the status for DNSSEC enabled with manual management
+	// ManualDNSSECStatus is the status for DNSSEC enabled with manual management.
 	ManualDNSSECStatus = "MANUAL"
 )
 
-// DNSSecStatus returns domain dnssec status
+// DNSSecStatus returns domain dnssec status.
 func (api *inwxAPI) DNSSecStatus(domain string) (string, error) {
 	resp, err := api.client.Dnssec.Info([]string{domain})
 	if err != nil {
@@ -29,7 +29,7 @@ func (api *inwxAPI) DNSSecStatus(domain string) (string, error) {
 	return resp.Data[0].DNSSecStatus, nil
 }
 
-// enableAutoDNSSEC enables automatic management of DNSSEC
+// enableAutoDNSSEC enables automatic management of DNSSEC.
 func (api *inwxAPI) enableAutoDNSSEC(domain string) error {
 	// if the domain is IDN, it must be in Unicode - ACE encoding is not supported
 	// in the INWX dnssec.enablednssec endpoint
@@ -41,7 +41,7 @@ func (api *inwxAPI) enableAutoDNSSEC(domain string) error {
 	return err
 }
 
-// disableAutoDNSSEC disables automatic management of DNSSEC
+// disableAutoDNSSEC disables automatic management of DNSSEC.
 func (api *inwxAPI) disableAutoDNSSEC(domain string) error {
 	err := api.client.Dnssec.Disable(domain)
 	return err

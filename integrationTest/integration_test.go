@@ -660,7 +660,6 @@ func makeTests() []*TestGroup {
 				// "CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEDNS",      // Doesn't page. Works fine.  Due to the slow API we skip.
-				"HEXONET",    // Doesn't page. Works fine.  Due to the slow API we skip.
 				"LOOPIA",     // Their API is so damn slow. Plus, no paging.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
 				"NS1",        // Free acct only allows 50 records, therefore we skip
@@ -683,7 +682,6 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
@@ -700,7 +698,6 @@ func makeTests() []*TestGroup {
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"HEDNS",         // No paging done. No need to test.
 				//"GCLOUD",
-				//"HEXONET", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HOSTINGDE", // Pages.
 				"ROUTE53",   // Batches up changes in pages.
 			),
@@ -1227,6 +1224,48 @@ func makeTests() []*TestGroup {
 			CfCProxyOn(), CfCProxyOff(),
 		),
 
+		// CLOUDFLAREAPI: CNAME FLATTENING (requires paid plan)
+
+		testgroup("CF_CNAME_FLATTEN create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), tcEmptyZone(),
+			CfFlattenOn(), tcEmptyZone(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN off to on",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOff(), CfFlattenOn(),
+		),
+
+		testgroup("CF_CNAME_FLATTEN on to off",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFFlatten),
+			CfFlattenOn(), CfFlattenOff(),
+		),
+
+		// CLOUDFLAREAPI: COMMENTS (works on all plans)
+
+		testgroup("CF_COMMENT create",
+			only("CLOUDFLAREAPI"),
+			domainMeta(map[string]string{"cloudflare_manage_comments": "true"}),
+			tc("comment_create", cfCommentA("cmnt", "174.136.107.111", "Test comment")),
+			tc("comment_change", cfCommentA("cmnt", "174.136.107.111", "Changed comment")),
+			tc("comment_remove", a("cmnt", "174.136.107.111")),
+		),
+
+		// CLOUDFLAREAPI: TAGS (requires paid plan)
+
+		testgroup("CF_TAGS create",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFTags),
+			domainMeta(map[string]string{"cloudflare_manage_tags": "true"}),
+			tc("tags_create", cfTagsA("tags", "174.136.107.111", "tag1,tag2")),
+			tc("tags_change", cfTagsA("tags", "174.136.107.111", "tag2,tag3")),
+			tc("tags_remove", a("tags", "174.136.107.111")),
+		),
+
 		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
 			alltrue(*enableCFWorkers),
@@ -1263,6 +1302,61 @@ func makeTests() []*TestGroup {
 		testgroup("ADGUARDHOME_AAAA_PASSTHROUGH",
 			only("ADGUARDHOME"),
 			tc("simple", aghAAAAPassthrough("foo", "")),
+		),
+
+		// MikroTik RouterOS features
+
+		testgroup("MIKROTIK_FWD",
+			only("MIKROTIK"),
+			tc("create FWD record",
+				mikrotikFwd("internal", "10.0.0.1"),
+			),
+			tc("change FWD target",
+				mikrotikFwd("internal", "10.0.0.2"),
+			),
+			tc("FWD with match_subdomain",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"match_subdomain": "true"}),
+			),
+			tc("FWD with address_list",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"address_list": "mylist"}),
+			),
+			tc("FWD with comment",
+				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"comment": "test forward"}),
+			),
+			tc("multiple FWD records",
+				mikrotikFwd("internal", "10.0.0.2"),
+				mikrotikFwd("vpn", "192.168.1.1"),
+			),
+			tc("delete one FWD",
+				mikrotikFwd("vpn", "192.168.1.1"),
+			),
+		),
+
+		testgroup("MIKROTIK_NXDOMAIN",
+			only("MIKROTIK"),
+			tc("create NXDOMAIN",
+				mikrotikNxdomain("blocked"),
+			),
+			tc("multiple NXDOMAIN",
+				mikrotikNxdomain("blocked"),
+				mikrotikNxdomain("ads"),
+			),
+			tc("delete one NXDOMAIN",
+				mikrotikNxdomain("ads"),
+			),
+		),
+
+		testgroup("MIKROTIK_METADATA",
+			only("MIKROTIK"),
+			tc("A record with comment",
+				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "test comment"}),
+			),
+			tc("change comment",
+				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "updated comment"}),
+			),
+			tc("A with match_subdomain",
+				withMeta(a("wildmeta", "1.2.3.4"), map[string]string{"match_subdomain": "true"}),
+			),
 		),
 
 		// VERCEL features(?)
@@ -1962,12 +2056,18 @@ func makeTests() []*TestGroup {
 
 		testgroup("OPENPGPKEY",
 			requires(providers.CanUseOPENPGPKEY),
-			tc("OPENPGPKEY record",
-				openpgpkey("9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15._openpgpkey", "9901a204447450b7110400d9bef554b145128ccc90d9f52df14bb878626e3db32112d47fbc5ee9cc5ffcbbd06bee487a580481674d9d31e368a85ccf4d4ef3bfa3e23fdde238bc32d8c40d39204b912f8cb1c47a7f34ba64bf3598dafe0f080e17facb678b6e700b0163d677960471d265a197e5ee9d53d71e1911f47f518a0e303abaf3c01b188e37d7bf00a0b90d4f43af944202fc49356a35a367955633cd4503ff7dfa21fb70a201ffb4aa7a755fc560ffd5a4b1d7b7015e7b4bdc0a1e45c1c28fd2f628f4d21f07a091da0d29c98b070566e178c5974554e509a5153a16b271df835e8c8a97715cc4beb5383d05fdf7a0d9412a1fb9f572c195d8c0c696a5ec179bab29d3d8701446e7aca79565ecdd6ec3ceef4937cb248564a75ddb4115adc10400a8f820174b32c99c5ac6ee483c0184fed24fa44d2fd4c9dc00af9ed048b51cfdb95747ab1e35df933382b08f8223da934bfcba59cb356b0d2f4158d647ab76d09c444fadf5e92b95d65f4aae667f33835226170c6625db872a6b72cb13638cf4754941730f5117a4f7c262044bea453839f95b806a0bd98a668073ba2d0fce1ab4326f70656e53555345204275696c642053657276696365203c6275696c6473657276696365406f70656e737573652e6f72673e8864041311020024021b03060b09080703020315020303160201021e01021780050253674e3b050921bf0084000a09103b3011b76b9d65234a5b00a095c38bcfaa29f80adefc0cf9ba2abf3a3e9b516b009e367296e1a96af211f8cded2493f7f6ac09de41"),
+			tc("OPENPGPKEY records",
+				openpgpkey("bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey", "9833040000000116092b06010401da470f010107403b6b9ff1ad0c524356507cdecbc1616093f6492fb4eb5a45f8614adb77a057d2b4244578616d706c652031203c6578616d706c652d3140646e73636f6e74726f6c2e6f72673e887e0413160a0026162104c0fe77c20fe349b863cda9980bfe1cf3d96e34ce050200000001021b01021e05021780000a09100bfe1cf3d96e34ce3f2e0100f00463e222747d5ae94519e1ad3b651b0a2cd7bd130e14ee65f3e818cab0792d00ff5196b60ebfcb047810fb51bbea7d5a882c4263b51ce9376a0dc8e5dee23f5f02"),
+				openpgpkey("6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey", "mDMEAAAAARYJKwYBBAHaRw8BAQdAxCQnAKBDmA75+73+3lYVXDwrMUbaR61fNZgGeOHwmDq0JEV4YW1wbGUgMiA8ZXhhbXBsZS0yQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEYZ3PIZnaOWQrPxj6VX+9VdC3r4wFAgAAAAECGwECHgUCF4AACgkQVX+9VdC3r4xq6wEAl2ujFSqWwc2wQuHedpFrSTN9Gh7cIziKCZ3f8BGSRTgBAIvjKlWLLLBu0FPpCVlcfkpsZMV5YRrg90k+D+O4zZ4M"),
 			),
-			tc("OPENPGPKEY record change",
-				openpgpkey("2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db._openpgpkey", "99010d045ae3116a010800c426db68c752d5a5c3f6608b0b20ee6a2a6c1f321ca3490f8be044f3b671512ca1489629f8d7d4e273f96517dca642bd8cc652a5460773159f52707d6b839d9b996771cbed9367c248b125785f27d24d926f33e9d7606c4440126b6257117c2e617b4b411931301be869ea45c7e7adc5f97538bb31949a1d6b0616af0ec5a378ca3db2369fb2a9fae890099f126b40e72a8cdbdacd88e9a448c5cf27bf1daaaedabe5c9c3fdb3e732f40466da4dd63ce75a42216b60dd6a9559ab66ff4a6753315ef31d1a90be1111536b92e1214b368a72b7f730ba38f75d35aa080aef4204536a21c088be07637954a43587f699b14fecaee5fec520d73ea6b466be74356290011010001b43d6f70656e5355534520436f6e7461696e6572205369676e696e67204b6579203c6275696c642d636f6e7461696e6572406f70656e737573652e6f72673e89013e04130102002805025ae3116a021b03050912cc0300060b090807030206150802090a0b0416020301021e01021780000a0910d754694f9ab48ce976dd07fc0e63f41edf7aa4d12b8f53588b2029310b1bee9a73858bfaebd9b381e650f80e31ef5f910be626d3cc1904f76b00927a3107bafabbb0cb0e3805c9de5a150cd90958eb64a2147225febefa5bf32f6e2f0296f348b7f16b58a7b6c732a09d20f00d95f8dcc6e36f1c300ccbe519dfd5c9229839303a08c50530eac2ad673c50d0fb4d7001e9c33cb76e2c04bae7ebab98c10e221a010773a97397ea3ca594fb0f2a6aff187d85236907007c67acc2dfba9b9e155d893ca6b982b927c51eaf588bc4f6f9531c2047474183a7e27561ccd63d993cc9e0208661d2e16a9e3f3fcff11ee894b95ac0447782a1389049cd45c234f5417694fb2624d522c58b42da3e04"),
+			tc("OPENPGPKEY record change same format",
+				openpgpkey("bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey", "9833040000000116092b06010401da470f010107401471ec1d5cc4d6bbd8702997ed29f95f7a7bd5e179aa8d3698efc8b942eb08f5b4244578616d706c652031203c6578616d706c652d3140646e73636f6e74726f6c2e6f72673e887e0413160a00261621049305f15ff783096d39427e6d048e36367e3e3ae2050200000001021b01021e05021780000a0910048e36367e3e3ae2ffaa00ff4b6ad99b62da7e9d759abe6ae232016780c24bf5e5f869b8003be83c6a73933c0100b66ac65093a0fe0a434448d9996ab46412cbe7c70d5c5ab74abba4566c468d0a"),
+				openpgpkey("6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey", "mDMEAAAAARYJKwYBBAHaRw8BAQdAQWiJ4gXP6wC2wQ7h7odcLpZU+mQD2rHiqtTgj+1e6ou0JEV4YW1wbGUgMiA8ZXhhbXBsZS0yQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEE/tuN1tP/jpKko/EvTN4yJT7efAsFAgAAAAECGwECHgUCF4AACgkQTN4yJT7efAuxPQD/aEhrJaCX9FD1IkjA/8UmK0nokjtJNy46It3IWTGT4EQBAJI6goeRQBJqu/UnHmjv0OfqBQQCt87f9zXqZxLjiIQN"),
 			),
+			tc("OPENPGPKEY record change different formats",
+				openpgpkey("bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey", "mDMEAAAAARYJKwYBBAHaRw8BAQdAFHHsHVzE1rvYcCmX7Sn5X3p71eF5qo02mO/IuULrCPW0JEV4YW1wbGUgMSA8ZXhhbXBsZS0xQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEkwXxX/eDCW05Qn5tBI42Nn4+OuIFAgAAAAECGwECHgUCF4AACgkQBI42Nn4+OuL/qgD/S2rZm2Lafp11mr5q4jIBZ4DCS/Xl+Gm4ADvoPGpzkzwBALZqxlCToP4KQ0RI2ZlqtGQSy+fHDVxat0q7pFZsRo0K"),
+				openpgpkey("6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey", "9833040000000116092b06010401da470f01010740416889e205cfeb00b6c10ee1ee875c2e9654fa6403dab1e2aad4e08fed5eea8bb4244578616d706c652032203c6578616d706c652d3240646e73636f6e74726f6c2e6f72673e887e0413160a0026162104fedb8dd6d3ff8e92a4a3f12f4cde32253ede7c0b050200000001021b01021e05021780000a09104cde32253ede7c0bb13d00ff68486b25a097f450f52248c0ffc5262b49e8923b49372e3a22ddc8593193e0440100923a82879140126abbf5271e68efd0e7ea050402b7cedff735ea6712e388840d"),
+			).ExpectNoChanges(),
 		),
 
 		testgroup("SMIMEA",
@@ -1977,6 +2077,59 @@ func makeTests() []*TestGroup {
 			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),
 			tc("SMIMEA change matchingtype", smimea("_443._tcp", 2, 0, 2, sha512hash)),
 			tc("SMIMEA change certificate", smimea("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
+		testgroup("Bunny DNS Pull Zone",
+			only("BUNNY_DNS"),
+			tc("Create PZ", bunnyPullZone("@", "5269987")),
+			tc("Change PZ", bunnyPullZone("@", "5269992")),
+		),
+
+		// HEDNS: Dynamic DNS
+
+		testgroup("HEDNS_DYNAMIC A lifecycle",
+			only("HEDNS"),
+			// Create a dynamic A record and verify target changes preserve the flag.
+			tc("Create dynamic A", hednsDynamicA("hdyn", "1.2.3.4", "on")),
+			tc("Change target preserves dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Toggle dynamic off, then back on.
+			tc("Turn off dynamic", hednsDynamicA("hdyn", "5.6.7.8", "off")),
+			tc("Turn on dynamic", hednsDynamicA("hdyn", "5.6.7.8", "on")),
+			// Change target without specifying hedns_dynamic — it should stay dynamic.
+			tc("Inherit dynamic on modify", a("hdyn", "10.0.0.1")),
+			// Create a non-dynamic record alongside.
+			tc("Add static record", a("hdyn", "10.0.0.1"), a("hstatic", "2.2.2.2")),
+		),
+
+		testgroup("HEDNS_DYNAMIC AAAA+TXT",
+			only("HEDNS"),
+			tc("Create dynamic AAAA", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2006", "on")),
+			tc("Change dynamic AAAA target", hednsDynamicAAAA("hdynv6", "2607:f8b0:4006:820::2013", "on")),
+			tc("Create dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "on")),
+			tc("Turn off dynamic TXT", hednsDynamicTXT("hdyntxt", "dynamic-value", "off")),
+		),
+
+		testgroup("HEDNS_DDNS_KEY",
+			only("HEDNS"),
+			// Setting a DDNS key implicitly enables dynamic.
+			tc("Create A with DDNS key (implicit dynamic)", hednsDdnsKeyA("hkey", "1.2.3.4", "key1")),
+			// Change target and key together.
+			tc("Change target + key", hednsDdnsKeyA("hkey", "5.6.7.8", "key2")),
+			// AAAA with DDNS key.
+			tc("Create AAAA with DDNS key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2006", "v6key")),
+			tc("Change AAAA target + key", hednsDdnsKeyAAAA("hkeyv6", "2607:f8b0:4006:820::2013", "newv6key")),
+		),
+
+		testgroup("HEDNS_DYNAMIC mixed records",
+			only("HEDNS"),
+			tc("Create mix of dynamic and static",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "2.2.2.2"),
+			),
+			tc("Modify only the static record",
+				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
+				a("hdmix-static", "3.3.3.3"),
+			),
 		),
 
 		// This MUST be the last test.

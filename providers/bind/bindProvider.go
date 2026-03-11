@@ -30,7 +30,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/miekg/dns"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
+	dnsv1 "github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -143,7 +144,7 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(r)
 }
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
@@ -206,7 +207,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
@@ -214,26 +215,18 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var prec *models.RecordConfig
 		var err error
 
-		// Modern types:
 		rtype := rr.Header().Rrtype
-		switch rtype {
-		case dns.TypeDS:
+		rtypeStr := dnsv1.TypeToString[rtype]
+		if rtypeinfo.IsModernType(rtypeStr) {
+			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "DS", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
 			rec = *prec
 			rec.TTL = rr.Header().Ttl
-		case dns.TypeRP:
-			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
-			if err != nil {
-				return nil, err
-			}
-			rec = *prec
-			rec.TTL = rr.Header().Ttl
-		default:
+		} else {
 			// Legacy types:
 			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
 			if err != nil {

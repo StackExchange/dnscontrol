@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 )
 
 type md5Provider string
@@ -19,7 +19,7 @@ func fromBase64(s []byte) (buf []byte, err error) {
 	return
 }
 
-func (key md5Provider) Generate(msg []byte, _ *dns.TSIG) ([]byte, error) {
+func (key md5Provider) Generate(msg []byte, _ *dnsv1.TSIG) ([]byte, error) {
 	rawsecret, err := fromBase64([]byte(key))
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (key md5Provider) Generate(msg []byte, _ *dns.TSIG) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func (key md5Provider) Verify(msg []byte, t *dns.TSIG) error {
+func (key md5Provider) Verify(msg []byte, t *dnsv1.TSIG) error {
 	b, err := key.Generate(msg, t)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (key md5Provider) Verify(msg []byte, t *dns.TSIG) error {
 		return err
 	}
 	if !hmac.Equal(b, mac) {
-		return dns.ErrSig
+		return dnsv1.ErrSig
 	}
 	return nil
 }

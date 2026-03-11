@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -17,8 +18,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 var (
@@ -31,15 +33,64 @@ var (
 // Global variable to hold the current DomainConfig	for use in FromRaw calls.
 var globalDCN *domaintags.DomainNameVarieties
 
+// Helper constants/funcs for the HEDNS Dynamic DNS testing:
+
+func hednsDynamicA(name, target, status string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
+func hednsDdnsKeyA(name, target, key string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = "on"
+	r.Metadata["hedns_ddns_key"] = key
+	return r
+}
+
+func hednsDynamicAAAA(name, target, status string) *models.RecordConfig {
+	r := aaaa(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
+func hednsDdnsKeyAAAA(name, target, key string) *models.RecordConfig {
+	r := aaaa(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = "on"
+	r.Metadata["hedns_ddns_key"] = key
+	return r
+}
+
+func hednsDynamicTXT(name, target, status string) *models.RecordConfig {
+	r := txt(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["hedns_dynamic"] = status
+	return r
+}
+
 // Helper constants/funcs for the CLOUDFLARE proxy testing:
 
-// A-record proxy off/on
+// A-record proxy off/on.
 func CfProxyOff() *TestCase { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
 func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
 
-// CNAME-record proxy off/on
+// CNAME-record proxy off/on.
 func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
 func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
+
+// Helper constants/funcs for the CLOUDFLARE CNAME flattening testing:
+
+// CNAME flattening off/on (requires paid plan).
+func CfFlattenOff() *TestCase {
+	return tc("flattenoff", cfFlattenCNAME("cflatten", "example.com.", "off"))
+}
+func CfFlattenOn() *TestCase {
+	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
+}
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
@@ -106,11 +157,20 @@ func testPermitted(p string, f TestGroup) error {
 }
 
 // makeChanges runs one set of DNS record tests. Returns true on success.
-func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
+func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, domainMeta map[string]string) bool {
 	domainName := dc.Name
 
 	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
 		dom, _ := dc.Copy()
+
+		// Apply domain-level metadata if provided (e.g., for Cloudflare comments/tags management)
+		if domainMeta != nil {
+			if dom.Metadata == nil {
+				dom.Metadata = make(map[string]string)
+			}
+			maps.Copy(dom.Metadata, domainMeta)
+		}
+
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
 
@@ -230,12 +290,12 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		// fmt.Printf("DEBUG testPermitted: prov=%q profile=%q\n", *providerFlag, *profileFlag)
 		if err := testPermitted(*profileFlag, *group); err != nil {
 			// t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
-			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
+			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig, nil)
 			continue
 		}
 
 		// Start the testgroup with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil, nil)
 
 		// Run the tests.
 		start := time.Now()
@@ -249,7 +309,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			//      if t.Failed() {
 			//        break
 			//      }
-			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig); !ok {
+			if ok := makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig, group.domainMeta); !ok {
 				break
 			}
 		}
@@ -262,12 +322,13 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 type TestGroup struct {
-	Desc      string
-	required  []providers.Capability
-	only      []string
-	not       []string
-	trueflags []bool
-	tests     []*TestCase
+	Desc       string
+	required   []providers.Capability
+	only       []string
+	not        []string
+	trueflags  []bool
+	domainMeta map[string]string
+	tests      []*TestCase
 }
 
 type TestCase struct {
@@ -284,7 +345,7 @@ func (tc *TestCase) ExpectNoChanges() *TestCase {
 	return tc
 }
 
-// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK
+// UnsafeIgnore is the equivalent of DISABLE_IGNORE_SAFETY_CHECK.
 func (tc *TestCase) UnsafeIgnore() *TestCase {
 	tc.UnmanagedUnsafe = true
 	return tc
@@ -292,7 +353,7 @@ func (tc *TestCase) UnsafeIgnore() *TestCase {
 
 func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
-	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**.")
+	r.NameFQDN = dnsutilv1.AddOrigin(label, "**current-domain**.")
 }
 
 func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
@@ -340,6 +401,27 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	return r
 }
 
+func cfFlattenCNAME(name, target, status string) *models.RecordConfig {
+	r := cname(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_cname_flatten"] = status
+	return r
+}
+
+func cfCommentA(name, target, comment string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_comment"] = comment
+	return r
+}
+
+func cfTagsA(name, target, tags string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_tags"] = tags
+	return r
+}
+
 func cfSingleRedirectEnabled() bool {
 	return (*enableCFRedirectMode)
 }
@@ -359,6 +441,10 @@ func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_WORKER_ROUTE")
 	return r
+}
+
+func bunnyPullZone(name, pullZoneID string) *models.RecordConfig {
+	return makeRec(name, pullZoneID, "BUNNY_DNS_PZ")
 }
 
 func cfRedir(pattern, target string) *models.RecordConfig {
@@ -391,6 +477,14 @@ func aghAPassthrough(pattern, target string) *models.RecordConfig {
 func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
 	r := makeRec(pattern, target, "ADGUARDHOME_AAAA_PASSTHROUGH")
 	return r
+}
+
+func mikrotikFwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "MIKROTIK_FWD")
+}
+
+func mikrotikNxdomain(name string) *models.RecordConfig {
+	return makeRec(name, "NXDOMAIN", "MIKROTIK_NXDOMAIN")
 }
 
 func cname(name, target string) *models.RecordConfig {
@@ -492,6 +586,8 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 }
 
 func openpgpkey(name, target string) *models.RecordConfig {
+	target, err := transform.OPENPGPKEY(target)
+	panicOnErr(err)
 	return makeRec(name, target, "OPENPGPKEY")
 }
 
@@ -598,6 +694,15 @@ func testgroup(desc string, items ...any) *TestGroup {
 				os.Exit(1)
 			}
 			group.trueflags = append(group.trueflags, v.flags...)
+		case domainMetaFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: domainMeta() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
+			if group.domainMeta == nil {
+				group.domainMeta = make(map[string]string)
+			}
+			maps.Copy(group.domainMeta, v.meta)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -639,7 +744,7 @@ func txt(name, target string) *models.RecordConfig {
 	return r
 }
 
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
+// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {.
 func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	r.TTL = t
 	return r
@@ -706,4 +811,12 @@ type alltrueFilter struct {
 
 func alltrue(f ...bool) alltrueFilter {
 	return alltrueFilter{flags: f}
+}
+
+type domainMetaFilter struct {
+	meta map[string]string
+}
+
+func domainMeta(m map[string]string) domainMetaFilter {
+	return domainMetaFilter{meta: m}
 }

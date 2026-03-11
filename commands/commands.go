@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// categories of commands
+// categories of commands.
 const (
 	catMain  = "\b main" // screwed up to alphebatize first
 	catDebug = "debug"
@@ -41,8 +41,14 @@ var _ = cmd(catDebug, &cli.Command{
 	},
 })
 
-// Run will execute the CLI
+// Run will execute the CLI.
 func Run(v string) int {
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Aliases: []string{"V"},
+		Usage:   "print the version",
+	}
+
 	app := &cli.Command{
 		Name:    "dnscontrol",
 		Usage:   "DNSControl is a compiler and DSL for managing dns zones",
@@ -51,7 +57,6 @@ func Run(v string) int {
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "debug",
-			Aliases:     []string{"v"},
 			Usage:       "Enable debug logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},
@@ -129,7 +134,7 @@ func Run(v string) int {
 // Shared config types
 
 // GetDNSConfigArgs contains what we need to get a valid dns config.
-// Could come from parsing js, or from stored json
+// Could come from parsing js, or from stored json.
 type GetDNSConfigArgs struct {
 	ExecuteDSLArgs
 	JSONFile string
@@ -226,7 +231,7 @@ func preloadProviders(cfg *models.DNSConfig) (*models.DNSConfig, error) {
 	return cfg, nil
 }
 
-// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL
+// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL.
 type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
@@ -263,7 +268,7 @@ func (args *ExecuteDSLArgs) flags() []cli.Flag {
 	}
 }
 
-// PrintJSONArgs are used anytime a command may print some json
+// PrintJSONArgs are used anytime a command may print some json.
 type PrintJSONArgs struct {
 	Pretty bool
 	Output string

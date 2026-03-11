@@ -19,6 +19,10 @@ import (
 //go:embed completion-scripts/completion.*.gotmpl
 var completionScripts embed.FS
 
+type contextKey int
+
+const contextKeyCompletionHandled contextKey = iota
+
 func shellCompletionCommand() *cli.Command {
 	supportedShells, templates, err := getCompletionSupportedShells()
 	if err != nil {
@@ -45,7 +49,7 @@ func shellCompletionCommand() *cli.Command {
 					cmd.ShellComplete(ctx, cmd)
 				}
 				// Mark that we handled completion so Action can skip
-				return context.WithValue(ctx, "completionHandled", true), nil
+				return context.WithValue(ctx, contextKeyCompletionHandled, true), nil
 			}
 			return ctx, nil
 		},
@@ -60,7 +64,7 @@ func shellCompletionCommand() *cli.Command {
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			// If completion was handled in Before, skip normal action
-			if ctx.Value("completionHandled") != nil {
+			if ctx.Value(contextKeyCompletionHandled) != nil {
 				return nil
 			}
 

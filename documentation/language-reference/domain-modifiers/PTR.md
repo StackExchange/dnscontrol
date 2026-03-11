@@ -10,7 +10,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-PTR adds a PTR record to the domain.
+`PTR` adds a [PTR Resource record](https://www.rfc-editor.org/rfc/rfc1035) to the domain.
 
 The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
 saving the user from having to reverse the IP address manually.

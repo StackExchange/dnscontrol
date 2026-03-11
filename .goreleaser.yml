@@ -3,10 +3,8 @@ project_name: dnscontrol
 version: 2
 builds:
   -
-    id: build
     env:
       - CGO_ENABLED=0
-      - GO111MODULE=on
     goos:
       - linux
       - windows
@@ -39,7 +37,7 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)((adguardhome|akamaiedge|autodns|axfrd|azure|azure_private_dns|alidns|bind|bunnydns|cloudflare|cloudflareapi_old|cloudns|cnr|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|dynadot|easyname|exoscale|fortigate|gandi|gcloud|gcore|hedns|hetzner|hetznerv2|hexonet|hostingde|huaweicloud|inwx|joker|linode|loopia|luadns|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|vercel|vultr).*:)+.*"
+      regexp: "(?i)((adguardhome|akamaiedgedns|alidns|autodns|axfrddns|azure_dns|azure_private_dns|bind|bunny_dns|cloudflare|cloudflareapi|cloudns|cnr|cscglobal|desec|digitalocean|dnscale|dnsimple|dnsmadeeasy|dnsoverhttps|domainnameshop|dynadot|easyname|exoscale|fortigate|gandi_v5|gcloud|gcore|gidinet|hedns|hetzner|hetzner_v2|hostingde|huaweicloud|infomaniak|internetbs|inwx|joker|linode|loopia|luadns|mikrotik|mythicbeasts|namecheap|namedotcom|netcup|netlify|ns1|opensrs|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|softlayer|transip|unifi|vercel|vultr).*:)+.*"
       order: 2
     - title: 'Documentation:'
       regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
@@ -68,7 +66,6 @@ archives:
 universal_binaries:
   -
     replace: true
-    id: build
 
 nfpms:
   - id: packages_rpm
@@ -96,62 +93,56 @@ nfpms:
     license: MIT
     formats:
     - deb
-dockers:
-  - image_templates:
-    - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
-    - &amd_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
-    goos: linux
-    goarch: amd64
-    use: buildx
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--platform=linux/amd64"
-    - "--label=org.opencontainers.image.created={{ .Date }}"
-    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-    - "--label=org.opencontainers.image.version={{ .Version }}"
-    - "--label=org.opencontainers.image.source={{ .GitURL }}"
-  - image_templates:
-    - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
-    - &arm_image_ghcr "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
-    goos: linux
-    goarch: arm64
-    use: buildx
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--platform=linux/arm64"
-    - "--label=org.opencontainers.image.created={{ .Date }}"
-    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-    - "--label=org.opencontainers.image.version={{ .Version }}"
-    - "--label=org.opencontainers.image.source={{ .GitURL }}"
-docker_manifests:
-  - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
-    image_templates:
-      - *amd_image
-      - *arm_image
-  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
-    image_templates:
-      - *amd_image_ghcr
-      - *arm_image_ghcr
-  - name_template: "stackexchange/{{.ProjectName}}:latest"
-    skip_push: auto
-    image_templates:
-      - *amd_image
-      - *arm_image
-  - name_template: "ghcr.io/stackexchange/{{.ProjectName}}:latest"
-    skip_push: auto
-    image_templates:
-      - *amd_image_ghcr
-      - *arm_image_ghcr
+dockers_v2:
+  - images:
+      - "stackexchange/{{.ProjectName}}"
+      - "ghcr.io/stackexchange/{{.ProjectName}}"
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .IsSnapshot }}latest{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.created": "{{ .Date }}"
+      "org.opencontainers.image.name": "{{ .ProjectName }}"
+      "org.opencontainers.image.revision": "{{ .FullCommit }}"
+      "org.opencontainers.image.version": "{{ .Version }}"
+      "org.opencontainers.image.source": "{{ .GitURL }}"
+notarize:
+  macos:
+    - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+      sign:
+        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
+        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
+
+homebrew_casks:
+  -
+    name: dnscontrol
+    url:
+      template: "https://github.com/StackExchange/dnscontrol/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Casks
+    homepage: "https://docs.dnscontrol.org/"
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    license: "MIT"
+    repository:
+      owner: StackExchange
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
 
 release:
   draft: true
@@ -184,7 +175,7 @@ release:
     ##### Install with [Homebrew](https://brew.sh) (recommended)
 
     ```shell
-    brew install dnscontrol
+    brew install StackExchange/tap/dnscontrol
     ```
 
     ##### Using with [Docker](https://www.docker.com)
@@ -212,7 +203,7 @@ release:
     #### Update with [Homebrew](https://brew.sh)
 
     ```shell
-    brew upgrade dnscontrol
+    brew upgrade StackExchange/tap/dnscontrol
     ```
 
     Alternatively, you can grab the latest binary (or the apt/rpm/deb package) from this page.

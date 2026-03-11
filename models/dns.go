@@ -91,7 +91,7 @@ func ToNameserversStripTD(nss []string) ([]*Nameserver, error) {
 	return nservers, nil
 }
 
-// NameserversToStrings constructs a list of strings from *Nameserver structs
+// NameserversToStrings constructs a list of strings from *Nameserver structs.
 func NameserversToStrings(nss []*Nameserver) (s []string) {
 	for _, ns := range nss {
 		s = append(s, ns.Name)
@@ -109,7 +109,7 @@ type Correction struct {
 func (config *DNSConfig) PostProcess() error {
 	for _, domain := range config.Domains {
 		domain.PostProcess()
-		// No need to call FixLegacyAll here. These records were created from dnsconfig.js, not from a provider.
+		// No need to call FixLegacyDC here. These records were created from dnsconfig.js, not from a provider.
 	}
 	return nil
 }

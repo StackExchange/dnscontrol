@@ -112,7 +112,7 @@ if (emergency) {
 {% endcode %}
 
 
-#### ProTips
+### ProTips
 
 The cli variables functionality permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next person

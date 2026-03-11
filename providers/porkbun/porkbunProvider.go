@@ -13,7 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 const (
@@ -245,7 +245,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	for i := range records {
 		shouldSkip := false
 		if strings.HasSuffix(records[i].Content, ".porkbun.com") {
-			name := dnsutil.TrimDomainName(records[i].Name, domain)
+			name := dnsutilv1.TrimDomainName(records[i].Name, domain)
 			if name == "@" {
 				name = ""
 			}
@@ -299,7 +299,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// parses the porkbun format into our standard RecordConfig
+// parses the porkbun format into our standard RecordConfig.
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)

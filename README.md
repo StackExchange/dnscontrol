@@ -39,18 +39,20 @@ Currently supported DNS providers:
 - Fortigate
 - Gandi
 - Gcore
+- Gidinet
 - Google DNS
 - Hetzner
-- HEXONET
 - hosting.de
 - Huawei Cloud DNS
 - Hurricane Electric DNS
+- Infomaniak
 - INWX
 - Joker
 - Linode
 - Loopia
 - LuaDNS
 - Microsoft Windows Server DNS Server
+- MikroTik RouterOS
 - Mythic Beasts
 - Name.com
 - Namecheap
@@ -67,6 +69,7 @@ Currently supported DNS providers:
 - Sakura Cloud
 - SoftLayer
 - TransIP
+- UniFi Network
 - Vercel
 - Vultr
 
@@ -80,7 +83,7 @@ Currently supported Domain Registrars:
 - Dynadot
 - easyname
 - Gandi
-- HEXONET
+- Gidinet
 - hosting.de
 - Internet.bs
 - INWX

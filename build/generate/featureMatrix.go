@@ -21,15 +21,14 @@ func generateFeatureMatrix() error {
 		var jumptotableContent = ""
 
 		var anchor = strings.ToLower(tableTitle)
-		anchor = strings.Replace(anchor, " ", "-", -1)
+		anchor = strings.ReplaceAll(anchor, " ", "-")
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
 		replacementContent.WriteString(jumptotableContent)
 	}
 
 	for i, tableTitle := range matrix.FeatureTablesTitles {
-		replacementContent.WriteString(fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
-			tableTitle, i+1, len(matrix.FeatureTablesTitles)))
+		fmt.Fprintf(&replacementContent, "\n### %s <!--(table %d/%d)-->\n\n", tableTitle, i+1, len(matrix.FeatureTablesTitles))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
@@ -57,8 +56,10 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	for _, providerName := range allProviderNames() {
 		featureMap := matrix.Providers[providerName]
 
+		var providerLink = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
+
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+providerLink+".md)")
 		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}
