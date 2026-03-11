@@ -14,6 +14,9 @@ on:
     branches:
       - 'tlim_testpr'
 
+permissions:
+  contents: read
+
 # Environment Variables
 env:
   # cache-key: Change to force cache reset `pwsh > Get-Date -UFormat %s`
@@ -53,7 +56,7 @@ jobs:
         gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 #    - name: Enforce Go Formatted Code
 #      run: "[ `go fmt ./... | wc -l` -eq 0 ]"
-    - uses: actions/upload-artifact@v6.0.0
+    - uses: actions/upload-artifact@v7.0.0
       with:
         name: unit-tests
         path: ${{ env.TEST_RESULTS }}

@@ -24,6 +24,7 @@ const selfLinkBasePath = "https://www.googleapis.com/compute/v1/projects/"
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
@@ -43,7 +44,7 @@ var features = providers.DocumentationNotes{
 
 var (
 	visibilityCheck  = regexp.MustCompile("^(public|private)$")
-	networkURLCheck  = regexp.MustCompile("^" + selfLinkBasePath + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
+	networkURLCheck  = regexp.MustCompile("^" + regexp.QuoteMeta(selfLinkBasePath) + "[a-z][-a-z0-9]{4,28}[a-z0-9]/global/networks/[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 )
 
@@ -241,15 +242,25 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
+	dnssecFixes, err := g.getDnssecCorrections(dc)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(changes) == 0 {
+	if len(changes) == 0 && len(dnssecFixes) == 0 {
 		return nil, 0, nil
 	}
 
 	var corrections []*models.Correction
+	// Inject the dnssec correction if we have one
+	if len(dnssecFixes) != 0 {
+		actualChangeCount += len(dnssecFixes)
+		corrections = append(corrections, dnssecFixes...)
+	}
 	batch := &gdns.Change{Kind: "dns#change"}
 	var accumlatedMsgs []string
 	var newMsgs []string

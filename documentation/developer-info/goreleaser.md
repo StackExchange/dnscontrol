@@ -84,10 +84,11 @@ Sign up at [developer.apple.com/programs](https://developer.apple.com/programs/)
 
 ##### 5. GitHub Actions Secrets
 
-Encode the `.p12` file:
+Encode the `.p12` and `.p8` files:
 
 ```bash
 base64 -i DeveloperIDApplication.p12 | pbcopy
+base64 -i AuthKey_XXXXXX.p8 | pbcopy
 ```
 
 Configure under repo > **Settings** > **Secrets and variables** > **Actions**:
@@ -98,7 +99,7 @@ Configure under repo > **Settings** > **Secrets and variables** > **Actions**:
 | `MACOS_SIGN_PASSWORD` | Password of the `.p12` certificate |
 | `MACOS_NOTARY_ISSUER_ID` | Issuer ID from App Store Connect |
 | `MACOS_NOTARY_KEY_ID` | Key ID of the API key |
-| `MACOS_NOTARY_KEY` | Full contents of the `.p8` file (including BEGIN/END lines) |
+| `MACOS_NOTARY_KEY` | Base64-encoded `.p8` file |
 
 ##### 6. Testing
 
@@ -107,7 +108,7 @@ export MACOS_SIGN_P12=$(base64 -i DeveloperIDApplication.p12)
 export MACOS_SIGN_PASSWORD="password"
 export MACOS_NOTARY_ISSUER_ID="..."
 export MACOS_NOTARY_KEY_ID="..."
-export MACOS_NOTARY_KEY="$(cat AuthKey_XXXXXX.p8)"
+export MACOS_NOTARY_KEY=$(base64 -i AuthKey_XXXXXX.p8)
 goreleaser release --snapshot --clean
 ```
 

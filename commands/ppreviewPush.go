@@ -107,7 +107,7 @@ func (args *PPreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.IntFlag{
 		Name:        "cmax",
 		Destination: &args.ConcurMax,
-		Value:       999,
+		Value:       100,
 		Usage:       `Maximum number of concurrent connections`,
 		Action: func(ctx context.Context, c *cli.Command, v int) error {
 			if v < 1 {

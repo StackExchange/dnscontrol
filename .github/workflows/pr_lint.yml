@@ -1,10 +1,12 @@
 name: "PR: Lint"
+permissions:
+  contents: read
 on:
   pull_request:
   workflow_dispatch:
   push:
     branches:
-      - 'tlim_testpr'
+      - "tlim_testpr"
 
 jobs:
   golangci-lint:

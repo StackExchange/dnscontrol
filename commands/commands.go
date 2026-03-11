@@ -43,6 +43,12 @@ var _ = cmd(catDebug, &cli.Command{
 
 // Run will execute the CLI.
 func Run(v string) int {
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Aliases: []string{"V"},
+		Usage:   "print the version",
+	}
+
 	app := &cli.Command{
 		Name:    "dnscontrol",
 		Usage:   "DNSControl is a compiler and DSL for managing dns zones",
@@ -51,7 +57,6 @@ func Run(v string) int {
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "debug",
-			Aliases:     []string{"v"},
 			Usage:       "Enable debug logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},

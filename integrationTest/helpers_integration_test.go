@@ -18,6 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
@@ -585,6 +586,8 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 }
 
 func openpgpkey(name, target string) *models.RecordConfig {
+	target, err := transform.OPENPGPKEY(target)
+	panicOnErr(err)
 	return makeRec(name, target, "OPENPGPKEY")
 }
 
