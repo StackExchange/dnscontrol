@@ -226,11 +226,34 @@ jobs:
           key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
           restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
           path: ${{ env.go-mod-path }}
+      - name: Set END value for PRs
+        # For PRs we only run a smoke test (the first 3 tests) to save time.
+        # For pushes to main or if the PR has the 'longtest' label, we run all tests.
+        id: set_end
+        run: |
+          END=3
+          DO_WORKERS=false
+          # Only for PRs
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Check if branch is main
+            if [[ "${{ github.base_ref }}" == "main" ]]; then
+              END=999
+              DO_WORKERS=true
+            fi
+            # Check for 'longtest' label
+            if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+              END=999
+              DO_WORKERS=true
+            fi
+          fi
+          echo "END=$END" >> $GITHUB_ENV
+          echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
+
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=true -cfredirect=false -cfflatten=false
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=$DO_WORKERS -cfredirect=false -cfflatten=false -cftags=false -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
           else
             echo "Skip test for ${{ matrix.provider }} provider"
           fi
