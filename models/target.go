@@ -182,10 +182,10 @@ func (rc *RecordConfig) GetTargetDebug() string {
 // quoted, unless it is an integer or boolean.  We can't use GetTargetCombined()
 // because it is not designed for JavaScript and may include unquoted
 // parameters, which would break the JavaScript.  Instead, we must quote each
-// parameter separately.
-// FIXME(tlim): This function doesn't handle all types. Eventually
-// RecordConfigV2 should do better (maybe even using a JSON encoder for each
-// field). In the meantime, add new cases as needed.
+// parameter separately. This doesn't support all types and needs to be improved.
+// FIXME(tlim): This duplicates code in commands/getZones.go:formatDsl().
+//
+//	We should extract the common logic into a function they can both use.
 func (rc *RecordConfig) GetTargetJS() string {
 	if rc.Type == "TXT" || rc.Type == "LUA" {
 		return fmt.Sprintf("%q", rc.target)
