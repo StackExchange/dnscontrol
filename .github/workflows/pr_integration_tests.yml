@@ -69,8 +69,8 @@ jobs:
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.25
+    #container:
+    #  image: golang:1.25
     needs:
       - integration-test-providers
     env:
