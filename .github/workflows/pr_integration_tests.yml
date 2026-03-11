@@ -15,7 +15,7 @@ on:
   # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_integration_tests.yml?query=branch%3Atlim_testpr
   push:
     branches:
-      - 'tlim_testpr'
+      - "tlim_testpr"
 
 # Environment Variables
 env:
@@ -28,47 +28,46 @@ env:
   BIND_DOMAIN: example.com
 
 jobs:
-
-# integration-test-providers: Determine which providers have a _DOMAIN variable set.
-# That variable enables testing for the provider.  The results are
-# stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
-# where integration-tests can pick it up.
+  # integration-test-providers: Determine which providers have a _DOMAIN variable set.
+  # That variable enables testing for the provider.  The results are
+  # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
+  # where integration-tests can pick it up.
   integration-test-providers:
     #needs: build
     runs-on: ubuntu-latest
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
     steps:
-    - name: Set Integration Test Providers
-      id: get_integration_test_providers
-      shell: pwsh
-      run: |
-        $Providers = @()
-        $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
-        $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
-        $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
-        ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
-          if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
-            $Providers += $_
+      - name: Set Integration Test Providers
+        id: get_integration_test_providers
+        shell: pwsh
+        run: |
+          $Providers = @()
+          $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
+          $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
+          $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
+          ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+            if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
+              $Providers += $_
+            }
           }
-        }
-        Write-Host "Integration test providers: $Providers"
-        echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
-      env:
-        PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
-        ENV_CONTEXT: ${{ toJson(env) }}
-        VARS_CONTEXT: ${{ toJson(vars) }}
-        SECRETS_CONTEXT: ${{ toJson(secrets) }}
+          Write-Host "Integration test providers: $Providers"
+          echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
+        env:
+          PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
+          ENV_CONTEXT: ${{ toJson(env) }}
+          VARS_CONTEXT: ${{ toJson(vars) }}
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
 
-# integration-tests: Run the integration tests on any provider listed
-# in needs.integration-test-providers.outputs.integration_test_providers.
+  # integration-tests: Run the integration tests on any provider listed
+  # in needs.integration-test-providers.outputs.integration_test_providers.
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
       image: golang:1.25
     needs:
-    - integration-test-providers
+      - integration-test-providers
     env:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
@@ -214,24 +213,24 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v6
-    - run: mkdir -p "$TEST_RESULTS"
-    - name: restore_cache
-      uses: actions/cache@v5.0.3
-      with:
-        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        path: ${{ env.go-mod-path }}
-    - name: Run integration tests for ${{ matrix.provider }} provider
-      run: |-
-        go install gotest.tools/gotestsum@latest
-        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=true -cfredirect=false -cfflatten=false
-        else
-          echo "Skip test for ${{ matrix.provider }} provider"
-        fi
-      working-directory: integrationTest
-    - uses: actions/upload-artifact@v7.0.0
-      with:
-        name: integration-tests-${{ matrix.provider }}
-        path: ${{ env.TEST_RESULTS }}
+      - uses: actions/checkout@v6
+      - run: mkdir -p "$TEST_RESULTS"
+      - name: restore_cache
+        uses: actions/cache@v5.0.3
+        with:
+          key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+          restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+          path: ${{ env.go-mod-path }}
+      - name: Run integration tests for ${{ matrix.provider }} provider
+        run: |-
+          go install gotest.tools/gotestsum@latest
+          if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=true -cfredirect=false -cfflatten=false
+          else
+            echo "Skip test for ${{ matrix.provider }} provider"
+          fi
+        working-directory: integrationTest
+      - uses: actions/upload-artifact@v7.0.0
+        with:
+          name: integration-tests-${{ matrix.provider }}
+          path: ${{ env.TEST_RESULTS }}
