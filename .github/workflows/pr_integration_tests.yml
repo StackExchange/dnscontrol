@@ -4,10 +4,15 @@ permissions:
   contents: read
 
 # When will this pipeline be activated?
-# 1. On any pull-request, or if someone pushes to a branch called
-# "tlim_testpr".
+# 1. If someone pushes to a branch called "tlim_testpr".
+# 2. On a schedule (currently set to run every day at 4am UTC).
 on:
-  pull_request:
+  # Note: We used to trigger on every pull request. This was taking too much
+  # time and wasn't always needed. Now it is run manually.
+  #pull_request:
+  schedule:
+    - cron: "0 4 * * *"
+
   workflow_dispatch:
   # Want to trigger all the tests without making a PR?
   # Run: git push origin main:tlim_testpr --force
