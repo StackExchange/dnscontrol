@@ -9,7 +9,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 )
 
-func (api *domainNameShopProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *domainNameShopProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := api.getDNS(domain)
 	if err != nil {
 		return nil, err

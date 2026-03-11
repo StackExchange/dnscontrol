@@ -68,7 +68,9 @@ func (s *softlayerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets all the records for domainName and converts
 // them to model.RecordConfig.
-func (s *softlayerProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
+func (s *softlayerProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domainName := dc.Name
+
 	domain, err := s.getDomain(&domainName)
 	if err != nil {
 		return nil, err

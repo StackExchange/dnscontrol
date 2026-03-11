@@ -111,7 +111,9 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *cloudflareProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	domainID, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err

@@ -100,7 +100,9 @@ func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver
 	return models.ToNameservers(hp.nameservers)
 }
 
-func (hp *hostingdeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (hp *hostingdeProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := hp.getZone(domain)
 	if err != nil {
 		return nil, err

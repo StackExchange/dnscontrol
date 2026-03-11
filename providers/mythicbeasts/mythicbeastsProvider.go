@@ -91,7 +91,9 @@ func (n *mythicBeastsProvider) httpRequest(method, url string, body io.Reader) (
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *mythicBeastsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n *mythicBeastsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	resp, err := n.httpRequest("GET", "/zones/"+domain+"/records", nil)
 	if err != nil {
 		return nil, err

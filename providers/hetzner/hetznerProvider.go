@@ -146,7 +146,9 @@ func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *hetznerProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *hetznerProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := api.getAllRecords(domain)
 	if err != nil {
 		return nil, err

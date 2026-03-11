@@ -44,7 +44,9 @@ type Record struct {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *Client) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n *Client) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err

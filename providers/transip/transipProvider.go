@@ -156,7 +156,9 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 }
 
 // GetZoneRecords returns all records within given zone.
-func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
+func (n *transipProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domainName := dc.Name
+
 retry:
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if retryNeeded(err) {

@@ -93,7 +93,9 @@ func (api *realtimeregisterAPI) GetNameservers(domain string) ([]*models.Nameser
 	return []*models.Nameserver{}, nil
 }
 
-func (api *realtimeregisterAPI) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *realtimeregisterAPI) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	response, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
