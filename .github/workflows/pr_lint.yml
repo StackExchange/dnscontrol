@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'tlim_testpr'
+      - "tlim_testpr"
 
 jobs:
   golangci-lint:
