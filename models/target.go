@@ -194,9 +194,11 @@ func (rc *RecordConfig) GetTargetJS() string {
 	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "OPENPGPKEY", "PTR":
 		return fmt.Sprintf("%q", rc.target)
 	case "SOA":
-		return fmt.Sprintf("%q %q %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+		// SOA(ns, mbox, refresh, retry, expire, minttl)
+		return fmt.Sprintf("%q, %q, %d, %d, %d, %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	case "SRV":
-		return fmt.Sprintf("%q %d %d %d", rc.target, rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+		// SRV(priority, weight, port, target)
+		return fmt.Sprintf("%d, %d, %d, %q", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target)
 	default:
 		return fmt.Sprintf("%q", rc.GetTargetCombined())
 	}
