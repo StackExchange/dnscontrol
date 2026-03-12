@@ -11,7 +11,9 @@ import (
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *huaweicloudProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *huaweicloudProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	if err := c.getZones(); err != nil {
 		return nil, err
 	}

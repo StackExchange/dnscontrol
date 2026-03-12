@@ -150,7 +150,9 @@ func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiv5Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (client *gandiv5Provider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	g := newLiveDNSClient(client)
 
 	// Get all the existing records:

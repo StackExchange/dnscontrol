@@ -373,7 +373,9 @@ func (c *hednsProvider) setDDNSKeyForNewRecord(zoneID uint64, domain string, rec
 }
 
 // GetZoneRecords returns all the records for the given domain.
-func (c *hednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *hednsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	var zoneRecords []*models.RecordConfig
 
 	// Get Domain ID

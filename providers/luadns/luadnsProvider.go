@@ -100,7 +100,9 @@ func (l *luadnsProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (l *luadnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (l *luadnsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := l.getZone(domain)
 	if err != nil {
 		return nil, err

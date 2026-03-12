@@ -168,7 +168,9 @@ func (p *mikrotikProvider) EnsureZoneExists(_ string, _ map[string]string) error
 
 // GetZoneRecords fetches all static DNS records from RouterOS and filters by domain.
 // For the special zone "_forwarders.mikrotik", it returns DNS forwarder entries instead.
-func (p *mikrotikProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *mikrotikProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	if domain == ForwarderZone {
 		return p.getForwarderRecords()
 	}

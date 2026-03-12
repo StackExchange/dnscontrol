@@ -180,7 +180,9 @@ func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *autoDNSProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *autoDNSProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, err

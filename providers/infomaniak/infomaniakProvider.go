@@ -276,7 +276,9 @@ func toRecordUpdate(rc *models.RecordConfig) *dnsRecordUpdate {
 	}
 }
 
-func (p *infomaniakProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *infomaniakProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := p.getDNSRecords(domain)
 	if err != nil {
 		return nil, err

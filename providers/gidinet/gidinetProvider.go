@@ -105,7 +105,9 @@ func (c *gidinetProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *gidinetProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *gidinetProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := c.recordGetList(domain)
 	if err != nil {
 		return nil, err

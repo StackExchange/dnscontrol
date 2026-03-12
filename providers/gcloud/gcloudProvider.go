@@ -212,7 +212,9 @@ func keyFor(r *gdns.ResourceRecordSet) key {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (g *gcloudProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (g *gcloudProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	existingRecords, err := g.getZoneSets(domain)
 	return existingRecords, err
 }

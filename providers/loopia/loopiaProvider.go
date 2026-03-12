@@ -167,7 +167,9 @@ func (c *APIClient) ListZones() ([]string, error) {
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *APIClient) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	// Two approaches. One: get all SubDomains, and get their respective records
 	// simultaneously, or first get subdomains then fill each subdomain with its
 	// respective records on a subsequent pass.

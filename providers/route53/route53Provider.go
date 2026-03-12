@@ -255,7 +255,10 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	// If the zone_id is specified in meta, use it.
 	if zoneID, ok := meta["zone_id"]; ok {
 		zone, found := r.getZoneByID(zoneID)

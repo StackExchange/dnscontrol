@@ -186,7 +186,9 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return nssNoStrip, nil
 }
 
-func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	zone := dc.Name
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 

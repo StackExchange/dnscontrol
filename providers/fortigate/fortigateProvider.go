@@ -78,7 +78,9 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 
 // Record Fetching
 
-func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *fortigateProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records := models.Records{}
 
 	// Request the zone object from FortiGate

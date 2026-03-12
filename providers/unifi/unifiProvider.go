@@ -96,7 +96,9 @@ func (p *unifiProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (p *unifiProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *unifiProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	// Fetch all records from UniFi using the appropriate API
 	allRecords, isNewAPI, err := p.client.getRecords()
 	if err != nil {

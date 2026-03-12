@@ -166,7 +166,10 @@ func (c *bindProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	var zonefile string
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {

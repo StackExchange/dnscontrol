@@ -16,7 +16,9 @@ import (
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *nsone) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n *nsone) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	z, _, err := n.Zones.Get(domain, true)
 	if err != nil && errors.Is(err, rest.ErrZoneMissing) {
 		// if we get here, zone wasn't created, but we ended up continuing regardless.

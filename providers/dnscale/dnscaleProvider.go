@@ -131,7 +131,9 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (p *dnscaleProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *dnscaleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := p.getZoneByName(domain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get zone %s: %w", domain, err)
