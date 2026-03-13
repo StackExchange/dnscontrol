@@ -84,3 +84,4 @@ jobs:
       uses: goreleaser/goreleaser-action@v7
       with:
         args: build --snapshot
+# noop
