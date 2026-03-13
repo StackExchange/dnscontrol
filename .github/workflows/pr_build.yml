@@ -83,4 +83,4 @@ jobs:
       if: github.ref_type != 'tag'
       uses: goreleaser/goreleaser-action@v7
       with:
-        args: build -p 1 --snapshot
+        args: build -p 2 --snapshot
