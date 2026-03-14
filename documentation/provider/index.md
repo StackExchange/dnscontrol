@@ -73,6 +73,7 @@ Jump to a table:
 | [`NETLIFY`](netlify.md) | ❌ | ✅ | ❌ |
 | [`NS1`](ns1.md) | ❌ | ✅ | ❌ |
 | [`OPENSRS`](opensrs.md) | ❌ | ❌ | ✅ |
+| [`OPENWRT`](openwrt.md) | ❌ | ✅ | ❌ |
 | [`ORACLE`](oracle.md) | ❌ | ✅ | ❌ |
 | [`OVH`](ovh.md) | ❌ | ✅ | ✅ |
 | [`PACKETFRAME`](packetframe.md) | ❌ | ✅ | ❌ |
@@ -140,6 +141,7 @@ Jump to a table:
 | [`NETLIFY`](netlify.md) | ✅ | ❌ | ❌ | ✅ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
 | [`OPENSRS`](opensrs.md) | ❔ | ❔ | ❌ | ❔ |
+| [`OPENWRT`](openwrt.md) | ❔ | ❔ | ❌ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ✅ |
 | [`OVH`](ovh.md) | ❔ | ✅ | ❌ | ✅ |
 | [`PACKETFRAME`](packetframe.md) | ❔ | ❌ | ❌ | ❔ |
@@ -202,6 +204,7 @@ Jump to a table:
 | [`NETCUP`](netcup.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`NETLIFY`](netlify.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ❌ | ✅ | ❔ |
+| [`OPENWRT`](openwrt.md) | ❌ | ❔ | ❔ | ❔ | ❔ |
 | [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`OVH`](ovh.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
 | [`PACKETFRAME`](packetframe.md) | ❔ | ❔ | ❔ | ✅ | ❔ |
@@ -263,6 +266,7 @@ Jump to a table:
 | [`NETCUP`](netcup.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NETLIFY`](netlify.md) | ❔ | ❌ | ✅ | ❔ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
+| [`OPENWRT`](openwrt.md) | ❔ | ❔ | ✅ | ❔ |
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ❔ |
 | [`OVH`](ovh.md) | ❔ | ❔ | ✅ | ❔ |
 | [`PACKETFRAME`](packetframe.md) | ❔ | ❔ | ✅ | ❔ |
@@ -460,6 +464,7 @@ Providers in this category and their maintainers are:
 |[`NETLIFY`](netlify.md)|@SphericalKat|
 |[`NS1`](ns1.md)|@costasd|
 |[`OPENSRS`](opensrs.md)|@philhug|
+|[`OPENWRT`](openwrt.md)|@huskyistaken|
 |[`ORACLE`](oracle.md)|@kallsyms|
 |[`OVH`](ovh.md)|@masterzen|
 |[`PACKETFRAME`](packetframe.md)|@hamptonmoore|

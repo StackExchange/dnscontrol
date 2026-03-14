@@ -290,6 +290,13 @@
     "api_token": "$NS1_TOKEN",
     "domain": "$NS1_DOMAIN"
   },
+  "OPENWRT": {
+    "TYPE": "OPENWRT",
+    "domain": "$OPENWRT_DOMAIN",
+    "host": "$OPENWRT_HOST",
+    "username": "$OPENWRT_USERNAME",
+    "password": "$OPENWRT_PASSWORD"
+  },
   "ORACLE": {
     "TYPE": "ORACLE",
     "compartment": "$ORACLE_COMPARTMENT",

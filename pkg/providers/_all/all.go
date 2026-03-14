@@ -50,6 +50,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v4/providers/netcup"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/netlify"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/ns1"
+	_ "github.com/StackExchange/dnscontrol/v4/providers/openwrt"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/opensrs"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/oracle"
 	_ "github.com/StackExchange/dnscontrol/v4/providers/ovh"
