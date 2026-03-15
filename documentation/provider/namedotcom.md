@@ -68,7 +68,7 @@ D("example.com", REG_NAMECOM, DnsProvider(DSP_R53),
 {% endhint %}
 
 ## Activation
-In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/reseller/apply). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.
+In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/account/login). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.
 
 ## Tips and error messages
 
