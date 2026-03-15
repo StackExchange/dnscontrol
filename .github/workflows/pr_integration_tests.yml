@@ -65,7 +65,7 @@ jobs:
           Write-Host "Integration test providers: $Providers"
           echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
         env:
-          PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
+          PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','OPENWRT','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
           ENV_CONTEXT: ${{ toJson(env) }}
           VARS_CONTEXT: ${{ toJson(vars) }}
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -109,6 +109,7 @@ jobs:
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
+      OPENWRT_DOMAIN: ${{ vars.OPENWRT_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
@@ -198,6 +199,10 @@ jobs:
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
       #
       NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
+      #
+      OPENWRT_USERNAME: ${{ secrets.OPENWRT_USERNAME }}
+      OPENWRT_PASSWORD: ${{ secrets.OPENWRT_PASSWORD }}
+      OPENWRT_HOST: ${{ secrets.OPENWRT_HOST }}
       #
       POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
       POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}

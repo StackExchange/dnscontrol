@@ -169,6 +169,7 @@
 * [Netcup](provider/netcup.md)
 * [Netlify](provider/netlify.md)
 * [NS1](provider/ns1.md)
+* [OpenWrt](provider/openwrt.md)
 * [OpenSRS](provider/opensrs.md)
 * [Oracle Cloud](provider/oracle.md)
 * [OVH](provider/ovh.md)

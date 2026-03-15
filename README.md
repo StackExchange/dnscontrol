@@ -59,6 +59,7 @@ Currently supported DNS providers:
 - Netcup
 - Netlify
 - NS1
+- OpenWrt
 - Oracle Cloud
 - OVH
 - Packetframe
