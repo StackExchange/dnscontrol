@@ -56,6 +56,7 @@ Currently supported DNS providers:
 - Mythic Beasts
 - Name.com
 - Namecheap
+- NetBird
 - Netcup
 - Netlify
 - NS1
