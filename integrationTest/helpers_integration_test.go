@@ -616,9 +616,9 @@ func r53weighted(name, target, rtype string, weight int, setID string) *models.R
 func r53weightedHealthCheck(name, target, rtype string, weight int, setID, healthCheckID string) *models.RecordConfig {
 	r := makeRec(name, target, rtype)
 	r.Metadata = map[string]string{
-		"r53_weight":           fmt.Sprintf("%d", weight),
-		"r53_set_identifier":   setID,
-		"r53_health_check_id":  healthCheckID,
+		"r53_weight":          fmt.Sprintf("%d", weight),
+		"r53_set_identifier":  setID,
+		"r53_health_check_id": healthCheckID,
 	}
 	return r
 }
