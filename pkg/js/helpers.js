@@ -429,6 +429,37 @@ function R53_EVALUATE_TARGET_HEALTH(enabled) {
     };
 }
 
+// R53_WEIGHT(weight, set_identifier) configures Route 53 weighted routing.
+// weight: integer 0-255, set_identifier: unique string within the weighted group.
+function R53_WEIGHT(weight, set_identifier) {
+    if (!_.isNumber(weight) || weight < 0 || weight > 255) {
+        throw 'R53_WEIGHT: weight must be a number between 0 and 255';
+    }
+    if (!_.isString(set_identifier) || set_identifier === '') {
+        throw 'R53_WEIGHT: set_identifier must be a non-empty string';
+    }
+    return function (r) {
+        if (!_.isObject(r.meta)) {
+            r.meta = {};
+        }
+        r.meta['r53_weight'] = weight.toString();
+        r.meta['r53_set_identifier'] = set_identifier;
+    };
+}
+
+// R53_HEALTH_CHECK_ID(health_check_id) associates a Route 53 health check with the record.
+function R53_HEALTH_CHECK_ID(health_check_id) {
+    if (!_.isString(health_check_id) || health_check_id === '') {
+        throw 'R53_HEALTH_CHECK_ID: health_check_id must be a non-empty string';
+    }
+    return function (r) {
+        if (!_.isObject(r.meta)) {
+            r.meta = {};
+        }
+        r.meta['r53_health_check_id'] = health_check_id;
+    };
+}
+
 function validateR53AliasType(value) {
     if (!_.isString(value)) {
         return false;
