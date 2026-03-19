@@ -604,6 +604,15 @@ func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordCo
 	return r
 }
 
+func r53weighted(name, target, rtype string, weight int, setID string) *models.RecordConfig {
+	r := makeRec(name, target, rtype)
+	r.Metadata = map[string]string{
+		"r53_weight":         fmt.Sprintf("%d", weight),
+		"r53_set_identifier": setID,
+	}
+	return r
+}
+
 func rp(name string, m, t string) *models.RecordConfig {
 	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
 		Type: "RP",

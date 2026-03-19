@@ -581,6 +581,102 @@ func Test_DSChecks(t *testing.T) {
 	})
 }
 
+func TestCheckR53WeightedGroupConsistency_noerr_consistent(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary", "r53_health_check_id": "hc-1"},
+		}),
+		makeRC("@", "example.com", "2.3.4.5", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary", "r53_health_check_id": "hc-1"},
+		}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckR53WeightedGroupConsistency_noerr_different_set_ids(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary"},
+		}),
+		makeRC("@", "example.com", "5.6.7.8", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "30", "r53_set_identifier": "secondary"},
+		}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckR53WeightedGroupConsistency_noerr_no_metadata(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{Type: "A"}),
+		makeRC("@", "example.com", "5.6.7.8", models.RecordConfig{Type: "A"}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckR53WeightedGroupConsistency_err_different_weights(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary"},
+		}),
+		makeRC("@", "example.com", "2.3.4.5", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "50", "r53_set_identifier": "primary"},
+		}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 1 {
+		t.Errorf("Expected 1 error for inconsistent weights but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckR53WeightedGroupConsistency_err_different_health_checks(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary", "r53_health_check_id": "hc-1"},
+		}),
+		makeRC("@", "example.com", "2.3.4.5", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary", "r53_health_check_id": "hc-2"},
+		}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 1 {
+		t.Errorf("Expected 1 error for inconsistent health checks but got %d: %v", len(errs), errs)
+	}
+}
+
+func TestCheckR53WeightedGroupConsistency_err_both_inconsistent(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.2.3.4", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "70", "r53_set_identifier": "primary", "r53_health_check_id": "hc-1"},
+		}),
+		makeRC("@", "example.com", "2.3.4.5", models.RecordConfig{
+			Type:     "A",
+			Metadata: map[string]string{"r53_weight": "50", "r53_set_identifier": "primary", "r53_health_check_id": "hc-2"},
+		}),
+	}
+	errs := checkR53WeightedGroupConsistency(records)
+	if len(errs) != 2 {
+		t.Errorf("Expected 2 errors (weight + health check) but got %d: %v", len(errs), errs)
+	}
+}
+
 func Test_errorRepeat(t *testing.T) {
 	type args struct {
 		label  string
