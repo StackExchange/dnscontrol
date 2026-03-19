@@ -3390,23 +3390,14 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
 declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 
 /**
- * `R53_HEALTH_CHECK_ID` associates a [Route 53 health check](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating.html) with a record. This is typically used in combination with [`R53_WEIGHT()`](R53_WEIGHT.md) for weighted routing, so that Route 53 stops routing traffic to unhealthy endpoints.
+ * `R53_HEALTH_CHECK_ID` associates a [Route 53 health check](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating.html) with a record. This is typically used with [`R53_WEIGHT()`](R53_WEIGHT.md) so that Route 53 stops routing traffic to unhealthy endpoints.
  *
  * The `health_check_id` is the ID of a Route 53 health check that you create separately (e.g. via the AWS Console, CLI, or Terraform). DNSControl does not manage the health checks themselves, only their association with DNS records.
  *
  * ```javascript
- * var REG_NONE = NewRegistrar("none");
- * var DSP_R53 = NewDnsProvider("r53_main");
- *
- * D("example.com", REG_NONE, DnsProvider(DSP_R53),
- *     A("www", "1.2.3.4",
- *         R53_WEIGHT(70, "primary"),
- *         R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012"),
- *     ),
- *     A("www", "5.6.7.8",
- *         R53_WEIGHT(30, "secondary"),
- *         R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321"),
- *     ),
+ * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
+ *   A("www", "1.2.3.4", R53_WEIGHT(70, "primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
+ *   A("www", "5.6.7.8", R53_WEIGHT(30, "secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
  * );
  * ```
  *
@@ -3415,56 +3406,31 @@ declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
 declare function R53_HEALTH_CHECK_ID(health_check_id: string): RecordModifier;
 
 /**
- * `R53_WEIGHT` configures [Route 53 weighted routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html) for a record.
+ * `R53_WEIGHT` configures [Route 53 weighted routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html) for a record. It distributes traffic across multiple resources based on the weights you assign.
  *
- * Weighted routing lets you associate multiple resources with a single domain name and control the proportion of traffic that is routed to each resource.
+ * `weight` is an integer between 0 and 255. Route 53 distributes traffic proportionally based on the weights assigned to each record with the same name and type. A weight of 0 means no traffic is routed to that resource unless all other records also have weight 0.
  *
- * - `weight`: An integer between 0 and 255. Route 53 distributes traffic proportionally based on the weights assigned to each record with the same name and type.
- * - `set_identifier`: A unique string that differentiates this record from other records with the same name and type. Each weighted record in a group must have a unique set identifier.
+ * `set_identifier` is a unique string that differentiates this record from other weighted records with the same name and type.
  *
- * ```javascript
- * var REG_NONE = NewRegistrar("none");
- * var DSP_R53 = NewDnsProvider("r53_main");
- *
- * D("example.com", REG_NONE, DnsProvider(DSP_R53),
- *     // 70% of traffic goes to 1.2.3.4, 30% to 5.6.7.8
- *     A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
- *     A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
- * );
- * ```
- *
- * `R53_WEIGHT` can be used with any record type supported by Route 53 weighted routing, including `A`, `AAAA`, `CNAME`, `TXT`, and [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md).
+ * You can optionally associate a health check using [`R53_HEALTH_CHECK_ID()`](R53_HEALTH_CHECK_ID.md) to remove unhealthy endpoints from the rotation.
  *
  * ```javascript
- * D("example.com", REG_NONE, DnsProvider(DSP_R53),
- *     // Weighted CNAME records
- *     CNAME("cdn", "east.cdn.example.com.", R53_WEIGHT(70, "cdn-east")),
- *     CNAME("cdn", "west.cdn.example.com.", R53_WEIGHT(30, "cdn-west")),
+ * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
+ *   // 70% of traffic to east, 30% to west
+ *   A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
+ *   A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
  *
- *     // Weighted R53_ALIAS records
- *     R53_ALIAS("api", "A", "alb-east.us-east-1.elb.amazonaws.com.",
- *         R53_WEIGHT(60, "api-east"),
- *         R53_ZONE("Z35SXDOTRQ7X7K"),
- *     ),
- *     R53_ALIAS("api", "A", "alb-west.us-west-2.elb.amazonaws.com.",
- *         R53_WEIGHT(40, "api-west"),
- *         R53_ZONE("Z1H1FL5HABSF5"),
- *     ),
- * );
- * ```
+ *   // Weighted CNAME records
+ *   CNAME("cdn", "east.cdn.example.com.", R53_WEIGHT(70, "cdn-east")),
+ *   CNAME("cdn", "west.cdn.example.com.", R53_WEIGHT(30, "cdn-west")),
  *
- * You can optionally add a health check using [`R53_HEALTH_CHECK_ID()`](R53_HEALTH_CHECK_ID.md) to remove unhealthy endpoints from the rotation.
+ *   // Weighted R53_ALIAS records
+ *   R53_ALIAS("api", "A", "alb-east.us-east-1.elb.amazonaws.com.", R53_ZONE("Z35SXDOTRQ7X7K"), R53_WEIGHT(60, "api-east")),
+ *   R53_ALIAS("api", "A", "alb-west.us-west-2.elb.amazonaws.com.", R53_ZONE("Z1H1FL5HABSF5"), R53_WEIGHT(40, "api-west")),
  *
- * ```javascript
- * D("example.com", REG_NONE, DnsProvider(DSP_R53),
- *     A("www", "1.2.3.4",
- *         R53_WEIGHT(70, "web-east"),
- *         R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012"),
- *     ),
- *     A("www", "5.6.7.8",
- *         R53_WEIGHT(30, "web-west"),
- *         R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321"),
- *     ),
+ *   // With health checks
+ *   A("api", "10.0.1.1", R53_WEIGHT(50, "api-primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
+ *   A("api", "10.0.2.1", R53_WEIGHT(50, "api-secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
  * );
  * ```
  *

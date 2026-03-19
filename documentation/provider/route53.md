@@ -79,13 +79,11 @@ You can find some other ways to authenticate to Route53 in the [go sdk configura
 
 ## Metadata
 
-Record-level metadata:
+This provider supports the following record-level metadata, typically set via the [`R53_WEIGHT()`](../language-reference/record-modifiers/R53_WEIGHT.md) and [`R53_HEALTH_CHECK_ID()`](../language-reference/record-modifiers/R53_HEALTH_CHECK_ID.md) record modifiers:
 
 - `r53_weight` (0-255): Route 53 weighted routing weight. Must be used with `r53_set_identifier`.
 - `r53_set_identifier` (string): Unique identifier for a weighted routing record set. Required when using `r53_weight`.
 - `r53_health_check_id` (string): Route 53 health check ID to associate with the record.
-
-These are typically set using the [`R53_WEIGHT()`](../language-reference/record-modifiers/R53_WEIGHT.md) and [`R53_HEALTH_CHECK_ID()`](../language-reference/record-modifiers/R53_HEALTH_CHECK_ID.md) record modifiers.
 
 ## Usage
 An example configuration:
@@ -129,7 +127,7 @@ D("testzone.net!public", REG_NONE,
 
 ## Weighted routing
 
-Route 53 [weighted routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html) distributes traffic across multiple endpoints based on weights you assign.
+Route 53 [weighted routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html) distributes traffic across multiple endpoints based on weights you assign. Use the [`R53_WEIGHT()`](../language-reference/record-modifiers/R53_WEIGHT.md) record modifier to configure weighted routing.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -137,24 +135,27 @@ var REG_NONE = NewRegistrar("none");
 var DSP_R53 = NewDnsProvider("r53_main");
 
 D("example.com", REG_NONE, DnsProvider(DSP_R53),
-    // 70% of traffic goes to 1.2.3.4, 30% to 5.6.7.8
-    A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
-    A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
-
-    // With health checks
-    A("api", "10.0.1.1",
-        R53_WEIGHT(50, "api-primary"),
-        R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012"),
-    ),
-    A("api", "10.0.2.1",
-        R53_WEIGHT(50, "api-secondary"),
-        R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321"),
-    ),
+  A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
+  A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
 );
 ```
 {% endcode %}
 
-See [`R53_WEIGHT()`](../language-reference/record-modifiers/R53_WEIGHT.md) and [`R53_HEALTH_CHECK_ID()`](../language-reference/record-modifiers/R53_HEALTH_CHECK_ID.md) for full documentation.
+## Health checks
+
+Use the [`R53_HEALTH_CHECK_ID()`](../language-reference/record-modifiers/R53_HEALTH_CHECK_ID.md) record modifier to associate a [Route 53 health check](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating.html) with a record. Health checks must be created separately (e.g. via the AWS Console, CLI, or Terraform). DNSControl only manages the association.
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
+
+D("example.com", REG_NONE, DnsProvider(DSP_R53),
+  A("api", "10.0.1.1", R53_WEIGHT(50, "api-primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
+  A("api", "10.0.2.1", R53_WEIGHT(50, "api-secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
+);
+```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a standard [AWS access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.
