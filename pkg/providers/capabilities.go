@@ -26,22 +26,24 @@ const (
 	CanConcur
 
 	// CanGetZones indicates the provider supports the get-zones subcommand.
+	// When using providers.Register(), this is set automatically for you.
 	CanGetZones
 
 	// CanOnlyDiff1Features indicates the provider has not yet been upgraded to
 	// use the "diff2" differencing engine.  Instead, it uses the the backwards
 	// compatibility mode.  The diff2 engine is required to repliably provide
 	// IGNORE(), NO_PURGE, and other features.
-	// This capability is set automatically for the provider during the call to
-	// RegisterDomainServiceProviderType.  It is set to Can() if we detect
-	// compatibility mode is in use. All other values (Unimplemented and Cannot)
-	// are equivalent.
 	CanOnlyDiff1Features
 
 	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAICDN
 
+	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
+	CanUseAKAMAITLC
+
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseAlias
 
 	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports.
@@ -58,6 +60,7 @@ const (
 
 	// CanUseDS indicates that the provider can handle DS record types. This
 	// implies CanUseDSForChildren without specifying the latter explicitly.
+	// When using providers.Register(), this is set if RecordTypes[] includes it.
 	CanUseDS
 
 	// CanUseDSForChildren indicates the provider can handle DS record types, but
@@ -115,8 +118,11 @@ const (
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange.
 	DocOfficiallySupported
 
-	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports.
-	CanUseAKAMAITLC
+	// IsRegistrar is true if this provider manages DNS Domain Nameserver Delegations.
+	IsRegistrar
+
+	// IsDnsServiceProvider is true if this provider manages DNS zones.
+	IsDnsServiceProvider
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
