@@ -221,9 +221,20 @@ func (p *dnscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 	return corrections, actualChangeCount, nil
 }
 
-// GetNameservers returns an empty array.
-// DNScale manages apex NS records automatically - they cannot be modified via API.
-// Returning empty prevents DNSControl from trying to create NS records at apex.
+// GetNameservers returns an empty array because DNScale assigns nameservers
+// server-side when a zone is created. Returning empty means dnscontrol won't
+// auto-generate NS records for DNScale at the apex.
+//
+// For multi-provider DNS setups, you must explicitly declare DNScale's
+// nameservers so they are included in registrar delegation:
+//
+//	D("example.com", REG_NAMECHEAP,
+//	  DnsProvider(DSP_DNSCALE),
+//	  DnsProvider(DSP_CLOUDFLARE),
+//	  NAMESERVER("ns1.dnscale.eu"),
+//	  NAMESERVER("ns2.dnscale.eu"),
+//	  // ...
+//	)
 func (p *dnscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
