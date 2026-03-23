@@ -146,9 +146,13 @@ func (p *dnscaleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Record
 
 	curRecords := make(models.Records, 0, len(records))
 	for _, rec := range records {
-		// Skip NS records at apex - these are managed by DNScale
+		// Skip DNScale's own NS records at apex - these are system-managed.
+		// Third-party NS records at apex are kept for multi-provider DNS setups.
 		if rec.Type == "NS" && (rec.Name == domain+"." || rec.Name == "@") {
-			continue
+			content := strings.TrimSuffix(rec.Content, ".")
+			if strings.HasSuffix(content, ".dnscale.eu") || strings.HasSuffix(content, ".dnscale.com") {
+				continue
+			}
 		}
 		// Skip SOA records
 		if rec.Type == "SOA" {
