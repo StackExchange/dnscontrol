@@ -1,35 +1,38 @@
 package transform
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 )
 
 // IPConversion describes an IP conversion.
 type IPConversion struct {
-	Low, High net.IP
-	NewBases  []net.IP
-	NewIPs    []net.IP
+	Low, High netip.Addr
+	NewBases  []netip.Addr
+	NewIPs    []netip.Addr
 }
 
-func ipToUint(i net.IP) (uint32, error) {
-	parts := i.To4()
-	if parts == nil || len(parts) != 4 {
-		return 0, fmt.Errorf("%s is not an ipv4 address", parts.String())
+func ipToUint(i netip.Addr) (uint32, error) {
+	if !i.Is4() {
+		return 0, fmt.Errorf("%s is not an ipv4 address", i.String())
 	}
+	parts := i.AsSlice()
 	r := uint32(parts[0])<<24 | uint32(parts[1])<<16 | uint32(parts[2])<<8 | uint32(parts[3])
 	return r, nil
 }
 
-// UintToIP convert a 32-bit into a net.IP.
-func UintToIP(u uint32) net.IP {
-	return net.IPv4(
-		byte((u>>24)&255),
-		byte((u>>16)&255),
-		byte((u>>8)&255),
-		byte((u)&255))
+// UintToIP convert a 32-bit into a netip.Addr.
+func UintToIP(u uint32) netip.Addr {
+	return netip.AddrFrom4([4]byte{
+		byte((u >> 24) & 255),
+		byte((u >> 16) & 255),
+		byte((u >> 8) & 255),
+		byte((u) & 255),
+	})
 }
 
 // DecodeTransformTable turns a string-encoded table into a list of conversions.
@@ -45,25 +48,36 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 			items[i] = strings.TrimSpace(item)
 		}
 
-		con := IPConversion{
-			Low:  net.ParseIP(items[0]),
-			High: net.ParseIP(items[1]),
+		var err error
+		var tLow, tHigh netip.Addr
+		tLow, err = netip.ParseAddr(items[0])
+		if err != nil {
+			return nil, err
 		}
-		parseList := func(s string) ([]net.IP, error) {
-			ips := []net.IP{}
-			for _, ip := range strings.Split(s, ",") {
+		tHigh, err = netip.ParseAddr(items[1])
+		if err != nil {
+			return nil, err
+		}
+
+		con := IPConversion{
+			Low:  tLow,
+			High: tHigh,
+		}
+		parseList := func(s string) ([]netip.Addr, error) {
+			ips := []netip.Addr{}
+			for ip := range strings.SplitSeq(s, ",") {
 				if ip == "" {
 					continue
 				}
-				addr := net.ParseIP(ip)
-				if addr == nil {
-					return nil, fmt.Errorf("%s is not a valid ip address", ip)
+				addr, err := netip.ParseAddr(ip)
+				if err != nil {
+					return nil, err
 				}
 				ips = append(ips, addr)
 			}
 			return ips, nil
 		}
-		var err error
+		//var err error
 		if con.NewBases, err = parseList(items[2]); err != nil {
 			return nil, err
 		}
@@ -86,46 +100,126 @@ func DecodeTransformTable(transforms string) ([]IPConversion, error) {
 }
 
 // IP transforms a single ip address. If the transform results in multiple new targets, an error will be returned.
-func IP(address net.IP, transforms []IPConversion) (net.IP, error) {
+func IP(address netip.Addr, transforms []IPConversion) (netip.Addr, error) {
 	ips, err := IPToList(address, transforms)
 	if err != nil {
-		return nil, err
+		return netip.Addr{}, err
 	}
 	if len(ips) != 1 {
-		return nil, fmt.Errorf("exactly one IP expected. Got: %s", ips)
+		return netip.Addr{}, fmt.Errorf("exactly one IP expected. Got: %s", ips)
 	}
 	return ips[0], err
 }
 
 // IPToList manipulates an net.IP based on a list of IPConversions. It can potentially expand one ip address into multiple addresses.
-func IPToList(address net.IP, transforms []IPConversion) ([]net.IP, error) {
+func IPToList(address netip.Addr, transforms []IPConversion) ([]netip.Addr, error) {
 	thisIP, err := ipToUint(address)
 	if err != nil {
 		return nil, err
 	}
 	for _, conv := range transforms {
-		min_, err := ipToUint(conv.Low)
+		minIP, err := ipToUint(conv.Low)
 		if err != nil {
 			return nil, err
 		}
-		max_, err := ipToUint(conv.High)
+		maxIP, err := ipToUint(conv.High)
 		if err != nil {
 			return nil, err
 		}
-		if (thisIP >= min_) && (thisIP <= max_) {
+		if (thisIP >= minIP) && (thisIP <= maxIP) {
 			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
-			list := []net.IP{}
+			list := []netip.Addr{}
 			for _, nb := range conv.NewBases {
 				newbase, err := ipToUint(nb)
 				if err != nil {
 					return nil, err
 				}
-				list = append(list, UintToIP(newbase+(thisIP-min_)))
+				list = append(list, UintToIP(newbase+(thisIP-minIP)))
 			}
 			return list, nil
 		}
 	}
-	return []net.IP{address}, nil
+	return []netip.Addr{address}, nil
+}
+
+var b64 = base64.StdEncoding.Strict()
+
+// The target of an OPENPGPKEY record can be either hex or base64, so we need to
+// be able to decode both formats.
+//
+// PGP keys are quite long and are largely random, so the odds of the base64
+// encoding of a PGP key also being valid hex are very low. Therefore, we will
+// assume that if a string is both valid hex and valid base64, then it is hex.
+// The other cases where a string decodes as only hex, only base64, or neither
+// are all unambiguous.
+func decodeHexOrBase64(s string) ([]byte, error) {
+	// A string with mixed casing *could* be hex, but it's more likely to be
+	// base64. So we only try to decode as hex only if the string is all a
+	// single case.
+	var (
+		hexErr  error
+		hexData []byte
+	)
+	if s == strings.ToLower(s) || s == strings.ToUpper(s) {
+		hexData, hexErr = hex.DecodeString(s)
+	} else {
+		hexData, hexErr = nil, fmt.Errorf(
+			"hex string contains mixed case: %#v", s,
+		)
+	}
+
+	// Also try to decode the string as base64, using the strictest possible
+	// decoder (which is also used in the DNS "presentation" format and the "gpg
+	// --armor" format).
+	var (
+		b64Err  error
+		b64Data []byte
+	)
+	// Reject base64 strings that contain whitespace
+	if strings.ContainsAny(s, " \t\r\n") {
+		b64Data, b64Err = nil, fmt.Errorf(
+			"base64 string contains whitespace: %#v", s,
+		)
+	} else {
+		b64Data, b64Err = b64.DecodeString(s)
+	}
+
+	// Return the result.
+	if hexErr != nil && b64Err != nil {
+		// Both decodings failed, so there's nothing that we can do but return
+		// an error.
+		return nil, fmt.Errorf(
+			"string is neither valid hex nor valid base64: %w; %w",
+			hexErr, b64Err,
+		)
+	} else if hexErr == nil && b64Err != nil {
+		// Only the hex decoding succeeded, therefore the input must only be
+		// valid hex.
+		return hexData, nil
+	} else if hexErr != nil && b64Err == nil {
+		// Only the base64 decoding succeeded, therefore the input must only be
+		// valid base64.
+		return b64Data, nil
+	} else if hexErr == nil && b64Err == nil {
+		// Both decodings succeeded. This is theoretically ambiguous, but it's
+		// very unlikely that a valid base64 string would also be valid hex, so
+		// we will assume that the input is hex.
+		return hexData, nil
+	} else {
+		return nil, fmt.Errorf("unreachable")
+	}
+}
+
+func OPENPGPKEY(encodedKey string) (string, error) {
+	// Decode the key, which can be either hex or base64.
+	decodedKey, err := decodeHexOrBase64(encodedKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode OPENPGPKEY: %w", err)
+	}
+
+	// Re-encode the key as base64, since the input may have been hex.
+	encodedKey = b64.EncodeToString(decodedKey)
+	return encodedKey, nil
 }

@@ -26,8 +26,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Section 1: Register this provider in the system.
@@ -167,7 +167,9 @@ func (c *APIClient) ListZones() ([]string, error) {
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (c *APIClient) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *APIClient) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	// Two approaches. One: get all SubDomains, and get their respective records
 	// simultaneously, or first get subdomains then fill each subdomain with its
 	// respective records on a subsequent pass.
@@ -313,7 +315,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 		if len(desiredRecords[fqdn]) == 0 {
 			msgs := strings.Join(msgsForLabel[fqdn], "\n")
 			msgs = "records affected by deletion of subdomain " + fqdn + "\n" + msgs
-			subdomain := dnsutil.TrimDomainName(fqdn, dc.Name)
+			subdomain := dnsutilv1.TrimDomainName(fqdn, dc.Name)
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
@@ -327,7 +329,7 @@ func (c *APIClient) GetZoneRecordsCorrections(dc *models.DomainConfig, existingR
 		skip := false
 		for fqdn := range affectedLabels {
 			if len(desiredRecords[fqdn]) == 0 {
-				subdomain := dnsutil.TrimDomainName(fqdn, dc.Name)
+				subdomain := dnsutilv1.TrimDomainName(fqdn, dc.Name)
 				if d.Existing.NameFQDN == fqdn && d.Existing.Name == subdomain {
 					// fmt.Printf("fqdn extinct wtf: %s\n", fqdn)
 					// deletion is a member of fqdn. skip its deletion (otherwise extra API call and its error)

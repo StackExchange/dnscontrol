@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 /*
@@ -85,7 +85,9 @@ func (c *gcoreProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *gcoreProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *gcoreProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := c.provider.Zone(c.ctx, domain)
 	if err != nil {
 		return nil, err
@@ -112,7 +114,7 @@ func (c *gcoreProvider) GetZoneRecords(domain string, meta map[string]string) (m
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *gcoreProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {
@@ -229,7 +231,7 @@ func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exist
 	return result, actualChangeCount, nil
 }
 
-// ListZones return all the zones in the account
+// ListZones return all the zones in the account.
 func (c *gcoreProvider) ListZones() ([]string, error) {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {

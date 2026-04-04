@@ -10,7 +10,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 )
 
-func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (b *bunnydnsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := b.findZoneByDomain(domain)
 	if err != nil {
 		return nil, err
@@ -32,7 +34,6 @@ func (b *bunnydnsProvider) GetZoneRecords(domain string, meta map[string]string)
 	// Define a list of record types that are currently not supported by this provider.
 	unsupportedTypes := []recordType{
 		recordTypeFlatten,
-		recordTypePullZone,
 		recordTypeScript,
 	}
 

@@ -18,7 +18,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 type azurednsProvider struct {
@@ -249,7 +249,9 @@ func (a *azurednsProvider) getNameNonDefaultNameServers(domain string, nss []str
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (a *azurednsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (a *azurednsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	existingRecords, _, _, err := a.getExistingRecords(domain)
 	if err != nil {
 		return nil, err
@@ -613,7 +615,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			if !(rec.GetTargetTXTSegmentCount() == 1 && rec.GetTargetTXTSegmented()[0] == "") {
+			if rec.GetTargetTXTSegmentCount() != 1 || rec.GetTargetTXTSegmented()[0] != "" {
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
 					txts = append(txts, to.StringPtr(txt))

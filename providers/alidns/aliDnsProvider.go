@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 )
 
@@ -100,7 +100,9 @@ func (a *aliDNSDsp) GetNameservers(domain string) ([]*models.Nameserver, error) 
 }
 
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
-func (a *aliDNSDsp) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (a *aliDNSDsp) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	// Fetch all pages of domain records.
 	records, err := a.describeDomainRecordsAll(domain)
 	if err != nil {

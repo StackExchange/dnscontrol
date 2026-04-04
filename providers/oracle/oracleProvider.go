@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/dns"
 	"github.com/oracle/oci-go-sdk/v65/example/helpers"
@@ -53,7 +53,7 @@ type oracleProvider struct {
 	compartment string
 }
 
-// New creates a new provider for Oracle Cloud DNS
+// New creates a new provider for Oracle Cloud DNS.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	client, err := dns.NewDnsClientWithConfigurationProvider(common.NewRawConfigurationProvider(
 		settings["tenancy_ocid"],
@@ -113,7 +113,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (o *oracleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -168,8 +168,8 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]string, len(getResp.Zone.Nameservers))
-	for i, ns := range getResp.Zone.Nameservers {
+	nss := make([]string, len(getResp.Nameservers))
+	for i, ns := range getResp.Nameservers {
 		nss[i] = *ns.Hostname
 	}
 
@@ -186,7 +186,9 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return nssNoStrip, nil
 }
 
-func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	zone := dc.Name
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -277,21 +279,21 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		for any size zone.
 	*/
 
-	desc := ""
+	var desc strings.Builder
 	createRecords := models.Records{}
 	deleteRecords := models.Records{}
 
 	if len(create) > 0 {
 		for _, rec := range create {
 			createRecords = append(createRecords, rec.Desired)
-			desc += rec.String() + "\n"
+			desc.WriteString(rec.String() + "\n")
 		}
 	}
 
 	if len(dels) > 0 {
 		for _, rec := range dels {
 			deleteRecords = append(deleteRecords, rec.Existing)
-			desc += rec.String() + "\n"
+			desc.WriteString(rec.String() + "\n")
 		}
 	}
 
@@ -299,14 +301,14 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		for _, rec := range modify {
 			createRecords = append(createRecords, rec.Desired)
 			deleteRecords = append(deleteRecords, rec.Existing)
-			desc += rec.String() + "\n"
+			desc.WriteString(rec.String() + "\n")
 		}
 	}
 
 	// There were corrections. Send them as one big batch:
 	if len(createRecords) > 0 || len(deleteRecords) > 0 {
 		corrections = append(corrections, &models.Correction{
-			Msg: desc,
+			Msg: desc.String(),
 			F: func() error {
 				return o.patch(createRecords, deleteRecords, dc.Name)
 			},
@@ -335,10 +337,7 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 	}
 
 	for batchStart := 0; batchStart < len(ops); batchStart += 100 {
-		batchEnd := batchStart + 100
-		if batchEnd > len(ops) {
-			batchEnd = len(ops)
-		}
+		batchEnd := min(batchStart+100, len(ops))
 		patchReq.Items = ops[batchStart:batchEnd]
 
 		_, err := o.client.PatchZoneRecords(ctx, patchReq)

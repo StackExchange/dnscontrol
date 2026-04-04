@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 )
 
@@ -33,7 +33,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// clientRetries is the number of retries for API backend requests in case of StatusTooManyRequests responses
+// clientRetries is the number of retries for API backend requests in case of StatusTooManyRequests responses.
 const clientRetries = 10
 
 func init() {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/region"
 	dnssdk "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2"
@@ -122,7 +122,7 @@ func init() {
 }
 
 // huaweicloud has request limiting like above.
-// "The throttling threshold has been reached: policy user over ratelimit,limit:100,time:1 minute"
+// "The throttling threshold has been reached: policy user over ratelimit,limit:100,time:1 minute".
 func withRetry(f func() error) {
 	const maxRetries = 23
 	const sleepTime = 5 * time.Second

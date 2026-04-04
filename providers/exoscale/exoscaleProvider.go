@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	egoscale "github.com/exoscale/egoscale/v2"
 )
 
@@ -80,7 +80,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *exoscaleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	_, err := c.findDomainByName(domain)
 	if err == ErrDomainNotFound {
@@ -96,8 +96,8 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *exoscaleProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
-	// dc.Punycode()
+func (c *exoscaleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domainName := dc.Name
 
 	domain, err := c.findDomainByName(domainName)
 	if err != nil {
@@ -222,11 +222,11 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	}
 
 	for _, mod := range modify {
-		old_ := mod.Existing.Original.(*egoscale.DNSDomainRecord)
-		new_ := mod.Desired
+		oldRec := mod.Existing.Original.(*egoscale.DNSDomainRecord)
+		newRec := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old_, new_, domainID),
+			F:   c.updateRecordFunc(oldRec, newRec, domainID),
 		})
 	}
 
@@ -364,7 +364,7 @@ func defaultNSSUffix(defNS string) bool {
 }
 
 // remove all non-exoscale NS records from our desired state.
-// if any are found, print a warning
+// if any are found, print a warning.
 func removeOtherNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {

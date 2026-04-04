@@ -6,41 +6,42 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	_ "github.com/StackExchange/dnscontrol/v4/providers/_all"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
 	"github.com/fbiville/markdown-table-formatter/pkg/markdown"
 )
 
 func generateFeatureMatrix() error {
-	var replacementContent = "Jump to a table:\n\n"
+	var replacementContent strings.Builder
+	replacementContent.WriteString("Jump to a table:\n\n")
 	matrix := matrixData()
 
 	for _, tableTitle := range matrix.FeatureTablesTitles {
 		var jumptotableContent = ""
 
 		var anchor = strings.ToLower(tableTitle)
-		anchor = strings.Replace(anchor, " ", "-", -1)
+		anchor = strings.ReplaceAll(anchor, " ", "-")
 
 		jumptotableContent += fmt.Sprintf("- [%s](#%s)\n", tableTitle, anchor)
-		replacementContent += jumptotableContent
+		replacementContent.WriteString(jumptotableContent)
 	}
 
 	for i, tableTitle := range matrix.FeatureTablesTitles {
-		replacementContent += fmt.Sprintf("\n### %s <!--(table %d/%d)-->\n\n",
-			tableTitle, i+1, len(matrix.FeatureTablesTitles))
+		fmt.Fprintf(&replacementContent, "\n### %s <!--(table %d/%d)-->\n\n", tableTitle, i+1, len(matrix.FeatureTablesTitles))
 		markdownTable, err := markdownTable(matrix, int32(i))
 		if err != nil {
 			return err
 		}
-		replacementContent += markdownTable
-		replacementContent += "\n"
+		replacementContent.WriteString(markdownTable)
+		replacementContent.WriteString("\n")
 	}
 
 	replaceInlineContent(
 		"documentation/provider/index.md",
 		"<!-- provider-matrix-start -->",
 		"<!-- provider-matrix-end -->",
-		replacementContent,
+		replacementContent.String(),
 	)
 
 	return nil
@@ -55,8 +56,10 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	for _, providerName := range allProviderNames() {
 		featureMap := matrix.Providers[providerName]
 
+		var providerLink = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
+
 		var tableDataRow []string
-		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+strings.ToLower(providerName)+".md)")
+		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+providerLink+".md)")
 		for _, featureName := range matrix.FeatureTables[tableNumber] {
 			tableDataRow = append(tableDataRow, featureEmoji(featureMap, featureName))
 		}

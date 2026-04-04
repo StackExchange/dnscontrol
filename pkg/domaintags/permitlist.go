@@ -4,13 +4,17 @@ import (
 	"strings"
 )
 
+// PermitList is a structure that holds a pre-compiled version of the --domains
+// commmand line argument.  "all" means all domains are permitted and the rest
+// of the list is ignored. Otherwise, the list contains each element stored in a
+// variety of ways useful to the matching algorithm.
 type PermitList struct {
 	// If the permit list is "all" or "".
 	all   bool
 	items []*DomainNameVarieties
 }
 
-// CompilePermitList compiles a list of domain strings into a PermitList structure. The
+// CompilePermitList compiles a list of domain strings into a PermitList structure.
 func CompilePermitList(s string) PermitList {
 	s = strings.TrimSpace(s)
 	if s == "" || s == "*" || strings.ToLower(s) == "all" {
@@ -18,7 +22,7 @@ func CompilePermitList(s string) PermitList {
 	}
 
 	sl := PermitList{}
-	for _, l := range strings.Split(s, ",") {
+	for l := range strings.SplitSeq(s, ",") {
 		l = strings.TrimSpace(l)
 		if l == "" { // Skip empty entries. They match nothing.
 			continue
@@ -33,6 +37,7 @@ func CompilePermitList(s string) PermitList {
 	return sl
 }
 
+// Permitted returns whether a domain is permitted by the PermitList.
 func (pl *PermitList) Permitted(domToCheck string) bool {
 
 	// If the permit list is "all", everything is permitted.

@@ -1,13 +1,13 @@
 package transform
 
 import (
-	"net"
+	"net/netip"
 	"strings"
 	"testing"
 )
 
 func TestIPToUint(t *testing.T) {
-	ip := net.ParseIP("1.2.3.4")
+	ip := netip.MustParseAddr("1.2.3.4")
 	u, err := ipToUint(ip)
 	if err != nil {
 		t.Fatal(err)
@@ -16,7 +16,7 @@ func TestIPToUint(t *testing.T) {
 		t.Fatalf("I to uint conversion failed. Should be 16909060. Got %d", u)
 	}
 	ip2 := UintToIP(u)
-	if !ip.Equal(ip2) {
+	if ip.Compare(ip2) != 0 {
 		t.Fatalf("IPs should be equal. %s is not %s", ip2, ip)
 	}
 }
@@ -31,8 +31,9 @@ func TestDecodeTransformTableFailures(t *testing.T) {
 	}
 }
 
-func testIP(t *testing.T, test string, expected string, actual net.IP) {
-	if !net.ParseIP(expected).Equal(actual) {
+func testIP(t *testing.T, test string, expected string, actual netip.Addr) {
+	expectedIP := netip.MustParseAddr(expected)
+	if expectedIP.Compare(actual) != 0 {
 		t.Errorf("Test %v: expected Low (%v), got (%v)\n", test, actual, expected)
 	}
 }
@@ -106,25 +107,25 @@ func Test_DecodeTransformTable_Base_and_IP(t *testing.T) {
 
 func Test_IP(t *testing.T) {
 	transforms1 := []IPConversion{{
-		Low:      net.ParseIP("11.11.11.0"),
-		High:     net.ParseIP("11.11.11.20"),
-		NewBases: []net.IP{net.ParseIP("99.99.99.0")},
+		Low:      netip.MustParseAddr("11.11.11.0"),
+		High:     netip.MustParseAddr("11.11.11.20"),
+		NewBases: []netip.Addr{netip.MustParseAddr("99.99.99.0")},
 	}, {
-		Low:      net.ParseIP("22.22.22.0"),
-		High:     net.ParseIP("22.22.22.40"),
-		NewBases: []net.IP{net.ParseIP("99.99.99.100")},
+		Low:      netip.MustParseAddr("22.22.22.0"),
+		High:     netip.MustParseAddr("22.22.22.40"),
+		NewBases: []netip.Addr{netip.MustParseAddr("99.99.99.100")},
 	}, {
-		Low:      net.ParseIP("33.33.33.20"),
-		High:     net.ParseIP("33.33.35.40"),
-		NewBases: []net.IP{net.ParseIP("100.100.100.0")},
+		Low:      netip.MustParseAddr("33.33.33.20"),
+		High:     netip.MustParseAddr("33.33.35.40"),
+		NewBases: []netip.Addr{netip.MustParseAddr("100.100.100.0")},
 	}, {
-		Low:      net.ParseIP("44.44.44.20"),
-		High:     net.ParseIP("44.44.44.40"),
-		NewBases: []net.IP{net.ParseIP("100.100.100.40")},
+		Low:      netip.MustParseAddr("44.44.44.20"),
+		High:     netip.MustParseAddr("44.44.44.40"),
+		NewBases: []netip.Addr{netip.MustParseAddr("100.100.100.40")},
 	}, {
-		Low:      net.ParseIP("55.0.0.0"),
-		High:     net.ParseIP("55.255.0.0"),
-		NewBases: []net.IP{net.ParseIP("66.0.0.0"), net.ParseIP("77.0.0.0")},
+		Low:      netip.MustParseAddr("55.0.0.0"),
+		High:     netip.MustParseAddr("55.255.0.0"),
+		NewBases: []netip.Addr{netip.MustParseAddr("66.0.0.0"), netip.MustParseAddr("77.0.0.0")},
 	}}
 	// NO TRANSFORMS ON 99.x.x.x PLZ
 
@@ -155,7 +156,7 @@ func Test_IP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		experiment := net.ParseIP(test.experiment)
+		experiment := netip.MustParseAddr(test.experiment)
 		actual, err := IPToList(experiment, transforms1)
 		if err != nil {
 			t.Errorf("%v: got an err: %v\n", experiment, err)
@@ -174,17 +175,17 @@ func Test_IP(t *testing.T) {
 func Test_IP_NewIP(t *testing.T) {
 	transforms1 := []IPConversion{
 		{
-			Low:    net.ParseIP("11.11.11.0"),
-			High:   net.ParseIP("11.11.11.20"),
-			NewIPs: []net.IP{net.ParseIP("1.1.1.1")},
+			Low:    netip.MustParseAddr("11.11.11.0"),
+			High:   netip.MustParseAddr("11.11.11.20"),
+			NewIPs: []netip.Addr{netip.MustParseAddr("1.1.1.1")},
 		}, {
-			Low:    net.ParseIP("22.22.22.0"),
-			High:   net.ParseIP("22.22.22.40"),
-			NewIPs: []net.IP{net.ParseIP("2.2.2.2")},
+			Low:    netip.MustParseAddr("22.22.22.0"),
+			High:   netip.MustParseAddr("22.22.22.40"),
+			NewIPs: []netip.Addr{netip.MustParseAddr("2.2.2.2")},
 		}, {
-			Low:    net.ParseIP("33.33.33.20"),
-			High:   net.ParseIP("33.33.35.40"),
-			NewIPs: []net.IP{net.ParseIP("3.3.3.3")},
+			Low:    netip.MustParseAddr("33.33.33.20"),
+			High:   netip.MustParseAddr("33.33.35.40"),
+			NewIPs: []netip.Addr{netip.MustParseAddr("3.3.3.3")},
 		},
 	}
 
@@ -211,13 +212,13 @@ func Test_IP_NewIP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		experiment := net.ParseIP(test.experiment)
-		expected := net.ParseIP(test.expected)
+		experiment := netip.MustParseAddr(test.experiment)
+		expected := netip.MustParseAddr(test.expected)
 		actual, err := IP(experiment, transforms1)
 		if err != nil {
 			t.Errorf("%v: got an err: %v\n", experiment, err)
 		}
-		if !expected.Equal(actual) {
+		if expected.Compare(actual) != 0 {
 			t.Errorf("%v: expected (%v) got (%v)\n", experiment, expected, actual)
 		}
 	}

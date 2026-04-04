@@ -71,6 +71,7 @@
     * [OPENPGPKEY](language-reference/domain-modifiers/OPENPGPKEY.md)
     * [PTR](language-reference/domain-modifiers/PTR.md)
     * [PURGE](language-reference/domain-modifiers/PURGE.md)
+    * [RP](language-reference/domain-modifiers/RP.md)
     * [SMIMEA](language-reference/domain-modifiers/SMIMEA.md)
     * [SOA](language-reference/domain-modifiers/SOA.md)
     * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
@@ -99,14 +100,22 @@
             * [CF_WORKER_ROUTE](language-reference/domain-modifiers/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
+        * MikroTik RouterOS
+            * [MIKROTIK_FORWARDER](language-reference/domain-modifiers/MIKROTIK_FORWARDER.md)
+            * [MIKROTIK_FWD](language-reference/domain-modifiers/MIKROTIK_FWD.md)
+            * [MIKROTIK_NXDOMAIN](language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
         * PowerDNS
-            * [LUA](language-reference/domain-modifiers/LUA.md)     
+            * [LUA](language-reference/domain-modifiers/LUA.md)
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](language-reference/record-modifiers/R53_ZONE.md)
-            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53\_EVALUATE\_TARGET\_HEALTH.md)
+            * [R53_EVALUATE_TARGET_HEALTH](language-reference/record-modifiers/R53_EVALUATE_TARGET_HEALTH.md)
+        * Hurricane Electric DNS
+            * [HEDNS_DYNAMIC_ON](language-reference/record-modifiers/HEDNS_DYNAMIC_ON.md)
+            * [HEDNS_DYNAMIC_OFF](language-reference/record-modifiers/HEDNS_DYNAMIC_OFF.md)
+            * [HEDNS_DDNS_KEY](language-reference/record-modifiers/HEDNS_DDNS_KEY.md)
 * [Why CNAME/MX/NS targets require a "dot"](language-reference/why-the-dot.md)
 
 ## Provider
@@ -118,10 +127,10 @@
 * [Amazon Route 53](provider/route53.md)
 * [AutoDNS](provider/autodns.md)
 * [AXFR+DDNS](provider/axfrddns.md)
-* [Azure DNS](provider/azure_dns.md)
-* [Azure Private DNS](provider/azure_private_dns.md)
+* [Azure DNS](provider/azuredns.md)
+* [Azure Private DNS](provider/azureprivatedns.md)
 * [BIND](provider/bind.md)
-* [Bunny DNS](provider/bunny\_dns.md)
+* [Bunny DNS](provider/bunnydns.md)
 * [CentralNic Reseller (CNR) - formerly RRPProxy](provider/cnr.md)
 * [Cloudflare](provider/cloudflareapi.md)
 * [ClouDNS](provider/cloudns.md)
@@ -129,6 +138,7 @@
 * [deSEC](provider/desec.md)
 * [DigitalOcean](provider/digitalocean.md)
 * [DNS Made Easy](provider/dnsmadeeasy.md)
+* [DNScale](provider/dnscale.md)
 * [DNSimple](provider/dnsimple.md)
 * [DNS-over-HTTPS](provider/dnsoverhttps.md)
 * [DOMAINNAMESHOP](provider/domainnameshop.md)
@@ -136,21 +146,23 @@
 * [easyname](provider/easyname.md)
 * [Exoscale](provider/exoscale.md)
 * [Fortigate](provider/fortigate.md)
-* [Gandi_v5](provider/gandi_v5.md)
+* [Gandi_v5](provider/gandiv5.md)
 * [Gcore](provider/gcore.md)
+* [Gidinet](provider/gidinet.md)
 * [Google Cloud DNS](provider/gcloud.md)
-* [Hetzner DNS API](provider/hetzner_v2.md)
+* [Hetzner DNS API](provider/hetznerv2.md)
 * [Hetzner DNS Console (legacy)](provider/hetzner.md)
-* [HEXONET](provider/hexonet.md)
 * [hosting.de](provider/hostingde.md)
 * [Huawei Cloud DNS](provider/huaweicloud.md)
 * [Hurricane Electric DNS](provider/hedns.md)
+* [Infomaniak](provider/infomaniak.md)
 * [Internet.bs](provider/internetbs.md)
 * [INWX](provider/inwx.md)
 * [Joker](provider/joker.md)
 * [Linode](provider/linode.md)
 * [Loopia](provider/loopia.md)
 * [LuaDNS](provider/luadns.md)
+* [MikroTik RouterOS](provider/mikrotik.md)
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)
@@ -168,6 +180,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [SoftLayer DNS](provider/softlayer.md)
 * [TransIP](provider/transip.md)
+* [UniFi Network](provider/unifi.md)
 * [Vercel](provider/vercel.md)
 * [Vultr](provider/vultr.md)
 
@@ -197,6 +210,7 @@
 * [Code Style Guide](advanced-features/styleguide-code.md)
 * [Documentation Style Guide](advanced-features/styleguide-doc.md)
 * [DNSControl is an opinionated system](advanced-features/opinions.md)
+* [GitHub actions](developer-info/github-actions.md)
 * [Writing new DNS providers](advanced-features/writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](advanced-features/adding-new-rtypes.md)
 * [Integration Tests](advanced-features/integration-tests.md)
@@ -209,6 +223,8 @@
 * [TXT record testing](advanced-features/testing-txt-records.md)
 * [DNS records ordering](advanced-features/ordering.md)
 * [How to add a requested provider](developer-info/provider-request.md)
+* [GoReleaser](developer-info/goreleaser.md)
+* [Documentation MCP Server](developer-info/mcp-server.md)
 
 ## Release
 

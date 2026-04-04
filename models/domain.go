@@ -10,20 +10,28 @@ import (
 )
 
 const (
-	DomainTag         = "dnscontrol_tag"         // A copy of DomainConfig.Tag
-	DomainUniqueName  = "dnscontrol_uniquename"  // A copy of DomainConfig.UniqueName
-	DomainNameRaw     = "dnscontrol_nameraw"     // A copy of DomainConfig.NameRaw
-	DomainNameUnicode = "dnscontrol_nameunicode" // A copy of DomainConfig.NameUnicode
+	// DomainTag is the key used to store a copy of DomainConfig.Tag in the Metadata map.
+	DomainTag = "dnscontrol_tag"
+
+	// DomainUniqueName is the key used to store a copy of DomainConfig.UniqueName in the Metadata map.
+	DomainUniqueName = "dnscontrol_uniquename"
+
+	// DomainNameRaw is the key used to store a copy of DomainConfig.NameRaw in the Metadata map.
+	DomainNameRaw = "dnscontrol_nameraw"
+
+	// DomainNameUnicode is the key used to store a copy of DomainConfig.NameUnicode in the Metadata map.
+	DomainNameUnicode = "dnscontrol_nameunicode"
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
-	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
 	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
+	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
 	NameUnicode string `json:"-"`    // name in Unicode format
 
-	Tag        string `json:"tag,omitempty"` // Split horizon tag.
-	UniqueName string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
+	Tag         string `json:"tag,omitempty"` // Split horizon tag.
+	UniqueName  string `json:"uniquename"`    // .Name + "!" + .Tag (no !tag added if tag is "")
+	DisplayName string `json:"-"`             // For TUI display: "canonical!tag" or "canonical!tag (unicode)"
 
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
@@ -73,7 +81,7 @@ func (dc *DomainConfig) PostProcess() {
 
 	// Turn the user-supplied name into the fixed forms.
 	ff := domaintags.MakeDomainNameVarieties(dc.Name)
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName
+	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName, dc.DisplayName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName, ff.DisplayName
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
 	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
@@ -119,7 +127,7 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // It will encode:
 // - Name
 // - NameFQDN
-// - Target (CNAME and MX only)
+// - Target (CNAME and MX only).
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
 		if rec.IsModernType() {
@@ -144,7 +152,7 @@ func (dc *DomainConfig) Punycode() error {
 			if err := rec.SetTarget(t); err != nil {
 				return err
 			}
-		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH":
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE", "ADGUARDHOME_A_PASSTHROUGH", "ADGUARDHOME_AAAA_PASSTHROUGH", "BUNNY_DNS_PZ", "MIKROTIK_FWD", "MIKROTIK_NXDOMAIN", "MIKROTIK_FORWARDER":
 			if err := rec.SetTarget(rec.GetTargetField()); err != nil {
 				return err
 			}

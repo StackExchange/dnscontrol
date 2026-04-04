@@ -9,7 +9,9 @@ import (
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (s *sakuracloudProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (s *sakuracloudProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	itemMap, err := s.api.GetCommonServiceItemMap()
 	if err != nil {
 		return nil, err

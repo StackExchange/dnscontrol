@@ -32,8 +32,10 @@ git commit -am "CHORE: generate-all.sh"
 ## Step 2. Tag the commit in main that you want to release
 
 ```shell
-export VERSION=v4.x.0
 git checkout main
+git pull --rebase --ff-only --prune
+git tag -l |grep -F v4. | sort --version-sort --field-separator=. --key=2,2 | tail
+export VERSION=v4.x.0
 git tag -m "Release $VERSION" -a $VERSION
 git push origin HEAD --tags
 ```
@@ -103,6 +105,9 @@ find * -name \*.bak -delete
 ### Overview
 
 GHA is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the Google Cloud provider integration test is only run if `GCLOUD_DOMAIN` is set.
+
+* Q: What labels control the integration tests?
+* A: A PR only runs a "smoke test" (the first few tests).  Add the label "fulltest" to run all tests. (The daily run of integration tests on the main branch always does all test.)
 
 * Q: Where is the list of providers to run integration tests on?
 * A: In `.github/workflows/pr_test.yml`: (1) the "PROVIDERS" list, (2) the `integrtests-diff2` section.

@@ -16,14 +16,17 @@ type realtimeregisterAPI struct {
 	ServiceType string
 }
 
+// Zones represents a collection of DNS zones in Realtime Register.
 type Zones struct {
 	Entities []Zone `json:"entities"`
 }
 
+// Domain represents a domain in Realtime Register.
 type Domain struct {
 	Nameservers []string `json:"ns"`
 }
 
+// Zone represents a DNS zone in Realtime Register.
 type Zone struct {
 	Name    string   `json:"name,omitempty"`
 	Service string   `json:"service,omitempty"`
@@ -32,6 +35,7 @@ type Zone struct {
 	Dnssec  bool     `json:"dnssec"`
 }
 
+// Record represents a DNS record in Realtime Register.
 type Record struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
@@ -206,7 +210,7 @@ func (api *realtimeregisterAPI) createOrUpdateZone(body *Zone, url string) error
 	}
 
 	// Workaround for 0 prio and 'omitempty' restrictions on json marshalling
-	requestBody := strings.Replace(string(bodyBytes), "\"prio\":-1", "\"prio\":0", -1)
+	requestBody := strings.ReplaceAll(string(bodyBytes), "\"prio\":-1", "\"prio\":0")
 
 	_, err = api.request("POST", url, strings.NewReader(requestBody))
 	if err != nil {

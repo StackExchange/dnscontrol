@@ -19,7 +19,10 @@ func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (dsp *powerdnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (dsp *powerdnsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	curRecords := models.Records{}
 	domainVariant := dsp.zoneName(domain, meta[models.DomainTag])
 	zone, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domainVariant)
@@ -63,7 +66,7 @@ func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	return append(corrections, dnssecCorrections...), actualChangeCount, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (dsp *powerdnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	domainVariant := dsp.zoneName(domain, metadata[models.DomainTag])
 	if _, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domainVariant); err != nil {

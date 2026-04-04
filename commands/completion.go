@@ -1,21 +1,27 @@
 package commands
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"text/template"
 	"unicode/utf8"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 //go:embed completion-scripts/completion.*.gotmpl
 var completionScripts embed.FS
+
+type contextKey int
+
+const contextKeyCompletionHandled contextKey = iota
 
 func shellCompletionCommand() *cli.Command {
 	supportedShells, templates, err := getCompletionSupportedShells()
@@ -27,32 +33,58 @@ func shellCompletionCommand() *cli.Command {
 		Usage:       "generate shell completion scripts",
 		ArgsUsage:   fmt.Sprintf("[ %s ]", strings.Join(supportedShells, " | ")),
 		Description: fmt.Sprintf("Generate shell completion script for [ %s ]", strings.Join(supportedShells, " | ")),
-		BashComplete: func(ctx *cli.Context) {
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:   "generate-bash-completion",
+				Usage:  "Generate bash completion",
+				Hidden: true,
+			},
+		},
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			// In v2, EnableBashCompletion would automatically add this flag and trigger completion.
+			// In v3, we need to handle it manually.
+			// This runs before Action, so we intercept the flag here.
+			if cmd.Bool("generate-bash-completion") {
+				if cmd.ShellComplete != nil {
+					cmd.ShellComplete(ctx, cmd)
+				}
+				// Mark that we handled completion so Action can skip
+				return context.WithValue(ctx, contextKeyCompletionHandled, true), nil
+			}
+			return ctx, nil
+		},
+		ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 			for _, shell := range supportedShells {
-				if strings.HasPrefix(shell, ctx.Args().First()) {
-					if _, err := ctx.App.Writer.Write([]byte(shell + "\n")); err != nil {
+				if strings.HasPrefix(shell, cmd.Args().First()) {
+					if _, err := cmd.Root().Writer.Write([]byte(shell + "\n")); err != nil {
 						panic(err)
 					}
 				}
 			}
 		},
-		Action: func(ctx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			// If completion was handled in Before, skip normal action
+			if ctx.Value(contextKeyCompletionHandled) != nil {
+				return nil
+			}
+
 			var inputShell string
-			if inputShell = ctx.Args().First(); inputShell == "" {
+			if inputShell = cmd.Args().First(); inputShell == "" {
 				if inputShell = os.Getenv("SHELL"); inputShell == "" {
 					return cli.Exit(errors.New("shell not specified"), 1)
 				}
 			}
 			shellName := path.Base(inputShell) // necessary if using $SHELL, noop otherwise
+			//fmt.Printf("DEBUG: shellName = %q\n", shellName)
 
 			template := templates[shellName]
 			if template == nil {
 				return cli.Exit(fmt.Errorf("unknown shell: %s", inputShell), 1)
 			}
 
-			err = template.Execute(ctx.App.Writer, struct {
-				App *cli.App
-			}{ctx.App})
+			err = template.Execute(cmd.Root().Writer, struct {
+				App *cli.Command
+			}{cmd.Root()})
 			if err != nil {
 				return cli.Exit(fmt.Errorf("failed to print completion script: %w", err), 1)
 			}
@@ -112,17 +144,12 @@ func dnscontrolPrintCommandSuggestions(commands []*cli.Command, writer io.Writer
 }
 
 func dnscontrolCliArgContains(flagName string) bool {
-	for _, name := range strings.Split(flagName, ",") {
+	for name := range strings.SplitSeq(flagName, ",") {
 		name = strings.TrimSpace(name)
-		count := utf8.RuneCountInString(name)
-		if count > 2 {
-			count = 2
-		}
+		count := min(utf8.RuneCountInString(name), 2)
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range os.Args {
-			if a == flag {
-				return true
-			}
+		if slices.Contains(os.Args, flag) {
+			return true
 		}
 	}
 	return false
@@ -138,10 +165,9 @@ func dnscontrolPrintFlagSuggestions(lastArg string, flags []cli.Flag, writer io.
 		for _, name := range flag.Names() {
 			name = strings.TrimSpace(name)
 			// this will get total count utf8 letters in flag name
-			count := utf8.RuneCountInString(name)
-			if count > 2 {
-				count = 2 // reuse this count to generate single - or -- in flag completion
-			}
+			count := min(utf8.RuneCountInString(name),
+				// reuse this count to generate single - or -- in flag completion
+				2)
 			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
 			// skip flag completion for short flags example -v or -x
 			if strings.HasPrefix(lastArg, "--") && count == 1 {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -53,56 +53,14 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, errors.New("missing DNSMADEEASY secret_key")
 	}
 
-	sandbox := false
-	if settings["sandbox"] != "" {
-		sandbox = true
-	}
+	sandbox := settings["sandbox"] != ""
 
-	debug := false
-	if os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1" {
-		debug = true
-	}
+	debug := os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1"
 
 	api := newProvider(settings["api_key"], settings["secret_key"], sandbox, debug)
 
 	return api, nil
 }
-
-// // GetDomainCorrections returns the corrections for a domain.
-// func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	err = dc.Punycode()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	for _, rec := range dc.Records {
-// 		if rec.Type == "ALIAS" {
-// 			// ALIAS is called ANAME on DNS Made Easy
-// 			rec.Type = "ANAME"
-// 		} else if rec.Type == "NS" {
-// 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
-// 			rec.TTL = fixedNameServerRecordTTL
-// 		}
-// 	}
-
-// 	domainName := dc.Name
-
-// 	// Get existing records
-// 	existingRecords, err := api.GetZoneRecords(domainName)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	return api.GetZoneRecordsCorrections(dc, existingRecords)
-// }
 
 func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	domainName := dc.Name
@@ -112,10 +70,11 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	}
 
 	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
+		switch rec.Type {
+		case "ALIAS":
 			// ALIAS is called ANAME on DNS Made Easy
 			rec.ChangeType("ANAME", dc.Name)
-		} else if rec.Type == "NS" {
+		case "NS":
 			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
 			rec.TTL = fixedNameServerRecordTTL
 		}
@@ -190,7 +149,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfi
 	return corrections, actualChangeCount, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	exists, err := api.domainExists(domain)
 	if err != nil {
@@ -216,7 +175,9 @@ func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameser
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *dnsMadeEasyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := api.fetchDomainRecords(domain)
 	if err != nil {
 		return nil, err

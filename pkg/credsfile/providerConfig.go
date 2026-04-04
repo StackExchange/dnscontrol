@@ -19,7 +19,7 @@ import (
 	"github.com/google/shlex"
 )
 
-// LoadProviderConfigs will open or execute the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
+// LoadProviderConfigs will open or execute the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+.
 func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	results := map[string]map[string]string{}
 

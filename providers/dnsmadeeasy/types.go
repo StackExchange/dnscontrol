@@ -15,7 +15,7 @@ type singleDomainResponse struct {
 	DelegateNameServers []string                         `json:"delegateNameServers"`
 	NameServers         []singleDomainResponseNameServer `json:"nameServers"`
 	ProcessMulti        bool                             `json:"processMulti"`
-	ActiveThirdParties  []interface{}                    `json:"activeThirdParties"`
+	ActiveThirdParties  []any                            `json:"activeThirdParties"`
 	PendingActionID     int                              `json:"pendingActionId"`
 	GtdEnabled          bool                             `json:"gtdEnabled"`
 	Created             int64                            `json:"created"`
@@ -40,16 +40,16 @@ type multiDomainResponse struct {
 }
 
 type multiDomainResponseDataEntry struct {
-	ID                 int           `json:"id"`
-	Name               string        `json:"name"`
-	FolderID           int           `json:"folderId"`
-	GtdEnabled         bool          `json:"gtdEnabled"`
-	ProcessMulti       bool          `json:"processMulti"`
-	ActiveThirdParties []interface{} `json:"activeThirdParties"`
-	PendingActionID    int           `json:"pendingActionId"`
-	VanityID           int           `json:"vanityId,omitempty"`
-	Created            int64         `json:"created"`
-	Updated            int64         `json:"updated"`
+	ID                 int    `json:"id"`
+	Name               string `json:"name"`
+	FolderID           int    `json:"folderId"`
+	GtdEnabled         bool   `json:"gtdEnabled"`
+	ProcessMulti       bool   `json:"processMulti"`
+	ActiveThirdParties []any  `json:"activeThirdParties"`
+	PendingActionID    int    `json:"pendingActionId"`
+	VanityID           int    `json:"vanityId,omitempty"`
+	Created            int64  `json:"created"`
+	Updated            int64  `json:"updated"`
 }
 
 type recordResponse struct {
@@ -133,17 +133,18 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 	rc.SetLabel(record.Name, domain)
 
 	var err error
-	if record.Type == "MX" {
+	switch record.Type {
+	case "MX":
 		err = rc.SetTargetMX(uint16(record.MxLevel), record.Value)
-	} else if record.Type == "SRV" {
+	case "SRV":
 		err = rc.SetTargetSRV(uint16(record.Priority), uint16(record.Weight), uint16(record.Port), record.Value)
-	} else if record.Type == "CAA" {
+	case "CAA":
 		value, unquoteErr := strconv.Unquote(record.Value)
 		if unquoteErr != nil {
 			panic(unquoteErr)
 		}
 		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
-	} else {
+	default:
 		err = rc.PopulateFromString(record.Type, record.Value, domain)
 	}
 
@@ -168,10 +169,11 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 		Value:       rc.GetTargetCombined(),
 	}
 
-	if record.Type == "MX" {
+	switch record.Type {
+	case "MX":
 		record.MxLevel = int(rc.MxPreference)
 		record.Value = rc.GetTargetField()
-	} else if record.Type == "SRV" {
+	case "SRV":
 		target := rc.GetTargetField()
 		if target == "." {
 			target += "."
@@ -181,7 +183,7 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 		record.Weight = int(rc.SrvWeight)
 		record.Port = int(rc.SrvPort)
 		record.Value = target
-	} else if record.Type == "CAA" {
+	case "CAA":
 		record.IssuerCritical = int(rc.CaaFlag)
 		record.CaaType = rc.CaaTag
 		record.Value = rc.GetTargetField()

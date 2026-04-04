@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go"
-	"golang.org/x/net/idna"
-
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/cloudflare/cloudflare-go"
+	"golang.org/x/net/idna"
 )
 
 func (c *cloudflareProvider) fetchAllZones() (map[string]cloudflare.Zone, error) {
@@ -37,7 +37,7 @@ func (c *cloudflareProvider) fetchAllZones() (map[string]cloudflare.Zone, error)
 	return m, nil
 }
 
-// get all records for a domain
+// get all records for a domain.
 func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
 	records := []*models.RecordConfig{}
 	rrs, _, err := c.cfClient.ListDNSRecords(context.Background(), cloudflare.ZoneIdentifier(id), cloudflare.ListDNSRecordsParams{})
@@ -180,7 +180,7 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	case "MX":
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	case "TXT":
-		content = rec.GetTargetTXTJoined()
+		content = txtutil.EncodeQuoted(rec.GetTargetTXTJoined())
 	case "DS":
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
@@ -189,6 +189,15 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	}
 	if rec.Metadata[metaProxy] == "on" || rec.Metadata[metaProxy] == "full" {
 		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
+	}
+	if rec.Metadata[metaCNAMEFlatten] == "on" {
+		msg = msg + fmt.Sprintf("\nENABLE CNAME FLATTENING for new record %s %s", rec.GetLabel(), rec.Type)
+	}
+	if rec.Metadata[metaComment] != "" {
+		msg = msg + fmt.Sprintf("\nSET COMMENT for new record %s %s: %q", rec.GetLabel(), rec.Type, rec.Metadata[metaComment])
+	}
+	if rec.Metadata[metaTags] != "" {
+		msg = msg + fmt.Sprintf("\nSET TAGS for new record %s %s: %s", rec.GetLabel(), rec.Type, rec.Metadata[metaTags])
 	}
 	arr := []*models.Correction{{
 		Msg: msg,
@@ -199,6 +208,19 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 				TTL:      int(rec.TTL),
 				Content:  content,
 				Priority: &rec.MxPreference,
+			}
+			// Set comment if specified
+			if comment := rec.Metadata[metaComment]; comment != "" {
+				cf.Comment = comment
+			}
+			// Set tags if specified
+			if tags := rec.Metadata[metaTags]; tags != "" {
+				cf.Tags = strings.Split(tags, ",")
+			}
+			// Set CNAME flattening setting if enabled
+			if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" {
+				flatten := true
+				cf.Settings = cloudflare.DNSRecordSettings{FlattenCNAME: &flatten}
 			}
 			switch rec.Type {
 			case "SRV":
@@ -256,9 +278,29 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Priority: &rec.MxPreference,
 		TTL:      int(rec.TTL),
 	}
+
+	// Handle CNAME flattening setting
+	if rec.Type == "CNAME" {
+		flatten := rec.Metadata[metaCNAMEFlatten] == "on"
+		r.Settings = cloudflare.DNSRecordSettings{FlattenCNAME: &flatten}
+	}
+
+	// Set comment if specified (nil keeps current, "" empties it, value sets it)
+	if comment, ok := rec.Metadata[metaComment]; ok {
+		r.Comment = &comment
+	}
+	// Set tags if specified (empty key means clear all tags)
+	if tags, ok := rec.Metadata[metaTags]; ok {
+		if tags != "" {
+			r.Tags = strings.Split(tags, ",")
+		} else {
+			r.Tags = []string{}
+		}
+	}
+
 	switch rec.Type {
 	case "TXT":
-		r.Content = rec.GetTargetTXTJoined()
+		r.Content = txtutil.EncodeQuoted(rec.GetTargetTXTJoined())
 	case "SRV":
 		r.Data = cfSrvData(rec)
 		r.Name = rec.GetLabelFQDN()
@@ -290,13 +332,13 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	return err
 }
 
-// change universal ssl state
+// change universal ssl state.
 func (c *cloudflareProvider) changeUniversalSSL(domainID string, state bool) error {
 	_, err := c.cfClient.EditUniversalSSLSetting(context.Background(), domainID, cloudflare.UniversalSSLSetting{Enabled: state})
 	return err
 }
 
-// get universal ssl state
+// get universal ssl state.
 func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 	result, err := c.cfClient.UniversalSSLSettingDetails(context.Background(), domainID)
 	return result.Enabled, err
@@ -322,11 +364,12 @@ func (c *cloudflareProvider) getSingleRedirects(id string, domain string) ([]*mo
 		srThen := pr.ActionParameters.FromValue.TargetURL.Expression
 		code := uint16(pr.ActionParameters.FromValue.StatusCode)
 
-		rec, err := rtypecontrol.NewRecordConfigFromRaw(
-			"CLOUDFLAREAPI_SINGLE_REDIRECT",
-			1,
-			[]any{srName, code, srWhen, srThen},
-			domaintags.MakeDomainNameVarieties(domain))
+		rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+			Type: "CLOUDFLAREAPI_SINGLE_REDIRECT",
+			TTL:  1,
+			Args: []any{srName, code, srWhen, srThen},
+			DCN:  domaintags.MakeDomainNameVarieties(domain),
+		})
 		if err != nil {
 			return nil, err
 		}

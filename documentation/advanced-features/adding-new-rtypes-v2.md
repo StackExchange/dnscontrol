@@ -166,11 +166,7 @@ we migrate `SRV`, this function will populate the `Srv*` fields.  Then, eventual
 those legacy fields.
 
 
-TODO:
-
-* `js/parse_test`
-* Run the integration tests for BIND
-* Write documentation
+TODO: `js/parse_test`
 
 ## Add a capability for the record type
 
@@ -272,6 +268,66 @@ example we removed `providers.CanUseCAA` from the
     capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
 ```
 
+## Step 6: Add an `integrationTest` test case
+
+(see old doc)
+
+## Step 8: Write documentation
+
+Add a new Markdown file to `documentation/language-reference/domain-modifiers`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+
+-   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
+-   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
+-   `parameter_types`: an object with parameter names as keys and TypeScript type names as values. Check out existing record documentation if you’re not sure to put for a parameter. Note that this isn’t displayed on the website, it’s only used to generate the `.d.ts` file.
+
+The rest of the file is the documentation. You can use Markdown syntax to format the text.
+
+Add the new file `FOO.md` to the documentation table of contents
+`documentation/SUMMARY.md` > `Domain Modifiers`, and/or to the `Service
+Provider specific` section if you made a record specific to a provider, and to
+the `Record Modifiers` section if you created any `*_BUILDER` or `*_HELPER` or
+similar functions for the new record type:
+
+{% code title="documentation/SUMMARY.md" %}
+```diff
+...
+* Domain Modifiers
+...
+    * [DnsProvider](language-reference/domain-modifiers/DnsProvider.md)
++   * [FOO](language-reference/domain-modifiers/FOO.md)
+    * [FRAME](language-reference/domain-modifiers/FRAME.md)
+...
+    * Service Provider specific
+...
+        * ClouDNS
+            * [CLOUDNS_WR](language-reference/domain-modifiers/CLOUDNS_WR.md)
++       * ASDF
++           * [ASDF_NINJA](language-reference/domain-modifiers/ASDF_NINJA.md)
+...
+* Record Modifiers
+...
+    * [DMARC_BUILDER](language-reference/domain-modifiers/DMARC_BUILDER.md)
++   * [FOO_HELPER](language-reference/record-modifiers/FOO_HELPER.md)
+    * [SPF_BUILDER](language-reference/domain-modifiers/SPF_BUILDER.md)
+...
+```
+{% endcode %}
+
+TODO Run the integration tests for BIND
+
+## Step 9: "Update the index page"
+
+Edit `documentation/SUMMARY.md` and add a link to the new record type's doc.
+
+## Step 9: "go generate"
+
+Re-generate the documentation:
+
+```shell
+go generate ./...
+```
+
+This will regenerate things like the table of which providers have which features and the `dnscontrol.d.ts` file.
 
 
 # Update providers

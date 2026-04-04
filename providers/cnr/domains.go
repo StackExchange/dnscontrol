@@ -2,9 +2,9 @@ package cnr
 
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
-// * if it doesn't exist and creating it fails
+// * if it doesn't exist and creating it fails.
 func (n *Client) EnsureZoneExists(domain string, metadata map[string]string) error {
-	command := map[string]interface{}{
+	command := map[string]any{
 		"COMMAND": "AddDNSZone",
 		"DNSZONE": domain,
 	}
@@ -20,7 +20,7 @@ func (n *Client) EnsureZoneExists(domain string, metadata map[string]string) err
 	return n.GetAPIError("Failed to create not existing zone ", domain, r)
 }
 
-// ListZones lists all the
+// ListZones lists all the.
 func (n *Client) ListZones() ([]string, error) {
 	var zones []string
 

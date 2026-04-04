@@ -12,8 +12,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -95,6 +95,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
+	providers.CanUseSRV:              providers.Can("Linode requires non-zero priority"),
 	providers.CanUseLOC:              providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -118,7 +119,9 @@ func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *linodeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err
@@ -268,7 +271,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	var err error
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "CNAME", "MX", "NS", "SRV":
-		err = rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+		err = rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		// Linode doesn't support CAA flags and just returns the tag and value separately
 		err = rc.SetTarget(r.Target)

@@ -10,10 +10,10 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -87,7 +87,7 @@ func (h *hetznerv2Provider) fetchAllZones() (map[string]*hcloud.Zone, error) {
 	return zones, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (h *hetznerv2Provider) EnsureZoneExists(domain string, _ map[string]string) error {
 	encoded, err := idna.ToASCII(domain)
 	if err != nil {
@@ -215,7 +215,9 @@ func (h *hetznerv2Provider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (h *hetznerv2Provider) GetZoneRecords(domain string, _ map[string]string) (models.Records, error) {
+func (h *hetznerv2Provider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	encoded, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -13,10 +14,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-// categories of commands
+// categories of commands.
 const (
 	catMain  = "\b main" // screwed up to alphebatize first
 	catDebug = "debug"
@@ -34,23 +35,28 @@ func cmd(cat string, c *cli.Command) bool {
 var _ = cmd(catDebug, &cli.Command{
 	Name:  "version",
 	Usage: "Print version information",
-	Action: func(c *cli.Context) error {
+	Action: func(ctx context.Context, c *cli.Command) error {
 		_, err := fmt.Println(version.Version())
 		return err
 	},
 })
 
-// Run will execute the CLI
+// Run will execute the CLI.
 func Run(v string) int {
-	app := cli.NewApp()
-	app.Version = v
-	app.Name = "dnscontrol"
-	app.HideVersion = true
-	app.Usage = "DNSControl is a compiler and DSL for managing dns zones"
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Aliases: []string{"V"},
+		Usage:   "print the version",
+	}
+
+	app := &cli.Command{
+		Name:    "dnscontrol",
+		Usage:   "DNSControl is a compiler and DSL for managing dns zones",
+		Version: v,
+	}
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
 			Name:        "debug",
-			Aliases:     []string{"v"},
 			Usage:       "Enable debug logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},
@@ -63,7 +69,7 @@ func Run(v string) int {
 			Name:   "diff2",
 			Usage:  "Obsolete flag. Will be removed in v5 or later",
 			Hidden: true,
-			Action: func(ctx *cli.Context, v bool) error {
+			Action: func(ctx context.Context, c *cli.Command, v bool) error {
 				pobsoleteDiff2FlagUsed = true
 				return nil
 			},
@@ -79,11 +85,29 @@ func Run(v string) int {
 			Destination: &color.NoColor,
 			Value:       false,
 		},
+		&cli.BoolFlag{
+			Name:   "generate-bash-completion",
+			Usage:  "Generate bash completion",
+			Hidden: true,
+		},
 	}
-	sort.Sort(cli.CommandsByName(commands))
+	app.Before = func(ctx context.Context, c *cli.Command) (context.Context, error) {
+		// In v2, EnableBashCompletion would automatically add this flag and trigger completion.
+		// In v3, we need to handle it manually.
+		// Only handle at root level - subcommands like shell-completion will handle their own.
+		if c.Bool("generate-bash-completion") && c.Root() == c {
+			if c.Root().ShellComplete != nil {
+				c.Root().ShellComplete(ctx, c)
+			}
+			return ctx, cli.Exit("", 0)
+		}
+		return ctx, nil
+	}
+	sort.Slice(commands, func(i, j int) bool {
+		return commands[i].Name < commands[j].Name
+	})
 	app.Commands = commands
-	app.EnableBashCompletion = true
-	app.BashComplete = func(cCtx *cli.Context) {
+	app.ShellComplete = func(ctx context.Context, c *cli.Command) {
 		// ripped from cli.DefaultCompleteWithFlags
 		var lastArg string
 
@@ -94,14 +118,14 @@ func Run(v string) int {
 		if lastArg != "" {
 			if strings.HasPrefix(lastArg, "-") {
 				if !islastFlagComplete(lastArg, app.Flags) {
-					dnscontrolPrintFlagSuggestions(lastArg, app.Flags, cCtx.App.Writer)
+					dnscontrolPrintFlagSuggestions(lastArg, app.Flags, c.Writer)
 					return
 				}
 			}
 		}
-		dnscontrolPrintCommandSuggestions(app.Commands, cCtx.App.Writer)
+		dnscontrolPrintCommandSuggestions(app.Commands, c.Writer)
 	}
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		return 1
 	}
 	return 0
@@ -110,7 +134,7 @@ func Run(v string) int {
 // Shared config types
 
 // GetDNSConfigArgs contains what we need to get a valid dns config.
-// Could come from parsing js, or from stored json
+// Could come from parsing js, or from stored json.
 type GetDNSConfigArgs struct {
 	ExecuteDSLArgs
 	JSONFile string
@@ -207,12 +231,12 @@ func preloadProviders(cfg *models.DNSConfig) (*models.DNSConfig, error) {
 	return cfg, nil
 }
 
-// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL
+// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL.
 type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
 	DevMode  bool
-	Variable cli.StringSlice
+	Variable []string
 }
 
 func (args *ExecuteDSLArgs) flags() []cli.Flag {
@@ -244,7 +268,7 @@ func (args *ExecuteDSLArgs) flags() []cli.Flag {
 	}
 }
 
-// PrintJSONArgs are used anytime a command may print some json
+// PrintJSONArgs are used anytime a command may print some json.
 type PrintJSONArgs struct {
 	Pretty bool
 	Output string

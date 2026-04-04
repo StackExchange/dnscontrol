@@ -229,7 +229,7 @@ func recordsMetadataToNative(meta map[string]string) ([]dnssdk.RecordFilter, map
 		case metaASN:
 			// This is probably a ton of memory copies, but I cannot think of a better solution for now
 			asnArray := []int{}
-			for _, asn := range strings.Split(v, ",") {
+			for asn := range strings.SplitSeq(v, ",") {
 				if len(asn) > 0 {
 					value, err := strconv.Atoi(asn)
 					if err != nil {
@@ -327,7 +327,7 @@ func serializeRecordFilter(f []dnssdk.RecordFilter) string {
 func parseRecordFilter(filterString string) ([]dnssdk.RecordFilter, error) {
 	result := []dnssdk.RecordFilter{}
 
-	for _, s := range strings.Split(filterString, ";") {
+	for s := range strings.SplitSeq(filterString, ";") {
 		var err error
 
 		fields := strings.Split(s, ",")

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 // Feature Declaration
@@ -45,8 +45,7 @@ type fortigateProvider struct {
 	client   *apiClient
 }
 
-// Constructor
-
+// NewFortiGate creates a new instance of the FortiGate DNS provider.
 func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	host, vdom, apiKey := m["host"], m["vdom"], m["apiKey"]
 
@@ -79,7 +78,9 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 
 // Record Fetching
 
-func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *fortigateProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records := models.Records{}
 
 	// Request the zone object from FortiGate
@@ -169,7 +170,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	return corrections, actualChangeCount, nil
 }
 
-// Zone Existence Check & Creation
+// Zone Existence Check & Creation.
 func (p *fortigateProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	var probe struct{ Results []any }
 
@@ -219,8 +220,8 @@ func buildZonePayload(dc *models.DomainConfig, resourceRecords []*fgDNSRecord) (
 	payload["authoritative"] = "enable"
 
 	if v, ok := dc.Metadata["forwarder"]; ok {
-		ip := net.ParseIP(v)
-		if ip == nil || ip.To4() == nil {
+		ip, err := netip.ParseAddr(v)
+		if err != nil || !ip.Is4() {
 			return nil, fmt.Errorf("[FORTIGATE] Invalid forwarder IP: %q", v)
 		}
 		payload["forwarder"] = []string{v}

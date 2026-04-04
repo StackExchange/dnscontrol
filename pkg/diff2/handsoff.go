@@ -194,7 +194,7 @@ func reportSkips(recs models.Records, full bool) []string {
 	}
 
 	for _, r := range recs[:last] {
-		msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()))
+		msgs = append(msgs, fmt.Sprintf(`    %s("%s.", %s),`, r.Type, r.GetLabelFQDN(), r.GetTargetJS()))
 	}
 	if shorten && printer.MaxReport != 0 {
 		msgs = append(msgs, fmt.Sprintf("    ...and %d more... (use --full to show all)", len(recs)-printer.MaxReport))
@@ -261,7 +261,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 
 		c.RTypeMap = make(map[string]struct{})
 		if c.RTypePattern != "*" && c.RTypePattern != "" {
-			for _, part := range strings.Split(c.RTypePattern, ",") {
+			for part := range strings.SplitSeq(c.RTypePattern, ",") {
 				part = strings.TrimSpace(part)
 				c.RTypeMap[part] = struct{}{}
 			}

@@ -25,7 +25,7 @@ type paramInt struct {
 
 func (p paramInt) param() {}
 
-// payload of values for a subdomain record
+// payload of values for a subdomain record.
 type paramStruct struct {
 	XMLName       xml.Name       `xml:"param"`
 	StructMembers []structMember `xml:"value>struct>member"`
@@ -109,7 +109,6 @@ type zRec struct {
 type zoneRecord struct {
 	XMLName    xml.Name   `xml:"struct"`
 	Properties []Property `xml:"member"`
-	// Properties map[string]interface{}
 }
 
 // zoneRecordsResponse decodes the API zoneRecords call.
@@ -125,7 +124,7 @@ type Property struct {
 	Value Value  `xml:"value"`
 }
 
-// Value is a xml any
+// Value is a xml any.
 type Value struct {
 	// String string `xml:",any"`
 	String string `xml:"string"`

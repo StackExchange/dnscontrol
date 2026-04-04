@@ -9,7 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/vultr/govultr/v2"
 	"golang.org/x/net/idna"
 	"golang.org/x/oauth2"
@@ -80,7 +80,9 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *vultrProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *vultrProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	listOptions := &govultr.ListOptions{}
 	records, recordsMeta, err := api.client.DomainRecord.List(context.Background(), domain, listOptions)
 	curRecords := make(models.Records, recordsMeta.Total)
@@ -175,12 +177,12 @@ func (api *vultrProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 	return corrections, actualChangeCount, nil
 }
 
-// GetNameservers gets the Vultr nameservers for a domain
+// GetNameservers gets the Vultr nameservers for a domain.
 func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNS)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *vultrProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
@@ -219,7 +221,7 @@ func (api *vultrProvider) isDomainInAccount(domain string) (bool, error) {
 	return false, nil
 }
 
-// toRecordConfig converts a Vultr DomainRecord to a RecordConfig. #rtype_variations
+// toRecordConfig converts a Vultr DomainRecord to a RecordConfig. #rtype_variations.
 func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig, error) {
 	origin, data := domain, r.Data
 
@@ -265,7 +267,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		// TXT records from Vultr are always surrounded by quotes.
 		// They don't permit quotes within the string, therefore there is no
 		// need to resolve \" or other quoting.
-		if !(strings.HasPrefix(data, `"`) && strings.HasSuffix(data, `"`)) {
+		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
 			// Give an error if Vultr changes their protocol. We'd rather break
 			// than do the wrong thing.
 			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")
@@ -276,7 +278,7 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 	}
 }
 
-// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DomainRecordReq. #rtype_variations
+// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DomainRecordReq. #rtype_variations.
 func toVultrRecord(rc *models.RecordConfig, vultrID string) *govultr.DomainRecord {
 	name := rc.GetLabel()
 	// Vultr uses a blank string to represent the apex domain.

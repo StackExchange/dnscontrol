@@ -9,7 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
 	"github.com/transip/gotransip/v6/repository"
@@ -155,8 +155,10 @@ func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, cur
 	return corrections, result.ActualChangeCount, err
 }
 
-// GetZoneRecords returns all records within given zone
-func (n *transipProvider) GetZoneRecords(domainName string, meta map[string]string) (models.Records, error) {
+// GetZoneRecords returns all records within given zone.
+func (n *transipProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domainName := dc.Name
+
 retry:
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if retryNeeded(err) {
@@ -178,7 +180,7 @@ retry:
 	return existingRecords, nil
 }
 
-// GetNameservers returns the nameservers of the given zone
+// GetNameservers returns the nameservers of the given zone.
 func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	var nss []string
 
@@ -237,9 +239,9 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 	return rc, nil
 }
 
-// removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers
+// removeDomainNameserversFromDomainRecords removes the nameserver records from the dc.Records which are already defined as the Domain nameservers.
 func removeDomainNameserversFromDomainRecords(dc *models.DomainConfig) {
-	nameserverLookup := map[string]interface{}{}
+	nameserverLookup := map[string]any{}
 	for _, nameserver := range dc.Nameservers {
 		nameserverLookup[nameserver.Name] = nil
 	}

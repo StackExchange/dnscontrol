@@ -1,24 +1,24 @@
 package normalize
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/spflib"
-	"golang.org/x/exp/constraints"
 )
 
-func sortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
+func sortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, len(m))
 	i := 0
 	for k := range m {
 		keys[i] = k
 		i++
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }
 

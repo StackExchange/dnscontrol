@@ -58,11 +58,11 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
     pubkey: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC5/z4L",
     label: "subdomain",
     version: "DKIM1",
-    hashtypes: ['sha1', 'sha256'],
+    hashtypes: ["sha1", "sha256"],
     keytype: "rsa",
     note: "some human-readable notes",
-    servicetypes: ['email'],
-    flags: ['y', 's'],
+    servicetypes: ["email"],
+    flags: ["y", "s"],
     ttl: 150
   }),
 );
@@ -90,9 +90,9 @@ k2._domainkey.subdomain   IN  TXT "v=DKIM1; h=sha1:sha256; k=rsa; n=some=20human
 * `keytype` (string, optional): Key algorithm type. Maps to the `k=` tag. Default: `rsa`. Supported values:
    * `rsa`
    * `ed25519`
-* `notes` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
+* `note` (string, optional): Human-readable notes intended for administrators. Pass normal text here; DKIM-Quoted-Printable encoding will be applied automatically. Maps to the `n=` tag.
 * `servicetypes` (array, optional): Service types using this key. Maps to the `s=` tag. Supported values:
-  * `*`: explicity allows all service types
+  * `*`: explicitly allows all service types
   * `email`: restricts key to email service only
 * `flags` (array, optional): Flags to modify the interpretation of the selector. Maps to the `t=` tag. Supported values:
   * `y`: Testing mode.

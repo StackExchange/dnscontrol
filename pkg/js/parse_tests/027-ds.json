@@ -11,26 +11,60 @@
       "name": "foo.com",
       "records": [
         {
+          "comparable": "1 1 1 FFFF",
           "dsalgorithm": 1,
           "dsdigest": "FFFF",
           "dsdigesttype": 1,
           "dskeytag": 1,
+          "fields": {
+            "Algorithm": 1,
+            "Digest": "FFFF",
+            "DigestType": 1,
+            "Hdr": {
+              "Class": 1,
+              "Name": "foo.com.",
+              "Rdlength": 0,
+              "Rrtype": 43,
+              "Ttl": 300
+            },
+            "KeyTag": 1
+          },
           "filepos": "[line:3:5]",
           "name": "@",
+          "name_raw": "@",
+          "name_unicode": "@",
           "target": "",
           "ttl": 300,
-          "type": "DS"
+          "type": "DS",
+          "zonfefilepartial": "1 1 1 FFFF"
         },
         {
+          "comparable": "1000 13 2 AABBCCDDEEFF",
           "dsalgorithm": 13,
           "dsdigest": "AABBCCDDEEFF",
           "dsdigesttype": 2,
           "dskeytag": 1000,
+          "fields": {
+            "Algorithm": 13,
+            "Digest": "AABBCCDDEEFF",
+            "DigestType": 2,
+            "Hdr": {
+              "Class": 1,
+              "Name": "foo.com.",
+              "Rdlength": 0,
+              "Rrtype": 43,
+              "Ttl": 300
+            },
+            "KeyTag": 1000
+          },
           "filepos": "[line:2:5]",
           "name": "@",
+          "name_raw": "@",
+          "name_unicode": "@",
           "target": "",
           "ttl": 300,
-          "type": "DS"
+          "type": "DS",
+          "zonfefilepartial": "1000 13 2 AABBCCDDEEFF"
         }
       ],
       "registrar": "none",

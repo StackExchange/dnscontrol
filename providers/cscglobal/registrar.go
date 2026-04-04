@@ -9,7 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (client *providerClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := client.getNameservers(dc.Name)
 	if err != nil {

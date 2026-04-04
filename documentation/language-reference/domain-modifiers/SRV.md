@@ -16,7 +16,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.
+`SRV` adds a [Service locator record](https://www.rfc-editor.org/rfc/rfc2782) to a domain. The name should be the relative label for the record.
 
 Priority, weight, and port are ints.
 

@@ -6,19 +6,20 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/js"
-	"github.com/miekg/dns"
+	dnsv1 "github.com/miekg/dns"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
 // parseZoneContents is copied verbatim from providers/bind/bindProvider.go
 // because import cycles and... tests shouldn't depend on huge modules.
 func parseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRCTxtBug(rr, zoneName)
+		rec, err := dnsrr.RRtoRCTxtBug(rr, zoneName)
 		if err != nil {
 			return nil, err
 		}
@@ -32,14 +33,16 @@ func parseZoneContents(content string, zoneName string, zonefileName string) (mo
 }
 
 func showRecs(recs models.Records) string {
-	result := ""
+	var result strings.Builder
 	for _, rec := range recs {
-		result += (rec.GetLabel() +
-			" " + rec.Type +
-			" " + rec.GetTargetCombined() +
-			"\n")
+		result.WriteString(rec.GetLabel())
+		result.WriteString(" ")
+		result.WriteString(rec.Type)
+		result.WriteString(" ")
+		result.WriteString(rec.GetTargetCombined())
+		result.WriteString("\n")
 	}
-	return result
+	return result.String()
 }
 
 func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, resultWanted string) {
@@ -280,8 +283,8 @@ func Test_ignore_external_dns(t *testing.T) {
 	// Check that external-dns records are in the result (so they won't be deleted)
 	foundMyappA := false
 	foundMyappTXT := false
-	foundApiCNAME := false
-	foundApiTXT := false
+	foundAPICNAME := false
+	foundAPITXT := false
 	foundStatic := false
 
 	for _, rec := range result {
@@ -291,9 +294,9 @@ func Test_ignore_external_dns(t *testing.T) {
 		case rec.GetLabel() == "a-myapp" && rec.Type == "TXT":
 			foundMyappTXT = true
 		case rec.GetLabel() == "api" && rec.Type == "CNAME":
-			foundApiCNAME = true
+			foundAPICNAME = true
 		case rec.GetLabel() == "cname-api" && rec.Type == "TXT":
-			foundApiTXT = true
+			foundAPITXT = true
 		case rec.GetLabel() == "static" && rec.Type == "A":
 			foundStatic = true
 		}
@@ -305,10 +308,10 @@ func Test_ignore_external_dns(t *testing.T) {
 	if !foundMyappTXT {
 		t.Error("Expected a-myapp TXT record to be preserved")
 	}
-	if !foundApiCNAME {
+	if !foundAPICNAME {
 		t.Error("Expected api CNAME record to be preserved")
 	}
-	if !foundApiTXT {
+	if !foundAPITXT {
 		t.Error("Expected cname-api TXT record to be preserved")
 	}
 	if !foundStatic {
@@ -328,7 +331,7 @@ func Test_ignore_external_dns(t *testing.T) {
 	}
 }
 
-// Test_ignore_external_dns_custom_prefix tests IGNORE_EXTERNAL_DNS with custom prefix
+// Test_ignore_external_dns_custom_prefix tests IGNORE_EXTERNAL_DNS with custom prefix.
 func Test_ignore_external_dns_custom_prefix(t *testing.T) {
 	domain := "f.com"
 
@@ -384,7 +387,7 @@ func Test_ignore_external_dns_custom_prefix(t *testing.T) {
 	}
 }
 
-// Test_ignore_external_dns_conflict tests conflict detection
+// Test_ignore_external_dns_conflict tests conflict detection.
 func Test_ignore_external_dns_conflict(t *testing.T) {
 	domain := "f.com"
 

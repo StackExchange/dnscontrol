@@ -1,18 +1,32 @@
 name: "PR: Run INTEGRATION tests"
 
+permissions:
+  contents: read
+
 # When will this pipeline be activated?
-# 1. On any pull-request, or if someone pushes to a branch called
-# "tlim_testpr".
+# 1. If someone pushes to a branch called "tlim_testpr".
+# 2. On a schedule (currently set to run every day at 4am UTC).
+
+# When are "smoke tests" vs "full tests" run?
+# 1. Is this a PR?  If the label "longtest" exists, run full tests.  Otherwise, run smoke tests.
+# 1. Is this a scheduled run? Run all the tests.
+# 2. Manually triggered? Run all the tests.
+
 on:
   pull_request:
+
+  schedule:
+    - cron: "0 4 * * *"
+
   workflow_dispatch:
   # Want to trigger all the tests without making a PR?
   # Run: git push origin main:tlim_testpr --force
   # This will trigger a full PR test on the main branch.
   # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_integration_tests.yml?query=branch%3Atlim_testpr
+
   push:
     branches:
-      - 'tlim_testpr'
+      - "tlim_testpr"
 
 # Environment Variables
 env:
@@ -25,47 +39,46 @@ env:
   BIND_DOMAIN: example.com
 
 jobs:
-
-# integration-test-providers: Determine which providers have a _DOMAIN variable set.
-# That variable enables testing for the provider.  The results are
-# stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
-# where integration-tests can pick it up.
+  # integration-test-providers: Determine which providers have a _DOMAIN variable set.
+  # That variable enables testing for the provider.  The results are
+  # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
+  # where integration-tests can pick it up.
   integration-test-providers:
     #needs: build
     runs-on: ubuntu-latest
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
     steps:
-    - name: Set Integration Test Providers
-      id: get_integration_test_providers
-      shell: pwsh
-      run: |
-        $Providers = @()
-        $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
-        $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
-        $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
-        ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
-          if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
-            $Providers += $_
+      - name: Set Integration Test Providers
+        id: get_integration_test_providers
+        shell: pwsh
+        run: |
+          $Providers = @()
+          $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
+          $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
+          $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
+          ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+            if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
+              $Providers += $_
+            }
           }
-        }
-        Write-Host "Integration test providers: $Providers"
-        echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
-      env:
-        PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','HEDNS','HETZNER_V2','HEXONET','HUAWEICLOUD','INWX','JOKER','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
-        ENV_CONTEXT: ${{ toJson(env) }}
-        VARS_CONTEXT: ${{ toJson(vars) }}
-        SECRETS_CONTEXT: ${{ toJson(secrets) }}
+          Write-Host "Integration test providers: $Providers"
+          echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
+        env:
+          PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
+          ENV_CONTEXT: ${{ toJson(env) }}
+          VARS_CONTEXT: ${{ toJson(vars) }}
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
 
-# integration-tests: Run the integration tests on any provider listed
-# in needs.integration-test-providers.outputs.integration_test_providers.
+  # integration-tests: Run the integration tests on any provider listed
+  # in needs.integration-test-providers.outputs.integration_test_providers.
   integration-tests:
     if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
       image: golang:1.25
     needs:
-    - integration-test-providers
+      - integration-test-providers
     env:
       TEST_RESULTS: "/tmp/test-results"
       GOTESTSUM_FORMAT: testname
@@ -87,11 +100,12 @@ jobs:
       FORTIGATE_DOMAIN: ${{ vars.FORTIGATE_DOMAIN }}
       GANDI_V5_DOMAIN: ${{ vars.GANDI_V5_DOMAIN }}
       GCLOUD_DOMAIN: ${{ vars.GCLOUD_DOMAIN }}
+      GIDINET_DOMAIN: ${{ vars.GIDINET_DOMAIN }}
       HEDNS_DOMAIN: ${{ vars.HEDNS_DOMAIN }}
       HETZNER_V2_DOMAIN: ${{ vars.HETZNER_V2_DOMAIN }}
-      HEXONET_DOMAIN: ${{ vars.HEXONET_DOMAIN }}
       HUAWEICLOUD_DOMAIN: ${{ vars.HUAWEICLOUD_DOMAIN }}
       JOKER_DOMAIN: ${{ vars.JOKER_DOMAIN }}
+      MIKROTIK_DOMAIN: ${{ vars.MIKROTIK_DOMAIN }}
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
@@ -99,6 +113,7 @@ jobs:
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
       SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
+      UNIFI_DOMAIN: ${{ vars.UNIFI_DOMAIN }}
 
       # PROVIDER SECRET LIST
       # The above providers have additional env variables they
@@ -155,15 +170,14 @@ jobs:
       GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
       GCLOUD_TYPE: ${{ secrets.GCLOUD_TYPE }}
       #
+      GIDINET_PASSWORD: ${{ secrets.GIDINET_PASSWORD }}
+      GIDINET_USERNAME: ${{ secrets.GIDINET_USERNAME }}
+      #
       HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
       HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
       HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
       #
       HETZNER_V2_API_TOKEN: ${{ secrets.HETZNER_V2_API_TOKEN }}
-      #
-      HEXONET_ENTITY: ${{ secrets.HEXONET_ENTITY }}
-      HEXONET_PW: ${{ secrets.HEXONET_PW }}
-      HEXONET_UID: ${{ secrets.HEXONET_UID }}
       #
       HUAWEICLOUD_REGION: ${{ secrets.HUAWEICLOUD_REGION }}
       HUAWEICLOUD_KEY_ID: ${{ secrets.HUAWEICLOUD_KEY_ID }}
@@ -171,6 +185,10 @@ jobs:
       #
       JOKER_USERNAME: ${{ secrets.JOKER_USERNAME }}
       JOKER_PASSWORD: ${{ secrets.JOKER_PASSWORD }}
+      #
+      MIKROTIK_HOST: ${{ secrets.MIKROTIK_HOST }}
+      MIKROTIK_USERNAME: ${{ secrets.MIKROTIK_USERNAME }}
+      MIKROTIK_PASSWORD: ${{ secrets.MIKROTIK_PASSWORD }}
       #
       MYTHICBEASTS_KEYID: ${{ secrets.MYTHICBEASTS_KEYID }}
       MYTHICBEASTS_SECRET: ${{ secrets.MYTHICBEASTS_SECRET }}
@@ -193,6 +211,11 @@ jobs:
       #
       TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
+      #
+      UNIFI_API_KEY: ${{ secrets.UNIFI_API_KEY }}
+      UNIFI_HOST: ${{ secrets.UNIFI_HOST }}
+      UNIFI_SITE: ${{ secrets.UNIFI_SITE }}
+      UNIFI_SKIP_TLS_VERIFY: ${{ secrets.UNIFI_SKIP_TLS_VERIFY }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.provider }}
@@ -201,24 +224,47 @@ jobs:
       matrix:
         provider: ${{ fromJson(needs.integration-test-providers.outputs.integration_test_providers )}}
     steps:
-    - uses: actions/checkout@v6
-    - run: mkdir -p "$TEST_RESULTS"
-    - name: restore_cache
-      uses: actions/cache@v4.3.0
-      with:
-        key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
-        path: ${{ env.go-mod-path }}
-    - name: Run integration tests for ${{ matrix.provider }} provider
-      run: |-
-        go install gotest.tools/gotestsum@latest
-        if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-          gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=false
-        else
-          echo "Skip test for ${{ matrix.provider }} provider"
-        fi
-      working-directory: integrationTest
-    - uses: actions/upload-artifact@v5.0.0
-      with:
-        name: integration-tests-${{ matrix.provider }}
-        path: ${{ env.TEST_RESULTS }}
+      - uses: actions/checkout@v6
+      - run: mkdir -p "$TEST_RESULTS"
+      - name: restore_cache
+        uses: actions/cache@v5.0.3
+        with:
+          key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+          restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
+          path: ${{ env.go-mod-path }}
+      - name: Set END value for PRs
+        # For PRs we only run a smoke test (the first 3 tests) to save time.
+        # For pushes to main or if the PR has the 'longtest' label, we run all tests.
+        id: set_end
+        run: |
+          END=3
+          DO_WORKERS=false
+          # Only for PRs
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Check for 'longtest' label
+            if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+              END=999
+              DO_WORKERS=true
+            fi
+          fi
+          # Check if branch is main
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
+            END=999
+            DO_WORKERS=true
+          fi
+          echo "END=$END" >> $GITHUB_ENV
+          echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
+
+      - name: Run integration tests for ${{ matrix.provider }} provider
+        run: |-
+          go install gotest.tools/gotestsum@latest
+          if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=$DO_WORKERS -cfredirect=false -cfflatten=false -cftags=false -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
+          else
+            echo "Skip test for ${{ matrix.provider }} provider"
+          fi
+        working-directory: integrationTest
+      - uses: actions/upload-artifact@v7.0.0
+        with:
+          name: integration-tests-${{ matrix.provider }}
+          path: ${{ env.TEST_RESULTS }}

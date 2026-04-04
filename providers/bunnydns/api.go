@@ -31,17 +31,19 @@ func (zone *zone) Nameservers() []string {
 }
 
 type record struct {
-	ID       int64      `json:"Id,omitempty"`
-	Type     recordType `json:"Type"`
-	Name     string     `json:"Name"`
-	Value    string     `json:"Value"`
-	Disabled bool       `json:"Disabled"`
-	TTL      uint32     `json:"Ttl"`
-	Flags    uint8      `json:"Flags"`
-	Priority uint16     `json:"Priority"`
-	Weight   uint16     `json:"Weight"`
-	Port     uint16     `json:"Port"`
-	Tag      string     `json:"Tag"`
+	ID         int64      `json:"Id,omitempty"`
+	Type       recordType `json:"Type"`
+	Name       string     `json:"Name"`
+	Value      string     `json:"Value"`
+	Disabled   bool       `json:"Disabled"`
+	TTL        uint32     `json:"Ttl"`
+	Flags      uint8      `json:"Flags"`
+	Priority   uint16     `json:"Priority"`
+	Weight     uint16     `json:"Weight"`
+	Port       uint16     `json:"Port"`
+	Tag        string     `json:"Tag"`
+	PullZoneID int64      `json:"PullZoneId,omitempty"`
+	LinkName   string     `json:"LinkName,omitempty"`
 }
 
 type listZonesResponse struct {

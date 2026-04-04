@@ -12,9 +12,11 @@ type DomainNameVarieties struct {
 	NameASCII   string // "punycode.com" (converted to punycode and downcase)
 	NameUnicode string // "unicode.com" (converted to unicode, ASCII portions downcased)
 	UniqueName  string // "punycode.com!tag" (canonical unique name with tag)
+	DisplayName string // "canonical" or "canonical (unicode.com)" if unicode
 
 	Tag     string // The tag portion of `example.com!tag`
 	HasBang bool   // Was there a "!" in the input when creating this struct?
+
 }
 
 // MakeDomainNameVarieties turns the user-supplied name into the varioius forms.
@@ -23,6 +25,7 @@ type DomainNameVarieties struct {
 // * .NameASCII: punycode version, downcased
 // * .NameUnicode: unicode version of the name, downcased.
 // * .UniqueName: "example.com!tag" unique across the entire config.
+// * .NameDisplay: "punycode.com!tag" or "punycode.com!tag (unicode.com)" if unicode.
 func MakeDomainNameVarieties(n string) *DomainNameVarieties {
 	var err error
 	var tag, nameRaw, nameASCII, nameUnicode, uniqueName string
@@ -73,12 +76,27 @@ func MakeDomainNameVarieties(n string) *DomainNameVarieties {
 		uniqueName = nameASCII
 	}
 
+	// Display this as "example.com" or "punycode.com (unicode.com)"
+	display := Display(uniqueName, nameASCII, nameUnicode)
+
 	return &DomainNameVarieties{
-		Tag:         tag,
 		NameRaw:     nameRaw,
 		NameASCII:   nameASCII,
 		NameUnicode: nameUnicode,
 		UniqueName:  uniqueName,
-		HasBang:     hasBang,
+		DisplayName: display,
+
+		Tag:     tag,
+		HasBang: hasBang,
 	}
+}
+
+// Display constructs the string suitable for displaying to the user
+// "example.com" or "punycode.com (unicode.com)"
+// If we add a user-configurable display format, it will be implemented here.
+func Display(canonical, nameASCII, nameUnicode string) string {
+	if nameUnicode != nameASCII {
+		return canonical + " (" + nameUnicode + ")"
+	}
+	return canonical
 }

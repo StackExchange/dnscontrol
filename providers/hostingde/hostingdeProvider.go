@@ -11,7 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
@@ -100,7 +100,9 @@ func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver
 	return models.ToNameservers(hp.nameservers)
 }
 
-func (hp *hostingdeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (hp *hostingdeProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := hp.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -325,11 +327,6 @@ func firstNonZero(items ...uint32) uint32 {
 }
 
 func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	// err := dc.Punycode()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	found, err := hp.getNameservers(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting nameservers: %w", err)

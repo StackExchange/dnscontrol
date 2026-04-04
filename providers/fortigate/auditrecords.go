@@ -2,8 +2,9 @@ package fortigate
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v4/models"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v4/models"
 )
 
 // AuditRecords performs basic validation and returns warnings for known limitations.

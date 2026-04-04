@@ -20,7 +20,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-`SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
+`SOA` adds a [Start of Authority record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -31,8 +31,8 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
 {% endcode %}
 
 ## Notes
-* The serial number is managed automatically.  It isn't even a field in `SOA()`.
-* Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
+* The serial number is managed automatically.  It isn't even a field in `SOA`.
+* Most providers automatically generate SOA records.  They will ignore any `SOA` statements.
 * The mbox field should not be set to a real email address unless you love spam and hate your privacy.
 
 There is more info about `SOA` in the documentation for the [BIND provider](../../provider/bind.md).

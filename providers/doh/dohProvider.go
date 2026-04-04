@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 /*
@@ -40,7 +40,7 @@ func newDNSOverHTTPS(m map[string]string) (providers.Registrar, error) {
 	return api, nil
 }
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (c *dohProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
@@ -58,7 +58,6 @@ func (c *dohProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 	if foundNameservers == expectedNameservers {
 		return nil, nil
 	}
-
 	return []*models.Correction{
 		{
 			Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),

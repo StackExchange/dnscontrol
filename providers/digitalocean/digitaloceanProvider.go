@@ -11,9 +11,9 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/digitalocean/godo"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -73,11 +73,25 @@ retry:
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
+	providers.CanAutoDNSSEC:          providers.Cannot("Digital Ocean documents that this is not supported."),
 	providers.CanConcur:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Cannot("Digital Ocean documents that this is not supported."),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDHCID:            providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseDNAME:            providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseDNSKEY:           providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseDS:               providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseHTTPS:            providers.Cannot("Digital Ocean documents that this is not supported."),
 	providers.CanUseLOC:              providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUsePTR:              providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseSOA:              providers.Cannot("Technically SOA is supported but in reality the API only permits updates to the TTL. That is insufficient for DNSControl to claim 'support'"),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseSMIMEA:           providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseSVCB:             providers.Cannot("Digital Ocean documents that this is not supported."),
+	providers.CanUseTLSA:             providers.Cannot("Digital Ocean documents that this is not supported."),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -94,7 +108,7 @@ func init() {
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (api *digitaloceanProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 retry:
 	ctx := context.Background()
@@ -155,7 +169,9 @@ func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Namese
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *digitaloceanProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (api *digitaloceanProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err
@@ -277,16 +293,17 @@ retry:
 
 func toRc(domain string, r *godo.DomainRecord) (*models.RecordConfig, error) {
 	// This handles "@" etc.
-	name := dnsutil.AddOrigin(r.Name, domain)
+	name := dnsutilv1.AddOrigin(r.Name, domain)
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		// If target is the domainname, e.g. cname foo.example.com -> example.com,
 		// DO returns "@" on read even if fqdn was written.
-		if target == "@" {
+		switch target {
+		case "@":
 			target = domain
-		} else if target == "." {
+		case ".":
 			target = ""
 		}
 		target = target + "."
@@ -359,7 +376,7 @@ var backoff = time.Second * 5
 const maxBackoff = time.Minute * 3
 
 func pauseAndRetry(resp *godo.Response) bool {
-	statusCode := resp.Response.StatusCode
+	statusCode := resp.StatusCode
 	if statusCode != 429 && statusCode != 504 {
 		backoff = time.Second * 5
 		return false
@@ -368,9 +385,6 @@ func pauseAndRetry(resp *godo.Response) bool {
 	// a simple exponential back-off with a 3-minute max.
 	log.Printf("Delaying %v due to ratelimit\n", backoff)
 	time.Sleep(backoff)
-	backoff = backoff + (backoff / 2)
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
+	backoff = min(backoff+(backoff/2), maxBackoff)
 	return true
 }

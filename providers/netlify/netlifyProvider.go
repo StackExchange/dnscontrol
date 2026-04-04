@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
+	"codeberg.org/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -88,7 +88,9 @@ func (n *netlifyProvider) getZone(domain string) (*dnsZone, error) {
 	return nil, errors.New("no zones found for this domain")
 }
 
-func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n *netlifyProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	zone, err := n.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -114,7 +116,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string, meta map[string]string) 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
 		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
-			r.Value = dns.CanonicalName(r.Value)
+			r.Value = dnsutil.Canonical(r.Value)
 		}
 
 		switch rtype := r.Type; rtype {

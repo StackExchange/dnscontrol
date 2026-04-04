@@ -70,6 +70,7 @@ type Domain struct {
 	Zone        *Zone         `json:"zone,omitempty"`
 }
 
+// NameServer represents a nameserver in API calls.
 type NameServer struct {
 	// Host name of the nameserver written as a Fully-Qualified-Domain-Name (FQDN).
 	Name string `json:"name"`
@@ -79,12 +80,19 @@ type NameServer struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 }
 
+type ListResponseMetaData struct {
+	ObjectType string `json:"type"`
+	ItemCount  int    `json:"summary"`
+}
+
 // JSONResponseDataZone represents the response to the DataZone call.
 type JSONResponseDataZone struct {
 	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.
-	Data []*Zone `json:"data"`
+	Data     []*Zone               `json:"data"`
+	MetaData *ListResponseMetaData `json:"object"`
 }
 
+// JSONResponseDataDomain represents the response to the DataDomain call.
 type JSONResponseDataDomain struct {
 	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.
 	Data []*Domain `json:"data"`

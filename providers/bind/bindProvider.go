@@ -24,12 +24,14 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
 	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/StackExchange/dnscontrol/v4/providers"
-	"github.com/miekg/dns"
+	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
+	dnsv1 "github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -142,7 +144,7 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(r)
 }
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
@@ -164,7 +166,10 @@ func (c *bindProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	var zonefile string
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
@@ -176,6 +181,9 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 		NameASCII:   domain,
 		NameUnicode: meta[models.DomainNameUnicode],
 		UniqueName:  meta[models.DomainUniqueName],
+		// NB(tlim): When "get-zones" is called, these values are populated
+		// directly by commands/getZones.go near where provider.GetZoneRecords()
+		// is called. Changes here may need to be reflected there too.
 	}
 	zonefile = filepath.Join(c.directory,
 		makeFileName(
@@ -190,7 +198,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 	content, err := os.ReadFile(zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
-		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", zonefile)
+		fmt.Fprintf(os.Stderr, "INFO: File does not (yet) exist: %q\n", zonefile)
 		return nil, nil
 	}
 	if err != nil {
@@ -202,7 +210,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
@@ -210,20 +218,20 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var prec *models.RecordConfig
 		var err error
 
-		// Modern types:
 		rtype := rr.Header().Rrtype
-		switch rtype {
-		case dns.TypeRP:
+		rtypeStr := dnsv1.TypeToString[rtype]
+		if rtypeinfo.IsModernType(rtypeStr) {
+			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, "RP", rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
 			rec = *prec
 			rec.TTL = rr.Header().Ttl
-		default:
+		} else {
 			// Legacy types:
-			rec, err = models.RRtoRCTxtBug(rr, zoneName)
+			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
 			if err != nil {
 				return nil, err
 			}
@@ -238,7 +246,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-func (c *bindProvider) EnsureZoneExists(_ string) error {
+func (c *bindProvider) EnsureZoneExists(_ string, _ map[string]string) error {
 	return nil
 }
 

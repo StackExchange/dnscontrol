@@ -26,8 +26,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 type route53Provider struct {
@@ -55,7 +55,7 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		config.WithRegion("us-east-1"),
 	}
 
-	keyID, secretKey, tokenID, roleArn, externalId := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
+	keyID, secretKey, tokenID, roleArn, externalID := m["KeyId"], m["SecretKey"], m["Token"], m["RoleArn"], m["ExternalId"]
 	// Token is optional and left empty unless required
 	if keyID != "" || secretKey != "" {
 		optFns = append(optFns, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(keyID, secretKey, tokenID)))
@@ -71,8 +71,8 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		sessionName := fmt.Sprintf("dnscontrol-route53-%d", time.Now().Unix())
 
 		var assumeOpts []func(*stscreds.AssumeRoleOptions)
-		if externalId != "" {
-			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalId) })
+		if externalID != "" {
+			assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.ExternalID = aws.String(externalID) })
 		}
 		assumeOpts = append(assumeOpts, func(o *stscreds.AssumeRoleOptions) { o.RoleSessionName = sessionName })
 
@@ -255,7 +255,10 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-func (r *route53Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	// If the zone_id is specified in meta, use it.
 	if zoneID, ok := meta["zone_id"]; ok {
 		zone, found := r.getZoneByID(zoneID)
@@ -538,7 +541,7 @@ func getZoneID(zone r53Types.HostedZone, r *models.RecordConfig) string {
 	return parseZoneID(zoneID)
 }
 
-/** Removes "/hostedzone/"" prefix from AWS ZoneId */
+/** Removes "/hostedzone/"" prefix from AWS ZoneId. */
 func parseZoneID(zoneID string) string {
 	return strings.TrimPrefix(zoneID, "/hostedzone/")
 }
@@ -649,13 +652,13 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]r53Types.ResourceRe
 	return records, nil
 }
 
-// we have to process names from route53 to match what we expect and to remove their odd octal encoding
+// we have to process names from route53 to match what we expect and to remove their odd octal encoding.
 func unescape(s *string) string {
 	if s == nil {
 		return ""
 	}
 	name := strings.TrimSuffix(*s, ".")
-	name = strings.Replace(name, `\052`, "*", -1) // TODO: escape all octal sequences
+	name = strings.ReplaceAll(name, `\052`, "*") // TODO: escape all octal sequences
 	return name
 }
 

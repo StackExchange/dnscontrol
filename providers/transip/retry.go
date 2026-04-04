@@ -40,10 +40,7 @@ func retryNeeded(err error) bool {
 	// a simple exponential back-off
 	log.Printf("Pausing due to ratelimit (%03d): %v seconds\n", serr.StatusCode, backoff)
 	time.Sleep(backoff)
-	backoff = backoff + (backoff / 2)
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
+	backoff = min(backoff+(backoff/2), maxBackoff)
 
 	return true // Request the API call be re-tried.
 }

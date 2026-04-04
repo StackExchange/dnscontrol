@@ -8,8 +8,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
-	"github.com/StackExchange/dnscontrol/v4/providers"
 )
 
 // TestDualProviders verifies that providers labeled DocDualHost support having

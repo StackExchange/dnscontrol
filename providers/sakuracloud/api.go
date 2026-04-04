@@ -223,9 +223,9 @@ type commonServiceItem struct {
 	ID           string   `json:"ID,omitempty"`
 	Name         string   `json:"Name,omitempty"`
 	Settings     settings `json:"Settings"`
-	Status       status   `json:"Status,omitempty"`
+	Status       status   `json:"Status"`
 	ServiceClass string   `json:"ServiceClass,omitempty"`
-	Provider     provider `json:"Provider,omitempty"`
+	Provider     provider `json:"Provider"`
 }
 
 // settings is a resource setting.
@@ -269,7 +269,8 @@ type sakuracloudAPI struct {
 	commonServiceItemMap map[string]*commonServiceItem
 }
 
-func NewSakuracloudAPI(accessToken, accessTokenSecret, endpoint string) (*sakuracloudAPI, error) {
+// newSakuracloudAPI creates and returns a sakuracloudAPI instance.
+func newSakuracloudAPI(accessToken, accessTokenSecret, endpoint string) (*sakuracloudAPI, error) {
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("endpoint_url parse error: %w", err)
@@ -317,7 +318,7 @@ func (api *sakuracloudAPI) request(method, path string, data []byte) ([]byte, er
 	return respBody, nil
 }
 
-// getCommonServiceItems return all the zones in the account
+// getCommonServiceItems return all the zones in the account.
 func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error) {
 	var items []*commonServiceItem
 
@@ -349,7 +350,6 @@ func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error)
 		}
 
 		for _, item := range respData.CommonServiceItems {
-			item := item
 			items = append(items, &item)
 		}
 
@@ -363,7 +363,7 @@ func (api *sakuracloudAPI) getCommonServiceItems() ([]*commonServiceItem, error)
 	return items, nil
 }
 
-// GetCommonServiceItemMap return all the zones in the account
+// GetCommonServiceItemMap return all the zones in the account.
 func (api *sakuracloudAPI) GetCommonServiceItemMap() (map[string]*commonServiceItem, error) {
 	if api.commonServiceItemMap != nil {
 		return api.commonServiceItemMap, nil

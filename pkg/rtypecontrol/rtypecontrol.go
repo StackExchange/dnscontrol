@@ -5,12 +5,10 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v4/models"
 	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
-// backwards compatibility:
-//var validTypes = map[string]struct{}{}
-
+// RType is an interface that defines the methods required for a DNS record type.
 type RType interface {
 	// Returns the name of the rtype ("A", "MX", etc.)
 	Name() string
@@ -20,11 +18,16 @@ type RType interface {
 	FromStruct(*domaintags.DomainNameVarieties, *models.RecordConfig, string, any) error
 
 	CopyToLegacyFields(*models.RecordConfig)
+	CopyFromLegacyFields(*models.RecordConfig)
 }
 
-// Map of registered rtypes.
+// Func is a map of registered rtypes.
 var Func map[string]RType = map[string]RType{}
 
+// Register registers a new RType (Record Type) implementation. It can be used
+// to register an RFC-defined type, a new custom type, or a "builder".
+//
+// It panics if the type is already registered, to prevent accidental overwrites.
 func Register(t RType) {
 	name := t.Name()
 	if _, ok := Func[name]; ok {
@@ -35,9 +38,4 @@ func Register(t RType) {
 
 	// For compatibility with legacy systems:
 	providers.RegisterCustomRecordType(name, "", "")
-}
-
-func IsModernType(name string) bool {
-	_, ok := Func[name]
-	return ok
 }

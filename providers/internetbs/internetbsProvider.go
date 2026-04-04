@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/providers"
+	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
 )
 
 /*
@@ -44,7 +44,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 	return api, nil
 }
 
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
+// GetRegistrarCorrections gathers corrections that would bring n to match dc.
 func (c *internetbsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
