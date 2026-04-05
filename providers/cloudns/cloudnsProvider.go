@@ -406,7 +406,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 		rc.DsDigest = r.Target
 		err = rc.SetTarget(r.Target)
 	case "CLOUD_WR":
-		rc.Type = "WR"
+		rc.Type = "CLOUDNS_WR"
 		err = rc.SetTarget(r.Target)
 	case "LOC":
 		loc := fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s",
@@ -459,7 +459,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR", "DNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "DNAME":
 		// Nothing special.
 	case "CLOUDNS_WR":
 		req["record-type"] = "WR"
