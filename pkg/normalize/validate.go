@@ -636,18 +636,28 @@ func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 
 func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	cnames := map[string]bool{}
+	proxiedCnames := map[string]bool{}
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
 				errs = append(errs, fmt.Errorf("%s: cannot have multiple CNAMEs with same name: %s", r.FilePos, r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
+			if p, ok := r.Metadata["cloudflare_proxy"]; ok && (p == "on" || p == "full") {
+				proxiedCnames[r.GetLabel()] = true
+			}
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
 			// Allow AKAMAICDN and CNAME to have same name
 			if r.Type == "AKAMAICDN" {
+				continue
+			}
+			// Cloudflare proxied (flattened) CNAMEs are resolved internally
+			// and never served as actual CNAME records, so the RFC 1034 §3.6.2
+			// restriction does not apply.
+			if proxiedCnames[r.GetLabel()] {
 				continue
 			}
 			errs = append(errs, fmt.Errorf("%s: cannot have CNAME and %s record with same name: %s", r.FilePos, r.Type, r.GetLabelFQDN()))
