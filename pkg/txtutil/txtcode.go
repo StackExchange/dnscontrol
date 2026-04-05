@@ -36,6 +36,13 @@ func EncodeQuoted(t string) string {
 	return txtEncode(ToChunks(t))
 }
 
+// EncodeSingle encodes a string as a single quoted value without splitting
+// into 255-octet chunks. This is intended for user-facing display (e.g., diff
+// preview) where the chunked representation is confusing.
+func EncodeSingle(t string) string {
+	return txtEncode([]string{t})
+}
+
 // State denotes the parser state.
 type State int
 

@@ -344,7 +344,7 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		// SoaSerial is not included because it isn't used in comparisons.
 	case "TXT":
 		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL raw txts=%s q=%q\n", rc.target, rc.target)
-		r := txtutil.EncodeQuoted(rc.target)
+		r := txtutil.EncodeSingle(rc.target)
 		// fmt.Fprintf(os.Stdout, "DEBUG: ToComNoTTL cmp txts=%s q=%q\n", r, r)
 		return r
 	case "LUA":
