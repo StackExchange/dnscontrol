@@ -340,6 +340,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04 h1:o6uBwrhM5C8Ll3MAAxrQxRHEu7FkapwTuI2WmL1rw4g=
 github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04/go.mod h1:5sN+Lt1CaY4wsPvgQH/jsuJi4XO2ssZbdsIizr4CVC8=
+github.com/netnod/netnod-primary-dns-client v1.0.0 h1:ISyr7eOsQtUAZ4c1ov0sFV22I4yB09Du1kf9zy/q85U=
+github.com/netnod/netnod-primary-dns-client v1.0.0/go.mod h1:MLvJf4UhbAB8WQdypLqYv9rwtOGD+3cZlAVXMwgad3c=
 github.com/nicholas-fedor/shoutrrr v0.13.2 h1:hfsYBIqSFYGg92pZP5CXk/g7/OJIkLYmiUnRl+AD1IA=
 github.com/nicholas-fedor/shoutrrr v0.13.2/go.mod h1:ZqzV3gY/Wj6AvWs1etlO7+yKbh4iptSbeL8avBpMQbA=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
