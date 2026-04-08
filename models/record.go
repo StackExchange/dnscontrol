@@ -172,8 +172,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		LocSize            uint8             `json:"locsize,omitempty"`
 		LocHorizPre        uint8             `json:"lochorizpre,omitempty"`
 		LocVertPre         uint8             `json:"locvertpre,omitempty"`
-		LocLatitude        int               `json:"loclatitude,omitempty"`
-		LocLongitude       int               `json:"loclongitude,omitempty"`
+		LocLatitude        uint32            `json:"loclatitude,omitempty"`
+		LocLongitude       uint32            `json:"loclongitude,omitempty"`
 		LocAltitude        uint32            `json:"localtitude,omitempty"`
 		LuaRType           string            `json:"luartype,omitempty"`
 		NaptrOrder         uint16            `json:"naptrorder,omitempty"`
