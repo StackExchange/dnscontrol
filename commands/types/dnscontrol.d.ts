@@ -4087,7 +4087,7 @@ declare function TTL(ttl: Duration): RecordModifier;
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/txt
  */
-declare function TXT(name: string, contents: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function TXT(name: string, contents: string | string[], ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * This is provider specific type of record and not a DNS standard. It may behave differently for each provider that handles it.
