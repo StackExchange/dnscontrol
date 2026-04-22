@@ -1490,6 +1490,28 @@ function HEDNS_DDNS_KEY(key) {
     return { hedns_dynamic: 'on', hedns_ddns_key: key };
 }
 
+// Gidinet aliases:
+
+// GIDINET_PREMIUM_NS(): Emit NAMESERVER records for Gidinet premium DNS
+// (dns1..dns5.gidinet.com). Use together with DnsProvider(DNS_GIDINET, 0)
+// so the free-tier defaults from GetNameservers are skipped.
+//
+// Usage:
+//   D("premium.example", REG_GIDINET,
+//     DnsProvider(DNS_GIDINET, 0),
+//     GIDINET_PREMIUM_NS(),
+//     A("www", "1.2.3.4"),
+//   );
+function GIDINET_PREMIUM_NS() {
+    return [
+        NAMESERVER('dns1.gidinet.com.'),
+        NAMESERVER('dns2.gidinet.com.'),
+        NAMESERVER('dns3.gidinet.com.'),
+        NAMESERVER('dns4.gidinet.com.'),
+        NAMESERVER('dns5.gidinet.com.'),
+    ];
+}
+
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
 function _validateCloudflareRedirect(value) {

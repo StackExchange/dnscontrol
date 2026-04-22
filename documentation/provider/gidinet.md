@@ -123,13 +123,20 @@ Allowed TTL values (in seconds):
 
 ### Nameservers
 
-Gidinet's default nameservers are:
+Gidinet offers two DNS tiers with different nameserver sets.
+
+**Free tier (default):**
 - `dnsl1.gidinet.com`
 - `dnsl2.gidinet.com`
 
-**Apex NS records are automatically filtered** by the DNS provider with a warning message. Gidinet does not support modifying NS records at the zone apex via the DNS API - they are managed by the registrar.
+**Premium DNS:**
+- `dns1.gidinet.com`
+- `dns2.gidinet.com`
+- `dns3.gidinet.com`
+- `dns4.gidinet.com`
+- `dns5.gidinet.com`
 
-To manage nameserver delegation, use Gidinet as a **registrar** with the `NAMESERVER()` function:
+The DNS provider returns the free-tier nameservers via `GetNameservers`, so free-tier zones need no explicit `NAMESERVER(...)` — DNSControl will suggest the correct delegation to the registrar automatically:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -137,14 +144,31 @@ var REG_GIDINET = NewRegistrar("gidinet");
 var DSP_GIDINET = NewDnsProvider("gidinet");
 
 D("example.com", REG_GIDINET, DnsProvider(DSP_GIDINET),
-    NAMESERVER("dnsl1.gidinet.com."),
-    NAMESERVER("dnsl2.gidinet.com."),
     A("test", "1.2.3.4"),
 );
 ```
 {% endcode %}
 
-This uses the Core API's `domainNameServersChange` method to update the nameservers at the registry level.
+For zones on the **premium DNS** tier, opt out of the free-tier defaults with `DnsProvider(DSP_GIDINET, 0)` and use the `GIDINET_PREMIUM_NS()` helper to emit the five premium `NAMESERVER()` records:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_GIDINET = NewRegistrar("gidinet");
+var DSP_GIDINET = NewDnsProvider("gidinet");
+
+D("premium.example", REG_GIDINET,
+    DnsProvider(DSP_GIDINET, 0),
+    GIDINET_PREMIUM_NS(),
+    A("test", "1.2.3.4"),
+);
+```
+{% endcode %}
+
+The `0` passed to `DnsProvider()` tells DNSControl to skip the provider's auto-injected nameservers for that zone, so only the explicit `NAMESERVER()` records drive the delegation.
+
+When used as a registrar, Gidinet updates the nameservers at the registry level via the Core API's `domainNameServersChange` method.
+
+**Apex NS records are automatically filtered** by the DNS provider with a warning message. Gidinet does not support modifying NS records at the zone apex via the DNS API — they are managed by the registrar. If you use a DNS provider other than Gidinet, declare `NAMESERVER(...)` records (or rely on the other provider's `GetNameservers`) so `REG_GIDINET` can drive the delegation.
 
 ### Zone creation
 
