@@ -34,6 +34,10 @@ import (
 	dnsv1 "github.com/miekg/dns"
 )
 
+// defaultZonesDir is used when the BIND credentials do not specify a
+// directory.
+const defaultZonesDir = "zones"
+
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
@@ -108,6 +112,33 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "ISC BIND",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/bind",
+		Notes:       "BIND writes zone files to a local directory; no API credentials are needed.",
+		Fields: []providers.CredsField{
+			{
+				Key:     "directory",
+				Label:   "Zone files directory",
+				Help:    "Directory where BIND zone files are written. Defaults to zones.",
+				Default: defaultZonesDir,
+			},
+			{
+				Key:     "filenameformat",
+				Label:   "File name format",
+				Help:    "Format used for zone file names. Defaults to %c.zone.",
+				Default: "%c.zone",
+			},
+		},
+		PostWrite: func(fields map[string]string) error {
+			dir := fields["directory"]
+			if dir == "" {
+				dir = defaultZonesDir
+			}
+			return os.MkdirAll(dir, 0o755)
+		},
+	})
 }
 
 // SoaDefaults contains the parts of the default SOA settings.
