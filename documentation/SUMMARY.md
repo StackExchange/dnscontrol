@@ -189,6 +189,7 @@
 * [preview/push](commands/preview-push.md)
 * [check-creds](commands/check-creds.md)
 * [get-zones](commands/get-zones.md)
+* [init](commands/init.md)
 * [fmt](commands/fmt.md)
 * [creds.json](commands/creds-json.md)
 * [Global Flag](commands/globalflags.md)
