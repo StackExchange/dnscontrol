@@ -2,7 +2,7 @@
 
 This document explains how to migrate (convert) DNS zones from other systems to DNSControl's `dnsconfig.js` file.
 
-This document assumes you have DNSControl set up and working on at least one zone. You should have a working `dnsconfig.js` file and `creds.json` file as explained in the [Getting Started](getting-started.md) doc.
+This document assumes you have DNSControl set up and working on at least one zone. You should have a working `dnsconfig.js` file and `creds.json` file as explained in the [Getting Started](getting-started.md) doc, or by running [`dnscontrol init`](../commands/init.md) which generates both files interactively in under a minute.
 
 ## General advice
 
