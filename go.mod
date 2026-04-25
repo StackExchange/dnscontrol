@@ -15,7 +15,9 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/sony/gobreaker/v2 v2.4.0 // indirect
@@ -78,6 +80,7 @@ require (
 
 require (
 	codeberg.org/miekg/dns v0.6.75
+	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
