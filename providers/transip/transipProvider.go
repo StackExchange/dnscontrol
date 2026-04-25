@@ -94,6 +94,46 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "TransIP",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/transip",
+		PortalURL:   "https://www.transip.nl/cp/account/api/",
+		Notes:       "TransIP supports two auth methods: a short lived access token, or an account name paired with a long lived private key.",
+		Fields: []providers.CredsField{
+			{
+				Key:      "_authMethod",
+				Label:    "Which authentication method do you want to use?",
+				Help:     "Access token is quicker; private key lasts longer but needs your account name.",
+				Choices:  []string{"Access token", "Account name + private key"},
+				Required: true,
+				Internal: true,
+			},
+			{
+				Key:      "AccessToken",
+				Label:    "Access token",
+				Help:     "Personal access token from the TransIP control panel. Has a limited lifetime.",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Access token"},
+			},
+			{
+				Key:      "AccountName",
+				Label:    "Account name",
+				Help:     "Your TransIP account name.",
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Account name + private key"},
+			},
+			{
+				Key:       "PrivateKey",
+				Label:     "Private key (opens $EDITOR)",
+				Help:      "Paste the full PEM block including the BEGIN and END lines, then save and close the editor.",
+				Multiline: true,
+				Required:  true,
+				ShowIf:    map[string]string{"_authMethod": "Account name + private key"},
+			},
+		},
+	})
 }
 
 func (n *transipProvider) ListZones() ([]string, error) {
