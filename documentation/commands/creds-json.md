@@ -3,6 +3,13 @@
 When DNSControl interacts with a provider, any API keys, credentials, or other
 configuration parameters required are stored in `creds.json`.   The file contains a set of key/value pairs for each configuration.  That is, since a provider can be used multiple times with different credentials, the file contains a section for each set of credentials.
 
+{% hint style="success" %}
+Need to populate `creds.json` for the first time, or add an entry for a
+new provider? [`dnscontrol init`](init.md) generates the file
+interactively, prompting for the exact fields the chosen provider
+expects.
+{% endhint %}
+
 Here's a sample file:
 
 {% code title="creds.json" %}
