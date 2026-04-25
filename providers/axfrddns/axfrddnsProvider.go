@@ -248,7 +248,8 @@ func (c *axfrddnsProvider) getAxfrConnection() (*dnsv1.Transfer, error) {
 	var con net.Conn
 	var err error
 	if c.transferMode == "tcp-tls" {
-		con, err = tls.Dial("tcp", c.transferServer, &tls.Config{})
+		// RFC 9103 "DNS Zone Transfer over TLS" section 7.1 requires "dot"
+		con, err = tls.Dial("tcp", c.transferServer, &tls.Config{NextProtos: []string{"dot"}})
 	} else {
 		con, err = net.Dial("tcp", c.transferServer)
 	}
