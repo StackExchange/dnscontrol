@@ -85,6 +85,14 @@ use BIND for DNS service, it is useful for testing.
 `dnsconfig.js` is the main configuration and defines providers, DNS
 domains, and so on.
 
+{% hint style="success" %}
+**Quick path:** run `dnscontrol init` instead. The interactive wizard
+asks for your DNS provider and registrar, prompts for the right
+`creds.json` fields and writes a working starter `dnsconfig.js` for
+you. The rest of this section is the manual equivalent. See the
+[init command reference](../commands/init.md) for details.
+{% endhint %}
+
 Start your `dnsconfig.js` file by downloading
 [dnsconfig.js](https://github.com/StackExchange/dnscontrol/blob/main/documentation/assets/getting-started/dnsconfig.js)
 and renaming it.

@@ -125,6 +125,57 @@ Edit
 [providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
+### Onboarding metadata for `dnscontrol init` (optional)
+
+If you want your provider to appear in the interactive
+[`dnscontrol init`](../commands/init.md) wizard, register a
+`CredsMetadata` block in the same `init()` function where you call
+`RegisterDomainServiceProviderType` and `RegisterMaintainer`. A simple
+provider reduces to a few lines:
+
+```go
+providers.RegisterCredsMetadata("MYPROVIDER", providers.CredsMetadata{
+    DisplayName: "My Provider",
+    Kind:        providers.KindDNS, // or providers.KindDNS | providers.KindRegistrar
+    DocsURL:     "https://docs.dnscontrol.org/provider/myprovider",
+    PortalURL:   "https://portal.example.com/api-tokens",
+    Fields: []providers.CredsField{
+        {Key: "apitoken", Label: "API Token", Required: true, Secret: true},
+    },
+})
+```
+
+A field can carry any of the following flags:
+
+| Flag | Effect |
+|---|---|
+| `Required` | Empty answers are rejected. |
+| `Secret` | Input is masked. |
+| `Multiline` | Opens `$EDITOR` so PEM blocks and other multi line values can be entered intact. |
+| `Choices` | Input is restricted to a fixed list. |
+| `EnvVar` | When the environment variable is set, its value becomes the default. |
+| `Internal` | Marks a selector whose answer only drives `ShowIf` logic. The value is not written to `creds.json`. |
+| `ShowIf` | Only ask this field when earlier field answers match the given key/value map. Used to branch between auth methods. |
+| `Default` | Suggested value shown in the prompt. |
+| `Validator` | Custom function that rejects invalid values with an error message. |
+
+The optional `PostWrite` hook on `CredsMetadata` lets the provider
+prepare local resources after the wizard writes `creds.json` (BIND uses
+this to create the zone files directory).
+
+The BIND and TransIP registrations in this repository are worked
+examples maintainers can copy from:
+
+- [`providers/bind/bindProvider.go`][bind-source]: the simple shape, plus a `PostWrite` hook that creates the zone files directory.
+- [`providers/transip/transipProvider.go`][transip-source]: an auth method selector (`Internal` plus `ShowIf`) that branches between a short lived access token and an account name paired with a PEM private key.
+
+[bind-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/bind/bindProvider.go
+[transip-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/transip/transipProvider.go
+
+Providers without registered metadata still work; users just create the
+`creds.json` entry from the provider's documentation page rather than
+via the wizard.
+
 ## Step 5: Implement
 
 **If you are implementing a DNS Service Provider:**
