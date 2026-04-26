@@ -163,9 +163,14 @@ The optional `PostWrite` hook on `CredsMetadata` lets the provider
 prepare local resources after the wizard writes `creds.json` (BIND uses
 this to create the zone files directory).
 
-Worked examples: `providers/bind/bindProvider.go` (simple plus a
-`PostWrite` hook) and `providers/transip/transipProvider.go` (two auth
-methods expressed via `Internal` plus `ShowIf`).
+The BIND and TransIP registrations in this repository are worked
+examples maintainers can copy from:
+
+- [`providers/bind/bindProvider.go`][bind-source]: the simple shape, plus a `PostWrite` hook that creates the zone files directory.
+- [`providers/transip/transipProvider.go`][transip-source]: an auth method selector (`Internal` plus `ShowIf`) that branches between a short lived access token and an account name paired with a PEM private key.
+
+[bind-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/bind/bindProvider.go
+[transip-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/transip/transipProvider.go
 
 Providers without registered metadata still work; users just create the
 `creds.json` entry from the provider's documentation page rather than
