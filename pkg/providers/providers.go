@@ -206,7 +206,7 @@ func init() {
 	RegisterCredsMetadata("NONE", CredsMetadata{
 		DisplayName: "No registrar",
 		Kind:        KindRegistrar,
-		Notes:       "Use NONE when you do not want DNSControl to manage nameserver delegation.",
+		Notes:       "Use NONE when you do not want DNSControl to manage nameserver delegation (that is, the nameservers for this domain will be managed manually).",
 	})
 }
 

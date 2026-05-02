@@ -27,7 +27,7 @@ OPTIONS:
 1. Pick a DNS provider. This is the service that hosts the actual records
    (A, MX, TXT, CNAME, and so on). Pick `NONE` to defer the choice.
 2. If the chosen DNS provider also works as a registrar, `init` offers to
-   reuse the same account for NS delegation.
+   reuse the same account for nameserver (NS) delegation.
 3. Otherwise pick a registrar. The registrar is where the domain itself
    is registered. Pick `NONE` to manage the registrar outside DNSControl.
 4. For each provider `init` prints the API settings URL so you can open
