@@ -12,9 +12,3 @@ linters:
     - durationcheck
     - godot
     - predeclared
-# 2026-05-02: Temporary exclusions
-  exclusions:
-    rules:
-      - linters:
-          - govet
-        text: "inline: cannot inline: type parameter inference is not yet supported"
