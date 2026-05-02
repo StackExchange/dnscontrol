@@ -83,7 +83,6 @@ require (
 	github.com/urfave/cli/v3 v3.7.0
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
 	golang.org/x/text v0.34.0
 	golang.org/x/time v0.14.0
 	gopkg.in/yaml.v3 v3.0.1

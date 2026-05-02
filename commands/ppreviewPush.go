@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,7 +31,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/nozzle/throttler"
 	"github.com/urfave/cli/v3"
-	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
 )
 
