@@ -95,7 +95,7 @@ Currently supported Domain Registrars:
 - Porkbun
 - Realtime Register
 
-At Stack Overflow, we use this system to manage hundreds of domains
+Stack Overflow uses this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
 
 You can think of it as a DNS compiler.  The configuration files are
@@ -143,7 +143,7 @@ See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-starte
   will upload your DNS records to multiple providers, which means you
   can test one while switching to another. We've switched providers 3
   times in three years and we've never lost a DNS record.
-- **Apply CI/CD principles to DNS!**  At StackOverflow we maintain our
+- **Apply CI/CD principles to DNS!**  StackOverflow maintains their
   DNSControl configurations in Git and use our CI system to roll out
   changes.  Keeping DNS information in a VCS means we have full
   history.  Using CI enables us to include unit-tests and
@@ -177,7 +177,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 ## Deprecation warnings (updated 2025-11-21)
 
 - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
-- **NAMEDOTCOM, OPENSRS, and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes. Interested in being a hero and adopting them?  Contact tlimoncelli at stack overflow dot com.
+- **NAMEDOTCOM, OPENSRS, and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes. Interested in being a hero and adopting them?  Contact tal at what exit dot org.
 
 ## More info at our website
 
