@@ -95,7 +95,7 @@ were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v3@github.com/DNSControl/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/DNSControl/dnscontrol/v3 *)
+sed -i.bak -e 's@github.com/DNSControl/dnscontrol.v3@github.com/DNSControl/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/DNSControl/dnscontrol/v3 *)
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
@@ -130,7 +130,7 @@ Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/ac
 
 Overview: You will fork the repo and add any secrets to your fork.  For security reasons you won't have access to the secrets from the main repository.
 
-1. [Fork StackExchange/dnscontrol](https://github.com/DNSControl/dnscontrol/fork) in GitHub.
+1. [Fork DNSControl/dnscontrol](https://github.com/DNSControl/dnscontrol/fork) in GitHub.
 
     If you already have a fork, be sure to use the "sync fork" button on the main page to sync with the upstream.
 
