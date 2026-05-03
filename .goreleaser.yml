@@ -180,7 +180,7 @@ release:
 
     ##### Using with [Docker](https://www.docker.com)
 
-    You can use the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol).
+    You can use the Docker image from [Docker hub](https://hub.docker.com/r/dnscontrol/dnscontrol/) or [GitHub Container Registry](https://github.com/dnscontrol/dnscontrol/pkgs/container/dnscontrol).
 
     ```shell
     docker run --rm -it -v "$(pwd):/dns" ghcr.io/dnscontrodnscontrol/dnscontrol preview

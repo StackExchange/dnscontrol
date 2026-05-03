@@ -128,7 +128,7 @@ Running `dnscontrol push` will make those changes with the provider and my dns r
 The easiest way to run DNSControl is to use the Docker container:
 
 ```
-docker run --rm -it -v "$(pwd):/dns"  ghcr.io/stackexchange/dnscontrol preview
+docker run --rm -it -v "$(pwd):/dns"  ghcr.io/dnscontrol/dnscontrol preview
 ```
 
 See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site to get started!

@@ -20,10 +20,10 @@ brew install StackExchange/tap/dnscontrol
 
 ### Docker
 
-You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) or [GitHub Container Registry](https://github.com/stackexchange/dnscontrol/pkgs/container/dnscontrol) and the command below.
+You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/dnscontrol/dnscontrol/) or [GitHub Container Registry](https://github.com/dnscontrol/dnscontrol/pkgs/container/dnscontrol) and the command below.
 
 ```shell
-docker run --rm -it -v "$(pwd):/dns"  ghcr.io/stackexchange/dnscontrol preview
+docker run --rm -it -v "$(pwd):/dns"  ghcr.io/dnscontrol/dnscontrol preview
 ```
 
 ### Binaries
