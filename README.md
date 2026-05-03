@@ -187,4 +187,4 @@ The getting started guide: [https://docs.dnscontrol.org/getting-started/getting-
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/StackExchange/dnscontrol.svg?variant=adaptive)](https://starchart.cc/StackExchange/dnscontrol)
+[![Stargazers over time](https://starchart.cc/DNSControl/dnscontrol.svg?variant=adaptive)](https://starchart.cc/DNSControl/dnscontrol)
