@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
+	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/providers/cloudflare"
 )
 
 var (

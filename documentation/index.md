@@ -27,4 +27,4 @@ Take advantage of the advanced features. Use macros and variables for easier upd
 
 # Get Involved
 
-Join our [mailing list](https://groups.google.com/g/dnscontrol-discuss). We make it easy to contribute by using [GitHub](https://github.com/StackExchange/dnscontrol), you can make code changes with confidence thanks to extensive integration tests. The project is [newbie-friendly](https://everythingsysadmin.com/2017/08/go-get-up-to-speed.html) so jump right in!
+Join our [mailing list](https://groups.google.com/g/dnscontrol-discuss). We make it easy to contribute by using [GitHub](https://github.com/DNSControl/dnscontrol), you can make code changes with confidence thanks to extensive integration tests. The project is [newbie-friendly](https://everythingsysadmin.com/2017/08/go-get-up-to-speed.html) so jump right in!

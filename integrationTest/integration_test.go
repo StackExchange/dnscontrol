@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
-	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	_ "github.com/DNSControl/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/DNSControl/dnscontrol/v4/pkg/rtype"
 )
 
 func TestDNSProviders(t *testing.T) {
@@ -691,8 +691,8 @@ func makeTests() []*TestGroup {
 		testgroup("pager1201",
 			only(
 				// "AKAMAIEDGEDNS", // No paging done. No need to test.
-				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
-				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
+				//"AZURE_DNS",     // Currently failing. See https://github.com/DNSControl/dnscontrol/issues/770
+				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/DNSControl/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
@@ -707,7 +707,7 @@ func makeTests() []*TestGroup {
 
 		// Test the boundaries of Google' batch system.
 		// 1200 is used because it is larger than batchMax.
-		// https://github.com/StackExchange/dnscontrol/pull/2762#issuecomment-1877825559
+		// https://github.com/DNSControl/dnscontrol/pull/2762#issuecomment-1877825559
 		testgroup("batchRecordswithOthers",
 			only(
 				//"GCLOUD",
@@ -830,7 +830,7 @@ func makeTests() []*TestGroup {
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
-		// https://github.com/StackExchange/dnscontrol/issues/2066
+		// https://github.com/DNSControl/dnscontrol/issues/2066
 		testgroup("SRV",
 			requires(providers.CanUseSRV),
 			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
@@ -1105,14 +1105,14 @@ func makeTests() []*TestGroup {
 		testgroup("R53_ALIAS_Loop",
 			// This will always be skipped because rejectifTargetEqualsLabel
 			// will always flag it as not permitted.
-			// See https://github.com/StackExchange/dnscontrol/issues/2107
+			// See https://github.com/DNSControl/dnscontrol/issues/2107
 			requires(providers.CanUseRoute53Alias),
 			tc("loop should fail",
 				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**.", "false"),
 			),
 		),
 
-		// Bug https://github.com/StackExchange/dnscontrol/issues/2285
+		// Bug https://github.com/DNSControl/dnscontrol/issues/2285
 		testgroup("R53_alias pre-existing",
 			requires(providers.CanUseRoute53Alias),
 			tc("Create some records",
@@ -1137,7 +1137,7 @@ func makeTests() []*TestGroup {
 			),
 		),
 
-		// Bug https://github.com/StackExchange/dnscontrol/issues/3493
+		// Bug https://github.com/DNSControl/dnscontrol/issues/3493
 		// Summary: R53_ALIAS -> CNAME conversion doesn't work.
 		testgroup("R53_B3493",
 			requires(providers.CanUseRoute53Alias),
@@ -1866,7 +1866,7 @@ func makeTests() []*TestGroup {
 
 		// IGNORE repro bug reports
 
-		// https://github.com/StackExchange/dnscontrol/issues/2285
+		// https://github.com/DNSControl/dnscontrol/issues/2285
 		testgroup("IGNORE_TARGET b2285",
 			tc("Create some records",
 				cname("foo", "redact1.acm-validations.aws."),
@@ -1881,7 +1881,7 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 		),
 
-		// https://github.com/StackExchange/dnscontrol/issues/2822
+		// https://github.com/DNSControl/dnscontrol/issues/2822
 		// Don't send empty updates.
 		// A carefully constructed IGNORE() can ignore all the
 		// changes. This resulted in the deSEC provider generating an
@@ -1909,7 +1909,7 @@ func makeTests() []*TestGroup {
 			).ExpectNoChanges(),
 		),
 
-		// https://github.com/StackExchange/dnscontrol/issues/3227
+		// https://github.com/DNSControl/dnscontrol/issues/3227
 		testgroup("IGNORE w/change b3227",
 			not("NAMECHEAP"), // Will fail until converted to use diff2 module.
 			tc("Create some records",

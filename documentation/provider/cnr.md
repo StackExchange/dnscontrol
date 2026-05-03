@@ -83,7 +83,7 @@ var DSP_CNR = NewDnsProvider("CNR");
 // Set Default TTL for all RR to reflect our Backend API Default
 // If you use additional DNS Providers, configure a default TTL
 // per domain using the domain modifier DefaultTTL instead.
-// also check this issue for [NAMESERVER TTL](https://github.com/StackExchange/dnscontrol/issues/176).
+// also check this issue for [NAMESERVER TTL](https://github.com/DNSControl/dnscontrol/issues/176).
 DEFAULTS(
     {"ns_ttl":"3600"},
     DefaultTTL(3600)

@@ -17,17 +17,17 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
-	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v4/pkg/notifications"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/bindserial"
+	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/nameservers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/normalize"
+	"github.com/DNSControl/dnscontrol/v4/pkg/notifications"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rfc4183"
+	"github.com/DNSControl/dnscontrol/v4/pkg/zonerecs"
 	"github.com/dustin/go-humanize"
 	"github.com/nozzle/throttler"
 	"github.com/urfave/cli/v3"
@@ -202,7 +202,7 @@ func prun(args PPreviewArgs, push bool, interactive bool, out printer.CLI, repor
 	fullMode := args.Full
 
 	if pobsoleteDiff2FlagUsed {
-		printer.Println("WARNING: Please remove obsolete --diff2 flag. This will be an error in v5 or later. See https://github.com/StackExchange/dnscontrol/issues/2262")
+		printer.Println("WARNING: Please remove obsolete --diff2 flag. This will be an error in v5 or later. See https://github.com/DNSControl/dnscontrol/issues/2262")
 	}
 
 	out.PrintfIf(fullMode, "Reading dnsconfig.js or equiv.\n")

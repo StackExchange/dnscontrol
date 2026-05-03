@@ -221,4 +221,4 @@ dnscontrol-push:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"'
 ```
 
-If you are unexpectedly unable to set up this setup, feel free to [ask questions](https://github.com/StackExchange/dnscontrol/issues/new) about it.
+If you are unexpectedly unable to set up this setup, feel free to [ask questions](https://github.com/DNSControl/dnscontrol/issues/new) about it.

@@ -2,18 +2,18 @@
 
 ## Where are the docs?
 
-TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
+TL;DR version: [`docs`](https://github.com/DNSControl/dnscontrol/tree/main/docs) is the [marketing website](https://dnscontrol.org). [`documentation`](https://github.com/DNSControl/dnscontrol/tree/main/documentation) is the [docs.dnscontrol.org](https://docs.dnscontrol.org/) website. (Yes, the names are backwards!)
 
 **The two websites**
 
 1. <https://dnscontrol.org/>
    * The main website
-   * Source code: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/docs)
+   * Source code: [`docs`](https://github.com/DNSControl/dnscontrol/tree/main/docs)
    * Mostly "marketing" for the project.
    * Rarely changes.  Updated via GitHub "pages" feature.
 2. <https://docs.dnscontrol.org/>
    * Project documentation
-   * Source code: [`documentation`](https://github.com/StackExchange/dnscontrol/tree/main/documentation)
+   * Source code: [`documentation`](https://github.com/DNSControl/dnscontrol/tree/main/documentation)
    * Users and developer documentation
    * Changes frequently.  Updated via [GitBook](https://www.gitbook.com/)
 
@@ -21,10 +21,10 @@ TL;DR version: [`docs`](https://github.com/StackExchange/dnscontrol/tree/main/do
 
 Within the git repo, docs are grouped:
 
-* [`documentation/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation): general docs
-* [`documentation/provider/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/provider/): One file per provider
-* [`documentation/language-reference/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/language-reference/): One file per `dnsconfig.js` language feature
-* [`documentation/assets/FOO/`](https://github.com/StackExchange/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
+* [`documentation/`](https://github.com/DNSControl/dnscontrol/tree/main/documentation): general docs
+* [`documentation/provider/`](https://github.com/DNSControl/dnscontrol/tree/main/documentation/provider/): One file per provider
+* [`documentation/language-reference/`](https://github.com/DNSControl/dnscontrol/tree/main/documentation/language-reference/): One file per `dnsconfig.js` language feature
+* [`documentation/assets/FOO/`](https://github.com/DNSControl/dnscontrol/tree/main/documentation/assets/): Images for page FOO(PNGs only, please!)
 
 ## How to add a new page?
 

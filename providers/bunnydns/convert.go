@@ -7,7 +7,7 @@ import (
 
 	"slices"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/models"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 

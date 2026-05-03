@@ -41,13 +41,13 @@ git push origin HEAD --tags
 ```
 
 Soon after
-GitHub will start an [Action](https://github.com/StackExchange/dnscontrol/actions) Workflow called "draft release" which will build all release binaries and write the draft release notes.
+GitHub will start an [Action](https://github.com/DNSControl/dnscontrol/actions) Workflow called "draft release" which will build all release binaries and write the draft release notes.
 
 ## Step 3. Create the release notes
 
 The draft release notes are created for you. In this step you'll edit them.
 
-The GHA workflow uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/StackExchange/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
+The GHA workflow uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/DNSControl/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
 These notes are just a draft and needs considerable editing.
 These release notes are used elsewhere, in particular the email step.
 
@@ -59,7 +59,7 @@ Release notes style guide:
 * Items related to a specific provider should begin with the all-caps name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
 * The `Deprecation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
 
-See [https://github.com/StackExchange/dnscontrol/releases](https://github.com/StackExchange/dnscontrol/releases) for examples for recent release notes and copy that style.
+See [https://github.com/DNSControl/dnscontrol/releases](https://github.com/DNSControl/dnscontrol/releases) for examples for recent release notes and copy that style.
 
 ## Step 4. Announce it via email
 
@@ -69,7 +69,7 @@ Email the release notes to the mailing list: (note the format of the Subject lin
 To: dnscontrol-discuss@googlegroups.com
 Subject: New release: dnscontrol v$VERSION
 
-https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
+https://github.com/DNSControl/dnscontrol/releases/tag/v$VERSION
 
 [insert the release notes here]
 ```
@@ -95,7 +95,7 @@ were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v3@github.com/StackExchange/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v3 *)
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v3@github.com/DNSControl/dnscontrol/v4@g' go.* $(fgrep -lri --include '*.go' github.com/DNSControl/dnscontrol/v3 *)
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
@@ -113,24 +113,24 @@ GHA is configured to run an integration test for any provider listed in the "pro
 * A: In `.github/workflows/pr_test.yml`: (1) the "PROVIDERS" list, (2) the `integrtests-diff2` section.
 
 * Q: Where are non-secret environment variables stored?
-* A: GHA calls them "Variables". Update them here: https://github.com/StackExchange/dnscontrol/settings/variables/actions
+* A: GHA calls them "Variables". Update them here: https://github.com/DNSControl/dnscontrol/settings/variables/actions
 
 * Q: Where are SECRET environment variables stored?
-* A: GHA calls them "Secrets". Update them here: https://github.com/StackExchange/dnscontrol/settings/secrets/actions
+* A: GHA calls them "Secrets". Update them here: https://github.com/DNSControl/dnscontrol/settings/secrets/actions
 
 ### How do I add a single new integration test?
 
 1. Edit `.github/workflows/pr_test.yml`
 2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
-3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/StackExchange/dnscontrol/settings/variables/actions
+3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/DNSControl/dnscontrol/settings/variables/actions
 4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section.
-Set them in GHA via https://github.com/StackExchange/dnscontrol/settings/secrets/actions
+Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/actions
 
 ### How do I add a "bring your own keys" integration test?
 
 Overview: You will fork the repo and add any secrets to your fork.  For security reasons you won't have access to the secrets from the main repository.
 
-1. [Fork StackExchange/dnscontrol](https://github.com/StackExchange/dnscontrol/fork) in GitHub.
+1. [Fork StackExchange/dnscontrol](https://github.com/DNSControl/dnscontrol/fork) in GitHub.
 
     If you already have a fork, be sure to use the "sync fork" button on the main page to sync with the upstream.
 

@@ -1,4 +1,4 @@
-module github.com/StackExchange/dnscontrol/v4
+module github.com/DNSControl/dnscontrol/v4
 
 go 1.25.0
 

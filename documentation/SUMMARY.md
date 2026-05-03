@@ -230,4 +230,4 @@
 
 * [How to build and ship a release](release/release-engineering.md)
 * [Changelog v3.16.0](release/v316.md)
-* [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+* [GitHub releases](https://github.com/DNSControl/dnscontrol/releases/latest)

@@ -28,7 +28,7 @@ docker run --rm -it -v "$(pwd):/dns"  ghcr.io/dnscontrol/dnscontrol preview
 
 ### Binaries
 
-Download binaries from [GitHub](https://github.com/StackExchange/dnscontrol/releases/latest) for Linux (binary, tar, RPM, DEB), FreeBSD (tar), Windows (exec, ZIP) for 32-bit, 64-bit, and ARM.
+Download binaries from [GitHub](https://github.com/DNSControl/dnscontrol/releases/latest) for Linux (binary, tar, RPM, DEB), FreeBSD (tar), Windows (exec, ZIP) for 32-bit, 64-bit, and ARM.
 
 ### Source
 
@@ -40,16 +40,16 @@ install `dnscontrol` in your `$GOBIN` directory.
 To install, simply run
 
 ```shell
-go install github.com/StackExchange/dnscontrol/v4@latest
+go install github.com/DNSControl/dnscontrol/v4@latest
 ```
 
 To download the source
 
 ```shell
-git clone https://github.com/StackExchange/dnscontrol
+git clone https://github.com/DNSControl/dnscontrol
 ```
 
-If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
+If these don't work, more info is in [#805](https://github.com/DNSControl/dnscontrol/issues/805).
 
 ## 1.1. Shell Completion
 
@@ -86,7 +86,7 @@ use BIND for DNS service, it is useful for testing.
 domains, and so on.
 
 Start your `dnsconfig.js` file by downloading
-[dnsconfig.js](https://github.com/StackExchange/dnscontrol/blob/main/documentation/assets/getting-started/dnsconfig.js)
+[dnsconfig.js](https://github.com/DNSControl/dnscontrol/blob/main/documentation/assets/getting-started/dnsconfig.js)
 and renaming it.
 
 The file looks like:
@@ -152,7 +152,7 @@ It is only needed if any providers require credentials (API keys,
 usernames, passwords, etc.).
 
 Start your `creds.json` file by downloading
-[creds.json](https://github.com/StackExchange/dnscontrol/blob/main/documentation/assets/getting-started/creds.json)
+[creds.json](https://github.com/DNSControl/dnscontrol/blob/main/documentation/assets/getting-started/creds.json)
 and renaming it.
 
 The file looks like:
@@ -339,7 +339,7 @@ Now you can make changes to the domain(s)  and run `dnscontrol preview`
 
 {% hint style="warn" %}
 **get-zones is not perfect** It is intended to be "a decent first draft", only
-requiring minimal editing. Please submit a [bug report](https://github.com/StackExchange/dnscontrol/issues/new?template=bug_report.md) if you have suggestions
+requiring minimal editing. Please submit a [bug report](https://github.com/DNSControl/dnscontrol/issues/new?template=bug_report.md) if you have suggestions
 on how it can be improved.
 {% endhint %}
 
@@ -350,5 +350,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like [GitLab](../advanced-features/ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
-* Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).
+* Use a CI/CD tool like [GitLab](../advanced-features/ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/DNSControl/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Join the DNSControl community. File [issues](https://github.com/DNSControl/dnscontrol/issues) and [PRs](https://github.com/DNSControl/dnscontrol/pulls).

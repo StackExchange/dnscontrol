@@ -149,7 +149,7 @@ know for sure because code can't guess intention.
 Therefore we print a warning if a label has an underscore in it,
 unless the rtype is SRV, TLSA, TXT, or if the name starts with
 certain prefixes such as `_dmarc`.  We're always willing to
-[add more exceptions](https://github.com/StackExchange/dnscontrol/pull/453/files).
+[add more exceptions](https://github.com/DNSControl/dnscontrol/pull/453/files).
 
 # Opinion #8: TXT Records are one long string
 

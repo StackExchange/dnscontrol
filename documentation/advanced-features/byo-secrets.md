@@ -33,7 +33,7 @@ actually what's happening.
 Actually what happens is the secrets come from the forked repo.  Or,
 more precisely, the secrets offered to a PR come from the repo that the
 PR came from.  A PR from DNSControl's owners gets secrets from
-[github.com/StackExchange/dnscontrol's secret store](https://github.com/StackExchange/dnscontrol/settings/secrets/actions)
+[github.com/DNSControl/dnscontrol's secret store](https://github.com/DNSControl/dnscontrol/settings/secrets/actions)
 but a PR from a fork, such as
 [https://github.com/TomOnTime/dnscontrol](https://github.com/TomOnTime/dnscontrol)
 gets its secrets from TomOnTime's secrets.
@@ -120,13 +120,13 @@ The `*_DOMAIN` variable is stored as a "variable" while the others are stored as
 2. On the "Variables" tab, add `*_DOMAIN` with the name of a test domain. This domain must already exist in the account. The DNS records of the domain will be deleted, so please use a test domain or other disposable domain.
 
 {% hint style="info" %}
-For the main project, **variables** are added here: [https://github.com/StackExchange/dnscontrol/settings/variables/actions](https://github.com/StackExchange/dnscontrol/settings/variables/actions)
+For the main project, **variables** are added here: [https://github.com/DNSControl/dnscontrol/settings/variables/actions](https://github.com/DNSControl/dnscontrol/settings/variables/actions)
 {% endhint %}
 
 3. On the "Secrets" tab, add the other env variables.
 
 {% hint style="info" %}
-For the main project, **secrets** are added here: [https://github.com/StackExchange/dnscontrol/settings/secrets/actions](https://github.com/StackExchange/dnscontrol/settings/secrets/actions)
+For the main project, **secrets** are added here: [https://github.com/DNSControl/dnscontrol/settings/secrets/actions](https://github.com/DNSControl/dnscontrol/settings/secrets/actions)
 {% endhint %}
 
 If you have forked the project, add these to the settings of that fork.

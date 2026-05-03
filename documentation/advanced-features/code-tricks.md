@@ -22,7 +22,7 @@ END);
 ```
 {% endcode %}
 
-As of [DNSControl v4.15.0](https://github.com/StackExchange/dnscontrol/releases/tag/v4.15.0), the `END` statements are no longer necessary.
+As of [DNSControl v4.15.0](https://github.com/DNSControl/dnscontrol/releases/tag/v4.15.0), the `END` statements are no longer necessary.
 These were originally included for historical reasons that are now irrelevant. You can safely remove them from your configurations.
 
 # Repeat records in many domains (macros)

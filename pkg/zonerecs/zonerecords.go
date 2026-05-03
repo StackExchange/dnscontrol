@@ -1,8 +1,8 @@
 package zonerecs
 
 import (
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
 )
 
 // CorrectZoneRecords calls both GetZoneRecords, does any

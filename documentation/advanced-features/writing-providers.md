@@ -2,7 +2,7 @@
 
 Writing a new DNS provider is a relatively straightforward process.
 You essentially need to implement the
-[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#DNSServiceProvider)
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v4/pkg/providers#DNSServiceProvider)
 and the system takes care of the rest.
 
 Please do note that if you submit a new provider you will be
@@ -122,7 +122,7 @@ Directory names should be consistent.  It should be all lowercase and match the 
 ## Step 4: Activate the driver
 
 Edit
-[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/main/pkg/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/DNSControl/dnscontrol/blob/main/pkg/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
@@ -130,7 +130,7 @@ Add the provider list so DNSControl knows it exists.
 **If you are implementing a DNS Service Provider:**
 
 Implement all the calls in the
-[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#DNSServiceProvider).
+[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v4/pkg/providers#DNSServiceProvider).
 
 The function `GetDomainCorrections()` is a bit interesting. It returns
 a list of corrections to be made. These are in the form of functions
@@ -139,7 +139,7 @@ that DNSControl can call to actually make the corrections.
 **If you are implementing a DNS Registrar:**
 
 Implement all the calls in the
-[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v4/pkg/providers#Registrar).
+[providers.Registrar interface](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v4/pkg/providers#Registrar).
 
 The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
@@ -163,7 +163,7 @@ Integration tests use a test account and a test domain.
 All records will be deleted from the test domain!  Use a OTE domain or a real domain that isn't otherwise in use and can be destroyed.
 {% endhint %}
 
-* Edit [integrationTest/profiles.json](https://github.com/StackExchange/dnscontrol/blob/main/integrationTest/profiles.json):
+* Edit [integrationTest/profiles.json](https://github.com/DNSControl/dnscontrol/blob/main/integrationTest/profiles.json):
   * Add the `creds.json` info required for this provider in the form of environment variables.
 
 Now you can run the integration tests.
@@ -201,7 +201,7 @@ Some useful `go test` flags:
   * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
   * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
   * Example:  `go test -timeout 20m -v -verbose -profile CLOUDFLAREAPI`
-* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
+* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/DNSControl/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
 
 ## Step 8: Manual tests
 

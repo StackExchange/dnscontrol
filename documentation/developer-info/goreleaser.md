@@ -16,13 +16,13 @@ GoReleaser needs a GitHub Personal Access Token to push the Homebrew Cask formul
 | **Action needed before** | ~January 18, 2027 |
 
 **Links:**
-- [GitHub Issue (tracking): Rotate Homebrew TAP GitHub PAT before Feb 6, 2027](https://github.com/StackExchange/dnscontrol/issues/4071)
-- [Secret setting](https://github.com/StackExchange/dnscontrol/settings/secrets/actions/HOMEBREW_TAP_GITHUB_TOKEN)
+- [GitHub Issue (tracking): Rotate Homebrew TAP GitHub PAT before Feb 6, 2027](https://github.com/DNSControl/dnscontrol/issues/4071)
+- [Secret setting](https://github.com/DNSControl/dnscontrol/settings/secrets/actions/HOMEBREW_TAP_GITHUB_TOKEN)
 
 #### Rotation procedure
 
 1. Generate a new PAT with the same scopes (`repo` on `StackExchange` org)
-2. Update the repository secret [`HOMEBREW_TAP_GITHUB_TOKEN`](https://github.com/StackExchange/dnscontrol/settings/secrets/actions/HOMEBREW_TAP_GITHUB_TOKEN)
+2. Update the repository secret [`HOMEBREW_TAP_GITHUB_TOKEN`](https://github.com/DNSControl/dnscontrol/settings/secrets/actions/HOMEBREW_TAP_GITHUB_TOKEN)
 3. Verify that the next GoReleaser release successfully updates the Homebrew tap
 4. Create a new tracking issue for the next rotation cycle
 

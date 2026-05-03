@@ -181,7 +181,7 @@ delegation set.  Note that you you only want the portion of the `Id` after the `
 
 This code may not function properly if a domain has R53 as a Registrar
 but not as a DnsProvider.  The situation is described in
-[PR#155](https://github.com/StackExchange/dnscontrol/pull/155).
+[PR#155](https://github.com/DNSControl/dnscontrol/pull/155).
 
 In this situation you will see a message like: (This output assumes the `--full` flag)
 
@@ -223,7 +223,7 @@ executes and the others do not.  Once all such records are replaced
 this problem disappears.
 {% endhint %}
 
-More info is available in [#891](https://github.com/StackExchange/dnscontrol/issues/891).
+More info is available in [#891](https://github.com/DNSControl/dnscontrol/issues/891).
 
 
 ## Error messages

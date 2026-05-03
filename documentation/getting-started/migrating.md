@@ -94,7 +94,7 @@ kind of cleanups you want.  In fact, they should be easier to do
 now that you are using DNSControl!
 
 If `dnscontrol get-zones` could have done a better job, please
-[let us know](https://github.com/StackExchange/dnscontrol/issues)!
+[let us know](https://github.com/DNSControl/dnscontrol/issues)!
 
 ## Example workflow
 

@@ -48,12 +48,12 @@ Add these comments to the top of your `dnsconfig.js` file:
 
 That should be all you need to do!
 
-If your editor requires extra steps, please [file a bug](https://github.com/StackExchange/dnscontrol/issues) and we'll update this page.
+If your editor requires extra steps, please [file a bug](https://github.com/DNSControl/dnscontrol/issues) and we'll update this page.
 
 ### Bugs?
 
 {% hint style="warning" %}
-**BUGS**: Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/StackExchange/dnscontrol/issues
+**BUGS**: Not all features of DNSControl work perfectly at the moment. Please report bugs and feature requests on https://github.com/DNSControl/dnscontrol/issues
 {% endhint %}
 
 {% hint style="info" %}

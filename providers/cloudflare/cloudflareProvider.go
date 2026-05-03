@@ -14,14 +14,14 @@ import (
 	"github.com/fatih/color"
 	"golang.org/x/net/idna"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/transform"
+	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
+	"github.com/DNSControl/dnscontrol/v4/pkg/zonecache"
+	"github.com/DNSControl/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
 /*
@@ -871,7 +871,7 @@ func stringDefault(value any, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 	// Check for read_only metadata
-	// https://github.com/StackExchange/dnscontrol/issues/3850
+	// https://github.com/DNSControl/dnscontrol/issues/3850
 	if cr.Meta != nil {
 		if metaMap, ok := cr.Meta.(map[string]any); ok {
 			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
@@ -885,7 +885,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		cr.Type = "CNAME"
 	}
 
-	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	// workaround for https://github.com/DNSControl/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
 	}

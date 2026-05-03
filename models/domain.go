@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )

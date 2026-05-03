@@ -10,7 +10,7 @@ Consult your provider docs to ensure that **both** of them support this feature.
 
 ## Source reference
 
-[The source](https://github.com/StackExchange/dnscontrol/blob/cdbd54016f93140548d846842b0d7575603069c8/providers/capabilities.go#L93)
+[The source](https://github.com/DNSControl/dnscontrol/blob/cdbd54016f93140548d846842b0d7575603069c8/providers/capabilities.go#L93)
 states that this flag
 
 >  provider allows full management of apex NS records, so we can safely dual-host with another provider
