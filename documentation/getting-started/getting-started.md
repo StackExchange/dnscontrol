@@ -129,8 +129,7 @@ Note: Do **not** store your `creds.json` file in Git unencrypted.
 That is unsafe. Add `creds.json` to your
 `.gitignore` file as a precaution.  This file should be encrypted
 using something
-like [git-crypt](https://www.agwa.name/projects/git-crypt) or
-[Blackbox](https://github.com/StackExchange/blackbox).
+like [git-crypt](https://www.agwa.name/projects/git-crypt).
 
 There are 2 types of providers:
 
