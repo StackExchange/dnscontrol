@@ -151,7 +151,7 @@ We recommend first using this without any flattening. Make sure
 flattening required to reduce the number of lookups to 10 or less.
 
 To count the number of lookups, you can use our interactive SPF
-debugger at [https://stackexchange.github.io/dnscontrol/flattener/index.html](https://stackexchange.github.io/dnscontrol/flattener/index.html)
+debugger at [https://dnscontrol.github.io/dnscontrol/flattener/index.html](https://dnscontrol.github.io/dnscontrol/flattener/index.html)
 
 # The first in a chain is special
 
@@ -259,7 +259,7 @@ In which case, it is equivalent to `include:`.
 DNSControl includes an experimental system for viewing
 SPF settings:
 
-[https://stackexchange.github.io/dnscontrol/flattener/index.html](https://stackexchange.github.io/dnscontrol/flattener/index.html)
+[https://dnscontrol.github.io/dnscontrol/flattener/index.html](https://dnscontrol.github.io/dnscontrol/flattener/index.html)
 
 You can also run this locally (it is self-contained) by opening
 `dnscontrol/docs/flattener/index.html` in your browser.
