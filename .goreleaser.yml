@@ -96,7 +96,7 @@ nfpms:
 dockers_v2:
   - images:
       - "dnscontrol/{{.ProjectName}}"
-      - "ghcr.io/dnscontrodnscontrol/{{.ProjectName}}"
+      - "ghcr.io/dnscontrol/{{.ProjectName}}"
     tags:
       - "{{ .Version }}"
       - "{{ if not .IsSnapshot }}latest{{ end }}"
@@ -183,7 +183,7 @@ release:
     You can use the Docker image from [Docker hub](https://hub.docker.com/r/dnscontrol/dnscontrol/) or [GitHub Container Registry](https://github.com/dnscontrol/dnscontrol/pkgs/container/dnscontrol).
 
     ```shell
-    docker run --rm -it -v "$(pwd):/dns" ghcr.io/dnscontrodnscontrol/dnscontrol preview
+    docker run --rm -it -v "$(pwd):/dns" ghcr.io/dnscontrol/dnscontrol preview
     ```
 
     #### Anywhere else
