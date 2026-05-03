@@ -2,11 +2,11 @@
 
 ## Homebrew Tap
 
-GoReleaser automatically publishes a Homebrew Cask to [StackExchange/homebrew-tap](https://github.com/StackExchange/homebrew-tap) on every release. This requires two components: a GitHub PAT for tap updates and macOS code signing + notarization.
+GoReleaser automatically publishes a Homebrew Cask to [DNSControl/homebrew-tap](https://github.com/DNSControl/homebrew-tap) on every release. This requires two components: a GitHub PAT for tap updates and macOS code signing + notarization.
 
 ### Homebrew TAP GitHub PAT
 
-GoReleaser needs a GitHub Personal Access Token to push the Homebrew Cask formula to the `StackExchange/homebrew-tap` repository.
+GoReleaser needs a GitHub Personal Access Token to push the Homebrew Cask formula to the `DNSControl/homebrew-tap` repository.
 
 | Item | Value |
 |------|-------|
