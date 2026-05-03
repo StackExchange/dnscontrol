@@ -101,7 +101,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 
 func init() {
 	const providerName = "BIND"
-	const providerMaintainer = "@tlimoncelli"
+	const providerMaintainer = "@TomOnTime"
 	fns := providers.DspFuncs{
 		Initializer:   initBind,
 		RecordAuditor: AuditRecords,

@@ -394,7 +394,7 @@ Providers in this category and their maintainers are:
 |Name|Maintainer|
 |---|---|
 |[`AZURE_DNS`](azuredns.md)|@vatsalyagoel|
-|[`BIND`](bind.md)|@tlimoncelli|
+|[`BIND`](bind.md)|@TomOnTime|
 |[`CLOUDFLAREAPI`](cloudflareapi.md)|@tresni|
 |[`CSCGLOBAL`](cscglobal.md)|@mikenz|
 |[`GCLOUD`](gcloud.md)|@riyadhalnur|
@@ -416,7 +416,7 @@ Expectations of maintainers:
 * Contributors are encouraged to add new tests and refine old ones. (Test-driven development is encouraged.)
 * Bugs will be referred to the maintainer or their designate.
 * Maintainers must be responsible to bug reports and PRs.  If a maintainer is unresponsive for more than 2 months, we will consider disabling the provider.  First we will put out a call for new maintainer. If nobody volunteers, the provider may be disabled.
-* Tom needs to know your real email address.  Please email tlimoncelli at stack over flow dot com so he has it.
+* Tom needs to know your real email address.  Please email tal at what exit dot org so he has it.
 
 Providers in this category and their maintainers are:
 
