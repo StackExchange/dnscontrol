@@ -6,8 +6,7 @@ This is based on API documents found at [https://kb.centralnicreseller.com/api/a
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `CNR`
-along with your CentralNic Reseller login data.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `CNR` along with your CentralNic Reseller login data.
 
 Example:
 
@@ -49,8 +48,7 @@ Here a working example for our OT&E System:
 **NOTE**: The above credentials are known to the public.
 {% endhint %}
 
-With the above CentralNic Reseller entry in `creds.json`, you can run the
-integration tests or by specifying the data per environment vars as follows:
+With the above CentralNic Reseller entry in `creds.json`, you can run the integration tests or by specifying the data per environment vars as follows:
 
 ```shell
 # Review the output.  Pick one domain and set CNR_DOMAIN.
@@ -71,9 +69,7 @@ Fetch a list of all DNSZones:
 dnscontrol get-zones --format=nameonly cnr CNR all
 ```
 
-Here's an example DNS Configuration `dnsconfig.js` using our provider module.
-Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
-You are free to decide if you want to use both of our provider technology or just one of them.
+Here's an example DNS Configuration `dnsconfig.js` using our provider module. Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that. You are free to decide if you want to use both of our provider technology or just one of them.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -105,15 +101,12 @@ This provider does not recognize any special metadata fields unique to CentralNi
 
 ## get-zones
 
-`dnscontrol get-zones` is implemented for this provider. The list
-includes both basic and premier zones.
+`dnscontrol get-zones` is implemented for this provider. The list includes both basic and premier zones.
 
 ## New domains
 
-If a dnszone does not exist in your CNR account, DNSControl will *not* automatically add it with the `dnscontrol push` or `dnscontrol preview` command. You'll need to do that via the control panel manually or using the command `dnscontrol create-domains`.
-This is because it could lead to unwanted costs on customer-side that we want to avoid.
+If a dnszone does not exist in your CNR account, DNSControl will *not* automatically add it with the `dnscontrol push` or `dnscontrol preview` command. You'll need to do that via the control panel manually or using the command `dnscontrol create-domains`. This is because it could lead to unwanted costs on customer-side that we want to avoid.
 
 ## Debug Mode
 
-As shown in the configuration examples above, this can be activated on demand and it can be used to check the API commands send to our system.
-In general this is thought for our purpose to have an easy way to dive into issues. But if you're interested what's going on, feel free to activate it.
+As shown in the configuration examples above, this can be activated on demand and it can be used to check the API commands send to our system. In general this is thought for our purpose to have an easy way to dive into issues. But if you're interested what's going on, feel free to activate it.

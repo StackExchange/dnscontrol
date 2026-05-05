@@ -4,8 +4,7 @@ These are the instructions for producing a release.
 
 GitHub Actions (GHA) will do most of the work for you. You will need to edit the draft release notes and click a button to make the release public.
 
-Please change the version number as appropriate.  Substitute (for example)
-`v4.2.0` any place you see `$VERSION` in this doc.
+Please change the version number as appropriate.  Substitute (for example) `v4.2.0` any place you see `$VERSION` in this doc.
 
 ## Step 0. Update dependencies
 
@@ -40,16 +39,13 @@ git tag -m "Release $VERSION" -a $VERSION
 git push origin HEAD --tags
 ```
 
-Soon after
-GitHub will start an [Action](https://github.com/DNSControl/dnscontrol/actions) Workflow called "draft release" which will build all release binaries and write the draft release notes.
+Soon after GitHub will start an [Action](https://github.com/DNSControl/dnscontrol/actions) Workflow called "draft release" which will build all release binaries and write the draft release notes.
 
 ## Step 3. Create the release notes
 
 The draft release notes are created for you. In this step you'll edit them.
 
-The GHA workflow uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/DNSControl/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
-These notes are just a draft and needs considerable editing.
-These release notes are used elsewhere, in particular the email step.
+The GHA workflow uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/DNSControl/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag. These notes are just a draft and needs considerable editing. These release notes are used elsewhere, in particular the email step.
 
 Release notes style guide:
 
@@ -89,9 +85,7 @@ If you are at Stack Overflow:
 
 ## Tip: How to bump the major version
 
-If you bump the major version, you need to change all the source
-files.  The last time this was done (v3 -> v4) these two commands
-were used. They're included her for reference.
+If you bump the major version, you need to change all the source files.  The last time this was done (v3 -> v4) these two commands were used. They're included her for reference.
 
 ```shell
 #  Make all the changes:
@@ -123,8 +117,7 @@ GHA is configured to run an integration test for any provider listed in the "pro
 1. Edit `.github/workflows/pr_test.yml`
 2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
 3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/DNSControl/dnscontrol/settings/variables/actions
-4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section.
-Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/actions
+4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section. Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/actions
 
 ### How do I add a "bring your own keys" integration test?
 
@@ -139,7 +132,6 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 3. In your fork, set any secrets in GHA via Settings :: Secrets and variables :: Actions :: Secrets.
 
 5. Start a build
-
 
 ## Tip: How to rebuild flattener
 

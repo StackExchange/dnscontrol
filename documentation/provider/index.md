@@ -2,12 +2,9 @@
 
 ## Provider Features
 
-The table below shows various features supported, or not supported by DNSControl providers.
-This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
+The table below shows various features supported, or not supported by DNSControl providers. This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
 
-An empty space may indicate the feature is not supported by a provider, or it may simply mean
-the feature has not been investigated and implemented yet. If a feature you need is missing from
-a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
+An empty space may indicate the feature is not supported by a provider, or it may simply mean the feature has not been investigated and implemented yet. If a feature you need is missing from a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
 
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
 
@@ -402,12 +399,9 @@ Providers in this category and their maintainers are:
 
 ### Providers with "contributor support"
 
-The other providers are supported by community members, usually the
-original contributor.
+The other providers are supported by community members, usually the original contributor.
 
-Due to the large number of DNS providers in the world, the DNSControl
-team can not support and test all providers.  Test frameworks are
-provided to help community members support their code independently.
+Due to the large number of DNS providers in the world, the DNSControl team can not support and test all providers.  Test frameworks are provided to help community members support their code independently.
 
 Expectations of maintainers:
 
@@ -475,8 +469,7 @@ Providers in this category and their maintainers are:
 
 ### Requested providers
 
-We have received requests for the following providers. If you would like to contribute
-code to support this provider, we'd be glad to help in any way.
+We have received requests for the following providers. If you would like to contribute code to support this provider, we'd be glad to help in any way.
 
 *(The list below is sorted alphabetically.)*
 
@@ -504,18 +497,10 @@ code to support this provider, we'd be glad to help in any way.
 
 #### Q: Why are the above GitHub issues marked "closed"?
 
-A: Following [provider requests](../developer-info/provider-request.md), the request
-is closed once it is added to this list. If someone chooses to implement the
-provider, they re-open the issue.
+A: Following [provider requests](../developer-info/provider-request.md), the request is closed once it is added to this list. If someone chooses to implement the provider, they re-open the issue.
 
 #### Q: Would someone write a provider for me?
 
-A: The maintainer of DNSControl does not write new providers.  New providers
-are contributed by the community.
+A: The maintainer of DNSControl does not write new providers.  New providers are contributed by the community.
 
-DNSControl tries to make writing a provider as easy as possible.  DNSControl
-does most of the work for you, you only have to write code to authenticate,
-download DNS records, and perform create/modify/delete operations on those
-records. Please read the directions for [Writing new DNS
-providers](../advanced-features/writing-providers.md).  The DNS maintainers will gladly
-coach you through the process.
+DNSControl tries to make writing a provider as easy as possible.  DNSControl does most of the work for you, you only have to write code to authenticate, download DNS records, and perform create/modify/delete operations on those records. Please read the directions for [Writing new DNS providers](../advanced-features/writing-providers.md).  The DNS maintainers will gladly coach you through the process.

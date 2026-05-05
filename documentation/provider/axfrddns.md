@@ -1,12 +1,6 @@
-This provider uses the native DNS protocols. It uses the AXFR (RFC5936,
-Zone Transfer Protocol) protocol to retrieve existing records and uses DDNS
-(RFC2136, Dynamic Update) to make updates. It can use both TSIG (RFC2845) and
-IP-based authentication (ACLs).
+This provider uses the native DNS protocols. It uses the AXFR (RFC5936, Zone Transfer Protocol) protocol to retrieve existing records and uses DDNS (RFC2136, Dynamic Update) to make updates. It can use both TSIG (RFC2845) and IP-based authentication (ACLs).
 
-It can work with any standards-compliant
-authoritative DNS server. It has been tested with
-[BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
-and [Yadifa](https://yadifa.eu/home.html).
+It can work with any standards-compliant authoritative DNS server. It has been tested with [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/), and [Yadifa](https://yadifa.eu/home.html).
 
 ## Configuration
 
@@ -16,16 +10,14 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`
 
 Zone transfers and DDNS updates default to TCP when using this provider.
 
-The following two parameters in `creds.json` allow switching
-to TCP or TCP over TLS.
+The following two parameters in `creds.json` allow switching to TCP or TCP over TLS.
 
 * `update-mode`: May contain `tcp` (the default), `udp`, or `tcp-tls`.
 * `transfer-mode`: May contain `tcp` (the default), or `tcp-tls`.
 
 ### Authentication
 
-Authentication information is included in the `creds.json` entry for
-the provider:
+Authentication information is included in the `creds.json` entry for the provider:
 
 * `transfer-key`: If this exists, the value is used to authenticate AXFR transfers.
 * `update-key`: If this exists, the value is used to authenticate DDNS updates.
@@ -44,13 +36,9 @@ For instance, your `creds.json` might look like:
 ```
 {% endcode %}
 
-If either key is missing, DNSControl defaults to IP-based ACL
-authentication for that function. Including both keys is the most
-secure option. Omitting both keys defaults to IP-based ACLs for all
-operations, which is the least secure option.
+If either key is missing, DNSControl defaults to IP-based ACL authentication for that function. Including both keys is the most secure option. Omitting both keys defaults to IP-based ACLs for all operations, which is the least secure option.
 
-If distinct zones require distinct keys, you will need to instantiate the
-provider once for each key:
+If distinct zones require distinct keys, you will need to instantiate the provider once for each key:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -80,12 +68,9 @@ And update `creds.json` accordingly:
 
 ### Default nameservers
 
-The AXFR+DDNS provider can be configured with a list of default
-nameservers. They will be added to all the zones handled by the
-provider.
+The AXFR+DDNS provider can be configured with a list of default nameservers. They will be added to all the zones handled by the provider.
 
-This list can be provided either as metadata or in `creds.json`. Only
-the later allows `get-zones` to work properly.
+This list can be provided either as metadata or in `creds.json`. Only the later allows `get-zones` to work properly.
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -114,14 +99,7 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
 
 ### Primary master
 
-By default, the AXFR+DDNS provider will send the AXFR requests and the
-DDNS updates to the first nameserver of the zone, usually known as the
-"primary master". Typically, this is the first of the default
-nameservers. Though, on some networks, the primary master is a private
-node, hidden behind slaves, and it does not appear in the `NS` records
-of the zone. In that case, the IP or the name of the primary server
-must be provided in `creds.json`. With this option, a non-standard
-port might be used.
+By default, the AXFR+DDNS provider will send the AXFR requests and the DDNS updates to the first nameserver of the zone, usually known as the "primary master". Typically, this is the first of the default nameservers. Though, on some networks, the primary master is a private node, hidden behind slaves, and it does not appear in the `NS` records of the zone. In that case, the IP or the name of the primary server must be provided in `creds.json`. With this option, a non-standard port might be used.
 
 {% code title="creds.json" %}
 ```json
@@ -134,9 +112,7 @@ port might be used.
 ```
 {% endcode %}
 
-When no nameserver appears in the zone, and no default nameservers nor
-custom master are configured, the AXFR+DDNS provider will fail with
-the following error message:
+When no nameserver appears in the zone, and no default nameservers nor custom master are configured, the AXFR+DDNS provider will fail with the following error message:
 
 ```text
 [Error] AXFRDDNS: the nameservers list cannot be empty.
@@ -145,10 +121,7 @@ Please consider adding default `nameservers` or an explicit `master` in `creds.j
 
 ### Transfer/AXFR server
 
-As mentioned above, the AXFR+DDNS provider will send AXFR requests to the
-primary master for the zone. On some networks, AXFR requests are handled
-by a different server than DDNS requests. Use the `transfer-server` option in
-`creds.json`. If not specified, it falls back to the primary master.
+As mentioned above, the AXFR+DDNS provider will send AXFR requests to the primary master for the zone. On some networks, AXFR requests are handled by a different server than DDNS requests. Use the `transfer-server` option in `creds.json`. If not specified, it falls back to the primary master.
 
 {% code title="creds.json" %}
 ```json
@@ -163,8 +136,7 @@ by a different server than DDNS requests. Use the `transfer-server` option in
 
 ### Example: local testing
 
-When testing `dnscontrol` against a local nameserver, you might use
-the following minimal configuration:
+When testing `dnscontrol` against a local nameserver, you might use the following minimal configuration:
 
 {% code title="creds.json" %}
 ```json
@@ -192,14 +164,11 @@ D("example.com", REG_NONE, DnsProvider(DNS),
 ```
 {% endcode %}
 
-
 ## Server configuration examples
 
 ### Bind9
 
-This is a sample `named.conf` example for an authoritative server hosting the
-zone `example.com`. It uses a simple IP-based ACL for the AXFR
-transfer and a conjunction of TSIG and IP-based ACL for the updates.
+This is a sample `named.conf` example for an authoritative server hosting the zone `example.com`. It uses a simple IP-based ACL for the AXFR transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
 {% code title="named.conf" %}
 ```text
@@ -249,12 +218,9 @@ key update-key-id {
 
 ## FYI: get-zones
 
-When using `get-zones`, a custom master or a list of default
-nameservers should be configured in `creds.json`.
+When using `get-zones`, a custom master or a list of default nameservers should be configured in `creds.json`.
 
-The AXFR+DDNS provider does not display DNSSEC records. But, if any
-DNSSEC records are found in the zone, it will replace all of them with
-a single placeholder record:
+The AXFR+DDNS provider does not display DNSSEC records. But, if any DNSSEC records are found in the zone, it will replace all of them with a single placeholder record:
 
 ```text
     __dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
