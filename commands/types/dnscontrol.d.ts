@@ -1226,30 +1226,15 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
 declare function DS(name: string, keytag: number, algorithm: number, digesttype: number, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `D_EXTEND` adds records (and metadata) to a domain previously defined
- * by [`D()`](D.md). It can also be used to add subdomain records (and metadata)
- * to a previously defined domain.
+ * `D_EXTEND` adds records (and metadata) to a domain previously defined by [`D()`](D.md). It can also be used to add subdomain records (and metadata) to a previously defined domain.
  *
- * The first argument is a domain name. If it exactly matches a
- * previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md),
- * simply adding records as if they had been specified in the original
- * [`D()`](D.md).
+ * The first argument is a domain name. If it exactly matches a previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md), simply adding records as if they had been specified in the original [`D()`](D.md).
  *
- * If the domain name does not match an existing domain, but could be a
- * (non-delegated) subdomain of an existing domain, the new records (and
- * metadata) are added with the subdomain part appended to all record
- * names (labels), and targets (as appropriate). See the examples below.
+ * If the domain name does not match an existing domain, but could be a (non-delegated) subdomain of an existing domain, the new records (and metadata) are added with the subdomain part appended to all record names (labels), and targets (as appropriate). See the examples below.
  *
- * Matching the domain name to previously-defined domains is done using a
- * `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
- * defined as separate domains via separate [`D()`](D.md) statements, then
- * `D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`,
- * not `domain.tld`.
+ * Matching the domain name to previously-defined domains is done using a `longest match` algorithm. If `domain.tld` and `sub.domain.tld` are defined as separate domains via separate [`D()`](D.md) statements, then `D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`, not `domain.tld`.
  *
- * Some operators only act on an apex domain (e.g.
- * [`CF_SINGLE_REDIRECT`](../domain-modifiers/CF_SINGLE_REDIRECT.md),
- * [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md), and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them
- * in a `D_EXTEND` subdomain may not be what you expect.
+ * Some operators only act on an apex domain (e.g. [`CF_SINGLE_REDIRECT`](../domain-modifiers/CF_SINGLE_REDIRECT.md), [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md), and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them in a `D_EXTEND` subdomain may not be what you expect.
  *
  * ```javascript
  * D("domain.tld", REG_MY_PROVIDER, DnsProvider(DNS),
@@ -1296,14 +1281,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
  * ```
  *
- * ProTips: `D_EXTEND()` permits you to create very complex and
- * sophisticated configurations, but you shouldn't. Be nice to the next
- * person that edits the file, who may not be as expert as yourself.
- * Enhance readability by putting any `D_EXTEND()` statements immediately
- * after the original [`D()`](D.md), like in above example.  Avoid the temptation
- * to obscure the addition of records to existing domains with randomly
- * placed `D_EXTEND()` statements. Don't build up a domain using loops of
- * `D_EXTEND()` statements. You'll be glad you didn't.
+ * ProTips: `D_EXTEND()` permits you to create very complex and sophisticated configurations, but you shouldn't. Be nice to the next person that edits the file, who may not be as expert as yourself. Enhance readability by putting any `D_EXTEND()` statements immediately after the original [`D()`](D.md), like in above example. Avoid the temptation to obscure the addition of records to existing domains with randomly placed `D_EXTEND()` statements. Don't build up a domain using loops of `D_EXTEND()` statements. You'll be glad you didn't.
  *
  * @see https://docs.dnscontrol.org/language-reference/top-level-functions/d_extend
  */
@@ -2583,15 +2561,11 @@ declare function MIKROTIK_NXDOMAIN(name: string, ...modifiers: RecordModifier[])
 declare function MX(name: string, priority: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * `NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone.
- * For some registrars this will also add NS records to the zone itself.
+ * `NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone. For some registrars this will also add NS records to the zone itself.
  *
- * This takes exactly one argument: the name of the nameserver. It must end with
- * a "." if it is a FQDN, just like all targets.
+ * This takes exactly one argument: the name of the nameserver. It must end with a "." if it is a FQDN, just like all targets.
  *
- * This is different than the [`NS()`](NS.md) function, which inserts NS records
- * in the current zone and accepts a label. [`NS()`](NS.md) is for downward
- * delegations. `NAMESERVER()` is for informing upstream delegations.
+ * This is different than the [`NS()`](NS.md) function, which inserts NS records in the current zone and accepts a label. [`NS()`](NS.md) is for downward delegations. `NAMESERVER()` is for informing upstream delegations.
  *
  * For more information, refer to [this page](../../advanced-features/nameservers.md).
  *
@@ -2613,43 +2587,25 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  *
  * # The difference between NS() and NAMESERVER()
  *
- * Nameservers are one of the least
- * understood parts of DNS, so a little extra explanation is required.
+ * Nameservers are one of the least understood parts of DNS, so a little extra explanation is required.
  *
- * * [`NS()`](NS.md) adds an NS record to a zone, just like [`A()`](A.md) adds an A
- *   record to the zone. This is generally used to delegate a subzone.
+ * * [`NS()`](NS.md) adds an NS record to a zone, just like [`A()`](A.md) adds an A record to the zone. This is generally used to delegate a subzone.
  *
  * * The `NAMESERVER()` directive speaks to the Registrar about how the parent should delegate the zone.
  *
- * Since the parent zone could be completely unrelated to the current
- * zone, changes made by `NAMESERVER()` have to be done by an API call to
- * the registrar, who then figures out what to do. For example, if I
- * use `NAMESERVER()` in the zone `stackoverflow.com`, DNSControl talks to
- * the registrar who does the hard work of talking to the people that
- * control `.com`.  If the domain was `gmeet.io`, the registrar does
- * the right thing to talk to the people that control `.io`.
+ * Since the parent zone could be completely unrelated to the current zone, changes made by `NAMESERVER()` have to be done by an API call to the registrar, who then figures out what to do. For example, if I use `NAMESERVER()` in the zone `stackoverflow.com`, DNSControl talks to the registrar who does the hard work of talking to the people that control `.com`. If the domain was `gmeet.io`, the registrar does the right thing to talk to the people that control `.io`.
  *
- * (A better name might have been `PARENTNAMESERVER()` but we didn't
- * think of that at the time.)
+ * (A better name might have been `PARENTNAMESERVER()` but we didn't think of that at the time.)
  *
- * Each registrar handles delegations differently.  Most use
- * the `NAMESERVER()` targets to update the delegation, adding
- * `NS` records to the parent zone as required.
- * Some providers restrict the names to hosts they control.
- * Others may require you to add the `NS` records to the parent domain
- * manually.
+ * Each registrar handles delegations differently. Most use the `NAMESERVER()` targets to update the delegation, adding `NS` records to the parent zone as required. Some providers restrict the names to hosts they control. Others may require you to add the `NS` records to the parent domain manually.
  *
  * # How to prevent changing the parent NS records?
  *
- * If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will
- * use the API to remove all non-default nameservers.
+ * If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will use the API to remove all non-default nameservers.
  *
- * If `dnsconfig.js` has 1 or more `NAMESERVER()` commands for a domain, it
- * will use the API to add those nameservers (unless, of course,
- * they already exist).
+ * If `dnsconfig.js` has 1 or more `NAMESERVER()` commands for a domain, it will use the API to add those nameservers (unless, of course, they already exist).
  *
- * So how do you tell DNSControl not to make any changes at all?  Use the
- * special Registrar called "NONE". It makes no changes.
+ * So how do you tell DNSControl not to make any changes at all? Use the special Registrar called "NONE". It makes no changes.
  *
  * It looks like this:
  *
@@ -2888,28 +2844,17 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
 declare function NAPTR(subdomain: string, order: number, preference: number, terminalflag: string, service: string, regexp: string, target: string): DomainModifier;
 
 /**
- * `NO_PURGE` indicates that existing records should not be deleted from a domain.
- * Records will be added and updated, but not removed.
+ * `NO_PURGE` indicates that existing records should not be deleted from a domain. Records will be added and updated, but not removed.
  *
- * Suppose a domain is managed by both DNSControl and a third-party system. This
- * creates a problem because DNSControl will try to delete records inserted by the
- * other system.
+ * Suppose a domain is managed by both DNSControl and a third-party system. This creates a problem because DNSControl will try to delete records inserted by the other system.
  *
- * By setting `NO_PURGE` on a domain, this tells DNSControl not to delete the
- * records found in the domain.
+ * By setting `NO_PURGE` on a domain, this tells DNSControl not to delete the records found in the domain.
  *
  * It is similar to [`IGNORE`](IGNORE.md) but more general.
  *
- * The original reason for `NO_PURGE` was that a legacy system was adopting
- * DNSControl. Previously the domain was managed via Microsoft DNS Server's GUI.
- * ActiveDirectory was in use, so various records were being inserted behind the
- * scenes.  It was decided to use DNSControl to simply insert a few records.  The
- * `NO_PURGE` setting instructed DNSControl not to delete the existing records.
+ * The original reason for `NO_PURGE` was that a legacy system was adopting DNSControl. Previously the domain was managed via Microsoft DNS Server's GUI. ActiveDirectory was in use, so various records were being inserted behind the scenes. It was decided to use DNSControl to simply insert a few records. The `NO_PURGE` setting instructed DNSControl not to delete the existing records.
  *
- * In this example DNSControl will insert "foo.example.com" into the zone, but
- * otherwise leave the zone alone.  Changes to "foo"'s IP address will update the
- * record. Removing the A("foo", ...) record from DNSControl will leave the record
- * in place.
+ * In this example DNSControl will insert "foo.example.com" into the zone, but otherwise leave the zone alone. Changes to "foo"'s IP address will update the record. Removing the A("foo", ...) record from DNSControl will leave the record in place.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER), NO_PURGE,
@@ -2917,20 +2862,13 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  * );
  * ```
  *
- * The main caveat of `NO_PURGE` is that intentionally deleting records becomes
- * more difficult. Suppose a `NO_PURGE` zone has an record such as A("ken",
- * "1.2.3.4"). Removing the record from `dnsconfig.js` will not delete "ken" from
- * the domain. DNSControl has no way of knowing the record was deleted from the
- * file  The DNS record must be removed manually.  Users of `NO_PURGE` are prone
- * to finding themselves with an accumulation of orphaned DNS records. That's easy
- * to fix for a small zone but can be a big mess for large zones.
+ * The main caveat of `NO_PURGE` is that intentionally deleting records becomes more difficult. Suppose a `NO_PURGE` zone has an record such as A("ken", "1.2.3.4"). Removing the record from `dnsconfig.js` will not delete "ken" from the domain. DNSControl has no way of knowing the record was deleted from the file The DNS record must be removed manually. Users of `NO_PURGE` are prone to finding themselves with an accumulation of orphaned DNS records. That's easy to fix for a small zone but can be a big mess for large zones.
  *
  * ## Support
  *
  * Prior to DNSControl v4.0.0, not all providers supported `NO_PURGE`.
  *
- * With introduction of `diff2` algorithm (enabled by default in v4.0.0),
- * `NO_PURGE` works with all providers.
+ * With introduction of `diff2` algorithm (enabled by default in v4.0.0), `NO_PURGE` works with all providers.
  *
  * ## See also
  *
@@ -3988,15 +3926,11 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
 declare function TTL(ttl: Duration): RecordModifier;
 
 /**
- * `TXT` adds a [Text record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative
- * label for the record. Use `@` for the domain apex.
+ * `TXT` adds a [Text record](https://www.rfc-editor.org/rfc/rfc1035) to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
  *
- * The contents is either a single or multiple strings.  To
- * specify multiple strings, specify them as an array.
+ * The contents is either a single or multiple strings. To specify multiple strings, specify them as an array.
  *
- * Each string is a JavaScript string (quoted using single or double
- * quotes).  The (somewhat complex) quoting rules of the DNS protocol
- * will be done for you.
+ * Each string is a JavaScript string (quoted using single or double quotes). The (somewhat complex) quoting rules of the DNS protocol will be done for you.
  *
  * Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
  *
@@ -4016,74 +3950,37 @@ declare function TTL(ttl: Duration): RecordModifier;
  *
  * ### Long strings
  *
- * Strings that are longer than 255 octets (bytes) will be quietly
- * split into 255-octets chunks or the provider may report an error
- * if it does not handle multiple strings.
+ * Strings that are longer than 255 octets (bytes) will be quietly split into 255-octets chunks or the provider may report an error if it does not handle multiple strings.
  *
  * ### TXT record edge cases
  *
- * Most providers do not support the full possibilities of what a `TXT`
- * record can store.  DNSControl can not handle all the edge cases
- * and incompatibles that providers have introduced.  Instead, it
- * stores the string(s) that you provide and passes them to the provider
- * verbatim. The provider may opt to accept the data, fix it, or
- * reject it. This happens early in the processing, long before
- * the DNSControl talks to the provider's API.
+ * Most providers do not support the full possibilities of what a `TXT` record can store. DNSControl can not handle all the edge cases and incompatibles that providers have introduced. Instead, it stores the string(s) that you provide and passes them to the provider verbatim. The provider may opt to accept the data, fix it, or reject it. This happens early in the processing, long before the DNSControl talks to the provider's API.
  *
- * The RFCs specify that a `TXT` record stores one or more strings,
- * each is up to 255 octets (bytes) long. We call these individual
- * strings *chunks*.  Each chunk may be zero to 255 octets long.
- * There is no limit to the number of chunks in a `TXT` record,
- * other than IP packet length restrictions.  The contents of each chunk
- * may be octets of value from 0x00 to 0xff.
+ * The RFCs specify that a `TXT` record stores one or more strings, each is up to 255 octets (bytes) long. We call these individual strings *chunks*. Each chunk may be zero to 255 octets long. There is no limit to the number of chunks in a `TXT` record, other than IP packet length restrictions. The contents of each chunk may be octets of value from 0x00 to 0xff.
  *
- * In reality DNS Service Providers (DSPs) place many restrictions on `TXT`
- * records.
+ * In reality DNS Service Providers (DSPs) place many restrictions on `TXT` records.
  *
- * Some DSPs only support a single string of 255 octets or fewer.
- * Multiple strings, or any one string being longer than 255 octets will
- * result in an error. One provider limits the string to 254 octets,
- * which makes me think they're code has an off-by-one error.
+ * Some DSPs only support a single string of 255 octets or fewer. Multiple strings, or any one string being longer than 255 octets will result in an error. One provider limits the string to 254 octets, which makes me think they're code has an off-by-one error.
  *
- * Some DSPs only support one string, but it may be of any length.
- * Behind the scenes the provider splits it into 255-octet chunks
- * (except the last one, of course).
+ * Some DSPs only support one string, but it may be of any length. Behind the scenes the provider splits it into 255-octet chunks (except the last one, of course).
  *
- * Some DSPs support multiple strings, but API requests must be 512-bytes
- * or fewer, and with quoting, escaping, and other encoding mishegoss
- * you can't be sure what will be permitted until you actually try it.
+ * Some DSPs support multiple strings, but API requests must be 512-bytes or fewer, and with quoting, escaping, and other encoding mishegoss you can't be sure what will be permitted until you actually try it.
  *
- * Regardless of the quantity and length of strings, some providers ban
- * double quotes, back-ticks, or other chars.
+ * Regardless of the quantity and length of strings, some providers ban double quotes, back-ticks, or other chars.
  *
  * ### Testing the support of a provider
  *
  * #### How can you tell if a provider will support a particular `TXT()` record?
  *
- * Include the `TXT()` record in a [`D()`](../top-level-functions/D.md) as usual, along
- * with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
- * see if any errors are produced.  The check command does not talk to
- * the provider's API, thus permitting you to do this without having an
- * account at that provider.
+ * Include the `TXT()` record in a [`D()`](../top-level-functions/D.md) as usual, along with the `DnsProvider()` for that provider. Run `dnscontrol check` to see if any errors are produced. The check command does not talk to the provider's API, thus permitting you to do this without having an account at that provider.
  *
  * #### What if the provider rejects a string that is supported?
  *
- * Suppose I can create the TXT record using the DSP's web portal but
- * DNSControl rejects the string?
+ * Suppose I can create the TXT record using the DSP's web portal but DNSControl rejects the string?
  *
- * It is possible that the provider code in DNSControl rejects strings
- * that the DSP accepts.  This is because the test is done in code, not
- * by querying the provider's API.  It is possible that the code was
- * written to work around a bug (such as rejecting a string with a
- * back-tick) but now that bug has been fixed.
+ * It is possible that the provider code in DNSControl rejects strings that the DSP accepts. This is because the test is done in code, not by querying the provider's API. It is possible that the code was written to work around a bug (such as rejecting a string with a back-tick) but now that bug has been fixed.
  *
- * All such checks are in `providers/${providername}/auditrecords.go`.
- * You can try removing the check that you feel is in error and see if
- * the provider's API accepts the record.  You can do this by running the
- * integration tests, or by simply adding that record to an existing
- * `dnsconfig.js` and seeing if `dnscontrol push` is able to push that
- * record into production. (Be careful if you are testing this on a
- * domain used in production.)
+ * All such checks are in `providers/${providername}/auditrecords.go`. You can try removing the check that you feel is in error and see if the provider's API accepts the record. You can do this by running the integration tests, or by simply adding that record to an existing `dnsconfig.js` and seeing if `dnscontrol push` is able to push that record into production. (Be careful if you are testing this on a domain used in production.)
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/txt
  */
