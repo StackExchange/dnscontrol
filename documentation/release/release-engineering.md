@@ -79,14 +79,6 @@ https://github.com/DNSControl/dnscontrol/releases/tag/v$VERSION
 it.  [Click here to join](https://groups.google.com/g/dnscontrol-discuss).
 {% endhint %}
 
-## Step 5. Get credit
-
-Mention the fact that you did this release in your weekly accomplishments.
-
-If you are at Stack Overflow:
-
-* Add the release to your weekly snippets
-
 ## Tip: How to bump the major version
 
 If you bump the major version, you need to change all the source
