@@ -31,11 +31,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.17
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.16
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.7
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.34.21
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.35.0
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/digitalocean/godo v1.188.0
+	github.com/digitalocean/godo v1.189.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go/v8 v8.3.0
 	github.com/exoscale/egoscale v0.102.4
@@ -59,7 +59,7 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.277.0
+	google.golang.org/api v0.278.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
 )
 
@@ -76,14 +76,14 @@ require (
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/hetznercloud/hcloud-go/v2 v2.39.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.194
+	github.com/hetznercloud/hcloud-go/v2 v2.40.0
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.195
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.22
-	github.com/nicholas-fedor/shoutrrr v0.14.3
+	github.com/nicholas-fedor/shoutrrr v0.15.0
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.114.0
+	github.com/oracle/oci-go-sdk/v65 v65.114.1
 	github.com/urfave/cli/v3 v3.8.0
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
