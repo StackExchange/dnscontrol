@@ -270,8 +270,9 @@ jobs:
         run: |-
           echo "END: Using: END=$END"
           go install gotest.tools/gotestsum@latest
+          echo "DEBUG: matrix.provider=$${{ matrix.provider }}_DOMAIN"
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-            echo "DEBUG: matrix.provider=$${{ matrix.provider }}_DOMAIN"
+            echo "DEBUG: running gotestsum"
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
                 -timeout 30m -v \
                 -verbose \
@@ -283,6 +284,7 @@ jobs:
                 -end $END \
                 ./... \
                 > ${TEST_RESULTS}/gotestsum-output.txt
+                ls -lad ${TEST_RESULTS}/gotestsum-output.txt
           else
             echo "Skip test for ${{ matrix.provider }} provider"
           fi
