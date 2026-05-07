@@ -236,6 +236,7 @@ jobs:
         # For PRs we only run a smoke test (the first 3 tests) to save time.
         # For pushes to main or if the PR has the 'longtest' label, we run all tests.
         id: set_end
+        shell: bash
         run: |
           END=3
           DO_WORKERS=false
@@ -257,6 +258,7 @@ jobs:
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
+          echo END=$END
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=$DO_WORKERS -cfredirect=false -cfflatten=false -cftags=false -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
