@@ -239,29 +239,41 @@ jobs:
         shell: bash
         run: |
           END=3
+          echo "END: Default set to $END"
           DO_WORKERS=false
           # Only for PRs
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Check for 'longtest' label
             if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
               END=999
+              echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
             fi
           fi
           # Check if branch is main
           if [[ "${{ github.base_ref }}" == "main" ]]; then
             END=999
+            echo "END: Branch is main.  END=$END"
             DO_WORKERS=true
           fi
+          echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
           echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
-          echo END=$END
+          echo "END: Using: END=$END"
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=$DO_WORKERS -cfredirect=false -cfflatten=false -cftags=false -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
+                -timeout 30m -v \
+                -verbose \
+                -profile ${{ matrix.provider }} \
+                -cfworkers=$DO_WORKERS \
+                -cfredirect=false \
+                -cfflatten=false \
+                -cftags=false \
+                -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
           else
             echo "Skip test for ${{ matrix.provider }} provider"
           fi
