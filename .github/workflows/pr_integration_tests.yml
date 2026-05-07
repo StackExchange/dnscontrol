@@ -256,10 +256,10 @@ jobs:
               echo "END: Not a pull request. No change."
           fi
           # Check if branch is main
-          if [[ "${{ github.base_ref }}" == "main" ]]; then
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
-            echo "END: DEBUG: base_ref=${{ github.base_ref }}" 
-            echo "END: github.base_ref is main.  END=$END"
+            echo "END: DEBUG: ref_name=${{ github.ref_name }}" 
+            echo "END: github.ref_name is main.  END=$END"
             DO_WORKERS=true
           fi
           echo "END: Final value: END=$END"
