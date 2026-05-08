@@ -246,10 +246,8 @@ jobs:
           DO_WORKERS=false
 
           # Only for PRs
-          echo "DEBUG: ONLY FOR PRs: ${{ github.event_name }} == pull_request"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Check for 'longtest' label
-            echo "DEBUG: check label: ${{ github.event.pull_request.labels.*.name }}"
             #if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
