@@ -258,7 +258,6 @@ jobs:
           # Check if branch is main
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
-            echo "END: DEBUG: ref_name=${{ github.ref_name }}" 
             echo "END: github.ref_name is main.  END=$END"
             DO_WORKERS=true
           fi
@@ -270,9 +269,9 @@ jobs:
         run: |-
           echo "END: Using: END=$END"
           go install gotest.tools/gotestsum@latest
-          echo "DEBUG: matrix.provider=$${{ matrix.provider }}_DOMAIN"
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-            echo "DEBUG: running gotestsum"
+            # NB(tlim): THe output of gotestsum needs to go to stdout AND the
+            # gotestsum-output.txt file. That's why "tee" is used.
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
                 -timeout 30m -v \
                 -verbose \
@@ -282,9 +281,8 @@ jobs:
                 -cfflatten=false \
                 -cftags=false \
                 -end $END \
-                ./... \
-                > ${TEST_RESULTS}/gotestsum-output.txt
-                ls -lad ${TEST_RESULTS}/gotestsum-output.txt
+                ./... >&1 | \
+                tee ${TEST_RESULTS}/gotestsum-output.txt
           else
             echo "Skip test for ${{ matrix.provider }} provider"
           fi
