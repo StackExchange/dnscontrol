@@ -2,8 +2,7 @@ This is the provider for [Namecheap](https://www.namecheap.com/).
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMECHEAP`
-along with your Namecheap API username and key:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMECHEAP` along with your Namecheap API username and key:
 
 Example:
 
@@ -19,8 +18,7 @@ Example:
 ```
 {% endcode %}
 
-You can optionally specify BaseURL to use a different endpoint - typically the
-sandbox:
+You can optionally specify BaseURL to use a different endpoint - typically the sandbox:
 
 {% code title="creds.json" %}
 ```json
@@ -37,10 +35,8 @@ sandbox:
 
 if BaseURL is omitted, the production namecheap URL is assumed.
 
-
 ## Metadata
-This provider does not recognize any special metadata fields unique to
-Namecheap.
+This provider does not recognize any special metadata fields unique to Namecheap.
 
 ## Usage
 An example configuration:
@@ -56,8 +52,7 @@ D("example.com", REG_NAMECHEAP, DnsProvider(DSP_BIND),
 ```
 {% endcode %}
 
-Namecheap provides custom redirect records URL, URL301, and FRAME.  These
-records can be used like any other record:
+Namecheap provides custom redirect records URL, URL301, and FRAME.  These records can be used like any other record:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -73,7 +68,4 @@ D("example.com", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
 {% endcode %}
 
 ## Activation
-In order to activate API functionality on your Namecheap account, you must
-enable it for your account and wait for their review process. More information
-on enabling API access is [located
-here](https://www.namecheap.com/support/api/intro.aspx).
+In order to activate API functionality on your Namecheap account, you must enable it for your account and wait for their review process. More information on enabling API access is [located here](https://www.namecheap.com/support/api/intro.aspx).

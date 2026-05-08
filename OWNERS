@@ -5,7 +5,7 @@ providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/azureprivatedns @matthewmgamble
-providers/bind @tlimoncelli
+providers/bind @TomOnTime
 providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton

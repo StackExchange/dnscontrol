@@ -22,7 +22,7 @@ on:
   # Want to trigger all the tests without making a PR?
   # Run: git push origin main:tlim_testpr --force
   # This will trigger a full PR test on the main branch.
-  # See https://github.com/StackExchange/dnscontrol/actions/workflows/pr_integration_tests.yml?query=branch%3Atlim_testpr
+  # See https://github.com/DNSControl/dnscontrol/actions/workflows/pr_integration_tests.yml?query=branch%3Atlim_testpr
 
   push:
     branches:
@@ -231,7 +231,7 @@ jobs:
       - uses: actions/checkout@v6
       - run: mkdir -p "$TEST_RESULTS"
       - name: restore_cache
-        uses: actions/cache@v5.0.3
+        uses: actions/cache@v5.0.5
         with:
           key: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
           restore-keys: linux-go-${{ hashFiles('go.sum') }}-${{ env.cache-key }}
@@ -240,35 +240,66 @@ jobs:
         # For PRs we only run a smoke test (the first 3 tests) to save time.
         # For pushes to main or if the PR has the 'longtest' label, we run all tests.
         id: set_end
+        shell: bash
+        env:
+          # Converts label names into a single string for easier grep/matching
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
         run: |
           END=3
+          echo "END: Default set to $END"
           DO_WORKERS=false
+
           # Only for PRs
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Check for 'longtest' label
-            if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+            #if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+            if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
+              echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
+            else
+              echo "END: longtest not set. No change."
             fi
+          else
+              echo "END: Not a pull request. No change."
           fi
           # Check if branch is main
-          if [[ "${{ github.base_ref }}" == "main" ]]; then
+          # NB(tlim): This used to be github.base_ref but it was changed to
+          #           github.ref_name in 2026-05-07 because that seemed more correct.
+          #           The original statement was created by an LLM and might have been
+          #           wrong.
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
+            echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
           fi
+          echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
           echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
+          echo "END: Running tests 0 to $END"
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -profile ${{ matrix.provider }} -cfworkers=$DO_WORKERS -cfredirect=false -cfflatten=false -cftags=false -end $END ./... > ${TEST_RESULTS}/gotestsum-output.txt
+            # NB(tlim): THe output of gotestsum needs to go to stdout AND the
+            # gotestsum-output.txt file. That's why "tee" is used.
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
+                -timeout 40m -v \
+                -verbose \
+                -profile ${{ matrix.provider }} \
+                -cfworkers=$DO_WORKERS \
+                -cfredirect=false \
+                -cfflatten=false \
+                -cftags=false \
+                -end $END \
+                ./... >&1 | \
+                tee ${TEST_RESULTS}/gotestsum-output.txt
           else
             echo "Skip test for ${{ matrix.provider }} provider"
           fi
         working-directory: integrationTest
-      - uses: actions/upload-artifact@v7.0.0
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: integration-tests-${{ matrix.provider }}
           path: ${{ env.TEST_RESULTS }}

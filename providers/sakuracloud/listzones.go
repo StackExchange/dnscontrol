@@ -1,6 +1,6 @@
 package sakuracloud
 
-import "github.com/StackExchange/dnscontrol/v4/pkg/printer"
+import "github.com/DNSControl/dnscontrol/v4/pkg/printer"
 
 // ListZones return all the zones in the account.
 func (s *sakuracloudProvider) ListZones() ([]string, error) {
