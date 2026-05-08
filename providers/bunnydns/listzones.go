@@ -1,6 +1,6 @@
 package bunnydns
 
-import "github.com/StackExchange/dnscontrol/v4/pkg/printer"
+import "github.com/DNSControl/dnscontrol/v4/pkg/printer"
 
 func (b *bunnydnsProvider) ListZones() ([]string, error) {
 	zones, err := b.getAllZones()

@@ -13,13 +13,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonerecs"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/nameservers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/DNSControl/dnscontrol/v4/pkg/transform"
+	"github.com/DNSControl/dnscontrol/v4/pkg/zonerecs"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
@@ -304,7 +304,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			// TODO(tlim): This is the old version. It skipped the remaining tc() statements if one failed.
 			// The new code continues to test the remaining tc() statements.  Keeping this as a comment
 			// in case we ever want to do something similar.
-			// https://github.com/StackExchange/dnscontrol/pull/2252#issuecomment-1492204409
+			// https://github.com/DNSControl/dnscontrol/pull/2252#issuecomment-1492204409
 			//      makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
 			//      if t.Failed() {
 			//        break

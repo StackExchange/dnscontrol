@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"codeberg.org/miekg/dns/dnsutil"
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
@@ -146,7 +146,7 @@ func (c *vercelProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records
 		// Those records will have their "creator" being "system", some of them even has a comment field
 		// "Vercel automatically manages this record. It may change without notice".
 		//
-		// Per https://github.com/StackExchange/dnscontrol/pull/3542#issuecomment-3560041419, let's
+		// Per https://github.com/DNSControl/dnscontrol/pull/3542#issuecomment-3560041419, let's
 		// pretend those records don't exist, and diff2.ByRecord() will not affect these existing records.
 		if r.Creator == "system" {
 			continue

@@ -6,8 +6,7 @@ it can not be easily fixed.
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMEDOTCOM`
-along with your name.com API username and access token:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMEDOTCOM` along with your name.com API username and access token:
 
 Example:
 
@@ -29,14 +28,12 @@ There is another key name `apiurl` but it is optional and defaults to the correc
 
 export NAMEDOTCOM_URL='api.name.com'
 
-
 ## Metadata
 This provider does not recognize any special metadata fields unique to name.com.
 
 ## Usage
 
-An example `dnsconfig.js` configuration with NAMEDOTCOM
-as the registrar and DNS service provider:
+An example `dnsconfig.js` configuration with NAMEDOTCOM as the registrar and DNS service provider:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -49,8 +46,7 @@ D("example.com", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
 ```
 {% endcode %}
 
-An example `dnsconfig.js` configuration with NAMEDOTCOM
-as the registrar and DNS only, DNS hosted elsewhere:
+An example `dnsconfig.js` configuration with NAMEDOTCOM as the registrar and DNS only, DNS hosted elsewhere:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -78,20 +74,16 @@ In order to activate API functionality on your Name.com account, you must apply 
 integration_test.go:140: api returned unexpected response: invalid character '<' looking for beginning of value
 ```
 
-This error means an invalid URL is being used to reach the API
-endpoint.  It usually means a setting is `api.name.com/api` when
-`api.name.com` is correct (i.e. remove the `/api`).
+This error means an invalid URL is being used to reach the API endpoint.  It usually means a setting is `api.name.com/api` when `api.name.com` is correct (i.e. remove the `/api`).
 
 In integration tests:
 
  * Wrong: `export NAMEDOTCOM_URL='api.name.com/api'`
  * Right: `export NAMEDOTCOM_URL='api.name.com'`
 
-In production, the `apiurl` setting in `creds.json` is wrong. You can
-simply leave this option out and use the default, which is correct.
+In production, the `apiurl` setting in `creds.json` is wrong. You can simply leave this option out and use the default, which is correct.
 
 TODO(tlim): Improve the error message. (Volunteer needed!)
-
 
 ### dial tcp: lookup https: no such host
 
@@ -99,11 +91,6 @@ TODO(tlim): Improve the error message. (Volunteer needed!)
 integration_test.go:81: Failed getting nameservers Get https://https//api.name.com/api/v4/domains/stackosphere.com?: dial tcp: lookup https: no such host
 ```
 
-When running integration tests, this error
-means you included the `https://` in the `NAMEDOTCOM_URL` variable.
-You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
+When running integration tests, this error means you included the `https://` in the `NAMEDOTCOM_URL` variable. You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
 
-In production, the `apiurl` setting in `creds.json` needs to be
-adjusted. You can simply leave this option out and use the default,
-which is correct. If you are using the EO&T system, leave the
-protocol (`http://`) off the URL.
+In production, the `apiurl` setting in `creds.json` needs to be adjusted. You can simply leave this option out and use the default, which is correct. If you are using the EO&T system, leave the protocol (`http://`) off the URL.

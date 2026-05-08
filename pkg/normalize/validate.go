@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/transform"
 	dnsv1 "github.com/miekg/dns"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
@@ -141,7 +141,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 		return nil
 	}
 	// Don't warn for records that start with _
-	// See https://github.com/StackExchange/dnscontrol/issues/829
+	// See https://github.com/DNSControl/dnscontrol/issues/829
 	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") || strings.HasPrefix(label, "sql-") {
 		return nil
 	}

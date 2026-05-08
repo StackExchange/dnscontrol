@@ -1,6 +1,6 @@
 package rejectif
 
-import "github.com/StackExchange/dnscontrol/v4/models"
+import "github.com/DNSControl/dnscontrol/v4/models"
 
 // Auditor stores a list of checks to be executed during Audit().
 type Auditor struct {

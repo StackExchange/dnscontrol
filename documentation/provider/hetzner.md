@@ -1,7 +1,6 @@
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER`
-along with a [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER` along with a [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
 
 Example:
 
@@ -18,8 +17,7 @@ Example:
 
 ## Metadata
 
-This provider does not recognize any special metadata fields unique to Hetzner
- DNS Console.
+This provider does not recognize any special metadata fields unique to Hetzner DNS Console.
 
 ## Usage
 
@@ -38,15 +36,13 @@ D("example.com", REG_NONE, DnsProvider(DSP_HETZNER),
 
 ## Activation
 
-Create a new API Key in the
-[Hetzner DNS Console](https://dns.hetzner.com/settings/api-token).
+Create a new API Key in the [Hetzner DNS Console](https://dns.hetzner.com/settings/api-token).
 
 ## Caveats
 
 ### CAA
 
-As of June 2022, the Hetzner DNS Console API does not accept spaces in CAA
- records.
+As of June 2022, the Hetzner DNS Console API does not accept spaces in CAA records.
 ```text
 0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"
 ```
@@ -58,10 +54,7 @@ Removing the spaces might still work for any consumer of the record.
 
 ### SOA
 
-Hetzner DNS Console does not allow changing the SOA record via their API.
-There is an alternative method using an import of a full BIND file, but this
- approach does not play nice with incremental changes or ignored records.
-At this time you cannot update SOA records via DNSControl.
+Hetzner DNS Console does not allow changing the SOA record via their API. There is an alternative method using an import of a full BIND file, but this approach does not play nice with incremental changes or ignored records. At this time you cannot update SOA records via DNSControl.
 
 ### Rate Limiting
 
@@ -69,9 +62,7 @@ Hetzner is rate limiting requests quite heavily.
 
 The rate limit and remaining quota is advertised in the API response headers.
 
-DNSControl will burst through half of the quota, and then it spreads the
- requests evenly throughout the remaining window. This allows you to move fast
- and be able to revert accidental changes to the DNS config in a timely manner.
+DNSControl will burst through half of the quota, and then it spreads the requests evenly throughout the remaining window. This allows you to move fast and be able to revert accidental changes to the DNS config in a timely manner.
 
 Every response from the Hetzner DNS Console API includes your limits:
 
@@ -90,11 +81,6 @@ Vary Origin
 X-Ratelimit-Limit-Minute 42
 X-Ratelimit-Remaining-Minute 33
 ```
-With the above values, DNSControl will not delay the next 12 requests (until it
- hits `Ratelimit-Remaining: 21 # 42/2`) and then slow down requests with a
- delay of `7s/22 ≈ 300ms` between requests (about 3 requests per second).
-Performing these 12 requests might take longer than 7s, at which point the
- quota resets and DNSControl will burst through the quota again.
+With the above values, DNSControl will not delay the next 12 requests (until it hits `Ratelimit-Remaining: 21 # 42/2`) and then slow down requests with a delay of `7s/22 ≈ 300ms` between requests (about 3 requests per second). Performing these 12 requests might take longer than 7s, at which point the quota resets and DNSControl will burst through the quota again.
 
-DNSControl will retry rate-limited requests (status 429) and respect the
- advertised `Retry-After` delay.
+DNSControl will retry rate-limited requests (status 429) and respect the advertised `Retry-After` delay.

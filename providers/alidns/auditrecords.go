@@ -4,8 +4,8 @@ import (
 	"errors"
 	"unicode"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rejectif"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rejectif"
 )
 
 // isValidAliDNSString checks if a string contains only ASCII or Chinese characters.
