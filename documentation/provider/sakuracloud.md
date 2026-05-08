@@ -1,8 +1,7 @@
 This is the provider for [Sakura Cloud](https://cloud.sakura.ad.jp/).
 
 ## Configuration
-To use this provider, add an entry to `creds.json` with `TYPE` set to `SAKURACLOUD`
-along with API credentials.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `SAKURACLOUD` along with API credentials.
 
 Example:
 
@@ -27,8 +26,7 @@ Endpoints are as follows:
 * `https://secure.sakura.ad.jp/cloud/zone/tk1a/api/cloud/1.1` (Tokyo first Zone)
 * `https://secure.sakura.ad.jp/cloud/zone/tk1b/api/cloud/1.1` (Tokyo second Zone)
 
-DNS service is independent of zones, so you can use any of these endpoints.
-The default is the Ishikari first Zone.
+DNS service is independent of zones, so you can use any of these endpoints. The default is the Ishikari first Zone.
 
 Alternatively you can also use environment variables.
 
@@ -50,8 +48,7 @@ export SAKURACLOUD_ACCESS_TOKEN_SECRET="your-access-token-secret"
 {% endcode %}
 
 ## Metadata
-This provider does not recognize any special metadata fields unique to
-Sakura Cloud.
+This provider does not recognize any special metadata fields unique to Sakura Cloud.
 
 ## Usage
 An example configuration:
@@ -67,19 +64,14 @@ D("example.com", REG_NONE, DnsProvider(DSP_SAKURACLOUD),
 ```
 {% endcode %}
 
-`NAMESERVER` does not need to be set as the name servers for the
-Sakura Cloud provider cannot be changed.
+`NAMESERVER` does not need to be set as the name servers for the Sakura Cloud provider cannot be changed.
 
 `SOA` cannot be set as SOA record of Sakura Cloud provider cannot be changed.
 
 ## Activation
 Sakura Cloud depends on an [API Key](https://manual.sakura.ad.jp/cloud/api/apikey.html).
 
-When creating an API key, select "can modify settings" as "Access level".
-if you plan to create zones, select "can create and delete resources" as
-"Access level".
-None of the options in the "Allow access to other services" field need
-to be checked.
+When creating an API key, select "can modify settings" as "Access level". if you plan to create zones, select "can create and delete resources" as "Access level". None of the options in the "Allow access to other services" field need to be checked.
 
 ## Caveats
 The limitations of the Sakura Cloud DNS service are described in [the DNS manual](https://manual.sakura.ad.jp/cloud/appliance/dns/index.html), which is written in Japanese.

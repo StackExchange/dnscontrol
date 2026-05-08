@@ -33,8 +33,7 @@ Within the git repo, docs are grouped:
 
 ## Top-of-Document parameters
 
-Files in the `documentation/language-reference/{record,domain,global}` subdirectories
-have a header at the top that is used to populate other systems.
+Files in the `documentation/language-reference/{record,domain,global}` subdirectories have a header at the top that is used to populate other systems.
 
 Here's an example from [`A`](../language-reference/domain-modifiers/A.md)
 
@@ -82,8 +81,7 @@ Include a blank line between paragraphs.
 
 Leave exactly one blank line before and after a heading.
 
-JavaScript code should use double quotes (`"`) for strings, not single quotes
-(`'`).  They are equivalent but consistency is good.
+JavaScript code should use double quotes (`"`) for strings, not single quotes (`'`).  They are equivalent but consistency is good.
 
 ### Headings
 
@@ -187,10 +185,7 @@ This is a second <mark style="color:white;background-color:green;">line</mark>
 
 #### Mentioning language features
 
-Not every mention to A, CNAME, or function
-needs to be a link to the manual for that record type.
-However, the first mention on a page should always
-be a link.  Others are at the authors digression.
+Not every mention to A, CNAME, or function needs to be a link to the manual for that record type. However, the first mention on a page should always be a link.  Others are at the authors digression.
 
 ```markdown
 The [`PTR`](../language-reference/domain-modifiers/PTR.md) feature is helpful in LANs.
@@ -239,7 +234,4 @@ Please capitalize these terms as you see them here:
 
 Please spellcheck documents before submitting a PR.
 
-Don't be surprised if Tom rewrites your text.  He often does that to keep the
-documentation consistent and make it more approachable by new users.  It's not
-[because he has a big ego](https://www.amazon.com/stores/author/B004J0QIVM).
-Well, not usually.
+Don't be surprised if Tom rewrites your text.  He often does that to keep the documentation consistent and make it more approachable by new users.  It's not [because he has a big ego](https://www.amazon.com/stores/author/B004J0QIVM). Well, not usually.

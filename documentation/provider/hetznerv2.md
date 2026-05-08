@@ -1,7 +1,6 @@
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER_V2`
-along with a [Hetzner API Token](https://docs.hetzner.cloud/reference/cloud#getting-started).
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER_V2` along with a [Hetzner API Token](https://docs.hetzner.cloud/reference/cloud#getting-started).
 
 Example:
 
@@ -37,8 +36,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_HETZNER),
 
 ## Activation
 
-Create a new API Key in the
-[Hetzner Console](https://docs.hetzner.cloud/reference/cloud#getting-started).
+Create a new API Key in the [Hetzner Console](https://docs.hetzner.cloud/reference/cloud#getting-started).
 
 ## Caveats
 
@@ -48,7 +46,4 @@ Removing the Hetzner provided NS records at the root is not possible.
 
 ### SOA
 
-Hetzner DNS API does not allow changing the SOA record via their API.
-There is an alternative method using an import of a full BIND file, but this
- approach does not play nice with incremental changes or ignored records.
-At this time you cannot update SOA records via DNSControl.
+Hetzner DNS API does not allow changing the SOA record via their API. There is an alternative method using an import of a full BIND file, but this approach does not play nice with incremental changes or ignored records. At this time you cannot update SOA records via DNSControl.

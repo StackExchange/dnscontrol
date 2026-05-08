@@ -1,7 +1,6 @@
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `ROUTE53`
-along with API credentials.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `ROUTE53` along with API credentials.
 
 Example:
 
@@ -98,8 +97,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_R53),
 
 This provider supports split horizons using the [`R53_ZONE()`](../language-reference/record-modifiers/R53_ZONE.md) domain function.
 
-In this example the domain `testzone.net` appears in the same account twice,
-each with different zone IDs specified using [`R53_ZONE()`](../language-reference/record-modifiers/R53_ZONE.md).
+In this example the domain `testzone.net` appears in the same account twice, each with different zone IDs specified using [`R53_ZONE()`](../language-reference/record-modifiers/R53_ZONE.md).
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -170,8 +168,7 @@ aws route53 create-reusable-delegation-set --caller-reference "foo"
 }
 ```
 
-You can then reference the DelegationSet.Id in your `r53_main` block (with your other credentials) to have all created domains placed in that
-delegation set.  Note that you you only want the portion of the `Id` after the `/delegationset/` (the `12312312123` in the example above).
+You can then reference the DelegationSet.Id in your `r53_main` block (with your other credentials) to have all created domains placed in that delegation set.  Note that you you only want the portion of the `Id` after the `/delegationset/` (the `12312312123` in the example above).
 
 > Delegation sets only apply during `create-domains` at the moment. Further work needs to be done to have them apply during `push`.
 
@@ -179,12 +176,9 @@ delegation set.  Note that you you only want the portion of the `Id` after the `
 
 ### Route53 errors if it is not the DnsProvider
 
-This code may not function properly if a domain has R53 as a Registrar
-but not as a DnsProvider.  The situation is described in
-[PR#155](https://github.com/DNSControl/dnscontrol/pull/155).
+This code may not function properly if a domain has R53 as a Registrar but not as a DnsProvider.  The situation is described in [PR#155](https://github.com/DNSControl/dnscontrol/pull/155).
 
 In this situation you will see a message like: (This output assumes the `--full` flag)
-
 
 ```text
 ----- Registrar: r53_main
@@ -202,12 +196,7 @@ You will see some weirdness if:
 1.  A CNAME was created using the web UI
 2.  The CNAME's target does NOT end with a dot.
 
-What you will see: When DNSControl tries to update such records, R53
-only updates the first one.  For example if DNSControl is updating 3
-such records, you will need to run `dnscontrol push` three times for
-all three records to update.  Each time DNSControl is sending three
-modify requests but only the first is executed.  After all such
-records are modified by DNSControl, everything works as expected.
+What you will see: When DNSControl tries to update such records, R53 only updates the first one.  For example if DNSControl is updating 3 such records, you will need to run `dnscontrol push` three times for all three records to update.  Each time DNSControl is sending three modify requests but only the first is executed.  After all such records are modified by DNSControl, everything works as expected.
 
 We believe this is a bug with R53.
 
@@ -225,7 +214,6 @@ this problem disappears.
 
 More info is available in [#891](https://github.com/DNSControl/dnscontrol/issues/891).
 
-
 ## Error messages
 
 ### Creds key mismatch
@@ -236,8 +224,7 @@ Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. D
     For verbose messaging see aws.Config.CredentialsChainVerboseErrors
 ```
 
-This means that the `creds.json` entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
-that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
+This means that the `creds.json` entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
 
 ### Invalid KeyId
 

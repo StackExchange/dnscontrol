@@ -1,7 +1,6 @@
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `DESEC`
-along with a deSEC account auth token.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `DESEC` along with a deSEC account auth token.
 
 Example:
 
@@ -34,8 +33,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_DESEC),
 {% endcode %}
 
 ## Activation
-DNSControl depends on a deSEC account auth token.
-This token can be obtained by [logging in via the deSEC API](https://desec.readthedocs.io/en/latest/auth/account.html#log-in).
+DNSControl depends on a deSEC account auth token. This token can be obtained by [logging in via the deSEC API](https://desec.readthedocs.io/en/latest/auth/account.html#log-in).
 
 {% hint style="warning" %}
 deSEC enforces a daily limit of 300 RRset creation/deletion/modification per
@@ -44,9 +42,4 @@ integration test suite can not be run in a single session. See
 [https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling](https://desec.readthedocs.io/en/latest/rate-limits.html#api-request-throttling)
 {% endhint %}
 
-Upon domain creation, the DNSKEY and DS records needed for DNSSEC setup are
-printed in the command output. If you need these values later, get them from
-the deSEC web interface or query deSEC nameservers for the CDS records. For
-example: `dig +short @ns1.desec.io example.com CDS` will return the published
-CDS records which can be used to insert the required DS records into the parent
-zone.
+Upon domain creation, the DNSKEY and DS records needed for DNSSEC setup are printed in the command output. If you need these values later, get them from the deSEC web interface or query deSEC nameservers for the CDS records. For example: `dig +short @ns1.desec.io example.com CDS` will return the published CDS records which can be used to insert the required DS records into the parent zone.

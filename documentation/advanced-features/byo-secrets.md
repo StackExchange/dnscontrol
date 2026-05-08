@@ -1,8 +1,6 @@
 # Bring-Your-Own-Secrets for automated testing
 
-Goal: Enable automated integration testing without accidentally
-leaking credentials (API keys and other secrets); at the same time permit everyone
-to automate their own tests without having to share their credentials.
+Goal: Enable automated integration testing without accidentally leaking credentials (API keys and other secrets); at the same time permit everyone to automate their own tests without having to share their credentials.
 
 The instructions in this document will enable automated tests to run in these situations:
 
@@ -15,38 +13,19 @@ The instructions in this document will enable automated tests to run in these si
 
 # Background: How GitHub Actions protects secrets
 
-GitHub Actions has a secure
-[secrets storage system](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets).
-Those secrets are available to GitHub Actions and are required for the
-integration tests to communicate with the various DNS providers that
-DNSControl supports.
+GitHub Actions has a secure [secrets storage system](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets). Those secrets are available to GitHub Actions and are required for the integration tests to communicate with the various DNS providers that DNSControl supports.
 
-For security reasons, those secrets are unavailable if the PR comes
-from outside the project (a forked repo).  This is a good thing.  If
-it didn't work that way, a third-party could write a PR that leaks the
-secrets without the owners of the project knowing.
+For security reasons, those secrets are unavailable if the PR comes from outside the project (a forked repo).  This is a good thing.  If it didn't work that way, a third-party could write a PR that leaks the secrets without the owners of the project knowing.
 
-The docs (and many blog posts) describe this as forked repos don't
-have access to secrets, and instead receive null strings. That's not
-actually what's happening.
+The docs (and many blog posts) describe this as forked repos don't have access to secrets, and instead receive null strings. That's not actually what's happening.
 
-Actually what happens is the secrets come from the forked repo.  Or,
-more precisely, the secrets offered to a PR come from the repo that the
-PR came from.  A PR from DNSControl's owners gets secrets from
-[github.com/DNSControl/dnscontrol's secret store](https://github.com/DNSControl/dnscontrol/settings/secrets/actions)
-but a PR from a fork, such as
-[https://github.com/TomOnTime/dnscontrol](https://github.com/TomOnTime/dnscontrol)
-gets its secrets from TomOnTime's secrets.
+Actually what happens is the secrets come from the forked repo.  Or, more precisely, the secrets offered to a PR come from the repo that the PR came from.  A PR from DNSControl's owners gets secrets from [github.com/DNSControl/dnscontrol's secret store](https://github.com/DNSControl/dnscontrol/settings/secrets/actions) but a PR from a fork, such as [https://github.com/TomOnTime/dnscontrol](https://github.com/TomOnTime/dnscontrol) gets its secrets from TomOnTime's secrets.
 
-Our automated integration tests leverages this info to have tests
-only run if they have access to the secrets they will need.
+Our automated integration tests leverages this info to have tests only run if they have access to the secrets they will need.
 
 # Which providers are selected for testing?
 
-Tests are executed if the env variable`*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or
-unset, the test is skipped.
-For example, if a provider is called `FANCYDNS`, there must
-be a variable called `FANCYDNS_DOMAIN`.
+Tests are executed if the env variable`*_DOMAIN` exists where `*` is the name of the provider.  If the value is empty or unset, the test is skipped. For example, if a provider is called `FANCYDNS`, there must be a variable called `FANCYDNS_DOMAIN`.
 
 # Bring your own secrets
 
@@ -139,23 +118,13 @@ The tests will fail if a secret is wrong or missing.  It may take a few iteratio
 
 # Donate secrets to the project
 
-The DNSControl project would like to have all providers automatically tested.
-However, we can't fund purchasing domains or maintaining credentials at every
-provider. Instead we depend on volunteers to maintain (and pay for) such
-accounts.
+The DNSControl project would like to have all providers automatically tested. However, we can't fund purchasing domains or maintaining credentials at every provider. Instead we depend on volunteers to maintain (and pay for) such accounts.
 
-We recommend the domain be named `dnscontroltest-PROVIDER.com` (or similar)
-where PROVIDER is replaced by the name of your provider or an abbreviation. For
-example `dnscontroltest-r53.com` and `dnscontroltest-gcloud.com`.
+We recommend the domain be named `dnscontroltest-PROVIDER.com` (or similar) where PROVIDER is replaced by the name of your provider or an abbreviation. For example `dnscontroltest-r53.com` and `dnscontroltest-gcloud.com`.
 
-When possible, use an OTE or free domain. Don't spend money if you don't have
-to. This isn't just to be thrifty! It avoids renewals and other hassles too.
-You'd be surprised at how many providers (such as Google and Azure) permit DNS
-zones to be created in your account without registering them.
+When possible, use an OTE or free domain. Don't spend money if you don't have to. This isn't just to be thrifty! It avoids renewals and other hassles too. You'd be surprised at how many providers (such as Google and Azure) permit DNS zones to be created in your account without registering them.
 
-For actual DNS domains, please select the "private registration" option if it
-is available. Otherwise you will get spam phones calls and emails. The phone
-calls will make you wish you didn't own a phone.
+For actual DNS domains, please select the "private registration" option if it is available. Otherwise you will get spam phones calls and emails. The phone calls will make you wish you didn't own a phone.
 
 {% hint style="danger" %}
 Some rules:
