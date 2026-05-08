@@ -237,6 +237,9 @@ jobs:
         # For pushes to main or if the PR has the 'longtest' label, we run all tests.
         id: set_end
         shell: bash
+        env:
+          # Converts label names into a single string for easier grep/matching
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
         run: |
           END=3
           echo "END: Default set to $END"
@@ -247,7 +250,8 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Check for 'longtest' label
             echo "DEBUG: check label: ${{ github.event.pull_request.labels.*.name }}"
-            if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+            #if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
+            if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
               echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
