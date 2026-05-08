@@ -256,9 +256,13 @@ jobs:
               echo "END: Not a pull request. No change."
           fi
           # Check if branch is main
+          # NB(tlim): This used to be github.base_ref but it was changed to
+          #           github.ref_name in 2026-05-07 because that seemed more correct.
+          #           The original statement was created by an LLM and might have been
+          #           wrong.
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
-            echo "END: github.ref_name is main.  END=$END"
+            echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
           fi
           echo "END: Final value: END=$END"
@@ -267,7 +271,7 @@ jobs:
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
-          echo "END: Using: END=$END"
+          echo "END: Running tests 0 to $END"
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
             # NB(tlim): THe output of gotestsum needs to go to stdout AND the
