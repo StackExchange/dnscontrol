@@ -358,6 +358,12 @@
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME"
   },
+  "TENCENTDNS": {
+    "TYPE": "TENCENTDNS",
+    "secret_id": "$TENCENTDNS_SECRET_ID",
+    "secret_key": "$TENCENTDNS_SECRET_KEY",
+    "domain": "$TENCENTDNS_DOMAIN"
+  },
   "TRANSIP": {
     "AccessToken": "$TRANSIP_ACCESS_TOKEN",
     "AccountName": "$TRANSIP_ACCOUNT_NAME",
