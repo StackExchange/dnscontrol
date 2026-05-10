@@ -24,19 +24,23 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Aliases: []string{"get-zone"},
 		Usage:   "gets a zone from a provider (stand-alone)",
 		Action: func(ctx context.Context, c *cli.Command) error {
-			if c.NArg() < 3 {
-				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
+			if c.NArg() < 2 {
+				return cli.Exit("Arguments should be: credskey zone(s) (Ex: my_cloudflare example.com)", 1)
 			}
 			args.CredName = c.Args().Get(0)
-			arg1 := c.Args().Get(1)
-			args.ProviderName = arg1
-			// In v4.0, skip the first args.ZoneNames if it equals "-".
-			args.ZoneNames = c.Args().Slice()[2:]
-
-			if arg1 != "" && arg1 != "-" {
-				// NB(tlim): In v4.0 this "if" can be removed.
-				fmt.Fprintf(os.Stderr, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
-					arg1, "-",
+			if c.NArg() == 2 || c.Args().Get(1) == "-" {
+				args.ProviderName = ""
+				if c.Args().Get(1) == "-" {
+					args.ZoneNames = c.Args().Slice()[2:]
+				} else {
+					args.ZoneNames = c.Args().Slice()[1:]
+				}
+			} else {
+				arg1 := c.Args().Get(1)
+				args.ProviderName = arg1
+				args.ZoneNames = c.Args().Slice()[2:]
+				fmt.Fprintf(os.Stderr, "WARNING: The provider name argument is deprecated. Please use \"dnscontrol get-zones %s %s\" instead. See %q\n",
+					args.CredName, strings.Join(args.ZoneNames, " "),
 					"https://docs.dnscontrol.org/commands/get-zones",
 				)
 			}
