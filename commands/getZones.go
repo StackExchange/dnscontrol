@@ -48,37 +48,21 @@ var _ = cmd(catUtils, func() *cli.Command {
 			return exit(GetZone(args))
 		},
 		Flags:     args.flags(),
-		UsageText: "dnscontrol get-zones [command options] credkey provider zone [...]",
+		UsageText: "dnscontrol get-zones [command options] credkey zone [...]",
 		Description: `Download a zone from a provider.  This is a stand-alone utility.
 
 ARGUMENTS:
-   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
-   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
+   credkey:  The name used in creds.json
    zone:     One or more zones (domains) to download; or "all".
-
-FORMATS:
-   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-   --format=djs       js with disco commas (leading commas)
-   --format=zone      BIND zonefile format
-   --format=tsv       TAB separated value (useful for AWK)
-   --format=nameonly  Just print the zone names
-
-The columns in --format=tsv are:
-   FQDN (the label with the domain)
-   ShortName (just the label, "@" if it is the naked domain)
-   TTL
-   Record Type (A, AAAA, CNAME, etc.)
-   Target and arguments (quoted like in a zonefile)
-   Either empty or a comma-separated list of properties like "cloudflare_proxy=true"
-
-The --ttl flag only applies to zone/js/djs formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.com other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones --format=tsv bind BIND example.com
-   dnscontrol get-zones --format=djs --out=draft.js gcloud GCLOUD example.com`,
+   dnscontrol get-zones --format=djs --out=draft.js gcloud GCLOUD example.com
+
+Documentation: https://docs.dnscontrol.org/commands/get-zones`,
 	}
 }())
 
@@ -124,7 +108,9 @@ ARGUMENTS:
 EXAMPLES:
    dnscontrol check-creds myr53 ROUTE53      # Pre v3.16, or pre-v4.0 for backwards-compatibility
    dnscontrol check-creds myr53
-   dnscontrol check-creds --out=/dev/null myr53 && echo Success`,
+   dnscontrol check-creds --out=/dev/null myr53 && echo Success
+
+Documentation: https://docs.dnscontrol.org/commands/check-creds`,
 	}
 }())
 
