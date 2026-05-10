@@ -6,7 +6,7 @@ parameters:
   - modifiers...
 parameter_types:
   name: string
-  contents: string
+  contents: string | string[]
   "modifiers...": RecordModifier[]
 ---
 

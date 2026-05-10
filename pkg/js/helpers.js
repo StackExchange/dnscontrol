@@ -874,8 +874,8 @@ function locStringBuilder(record, args) {
 // Renders LOC type internal properties from D˚M'S" parameters.
 // Change anything here at your peril.
 function locDMSBuilder(record, args) {
-    LOCEquator = 1 << 31; // RFC 1876, Section 2.
-    LOCPrimeMeridian = 1 << 31; // RFC 1876, Section 2.
+    LOCEquator = Math.pow(2, 31); // RFC 1876, Section 2.
+    LOCPrimeMeridian = Math.pow(2, 31); // RFC 1876, Section 2.
     LOCHours = 60 * 1000;
     LOCDegrees = 60 * LOCHours;
     LOCAltitudeBase = 100000;
