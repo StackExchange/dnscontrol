@@ -111,7 +111,7 @@ Jump to a table:
 | [`DNSOVERHTTPS`](dnsoverhttps.md) | ❔ | ❔ | ❌ | ❔ |
 | [`DYNADOT`](dynadot.md) | ❔ | ❔ | ❌ | ❔ |
 | [`EASYNAME`](easyname.md) | ❔ | ❔ | ❌ | ❔ |
-| [`EXOSCALE`](exoscale.md) | ❔ | ❌ | ❌ | ❔ |
+| [`EXOSCALE`](exoscale.md) | ❌ | ❌ | ❌ | ❔ |
 | [`FORTIGATE`](fortigate.md) | ❔ | ❔ | ✅ | ✅ |
 | [`GANDI_V5`](gandiv5.md) | ✅ | ❔ | ❌ | ✅ |
 | [`GCLOUD`](gcloud.md) | ✅ | ✅ | ✅ | ✅ |
