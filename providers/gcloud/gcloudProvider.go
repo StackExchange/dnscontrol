@@ -48,10 +48,10 @@ var (
 	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 )
 
-//go:fix inline
-func sPtr(s string) *string {
-	return new(s)
-}
+// //go:fix inline
+// func sPtr(s string) *string {
+// 	return new(s)
+// }
 
 func init() {
 	const providerName = "GCLOUD"

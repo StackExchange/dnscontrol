@@ -406,15 +406,3 @@ func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, err
 
 	return req, nil
 }
-
-// ptrInt64 returns a pointer to an int64.
-//
-//go:fix inline
-func ptrInt64(v int64) *int64 {
-	return new(v)
-}
-
-//go:fix inline
-func ptrString(v string) *string {
-	return new(v)
-}
