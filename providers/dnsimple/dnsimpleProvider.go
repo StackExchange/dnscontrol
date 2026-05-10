@@ -466,7 +466,7 @@ func (c *dnsimpleProvider) recordCreate(rc *models.RecordConfig, domainName stri
 	}
 
 	record := dnsimpleapi.ZoneRecordAttributes{
-		Name:     dnsimpleapi.String(rc.GetLabel()),
+		Name:     new(rc.GetLabel()),
 		Type:     rc.Type,
 		Content:  getTargetRecordContent(rc),
 		TTL:      int(rc.TTL),
@@ -512,7 +512,7 @@ func (c *dnsimpleProvider) recordUpdate(old *dnsimpleapi.ZoneRecord, rc *models.
 	}
 
 	record := dnsimpleapi.ZoneRecordAttributes{
-		Name:     dnsimpleapi.String(rc.GetLabel()),
+		Name:     new(rc.GetLabel()),
 		Type:     rc.Type,
 		Content:  getTargetRecordContent(rc),
 		TTL:      int(rc.TTL),

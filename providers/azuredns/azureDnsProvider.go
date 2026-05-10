@@ -13,7 +13,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
@@ -81,8 +80,8 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 	api := &azurednsProvider{
 		zonesClient:    zonesClient,
 		recordsClient:  recordsClient,
-		resourceGroup:  to.StringPtr(rg),
-		subscriptionID: to.StringPtr(subID),
+		resourceGroup:  new(rg),
+		subscriptionID: new(subID),
 	}
 
 	// Initialize zones
@@ -371,7 +370,7 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 		shortName = "@"
 	}
 
-	azRecType, err := nativeToRecordTypeDiff2(to.StringPtr(reckey.Type))
+	azRecType, err := nativeToRecordTypeDiff2(new(reckey.Type))
 	if err != nil {
 		return nil
 	}
@@ -585,31 +584,31 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 	//		fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXXXXXXXXXXXXXXXXX %v\n", recordKeyType)
 	//	}
 
-	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKeyType), Properties: &adns.RecordSetProperties{}}
+	recordSet := &adns.RecordSet{Type: new(recordKeyType), Properties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
 		switch recordKeyType {
 		case "A":
 			if recordSet.Properties.ARecords == nil {
 				recordSet.Properties.ARecords = []*adns.ARecord{}
 			}
-			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: new(rec.GetTargetField())})
 		case "AAAA":
 			if recordSet.Properties.AaaaRecords == nil {
 				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
 			}
-			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: new(rec.GetTargetField())})
 		case "CNAME":
-			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: new(rec.GetTargetField())}
 		case "NS":
 			if recordSet.Properties.NsRecords == nil {
 				recordSet.Properties.NsRecords = []*adns.NsRecord{}
 			}
-			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: new(rec.GetTargetField())})
 		case "PTR":
 			if recordSet.Properties.PtrRecords == nil {
 				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
 			}
-			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: new(rec.GetTargetField())})
 		case "TXT":
 			if recordSet.Properties.TxtRecords == nil {
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
@@ -618,7 +617,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if rec.GetTargetTXTSegmentCount() != 1 || rec.GetTargetTXTSegmented()[0] != "" {
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
-					txts = append(txts, to.StringPtr(txt))
+					txts = append(txts, new(txt))
 				}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
 			}
@@ -626,21 +625,21 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if recordSet.Properties.MxRecords == nil {
 				recordSet.Properties.MxRecords = []*adns.MxRecord{}
 			}
-			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: new(rec.GetTargetField()), Preference: new(int32(rec.MxPreference))})
 		case "SRV":
 			if recordSet.Properties.SrvRecords == nil {
 				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
 			}
-			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
+			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: new(rec.GetTargetField()), Port: new(int32(rec.SrvPort)), Weight: new(int32(rec.SrvWeight)), Priority: new(int32(rec.SrvPriority))})
 		case "CAA":
 			if recordSet.Properties.CaaRecords == nil {
 				recordSet.Properties.CaaRecords = []*adns.CaaRecord{}
 			}
-			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
+			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: new(rec.GetTargetField()), Tag: new(rec.CaaTag), Flags: new(int32(rec.CaaFlag))})
 		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
 			aatype := rec.AzureAlias["type"]
 			recordSet.Type = &aatype
-			aatarg := to.StringPtr(rec.GetTargetField())
+			aatarg := new(rec.GetTargetField())
 			aasub := adns.SubResource{ID: aatarg}
 			recordSet.Properties.TargetResource = &aasub
 
@@ -649,7 +648,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 		}
 	}
 
-	rt, err := nativeToRecordTypeDiff2(to.StringPtr(*recordSet.Type))
+	rt, err := nativeToRecordTypeDiff2(new(*recordSet.Type))
 	if err != nil {
 		return nil, adns.RecordTypeA, err // adns.A is a placeholder
 	}
@@ -702,7 +701,7 @@ func (a *azurednsProvider) EnsureZoneExists(domain string, metadata map[string]s
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 
-	z, err := a.zonesClient.CreateOrUpdate(ctx, *a.resourceGroup, domain, adns.Zone{Location: to.StringPtr("global")}, nil)
+	z, err := a.zonesClient.CreateOrUpdate(ctx, *a.resourceGroup, domain, adns.Zone{Location: new("global")}, nil)
 	if err != nil {
 		return err
 	}
