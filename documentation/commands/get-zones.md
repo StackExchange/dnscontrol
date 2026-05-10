@@ -33,7 +33,7 @@ If a provider supports it, `--format=nameonly` lists the names of the zones at t
 ## Syntax
 
 ```shell
-dnscontrol get-zones [command options] credkey provider zone [...]
+dnscontrol get-zones [command options] credkey zone [...]
 
 --creds value   Provider credentials JSON file (default: "creds.json")
 --format value  Output format: js djs zone tsv nameonly (default: "zone")
@@ -42,13 +42,10 @@ dnscontrol get-zones [command options] credkey provider zone [...]
 
 ARGUMENTS:
 credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
-provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 zone:     One or more zones (domains) to download; or "all".
 ```
 
-As of [v3.16](../release/v316.md), `provider` can be `-` to indicate that the provider name is listed in `creds.json` in the `TYPE` field. Doing this will be backwards compatible with an (otherwise) breaking change due in v4.0.
-
-As of v4.0 (BREAKING CHANGE), you must not specify `provider`. That value is found in the `TYPE` field of the credkey's `creds.json` file. For backwards compatibility, if the first `zone` is `-`, it will be skipped.
+The provider type is read from the `TYPE` field in `creds.json`. For backwards compatibility, you may still specify the provider name explicitly as a second argument (e.g. `dnscontrol get-zones my_route53 ROUTE53 example.com`), but this is deprecated.
 
 ```shell
 FORMATS:
@@ -73,50 +70,17 @@ The `--ttl` flag only applies to zone/js/djs formats.
 ## Examples
 
 ```shell
-dnscontrol get-zones myr53 ROUTE53 example.com
-dnscontrol get-zones gmain GANDI_V5 example.comn other.com
-dnscontrol get-zones cfmain CLOUDFLAREAPI all
-dnscontrol get-zones --format=tsv bind BIND example.com
-dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
-```
-
-As of [v3.16](../release/v316.md):
-
-```shell
-# NOTE: When "-" appears as the 2nd argument, it is assumed that the
-# creds.json entry has a field TYPE with the provider's type name.
-dnscontrol get-zones gmain GANDI_V5 example.comn other.com
-dnscontrol get-zones gmain - example.comn other.com
-dnscontrol get-zones cfmain CLOUDFLAREAPI all
-dnscontrol get-zones cfmain - all
-dnscontrol get-zones --format=tsv bind BIND example.com
-dnscontrol get-zones --format=tsv bind - example.com
-dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
-dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
-```
-
-As of v4.0:
-
-```shell
-dnscontrol get-zones gmain example.comn other.com
-dnscontrol get-zones cfmain all
-dnscontrol get-zones --format=tsv bind example.com
-dnscontrol get-zones --format=djs --out=draft.js glcoud example.com
-```
-
-For backwards compatibility, these are valid until at least v5.0
-
-```shell
-dnscontrol get-zones gmain - example.comn other.com
-dnscontrol get-zones cfmain - all
-dnscontrol get-zones --format=tsv bind - example.com
-dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
+dnscontrol get-zones my_route53 example.com
+dnscontrol get-zones my_gandi example.com other.com
+dnscontrol get-zones my_cloudflare all
+dnscontrol get-zones --format=tsv my_bind example.com
+dnscontrol get-zones --format=djs --out=draft.js my_gcloud example.com
 ```
 
 Read a zonefile, generate a JS file, then use the JS file to see how different it is from the zonefile:
 
 ```shell
-dnscontrol get-zone --format=djs -out=foo.djs bind - example.com
+dnscontrol get-zones --format=djs --out=foo.djs my_bind example.com
 dnscontrol preview --config foo.js
 ```
 
