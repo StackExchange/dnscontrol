@@ -56,11 +56,11 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 EXAMPLES:
-   dnscontrol get-zones myr53 ROUTE53 example.com
-   dnscontrol get-zones gmain GANDI_V5 example.com other.com
-   dnscontrol get-zones cfmain CLOUDFLAREAPI all
-   dnscontrol get-zones --format=tsv bind BIND example.com
-   dnscontrol get-zones --format=djs --out=draft.js gcloud GCLOUD example.com
+   dnscontrol get-zones my_route53 example.com
+   dnscontrol get-zones my_gandi example.com other.com
+   dnscontrol get-zones my_cloudflare all
+   dnscontrol get-zones --format=tsv my_bind example.com
+   dnscontrol get-zones --format=djs --out=draft.js my_gcloud example.com
 
 Documentation: https://docs.dnscontrol.org/commands/get-zones`,
 	}
