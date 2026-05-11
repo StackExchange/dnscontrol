@@ -37,12 +37,19 @@ var _ = cmd(catUtils, func() *cli.Command {
 				}
 			} else {
 				arg1 := c.Args().Get(1)
-				args.ProviderName = arg1
-				args.ZoneNames = c.Args().Slice()[2:]
-				fmt.Fprintf(os.Stderr, "WARNING: The provider name argument is deprecated. Please use \"dnscontrol get-zones %s %s\" instead. See %q\n",
-					args.CredName, strings.Join(args.ZoneNames, " "),
-					"https://docs.dnscontrol.org/commands/get-zones",
-				)
+				if _, ok := providers.DNSProviderTypes[arg1]; ok {
+					// Deprecated form: credkey provider zone [...]
+					args.ProviderName = arg1
+					args.ZoneNames = c.Args().Slice()[2:]
+					fmt.Fprintf(os.Stderr, "WARNING: The provider name argument is deprecated. Please use \"dnscontrol get-zones %s %s\" instead. See %q\n",
+						args.CredName, strings.Join(args.ZoneNames, " "),
+						"https://docs.dnscontrol.org/commands/get-zones",
+					)
+				} else {
+					// New form with multiple zones: credkey zone1 zone2 [...]
+					args.ProviderName = ""
+					args.ZoneNames = c.Args().Slice()[1:]
+				}
 			}
 
 			return exit(GetZone(args))
