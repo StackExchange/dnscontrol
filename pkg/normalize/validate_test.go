@@ -342,6 +342,40 @@ func TestCNAMEMutex(t *testing.T) {
 	}
 }
 
+func TestCNAMECloudflareProxied(t *testing.T) {
+	// A proxied (flattened) CNAME should be allowed alongside other record types.
+	recCNAME := &models.RecordConfig{
+		Type:     "CNAME",
+		Metadata: map[string]string{"cloudflare_proxy": "on"},
+	}
+	recCNAME.SetLabel("mail", "mail.example.com")
+	recCNAME.MustSetTarget("example.com.")
+	recMX := &models.RecordConfig{Type: "MX"}
+	recMX.SetLabel("mail", "mail.example.com")
+	recMX.MustSetTarget("smtp.example.com.")
+	dc := &models.DomainConfig{
+		Name:    "example.com",
+		Records: []*models.RecordConfig{recCNAME, recMX},
+	}
+	errs := checkCNAMEs(dc)
+	if len(errs) != 0 {
+		t.Errorf("Expected no errors for proxied CNAME + MX, got: %v", errs)
+	}
+
+	// A non-proxied CNAME should still fail.
+	recCNAME2 := &models.RecordConfig{Type: "CNAME"}
+	recCNAME2.SetLabel("mail", "mail.example.com")
+	recCNAME2.MustSetTarget("example.com.")
+	dc2 := &models.DomainConfig{
+		Name:    "example.com",
+		Records: []*models.RecordConfig{recCNAME2, recMX},
+	}
+	errs2 := checkCNAMEs(dc2)
+	if len(errs2) == 0 {
+		t.Error("Expected error for non-proxied CNAME + MX, got none")
+	}
+}
+
 func TestCAAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
