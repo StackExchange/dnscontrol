@@ -42,15 +42,9 @@ Here's a sample file:
   * ...may include any JSON string value including the empty string.
   * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$CNR_APILOGIN` would be replaced by the value of the environment variable `CNR_APILOGIN` or the empty string if no such environment variable exists.
 
-## New in v3.16
+## The TYPE subkey
 
-The special subkey "TYPE" is used to indicate the provider type (NONE, CLOUDFLAREAPI, GCLOUD, etc).
-
-Prior to [v3.16](../release/v316.md), the provider type is specified as the second argument to `NewRegistrar()` and `NewDnsProvider()` in `dnsconfig.js` or as a command-line argument in tools such as `dnscontrol get-zones`.
-
-Starting in [v3.16](../release/v316.md), `NewRegistrar()`, and `NewDnsProvider()` no longer require the provider type to be specified. It may be specified for backwards compatibility, but a warning will be generated with a suggestion of how to upgrade to the 4.0 format.  Likewise, command-line tools no longer require the provider type to be specified, but for backwards compatibility one may specify `-` since the parameter is positional.
-
-In 4.0, DNSControl will require the "TYPE" subkey in each `creds.json` entry. Command line tools will have a backwards-incompatible change to remove the provider-type as a positional argument.  Prior to 4.0, the various commands will output warnings and suggestions to avoid compatibility issues during the transition.
+The special subkey "TYPE" is required in each `creds.json` entry. It indicates the provider type (NONE, CLOUDFLAREAPI, GCLOUD, etc).
 
 ## Error messages
 
@@ -114,11 +108,7 @@ Examples:
 ```
 {% endcode %}
 
-Starting with [v3.16](../release/v316.md) use of an OLD format will trigger warnings with suggestions on how to adopt the NEW format.
-
-Starting with v4.0 support for the OLD format may be reported as an error.
-
-Please adopt the NEW format when your installation has eliminated any use of DNSControl pre-3.16.
+Use of the OLD format will trigger warnings with suggestions on how to adopt the NEW format.
 
 ### mismatch
 
