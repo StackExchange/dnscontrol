@@ -49,15 +49,20 @@ jobs:
     outputs:
       integration_test_providers: ${{ steps.get_integration_test_providers.outputs.integration_test_providers }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: integrationTest/profiles.json
+          sparse-checkout-cone-mode: false
       - name: Set Integration Test Providers
         id: get_integration_test_providers
         shell: pwsh
         run: |
           $Providers = @()
+          $AllProviders = (Get-Content integrationTest/profiles.json | ConvertFrom-Json).PSObject.Properties.Name
           $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
           $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
           $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
-          ConvertFrom-Json -InputObject $env:PROVIDERS | ForEach-Object {
+          $AllProviders | ForEach-Object {
             if(($null -ne $EnvContext."$($_)_DOMAIN") -or ($null -ne $VarsContext."$($_)_DOMAIN") -or ($null -ne $SecretsContext."$($_)_DOMAIN")) {
               $Providers += $_
             }
@@ -65,7 +70,6 @@ jobs:
           Write-Host "Integration test providers: $Providers"
           echo "integration_test_providers=$(ConvertTo-Json -InputObject $Providers -Compress)" >> $env:GITHUB_OUTPUT
         env:
-          PROVIDERS: "['ALIDNS', 'AXFRDDNS', 'AXFRDDNS_DNSSEC', 'AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','CNR','DIGITALOCEAN','FORTIGATE','GANDI_V5','GCLOUD','GIDINET','HEDNS','HETZNER_V2','HUAWEICLOUD','INWX','JOKER','MIKROTIK','MYTHICBEASTS', 'NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP','UNIFI']"
           ENV_CONTEXT: ${{ toJson(env) }}
           VARS_CONTEXT: ${{ toJson(vars) }}
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
