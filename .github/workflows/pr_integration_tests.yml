@@ -58,7 +58,7 @@ jobs:
         shell: pwsh
         run: |
           $Providers = @()
-          $AllProviders = (Get-Content integrationTest/profiles.json | ConvertFrom-Json).PSObject.Properties.Name
+          $AllProviders = (Get-Content integrationTest/profiles.json | ConvertFrom-Json -AsHashtable).Keys
           $EnvContext = ConvertFrom-Json -InputObject $env:ENV_CONTEXT
           $VarsContext = ConvertFrom-Json -InputObject $env:VARS_CONTEXT
           $SecretsContext = ConvertFrom-Json -InputObject $env:SECRETS_CONTEXT
