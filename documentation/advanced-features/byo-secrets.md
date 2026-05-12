@@ -43,22 +43,7 @@ Edits to `pr_integration_tests.yml` may have already been done for you.
 
 Edit `.github/workflows/pr_integration_tests.yml`
 
-1. Add the provider to the `PROVIDERS` list.
-
-* Add the name of the provider to the PROVIDERS list.
-* Please keep this list sorted alphabetically.
-
-The line looks something like:
-
-{% code title=".github/workflows/pr_integration_tests.yml" %}
-```yaml
-      env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
-        ENV_CONTEXT: ${{ toJson(env) }}
-```
-{% endcode %}
-
-2. Add your providers `_DOMAIN` env variable:
+1. Add your providers `_DOMAIN` env variable:
 
 * Add it to the `env` section of `integration-tests`.
 * Please keep this list sorted alphabetically.
