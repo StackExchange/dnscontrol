@@ -21,8 +21,8 @@ This provider recognizes the following metadata fields:
 
 | Key | Type | Value | Description |
 |-------|------|---------|-------------|
-| `enabled` | string | `"true"`/`"false"` |  Whether the zone is enabled. |
-| `enable_search_domain` | string | `"true"`/`"false"` | Whether to enable this zone as a search domain. |
+| `netbird_enabled` | string | `"true"`/`"false"` |  Whether the zone is enabled. |
+| `netbird_enable_search_domain` | string | `"true"`/`"false"` | Whether to enable this zone as a search domain. |
 
 **Note:** If metadata fields are not set, DNSControl will leave them unchanged in NetBird.
 
@@ -52,8 +52,8 @@ To configure zone options, use metadata:
 D("example.com", REG_DNSIMPLE,
     {
     		no_ns: "true",
-        enabled: "true",
-		    enable_search_domain: "true",
+        netbird_enabled: "true",
+		    netbird_enable_search_domain: "true",
     },
     DnsProvider(DSP_NETBIRD),
     A("test", "1.2.3.4"),

@@ -115,20 +115,20 @@ func AuditRecords(records []*models.RecordConfig) []error {
 	return errs
 }
 
-// parseEnabled parses the "enabled" metadata field.
+// parseEnabled parses the "netbird_enabled" metadata field.
 // Returns nil if not set (don't change), &true or &false if explicitly set.
 func parseEnabled(metadata map[string]string) *bool {
-	if v, ok := metadata["enabled"]; ok {
+	if v, ok := metadata["netbird_enabled"]; ok {
 		result := v != "false"
 		return &result
 	}
 	return nil
 }
 
-// parseEnableSearchDomain parses the "enable_search_domain" metadata field.
+// parseEnableSearchDomain parses the "netbird_enable_search_domain" metadata field.
 // Returns nil if not set (don't change), &true or &false if explicitly set.
 func parseEnableSearchDomain(metadata map[string]string) *bool {
-	if v, ok := metadata["enable_search_domain"]; ok {
+	if v, ok := metadata["netbird_enable_search_domain"]; ok {
 		result := v == "true"
 		return &result
 	}
