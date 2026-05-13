@@ -80,6 +80,7 @@ type NameServer struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 }
 
+// ListResponseMetaData represents a JSON reply to a list command.
 type ListResponseMetaData struct {
 	ObjectType string `json:"type"`
 	ItemCount  int    `json:"summary"`

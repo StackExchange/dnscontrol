@@ -30,6 +30,7 @@ type ZoneListRequest struct {
 	View   *ZoneListView     `json:"view,omitempty"`
 }
 
+// ZoneListView describes a JSON zone list reply.
 type ZoneListView struct {
 	Limit    int  `json:"limit"`
 	Offset   int  `json:"offset"`
