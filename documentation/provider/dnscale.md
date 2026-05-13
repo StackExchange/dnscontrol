@@ -64,6 +64,33 @@ DNScale supports the following record types:
 - TLSA
 - TXT
 
+## Nameservers and apex NS records
+
+DNScale automatically assigns nameservers (e.g. `ns1.dnscale.eu`, `ns2.dnscale.eu`) when a zone is created. These system-managed NS records at the zone apex are invisible to DNSControl — they cannot be modified or deleted.
+
+Third-party NS records at the apex **are** supported for multi-provider DNS setups. For example, if you use DNScale alongside another provider, you can add their nameservers as NS records and DNSControl will manage them normally.
+
+### Multi-provider DNS setup
+
+Because DNScale assigns nameservers server-side, `GetNameservers` returns an empty list. This means DNScale's nameservers are not automatically included in registrar delegation. For multi-provider setups, you must explicitly declare them using `NAMESERVER()`:
+
+{% code title="dnsconfig.js" %}
+```javascript
+var REG_NAMECHEAP = NewRegistrar("namecheap");
+var DSP_DNSCALE = NewDnsProvider("dnscale");
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
+
+D("example.com", REG_NAMECHEAP,
+    DnsProvider(DSP_DNSCALE),
+    DnsProvider(DSP_CLOUDFLARE),
+    NAMESERVER("ns1.dnscale.eu"),
+    NAMESERVER("ns2.dnscale.eu"),
+    A("@", "192.0.2.1"),
+    A("www", "192.0.2.1"),
+END);
+```
+{% endcode %}
+
 ## New domains
 
 If a domain does not exist in your DNScale account, DNSControl will automatically create it when you run `dnscontrol push`.
