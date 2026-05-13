@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
 )
 
 /*
@@ -16,12 +16,13 @@ at handling all these edge cases but it made the code very complex.
 
 pkg/diff2 was inspired by the intuition that the edge cases would
 disappear if we simply stored the data in a way that was easier to
-compare. The edge cases would disappear and the code would become more
+process. The edge cases would disappear and the code would become more
 simple.  Simple is better.
 
 The struct CompareConfig is a data structure that stores all the
 existing/desired RecordConfig items in a way that makes the
-differencing engine easier to implement.
+differencing engine easier to implement. We extract the zone data
+into this structure.
 
 However, complexity never disappears it just moves elsewhere in the
 system.  Converting our RecordConfigs to this datastructure is

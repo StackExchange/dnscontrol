@@ -5,7 +5,7 @@ providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/azureprivatedns @matthewmgamble
-providers/bind @tlimoncelli
+providers/bind @TomOnTime
 providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton
@@ -20,23 +20,25 @@ providers/doh @mikenz
 providers/domainnameshop @SimenBai
 providers/dynadot @e-im
 providers/easyname @tresni
-providers/exoscale @pierre-emmanuelJ
+providers/exoscale @Giza
 providers/fortigate @KlettIT
 providers/gandiv5 @TomOnTime
 providers/gcloud @riyadhalnur
 providers/gcore @xddxdd
+providers/gidinet @zupolgec
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
 providers/hetznerv2 @das7pad
-providers/hexonet @KaiSchwarz-cnic
 providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
+providers/infomaniak @jbelien
 providers/internetbs @pragmaton
 providers/inwx @patschi
 providers/joker @atrull
 providers/linode @koesie10
 providers/loopia @systemcrash
 providers/luadns @riku22
+providers/mikrotik @hedger
 providers/mythicbeasts @tomfitzhenry
 providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER
@@ -55,5 +57,8 @@ providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
 providers/transip @blackshadev
+providers/unifi @zupolgec
 providers/vercel @SukkaW
 providers/vultr @pgaskin
+
+* @TomOnTime

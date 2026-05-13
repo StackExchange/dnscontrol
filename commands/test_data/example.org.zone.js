@@ -4,6 +4,7 @@ var DSP_BIND = NewDnsProvider("bind", "BIND");
 var REG_CHANGEME = NewRegistrar("none");
 
 D("example.org", REG_CHANGEME,
+	{no_ns: "true"},
 	DnsProvider(DSP_BIND),
 	DefaultTTL(7200),
 	//SOA("@", "ns1.example.org.", "hostmaster.example.org.", 7200, 3600, 864000, 7200, TTL(43200)),

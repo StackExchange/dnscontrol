@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/netip"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -134,7 +134,9 @@ func (c *adguardHomeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *adguardHomeProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *adguardHomeProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -162,7 +164,7 @@ func toRewriteEntry(domain string, rc *models.RecordConfig) (rewriteEntry, error
 
 	case "CNAME", "ALIAS":
 		re.Answer = rc.GetTargetField()
-		re.Answer = dnsutil.TrimDomainName(re.Answer, domain)
+		re.Answer = dnsutilv1.TrimDomainName(re.Answer, domain)
 
 	case "ADGUARDHOME_A_PASSTHROUGH":
 		re.Answer = "A"
@@ -197,7 +199,7 @@ func toRc(domain string, r rewriteEntry) (*models.RecordConfig, error) {
 	} else if r.Answer == "AAAA" {
 		rc.Type = "ADGUARDHOME_AAAA_PASSTHROUGH"
 	} else {
-		answer := dnsutil.TrimDomainName(r.Answer, domain)
+		answer := dnsutilv1.TrimDomainName(r.Answer, domain)
 		rc.SetTarget(answer)
 
 		if r.Domain == domain {

@@ -5,9 +5,9 @@ package desec
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // nativeToRecord takes a DNS record from deSEC and returns a native RecordConfig struct.
@@ -43,7 +43,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 	keys := map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
 	for _, r := range rcs {
-		label := dnsutil.TrimDomainName(r.GetLabel(), origin)
+		label := dnsutilv1.TrimDomainName(r.GetLabel(), origin)
 		if label == "@" {
 			label = ""
 		}

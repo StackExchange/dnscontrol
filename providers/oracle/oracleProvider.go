@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/dns"
 	"github.com/oracle/oci-go-sdk/v65/example/helpers"
@@ -53,7 +53,7 @@ type oracleProvider struct {
 	compartment string
 }
 
-// New creates a new provider for Oracle Cloud DNS
+// New creates a new provider for Oracle Cloud DNS.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	client, err := dns.NewDnsClientWithConfigurationProvider(common.NewRawConfigurationProvider(
 		settings["tenancy_ocid"],
@@ -113,7 +113,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (o *oracleProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -168,8 +168,8 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]string, len(getResp.Zone.Nameservers))
-	for i, ns := range getResp.Zone.Nameservers {
+	nss := make([]string, len(getResp.Nameservers))
+	for i, ns := range getResp.Nameservers {
 		nss[i] = *ns.Hostname
 	}
 
@@ -186,7 +186,9 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return nssNoStrip, nil
 }
 
-func (o *oracleProvider) GetZoneRecords(zone string, meta map[string]string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	zone := dc.Name
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 

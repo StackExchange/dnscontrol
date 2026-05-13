@@ -5,13 +5,15 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2/model"
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *huaweicloudProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *huaweicloudProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	if err := c.getZones(); err != nil {
 		return nil, err
 	}

@@ -100,9 +100,25 @@ This option is disabled by default when this key is not present,
 {% endcode %}
 
 ## Metadata
-This provider does not recognize any special metadata fields unique to Hurricane Electric DNS.
+
+This provider supports the following record-level metadata:
+
+| Modifier | Description |
+|---|---|
+| `HEDNS_DYNAMIC_ON` | Enable [Dynamic DNS](https://dns.he.net/) on the record. The record will be assigned a DDNS key that can be used to update its value via the HE DDNS API (`https://dyn.dns.he.net/nic/update`). |
+| `HEDNS_DYNAMIC_OFF` | Explicitly disable Dynamic DNS on the record. **Warning:** this will clear any associated DDNS key. |
+| `HEDNS_DDNS_KEY("key")` | Enable Dynamic DNS and set a specific DDNS key (token) on the record. Implies `HEDNS_DYNAMIC_ON`. |
+
+### Dynamic DNS behavior
+
+* When a record has Dynamic DNS enabled and is subsequently modified by dnscontrol (e.g. TTL change), the dynamic flag is **preserved** automatically. You do not need to re-specify `HEDNS_DYNAMIC_ON` on every run unless you want to be explicit.
+* If you do not specify any `HEDNS_DYNAMIC_*` modifier on a record that is already dynamic on the provider, the dynamic state is **inherited** — the record stays dynamic.
+* DDNS keys are **write-only**: dnscontrol will set the key you specify but cannot read back the current key from HE DNS. This means:
+  * A key-only change (same record data, new key) requires changing another field (e.g. TTL) to trigger an update.
+  * The `get-zones` export will include `HEDNS_DYNAMIC_ON` for dynamic records but will not include the DDNS key.
 
 ## Usage
+
 An example configuration:
 
 {% code title="dnsconfig.js" %}
@@ -111,7 +127,20 @@ var REG_NONE = NewRegistrar("none");
 var DSP_HEDNS = NewDnsProvider("hedns");
 
 D("example.com", REG_NONE, DnsProvider(DSP_HEDNS),
+    // Standard static record
     A("test", "1.2.3.4"),
+
+    // Dynamic DNS record (HE DNS assigns/preserves the DDNS key)
+    A("dyn", "0.0.0.0", HEDNS_DYNAMIC_ON),
+
+    // Dynamic DNS record with a specific DDNS key
+    A("dyn2", "0.0.0.0", HEDNS_DDNS_KEY("my-secret-token")),
+
+    // Dynamic AAAA record
+    AAAA("dyn6", "::1", HEDNS_DYNAMIC_ON),
+
+    // Explicitly non-dynamic record (clears any prior DDNS key)
+    A("static", "5.6.7.8", HEDNS_DYNAMIC_OFF),
 );
 ```
 {% endcode %}

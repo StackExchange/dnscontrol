@@ -184,7 +184,7 @@ func (c *APIClient) getDomains() ([]domainObject, error) {
 	return resp.Domains, err
 }
 
-// getDomainRecords gets all records for a subdomain
+// getDomainRecords gets all records for a subdomain.
 func (c *APIClient) getDomainRecords(domain string, subdomain string) ([]zoneRecord, error) {
 	call := &methodCall{
 		MethodName: "getZoneRecords",
@@ -203,7 +203,7 @@ func (c *APIClient) getDomainRecords(domain string, subdomain string) ([]zoneRec
 	return resp.ZoneRecords, err
 }
 
-// GetSubDomains gets all the subdomains within a domain, no records
+// GetSubDomains gets all the subdomains within a domain, no records.
 func (c *APIClient) GetSubDomains(domain string) ([]string, error) {
 	call := &methodCall{
 		MethodName: "getSubdomains",
@@ -221,7 +221,7 @@ func (c *APIClient) GetSubDomains(domain string) ([]string, error) {
 	return resp.Params, err
 }
 
-// GetDomainNS gets all NS records for a subdomain, in this case, the apex "@"
+// GetDomainNS gets all NS records for a subdomain, in this case, the apex "@".
 func (c *APIClient) GetDomainNS(domain string) ([]string, error) {
 	if c.ModifyNameServers {
 		return nil, nil

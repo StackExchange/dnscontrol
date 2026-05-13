@@ -429,6 +429,37 @@ function R53_EVALUATE_TARGET_HEALTH(enabled) {
     };
 }
 
+// R53_WEIGHT(weight, set_identifier) configures Route 53 weighted routing.
+// weight: integer 0-255, set_identifier: unique string within the weighted group.
+function R53_WEIGHT(weight, set_identifier) {
+    if (!_.isNumber(weight) || weight < 0 || weight > 255) {
+        throw 'R53_WEIGHT: weight must be a number between 0 and 255';
+    }
+    if (!_.isString(set_identifier) || set_identifier === '') {
+        throw 'R53_WEIGHT: set_identifier must be a non-empty string';
+    }
+    return function (r) {
+        if (!_.isObject(r.meta)) {
+            r.meta = {};
+        }
+        r.meta['r53_weight'] = weight.toString();
+        r.meta['r53_set_identifier'] = set_identifier;
+    };
+}
+
+// R53_HEALTH_CHECK_ID(health_check_id) associates a Route 53 health check with the record.
+function R53_HEALTH_CHECK_ID(health_check_id) {
+    if (!_.isString(health_check_id) || health_check_id === '') {
+        throw 'R53_HEALTH_CHECK_ID: health_check_id must be a non-empty string';
+    }
+    return function (r) {
+        if (!_.isObject(r.meta)) {
+            r.meta = {};
+        }
+        r.meta['r53_health_check_id'] = health_check_id;
+    };
+}
+
 function validateR53AliasType(value) {
     if (!_.isString(value)) {
         return false;
@@ -874,8 +905,8 @@ function locStringBuilder(record, args) {
 // Renders LOC type internal properties from D˚M'S" parameters.
 // Change anything here at your peril.
 function locDMSBuilder(record, args) {
-    LOCEquator = 1 << 31; // RFC 1876, Section 2.
-    LOCPrimeMeridian = 1 << 31; // RFC 1876, Section 2.
+    LOCEquator = Math.pow(2, 31); // RFC 1876, Section 2.
+    LOCPrimeMeridian = Math.pow(2, 31); // RFC 1876, Section 2.
     LOCHours = 60 * 1000;
     LOCDegrees = 60 * LOCHours;
     LOCAltitudeBase = 100000;
@@ -1336,7 +1367,10 @@ function recordBuilder(type, opts) {
                 record.type != 'CF_SINGLE_REDIRECT' &&
                 record.type != 'CF_WORKER_ROUTE' &&
                 record.type != 'ADGUARDHOME_A_PASSTHROUGH' &&
-                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH'
+                record.type != 'ADGUARDHOME_AAAA_PASSTHROUGH' &&
+                record.type != 'MIKROTIK_FWD' &&
+                record.type != 'MIKROTIK_NXDOMAIN' &&
+                record.type != 'MIKROTIK_FORWARDER'
             ) {
                 record.subdomain = d.subdomain;
 
@@ -1463,6 +1497,51 @@ var CF_PROXY_DEFAULT_ON = { cloudflare_proxy_default: 'on' };
 var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
+// Per-record comment (works on all plans):
+function CF_COMMENT(comment) {
+    return { cloudflare_comment: comment };
+}
+// Per-record tags (requires paid plan):
+function CF_TAGS() {
+    return { cloudflare_tags: Array.prototype.slice.call(arguments).join(',') };
+}
+// Enable comment management for domain (opt-in to sync comments):
+var CF_MANAGE_COMMENTS = { cloudflare_manage_comments: 'true' };
+// Enable tag management for domain (opt-in to sync tags, requires paid plan):
+var CF_MANAGE_TAGS = { cloudflare_manage_tags: 'true' };
+
+// Hurricane Electric DNS (HEDNS) aliases:
+
+// Enable Dynamic DNS on a record (preserves existing DDNS key):
+var HEDNS_DYNAMIC_ON = { hedns_dynamic: 'on' };
+// Disable Dynamic DNS on a record (WARNING: clears the associated DDNS key):
+var HEDNS_DYNAMIC_OFF = { hedns_dynamic: 'off' };
+// Set a specific DDNS key on a dynamic record (implies HEDNS_DYNAMIC_ON):
+function HEDNS_DDNS_KEY(key) {
+    return { hedns_dynamic: 'on', hedns_ddns_key: key };
+}
+
+// Gidinet aliases:
+
+// GIDINET_PREMIUM_NS(): Emit NAMESERVER records for Gidinet premium DNS
+// (dns1..dns5.gidinet.com). Use together with DnsProvider(DNS_GIDINET, 0)
+// so the free-tier defaults from GetNameservers are skipped.
+//
+// Usage:
+//   D("premium.example", REG_GIDINET,
+//     DnsProvider(DNS_GIDINET, 0),
+//     GIDINET_PREMIUM_NS(),
+//     A("www", "1.2.3.4"),
+//   );
+function GIDINET_PREMIUM_NS() {
+    return [
+        NAMESERVER('dns1.gidinet.com.'),
+        NAMESERVER('dns2.gidinet.com.'),
+        NAMESERVER('dns3.gidinet.com.'),
+        NAMESERVER('dns4.gidinet.com.'),
+        NAMESERVER('dns5.gidinet.com.'),
+    ];
+}
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
@@ -1499,6 +1578,33 @@ var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
  */
 var PORKBUN_URLFWD = recordBuilder('PORKBUN_URLFWD');
 var BUNNY_DNS_RDR = recordBuilder('BUNNY_DNS_RDR');
+
+// MIKROTIK_FWD(name, target, modifiers...)
+// RouterOS conditional DNS forwarding entry.
+var MIKROTIK_FWD = recordBuilder('MIKROTIK_FWD');
+
+// MIKROTIK_NXDOMAIN(name, modifiers...)
+// RouterOS NXDOMAIN entry — returns NXDOMAIN for matching queries (DNS blackholing).
+var MIKROTIK_NXDOMAIN = recordBuilder('MIKROTIK_NXDOMAIN', {
+    args: [['name', _.isString]],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = 'NXDOMAIN';
+    },
+});
+
+// MIKROTIK_FORWARDER(name, dns_servers, modifiers...)
+// RouterOS named DNS forwarder (/ip/dns/forwarders).
+// Use in the synthetic zone "_forwarders.mikrotik".
+var MIKROTIK_FORWARDER = recordBuilder('MIKROTIK_FORWARDER');
+
+var BUNNY_DNS_PZ = recordBuilder('BUNNY_DNS_PZ', {
+    args: [['name', _.isString], ['pullZoneId']],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = String(args.pullZoneId);
+    },
+});
 // LOC_BUILDER_DD takes an object:
 // label: The DNS label for the LOC record. (default: '@')
 // x: Decimal X coordinate.

@@ -3,11 +3,11 @@ package powerdns
 import (
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/mittwald/go-powerdns/apis/zones"
 )
 
-// toRecordConfig converts a PowerDNS DNSRecord to a RecordConfig. #rtype_variations
+// toRecordConfig converts a PowerDNS DNSRecord to a RecordConfig. #rtype_variations.
 func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype string) (*models.RecordConfig, error) {
 	// trimming trailing dot and domain from name
 	name = strings.TrimSuffix(name, domain+".")

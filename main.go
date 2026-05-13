@@ -5,10 +5,10 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/StackExchange/dnscontrol/v4/commands"
-	_ "github.com/StackExchange/dnscontrol/v4/pkg/providers/_all"
-	_ "github.com/StackExchange/dnscontrol/v4/pkg/rtype"
-	"github.com/StackExchange/dnscontrol/v4/pkg/version"
+	"github.com/DNSControl/dnscontrol/v4/commands"
+	_ "github.com/DNSControl/dnscontrol/v4/pkg/providers/_all"
+	_ "github.com/DNSControl/dnscontrol/v4/pkg/rtype"
+	"github.com/DNSControl/dnscontrol/v4/pkg/version"
 	"github.com/fatih/color"
 )
 

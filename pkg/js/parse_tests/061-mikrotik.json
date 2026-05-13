@@ -1,0 +1,51 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "meta": {
+        "dnscontrol_nameraw": "foo.com",
+        "dnscontrol_nameunicode": "foo.com",
+        "dnscontrol_uniquename": "foo.com"
+      },
+      "name": "foo.com",
+      "records": [
+        {
+          "filepos": "[line:2:5]",
+          "meta": {
+            "address_list": "vpn-list",
+            "match_subdomain": "true",
+            "orig_custom_type": "MIKROTIK_FWD"
+          },
+          "name": "@",
+          "target": "8.8.8.8",
+          "ttl": 300,
+          "type": "MIKROTIK_FWD"
+        },
+        {
+          "filepos": "[line:6:5]",
+          "meta": {
+            "orig_custom_type": "MIKROTIK_NXDOMAIN"
+          },
+          "name": "blocked",
+          "target": "NXDOMAIN",
+          "ttl": 300,
+          "type": "MIKROTIK_NXDOMAIN"
+        },
+        {
+          "filepos": "[line:7:5]",
+          "meta": {
+            "orig_custom_type": "MIKROTIK_FORWARDER"
+          },
+          "name": "corp.example.com",
+          "target": "10.0.0.53",
+          "ttl": 300,
+          "type": "MIKROTIK_FORWARDER"
+        }
+      ],
+      "registrar": "none",
+      "uniquename": "foo.com"
+    }
+  ],
+  "registrars": []
+}

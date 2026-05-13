@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/models"
 )
 
 // Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future. Implement this only if the provider is a "registrar" (i.e. can update the NS records of the parent to a domain).
@@ -20,7 +20,7 @@ type DNSServiceProvider interface {
 }
 
 // ZoneCreator should be implemented by providers that have the ability to create zones
-// (used for automatically creating zones if they don't exist)
+// (used for automatically creating zones if they don't exist).
 type ZoneCreator interface {
 	EnsureZoneExists(domain string, metadata map[string]string) error
 }
@@ -129,7 +129,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 	return p.Initializer(config, meta)
 }
 
-// beCompatible looks up
+// beCompatible looks up.
 func beCompatible(n string, config map[string]string) (string, error) {
 	// Pre 4.0: If n is a placeholder, substitute the TYPE from creds.json.
 	// 4.0: Require TYPE from creds.json.
@@ -184,18 +184,13 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (n None) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
 	return nil, nil
 }
 
 // GetZoneRecordsCorrections gets the records of a zone and returns them in RecordConfig format.
 func (n None) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, int, error) {
 	return nil, 0, nil
-}
-
-// GetDomainCorrections returns corrections to update a domain.
-func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	return nil, nil
 }
 
 var featuresNone = DocumentationNotes{
@@ -220,12 +215,12 @@ type CustomRType struct {
 // RegisterCustomRecordType registers a record type that is only valid for one provider.
 // provider is the registered type of provider this is valid with
 // name is the record type as it will appear in the js. (should be something like $PROVIDER_FOO)
-// realType is the record type it will be replaced with after validation
+// realType is the record type it will be replaced with after validation.
 func RegisterCustomRecordType(name, provider, realType string) {
 	customRecordTypes[name] = &CustomRType{Name: name, Provider: provider, RealType: realType}
 }
 
-// GetCustomRecordType returns a registered custom record type, or nil if none
+// GetCustomRecordType returns a registered custom record type, or nil if none.
 func GetCustomRecordType(rType string) *CustomRType {
 	return customRecordTypes[rType]
 }

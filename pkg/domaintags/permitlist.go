@@ -14,7 +14,7 @@ type PermitList struct {
 	items []*DomainNameVarieties
 }
 
-// CompilePermitList compiles a list of domain strings into a PermitList structure. The
+// CompilePermitList compiles a list of domain strings into a PermitList structure.
 func CompilePermitList(s string) PermitList {
 	s = strings.TrimSpace(s)
 	if s == "" || s == "*" || strings.ToLower(s) == "all" {

@@ -1,7 +1,6 @@
 # creds.json
 
-When DNSControl interacts with a provider, any API keys, credentials, or other
-configuration parameters required are stored in `creds.json`.   The file contains a set of key/value pairs for each configuration.  That is, since a provider can be used multiple times with different credentials, the file contains a section for each set of credentials.
+When DNSControl interacts with a provider, any API keys, credentials, or other configuration parameters required are stored in `creds.json`.   The file contains a set of key/value pairs for each configuration.  That is, since a provider can be used multiple times with different credentials, the file contains a section for each set of credentials.
 
 Here's a sample file:
 
@@ -18,12 +17,12 @@ Here's a sample file:
     "directory": "inzones",
     "filenameformat": "db_%T%?_%D"
   },
-  "hexonet": {
-    "TYPE": "HEXONET",
-    "apilogin": "$HEXONET_APILOGIN",
-    "apipassword": "$HEXONET_APIPASSWORD",
-    "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "$HEXONET_DOMAIN"
+  "CNR": {
+    "TYPE": "CNR",
+    "apilogin": "$CNR_APILOGIN",
+    "apipassword": "$CNR_APIPASSWORD",
+    "debugmode": "$CNR_DEBUGMODE",
+    "domain": "$CNR_DOMAIN"
   }
 }
 ```
@@ -31,7 +30,7 @@ Here's a sample file:
 
 ## Format
 
-* Primary keys: (e.g. `cloudflare_tal`, `inside`, `hexonet`)
+* Primary keys: (e.g. `cloudflare_tal`, `inside`, `CNR`)
   * ...refer to the first parameter in the `NewRegistrar()` or `NewDnsProvider()` functions in a `dnsconfig.js` file.
   * ...may include any printable character except colon (`:`)
   * Convention: all lower case, usually the name of the provider or the username at the provider or both.
@@ -41,30 +40,11 @@ Here's a sample file:
   * A missing subkey is not an error. The value is the empty string.
 * Values:
   * ...may include any JSON string value including the empty string.
-  * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$HEXONET_APILOGIN` would be replaced by the value of the environment variable `HEXONET_APILOGIN` or the empty string if no such environment variable exists.
+  * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$CNR_APILOGIN` would be replaced by the value of the environment variable `CNR_APILOGIN` or the empty string if no such environment variable exists.
 
-## New in v3.16
+## The TYPE subkey
 
-The special subkey "TYPE" is used to indicate the provider type (NONE,
-CLOUDFLAREAPI, GCLOUD, etc).
-
-Prior to [v3.16](../release/v316.md), the provider type is specified as the second argument
-to `NewRegistrar()` and `NewDnsProvider()` in `dnsconfig.js` or as a
-command-line argument in tools such as `dnscontrol get-zones`.
-
-Starting in [v3.16](../release/v316.md), `NewRegistrar()`, and `NewDnsProvider()` no longer
-require the provider type to be specified. It may be specified for
-backwards compatibility, but a warning will be generated with a
-suggestion of how to upgrade to the 4.0 format.  Likewise,
-command-line tools no longer require the provider type to be
-specified, but for backwards compatibility one may specify `-` since
-the parameter is positional.
-
-In 4.0, DNSControl will require the "TYPE" subkey in each `creds.json`
-entry. Command line tools will have a backwards-incompatible change to
-remove the provider-type as a positional argument.  Prior to 4.0, the
-various commands will output warnings and suggestions to avoid
-compatibility issues during the transition.
+The special subkey "TYPE" is required in each `creds.json` entry. It indicates the provider type (NONE, CLOUDFLAREAPI, GCLOUD, etc).
 
 ## Error messages
 
@@ -74,8 +54,7 @@ Message: `WARNING: For future compatibility, add this entry creds.json:...`
 
 Message: `WARNING: For future compatibility, update the ... entry in creds.json by adding:...`
 
-These messages indicates that this provider is not mentioned in `creds.json`.  In v4.0
-all providers used in `dnsconfig.js` will require an entry in `creds.json`.
+These messages indicates that this provider is not mentioned in `creds.json`.  In v4.0 all providers used in `dnsconfig.js` will require an entry in `creds.json`.
 
 For a smooth transition, please update your `creds.json` file now.
 
@@ -95,12 +74,9 @@ Here is the minimal entry required:
 
 Message: `INFO: In dnsconfig.js New*(..., ...) can be simplified to New*(...)`
 
-This message indicates that the same provider name is specified in
-`dnsconfig.js` and `creds.json` and offers a suggestion for reducing
-the redundancy.
+This message indicates that the same provider name is specified in `dnsconfig.js` and `creds.json` and offers a suggestion for reducing the redundancy.
 
-The fix is to update `dnsconfig.js` as suggested in the error.
-Usually this is to simply remove the second parameter to the function.
+The fix is to update `dnsconfig.js` as suggested in the error. Usually this is to simply remove the second parameter to the function.
 
 Examples:
 
@@ -132,12 +108,7 @@ Examples:
 ```
 {% endcode %}
 
-Starting with [v3.16](../release/v316.md) use of an OLD format will trigger warnings with suggestions on how to adopt the NEW format.
-
-Starting with v4.0 support for the OLD format may be reported as an error.
-
-Please adopt the NEW format when your installation has eliminated any use of DNSControl pre-3.16.
-
+Use of the OLD format will trigger warnings with suggestions on how to adopt the NEW format.
 
 ### mismatch
 
@@ -151,9 +122,7 @@ The fix is to change one to match the other.
 
 Message: `ERROR: creds.json entry ... is missing ...: ...`
 
-However no `TYPE` subkey was found in an entry in `creds.json`.
-In 3.16 forward, it is required if new-style `NewRegistrar()` or `NewDnsProvider()` was used.
-In 4.0 this is required.
+However no `TYPE` subkey was found in an entry in `creds.json`. In 3.16 forward, it is required if new-style `NewRegistrar()` or `NewDnsProvider()` was used. In 4.0 this is required.
 
 The fix is to add a `TYPE` subkey to the `creds.json` entry.
 
@@ -161,14 +130,9 @@ The fix is to add a `TYPE` subkey to the `creds.json` entry.
 
 Message: `ERROR: creds.json entry ... has invalid ... value ...`
 
-This indicates that the type `-` was specified in a `TYPE` value in
-`creds.json`. There is no provider named `-` therefore that is
-invalid. Perhaps you meant to specify a `-` on a command-line tool?
+This indicates that the type `-` was specified in a `TYPE` value in `creds.json`. There is no provider named `-` therefore that is invalid. Perhaps you meant to specify a `-` on a command-line tool?
 
-The fix is to change the `TYPE` subkey entry in `creds.json` from `-` to
-a valid service provider identifier, as listed
-in [the service provider list](../provider/index.md).
-
+The fix is to change the `TYPE` subkey entry in `creds.json` from `-` to a valid service provider identifier, as listed in [the service provider list](../provider/index.md).
 
 ## Using a different file name
 
@@ -200,11 +164,7 @@ Following commands would execute a shell command:
 dnscontrol preview --creds '!op inject -i creds.json.tpl'
 ```
 
-This example requires the [1Password command-line tool](https://developer.1password.com/docs/cli/)
-but works with any shell command that returns a properly formatted `creds.json`.
-In this case, the 1Password CLI is used to inject the secrets from
-a 1Password vault, rather than storing them in environment variables.
-An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json](https://github.com/StackExchange/dnscontrol/blob/main/documentation/assets/1password/creds.json).
+This example requires the [1Password command-line tool](https://developer.1password.com/docs/cli/) but works with any shell command that returns a properly formatted `creds.json`. In this case, the 1Password CLI is used to inject the secrets from a 1Password vault, rather than storing them in environment variables. An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json](https://github.com/DNSControl/dnscontrol/blob/main/documentation/assets/1password/creds.json).
 
 {% code title="creds.json" %}
 ```json
@@ -229,10 +189,6 @@ An example of a template file containing Linode and Cloudflare API credentials i
 
 Do NOT store `creds.json` (or any secrets!) in a Git repository. That is not secure.
 
-For example, storing the creds.json at the top of this document would be horribly insecure.
-Anyone with access to your Git repository *or the history* will know your apiuser is `REDACTED`.
-Removing secrets accidentally stored in Git is very difficult because you'll need to rewrite
-the repo history.
+For example, storing the creds.json at the top of this document would be horribly insecure. Anyone with access to your Git repository *or the history* will know your apiuser is `REDACTED`. Removing secrets accidentally stored in Git is very difficult because you'll need to rewrite the repo history.
 
-A better way is to use environment variables as in the `hexonet` example above.  Use
-secure means to distribute the names and values of the environment variables.
+A better way is to use environment variables as in the `CNR` example above.  Use secure means to distribute the names and values of the environment variables.

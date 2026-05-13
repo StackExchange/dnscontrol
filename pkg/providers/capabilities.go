@@ -38,22 +38,22 @@ const (
 	// are equivalent.
 	CanOnlyDiff1Features
 
-	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
+	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAICDN
 
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
 	CanUseAlias
 
-	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports.
 	CanUseAzureAlias
 
-	// CanUseCAA indicates the provider can handle CAA records
+	// CanUseCAA indicates the provider can handle CAA records.
 	CanUseCAA
 
-	// CanUseDHCID indicates the provider can handle DHCID records
+	// CanUseDHCID indicates the provider can handle DHCID records.
 	CanUseDHCID
 
-	// CanUseDNAME indicates the provider can handle DNAME records
+	// CanUseDNAME indicates the provider can handle DNAME records.
 	CanUseDNAME
 
 	// CanUseDS indicates that the provider can handle DS record types. This
@@ -64,58 +64,58 @@ const (
 	// only for children records, not at the root of the zone.
 	CanUseDSForChildren
 
-	// CanUseHTTPS indicates the provider can handle HTTPS records
+	// CanUseHTTPS indicates the provider can handle HTTPS records.
 	CanUseHTTPS
 
-	// CanUseLOC indicates whether service provider handles LOC records
+	// CanUseLOC indicates whether service provider handles LOC records.
 	CanUseLOC
 
-	// CanUseNAPTR indicates the provider can handle NAPTR records
+	// CanUseNAPTR indicates the provider can handle NAPTR records.
 	CanUseNAPTR
 
-	// CanUsePTR indicates the provider can handle PTR records
+	// CanUsePTR indicates the provider can handle PTR records.
 	CanUsePTR
 
-	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
+	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports.
 	CanUseRoute53Alias
 
-	// CanUseRP indicates the provider can handle RP records
+	// CanUseRP indicates the provider can handle RP records.
 	CanUseRP
 
-	// CanUseSMIMEA indicates the provider can handle SMIMEA records
+	// CanUseSMIMEA indicates the provider can handle SMIMEA records.
 	CanUseSMIMEA
 
-	// CanUseSOA indicates the provider supports full management of a zone's SOA record
+	// CanUseSOA indicates the provider supports full management of a zone's SOA record.
 	CanUseSOA
 
-	// CanUseSRV indicates the provider can handle SRV records
+	// CanUseSRV indicates the provider can handle SRV records.
 	CanUseSRV
 
-	// CanUseSSHFP indicates the provider can handle SSHFP records
+	// CanUseSSHFP indicates the provider can handle SSHFP records.
 	CanUseSSHFP
 
-	// CanUseSVCB indicates the provider can handle SVCB records
+	// CanUseSVCB indicates the provider can handle SVCB records.
 	CanUseSVCB
 
-	// CanUseTLSA indicates the provider can handle TLSA records
+	// CanUseTLSA indicates the provider can handle TLSA records.
 	CanUseTLSA
 
-	// CanUseDNSKEY indicates that the provider can handle DNSKEY records
+	// CanUseDNSKEY indicates that the provider can handle DNSKEY records.
 	CanUseDNSKEY
 
-	// CanUseOPENPGPKEY indicates that the provider can handle OPENPGPKEY records
+	// CanUseOPENPGPKEY indicates that the provider can handle OPENPGPKEY records.
 	CanUseOPENPGPKEY
 
-	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
+	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command.
 	DocCreateDomains
 
-	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider
+	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider.
 	DocDualHost
 
-	// DocOfficiallySupported means it is actively used and maintained by stack exchange
+	// DocOfficiallySupported means it is actively used and maintained by stack exchange.
 	DocOfficiallySupported
 
-	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports
+	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAITLC
 )
 
@@ -137,13 +137,13 @@ type DocumentationNote struct {
 	Link          string
 }
 
-// DocumentationNotes is a full list of notes for a single provider
+// DocumentationNotes is a full list of notes for a single provider.
 type DocumentationNotes map[Capability]*DocumentationNote
 
-// ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangeably
+// ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangeably.
 type ProviderMetadata any
 
-// Notes is a collection of all documentation notes, keyed by provider type
+// Notes is a collection of all documentation notes, keyed by provider type.
 var Notes = map[string]DocumentationNotes{}
 
 func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {

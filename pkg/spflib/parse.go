@@ -52,11 +52,11 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		if part == "" {
 			continue
 		}
-		lcpart := strings.ToLower(part) // We have seen "Ip4" instead of "ip4".  Let's be gracious and allow it.
 		p := &SPFPart{Text: part}
 		if qualifiers[part[0]] {
 			part = part[1:]
 		}
+		lcpart := strings.ToLower(part) // We have seen "Ip4" instead of "ip4".  Let's be gracious and allow it.
 		rec.Parts = append(rec.Parts, p)
 		if part == "all" {
 			// all. nothing else matters.

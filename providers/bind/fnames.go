@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 )
 
-// makeFileName uses format to generate a zone's filename.  See the
+// makeFileName uses format to generate a zone's filename.  See the.
 func makeFileName(format string, ff domaintags.DomainNameVarieties) string {
 	//fmt.Printf("DEBUG: makeFileName(%q, %+v)\n", format, ff)
 	if format == "" {

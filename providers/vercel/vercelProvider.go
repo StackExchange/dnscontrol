@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns"
+	"codeberg.org/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	vercelClient "github.com/vercel/terraform-provider-vercel/client"
 )
 
@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// vercelProvider stores login credentials and represents and API connection
+// vercelProvider stores login credentials and represents and API connection.
 type vercelProvider struct {
 	client   vercelClient.Client
 	apiToken string
@@ -123,12 +123,14 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 // GetNameservers returns empty array.
 // Vercel doesn't permit apex NS records. Vercel's API doesn't even include apex NS records in their API response
 // To prevent DNSControl from trying to create default NS records, let' return an empty array here, just like
-// exoscale provider and gandi v5 provider
+// exoscale provider and gandi v5 provider.
 func (c *vercelProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return []*models.Nameserver{}, nil
 }
 
-func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *vercelProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	var zoneRecords []*models.RecordConfig
 
 	records, err := c.ListDNSRecords(context.Background(), domain)
@@ -144,7 +146,7 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 		// Those records will have their "creator" being "system", some of them even has a comment field
 		// "Vercel automatically manages this record. It may change without notice".
 		//
-		// Per https://github.com/StackExchange/dnscontrol/pull/3542#issuecomment-3560041419, let's
+		// Per https://github.com/DNSControl/dnscontrol/pull/3542#issuecomment-3560041419, let's
 		// pretend those records don't exist, and diff2.ByRecord() will not affect these existing records.
 		if r.Creator == "system" {
 			continue
@@ -162,7 +164,7 @@ func (c *vercelProvider) GetZoneRecords(domain string, meta map[string]string) (
 		rc.SetLabel(name, domain)
 
 		if r.Type == "CNAME" || r.Type == "MX" {
-			r.Value = dns.CanonicalName(r.Value)
+			r.Value = dnsutil.Canonical(r.Value)
 		}
 
 		switch rtype := r.RecordType; rtype {
@@ -317,7 +319,7 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 	}
 	req.Name = name
 	req.Type = rc.Type
-	req.Value = ptrString(rc.GetTargetField())
+	req.Value = new(rc.GetTargetField())
 	req.TTL = int64(rc.TTL)
 	req.Comment = ""
 
@@ -336,7 +338,7 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 		// bad_request - Invalid request: should NOT have additional property `value`
 		req.Value = nil
 	case "TXT":
-		req.Value = ptrString(rc.GetTargetTXTJoined())
+		req.Value = new(rc.GetTargetTXTJoined())
 	case "HTTPS":
 		req.HTTPS = &httpsRecord{
 			Priority: int64(rc.SvcPriority),
@@ -348,7 +350,7 @@ func toVercelCreateRequest(domain string, rc *models.RecordConfig) (createDNSRec
 		// bad_request - Invalid request: should NOT have additional property `value`.
 		req.Value = nil
 	case "CAA":
-		req.Value = ptrString(fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField()))
+		req.Value = new(fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField()))
 	}
 
 	return req, nil
@@ -367,17 +369,17 @@ func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, err
 	value := rc.GetTargetField()
 	req.Value = &value
 
-	req.TTL = ptrInt64(int64(rc.TTL))
+	req.TTL = new(int64(rc.TTL))
 	req.Comment = ""
 
 	switch rc.Type {
 	case "MX":
-		req.MXPriority = ptrInt64(int64(rc.MxPreference))
+		req.MXPriority = new(int64(rc.MxPreference))
 	case "SRV":
 		req.SRV = &vercelClient.SRVUpdate{
-			Priority: ptrInt64(int64(rc.SrvPriority)),
-			Weight:   ptrInt64(int64(rc.SrvWeight)),
-			Port:     ptrInt64(int64(rc.SrvPort)),
+			Priority: new(int64(rc.SrvPriority)),
+			Weight:   new(int64(rc.SrvWeight)),
+			Port:     new(int64(rc.SrvPort)),
 			Target:   &value,
 		}
 		// When dealing with SRV records, we must not set the Value fields,
@@ -403,13 +405,4 @@ func toVercelUpdateRequest(rc *models.RecordConfig) (updateDNSRecordRequest, err
 	}
 
 	return req, nil
-}
-
-// ptrInt64 returns a pointer to an int64
-func ptrInt64(v int64) *int64 {
-	return &v
-}
-
-func ptrString(v string) *string {
-	return &v
 }

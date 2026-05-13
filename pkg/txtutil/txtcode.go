@@ -17,7 +17,7 @@ import (
 // `"f\"oo"` => f"oo
 // `"f\\oo"` => f\oo
 // `"foo" "bar"` => foobar
-// `"foo" bar` => foobar
+// `"foo" bar` => foobar.
 func ParseQuoted(s string) (string, error) {
 	return txtDecode(s)
 }
@@ -36,23 +36,30 @@ func EncodeQuoted(t string) string {
 	return txtEncode(ToChunks(t))
 }
 
+// EncodeSingle encodes a string as a single quoted value without splitting
+// into 255-octet chunks. This is intended for user-facing display (e.g., diff
+// preview) where the chunked representation is confusing.
+func EncodeSingle(t string) string {
+	return txtEncode([]string{t})
+}
+
 // State denotes the parser state.
 type State int
 
 const (
-	// StateStart indicates parser is looking for a non-space
+	// StateStart indicates parser is looking for a non-space.
 	StateStart State = iota
 
-	// StateUnquoted indicates parser is in a run of unquoted text
+	// StateUnquoted indicates parser is in a run of unquoted text.
 	StateUnquoted
 
-	// StateQuoted indicates parser is in quoted text
+	// StateQuoted indicates parser is in quoted text.
 	StateQuoted
 
-	// StateBackslash indicates the last char was backlash in a quoted string
+	// StateBackslash indicates the last char was backlash in a quoted string.
 	StateBackslash
 
-	// StateWantSpace indicates parser expects a space (the previous token was a closing quote)
+	// StateWantSpace indicates parser expects a space (the previous token was a closing quote).
 	StateWantSpace
 )
 
@@ -90,11 +97,12 @@ func txtDecode(s string) (string, error) {
 
 		switch state {
 		case StateStart:
-			if c == ' ' {
+			switch c {
+			case ' ':
 				// skip whitespace
-			} else if c == '"' {
+			case '"':
 				state = StateQuoted
-			} else {
+			default:
 				state = StateUnquoted
 				b.WriteRune(c)
 			}
@@ -108,16 +116,16 @@ func txtDecode(s string) (string, error) {
 			}
 
 		case StateQuoted:
-
-			if c == '\\' {
+			switch c {
+			case '\\':
 				if isRemaining(s, i, 1) {
 					state = StateBackslash
 				} else {
 					return "", fmt.Errorf("txtDecode quoted string ends with backslash q(%q)", s)
 				}
-			} else if c == '"' {
+			case '"':
 				state = StateWantSpace
-			} else {
+			default:
 				b.WriteRune(c)
 			}
 

@@ -10,12 +10,12 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -25,7 +25,7 @@ Info required in `creds.json`:
    - auth-password
 */
 
-func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
+func newCloudns(m map[string]string) (*cloudnsProvider, error) {
 	c := &cloudnsProvider{}
 	c.requestLimit = NewAdaptiveLimiter(10, 10)
 
@@ -38,12 +38,12 @@ func NewCloudns(m map[string]string) (*cloudnsProvider, error) {
 	return c, nil
 }
 
-func NewDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	return NewCloudns(conf)
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newCloudns(conf)
 }
 
-func NewReg(conf map[string]string) (providers.Registrar, error) {
-	return NewCloudns(conf)
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newCloudns(conf)
 }
 
 var features = providers.DocumentationNotes{
@@ -77,11 +77,11 @@ func init() {
 	const providerName = "CLOUDNS"
 	const providerMaintainer = "@pragmaton"
 	fns := providers.DspFuncs{
-		Initializer:   NewDsp,
+		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterRegistrarType(providerName, NewReg)
+	providers.RegisterRegistrarType(providerName, newReg)
 	providers.RegisterCustomRecordType("CLOUDNS_WR", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 }
@@ -95,43 +95,6 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 
 	return models.ToNameservers(names)
 }
-
-// // GetDomainCorrections returns the corrections for a domain.
-// func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-// 	dc, err := dc.Copy()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	dc.Punycode()
-
-// 	if c.domainIndex == nil {
-// 		if err := c.fetchDomainList(); err != nil {
-// 			return nil, err
-// 		}
-// 	}
-// 	_, ok := c.domainIndex[dc.Name]
-// 	if !ok {
-// 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
-// 	}
-
-// 	existingRecords, err := c.GetZoneRecords(dc.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// Normalize
-// 	models.PostProcessRecords(existingRecords)
-
-// 	// Get a list of available TTL values.
-// 	// The TTL list needs to be obtained for each domain, so get it first here.
-// 	c.fetchAvailableTTLValues(dc.Name)
-// 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
-// 	for _, record := range dc.Records {
-// 		record.TTL = fixTTL(record.TTL)
-// 	}
-
-// 	return c.GetZoneRecordsCorrections(dc, existingRecords)
-// }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
@@ -277,7 +240,7 @@ func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	return corrections, actualChangeCount, nil
 }
 
-// GetRegistrarCorrections returns corrections to update domain nameserver delegation
+// GetRegistrarCorrections returns corrections to update domain nameserver delegation.
 func (c *cloudnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	// 1. Get current nameservers from registrar
 	existing, err := c.getNameservers(dc.Name)
@@ -336,7 +299,9 @@ func (c *cloudnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *cloudnsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -351,7 +316,7 @@ func (c *cloudnsProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if _, ok, err := c.idForDomain(domain); err != nil {
 		return err
@@ -361,7 +326,7 @@ func (c *cloudnsProvider) EnsureZoneExists(domain string, metadata map[string]st
 	return c.createDomain(domain)
 }
 
-// returns names of all DNS zones managed by this provider.
+// ListZones returns names of all DNS zones managed by this provider.
 func (c *cloudnsProvider) ListZones() ([]string, error) {
 	if err := c.fetchZones(); err != nil {
 		return nil, err
@@ -375,7 +340,7 @@ func (c *cloudnsProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// parses the ClouDNS format into our standard RecordConfig
+// parses the ClouDNS format into our standard RecordConfig.
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
@@ -409,7 +374,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "TXT":
 		err = rc.SetTargetTXT(r.Target)
 	case "CNAME", "DNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
-		if err := rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain)); err != nil {
+		if err := rc.SetTarget(dnsutilv1.AddOrigin(r.Target+".", domain)); err != nil {
 			return nil, err
 		}
 	case "CAA":
@@ -441,7 +406,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 		rc.DsDigest = r.Target
 		err = rc.SetTarget(r.Target)
 	case "CLOUD_WR":
-		rc.Type = "WR"
+		rc.Type = "CLOUDNS_WR"
 		err = rc.SetTarget(r.Target)
 	case "LOC":
 		loc := fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s",
@@ -452,7 +417,7 @@ func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	case "NAPTR":
 		naptrOrder, _ := strconv.ParseUint(r.NaptrOrder, 10, 16)
 		naptrPreference, _ := strconv.ParseUint(r.NaptrPreference, 10, 16)
-		target := dnsutil.AddOrigin(r.NaptrReplacement+".", domain)
+		target := dnsutilv1.AddOrigin(r.NaptrReplacement+".", domain)
 		err = rc.SetTargetNAPTR(uint16(naptrOrder), uint16(naptrPreference), r.NaptrFlags, r.NaptrService, r.NaptrRegexp, target)
 	default:
 		err = rc.SetTarget(r.Target)
@@ -494,7 +459,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR", "DNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "DNAME":
 		// Nothing special.
 	case "CLOUDNS_WR":
 		req["record-type"] = "WR"

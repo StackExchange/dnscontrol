@@ -1,12 +1,12 @@
 package recorddb
 
-import "github.com/StackExchange/dnscontrol/v4/models"
+import "github.com/DNSControl/dnscontrol/v4/models"
 
 // Functions that make it easier to deal with
 // a group of records.
 //
 
-// RecordDB is a container of many model.RecordConfig
+// RecordDB is a container of many model.RecordConfig.
 type RecordDB = struct {
 	labelAndTypeMap map[models.RecordKey]struct{}
 }

@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/transform"
+	dnsv1 "github.com/miekg/dns"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Returns false if target does not validate.
@@ -141,7 +141,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 		return nil
 	}
 	// Don't warn for records that start with _
-	// See https://github.com/StackExchange/dnscontrol/issues/829
+	// See https://github.com/DNSControl/dnscontrol/issues/829
 	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") || strings.HasPrefix(label, "sql-") {
 		return nil
 	}
@@ -206,8 +206,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(errors.New("cannot create CNAME record for bare domain"))
 		}
-		labelFQDN := dnsutil.AddOrigin(label, domain)
-		targetFQDN := dnsutil.AddOrigin(target, domain)
+		labelFQDN := dnsutilv1.AddOrigin(label, domain)
+		targetFQDN := dnsutilv1.AddOrigin(target, domain)
 		if labelFQDN == targetFQDN {
 			check(errors.New("CNAME loop (target points at itself)"))
 		}
@@ -241,7 +241,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(errors.New("LUA records must specify an emitted rtype"))
 			break
 		}
-		if _, ok := dns.StringToType[upper]; !ok {
+		if _, ok := dnsv1.StringToType[upper]; !ok {
 			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", rec.LuaRType))
 		}
 		rec.LuaRType = upper
@@ -265,7 +265,7 @@ func transformCNAME(target, oldDomain, newDomain, suffixstrip string) string {
 	if strings.HasSuffix(target, ".") {
 		return target + nd + "."
 	}
-	return dnsutil.AddOrigin(target, oldDomain) + "." + nd + "."
+	return dnsutilv1.AddOrigin(target, oldDomain) + "." + nd + "."
 }
 
 func newRec(rec *models.RecordConfig, ttl uint32) *models.RecordConfig {
@@ -394,7 +394,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				errs = append(errs, err)
 			}
 			// Unlike any other FQDN in this system, it is stored as a FQDN without the trailing dot.
-			n := dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			n := dnsutilv1.AddOrigin(ns.Name, domain.Name+".")
 			ns.Name = strings.TrimSuffix(n, ".")
 		}
 
@@ -441,7 +441,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "ALIAS" || rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
+			switch rec.Type { // #rtype_variations
+			case "ALIAS", "CNAME", "MX", "NS", "SRV":
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
@@ -450,27 +451,36 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.SubDomain != "" {
 					origin = rec.SubDomain + "." + origin
 				}
-				if err := rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin)); err != nil {
+				if err := rec.SetTarget(dnsutilv1.AddOrigin(rec.GetTargetField(), origin)); err != nil {
 					errs = append(errs, err)
 				}
-			} else if rec.Type == "A" || rec.Type == "AAAA" {
+			case "A", "AAAA":
 				if err := rec.SetTargetIP(rec.GetTargetIP()); err != nil {
 					errs = append(errs, err)
 				}
-			} else if rec.Type == "PTR" {
+			case "PTR":
 				var err error
 				var name string
 				if name, err = transform.PtrNameMagic(rec.GetLabel(), domain.Name); err != nil {
 					errs = append(errs, err)
 				}
 				rec.SetLabel(name, domain.Name)
-			} else if rec.Type == "CAA" {
+			case "CAA":
 				// Per: https://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml#caa-properties excluding reserved tags
 				allowedTags := []string{"issue", "issuewild", "iodef", "contactemail", "contactphone", "issuemail", "issuevmc"}
 				if !slices.Contains(allowedTags, rec.CaaTag) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
-			} else if rec.Type == "TLSA" {
+			case "OPENPGPKEY":
+				target := rec.GetTargetField()
+				if target, err = transform.OPENPGPKEY(target); err != nil {
+					errs = append(errs, err)
+				} else {
+					if err := rec.SetTarget(target); err != nil {
+						errs = append(errs, err)
+					}
+				}
+			case "TLSA":
 				if rec.TlsaUsage > 3 {
 					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
 						rec.TlsaUsage, rec.GetLabel(), domain.Name))
@@ -483,7 +493,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
-			} else if rec.Type == "SMIMEA" {
+			case "SMIMEA":
 				if rec.SmimeaUsage > 3 {
 					errs = append(errs, fmt.Errorf("SMIMEA Usage %d is invalid in record %s (domain %s)",
 						rec.SmimeaUsage, rec.GetLabel(), domain.Name))
@@ -557,6 +567,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, checkDuplicates(d.Records)...)
 		// Check for different TTLs under the same label
 		errs = append(errs, checkRecordSetHasMultipleTTLs(d.Records)...)
+		// Check for inconsistent R53 weighted routing metadata within a group
+		errs = append(errs, checkR53WeightedGroupConsistency(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -572,7 +584,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			if provider.ProviderBase.ProviderType == "-" {
+			if provider.ProviderType == "-" {
 				// "-" indicates that we don't yet know who the provider type
 				// is.  This is probably due to the fact that `dnscontrol
 				// check` doesn't read creds.json, which is where the TYPE is
@@ -581,9 +593,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// be performed.
 				continue
 			}
-			if es := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); len(es) != 0 {
+			if es := providers.AuditRecords(provider.ProviderType, domain.Records); len(es) != 0 {
 				for _, e := range es {
-					errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderBase.ProviderType, domain.Name, e))
+					errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderType, domain.Name, e))
 				}
 			}
 		}
@@ -626,16 +638,30 @@ func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 
 func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	cnames := map[string]bool{}
+	proxiedCnames := map[string]bool{}
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
 				errs = append(errs, fmt.Errorf("%s: cannot have multiple CNAMEs with same name: %s", r.FilePos, r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
+			if p, ok := r.Metadata["cloudflare_proxy"]; ok && (p == "on" || p == "full") {
+				proxiedCnames[r.GetLabel()] = true
+			}
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
+			// Allow AKAMAICDN and CNAME to have same name
+			if r.Type == "AKAMAICDN" {
+				continue
+			}
+			// Cloudflare proxied (flattened) CNAMEs are resolved internally
+			// and never served as actual CNAME records, so the RFC 1034 §3.6.2
+			// restriction does not apply.
+			if proxiedCnames[r.GetLabel()] {
+				continue
+			}
 			errs = append(errs, fmt.Errorf("%s: cannot have CNAME and %s record with same name: %s", r.FilePos, r.Type, r.GetLabelFQDN()))
 		}
 	}
@@ -739,6 +765,39 @@ func commaSepInts(list []int) string {
 		slist[i] = strconv.Itoa(v)
 	}
 	return strings.Join(slist, ",")
+}
+
+// checkR53WeightedGroupConsistency validates that all records sharing the same
+// label+type+set_identifier have identical weight and health_check_id, since
+// they map to a single Route 53 ResourceRecordSet.
+func checkR53WeightedGroupConsistency(records []*models.RecordConfig) (errs []error) {
+	type groupMeta struct {
+		weight      string
+		healthCheck string
+	}
+	groups := map[string]groupMeta{}
+
+	for _, rc := range records {
+		sid := rc.Metadata["r53_set_identifier"]
+		if sid == "" {
+			continue
+		}
+		key := rc.GetLabelFQDN() + ":" + rc.Type + "!" + sid
+		w := rc.Metadata["r53_weight"]
+		hc := rc.Metadata["r53_health_check_id"]
+
+		if existing, ok := groups[key]; ok {
+			if existing.weight != w {
+				errs = append(errs, fmt.Errorf("R53 weighted group %q at %s %s has inconsistent weights (%s vs %s)", sid, rc.Type, rc.GetLabelFQDN(), existing.weight, w))
+			}
+			if existing.healthCheck != hc {
+				errs = append(errs, fmt.Errorf("R53 weighted group %q at %s %s has inconsistent health check IDs (%s vs %s)", sid, rc.Type, rc.GetLabelFQDN(), existing.healthCheck, hc))
+			}
+		} else {
+			groups[key] = groupMeta{weight: w, healthCheck: hc}
+		}
+	}
+	return errs
 }
 
 // We pull this out of checkProviderCapabilities() so that it's visible within

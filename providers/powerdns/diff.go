@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
 	"github.com/fatih/color"
 	"github.com/mittwald/go-powerdns/apis/zones"
 )
@@ -80,7 +80,7 @@ func (dsp *powerdnsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, 
 	return corrections, actualChangeCount, nil
 }
 
-// buildRecordList returns a list of records for the PowerDNS resource record set from a change
+// buildRecordList returns a list of records for the PowerDNS resource record set from a change.
 func buildRecordList(change diff2.Change) (records []zones.Record) {
 	for _, recordContent := range change.New {
 		record := zones.Record{

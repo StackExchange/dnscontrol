@@ -5,8 +5,8 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/miekg/dns"
+	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
+	dnsv1 "github.com/miekg/dns"
 )
 
 /* .target is kind of a mess.
@@ -48,7 +48,7 @@ func (rc *RecordConfig) GetTargetCombinedFunc(encodeFn func(s string) string) st
 // code depends on the bugs. Use Get GetTargetCombinedFunc() instead.
 func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
-	if _, ok := dns.StringToType[rc.Type]; !ok {
+	if _, ok := dnsv1.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
 		case "LUA":
 			return rc.luaCombined()
@@ -175,6 +175,33 @@ func (rc *RecordConfig) GetTargetDebug() string {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
+}
+
+// GetTargetJS returns the target as a JavaScript literal, as documented in
+// documentation/language-reference/domain-modifiers/*.md. Each parameter is
+// quoted, unless it is an integer or boolean.  We can't use GetTargetCombined()
+// because it is not designed for JavaScript and may include unquoted
+// parameters, which would break the JavaScript.  Instead, we must quote each
+// parameter separately. This doesn't support all types and needs to be improved.
+// FIXME(tlim): This duplicates code in commands/getZones.go:formatDsl().
+//
+//	We should extract the common logic into a function they can both use.
+func (rc *RecordConfig) GetTargetJS() string {
+	if rc.Type == "TXT" || rc.Type == "LUA" {
+		return fmt.Sprintf("%q", rc.target)
+	}
+	switch rc.Type {
+	case "A", "AAAA", "AKAMAICDN", "CNAME", "DHCID", "NS", "OPENPGPKEY", "PTR":
+		return fmt.Sprintf("%q", rc.target)
+	case "SOA":
+		// SOA(ns, mbox, refresh, retry, expire, minttl)
+		return fmt.Sprintf("%q, %q, %d, %d, %d, %d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+	case "SRV":
+		// SRV(priority, weight, port, target)
+		return fmt.Sprintf("%d, %d, %d, %q", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.target)
+	default:
+		return fmt.Sprintf("%q", rc.GetTargetCombined())
+	}
 }
 
 // SetTarget sets the target, assuming that the rtype is appropriate.

@@ -67,11 +67,11 @@ var isRfc4183Format3 = regexp.MustCompile(`(\d{1,3})-(\d{1,3})\.(\d{1,3})\.in-ad
 
 // ipMatchesClasslessDomain returns true if ip is appropriate for domain.
 // domain is a reverse DNS lookup zone (in-addr.arpa) as described in RFC2317.
-func ipMatchesClasslessDomain(ip_ netip.Addr, domain string) int {
+func ipMatchesClasslessDomain(ipAddress netip.Addr, domain string) int {
 
 	// Converting netip.Addr to net.IP so we can use the legacy code, which is troublesome to translate.
 	// get Addr as []byte
-	s := ip_.AsSlice()
+	s := ipAddress.AsSlice()
 	// convert bytes slice to net.IP type (it works as net.IP underlying type is also []byte so net.IP and []byte are identical)
 	ip := net.IP(s)
 

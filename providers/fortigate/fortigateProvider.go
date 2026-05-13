@@ -7,9 +7,9 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 )
 
 // Feature Declaration
@@ -78,7 +78,9 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 
 // Record Fetching
 
-func (p *fortigateProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (p *fortigateProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records := models.Records{}
 
 	// Request the zone object from FortiGate
@@ -168,7 +170,7 @@ func (p *fortigateProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	return corrections, actualChangeCount, nil
 }
 
-// Zone Existence Check & Creation
+// Zone Existence Check & Creation.
 func (p *fortigateProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	var probe struct{ Results []any }
 

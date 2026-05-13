@@ -1,3 +1,14 @@
+version: "2"
+
 linters:
+  default: standard
   disable:
     - errcheck
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - decorder
+    - durationcheck
+    - godot
+    - predeclared

@@ -3,12 +3,12 @@ package domainnameshop
 import (
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 func toRecordConfig(domain string, currentRecord *domainNameShopRecord) (*models.RecordConfig, error) {
-	name := dnsutil.AddOrigin(currentRecord.Host, domain)
+	name := dnsutilv1.AddOrigin(currentRecord.Host, domain)
 
 	target := currentRecord.Data
 
@@ -35,11 +35,12 @@ func toRecordConfig(domain string, currentRecord *domainNameShopRecord) (*models
 			return nil, err
 		}
 	case "CAA":
-		if currentRecord.CAATag == "0" {
+		switch currentRecord.CAATag {
+		case "0":
 			t.CaaTag = "issue"
-		} else if currentRecord.CAATag == "1" {
+		case "1":
 			t.CaaTag = "issuewild"
-		} else {
+		default:
 			t.CaaTag = "iodef"
 		}
 	default:

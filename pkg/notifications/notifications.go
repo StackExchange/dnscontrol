@@ -2,7 +2,7 @@ package notifications
 
 import "regexp"
 
-// Notifier is a type that can send a notification
+// Notifier is a type that can send a notification.
 type Notifier interface {
 	// Notify will be called after a correction is performed.
 	// It will be given the correction's message, the result of executing it,
@@ -13,10 +13,10 @@ type Notifier interface {
 	Done()
 }
 
-// new notification types should add themselves to this array
+// new notification types should add themselves to this array.
 var initers = []func(map[string]string) Notifier{}
 
-// matches ansi color codes
+// matches ansi color codes.
 var ansiColorRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // Init will take the given config map (from creds.json notifications key) and create a single Notifier with
@@ -34,7 +34,7 @@ func Init(config map[string]string) Notifier {
 
 type multiNotifier []Notifier
 
-// removes any ansi color codes from a given string
+// removes any ansi color codes from a given string.
 func stripAnsiColors(colored string) string {
 	return ansiColorRegex.ReplaceAllString(colored, "")
 }

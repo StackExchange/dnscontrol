@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare"
+	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/providers/cloudflare"
 )
 
 var (
@@ -20,6 +20,7 @@ var (
 	enableCFWorkers      = flag.Bool("cfworkers", true, "enable CF worker tests (default true)")
 	enableCFRedirectMode = flag.Bool("cfredirect", false, "enable CF SingleRedirect tests (default false)")
 	enableCFFlatten      = flag.Bool("cfflatten", false, "enable CF CNAME flattening tests (requires paid plan, default false)")
+	enableCFTags         = flag.Bool("cftags", false, "enable CF tag tests (requires paid plan, default false)")
 )
 
 func init() {

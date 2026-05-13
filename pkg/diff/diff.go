@@ -3,7 +3,7 @@ package diff
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/fatih/color"
 )
 
@@ -28,7 +28,7 @@ type Differ interface {
 
 type differ struct{}
 
-// get normalized content for record. target, ttl, mxprio, and specified metadata
+// get normalized content for record. target, ttl, mxprio, and specified metadata.
 func (d *differ) content(r *models.RecordConfig) string {
 	return fmt.Sprintf("%s ttl=%d", r.ToComparableNoTTL(), r.TTL)
 }

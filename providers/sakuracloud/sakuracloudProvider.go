@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 )
 
 const defaultEndpoint = "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1"
@@ -75,7 +75,7 @@ func newSakuracloud(config map[string]string, _ json.RawMessage) (*sakuracloudPr
 		endpoint = defaultEndpoint
 	}
 
-	api, err := NewSakuracloudAPI(accessToken, accessTokenSecret, endpoint)
+	api, err := newSakuracloudAPI(accessToken, accessTokenSecret, endpoint)
 	if err != nil {
 		return nil, err
 	}

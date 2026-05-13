@@ -7,12 +7,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
 
 	"github.com/urfave/cli/v3"
 )
@@ -24,63 +24,58 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Aliases: []string{"get-zone"},
 		Usage:   "gets a zone from a provider (stand-alone)",
 		Action: func(ctx context.Context, c *cli.Command) error {
-			if c.NArg() < 3 {
-				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
+			if c.NArg() < 2 {
+				return cli.Exit("Arguments should be: credskey zone(s) (Ex: my_cloudflare example.com)", 1)
 			}
 			args.CredName = c.Args().Get(0)
-			arg1 := c.Args().Get(1)
-			args.ProviderName = arg1
-			// In v4.0, skip the first args.ZoneNames if it equals "-".
-			args.ZoneNames = c.Args().Slice()[2:]
-
-			if arg1 != "" && arg1 != "-" {
-				// NB(tlim): In v4.0 this "if" can be removed.
-				fmt.Fprintf(os.Stderr, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
-					arg1, "-",
-					"https://docs.dnscontrol.org/commands/get-zones",
-				)
+			if c.NArg() == 2 || c.Args().Get(1) == "-" {
+				args.ProviderName = ""
+				if c.Args().Get(1) == "-" {
+					args.ZoneNames = c.Args().Slice()[2:]
+				} else {
+					args.ZoneNames = c.Args().Slice()[1:]
+				}
+			} else {
+				arg1 := c.Args().Get(1)
+				if _, ok := providers.DNSProviderTypes[arg1]; ok {
+					// Deprecated form: credkey provider zone [...]
+					args.ProviderName = arg1
+					args.ZoneNames = c.Args().Slice()[2:]
+					fmt.Fprintf(os.Stderr, "WARNING: The provider name argument is deprecated. Please use \"dnscontrol get-zones %s %s\" instead. See %q\n",
+						args.CredName, strings.Join(args.ZoneNames, " "),
+						"https://docs.dnscontrol.org/commands/get-zones",
+					)
+				} else {
+					// New form with multiple zones: credkey zone1 zone2 [...]
+					args.ProviderName = ""
+					args.ZoneNames = c.Args().Slice()[1:]
+				}
 			}
 
 			return exit(GetZone(args))
 		},
 		Flags:     args.flags(),
-		UsageText: "dnscontrol get-zones [command options] credkey provider zone [...]",
+		UsageText: "dnscontrol get-zones [command options] credkey zone [...]",
 		Description: `Download a zone from a provider.  This is a stand-alone utility.
 
 ARGUMENTS:
-   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
-   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
+   credkey:  The name used in creds.json
    zone:     One or more zones (domains) to download; or "all".
 
-FORMATS:
-   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-   --format=djs       js with disco commas (leading commas)
-   --format=zone      BIND zonefile format
-   --format=tsv       TAB separated value (useful for AWK)
-   --format=nameonly  Just print the zone names
-
-The columns in --format=tsv are:
-   FQDN (the label with the domain)
-   ShortName (just the label, "@" if it is the naked domain)
-   TTL
-   Record Type (A, AAAA, CNAME, etc.)
-   Target and arguments (quoted like in a zonefile)
-   Either empty or a comma-separated list of properties like "cloudflare_proxy=true"
-
-The --ttl flag only applies to zone/js/djs formats.
-
 EXAMPLES:
-   dnscontrol get-zones myr53 ROUTE53 example.com
-   dnscontrol get-zones gmain GANDI_V5 example.com other.com
-   dnscontrol get-zones cfmain CLOUDFLAREAPI all
-   dnscontrol get-zones --format=tsv bind BIND example.com
-   dnscontrol get-zones --format=djs --out=draft.js gcloud GCLOUD example.com`,
+   dnscontrol get-zones my_route53 example.com
+   dnscontrol get-zones my_gandi example.com other.com
+   dnscontrol get-zones my_cloudflare all
+   dnscontrol get-zones --format=tsv my_bind example.com
+   dnscontrol get-zones --format=djs --out=draft.js my_gcloud example.com
+
+Documentation: https://docs.dnscontrol.org/commands/get-zones`,
 	}
 }())
 
 // check-creds foo bar
 // is the same as
-// get-zones --format=nameonly foo bar all
+// get-zones --format=nameonly foo bar all.
 var _ = cmd(catUtils, func() *cli.Command {
 	var args GetZoneArgs
 	return &cli.Command{
@@ -120,7 +115,9 @@ ARGUMENTS:
 EXAMPLES:
    dnscontrol check-creds myr53 ROUTE53      # Pre v3.16, or pre-v4.0 for backwards-compatibility
    dnscontrol check-creds myr53
-   dnscontrol check-creds --out=/dev/null myr53 && echo Success`,
+   dnscontrol check-creds --out=/dev/null myr53 && echo Success
+
+Documentation: https://docs.dnscontrol.org/commands/check-creds`,
 	}
 }())
 
@@ -211,14 +208,14 @@ func GetZone(args GetZoneArgs) error {
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		ff := domaintags.MakeDomainNameVarieties(zone)
-		recs, err := provider.GetZoneRecords(ff.NameASCII,
-			// Populate the map "manually" so that BIND's GetZoneRecords() has
-			// the information it needs to construct filenames.  If this code
-			// changes, you probably need to change that code too.
-			map[string]string{
-				models.DomainUniqueName:  ff.UniqueName,
-				models.DomainNameRaw:     ff.NameRaw,
-				models.DomainNameUnicode: ff.NameUnicode,
+		recs, err := provider.GetZoneRecords(
+			&models.DomainConfig{
+				Name: ff.NameASCII,
+				Metadata: map[string]string{
+					models.DomainUniqueName:  ff.UniqueName,
+					models.DomainNameRaw:     ff.NameRaw,
+					models.DomainNameUnicode: ff.NameUnicode,
+				},
 			})
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
@@ -265,6 +262,13 @@ func GetZone(args GetZoneArgs) error {
 
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
+
+			// If the provider returns no nameservers, emit {no_ns: "true"}
+			// so that preview/push won't skip the domain.
+			if ns, nsErr := provider.GetNameservers(zoneName); nsErr == nil && len(ns) == 0 {
+				o = append(o, `{no_ns: "true"}`)
+			}
+
 			o = append(o, fmt.Sprintf("DnsProvider(%s)", dspVariableName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
@@ -280,6 +284,28 @@ func GetZone(args GetZoneArgs) error {
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
+
+			// Check if any records have comments or tags, and add management flags if so
+			hasComments := false
+			hasTags := false
+			for _, rec := range recs {
+				if rec.Metadata["cloudflare_comment"] != "" {
+					hasComments = true
+				}
+				if rec.Metadata["cloudflare_tags"] != "" {
+					hasTags = true
+				}
+				if hasComments && hasTags {
+					break
+				}
+			}
+			if hasComments {
+				o = append(o, "CF_MANAGE_COMMENTS // opt into comments syncing")
+			}
+			if hasTags {
+				o = append(o, "CF_MANAGE_TAGS // opt into tags syncing")
+			}
+
 			for _, rec := range recs {
 				if (rec.Type == "CNAME") && (rec.Name == "@") {
 					o = append(o, "// NOTE: CNAME at apex may require manual editing.")
@@ -311,19 +337,32 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				cfmeta := ""
+				providerMeta := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
-						cfmeta += ",cloudflare_proxy=true"
+						providerMeta += ",cloudflare_proxy=true"
 					}
 				}
 				if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
 					if cf == "on" {
-						cfmeta += ",cloudflare_cname_flatten=on"
+						providerMeta += ",cloudflare_cname_flatten=on"
 					}
 				}
-				if cfmeta != "" {
-					cfmeta = "\t" + cfmeta[1:] // Remove leading comma, add tab
+				if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+					providerMeta += ",cloudflare_comment=" + comment
+				}
+				if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+					providerMeta += ",cloudflare_tags=" + tags
+				}
+				// HEDNS metadata
+				if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+					providerMeta += ",hedns_dynamic=on"
+					if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+						providerMeta += ",hedns_ddns_key=" + key
+					}
+				}
+				if providerMeta != "" {
+					providerMeta = "\t" + providerMeta[1:] // Remove leading comma, add tab
 				}
 
 				ty := rec.Type
@@ -331,7 +370,7 @@ func GetZone(args GetZoneArgs) error {
 					ty = rec.UnknownTypeName
 				}
 				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), cfmeta)
+					rec.NameFQDN, rec.Name, rec.TTL, ty, rec.GetTargetCombinedFunc(nil), providerMeta)
 			}
 
 		default:
@@ -372,6 +411,53 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 	if cf, ok := rec.Metadata["cloudflare_cname_flatten"]; ok {
 		if cf == "on" {
 			cfflatten = ", CF_CNAME_FLATTEN_ON"
+		}
+	}
+
+	cfcomment := ""
+	if comment := rec.Metadata["cloudflare_comment"]; comment != "" {
+		cfcomment = fmt.Sprintf(", CF_COMMENT(%s)", jsonQuoted(comment))
+	}
+
+	cftags := ""
+	if tags := rec.Metadata["cloudflare_tags"]; tags != "" {
+		// Convert comma-separated tags to CF_TAGS("tag1", "tag2", ...)
+		tagList := strings.Split(tags, ",")
+		quotedTags := make([]string, len(tagList))
+		for i, tag := range tagList {
+			quotedTags[i] = fmt.Sprintf("%q", tag)
+		}
+		cftags = ", CF_TAGS(" + strings.Join(quotedTags, ", ") + ")"
+	}
+
+	// Mikrotik RouterOS metadata (match_subdomain, regexp, address_list, comment)
+	mtmeta := ""
+	if rec.Metadata != nil {
+		var mtParts []string
+		if v := rec.Metadata["match_subdomain"]; v == "true" {
+			mtParts = append(mtParts, `match_subdomain: "true"`)
+		}
+		if v := rec.Metadata["regexp"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("regexp: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["address_list"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("address_list: %s", jsonQuoted(v)))
+		}
+		if v := rec.Metadata["comment"]; v != "" {
+			mtParts = append(mtParts, fmt.Sprintf("comment: %s", jsonQuoted(v)))
+		}
+		if len(mtParts) > 0 {
+			mtmeta = ", {" + strings.Join(mtParts, ", ") + "}"
+		}
+	}
+
+	// HEDNS metadata
+	hednsDynamic := ""
+	if dyn, ok := rec.Metadata["hedns_dynamic"]; ok && dyn == "on" {
+		hednsDynamic = ", HEDNS_DYNAMIC_ON"
+		if key := rec.Metadata["hedns_ddns_key"]; key != "" {
+			// HEDNS_DDNS_KEY implies dynamic, so use it instead.
+			hednsDynamic = fmt.Sprintf(", HEDNS_DDNS_KEY(%s)", jsonQuoted(key))
 		}
 	}
 
@@ -419,6 +505,26 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 			return fmt.Sprintf(`//NAMESERVER("%s")`, target)
 		}
 		target = `"` + target + `"`
+	case "MIKROTIK_FWD":
+		target = `"` + target + `"`
+	case "MIKROTIK_NXDOMAIN":
+		// NXDOMAIN has no target — emit only name + optional metadata + TTL
+		return fmt.Sprintf(`MIKROTIK_NXDOMAIN("%s"%s%s)`, rec.Name, mtmeta, ttlop)
+	case "MIKROTIK_FORWARDER":
+		// Forwarder: target is dns-servers, metadata has doh_servers/verify_doh_cert
+		target = `"` + target + `"`
+		if rec.Metadata != nil {
+			var fwdParts []string
+			if v := rec.Metadata["doh_servers"]; v != "" {
+				fwdParts = append(fwdParts, fmt.Sprintf("doh_servers: %s", jsonQuoted(v)))
+			}
+			if v := rec.Metadata["verify_doh_cert"]; v == "true" {
+				fwdParts = append(fwdParts, `verify_doh_cert: "true"`)
+			}
+			if len(fwdParts) > 0 {
+				target += ", {" + strings.Join(fwdParts, ", ") + "}"
+			}
+		}
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
 	case "UNKNOWN":
@@ -427,7 +533,7 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 		target = `"` + target + `"`
 	}
 
-	return fmt.Sprintf(`%s("%s", %s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, ttlop)
+	return fmt.Sprintf(`%s("%s", %s%s%s%s%s%s%s%s)`, rec.Type, rec.Name, target, cfproxy, cfflatten, cfcomment, cftags, mtmeta, hednsDynamic, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

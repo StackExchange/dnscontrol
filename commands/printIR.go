@@ -9,10 +9,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/js"
-	"github.com/StackExchange/dnscontrol/v4/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rfc4183"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/js"
+	"github.com/DNSControl/dnscontrol/v4/pkg/normalize"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rfc4183"
 	"github.com/urfave/cli/v3"
 )
 
@@ -164,7 +164,7 @@ func exit(err error) error {
 	return cli.Exit(err, 1)
 }
 
-// stringSliceToMap converts cli.StringSlice to map[string]string for further processing
+// stringSliceToMap converts cli.StringSlice to map[string]string for further processing.
 func stringSliceToMap(stringSlice []string) map[string]string {
 	mapString := make(map[string]string, len(stringSlice))
 	for _, values := range stringSlice {

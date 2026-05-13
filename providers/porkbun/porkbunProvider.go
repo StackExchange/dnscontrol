@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 const (
@@ -232,7 +232,9 @@ func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *porkbunProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -245,7 +247,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	for i := range records {
 		shouldSkip := false
 		if strings.HasSuffix(records[i].Content, ".porkbun.com") {
-			name := dnsutil.TrimDomainName(records[i].Name, domain)
+			name := dnsutilv1.TrimDomainName(records[i].Name, domain)
 			if name == "@" {
 				name = ""
 			}
@@ -299,7 +301,7 @@ func (c *porkbunProvider) GetZoneRecords(domain string, meta map[string]string) 
 	return existingRecords, nil
 }
 
-// parses the porkbun format into our standard RecordConfig
+// parses the porkbun format into our standard RecordConfig.
 func toRc(domain string, r *domainRecord) (*models.RecordConfig, error) {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Prio, 10, 16)

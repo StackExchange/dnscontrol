@@ -3,11 +3,11 @@ package huaweicloud
 import (
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2/model"
 )
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *huaweicloudProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if err := c.getZones(); err != nil {
 		return err

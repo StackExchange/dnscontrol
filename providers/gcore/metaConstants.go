@@ -1,10 +1,10 @@
 package gcore
 
 const (
-	// Applies to RRSet
+	// Applies to RRSet.
 	metaFilters = "gcore_filters"
 
-	// Only applies to RRSet metadata
+	// Only applies to RRSet metadata.
 	metaFailoverProtocol       = "gcore_failover_protocol"
 	metaFailoverPort           = "gcore_failover_port"
 	metaFailoverFrequency      = "gcore_failover_frequency"
@@ -17,7 +17,7 @@ const (
 	metaFailoverHTTPStatusCode = "gcore_failover_http_status_code"
 	metaFailoverHost           = "gcore_failover_host"
 
-	// Only applies to record metadata
+	// Only applies to record metadata.
 	metaASN        = "gcore_asn"
 	metaContinents = "gcore_continents"
 	metaCountries  = "gcore_countries"

@@ -14,14 +14,14 @@ import (
 	"github.com/fatih/color"
 	"golang.org/x/net/idna"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/transform"
-	"github.com/StackExchange/dnscontrol/v4/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v4/pkg/zonecache"
-	"github.com/StackExchange/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/transform"
+	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
+	"github.com/DNSControl/dnscontrol/v4/pkg/zonecache"
+	"github.com/DNSControl/dnscontrol/v4/providers/cloudflare/rtypes/cfsingleredirect"
 )
 
 /*
@@ -111,15 +111,66 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *cloudflareProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	domainID, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.getRecordsForDomain(domainID, domain)
-	if err != nil {
-		return nil, err
+
+	type result struct {
+		records models.Records
+		err     error
 	}
+
+	// Prepare channels for concurrent fetching
+	mainCh := make(chan result, 1)
+	redirectCh := make(chan result, 1)
+	workerCh := make(chan result, 1)
+
+	// Fetch DNS records concurrently
+	go func() {
+		recs, err := c.getRecordsForDomain(domainID, domain)
+		mainCh <- result{records: recs, err: err}
+	}()
+
+	// Fetch Single Redirects concurrently if enabled
+	if c.manageSingleRedirects {
+		go func() {
+			prs, err := c.getSingleRedirects(domainID, domain)
+			redirectCh <- result{records: prs, err: err}
+		}()
+	} else {
+		redirectCh <- result{records: nil, err: nil}
+	}
+
+	// Fetch Worker Routes concurrently if enabled
+	if c.manageWorkers {
+		go func() {
+			wrs, err := c.getWorkerRoutes(domainID, domain)
+			workerCh <- result{records: wrs, err: err}
+		}()
+	} else {
+		workerCh <- result{records: nil, err: nil}
+	}
+
+	// Collect results
+	mainRes := <-mainCh
+	redirectRes := <-redirectCh
+	workerRes := <-workerCh
+
+	if mainRes.err != nil {
+		return nil, mainRes.err
+	}
+	if redirectRes.err != nil {
+		return nil, redirectRes.err
+	}
+	if workerRes.err != nil {
+		return nil, workerRes.err
+	}
+
+	records := mainRes.records
 
 	for _, rec := range records {
 		if rec.TTL == 0 {
@@ -135,23 +186,8 @@ func (c *cloudflareProvider) GetZoneRecords(domain string, meta map[string]strin
 		}
 	}
 
-	if c.manageSingleRedirects { // if new xor old
-		// Download the list of Single Redirects.
-		// For each one, generate a SINGLEREDIRECT record
-		prs, err := c.getSingleRedirects(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, prs...)
-	}
-
-	if c.manageWorkers {
-		wrs, err := c.getWorkerRoutes(domainID, domain)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, wrs...)
-	}
+	records = append(records, redirectRes.records...)
+	records = append(records, workerRes.records...)
 
 	// Normalize
 	models.PostProcessRecords(records)
@@ -199,8 +235,17 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 
 	var corrections []*models.Correction
 
+	// Check if comment/tag management is enabled for this domain
+	manageComments := dc.Metadata[metaManageComments] == "true"
+	manageTags := dc.Metadata[metaManageTags] == "true"
+
+	// Create a comparable function that includes comments/tags only if management is enabled
+	comparableFunc := func(rec *models.RecordConfig) string {
+		return genComparableWithMgmt(rec, manageComments, manageTags)
+	}
+
 	// Cloudflare is a "ByRecord" API.
-	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, genComparable)
+	instructions, actualChangeCount, err := diff2.ByRecord(records, dc, comparableFunc)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -256,7 +301,7 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	return corrections, actualChangeCount, nil
 }
 
-func genComparable(rec *models.RecordConfig) string {
+func genComparableWithMgmt(rec *models.RecordConfig, manageComments, manageTags bool) string {
 	var parts []string
 	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
@@ -277,6 +322,16 @@ func genComparable(rec *models.RecordConfig) string {
 		} else {
 			parts = append(parts, "flatten=false")
 		}
+	}
+	// Include comment in comparison only if comment management is enabled
+	if manageComments {
+		comment := rec.Metadata[metaComment]
+		parts = append(parts, "comment="+comment)
+	}
+	// Include tags in comparison only if tag management is enabled
+	if manageTags {
+		tags := rec.Metadata[metaTags]
+		parts = append(parts, "tags="+tags)
 	}
 	return strings.Join(parts, ",")
 }
@@ -413,11 +468,15 @@ func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id strin
 }
 
 const (
-	metaProxy        = "cloudflare_proxy"
-	metaProxyDefault = metaProxy + "_default"
-	metaOriginalIP   = "original_ip" // TODO(tlim): Unclear what this means.
-	metaUniversalSSL = "cloudflare_universalssl"
-	metaCNAMEFlatten = "cloudflare_cname_flatten"
+	metaProxy          = "cloudflare_proxy"
+	metaProxyDefault   = metaProxy + "_default"
+	metaOriginalIP     = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL   = "cloudflare_universalssl"
+	metaCNAMEFlatten   = "cloudflare_cname_flatten"
+	metaComment        = "cloudflare_comment"
+	metaTags           = "cloudflare_tags"
+	metaManageComments = "cloudflare_manage_comments"
+	metaManageTags     = "cloudflare_manage_tags"
 )
 
 func checkProxyVal(v string) (string, error) {
@@ -513,18 +572,53 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.Metadata[metaCNAMEFlatten] = val
 		}
 
+		// Validate tags (check for reserved cf- prefix)
+		if tags := rec.Metadata[metaTags]; tags != "" {
+			for tag := range strings.SplitSeq(tags, ",") {
+				if strings.HasPrefix(strings.ToLower(tag), "cf-") {
+					return fmt.Errorf("cloudflare_tags on %v record %#v contains reserved tag prefix 'cf-': %q", rec.Type, rec.GetLabel(), tag)
+				}
+			}
+		}
+
+		// Validate that CF_COMMENT is only used when CF_MANAGE_COMMENTS is enabled
+		if rec.Metadata[metaComment] != "" && dc.Metadata[metaManageComments] != "true" {
+			return fmt.Errorf("CF_COMMENT used on %v record %#v but CF_MANAGE_COMMENTS is not enabled for this domain", rec.Type, rec.GetLabel())
+		}
+
+		// Validate that CF_TAGS is only used when CF_MANAGE_TAGS is enabled
+		if rec.Metadata[metaTags] != "" && dc.Metadata[metaManageTags] != "true" {
+			return fmt.Errorf("CF_TAGS used on %v record %#v but CF_MANAGE_TAGS is not enabled for this domain", rec.Type, rec.GetLabel())
+		}
+
+		// Ensure metadata keys exist when management is enabled, even if empty.
+		// This is needed so that modifyRecord sends an explicit empty value to
+		// the API to clear comments/tags, rather than omitting the field (which
+		// tells Cloudflare to keep the existing value).
+		if dc.Metadata[metaManageComments] == "true" {
+			if _, ok := rec.Metadata[metaComment]; !ok {
+				rec.Metadata[metaComment] = ""
+			}
+		}
+		if dc.Metadata[metaManageTags] == "true" {
+			if _, ok := rec.Metadata[metaTags]; !ok {
+				rec.Metadata[metaTags] = ""
+			}
+		}
+
 		// CNAME flattening and proxy are mutually exclusive (Opinion 6: if ambiguous, forbid it)
 		// Cloudflare silently disables flattening when proxy is enabled, which leads to confusing behavior
 		if rec.Type == "CNAME" && rec.Metadata[metaCNAMEFlatten] == "on" && rec.Metadata[metaProxy] == "on" {
 			return fmt.Errorf("CNAME record %#v has both CF_PROXY_ON and CF_CNAME_FLATTEN_ON set, but these are mutually exclusive; Cloudflare ignores CNAME flattening when proxy is enabled", rec.GetLabel())
 		}
 
-		if rec.Type == "CLOUDFLAREAPI_SINGLE_REDIRECT" {
+		switch rec.Type {
+		case "CLOUDFLAREAPI_SINGLE_REDIRECT":
 			// SINGLEREDIRECT record types. Verify they are enabled.
 			if !c.manageSingleRedirects {
 				return errors.New("you must add 'manage_single_redirects: true' metadata to cloudflare provider to use CLOUDFLAREAPI_SINGLE_REDIRECT records")
 			}
-		} else if rec.Type == "CF_WORKER_ROUTE" {
+		case "CF_WORKER_ROUTE":
 			// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
@@ -777,7 +871,7 @@ func stringDefault(value any, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 	// Check for read_only metadata
-	// https://github.com/StackExchange/dnscontrol/issues/3850
+	// https://github.com/DNSControl/dnscontrol/issues/3850
 	if cr.Meta != nil {
 		if metaMap, ok := cr.Meta.(map[string]any); ok {
 			if readOnly, ok := metaMap["read_only"].(bool); ok && readOnly {
@@ -791,7 +885,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		cr.Type = "CNAME"
 	}
 
-	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	// workaround for https://github.com/DNSControl/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
 	}
@@ -827,6 +921,14 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		} else {
 			rc.Metadata[metaCNAMEFlatten] = "off"
 		}
+	}
+
+	// Read comment and tags from API response
+	if cr.Comment != "" {
+		rc.Metadata[metaComment] = cr.Comment
+	}
+	if len(cr.Tags) > 0 {
+		rc.Metadata[metaTags] = strings.Join(cr.Tags, ",")
 	}
 
 	switch rType := cr.Type; rType { // #rtype_variations
@@ -925,7 +1027,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
-// EnsureZoneExists creates a zone if it does not exist
+// EnsureZoneExists creates a zone if it does not exist.
 func (c *cloudflareProvider) EnsureZoneExists(domain string, metadata map[string]string) error {
 	if ok, err := c.zoneCache.HasZone(domain); err != nil || ok {
 		return err

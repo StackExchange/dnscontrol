@@ -106,7 +106,7 @@ func makeRuleFromPattern(pattern, replacement string) (string, string, error) {
 }
 
 // normalizeURL turns foo.com into https://foo.com and replaces HTTP with HTTPS.
-// It also returns an error if there is a port specified (like :8080)
+// It also returns an error if there is a port specified (like :8080).
 func normalizeURL(s string) (string, string, string, error) {
 	orig := s
 	if strings.HasPrefix(s, `http://`) {

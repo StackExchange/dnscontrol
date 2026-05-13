@@ -23,14 +23,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/go-gandi/go-gandi"
 	"github.com/go-gandi/go-gandi/config"
 	"github.com/go-gandi/go-gandi/livedns"
-	"github.com/miekg/dns/dnsutil"
+	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
 
 // Section 1: Register this provider in the system.
@@ -150,7 +150,9 @@ func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiv5Provider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (client *gandiv5Provider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+
 	g := newLiveDNSClient(client)
 
 	// Get all the existing records:
@@ -236,7 +238,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 				label := inst.Key.NameFQDN
 				rtype := n.RrsetType
 				domain := dc.Name
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				shortname := dnsutilv1.TrimDomainName(label, dc.Name)
 				ttl := n.RrsetTTL
 				values := n.RrsetValues
 				key := models.RecordKey{NameFQDN: label, Type: rtype}
@@ -287,7 +289,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
 			label := inst.Key.NameFQDN
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			shortname := dnsutilv1.TrimDomainName(label, dc.Name)
 			corrections = append(corrections,
 				&models.Correction{
 					Msg: msgs,

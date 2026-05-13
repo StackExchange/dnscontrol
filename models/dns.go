@@ -55,7 +55,7 @@ type Nameserver struct {
 // that refer to the .Name field directly.  All new code should use
 // ToNameservers/ToNameserversStripTD and NameserversToStrings to make
 // future refactoring easier.  See
-// https://github.com/StackExchange/dnscontrol/issues/577
+// https://github.com/DNSControl/dnscontrol/issues/577
 
 func (n *Nameserver) String() string {
 	return n.Name
@@ -91,7 +91,7 @@ func ToNameserversStripTD(nss []string) ([]*Nameserver, error) {
 	return nservers, nil
 }
 
-// NameserversToStrings constructs a list of strings from *Nameserver structs
+// NameserversToStrings constructs a list of strings from *Nameserver structs.
 func NameserversToStrings(nss []*Nameserver) (s []string) {
 	for _, ns := range nss {
 		s = append(s, ns.Name)

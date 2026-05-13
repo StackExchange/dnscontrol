@@ -21,17 +21,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v4/models"
-	"github.com/StackExchange/dnscontrol/v4/pkg/bindserial"
-	"github.com/StackExchange/dnscontrol/v4/pkg/diff2"
-	"github.com/StackExchange/dnscontrol/v4/pkg/dnsrr"
-	"github.com/StackExchange/dnscontrol/v4/pkg/domaintags"
-	"github.com/StackExchange/dnscontrol/v4/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v4/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v4/pkg/providers"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypecontrol"
-	"github.com/StackExchange/dnscontrol/v4/pkg/rtypeinfo"
-	"github.com/miekg/dns"
+	"github.com/DNSControl/dnscontrol/v4/models"
+	"github.com/DNSControl/dnscontrol/v4/pkg/bindserial"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v4/pkg/dnsrr"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
+	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
+	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypeinfo"
+	dnsv1 "github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -101,7 +101,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 
 func init() {
 	const providerName = "BIND"
-	const providerMaintainer = "@tlimoncelli"
+	const providerMaintainer = "@TomOnTime"
 	fns := providers.DspFuncs{
 		Initializer:   initBind,
 		RecordAuditor: AuditRecords,
@@ -144,7 +144,7 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(r)
 }
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
@@ -166,7 +166,10 @@ func (c *bindProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, error) {
+	domain := dc.Name
+	meta := dc.Metadata
+
 	var zonefile string
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
@@ -207,7 +210,7 @@ func (c *bindProvider) GetZoneRecords(domain string, meta map[string]string) (mo
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
@@ -216,7 +219,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var err error
 
 		rtype := rr.Header().Rrtype
-		rtypeStr := dns.TypeToString[rtype]
+		rtypeStr := dnsv1.TypeToString[rtype]
 		if rtypeinfo.IsModernType(rtypeStr) {
 			// Modern types:
 			name := rr.Header().Name

@@ -10,7 +10,7 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
-// Exposes sha1, sha256, and sha512 hashing functions to Javascript
+// Exposes sha1, sha256, and sha512 hashing functions to Javascript.
 func hashFunc(call otto.FunctionCall) otto.Value {
 	if len(call.ArgumentList) != 2 {
 		throw(call.Otto, "require takes exactly two arguments")

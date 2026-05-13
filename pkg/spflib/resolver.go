@@ -98,7 +98,7 @@ func NewCache(filename string) (CachingResolver, error) {
 
 // IsCachePreserved returns true if cache preservation mode is enabled.
 // In this mode, warnings are issued if the cache is out of date.
-// This mode is enabled by the existance of the cache file "spfcache.json"
+// This mode is enabled by the existance of the cache file "spfcache.json".
 func (c *cache) IsCachePreserved() bool {
 	return c.cachePreserved
 }
