@@ -121,10 +121,9 @@ Some rules:
 
 Now that we've covered all that...
 
-Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  Write that you understand the above rules and would like to volunteer to maintain the credentials and account.
+Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  In the body write, "I understand the rules listed in byo-secrets.md and would like to volunteer to maintain the credentials and account."
 
-To securely send the credentials to the project, use this link: [https://transfer.secretoverflow.com/u/tlimoncelli](https://transfer.secretoverflow.com/u/tlimoncelli)
-
-You'll hear back within a week.
+To securely send the credentials to the project, please create a [SendSafely](https://www.sendsafely.com/) account (there is a free tier)
+and use it to send them to tal at what exit dot org.  You'll hear back within a week.
 
 Thank you for contributing credentials. The more providers we can test automatically with each PR, the better. It "shifts left" finding bugs and API changes and makes less work for everyone.
