@@ -15,7 +15,7 @@ var initBackoff = time.Second * 2
 const maxBackoff = time.Second * 30
 
 // doRequest makes an HTTP request to the NetBird API.
-func (api *netbirdProvider) doRequest(method, path string, body interface{}, result interface{}) error {
+func (api *netbirdProvider) doRequest(method, path string, body any, result any) error {
 	url := api.apiURL + path
 
 	var backoff = initBackoff
@@ -59,8 +59,6 @@ retry:
 		backoff = min(backoff*2, maxBackoff)
 		goto retry
 	}
-	// Reset backoff on success
-	backoff = initBackoff
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(respBody))
