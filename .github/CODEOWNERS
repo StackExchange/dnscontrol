@@ -62,3 +62,5 @@ providers/vercel @SukkaW
 providers/vultr @pgaskin
 
 * @TomOnTime
+.goreleaser.yml @cafferata @TomOnTime
+documentation/ @cafferata @TomOnTime
