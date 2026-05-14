@@ -282,8 +282,8 @@ jobs:
           fi
           # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
           if "${{ matrix.provider }}" == "VERCEL" ; then
-            echo "END: Exception for VERCEL: Never run more than the first few tests. END=$END"
             END=3
+            echo "END: Exception for VERCEL: Run fewer tests. END=$END"
           fi
           echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
