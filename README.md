@@ -179,6 +179,10 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 - **REV() will switch from RFC2317 to RFC4183 in v5.0.**  This is a breaking change. Warnings are output if your configuration is affected. No date has been announced for v5.0. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
 - **NAMEDOTCOM, OPENSRS, and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes. Interested in being a hero and adopting them?  Contact tal at what exit dot org.
 
+## Contributing
+
+Want to contribute? Whether it's fixing a bug, adding a new DNS provider, or improving documentation, contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
+
 ## More info at our website
 
 The website: [https://docs.dnscontrol.org/](https://docs.dnscontrol.org/)
