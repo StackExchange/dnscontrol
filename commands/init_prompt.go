@@ -193,6 +193,9 @@ func collectFields(asker Asker, meta providers.CredsMetadata) (map[string]string
 		if value == "" && !field.Required {
 			continue
 		}
+		if value == field.Default && !field.Required {
+			continue
+		}
 		output[field.Key] = value
 	}
 	return output, nil
