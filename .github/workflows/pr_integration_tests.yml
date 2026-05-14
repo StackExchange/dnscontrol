@@ -281,7 +281,7 @@ jobs:
             DO_WORKERS=true
           fi
           # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
-          if "${{ matrix.provider }}" == "VERCEL" ; then
+          if [[ "${{ matrix.provider }}" == "VERCEL" ]]; then
             END=3
             echo "END: Exception for VERCEL: Run fewer tests. END=$END"
           fi
