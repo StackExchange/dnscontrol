@@ -82,8 +82,8 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 		inputs: []string{
 			"",            // BIND: directory (accept default)
 			"",            // BIND: filenameformat (accept default)
-			"bind",        // BIND: entry name
-			"",            // NONE: entry name (accept default "none")
+			"",            // BIND: entry name (accept default "bind_primary")
+			"",            // NONE: entry name (accept default "none_primary")
 			"example.com", // first domain
 		},
 		confirm: []bool{
@@ -112,8 +112,8 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read creds: %v", err)
 	}
-	if !strings.Contains(string(credsBytes), `"bind"`) {
-		t.Errorf("creds.json missing bind entry: %s", credsBytes)
+	if !strings.Contains(string(credsBytes), `"bind_primary"`) {
+		t.Errorf("creds.json missing bind_primary entry: %s", credsBytes)
 	}
 	if !strings.Contains(string(credsBytes), `"TYPE": "BIND"`) {
 		t.Errorf("creds.json missing BIND TYPE: %s", credsBytes)
@@ -123,8 +123,8 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read config: %v", err)
 	}
-	if !strings.Contains(string(configBytes), `NewDnsProvider("bind")`) {
-		t.Errorf("config missing bind provider: %s", configBytes)
+	if !strings.Contains(string(configBytes), `NewDnsProvider("bind_primary")`) {
+		t.Errorf("config missing bind_primary provider: %s", configBytes)
 	}
 	if !strings.Contains(string(configBytes), `D("example.com"`) {
 		t.Errorf("config missing example.com domain: %s", configBytes)

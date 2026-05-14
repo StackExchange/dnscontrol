@@ -77,7 +77,7 @@ Pick NONE if you want to defer this choice.
 API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 ? API Token (required) **********
 ? Account ID (optional) 0123456789abcdef
-? creds.json entry name for this provider cloudflare
+? creds.json entry name for this provider cloudflare_primary
 ? First domain name for dnsconfig.js example.com
 ? Add another domain? No
 ...
@@ -86,7 +86,7 @@ API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 Done.
 ? Compare domains in dnsconfig.js with zones at Cloudflare? Yes
 
-$ dnscontrol get-zones --format=nameonly -- cloudflare - all
+$ dnscontrol get-zones --format=nameonly -- cloudflare_primary - all
 Zones at Cloudflare compared with dnsconfig.js:
   In both          : example.com
   Only in config   : (none)

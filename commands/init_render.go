@@ -123,7 +123,7 @@ func jsVarName(prefix, providerType string) string {
 }
 
 // defaultEntryName returns a sensible default creds.json entry key for the
-// given provider type. "CLOUDFLAREAPI" -> "cloudflareapi".
+// given provider type. "CLOUDFLAREAPI" -> "cloudflareapi_primary".
 func defaultEntryName(providerType string) string {
-	return strings.ToLower(providerType)
+	return strings.ToLower(providerType) + "_primary"
 }
