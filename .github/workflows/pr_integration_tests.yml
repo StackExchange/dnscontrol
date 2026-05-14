@@ -8,7 +8,7 @@ permissions:
 # 2. On a schedule (currently set to run every day at 4am UTC).
 
 # When are "smoke tests" vs "full tests" run?
-# 1. Is this a PR?  If the label "longtest" exists, run full tests.  Otherwise, run smoke tests.
+# 1. Is this a PR?  If the label "longtest" exists, run full tests. Otherwise, run smoke tests.
 # 1. Is this a scheduled run? Run all the tests.
 # 2. Manually triggered? Run all the tests.
 
@@ -40,7 +40,7 @@ env:
 
 jobs:
   # integration-test-providers: Determine which providers have a _DOMAIN variable set.
-  # That variable enables testing for the provider.  The results are
+  # That variable enables testing for the provider. The results are
   # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
   # where integration-tests can pick it up.
   integration-test-providers:
@@ -262,6 +262,8 @@ jobs:
             #if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
+              # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
+              unset VERCEL_DOMAIN
               echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
             else
@@ -277,6 +279,8 @@ jobs:
           #           wrong.
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
+            # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
+            unset VERCEL_DOMAIN
             echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
           fi
