@@ -50,7 +50,7 @@ require (
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/digitalocean/godo v1.189.0
+	github.com/digitalocean/godo v1.191.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go/v8 v8.3.0
 	github.com/exoscale/egoscale/v3 v3.1.35
@@ -74,12 +74,12 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.278.0
+	google.golang.org/api v0.279.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.75
+	codeberg.org/miekg/dns v0.6.76
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
@@ -99,8 +99,8 @@ require (
 	github.com/mattn/go-isatty v0.0.22
 	github.com/nicholas-fedor/shoutrrr v0.15.0
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.114.1
-	github.com/urfave/cli/v3 v3.8.0
+	github.com/oracle/oci-go-sdk/v65 v65.114.2
+	github.com/urfave/cli/v3 v3.9.0
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/text v0.37.0
