@@ -527,6 +527,12 @@ func (rc *RecordConfig) Key() RecordKey {
 			t = fmt.Sprintf("%s_%s", t, v)
 		}
 	}
+	// Route 53 weighted/failover routing: records with different
+	// SetIdentifiers are separate ResourceRecordSets in the R53 API,
+	// so they must have distinct keys for the diff engine.
+	if sid, ok := rc.Metadata["r53_set_identifier"]; ok && sid != "" {
+		t = fmt.Sprintf("%s!%s", t, sid)
+	}
 	return RecordKey{rc.NameFQDN, t}
 }
 

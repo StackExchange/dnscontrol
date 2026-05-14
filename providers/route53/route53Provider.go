@@ -335,7 +335,7 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 
 	// Amazon Route53 is a "ByRecordSet" API.
 	// At each label:rtype pair, we either delete all records or UPSERT the desired records.
-	instructions, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, r53ComparableFunc)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -345,6 +345,14 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
+
+		// Strip set identifier suffix added by Key() for weighted routing.
+		setIdentifier := ""
+		if idx := strings.Index(instType, "!"); idx != -1 {
+			setIdentifier = instType[idx+1:]
+			instType = instType[:idx]
+		}
+
 		var chg r53Types.Change
 
 		switch inst.Type {
@@ -386,6 +394,13 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 					rrset.TTL = &i
 				}
 			}
+
+			// Apply weighted routing policy fields from record metadata.
+			if setIdentifier != "" {
+				rrset.SetIdentifier = aws.String(setIdentifier)
+				applyR53RoutingFieldsToRRSet(rrset, inst.New[0])
+			}
+
 			chg = r53Types.Change{
 				Action:            r53Types.ChangeActionUpsert,
 				ResourceRecordSet: rrset,
@@ -456,6 +471,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 		if err := rc.SetTarget(aws.ToString(set.AliasTarget.DNSName)); err != nil {
 			return nil, err
 		}
+		applyR53RoutingMeta(rc, set)
 		// rc.Original stores a pointer to the original set for use by
 		// r53Types.ChangeActionDelete and anything else that needs the
 		// native record verbatim.
@@ -507,12 +523,58 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				if err := rc.PopulateFromStringFunc(rtypeString, val, origin, txtutil.ParseQuoted); err != nil {
 					return nil, fmt.Errorf("unparsable record type=%q received from ROUTE53: %w", rtypeString, err)
 				}
+				applyR53RoutingMeta(rc, set)
 
 				results = append(results, rc)
 			}
 		}
 	}
 	return results, nil
+}
+
+// applyR53RoutingMeta populates RecordConfig metadata from native Route 53
+// routing-policy fields (SetIdentifier, Weight, HealthCheckId).
+func applyR53RoutingMeta(rc *models.RecordConfig, set r53Types.ResourceRecordSet) {
+	if set.SetIdentifier == nil {
+		return
+	}
+	if rc.Metadata == nil {
+		rc.Metadata = map[string]string{}
+	}
+	rc.Metadata["r53_set_identifier"] = aws.ToString(set.SetIdentifier)
+	if set.Weight != nil {
+		rc.Metadata["r53_weight"] = strconv.FormatInt(*set.Weight, 10)
+	}
+	if set.HealthCheckId != nil {
+		rc.Metadata["r53_health_check_id"] = aws.ToString(set.HealthCheckId)
+	}
+}
+
+// r53ComparableFunc includes Route 53 routing-policy metadata in record
+// comparison so that changes to weight or health check are detected by the diff.
+func r53ComparableFunc(rc *models.RecordConfig) string {
+	var parts []string
+	if w, ok := rc.Metadata["r53_weight"]; ok && w != "" {
+		parts = append(parts, "r53_weight="+w)
+	}
+	if hc, ok := rc.Metadata["r53_health_check_id"]; ok && hc != "" {
+		parts = append(parts, "r53_health_check_id="+hc)
+	}
+	return strings.Join(parts, ",")
+}
+
+// applyR53RoutingFieldsToRRSet sets the Route 53 weighted routing fields on a
+// ResourceRecordSet based on the RecordConfig metadata.
+func applyR53RoutingFieldsToRRSet(rrset *r53Types.ResourceRecordSet, rc *models.RecordConfig) {
+	if w, ok := rc.Metadata["r53_weight"]; ok && w != "" {
+		weight, err := strconv.ParseInt(w, 10, 64)
+		if err == nil {
+			rrset.Weight = &weight
+		}
+	}
+	if hc, ok := rc.Metadata["r53_health_check_id"]; ok && hc != "" {
+		rrset.HealthCheckId = aws.String(hc)
+	}
 }
 
 func aliasToRRSet(zone r53Types.HostedZone, r *models.RecordConfig) *r53Types.ResourceRecordSet {
@@ -623,13 +685,15 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]r53Types.ResourceRe
 	}
 	var next *string
 	var nextType r53Types.RRType
+	var nextIdentifier *string
 	var records []r53Types.ResourceRecordSet
 	for {
 		listInput := &r53.ListResourceRecordSetsInput{
-			HostedZoneId:    zoneID,
-			StartRecordName: next,
-			StartRecordType: nextType,
-			MaxItems:        aws.Int32(100),
+			HostedZoneId:          zoneID,
+			StartRecordName:       next,
+			StartRecordType:       nextType,
+			StartRecordIdentifier: nextIdentifier,
+			MaxItems:              aws.Int32(100),
 		}
 		var list *r53.ListResourceRecordSetsOutput
 		var err error
@@ -645,6 +709,7 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]r53Types.ResourceRe
 		if list.NextRecordName != nil {
 			next = list.NextRecordName
 			nextType = list.NextRecordType
+			nextIdentifier = list.NextRecordIdentifier
 		} else {
 			break
 		}

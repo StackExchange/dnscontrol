@@ -95,9 +95,6 @@ GHA is configured to run an integration test for any provider listed in the "pro
 * Q: What labels control the integration tests?
 * A: A PR only runs a "smoke test" (the first few tests).  Add the label "fulltest" to run all tests. (The daily run of integration tests on the main branch always does all test.)
 
-* Q: Where is the list of providers to run integration tests on?
-* A: In `.github/workflows/pr_test.yml`: (1) the "PROVIDERS" list, (2) the `integrtests-diff2` section.
-
 * Q: Where are non-secret environment variables stored?
 * A: GHA calls them "Variables". Update them here: https://github.com/DNSControl/dnscontrol/settings/variables/actions
 
@@ -106,10 +103,9 @@ GHA is configured to run an integration test for any provider listed in the "pro
 
 ### How do I add a single new integration test?
 
-1. Edit `.github/workflows/pr_test.yml`
-2. Add the `FOO_DOMAIN` variable name of the provider to the "PROVIDERS" list.
-3. Set the `FOO_DOMAIN` variables in GHA via https://github.com/DNSControl/dnscontrol/settings/variables/actions
-4. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section. Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/actions
+1. Ensure the provider has an entry in `integrationTest/profiles.json`.
+2. Set the `FOO_DOMAIN` variables in GHA via https://github.com/DNSControl/dnscontrol/settings/variables/actions
+3. All other variables should be stored as secrets (for consistency).  Add them to the `integration-tests` section of `.github/workflows/pr_integration_tests.yml`. Set them in GHA via https://github.com/DNSControl/dnscontrol/settings/secrets/actions
 
 ### How do I add a "bring your own keys" integration test?
 

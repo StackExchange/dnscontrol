@@ -1167,6 +1167,61 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		// Route 53 weighted routing
+		testgroup("R53_WEIGHT",
+			only("ROUTE53"),
+			tc("create weighted A records",
+				r53weighted("weighted", "1.2.3.4", "A", 70, "web1"),
+				r53weighted("weighted", "5.6.7.8", "A", 30, "web2"),
+			),
+			tc("change weight",
+				r53weighted("weighted", "1.2.3.4", "A", 50, "web1"),
+				r53weighted("weighted", "5.6.7.8", "A", 50, "web2"),
+			),
+			tc("change target of one weighted record",
+				r53weighted("weighted", "9.10.11.12", "A", 50, "web1"),
+				r53weighted("weighted", "5.6.7.8", "A", 50, "web2"),
+			),
+			tc("delete one weighted record",
+				r53weighted("weighted", "5.6.7.8", "A", 50, "web2"),
+			),
+			tc("add back and change set identifier",
+				r53weighted("weighted", "9.10.11.12", "A", 50, "primary"),
+				r53weighted("weighted", "5.6.7.8", "A", 50, "secondary"),
+			),
+		),
+
+		testgroup("R53_WEIGHT_CNAME",
+			only("ROUTE53"),
+			tc("create weighted CNAME records",
+				r53weighted("cdn", "east.cdn.example.com.", "CNAME", 70, "east"),
+				r53weighted("cdn", "west.cdn.example.com.", "CNAME", 30, "west"),
+			),
+			tc("modify weighted CNAME",
+				r53weighted("cdn", "east.cdn.example.com.", "CNAME", 50, "east"),
+				r53weighted("cdn", "west.cdn.example.com.", "CNAME", 50, "west"),
+			),
+		),
+
+		testgroup("R53_WEIGHT_MIXED",
+			only("ROUTE53"),
+			tc("create weighted and non-weighted records",
+				a("normal", "1.2.3.4"),
+				r53weighted("weighted", "5.6.7.8", "A", 70, "web1"),
+				r53weighted("weighted", "9.10.11.12", "A", 30, "web2"),
+			),
+			tc("modify weighted, keep non-weighted",
+				a("normal", "1.2.3.4"),
+				r53weighted("weighted", "5.6.7.8", "A", 50, "web1"),
+				r53weighted("weighted", "9.10.11.12", "A", 50, "web2"),
+			),
+		),
+
+		// R53_WEIGHT_HEALTH_CHECK: Not included as an integration test because
+		// health checks are external AWS resources that must be pre-provisioned.
+		// The R53_HEALTH_CHECK_ID modifier is tested implicitly through the
+		// provider code and audit validation.
+
 		// CLOUDFLAREAPI features
 
 		// CLOUDFLAREAPI: Redirects:

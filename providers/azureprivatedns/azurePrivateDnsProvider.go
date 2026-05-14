@@ -11,7 +11,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
 	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
@@ -51,8 +50,8 @@ func newAzureDNS(m map[string]string, _ json.RawMessage) (*azurednsProvider, err
 	api := &azurednsProvider{
 		zonesClient:    zonesClient,
 		recordsClient:  recordsClient,
-		resourceGroup:  to.StringPtr(rg),
-		subscriptionID: to.StringPtr(subID),
+		resourceGroup:  new(rg),
+		subscriptionID: new(subID),
 		rawRecords:     map[string][]*adns.RecordSet{},
 		zoneName:       map[string]string{},
 	}
@@ -272,7 +271,7 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 		shortName = "@"
 	}
 
-	azRecType, err := nativeToRecordTypeDiff(to.StringPtr(reckey.Type))
+	azRecType, err := nativeToRecordTypeDiff(new(reckey.Type))
 	if err != nil {
 		return nil
 	}
@@ -431,26 +430,26 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 	//		fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXXXXXXXXXXXXXXXXX %v\n", recordKeyType)
 	//	}
 
-	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKeyType), Properties: &adns.RecordSetProperties{}}
+	recordSet := &adns.RecordSet{Type: new(recordKeyType), Properties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
 		switch recordKeyType {
 		case "A":
 			if recordSet.Properties.ARecords == nil {
 				recordSet.Properties.ARecords = []*adns.ARecord{}
 			}
-			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: new(rec.GetTargetField())})
 		case "AAAA":
 			if recordSet.Properties.AaaaRecords == nil {
 				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
 			}
-			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: new(rec.GetTargetField())})
 		case "CNAME":
-			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: new(rec.GetTargetField())}
 		case "PTR":
 			if recordSet.Properties.PtrRecords == nil {
 				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
 			}
-			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
+			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: new(rec.GetTargetField())})
 		case "TXT":
 			if recordSet.Properties.TxtRecords == nil {
 				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
@@ -459,7 +458,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if rec.GetTargetTXTJoined() == "" {
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
-					txts = append(txts, to.StringPtr(txt))
+					txts = append(txts, new(txt))
 				}
 				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
 			}
@@ -467,12 +466,12 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			if recordSet.Properties.MxRecords == nil {
 				recordSet.Properties.MxRecords = []*adns.MxRecord{}
 			}
-			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: new(rec.GetTargetField()), Preference: new(int32(rec.MxPreference))})
 		case "SRV":
 			if recordSet.Properties.SrvRecords == nil {
 				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
 			}
-			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
+			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: new(rec.GetTargetField()), Port: new(int32(rec.SrvPort)), Weight: new(int32(rec.SrvWeight)), Priority: new(int32(rec.SrvPriority))})
 			/* CAA records don't work in a private zone */
 		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
 			return nil, adns.RecordTypeA, fmt.Errorf("recordToNativeDiff2 RTYPE %v UNIMPLEMENTED", recordKeyType) // ands.A is a placeholder
@@ -481,7 +480,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 		}
 	}
 
-	rt, err := nativeToRecordTypeDiff(to.StringPtr(*recordSet.Type))
+	rt, err := nativeToRecordTypeDiff(new(*recordSet.Type))
 	if err != nil {
 		return nil, adns.RecordTypeA, err // adns.A is a placeholder
 	}

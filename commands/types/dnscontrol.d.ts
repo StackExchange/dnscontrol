@@ -2783,25 +2783,10 @@ declare function NS(name: string, target: string, ...modifiers: RecordModifier[]
  * answers on port 53 to queries related to the zone).
  *
  * * `name` must match the name of an entry in `creds.json`.
- * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../provider/index.md).
- *   * Starting with [v3.16](../../release/v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
- *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
+ * * `type` is deprecated. The provider type is read from the `TYPE` field in `creds.json`.
  * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider/index.md) for details.
  *
  * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
- *
- * Prior to [v3.16](../../release/v316.md):
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
- * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4"),
- * );
- * ```
- *
- * In [v3.16](../../release/v316.md) and later:
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom");
@@ -2822,25 +2807,10 @@ declare function NewDnsProvider(name: string, meta?: object): string;
  * nameservers for the domain).  DNSControl only manages the delegation.
  *
  * * `name` must match the name of an entry in `creds.json`.
- * * `type` specifies a valid DNS provider type identifier listed on the [provider page](../../provider/index.md).
- *   * Starting with [v3.16](../../release/v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
- *   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
+ * * `type` is deprecated. The provider type is read from the `TYPE` field in `creds.json`.
  * * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider/index.md) for details.
  *
  * This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
- *
- * Prior to [v3.16](../../release/v316.md):
- *
- * ```javascript
- * var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
- * var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
- *
- * D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
- *   A("@","1.2.3.4"),
- * );
- * ```
- *
- * In [v3.16](../../release/v316.md) and later:
  *
  * ```javascript
  * var REG_MYNDC = NewRegistrar("mynamedotcom");
@@ -3164,6 +3134,55 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
  * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_evaluate_target_health
  */
 declare function R53_EVALUATE_TARGET_HEALTH(enabled: boolean): RecordModifier;
+
+/**
+ * `R53_HEALTH_CHECK_ID` associates a [Route 53 health check](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating.html) with a record. This is typically used with [`R53_WEIGHT()`](R53_WEIGHT.md) so that Route 53 stops routing traffic to unhealthy endpoints.
+ *
+ * The `health_check_id` is the ID of a Route 53 health check that you create separately (e.g. via the AWS Console, CLI, or Terraform). DNSControl does not manage the health checks themselves, only their association with DNS records.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
+ *   A("www", "1.2.3.4", R53_WEIGHT(70, "primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
+ *   A("www", "5.6.7.8", R53_WEIGHT(30, "secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_health_check_id
+ */
+declare function R53_HEALTH_CHECK_ID(health_check_id: string): RecordModifier;
+
+/**
+ * `R53_WEIGHT` configures [Route 53 weighted routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html) for a record. It distributes traffic across multiple resources based on the weights you assign.
+ *
+ * `weight` is an integer between 0 and 255. Route 53 distributes traffic proportionally based on the weights assigned to each record with the same name and type. A weight of 0 means no traffic is routed to that resource unless all other records also have weight 0.
+ *
+ * `set_identifier` is a unique string that differentiates this record from other weighted records with the same name and type.
+ *
+ * You can optionally associate a health check using [`R53_HEALTH_CHECK_ID()`](R53_HEALTH_CHECK_ID.md) to remove unhealthy endpoints from the rotation.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider("ROUTE53"),
+ *   // 70% of traffic to east, 30% to west
+ *   A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
+ *   A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
+ *
+ *   // Weighted CNAME records
+ *   CNAME("cdn", "east.cdn.example.com.", R53_WEIGHT(70, "cdn-east")),
+ *   CNAME("cdn", "west.cdn.example.com.", R53_WEIGHT(30, "cdn-west")),
+ *
+ *   // Weighted R53_ALIAS records
+ *   R53_ALIAS("api", "A", "alb-east.us-east-1.elb.amazonaws.com.", R53_ZONE("Z35SXDOTRQ7X7K"), R53_WEIGHT(60, "api-east")),
+ *   R53_ALIAS("api", "A", "alb-west.us-west-2.elb.amazonaws.com.", R53_ZONE("Z1H1FL5HABSF5"), R53_WEIGHT(40, "api-west")),
+ *
+ *   // With health checks
+ *   A("api", "10.0.1.1", R53_WEIGHT(50, "api-primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
+ *   A("api", "10.0.2.1", R53_WEIGHT(50, "api-secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/record-modifiers/service-provider-specific/amazon-route-53/r53_weight
+ */
+declare function R53_WEIGHT(weight: number, set_identifier: string): RecordModifier;
 
 /**
  * `R53_ZONE` lets you specify the AWS Zone ID for an entire domain ([`D()`](../top-level-functions/D.md)) or a specific [`R53_ALIAS()`](../domain-modifiers/R53_ALIAS.md) record.

@@ -214,11 +214,11 @@ func (provider *exoscaleProvider) GetZoneRecordsCorrections(
 	}
 
 	for _, updateCorrelation := range toUpdate {
-		old := updateCorrelation.Existing.Original.(*egoscale.DNSDomainRecord)
-		new := updateCorrelation.Desired
+		oldc := updateCorrelation.Existing.Original.(*egoscale.DNSDomainRecord)
+		newc := updateCorrelation.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: updateCorrelation.String(),
-			F:   provider.updateRecordFunc(old, new, domain.ID),
+			F:   provider.updateRecordFunc(oldc, newc, domain.ID),
 		})
 	}
 

@@ -43,22 +43,7 @@ Edits to `pr_integration_tests.yml` may have already been done for you.
 
 Edit `.github/workflows/pr_integration_tests.yml`
 
-1. Add the provider to the `PROVIDERS` list.
-
-* Add the name of the provider to the PROVIDERS list.
-* Please keep this list sorted alphabetically.
-
-The line looks something like:
-
-{% code title=".github/workflows/pr_integration_tests.yml" %}
-```yaml
-      env:
-        PROVIDERS: "['AZURE_DNS','BIND','BUNNY_DNS','CLOUDFLAREAPI','CLOUDNS','DIGITALOCEAN','GANDI_V5','GCLOUD','HEDNS','HUAWEICLOUD','INWX','NAMEDOTCOM','NS1','POWERDNS','ROUTE53','SAKURACLOUD','TRANSIP']"
-        ENV_CONTEXT: ${{ toJson(env) }}
-```
-{% endcode %}
-
-2. Add your providers `_DOMAIN` env variable:
+1. Add your providers `_DOMAIN` env variable:
 
 * Add it to the `env` section of `integration-tests`.
 * Please keep this list sorted alphabetically.
@@ -136,10 +121,9 @@ Some rules:
 
 Now that we've covered all that...
 
-Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  Write that you understand the above rules and would like to volunteer to maintain the credentials and account.
+Create a new Github issue with a subject "Add PROVIDER to automated tests" where "PROVIDER" is the name of the provider. DO NOT SEND THE CREDENTIALS IN THE GITHUB ISSUE.  In the body write, "I understand the rules listed in byo-secrets.md and would like to volunteer to maintain the credentials and account."
 
-To securely send the credentials to the project, use this link: [https://transfer.secretoverflow.com/u/tlimoncelli](https://transfer.secretoverflow.com/u/tlimoncelli)
-
-You'll hear back within a week.
+To securely send the credentials to the project, please create a [SendSafely](https://www.sendsafely.com/) account (there is a free tier)
+and use it to send them to tal at what exit dot org.  You'll hear back within a week.
 
 Thank you for contributing credentials. The more providers we can test automatically with each PR, the better. It "shifts left" finding bugs and API changes and makes less work for everyone.

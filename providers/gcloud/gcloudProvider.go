@@ -48,9 +48,10 @@ var (
 	networkNameCheck = regexp.MustCompile("^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$")
 )
 
-func sPtr(s string) *string {
-	return &s
-}
+// //go:fix inline
+// func sPtr(s string) *string {
+// 	return new(s)
+// }
 
 func init() {
 	const providerName = "GCLOUD"
@@ -110,7 +111,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
 		printer.Printf("GCLOUD :name_server_set %s configured\n", val)
-		nss = sPtr(val)
+		nss = new(val)
 	}
 
 	g := &gcloudProvider{

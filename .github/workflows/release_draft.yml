@@ -10,6 +10,7 @@ jobs:
   draft_release:
     name: draft release
     runs-on: ubuntu-latest
+    if: github.repository == 'DNSControl/dnscontrol'
     permissions:
       packages: write
       contents: write

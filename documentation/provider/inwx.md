@@ -29,7 +29,7 @@ You will hit this limitation in the following two scenarios:
 * You use INWX as both the registrar and the DNS provider. In this case, DNSControl will try to login twice too quickly and the second login will fail because a TOTP code will be reused. The only way to support this configuration is to use a INWX account without two-factor authentication.
 
 If you cannot work around these two limitation it is possible to create and manage sub-account - with specific permission sets - dedicated for API access with two-factor
-authentication disabled. This is possible at [inwx.de/en/account](https://www.inwx.de/en/account).
+authentication disabled. This is possible at [inwx.de/en/customer/login](https://www.inwx.de/en/customer/login).
 
 If two-factor authentication has been enabled you will also need to provide a valid TOTP number.
 This can also be done via an environment variable:

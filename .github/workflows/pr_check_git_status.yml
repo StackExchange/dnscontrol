@@ -25,6 +25,7 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
 
   prettier:
     name: "Check: prettier"
@@ -43,6 +44,7 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
 
   fmtjson:
     name: "Check: fmtjson"
@@ -60,6 +62,7 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
 
   go-mod-tidy:
     name: "Check: go mod tidy"
@@ -76,6 +79,7 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
 
   go-generate:
     name: "Check: go generate"
@@ -93,6 +97,7 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
 
   go-fix:
     name: "Check: go fix"
@@ -109,3 +114,4 @@ jobs:
       - uses: CatChen/check-git-status-action@v2
         with:
           fail-if-not-clean: true
+          request-changes-if-not-clean: false
