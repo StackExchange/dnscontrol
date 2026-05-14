@@ -16,4 +16,7 @@ func main() {
 	if err := generateDTSFile(funcs); err != nil {
 		log.Fatal(err)
 	}
+	if err := generateGoreleaserFile(); err != nil {
+		log.Fatal(err)
+	}
 }

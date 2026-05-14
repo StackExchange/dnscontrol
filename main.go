@@ -12,7 +12,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/dtsFile.go build/generate/ownersFile.go
+//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/dtsFile.go build/generate/ownersFile.go build/generate/goreleaserFile.go
 
 func main() {
 	if os.Getenv("CI") == "true" {
