@@ -263,7 +263,7 @@ jobs:
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
               # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
-              unset VERCEL_DOMAIN
+              VERCEL_DOMAIN=""
               echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
             else
@@ -280,7 +280,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
             # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
-            unset VERCEL_DOMAIN
+            VERCEL_DOMAIN=""
             echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
           fi
