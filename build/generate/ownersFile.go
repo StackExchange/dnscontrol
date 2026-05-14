@@ -28,6 +28,8 @@ func generateOwnersFile() error {
 	// Overall maintainer
 	ownersData.WriteString("\n")
 	ownersData.WriteString("* @TomOnTime\n")
+	ownersData.WriteString(".goreleaser.yml @cafferata @TomOnTime\n")
+	ownersData.WriteString("documentation/ @cafferata @TomOnTime\n")
 
 	file, err := os.Create(".github/CODEOWNERS")
 	if err != nil {
