@@ -262,8 +262,6 @@ jobs:
             #if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "longtest" ]]; then
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
-              # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
-              VERCEL_DOMAIN=""
               echo "END: Pull request + longtest label. END=$END"
               DO_WORKERS=true
             else
@@ -279,10 +277,13 @@ jobs:
           #           wrong.
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
-            # VERCEL it limited to 100 updates per hour. Therefore we don't run it for the long tests. Sigh.
-            VERCEL_DOMAIN=""
             echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
+          fi
+          # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
+          if "${{ matrix.provider }}" == "VERCEL" ; then
+            echo "END: Exception for VERCEL: Never run more than the first few tests. END=$END"
+            END=3
           fi
           echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
@@ -290,6 +291,7 @@ jobs:
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
+          #
           echo "END: Running tests 0 to $END"
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then
