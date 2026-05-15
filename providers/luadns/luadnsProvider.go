@@ -52,6 +52,27 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "LuaDNS",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/luadns",
+		PortalURL:   "https://app.luadns.com/users/api_keys",
+		Fields: []providers.CredsField{
+			{
+				Key:      "email",
+				Label:    "Email",
+				Help:     "Your LuaDNS E-mail address.",
+				Required: true,
+			},
+			{
+				Key:      "apikey",
+				Label:    "API key",
+				Help:     "Specify the API key you created.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+	})
 }
 
 type luadnsProvider struct {
