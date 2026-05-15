@@ -12,10 +12,13 @@ import (
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 )
 
+const defaultTTL = uint32(600)
+
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("Tencent Cloud allows full management of apex NS records"),
@@ -32,8 +35,42 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterRegistrarType(providerName, newTencentDNSReg)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
-	// Default TTL for Tencent Cloud DNSPod is 600 for free domains.
-	providers.RegisterDefaultTTL(providerName, 600)
+	// Default TTL for Tencent Cloud DNSPod is 600 for free plan.
+	providers.RegisterDefaultTTL(providerName, defaultTTL)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Tencent Cloud DNS",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/tencentdns",
+		PortalURL:   "https://console.intl.cloud.tencent.com/cam/capi",
+		Fields: []providers.CredsField{
+			{
+				Key:      "secret_id",
+				Label:    "Secret ID",
+				Help:     "Tencent Cloud SecretId.",
+				Required: true,
+				Secret:   true,
+			},
+			{
+				Key:      "secret_key",
+				Label:    "Secret Key",
+				Help:     "Tencent Cloud SecretKey.",
+				Required: true,
+				Secret:   true,
+			},
+			{
+				Key:     "region",
+				Label:   "Region",
+				Help:    "The region value does not affect DNS management (DNS is global).",
+				Default: "ap-guangzhou",
+			},
+			{
+				Key:     "site",
+				Label:   "Site",
+				Help:    "Tencent Cloud site. Use cn for mainland China or intl for international APIs.",
+				Default: "cn",
+			},
+		},
+	})
 }
 
 type tencentdnsProvider struct {
@@ -60,7 +97,12 @@ func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
 		region = "ap-guangzhou" // Default region
 	}
 
-	client, err := newClient(secretId, secretKey, region)
+	siteConfig, err := siteConfigForSite(config["site"])
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := newClient(secretId, secretKey, region, siteConfig.dnspodEndpoint, siteConfig.useIntlDomainClient)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +110,25 @@ func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
 	return &tencentdnsProvider{
 		client: client,
 	}, nil
+}
+
+type tencentSiteConfig struct {
+	dnspodEndpoint      string
+	useIntlDomainClient bool
+}
+
+func siteConfigForSite(site string) (tencentSiteConfig, error) {
+	switch strings.ToLower(site) {
+	case "", "cn", "china":
+		return tencentSiteConfig{}, nil
+	case "intl", "international":
+		return tencentSiteConfig{
+			dnspodEndpoint:      intlDNSPodEndpoint,
+			useIntlDomainClient: true,
+		}, nil
+	default:
+		return tencentSiteConfig{}, fmt.Errorf("unsupported tencent cloud site %q: expected cn or intl", site)
+	}
 }
 
 func (p *tencentdnsProvider) ListZones() ([]string, error) {
@@ -120,8 +181,22 @@ func (p *tencentdnsProvider) GetZoneRecords(dc *models.DomainConfig) (models.Rec
 	return existingRecords, nil
 }
 
+func prepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
+	for _, rec := range dc.Records {
+		if rec.TTL != 0 && rec.TTL < minTTL {
+			rec.TTL = minTTL
+		}
+	}
+}
+
 func (p *tencentdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {
 	var corrections []*models.Correction
+
+	minTTL, err := p.client.getMinTTL(dc.Name)
+	if err != nil {
+		return nil, 0, err
+	}
+	prepDesiredRecords(dc, minTTL)
 
 	// Tencent Cloud is a "ByRecord" API.
 	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
@@ -172,14 +247,14 @@ func (p *tencentdnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 	if err != nil {
 		return nil, err
 	}
-	sort.Strings(actualSet)
+	actualSet = normalizeNameserverSet(actualSet)
 	actual := strings.Join(actualSet, ",")
 
 	expectedSet := []string{}
 	for _, ns := range dc.Nameservers {
 		expectedSet = append(expectedSet, ns.Name)
 	}
-	sort.Strings(expectedSet)
+	expectedSet = normalizeNameserverSet(expectedSet)
 	expected := strings.Join(expectedSet, ",")
 
 	if actual != expected {
@@ -194,6 +269,15 @@ func (p *tencentdnsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 	}
 
 	return nil, nil
+}
+
+func normalizeNameserverSet(nameservers []string) []string {
+	normalized := make([]string, 0, len(nameservers))
+	for _, ns := range nameservers {
+		normalized = append(normalized, strings.ToLower(strings.TrimSuffix(ns, ".")))
+	}
+	sort.Strings(normalized)
+	return normalized
 }
 
 func (p *tencentdnsProvider) EnsureZoneExists(domainName string, metadata map[string]string) error {

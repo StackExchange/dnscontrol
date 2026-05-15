@@ -18,7 +18,6 @@ func nativeToRecord(r *dnspod.RecordListItem, domainName string) (*models.Record
 	val := *r.Value
 	switch *r.Type {
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT", "CAA", "SRV":
-		// These are standard types, PopulateFromStringFunc handles them.
 	case "MX":
 		if r.MX != nil {
 			val = fmt.Sprintf("%d %s", *r.MX, *r.Value)
@@ -41,50 +40,53 @@ func nativeToRecord(r *dnspod.RecordListItem, domainName string) (*models.Record
 
 func recordToCreateRequest(rc *models.RecordConfig) *dnspod.CreateRecordRequest {
 	req := dnspod.NewCreateRecordRequest()
-	req.SubDomain = commonStringPtr(rc.GetLabel())
-	req.RecordType = commonStringPtr(rc.Type)
+	req.SubDomain = new(rc.GetLabel())
+	req.RecordType = new(rc.Type)
 	if rc.Type == "ALIAS" {
-		req.RecordType = commonStringPtr("CNAME")
+		req.RecordType = new("CNAME")
 	}
-	req.RecordLine = commonStringPtr("默认") // Default line
+	req.RecordLine = new("默认") // Default line
 
 	val := rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	if rc.Type == "MX" {
 		val = rc.GetTargetField()
-		req.MX = commonUint64Ptr(uint64(rc.MxPreference))
+		req.MX = new(uint64(rc.MxPreference))
 	}
-	req.Value = commonStringPtr(val)
-	req.TTL = commonUint64Ptr(uint64(rc.TTL))
+	req.Value = new(val)
+	req.TTL = new(uint64(rc.TTL))
 
 	return req
 }
 
 func recordToModifyRequest(rc *models.RecordConfig, recordId uint64) *dnspod.ModifyRecordRequest {
 	req := dnspod.NewModifyRecordRequest()
-	req.RecordId = commonUint64Ptr(recordId)
-	req.SubDomain = commonStringPtr(rc.GetLabel())
-	req.RecordType = commonStringPtr(rc.Type)
+	req.RecordId = new(recordId)
+	req.SubDomain = new(rc.GetLabel())
+	req.RecordType = new(rc.Type)
 	if rc.Type == "ALIAS" {
-		req.RecordType = commonStringPtr("CNAME")
+		req.RecordType = new("CNAME")
 	}
-	req.RecordLine = commonStringPtr("默认")
+	req.RecordLine = new("默认")
 
 	val := rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	if rc.Type == "MX" {
 		val = rc.GetTargetField()
-		req.MX = commonUint64Ptr(uint64(rc.MxPreference))
+		req.MX = new(uint64(rc.MxPreference))
 	}
-	req.Value = commonStringPtr(val)
-	req.TTL = commonUint64Ptr(uint64(rc.TTL))
+	req.Value = new(val)
+	req.TTL = new(uint64(rc.TTL))
 
 	return req
 }
 
 // Helpers to avoid importing "common" in every file if possible, or just import it.
+//
+//go:fix inline
 func commonStringPtr(s string) *string {
-	return &s
+	return new(s)
 }
 
+//go:fix inline
 func commonUint64Ptr(u uint64) *uint64 {
-	return &u
+	return new(u)
 }

@@ -57,11 +57,11 @@ providers/route53 @tresni
 providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 # providers/softlayer NEEDS VOLUNTEER
+providers/tencentdns @cylonchau
 providers/transip @blackshadev
 providers/unifi @zupolgec
 providers/vercel @SukkaW
 providers/vultr @pgaskin
-providers/tencentdns @cylonchau
 
 * @TomOnTime
 .goreleaser.yml @cafferata @TomOnTime

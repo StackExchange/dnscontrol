@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/DNSControl/dnscontrol/v4/models"
-	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 	"github.com/stretchr/testify/assert"
+	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 )
 
 func TestNativeToRecord(t *testing.T) {
 	domain := "example.com"
-	
+
 	tests := []struct {
 		name     string
 		input    *dnspod.RecordListItem
@@ -19,9 +19,9 @@ func TestNativeToRecord(t *testing.T) {
 		{
 			name: "Basic A record",
 			input: &dnspod.RecordListItem{
-				Name:  commonStringPtr("@"),
-				Type:  commonStringPtr("A"),
-				Value: commonStringPtr("1.2.3.4"),
+				Name:  new("@"),
+				Type:  new("A"),
+				Value: new("1.2.3.4"),
 				TTL:   commonUint64Ptr(600),
 			},
 			expected: &models.RecordConfig{
@@ -32,9 +32,9 @@ func TestNativeToRecord(t *testing.T) {
 		{
 			name: "CNAME record",
 			input: &dnspod.RecordListItem{
-				Name:  commonStringPtr("www"),
-				Type:  commonStringPtr("CNAME"),
-				Value: commonStringPtr("target.example.com."),
+				Name:  new("www"),
+				Type:  new("CNAME"),
+				Value: new("target.example.com."),
 				TTL:   commonUint64Ptr(300),
 			},
 			expected: &models.RecordConfig{
@@ -45,9 +45,9 @@ func TestNativeToRecord(t *testing.T) {
 		{
 			name: "MX record",
 			input: &dnspod.RecordListItem{
-				Name:  commonStringPtr("@"),
-				Type:  commonStringPtr("MX"),
-				Value: commonStringPtr("mail.example.com."),
+				Name:  new("@"),
+				Type:  new("MX"),
+				Value: new("mail.example.com."),
 				TTL:   commonUint64Ptr(600),
 				MX:    commonUint64Ptr(10),
 			},

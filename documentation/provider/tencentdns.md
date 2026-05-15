@@ -4,7 +4,7 @@
 This provider is developed for the **Tencent Cloud API 3.0** platform.
 {% endhint %}
 
-This provider is for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns) (DNSPod). To use this provider, add an entry to `creds.json` with `TYPE` set to `TENCENTDNS` along with your API credentials.
+This provider is for [Tencent Cloud DNS](https://cloud.tencent.com/product/dns) (DNSPod). To use this provider, add an entry to `creds.json` with `TYPE` set to `TENCENTDNS` along with your [API secrets](https://console.intl.cloud.tencent.com/cam/capi).
 
 Example:
 
@@ -14,7 +14,8 @@ Example:
   "tencentdns": {
     "TYPE": "TENCENTDNS",
     "secret_id": "YOUR_SECRET_ID",
-    "secret_key": "YOUR_SECRET_KEY"
+    "secret_key": "YOUR_SECRET_KEY",
+    "site": "cn | intl"
   }
 }
 ```
@@ -29,11 +30,34 @@ Optionally, you can specify a `region` (defaults to `"ap-guangzhou"`):
     "TYPE": "TENCENTDNS",
     "secret_id": "YOUR_SECRET_ID",
     "secret_key": "YOUR_SECRET_KEY",
-    "region": "ap-guangzhou"
+    "region": "ap-guangzhou",
+    "site": "intl"
   }
 }
 ```
 {% endcode %}
+
+Optionally, you can specify a `site` (defaults to `"cn"`). Use `"intl"` for Tencent Cloud International accounts:
+
+{% code title="creds.json" %}
+```json
+{
+  "tencentdns": {
+    "TYPE": "TENCENTDNS",
+    "secret_id": "YOUR_SECRET_ID",
+    "secret_key": "YOUR_SECRET_KEY",
+    "site": "intl"
+  }
+}
+```
+{% endcode %}
+
+Valid `site` values are:
+
+- `cn`: Tencent Cloud mainland China APIs.
+- `intl`: Tencent Cloud International APIs.
+
+The `site` setting affects both DNSPod DNS management and registrar nameserver updates.
 
 ## Usage
 
@@ -59,5 +83,6 @@ D("example.com", REG_TENCENT, DnsProvider(DSP_TENCENT),
 
 - **MX Records**: Priority and target are handled automatically.
 - **Registrar Support**: Supports updating authoritative nameservers for domains registered with Tencent Cloud.
+- **Tencent Cloud Site**: Use `site: "intl"` for Tencent Cloud International site, use `site: "cn"` for Tencent Cloud China site.
 - **Line Management**: All records are created on the "默认" (Default) line.
 - **New Domains**: DNSControl will automatically create non-existent domains in your account.

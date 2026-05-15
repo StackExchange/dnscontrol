@@ -13,6 +13,8 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("MX", rejectif.MxNull)
 	a.Add("TXT", rejectif.TxtIsEmpty)
+	a.Add("SRV", rejectif.SrvHasNullTarget)
+	a.Add("SRV", rejectif.SrvHasEmptyTarget)
 
 	return a.Audit(records)
 }
