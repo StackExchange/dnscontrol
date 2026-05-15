@@ -19,4 +19,7 @@ func main() {
 	if err := generateGoreleaserFile(); err != nil {
 		log.Fatal(err)
 	}
+	if err := generateLabelerFile(); err != nil {
+		log.Fatal(err)
+	}
 }
