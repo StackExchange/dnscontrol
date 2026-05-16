@@ -102,6 +102,15 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Netbird",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/netbird",
+		PortalURL:   "https://app.netbird.io/settings",
+		Fields: []providers.CredsField{
+			{Key: "token", Label: "API Token", Required: true, Secret: true},
+		},
+	})
 }
 
 // AuditRecords returns a list of errors for records that aren't supported.
