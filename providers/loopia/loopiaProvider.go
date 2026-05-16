@@ -47,7 +47,7 @@ func init() {
 		DisplayName: "Loopia",
 		Kind:        providers.KindDNS | providers.KindRegistrar,
 		DocsURL:     "https://docs.dnscontrol.org/provider/loopia",
-		PortalURL:   "https://customerzone.loopia.com/api/", // TODO: Verify
+		PortalURL:   "https://support.loopia.com/wiki/loopiaapi/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "username",
