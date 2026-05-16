@@ -77,6 +77,48 @@ D("example.com", REG_TENCENT, DnsProvider(DSP_TENCENT),
 ```
 {% endcode %}
 
+### Why use `ALIAS` for DNSPod
+
+DNSPod does not natively support the `ALIAS` record type.
+
+In this provider, `ALIAS("@")` is used only as a DNSControl-side representation of CNAME flattening at the zone apex (`@`). It does not mean DNSPod has a real ALIAS record type.
+
+We use `ALIAS("@")` because DNSControl treats `CNAME("@")` as invalid. In standard DNS, a CNAME record cannot be placed at the zone apex, because the apex already contains required records such as `SOA` and `NS`.
+
+For DNSPod, the provider maps `ALIAS("@")` to a CNAME record on `@` under the hood. The actual CNAME flattening behavior must still be configured manually in the DNSPod dashboard.
+
+#### Example:
+
+**Recommended**
+
+Use `ALIAS("@")` for apex CNAME flattening:
+
+```js
+D("example.com", REG_NONE, DnsProvider(DNSPOD),
+  ALIAS("@", "target.example.net.")
+);
+```
+**Not recommended**
+
+Avoid writing CNAME("@") directly:
+
+```js
+D("example.com", REG_NONE, DnsProvider(DNSPOD),
+  CNAME("@", "target.example.net.")
+);
+```
+
+For compatibility, the DNSPod provider automatically converts apex CNAME("@") to ALIAS("@") internally. This allows DNSControl to treat it as an apex-flattening record instead of a standard apex CNAME.
+
+### Note
+
+DNSPod does not natively support the ALIAS record type. In this provider, ALIAS("@") is only a DNSControl-side representation of apex CNAME flattening.
+
+When pushed to DNSPod, it is stored as a CNAME record on @.
+
+Reference: https://docs.dnspod.com/dns/faq-dns-resolution/?lang=en
+
+
 ## Important Notes
 
 ### Features

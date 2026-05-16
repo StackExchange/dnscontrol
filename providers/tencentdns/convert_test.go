@@ -22,7 +22,7 @@ func TestNativeToRecord(t *testing.T) {
 				Name:  new("@"),
 				Type:  new("A"),
 				Value: new("1.2.3.4"),
-				TTL:   commonUint64Ptr(600),
+				TTL:   new(uint64(600)),
 			},
 			expected: &models.RecordConfig{
 				Type: "A",
@@ -35,7 +35,7 @@ func TestNativeToRecord(t *testing.T) {
 				Name:  new("www"),
 				Type:  new("CNAME"),
 				Value: new("target.example.com."),
-				TTL:   commonUint64Ptr(300),
+				TTL:   new(uint64(300)),
 			},
 			expected: &models.RecordConfig{
 				Type: "CNAME",
@@ -48,8 +48,8 @@ func TestNativeToRecord(t *testing.T) {
 				Name:  new("@"),
 				Type:  new("MX"),
 				Value: new("mail.example.com."),
-				TTL:   commonUint64Ptr(600),
-				MX:    commonUint64Ptr(10),
+				TTL:   new(uint64(600)),
+				MX:    new(uint64(10)),
 			},
 			expected: &models.RecordConfig{
 				Type:         "MX",

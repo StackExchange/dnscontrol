@@ -15,7 +15,7 @@ import (
 const defaultTTL = uint32(600)
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseAlias:            providers.Can("DNSPod doesn't natively support the ALIAS record type."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),

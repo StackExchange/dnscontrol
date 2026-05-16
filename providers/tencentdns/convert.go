@@ -26,6 +26,12 @@ func nativeToRecord(r *dnspod.RecordListItem, domainName string) (*models.Record
 		return nil, fmt.Errorf("unsupported record type: %s", *r.Type)
 	}
 
+	// DNSPod does not have a native ALIAS record type.
+	// DNSControl uses ALIAS("@") to model apex CNAME flattening.
+	// On DNSPod, this is represented as a CNAME record at "@".
+	// https://docs.dnspod.com/dns/faq-dns-resolution/?lang=en
+
+	// Handle ALIAS records
 	rtype := *r.Type
 	if rtype == "CNAME" && *r.Name == "@" {
 		rtype = "ALIAS"

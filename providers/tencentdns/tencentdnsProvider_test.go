@@ -146,11 +146,11 @@ func TestMinTTLForGrade(t *testing.T) {
 	packages := []*dnspod.PackageDetailItem{
 		{
 			DomainGrade: new("DP_Free"),
-			MinTtl:      commonUint64Ptr(600),
+			MinTtl:      new(uint64(600)),
 		},
 		{
 			DomainGrade: new("DP_Plus"),
-			MinTtl:      commonUint64Ptr(1),
+			MinTtl:      new(uint64(1)),
 		},
 		{
 			DomainGrade: new("DP_MissingTTL"),
