@@ -75,4 +75,30 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Name.com",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/namedotcom",
+		PortalURL:   "https://www.name.com/account/settings/api", // TODO: Verify
+		Fields: []providers.CredsField{
+			{
+				Key:      "apiuser",
+				Label:    "API user",
+				Help:     "Your Name.com API username.",
+				Required: true,
+			},
+			{
+				Key:      "apikey",
+				Label:    "API key",
+				Help:     "Your Name.com API token.",
+				Secret:   true,
+				Required: true,
+			},
+			{
+				Key:   "apiurl",
+				Label: "API URL (optional)",
+				Help:  "Override the API base URL (for example api.dev.name.com for the OT&E sandbox). Leave blank to use the production URL.",
+			},
+		},
+	})
 }
