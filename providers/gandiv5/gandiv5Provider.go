@@ -46,6 +46,39 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterRegistrarType(providerName, newReg)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Gandi v5",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/gandi_v5",
+		PortalURL:   "https://account.gandi.net/", // TODO: Verify
+		Notes:       "Gandi supports two auth methods: the newer Personal Access Token (recommended) or the legacy API key.",
+		Fields: []providers.CredsField{
+			{
+				Key:      "_authMethod",
+				Label:    "Which authentication method do you want to use?",
+				Help:     "Personal access token is recommended; the API key is deprecated.",
+				Choices:  []string{"Personal access token", "API key (deprecated)"},
+				Required: true,
+				Internal: true,
+			},
+			{
+				Key:      "token",
+				Label:    "Personal access token",
+				Help:     "Gandi personal access token.",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Personal access token"},
+			},
+			{
+				Key:      "apikey",
+				Label:    "API key",
+				Help:     "Gandi v5 API key (legacy).",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "API key (deprecated)"},
+			},
+		},
+	})
 }
 
 // features declares which features and options are available.
