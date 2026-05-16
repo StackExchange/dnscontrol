@@ -10,6 +10,106 @@ plus "plug-ins" that speak to DNS provider APIs such as AWS Route 53,
 Cloudflare, and Gandi. It can send the same DNS records to multiple providers.
 It runs anywhere Go runs (Linux, macOS, Windows). The provider model is
 extensible, so more providers can be added.
+[DNSControl](https://docs.dnscontrol.org/) is a system
+for maintaining DNS zones.  It has two parts:
+a domain specific language (DSL) for describing DNS zones plus
+software that processes the DSL and pushes the resulting zones to
+DNS providers such as Route53, Cloudflare, and Gandi.  It can send
+the same DNS records to multiple providers.  It even generates
+the most beautiful BIND zone files ever.  It runs anywhere Go runs (Linux, macOS,
+Windows). The provider model is extensible, so more providers can be added.
+
+Currently supported DNS providers:
+
+- AdGuard Home
+- Akamai Edge DNS
+- Alibaba Cloud DNS (ALIDNS)
+- AutoDNS
+- AWS Route 53
+- AXFR+DDNS
+- Azure DNS
+- Azure Private DNS
+- BIND
+- Bunny DNS
+- CentralNic Reseller (CNR) - formerly RRPProxy
+- Cloudflare
+- ClouDNS
+- CSC Global (*Experimental*)
+- deSEC
+- DigitalOcean
+- DNS Made Easy
+- DNScale
+- DNSimple
+- Domainnameshop (Domeneshop)
+- Exoscale
+- Fortigate
+- Gandi
+- Gcore
+- Gidinet
+- Google DNS
+- Hetzner
+- hosting.de
+- Huawei Cloud DNS
+- Hurricane Electric DNS
+- Infomaniak
+- INWX
+- Joker
+- Linode
+- Loopia
+- LuaDNS
+- Microsoft Windows Server DNS Server
+- MikroTik RouterOS
+- Mythic Beasts
+- Name.com
+- Namecheap
+- NetBird
+- Netcup
+- Netlify
+- NS1
+- Oracle Cloud
+- OVH
+- Packetframe
+- Porkbun
+- PowerDNS
+- Realtime Register
+- RWTH DNS-Admin
+- Sakura Cloud
+- SoftLayer
+- TransIP
+- UniFi Network
+- Vercel
+- Vultr
+
+Currently supported Domain Registrars:
+
+- AWS Route 53
+- CentralNic Reseller (CNR) - formerly RRPProxy
+- CSC Global
+- DNSimple
+- DNSOVERHTTPS
+- Dynadot
+- easyname
+- Gandi
+- Gidinet
+- hosting.de
+- Internet.bs
+- INWX
+- Loopia
+- Name.com
+- Namecheap
+- OpenSRS
+- OVH
+- Porkbun
+- Realtime Register
+
+Stack Overflow uses this system to manage hundreds of domains
+and subdomains across multiple registrars and DNS providers.
+
+You can think of it as a DNS compiler.  The configuration files are
+written in a DSL that looks a lot like JavaScript.  It is compiled
+to an intermediate representation (IR).  Compiler back-ends use the
+IR to update your DNS zones on services such as Route53, Cloudflare,
+and Gandi, or systems such as BIND.
 
 ## An Example
 
