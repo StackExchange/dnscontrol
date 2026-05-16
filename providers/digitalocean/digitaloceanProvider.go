@@ -110,7 +110,7 @@ func init() {
 		DisplayName: "DigitalOcean",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/digitalocean",
-		PortalURL:   "https://cloud.digitalocean.com/account/api/tokens", // TODO: Verify
+		PortalURL:   "https://cloud.digitalocean.com/account/api/tokens",
 		Fields: []providers.CredsField{
 			{
 				Key:      "token",
