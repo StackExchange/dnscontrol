@@ -123,7 +123,7 @@ func init() {
 		DisplayName: "Huawei Cloud DNS",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/huaweicloud",
-		PortalURL:   "https://console-intl.huaweicloud.com/iam/?locale=en-us#/mine/accessKey", // TODO: Verify
+		PortalURL:   "https://console-intl.huaweicloud.com/iam/?locale=en-us#/iam/users",
 		Fields: []providers.CredsField{
 			{
 				Key:      "KeyId",
