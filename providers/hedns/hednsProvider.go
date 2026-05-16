@@ -77,6 +77,38 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Hurricane Electric DNS",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/hedns",
+		PortalURL:   "https://dns.he.net/", // TODO: Verify
+		Fields: []providers.CredsField{
+			{
+				Key:      "username",
+				Label:    "Username",
+				Help:     "Your dns.he.net account username.",
+				Required: true,
+			},
+			{
+				Key:      "password",
+				Label:    "Password",
+				Help:     "Your dns.he.net account password.",
+				Secret:   true,
+				Required: true,
+			},
+			{
+				Key:    "totp-key",
+				Label:  "TOTP shared secret (optional)",
+				Help:   "Shared TOTP secret used to generate a valid TOTP code. Leave blank if you do not use TOTP.",
+				Secret: true,
+			},
+			{
+				Key:   "session-file-path",
+				Label: "Session file path (optional)",
+				Help:  "Path to a directory where the .hedns-session file is stored to reuse the authenticated session. Leave blank to log in each run.",
+			},
+		},
+	})
 }
 
 var defaultNameservers = []string{
