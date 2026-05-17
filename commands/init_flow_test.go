@@ -12,12 +12,13 @@ import (
 // stubAsker drives the init flow from a pre recorded script for
 // deterministic tests.
 type stubAsker struct {
-	t          *testing.T
-	selects    []string
-	inputs     []string
-	secrets    []string
-	multilines []string
-	confirm    []bool
+	t            *testing.T
+	selects      []string
+	multiSelects [][]string
+	inputs       []string
+	secrets      []string
+	multilines   []string
+	confirm      []bool
 }
 
 func (stub *stubAsker) Select(_, _ string, options []string, _ string) (string, error) {
@@ -26,6 +27,15 @@ func (stub *stubAsker) Select(_, _ string, options []string, _ string) (string, 
 	}
 	value := stub.selects[0]
 	stub.selects = stub.selects[1:]
+	return value, nil
+}
+
+func (stub *stubAsker) MultiSelect(_, _ string, _ []string) ([]string, error) {
+	if len(stub.multiSelects) == 0 {
+		return nil, nil
+	}
+	value := stub.multiSelects[0]
+	stub.multiSelects = stub.multiSelects[1:]
 	return value, nil
 }
 
@@ -68,42 +78,40 @@ func (stub *stubAsker) Confirm(_ string, _ bool) (bool, error) {
 	return value, nil
 }
 
-// TestRunInit_NoneBindFlow walks the full init flow using only the built
-// in providers (NONE registrar + BIND DNS). It asserts the generated
-// creds.json and dnsconfig.js parse cleanly.
-func TestRunInit_NoneBindFlow(t *testing.T) {
+func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {
 	dir := t.TempDir()
 
 	stub := &stubAsker{
 		t: t,
 		selects: []string{
-			"BIND", // DNS provider (asked first)
+			"BIND", // DNS provider
 			"NONE", // registrar
 		},
 		inputs: []string{
-			"",            // BIND: directory (accept default)
-			"",            // BIND: filenameformat (accept default)
-			"",            // BIND: entry name (accept default "bind_primary")
-			"",            // NONE: entry name (accept default "none_primary")
-			"example.com", // first domain
+			"", // BIND: directory
+			"", // BIND: filenameformat
+			"", // BIND: entry name
+			"", // NONE: entry name
+		},
+		multiSelects: [][]string{
+			{"example.com", "example.org"}, // zone selection
 		},
 		confirm: []bool{
-			false, // "Add another domain?"
+			true,  // "Pick domains from the zone list?"
+			false, // "Add another domain manually?"
 			true,  // Write these files?
 			false, // Compare domains with zones at provider?
 			false, // Run preview now?
 		},
 	}
 
-	// Replace the subprocess seam so the test does not actually exec the
-	// dnscontrol binary for `preview` or `get-zones`.
 	origRun := runSubcommand
 	runSubcommand = func(*exec.Cmd) error { return nil }
 	t.Cleanup(func() { runSubcommand = origRun })
 
 	origVerify := verifyDNSProviderCredsFunc
 	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
-		return nil, nil
+		return []string{"example.com", "example.org", "example.net"}, nil
 	}
 	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
 
@@ -115,26 +123,18 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 		t.Fatalf("runInit: %v", err)
 	}
 
-	credsBytes, err := os.ReadFile(args.CredsFile)
-	if err != nil {
-		t.Fatalf("read creds: %v", err)
-	}
-	if !strings.Contains(string(credsBytes), `"bind_primary"`) {
-		t.Errorf("creds.json missing bind_primary entry: %s", credsBytes)
-	}
-	if !strings.Contains(string(credsBytes), `"TYPE": "BIND"`) {
-		t.Errorf("creds.json missing BIND TYPE: %s", credsBytes)
-	}
-
 	configBytes, err := os.ReadFile(args.ConfigFile)
 	if err != nil {
 		t.Fatalf("read config: %v", err)
 	}
-	if !strings.Contains(string(configBytes), `NewDnsProvider("bind_primary")`) {
-		t.Errorf("config missing bind_primary provider: %s", configBytes)
-	}
 	if !strings.Contains(string(configBytes), `D("example.com"`) {
 		t.Errorf("config missing example.com domain: %s", configBytes)
+	}
+	if !strings.Contains(string(configBytes), `D("example.org"`) {
+		t.Errorf("config missing example.org domain: %s", configBytes)
+	}
+	if strings.Contains(string(configBytes), `D("example.net"`) {
+		t.Errorf("config should not contain unselected example.net: %s", configBytes)
 	}
 }
 
@@ -227,5 +227,75 @@ func TestRunInit_VerifyDNSProviderCredsAbort(t *testing.T) {
 	err := runInit(args, stub)
 	if err != errInitAborted {
 		t.Fatalf("expected errInitAborted, got: %v", err)
+	}
+}
+
+// TestRunInit_NoneBindFlow walks the full init flow using only the built
+// in providers (NONE registrar + BIND DNS). It asserts the generated
+// creds.json and dnsconfig.js parse cleanly.
+func TestRunInit_NoneBindFlow(t *testing.T) {
+	dir := t.TempDir()
+
+	stub := &stubAsker{
+		t: t,
+		selects: []string{
+			"BIND", // DNS provider (asked first)
+			"NONE", // registrar
+		},
+		inputs: []string{
+			"",            // BIND: directory (accept default)
+			"",            // BIND: filenameformat (accept default)
+			"",            // BIND: entry name (accept default "bind_primary")
+			"",            // NONE: entry name (accept default "none_primary")
+			"example.com", // first domain
+		},
+		confirm: []bool{
+			false, // "Add another domain?"
+			true,  // Write these files?
+			false, // Compare domains with zones at provider?
+			false, // Run preview now?
+		},
+	}
+
+	// Replace the subprocess seam so the test does not actually exec the
+	// dnscontrol binary for `preview` or `get-zones`.
+	origRun := runSubcommand
+	runSubcommand = func(*exec.Cmd) error { return nil }
+	t.Cleanup(func() { runSubcommand = origRun })
+
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		return nil, nil
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	args := InitArgs{
+		CredsFile:  filepath.Join(dir, "creds.json"),
+		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
+	}
+	if err := runInit(args, stub); err != nil {
+		t.Fatalf("runInit: %v", err)
+	}
+
+	credsBytes, err := os.ReadFile(args.CredsFile)
+	if err != nil {
+		t.Fatalf("read creds: %v", err)
+	}
+	if !strings.Contains(string(credsBytes), `"bind_primary"`) {
+		t.Errorf("creds.json missing bind_primary entry: %s", credsBytes)
+	}
+	if !strings.Contains(string(credsBytes), `"TYPE": "BIND"`) {
+		t.Errorf("creds.json missing BIND TYPE: %s", credsBytes)
+	}
+
+	configBytes, err := os.ReadFile(args.ConfigFile)
+	if err != nil {
+		t.Fatalf("read config: %v", err)
+	}
+	if !strings.Contains(string(configBytes), `NewDnsProvider("bind_primary")`) {
+		t.Errorf("config missing bind_primary provider: %s", configBytes)
+	}
+	if !strings.Contains(string(configBytes), `D("example.com"`) {
+		t.Errorf("config missing example.com domain: %s", configBytes)
 	}
 }

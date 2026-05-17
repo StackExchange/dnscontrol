@@ -85,13 +85,13 @@ func runInit(args InitArgs, asker Asker) error {
 		return err
 	}
 
-	entries, choice, _, err := collectEntries(asker, registrarType, dnsProviderType, sameAccount)
+	entries, choice, availableZones, err := collectEntries(asker, registrarType, dnsProviderType, sameAccount)
 	if err != nil {
 		return err
 	}
 
 	if !args.SkipConfig {
-		choice.Domains, err = askDomains(asker)
+		choice.Domains, err = askDomainsWithZones(asker, availableZones)
 		if err != nil {
 			return err
 		}
@@ -297,6 +297,51 @@ func verifyRegistrarCredsReal(sample InitCredsEntry) ([]string, error) {
 		return nil, err
 	}
 	return nil, nil
+}
+
+func askDomainsWithZones(asker Asker, availableZones []string) ([]string, error) {
+	if len(availableZones) == 0 {
+		return askDomains(asker)
+	}
+
+	fmt.Println()
+	useList, err := asker.Confirm("Pick domains from the zone list?", true)
+	if err != nil {
+		return nil, err
+	}
+	if !useList {
+		return askDomains(asker)
+	}
+
+	selected, err := asker.MultiSelect(
+		"Select zones to manage in dnsconfig.js",
+		"Use space to select, enter to confirm.",
+		availableZones,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		more, err := asker.Confirm("Add another domain manually?", false)
+		if err != nil {
+			return nil, err
+		}
+		if !more {
+			break
+		}
+		next, err := askRequiredDomain(asker, "Domain name", "")
+		if err != nil {
+			return nil, err
+		}
+		selected = append(selected, next)
+	}
+
+	if len(selected) == 0 {
+		fmt.Println("No zones selected; please enter at least one domain.")
+		return askDomains(asker)
+	}
+	return selected, nil
 }
 
 // offerFollowUps asks the user whether to compare configured domains

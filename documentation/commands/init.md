@@ -47,7 +47,11 @@ OPTIONS:
    registrar. The same retry and abort choices apply. When the
    registrar reuses the DNS provider account (step 2), this step is
    skipped.
-8. You name one or more domains for the starter `dnsconfig.js`.
+8. When DNS credential verification succeeded and the provider returned
+   zones, `init` offers a multi-select list so you can pick the
+   domains to manage. You can also add extra domains manually. When no
+   zones are available (for example when the DNS provider is NONE),
+   `init` falls back to a free form prompt.
 9. Before writing, `init` shows a preview of both files and asks for
    confirmation.
 10. After writing, `init` offers to call
@@ -90,8 +94,11 @@ API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 
 Verifying credentials for Cloudflare...
 Credentials OK. Found 2 zone(s) at Cloudflare.
-? First domain name for dnsconfig.js example.com
-? Add another domain? No
+? Pick domains from the zone list? Yes
+? Select zones to manage in dnsconfig.js
+  [x] example.com
+  [ ] other.com
+? Add another domain manually? No
 ...
 ? Write these files? Yes
 
