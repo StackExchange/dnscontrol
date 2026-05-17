@@ -11,13 +11,18 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
+	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
+	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/urfave/cli/v3"
 )
 
 var verifyDNSProviderCredsFunc = verifyDNSProviderCredsReal
 var verifyRegistrarCredsFunc = verifyRegistrarCredsReal
+var fetchZoneRecordsFunc = fetchZoneRecordsReal
 
 var _ = cmd(catMain, func() *cli.Command {
 	var args InitArgs
@@ -94,6 +99,14 @@ func runInit(args InitArgs, asker Asker) error {
 		choice.Domains, err = askDomainsWithZones(asker, availableZones)
 		if err != nil {
 			return err
+		}
+
+		if sample, ok := dnsSample(entries); ok && len(choice.Domains) > 0 {
+			fmt.Printf("\nFetching records for %d zone(s) from %s...\n", len(choice.Domains), displayName(sample.TypeName))
+			choice.DomainRecords = importRecords(sample, choice.Domains)
+			if imported := len(choice.DomainRecords); imported > 0 {
+				fmt.Printf("Imported records for %d zone(s).\n", imported)
+			}
 		}
 	}
 
@@ -287,6 +300,70 @@ func verifyDNSProviderCredsReal(sample InitCredsEntry) ([]string, error) {
 	}
 	sort.Strings(zones)
 	return zones, nil
+}
+
+func fetchZoneRecordsReal(entry InitCredsEntry, zone string) (models.Records, error) {
+	creds := map[string]string{"TYPE": entry.TypeName}
+	maps.Copy(creds, entry.Fields)
+	provider, err := providers.CreateDNSProvider(entry.TypeName, creds, nil)
+	if err != nil {
+		return nil, err
+	}
+	ff := domaintags.MakeDomainNameVarieties(zone)
+	recs, err := provider.GetZoneRecords(
+		&models.DomainConfig{
+			Name: ff.NameASCII,
+			Metadata: map[string]string{
+				models.DomainUniqueName:  ff.UniqueName,
+				models.DomainNameRaw:     ff.NameRaw,
+				models.DomainNameUnicode: ff.NameUnicode,
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+	rtypecontrol.FixLegacyRecords(&recs)
+	return recs, nil
+}
+
+func importRecords(entry InitCredsEntry, domains []string) map[string]DomainImport {
+	result := make(map[string]DomainImport, len(domains))
+	for _, domain := range domains {
+		recs, err := fetchZoneRecordsFunc(entry, domain)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not import records for %s: %v\n", domain, err)
+			continue
+		}
+
+		var filtered models.Records
+		for _, rec := range recs {
+			if rec.Type == "SOA" {
+				continue
+			}
+			if rec.Type == "NS" && rec.Name == "@" {
+				continue
+			}
+			filtered = append(filtered, rec)
+		}
+
+		if len(filtered) == 0 {
+			continue
+		}
+
+		defaultTTL := prettyzone.MostCommonTTL(filtered)
+		sorted := prettyzone.PrettySort(filtered, domain, defaultTTL, nil)
+
+		var lines []string
+		for _, rec := range sorted.Records {
+			lines = append(lines, formatDsl(rec, defaultTTL))
+		}
+
+		result[domain] = DomainImport{
+			DefaultTTL: defaultTTL,
+			Records:    lines,
+		}
+	}
+	return result
 }
 
 func verifyRegistrarCredsReal(sample InitCredsEntry) ([]string, error) {

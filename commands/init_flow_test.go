@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/DNSControl/dnscontrol/v4/models"
 )
 
 // stubAsker drives the init flow from a pre recorded script for
@@ -78,6 +80,15 @@ func (stub *stubAsker) Confirm(_ string, _ bool) (bool, error) {
 	return value, nil
 }
 
+func stubFetchNoRecords(t *testing.T) {
+	t.Helper()
+	origFetch := fetchZoneRecordsFunc
+	fetchZoneRecordsFunc = func(_ InitCredsEntry, _ string) (models.Records, error) {
+		return nil, nil
+	}
+	t.Cleanup(func() { fetchZoneRecordsFunc = origFetch })
+}
+
 func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {
 	dir := t.TempDir()
 
@@ -114,6 +125,8 @@ func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {
 		return []string{"example.com", "example.org", "example.net"}, nil
 	}
 	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	stubFetchNoRecords(t)
 
 	args := InitArgs{
 		CredsFile:  filepath.Join(dir, "creds.json"),
@@ -179,6 +192,8 @@ func TestRunInit_VerifyDNSProviderCredsRetry(t *testing.T) {
 		return nil, nil
 	}
 	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	stubFetchNoRecords(t)
 
 	args := InitArgs{
 		CredsFile:  filepath.Join(dir, "creds.json"),
@@ -269,6 +284,8 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	}
 	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
 
+	stubFetchNoRecords(t)
+
 	args := InitArgs{
 		CredsFile:  filepath.Join(dir, "creds.json"),
 		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
@@ -297,5 +314,145 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	}
 	if !strings.Contains(string(configBytes), `D("example.com"`) {
 		t.Errorf("config missing example.com domain: %s", configBytes)
+	}
+}
+
+func TestRunInit_ImportRecords(t *testing.T) {
+	dir := t.TempDir()
+
+	stub := &stubAsker{
+		t: t,
+		selects: []string{
+			"BIND",
+			"NONE",
+		},
+		inputs: []string{
+			"", // BIND: directory
+			"", // BIND: filenameformat
+			"", // BIND: entry name
+			"", // NONE: entry name
+		},
+		multiSelects: [][]string{
+			{"example.com"},
+		},
+		confirm: []bool{
+			true,  // "Pick domains from the zone list?"
+			false, // "Add another domain manually?"
+			true,  // Write these files?
+			false, // Compare domains with zones at provider?
+			false, // Run preview now?
+		},
+	}
+
+	origRun := runSubcommand
+	runSubcommand = func(*exec.Cmd) error { return nil }
+	t.Cleanup(func() { runSubcommand = origRun })
+
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		return []string{"example.com"}, nil
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	origFetch := fetchZoneRecordsFunc
+	fetchZoneRecordsFunc = func(_ InitCredsEntry, zone string) (models.Records, error) {
+		aRecord := &models.RecordConfig{Type: "A", Name: "www", TTL: 300}
+		aRecord.SetTarget("192.0.2.1")
+		mxRecord := &models.RecordConfig{Type: "MX", Name: "@", TTL: 300, MxPreference: 10}
+		mxRecord.SetTarget("mx.example.com.")
+		soaRecord := &models.RecordConfig{Type: "SOA", Name: "@"}
+		nsRecord := &models.RecordConfig{Type: "NS", Name: "@"}
+		nsRecord.SetTarget("ns1.example.com.")
+		return models.Records{aRecord, mxRecord, soaRecord, nsRecord}, nil
+	}
+	t.Cleanup(func() { fetchZoneRecordsFunc = origFetch })
+
+	args := InitArgs{
+		CredsFile:  filepath.Join(dir, "creds.json"),
+		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
+	}
+	if err := runInit(args, stub); err != nil {
+		t.Fatalf("runInit: %v", err)
+	}
+
+	configBytes, err := os.ReadFile(args.ConfigFile)
+	if err != nil {
+		t.Fatalf("read config: %v", err)
+	}
+	config := string(configBytes)
+	if strings.Contains(config, `A("@", "1.2.3.4")`) {
+		t.Errorf("config should not contain placeholder when import succeeded: %s", config)
+	}
+	if !strings.Contains(config, `A("www", "192.0.2.1")`) {
+		t.Errorf("config missing imported A record: %s", config)
+	}
+	if !strings.Contains(config, `MX("@", 10, "mx.example.com.")`) {
+		t.Errorf("config missing imported MX record: %s", config)
+	}
+	if strings.Contains(config, "SOA") {
+		t.Errorf("config should not contain SOA record: %s", config)
+	}
+	if strings.Contains(config, "NAMESERVER") || strings.Contains(config, `NS("@"`) {
+		t.Errorf("config should not contain apex NS record: %s", config)
+	}
+}
+
+func TestRunInit_ImportFallback(t *testing.T) {
+	dir := t.TempDir()
+
+	stub := &stubAsker{
+		t: t,
+		selects: []string{
+			"BIND",
+			"NONE",
+		},
+		inputs: []string{
+			"", // BIND: directory
+			"", // BIND: filenameformat
+			"", // BIND: entry name
+			"", // NONE: entry name
+		},
+		multiSelects: [][]string{
+			{"example.com"},
+		},
+		confirm: []bool{
+			true,  // "Pick domains from the zone list?"
+			false, // "Add another domain manually?"
+			true,  // Write these files?
+			false, // Compare domains with zones at provider?
+			false, // Run preview now?
+		},
+	}
+
+	origRun := runSubcommand
+	runSubcommand = func(*exec.Cmd) error { return nil }
+	t.Cleanup(func() { runSubcommand = origRun })
+
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		return []string{"example.com"}, nil
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	origFetch := fetchZoneRecordsFunc
+	fetchZoneRecordsFunc = func(_ InitCredsEntry, zone string) (models.Records, error) {
+		return nil, fmt.Errorf("connection refused")
+	}
+	t.Cleanup(func() { fetchZoneRecordsFunc = origFetch })
+
+	args := InitArgs{
+		CredsFile:  filepath.Join(dir, "creds.json"),
+		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
+	}
+	if err := runInit(args, stub); err != nil {
+		t.Fatalf("runInit: %v", err)
+	}
+
+	configBytes, err := os.ReadFile(args.ConfigFile)
+	if err != nil {
+		t.Fatalf("read config: %v", err)
+	}
+	if !strings.Contains(string(configBytes), `A("@", "1.2.3.4")`) {
+		t.Errorf("config should contain placeholder when import failed: %s", configBytes)
 	}
 }

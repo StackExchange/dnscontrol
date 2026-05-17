@@ -52,13 +52,19 @@ OPTIONS:
    domains to manage. You can also add extra domains manually. When no
    zones are available (for example when the DNS provider is NONE),
    `init` falls back to a free form prompt.
-9. Before writing, `init` shows a preview of both files and asks for
+9. For each selected domain, `init` fetches the existing DNS records
+   from the provider and includes them in the generated `dnsconfig.js`.
+   When a zone uses a non-default TTL, a `DefaultTTL()` directive is
+   added. SOA records and apex NS records are excluded. When the
+   fetch fails for a domain, `init` falls back to a placeholder
+   `A("@", "1.2.3.4")` record and prints a warning.
+10. Before writing, `init` shows a preview of both files and asks for
    confirmation.
-10. After writing, `init` offers to call
+11. After writing, `init` offers to call
     `dnscontrol get-zones --format=nameonly` against the provider and
     lists which configured domains exist at the provider, which are
     only in the config and which are only at the provider.
-11. `init` offers to run `dnscontrol preview` as a final sanity check.
+12. `init` offers to run `dnscontrol preview` as a final sanity check.
 
 Existing `creds.json` entries are preserved when new entries are added.
 An existing `dnsconfig.js` is replaced by the starter; if you want to
@@ -99,6 +105,9 @@ Credentials OK. Found 2 zone(s) at Cloudflare.
   [x] example.com
   [ ] other.com
 ? Add another domain manually? No
+
+Fetching records for 1 zone(s) from Cloudflare...
+Imported records for 1 zone(s).
 ...
 ? Write these files? Yes
 
