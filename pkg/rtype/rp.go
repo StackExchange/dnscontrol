@@ -3,6 +3,8 @@ package rtype
 import (
 	"fmt"
 
+	dnsv2 "codeberg.org/miekg/dns"
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
@@ -48,6 +50,19 @@ func (handle *RP) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
 	rec.Comparable = rec.ZonefilePartial
+
+	// Hack to deal with the fact that fixlegacy.go can't import rtype.
+	switch rec.F.(type) {
+	case *RP:
+		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(*RP).Mbox, Txt: rec.F.(*RP).Txt}
+	case *dnsv1.RP:
+		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(*dnsv1.RP).Mbox, Txt: rec.F.(*dnsv1.RP).Txt}
+	default:
+		panic(fmt.Sprintf("unexpected type for RP.FromStruct: %T", rec.F))
+	}
+
+	rec.TypeNum = dnsv2.TypeRP
+	rec.ComparableV3 = rec.RDATA.(dnsrdatav2.RP).String()
 
 	handle.CopyToLegacyFields(rec)
 	return nil

@@ -1,6 +1,12 @@
 package rtypecontrol
 
-import "github.com/DNSControl/dnscontrol/v4/models"
+import (
+	"fmt"
+
+	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
+	"github.com/DNSControl/dnscontrol/v4/models"
+)
 
 // FixLegacyDC populates .F to compenstate for providers that have not been
 // updated to support RecordConfigV2 when creating RecordConfig.
@@ -25,12 +31,63 @@ func FixLegacyRecords(recs *models.Records) {
 // FixLegacyRecord populates .F to compenstate for providers that have not been
 // updated to support RecordConfigV2 when creating RecordConfig.
 func FixLegacyRecord(rec *models.RecordConfig) {
-	// Populate .F if needed:
+	// Populate .F if needed: (legacy)
 	// That is... If rec.F == nil and this is a "modern" type.
-	if rec.F != nil {
-		return
+	if rec.F == nil {
+		if fixer, ok := Func[rec.Type]; ok {
+			fixer.CopyFromLegacyFields(rec)
+		}
 	}
-	if fixer, ok := Func[rec.Type]; ok {
-		fixer.CopyFromLegacyFields(rec)
+
+	// Populate .RDATA if needed:
+	if rec.RDATA == nil {
+
+		// The .RDATA structure itself.
+		switch rec.Type {
+		case "A":
+			rec.RDATA = dnsrdatav2.A{Addr: rec.GetTargetIP()}
+		case "AAAA":
+			rec.RDATA = dnsrdatav2.AAAA{Addr: rec.GetTargetIP()}
+
+		case "CAA":
+			rec.RDATA = dnsrdatav2.CAA{Flag: rec.CaaFlag, Tag: rec.CaaTag, Value: rec.GetTargetField()}
+		case "CNAME":
+			rec.RDATA = dnsrdatav2.CNAME{Target: rec.GetTargetField()}
+
+		case "HTTPS":
+			//rec.RDATA = dnsrdatav2.HTTPS{Priority: rec.HttpsPriority, Target: rec.GetTargetField()}
+
+		case "MX":
+			rec.RDATA = dnsrdatav2.MX{Preference: rec.MxPreference, Mx: rec.GetTargetField()}
+
+		case "RP":
+			// no-op.  See pkg/rtype/rp.go:FromStruct.
+
+		case "SOA":
+			rec.RDATA = dnsrdatav2.SOA{Ns: rec.GetTargetField(), Mbox: rec.SoaMbox, Serial: rec.SoaSerial, Refresh: rec.SoaRefresh, Retry: rec.SoaRetry, Expire: rec.SoaExpire, Minttl: rec.SoaMinttl}
+		case "SRV":
+			rec.RDATA = dnsrdatav2.SRV{Priority: rec.SrvPriority, Weight: rec.SrvWeight, Port: rec.SrvPort, Target: rec.GetTargetField()}
+
+		case "TXT":
+			rec.RDATA = dnsrdatav2.TXT{Txt: []string{rec.GetTargetField()}}
+
+		default:
+			panic(fmt.Sprintf("RDATA CONVERSION NOT IMPLEMENTED TYPE=%q", rec.Type))
+		}
+
+		if rec.RDATA != nil {
+
+			// TypeNum:
+			tn, err := dnsutilv2.StringToType(rec.Type)
+			if err != nil {
+				panic("fix me")
+			}
+			rec.TypeNum = tn
+
+			// Comparable:
+			rec.Comparable = fmt.Sprintf("%s", rec.RDATA)
+
+		}
+
 	}
 }

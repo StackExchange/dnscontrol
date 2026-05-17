@@ -3,6 +3,7 @@ package rtype
 import (
 	"fmt"
 
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
@@ -49,6 +50,16 @@ func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 		return fmt.Errorf("fields is not *dns.DS, got %T", fields)
 	}
 	rec.F = &DS{*ds}
+
+	// Hack to deal with the fact that fixlegacy.go can't import rtype.
+	switch rec.F.(type) {
+	case *DS:
+		rec.RDATA = dnsrdatav2.DS{KeyTag: rec.F.(*DS).KeyTag, Algorithm: rec.F.(*DS).Algorithm, DigestType: rec.F.(*DS).DigestType, Digest: rec.F.(*DS).Digest}
+	case *dnsv1.DS:
+		rec.RDATA = dnsrdatav2.DS{KeyTag: rec.F.(*dnsv1.DS).KeyTag, Algorithm: rec.F.(*dnsv1.DS).Algorithm, DigestType: rec.F.(*dnsv1.DS).DigestType, Digest: rec.F.(*dnsv1.DS).Digest}
+	default:
+		panic(fmt.Sprintf("unexpected type for DS.FromStruct: %T", rec.F))
+	}
 
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
 	rec.Comparable = rec.ZonefilePartial

@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 	"github.com/jinzhu/copier"
 	dnsv1 "github.com/miekg/dns"
@@ -16,8 +17,21 @@ import (
 // RecordConfig stores a DNS record whether it was created from data downloaded from
 // a provider's API ("actual") or from user input in dndsconfig.js ("desired").
 type RecordConfig struct {
+
 	// Type is the DNS record type (rtype), all caps, "A", "MX", etc.
 	Type string `json:"type"`
+
+	// TypeNum is the assigned number of the record's type. 1 for A, 5 for CNAME, etc. See dnsv2.TypeToString and dnsv2.StringToType.
+	TypeNum uint16 `json:"typenum"`
+
+	// RDATA is (the fields of the record).
+	RDATA dnsv2.RDATA `json:"rdata"`
+
+	// ComparableV3 is an opaque string that can be used to compare two
+	// RecordConfigs for equality. Typically this is the Zonefile line minus the
+	// label and TTL.
+	// The V3 distingues itself from .Comparable and all other legacy systems that we're leaving in place for now.
+	ComparableV3 any `json:"comparablev3"`
 
 	// TTL is the DNS record's TTL in seconds. 0 means provider default.
 	TTL uint32 `json:"ttl,omitempty"`
