@@ -96,7 +96,7 @@ func runInit(args InitArgs, asker Asker) error {
 	}
 
 	if !args.SkipConfig {
-		choice.Domains, err = askDomainsWithZones(asker, availableZones)
+		choice.Domains, err = askDomainsWithZones(asker, availableZones, displayName(dnsProviderType))
 		if err != nil {
 			return err
 		}
@@ -376,13 +376,14 @@ func verifyRegistrarCredsReal(sample InitCredsEntry) ([]string, error) {
 	return nil, nil
 }
 
-func askDomainsWithZones(asker Asker, availableZones []string) ([]string, error) {
+func askDomainsWithZones(asker Asker, availableZones []string, providerName string) ([]string, error) {
 	if len(availableZones) == 0 {
 		return askDomains(asker)
 	}
 
 	fmt.Println()
-	useList, err := asker.Confirm("Pick domains from the zone list?", true)
+	prompt := fmt.Sprintf("Select from the %d zone(s) found at %s?", len(availableZones), providerName)
+	useList, err := asker.Confirm(prompt, true)
 	if err != nil {
 		return nil, err
 	}
