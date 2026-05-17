@@ -76,12 +76,12 @@ func runInit(args InitArgs, asker Asker) error {
 		return err
 	}
 
-	regType, dnsType, sameAccount, err := pickProviders(asker)
+	registrarType, dnsProviderType, sameAccount, err := pickProviders(asker)
 	if err != nil {
 		return err
 	}
 
-	entries, choice, err := collectEntries(asker, regType, dnsType, sameAccount)
+	entries, choice, err := collectEntries(asker, registrarType, dnsProviderType, sameAccount)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func runInit(args InitArgs, asker Asker) error {
 // pickProviders walks the user through choosing a DNS provider and a
 // registrar. It returns the chosen registrar TYPE, DNS provider TYPE,
 // and whether the registrar should reuse the DNS provider's credentials.
-func pickProviders(asker Asker) (regType, dnsType string, sameAccount bool, err error) {
+func pickProviders(asker Asker) (registrarType, dnsProviderType string, sameAccount bool, err error) {
 	// DNS first because most users think in terms of where their records
 	// live. NONE defers the choice. The picker only lists providers
 	// whose maintainers have registered onboarding metadata so the
@@ -126,7 +126,7 @@ func pickProviders(asker Asker) (regType, dnsType string, sameAccount bool, err 
 	fmt.Println("A DNS provider hosts the records (A, MX, TXT, CNAME, and so on) for your zones.")
 	fmt.Println("Pick NONE if you want to defer this choice.")
 	fmt.Println("Providers not listed below can be configured from their documentation page at https://docs.dnscontrol.org/provider/.")
-	dnsType, err = pickProvider(asker, "Which DNS service provider do you want to configure?", dnsOptions)
+	dnsProviderType, err = pickProvider(asker, "Which DNS service provider do you want to configure?", dnsOptions)
 	if err != nil {
 		return "", "", false, err
 	}
@@ -134,9 +134,9 @@ func pickProviders(asker Asker) (regType, dnsType string, sameAccount bool, err 
 	// If the chosen DNS provider can also act as a registrar, offer to
 	// reuse it; otherwise ask which registrar to use, with NONE as the
 	// default.
-	if dnsType != "NONE" {
-		if _, alsoRegistrar := providers.RegistrarTypes[dnsType]; alsoRegistrar {
-			meta, _ := providers.GetCredsMetadata(dnsType)
+	if dnsProviderType != "NONE" {
+		if _, alsoRegistrar := providers.RegistrarTypes[dnsProviderType]; alsoRegistrar {
+			meta, _ := providers.GetCredsMetadata(dnsProviderType)
 			sameAccount, err = asker.Confirm(
 				fmt.Sprintf("Use the same %s account for the registrar role too?", displayName(meta.TypeName)),
 				true,
@@ -145,7 +145,7 @@ func pickProviders(asker Asker) (regType, dnsType string, sameAccount bool, err 
 				return "", "", false, err
 			}
 			if sameAccount {
-				return dnsType, dnsType, true, nil
+				return dnsProviderType, dnsProviderType, true, nil
 			}
 		}
 	}
@@ -154,12 +154,12 @@ func pickProviders(asker Asker) (regType, dnsType string, sameAccount bool, err 
 	fmt.Println("A registrar is where the domain itself is registered. DNSControl updates the NS delegation there.")
 	fmt.Println("Pick NONE if you manage the registrar outside DNSControl.")
 	fmt.Println("Registrars not listed below can be configured from their documentation page at https://docs.dnscontrol.org/provider/.")
-	regType, err = pickProvider(asker, "Which registrar do you want to configure?",
+	registrarType, err = pickProvider(asker, "Which registrar do you want to configure?",
 		providersWithMetadata(keysOf(providers.RegistrarTypes)))
 	if err != nil {
 		return "", "", false, err
 	}
-	return regType, dnsType, false, nil
+	return registrarType, dnsProviderType, false, nil
 }
 
 // confirmAndWrite shows the rendered files, warns the user about any
@@ -420,55 +420,55 @@ func dnscontrolBinary() string {
 // collectEntries prompts for credentials for the chosen provider types and
 // returns the entries plus the dnsconfig.js choice record. DNS is
 // collected first because that is the primary workflow for most users.
-func collectEntries(asker Asker, regType, dnsType string, sameAccount bool) ([]InitCredsEntry, InitDnsconfigChoice, error) {
+func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAccount bool) ([]InitCredsEntry, InitDnsconfigChoice, error) {
 	var entries []InitCredsEntry
 	choice := InitDnsconfigChoice{}
 
 	dnsEntryName := ""
-	if dnsType != "NONE" && dnsType != "" {
-		meta, ok := providers.GetCredsMetadata(dnsType)
+	if dnsProviderType != "NONE" && dnsProviderType != "" {
+		meta, ok := providers.GetCredsMetadata(dnsProviderType)
 		if !ok {
-			meta = providers.CredsMetadata{TypeName: dnsType, DisplayName: dnsType}
+			meta = providers.CredsMetadata{TypeName: dnsProviderType, DisplayName: dnsProviderType}
 		}
 		fmt.Printf("\n== DNS provider: %s ==\n", displayName(meta.TypeName))
-		fields, name, err := askEntry(asker, meta, defaultEntryName(dnsType))
+		fields, name, err := askEntry(asker, meta, defaultEntryName(dnsProviderType))
 		if err != nil {
 			return nil, choice, err
 		}
 		entries = append(entries, InitCredsEntry{
 			Name:     name,
-			TypeName: dnsType,
+			TypeName: dnsProviderType,
 			Fields:   fields,
 		})
 		dnsEntryName = name
 		choice.DNSName = name
-		choice.DNSVar = jsVarName("DNS", dnsType)
+		choice.DNSVar = jsVarName("DNS", dnsProviderType)
 	}
 
-	if regType == "" {
+	if registrarType == "" {
 		return entries, choice, nil
 	}
 
-	if sameAccount && regType == dnsType && dnsEntryName != "" {
+	if sameAccount && registrarType == dnsProviderType && dnsEntryName != "" {
 		// Reuse the DNS entry as the registrar.
 		choice.RegistrarName = dnsEntryName
-		choice.RegistrarVar = jsVarName("REG", regType)
+		choice.RegistrarVar = jsVarName("REG", registrarType)
 		return entries, choice, nil
 	}
 
-	meta, ok := providers.GetCredsMetadata(regType)
+	meta, ok := providers.GetCredsMetadata(registrarType)
 	if !ok {
-		meta = providers.CredsMetadata{TypeName: regType, DisplayName: regType}
+		meta = providers.CredsMetadata{TypeName: registrarType, DisplayName: registrarType}
 	}
 	fmt.Printf("\n== Registrar: %s ==\n", displayName(meta.TypeName))
-	fields, name, err := askEntry(asker, meta, defaultEntryName(regType))
+	fields, name, err := askEntry(asker, meta, defaultEntryName(registrarType))
 	if err != nil {
 		return nil, choice, err
 	}
-	if regType != "NONE" || len(fields) > 0 {
+	if registrarType != "NONE" || len(fields) > 0 {
 		entries = append(entries, InitCredsEntry{
 			Name:     name,
-			TypeName: regType,
+			TypeName: registrarType,
 			Fields:   fields,
 		})
 	} else {
@@ -480,7 +480,7 @@ func collectEntries(asker Asker, regType, dnsType string, sameAccount bool) ([]I
 		})
 	}
 	choice.RegistrarName = name
-	choice.RegistrarVar = jsVarName("REG", regType)
+	choice.RegistrarVar = jsVarName("REG", registrarType)
 	return entries, choice, nil
 }
 
