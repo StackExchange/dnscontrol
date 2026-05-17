@@ -408,9 +408,13 @@ func askDomainsWithZones(asker Asker, availableZones []string, providerName stri
 		if !more {
 			break
 		}
-		next, err := askRequiredDomain(asker, "Domain name", "")
+		next, err := asker.Input("Domain name", "Leave empty to go back.", "")
 		if err != nil {
 			return nil, err
+		}
+		next = strings.TrimSpace(next)
+		if next == "" {
+			break
 		}
 		selected = append(selected, next)
 	}
