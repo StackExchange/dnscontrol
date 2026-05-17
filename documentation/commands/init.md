@@ -1,9 +1,6 @@
 # init
 
-`dnscontrol init` walks a new user through creating a working `creds.json`
-plus a minimal `dnsconfig.js` starter. It prompts for a DNS provider and a
-registrar, shows where to create the matching API credentials, and writes
-both files so that `dnscontrol preview` runs on a fresh checkout.
+`dnscontrol init` walks a new user through creating a working `creds.json` plus a minimal `dnsconfig.js` starter. It prompts for a DNS provider and a registrar, shows where to create the matching API credentials, and writes both files so that `dnscontrol preview` runs on a fresh checkout.
 
 ```shell
 NAME:
@@ -24,62 +21,24 @@ OPTIONS:
 
 ## What happens
 
-1. Pick a DNS provider. This is the service that hosts the actual records
-   (A, MX, TXT, CNAME, and so on). Pick `NONE` to defer the choice.
-2. If the chosen DNS provider also works as a registrar, `init` offers to
-   reuse the same account for nameserver (NS) delegation.
-3. Otherwise pick a registrar. The registrar is where the domain itself
-   is registered. Pick `NONE` to manage the registrar outside DNSControl.
-4. For each provider `init` prints the API settings URL so you can open
-   it from your terminal before answering the prompts.
-5. `init` prompts for every `creds.json` field registered for the
-   provider. Secret fields mask the input. Fields that carry newlines,
-   such as a PEM encoded private key, open your `$EDITOR` so the full
-   block can be pasted without being split up. Providers that support
-   multiple auth methods (for example TransIP) use an internal selector
-   so only the relevant fields are prompted.
-6. `init` verifies the DNS provider credentials by instantiating the
-   provider and calling `ListZones`. When verification fails (for
-   example a typo in the API token), `init` prints the error and
-   offers to retry or abort. Retrying re-prompts for the credential
-   fields only; the provider selection and entry name are kept.
-7. `init` verifies the registrar credentials by instantiating the
-   registrar. The same retry and abort choices apply. When the
-   registrar reuses the DNS provider account (step 2), this step is
-   skipped.
-8. When DNS credential verification succeeded and the provider returned
-   zones, `init` offers a multi-select list so you can pick the
-   domains to manage. You can also add extra domains manually. When no
-   zones are available (for example when the DNS provider is NONE),
-   `init` falls back to a free form prompt.
-9. For each selected domain, `init` fetches the existing DNS records
-   from the provider and includes them in the generated `dnsconfig.js`.
-   When a zone uses a non-default TTL, a `DefaultTTL()` directive is
-   added. SOA records and apex NS records are excluded. When the
-   fetch fails for a domain, `init` falls back to a placeholder
-   `A("@", "1.2.3.4")` record and prints a warning.
-10. Before writing, `init` shows a preview of both files and asks for
-   confirmation.
-11. After writing, `init` offers to call
-    `dnscontrol get-zones --format=nameonly` against the provider and
-    lists which configured domains exist at the provider, which are
-    only in the config and which are only at the provider.
+1. Pick a DNS provider. This is the service that hosts the actual records (A, MX, TXT, CNAME, and so on). Pick `NONE` to defer the choice.
+2. If the chosen DNS provider also works as a registrar, `init` offers to reuse the same account for nameserver (NS) delegation.
+3. Otherwise pick a registrar. The registrar is where the domain itself is registered. Pick `NONE` to manage the registrar outside DNSControl.
+4. For each provider `init` prints the API settings URL so you can open it from your terminal before answering the prompts.
+5. `init` prompts for every `creds.json` field registered for the provider. Secret fields mask the input. Fields that carry newlines, such as a PEM encoded private key, open your `$EDITOR` so the full block can be pasted without being split up. Providers that support multiple auth methods (for example TransIP) use an internal selector so only the relevant fields are prompted.
+6. `init` verifies the DNS provider credentials by instantiating the provider and calling `ListZones`. When verification fails (for example a typo in the API token), `init` prints the error and offers to retry or abort. Retrying re-prompts for the credential fields only; the provider selection and entry name are kept.
+7. `init` verifies the registrar credentials by instantiating the registrar. The same retry and abort choices apply. When the registrar reuses the DNS provider account (step 2), this step is skipped.
+8. When DNS credential verification succeeded and the provider returned zones, `init` offers a multi-select list so you can pick the domains to manage. You can also add extra domains manually. When no zones are available (for example when the DNS provider is NONE), `init` falls back to a free form prompt.
+9. For each selected domain, `init` fetches the existing DNS records from the provider and includes them in the generated `dnsconfig.js`. When a zone uses a non-default TTL, a `DefaultTTL()` directive is added. SOA records and apex NS records are excluded. When the fetch fails for a domain, `init` falls back to a placeholder `A("@", "1.2.3.4")` record and prints a warning.
+10. Before writing, `init` shows a preview of both files and asks for confirmation.
+11. After writing, `init` offers to call `dnscontrol get-zones --format=nameonly` against the provider and lists which configured domains exist at the provider, which are only in the config and which are only at the provider.
 12. `init` offers to run `dnscontrol preview` as a final sanity check.
 
-Existing `creds.json` entries are preserved when new entries are added.
-An existing `dnsconfig.js` is replaced by the starter; if you want to
-keep your current file, pass `--no-config` or answer no at the final
-confirmation.
+Existing `creds.json` entries are preserved when new entries are added. An existing `dnsconfig.js` is replaced by the starter; if you want to keep your current file, pass `--no-config` or answer no at the final confirmation.
 
 ## Provider coverage
 
-`init` only lists providers whose maintainers have registered onboarding
-metadata. Other providers can still be used with DNSControl; their
-`creds.json` entry is created from the provider's documentation page at
-`https://docs.dnscontrol.org/provider/` instead. Provider maintainers
-who want their provider to appear in the wizard can find the metadata
-schema and flag reference in
-[Writing new DNS providers](../advanced-features/writing-providers.md).
+`init` only lists providers whose maintainers have registered onboarding metadata. Other providers can still be used with DNSControl; their `creds.json` entry is created from the provider's documentation page at `https://docs.dnscontrol.org/provider/` instead. Provider maintainers who want their provider to appear in the wizard can find the metadata schema and flag reference in [Writing new DNS providers](../advanced-features/writing-providers.md).
 
 ## Example: Cloudflare (single account for DNS and registrar)
 
@@ -157,12 +116,7 @@ Credentials OK. Found 2 zone(s) at Cloudflare.
 
 ## Example: TransIP for DNS with a PEM private key
 
-TransIP accepts either a short lived access token, or an account name
-combined with a long lived private key. `init` asks which method you
-want to use and only prompts for the relevant fields. The private key
-field is multi line, so `init` opens your `$EDITOR` where you paste the
-full PEM block (including the `BEGIN` and `END` lines). Set `$EDITOR`
-before running `init` (for example `export EDITOR=nano`).
+TransIP accepts either a short lived access token, or an account name combined with a long lived private key. `init` asks which method you want to use and only prompts for the relevant fields. The private key field is multi line, so `init` opens your `$EDITOR` where you paste the full PEM block (including the `BEGIN` and `END` lines). Set `$EDITOR` before running `init` (for example `export EDITOR=nano`).
 
 ```shell
 $ dnscontrol init
