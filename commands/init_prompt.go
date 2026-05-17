@@ -131,6 +131,8 @@ func askField(asker Asker, field providers.CredsField) (string, error) {
 	label := field.Label
 	if label == "" {
 		label = field.Key
+	} else if !strings.EqualFold(label, field.Key) {
+		label += " [" + field.Key + "]"
 	}
 	if field.Required {
 		label += " (required)"
