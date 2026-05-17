@@ -52,7 +52,7 @@ func init() {
 		DisplayName: "hosting.de",
 		Kind:        providers.KindDNS | providers.KindRegistrar,
 		DocsURL:     "https://docs.dnscontrol.org/provider/hostingde",
-		PortalURL:   "https://secure.hosting.de/", // TODO: Verify
+		PortalURL:   "https://secure.hosting.de/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "authToken",
