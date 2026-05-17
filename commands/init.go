@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"sort"
@@ -14,6 +15,9 @@ import (
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/urfave/cli/v3"
 )
+
+var verifyDNSProviderCredsFunc = verifyDNSProviderCredsReal
+var verifyRegistrarCredsFunc = verifyRegistrarCredsReal
 
 var _ = cmd(catMain, func() *cli.Command {
 	var args InitArgs
@@ -81,7 +85,7 @@ func runInit(args InitArgs, asker Asker) error {
 		return err
 	}
 
-	entries, choice, err := collectEntries(asker, registrarType, dnsProviderType, sameAccount)
+	entries, choice, _, err := collectEntries(asker, registrarType, dnsProviderType, sameAccount)
 	if err != nil {
 		return err
 	}
@@ -216,6 +220,83 @@ func confirmAndWrite(asker Asker, args InitArgs, existingCreds map[string]map[st
 		return fmt.Errorf("wrote %s but it failed to parse: %w", args.CredsFile, err)
 	}
 	return nil
+}
+
+func verifyAndRetry(asker Asker, meta providers.CredsMetadata, entry InitCredsEntry, role string, verify func(InitCredsEntry) ([]string, error)) (map[string]string, []string, error) {
+	fields := entry.Fields
+	for {
+		fmt.Println()
+		fmt.Printf("Verifying credentials for %s...\n", displayName(entry.TypeName))
+
+		zones, err := verify(InitCredsEntry{
+			Name:     entry.Name,
+			TypeName: entry.TypeName,
+			Fields:   fields,
+		})
+		if err == nil {
+			fmt.Printf("Credentials OK.")
+			if len(zones) > 0 {
+				fmt.Printf(" Found %d zone(s) at %s.", len(zones), displayName(entry.TypeName))
+			}
+			fmt.Println()
+			return fields, zones, nil
+		}
+
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Credential verification failed:")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintf(os.Stderr, "  %v\n", err)
+		fmt.Fprintln(os.Stderr)
+		action, selectErr := asker.Select(
+			"What would you like to do?",
+			"",
+			[]string{"Retry credentials", "Abort"},
+			"Retry credentials",
+		)
+		if selectErr != nil {
+			return nil, nil, selectErr
+		}
+		switch action {
+		case "Retry credentials":
+			fmt.Printf("\n== %s: %s ==\n", role, displayName(meta.TypeName))
+			retryFields, retryErr := collectFields(asker, meta)
+			if retryErr != nil {
+				return nil, nil, retryErr
+			}
+			fields = retryFields
+		default:
+			return nil, nil, errInitAborted
+		}
+	}
+}
+
+func verifyDNSProviderCredsReal(sample InitCredsEntry) ([]string, error) {
+	creds := map[string]string{"TYPE": sample.TypeName}
+	maps.Copy(creds, sample.Fields)
+	provider, err := providers.CreateDNSProvider(sample.TypeName, creds, nil)
+	if err != nil {
+		return nil, err
+	}
+	lister, ok := provider.(providers.ZoneLister)
+	if !ok {
+		return nil, nil
+	}
+	zones, err := lister.ListZones()
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(zones)
+	return zones, nil
+}
+
+func verifyRegistrarCredsReal(sample InitCredsEntry) ([]string, error) {
+	creds := map[string]string{"TYPE": sample.TypeName}
+	maps.Copy(creds, sample.Fields)
+	_, err := providers.CreateRegistrar(sample.TypeName, creds)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 // offerFollowUps asks the user whether to compare configured domains
@@ -420,8 +501,9 @@ func dnscontrolBinary() string {
 // collectEntries prompts for credentials for the chosen provider types and
 // returns the entries plus the dnsconfig.js choice record. DNS is
 // collected first because that is the primary workflow for most users.
-func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAccount bool) ([]InitCredsEntry, InitDnsconfigChoice, error) {
+func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAccount bool) ([]InitCredsEntry, InitDnsconfigChoice, []string, error) {
 	var entries []InitCredsEntry
+	var availableZones []string
 	choice := InitDnsconfigChoice{}
 
 	dnsEntryName := ""
@@ -433,8 +515,19 @@ func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAcco
 		fmt.Printf("\n== DNS provider: %s ==\n", displayName(meta.TypeName))
 		fields, name, err := askEntry(asker, meta, defaultEntryName(dnsProviderType))
 		if err != nil {
-			return nil, choice, err
+			return nil, choice, nil, err
 		}
+
+		fields, zones, err := verifyAndRetry(asker, meta, InitCredsEntry{
+			Name:     name,
+			TypeName: dnsProviderType,
+			Fields:   fields,
+		}, "DNS provider", verifyDNSProviderCredsFunc)
+		if err != nil {
+			return nil, choice, nil, err
+		}
+		availableZones = zones
+
 		entries = append(entries, InitCredsEntry{
 			Name:     name,
 			TypeName: dnsProviderType,
@@ -446,14 +539,13 @@ func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAcco
 	}
 
 	if registrarType == "" {
-		return entries, choice, nil
+		return entries, choice, availableZones, nil
 	}
 
 	if sameAccount && registrarType == dnsProviderType && dnsEntryName != "" {
-		// Reuse the DNS entry as the registrar.
 		choice.RegistrarName = dnsEntryName
 		choice.RegistrarVar = jsVarName("REG", registrarType)
-		return entries, choice, nil
+		return entries, choice, availableZones, nil
 	}
 
 	meta, ok := providers.GetCredsMetadata(registrarType)
@@ -463,16 +555,23 @@ func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAcco
 	fmt.Printf("\n== Registrar: %s ==\n", displayName(meta.TypeName))
 	fields, name, err := askEntry(asker, meta, defaultEntryName(registrarType))
 	if err != nil {
-		return nil, choice, err
+		return nil, choice, nil, err
 	}
-	if registrarType != "NONE" || len(fields) > 0 {
+	if registrarType != "NONE" {
+		fields, _, err := verifyAndRetry(asker, meta, InitCredsEntry{
+			Name:     name,
+			TypeName: registrarType,
+			Fields:   fields,
+		}, "Registrar", verifyRegistrarCredsFunc)
+		if err != nil {
+			return nil, choice, nil, err
+		}
 		entries = append(entries, InitCredsEntry{
 			Name:     name,
 			TypeName: registrarType,
 			Fields:   fields,
 		})
 	} else {
-		// Minimal NONE entry so dnsconfig.js can reference it.
 		entries = append(entries, InitCredsEntry{
 			Name:     name,
 			TypeName: "NONE",
@@ -481,7 +580,7 @@ func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAcco
 	}
 	choice.RegistrarName = name
 	choice.RegistrarVar = jsVarName("REG", registrarType)
-	return entries, choice, nil
+	return entries, choice, availableZones, nil
 }
 
 // askEntry prompts for the creds.json entry key and the credential values

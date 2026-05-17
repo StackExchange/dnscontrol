@@ -38,14 +38,23 @@ OPTIONS:
    block can be pasted without being split up. Providers that support
    multiple auth methods (for example TransIP) use an internal selector
    so only the relevant fields are prompted.
-6. You name one or more domains for the starter `dnsconfig.js`.
-7. Before writing, `init` shows a preview of both files and asks for
+6. `init` verifies the DNS provider credentials by instantiating the
+   provider and calling `ListZones`. When verification fails (for
+   example a typo in the API token), `init` prints the error and
+   offers to retry or abort. Retrying re-prompts for the credential
+   fields only; the provider selection and entry name are kept.
+7. `init` verifies the registrar credentials by instantiating the
+   registrar. The same retry and abort choices apply. When the
+   registrar reuses the DNS provider account (step 2), this step is
+   skipped.
+8. You name one or more domains for the starter `dnsconfig.js`.
+9. Before writing, `init` shows a preview of both files and asks for
    confirmation.
-8. After writing, `init` offers to call
-   `dnscontrol get-zones --format=nameonly` against the provider and
-   lists which configured domains exist at the provider, which are only
-   in the config and which are only at the provider.
-9. `init` offers to run `dnscontrol preview` as a final sanity check.
+10. After writing, `init` offers to call
+    `dnscontrol get-zones --format=nameonly` against the provider and
+    lists which configured domains exist at the provider, which are
+    only in the config and which are only at the provider.
+11. `init` offers to run `dnscontrol preview` as a final sanity check.
 
 Existing `creds.json` entries are preserved when new entries are added.
 An existing `dnsconfig.js` is replaced by the starter; if you want to
@@ -78,6 +87,9 @@ API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 ? API Token (required) **********
 ? Account ID (optional) 0123456789abcdef
 ? creds.json entry name for this provider cloudflare_primary
+
+Verifying credentials for Cloudflare...
+Credentials OK. Found 2 zone(s) at Cloudflare.
 ? First domain name for dnsconfig.js example.com
 ? Add another domain? No
 ...
@@ -96,6 +108,35 @@ Zones at Cloudflare compared with dnsconfig.js:
 
 Welcome to the DNSControl community!
 ...
+```
+
+## Example: retrying after a credential error
+
+When verification fails, `init` lets you re-enter the credentials without starting over.
+
+```shell
+== DNS provider: Cloudflare ==
+
+API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
+? API Token (required) **********
+? Account ID (optional) 0123456789abcdef
+? creds.json entry name for this provider cloudflare_primary
+
+Verifying credentials for Cloudflare...
+
+Credential verification failed:
+
+  HTTP 403 Forbidden
+
+? What would you like to do? Retry credentials
+
+== DNS provider: Cloudflare ==
+
+? API Token (required) **********
+? Account ID (optional) 0123456789abcdef
+
+Verifying credentials for Cloudflare...
+Credentials OK. Found 2 zone(s) at Cloudflare.
 ```
 
 ## Example: TransIP for DNS with a PEM private key

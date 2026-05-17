@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -100,6 +101,12 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	runSubcommand = func(*exec.Cmd) error { return nil }
 	t.Cleanup(func() { runSubcommand = origRun })
 
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		return nil, nil
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
 	args := InitArgs{
 		CredsFile:  filepath.Join(dir, "creds.json"),
 		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
@@ -128,5 +135,97 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 	}
 	if !strings.Contains(string(configBytes), `D("example.com"`) {
 		t.Errorf("config missing example.com domain: %s", configBytes)
+	}
+}
+
+func TestRunInit_VerifyDNSProviderCredsRetry(t *testing.T) {
+	dir := t.TempDir()
+
+	attempt := 0
+	stub := &stubAsker{
+		t: t,
+		selects: []string{
+			"BIND",              // DNS provider
+			"NONE",              // registrar
+			"Retry credentials", // first verify fails
+		},
+		inputs: []string{
+			"", // BIND: directory (first attempt)
+			"", // BIND: filenameformat (first attempt)
+			"", // BIND: entry name
+			"", // BIND: directory (retry)
+			"", // BIND: filenameformat (retry)
+			"", // NONE: entry name
+			"example.com",
+		},
+		confirm: []bool{
+			false, // "Add another domain?"
+			true,  // Write these files?
+			false, // Compare domains with zones at provider?
+			false, // Run preview now?
+		},
+	}
+
+	origRun := runSubcommand
+	runSubcommand = func(*exec.Cmd) error { return nil }
+	t.Cleanup(func() { runSubcommand = origRun })
+
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		attempt++
+		if attempt == 1 {
+			return nil, fmt.Errorf("invalid credentials")
+		}
+		return nil, nil
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	args := InitArgs{
+		CredsFile:  filepath.Join(dir, "creds.json"),
+		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
+	}
+	if err := runInit(args, stub); err != nil {
+		t.Fatalf("runInit: %v", err)
+	}
+
+	if attempt != 2 {
+		t.Errorf("expected 2 verification attempts, got %d", attempt)
+	}
+}
+
+func TestRunInit_VerifyDNSProviderCredsAbort(t *testing.T) {
+	dir := t.TempDir()
+
+	stub := &stubAsker{
+		t: t,
+		selects: []string{
+			"BIND",  // DNS provider
+			"NONE",  // registrar
+			"Abort", // verify fails, user aborts
+		},
+		inputs: []string{
+			"", // BIND: directory
+			"", // BIND: filenameformat
+			"", // BIND: entry name
+		},
+	}
+
+	origRun := runSubcommand
+	runSubcommand = func(*exec.Cmd) error { return nil }
+	t.Cleanup(func() { runSubcommand = origRun })
+
+	origVerify := verifyDNSProviderCredsFunc
+	verifyDNSProviderCredsFunc = func(_ InitCredsEntry) ([]string, error) {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+	t.Cleanup(func() { verifyDNSProviderCredsFunc = origVerify })
+
+	args := InitArgs{
+		CredsFile:  filepath.Join(dir, "creds.json"),
+		ConfigFile: filepath.Join(dir, "dnsconfig.js"),
+	}
+	err := runInit(args, stub)
+	if err != errInitAborted {
+		t.Fatalf("expected errInitAborted, got: %v", err)
 	}
 }
