@@ -31,7 +31,7 @@ OPTIONS:
 8. When DNS credential verification succeeded and the provider returned zones, `init` offers a multi-select list so you can pick the domains to manage. You can also add extra domains manually. When no zones are available (for example when the DNS provider is NONE), `init` falls back to a free form prompt.
 9. For each selected domain, `init` fetches the existing DNS records from the provider and includes them in the generated `dnsconfig.js`. When a zone uses a non-default TTL, a `DefaultTTL()` directive is added. SOA records and apex NS records are excluded. When the fetch fails for a domain, `init` falls back to a placeholder `A("@", "1.2.3.4")` record and prints a warning.
 10. Before writing, `init` shows a preview of both files and asks for confirmation.
-11. After writing, `init` offers to call `dnscontrol get-zones --format=nameonly` against the provider and lists which configured domains exist at the provider, which are only in the config and which are only at the provider.
+11. After writing, `init` calls `dnscontrol get-zones --format=nameonly` against the provider and lists which configured domains exist at the provider, which are only in the config and which are only at the provider.
 12. `init` offers to run `dnscontrol preview` as a final sanity check.
 
 Existing `creds.json` entries are preserved when new entries are added. An existing `dnsconfig.js` is replaced by the starter; if you want to keep your current file, pass `--no-config` or answer no at the final confirmation.
@@ -71,7 +71,8 @@ Imported records for 1 zone(s).
 ? Write these files? Yes
 
 Done.
-? Compare domains in dnsconfig.js with zones at Cloudflare? Yes
+
+Comparing domains in dnsconfig.js with zones at Cloudflare...
 
 $ dnscontrol get-zones --format=nameonly -- cloudflare_primary - all
 Zones at Cloudflare compared with dnsconfig.js:

@@ -111,7 +111,7 @@ func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {
 			true,  // "Pick domains from the zone list?"
 			false, // "Add another domain manually?"
 			true,  // Write these files?
-			false, // Compare domains with zones at provider?
+
 			false, // Run preview now?
 		},
 	}
@@ -174,7 +174,7 @@ func TestRunInit_VerifyDNSProviderCredsRetry(t *testing.T) {
 		confirm: []bool{
 			false, // "Add another domain?"
 			true,  // Write these files?
-			false, // Compare domains with zones at provider?
+
 			false, // Run preview now?
 		},
 	}
@@ -267,7 +267,7 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 		confirm: []bool{
 			false, // "Add another domain?"
 			true,  // Write these files?
-			false, // Compare domains with zones at provider?
+
 			false, // Run preview now?
 		},
 	}
@@ -339,7 +339,7 @@ func TestRunInit_ImportRecords(t *testing.T) {
 			true,  // "Pick domains from the zone list?"
 			false, // "Add another domain manually?"
 			true,  // Write these files?
-			false, // Compare domains with zones at provider?
+
 			false, // Run preview now?
 		},
 	}
@@ -419,7 +419,7 @@ func TestRunInit_ImportFallback(t *testing.T) {
 			true,  // "Pick domains from the zone list?"
 			false, // "Add another domain manually?"
 			true,  // Write these files?
-			false, // Compare domains with zones at provider?
+
 			false, // Run preview now?
 		},
 	}

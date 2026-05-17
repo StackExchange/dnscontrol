@@ -428,17 +428,11 @@ func offerFollowUps(asker Asker, args InitArgs, entries []InitCredsEntry, choice
 	binary := dnscontrolBinary()
 
 	if sample, ok := dnsSample(entries); ok && len(choice.Domains) > 0 {
-		prompt := fmt.Sprintf("Compare domains in dnsconfig.js with zones at %s?", displayName(sample.TypeName))
-		compare, err := asker.Confirm(prompt, true)
-		if err != nil {
-			return err
-		}
-		if compare {
-			// get-zones writes its own diagnostics to stderr, so a
-			// non nil error here adds no information beyond what the
-			// user already saw. Keep going.
-			_ = compareZones(binary, args, sample, choice.Domains)
-		}
+		fmt.Printf("\nComparing domains in dnsconfig.js with zones at %s...\n", displayName(sample.TypeName))
+		// get-zones writes its own diagnostics to stderr, so a
+		// non nil error here adds no information beyond what the
+		// user already saw. Keep going.
+		_ = compareZones(binary, args, sample, choice.Domains)
 	}
 
 	run, err := asker.Confirm("Run `dnscontrol preview` now?", true)
