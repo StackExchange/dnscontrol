@@ -70,7 +70,6 @@ func TestNativeToRecord(t *testing.T) {
 			if tt.expected.Type == "MX" {
 				assert.Equal(t, tt.expected.MxPreference, rc.MxPreference)
 			}
-			// Verify label
 			expectedLabel := tt.expected.GetLabel()
 			if expectedLabel == "" {
 				expectedLabel = *tt.input.Name
@@ -109,6 +108,6 @@ func TestRecordToCreateRequest_MX(t *testing.T) {
 	req := recordToCreateRequest(rc)
 	assert.Equal(t, "@", *req.SubDomain)
 	assert.Equal(t, "MX", *req.RecordType)
-	assert.Equal(t, "mail.example.com.", *req.Value) // Target only, no priority
+	assert.Equal(t, "mail.example.com.", *req.Value)
 	assert.Equal(t, uint64(10), *req.MX)
 }

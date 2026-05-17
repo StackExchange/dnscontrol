@@ -29,15 +29,14 @@ type tencentCloudClient struct {
 	useIntlDomainClient bool
 }
 
-func newClient(secretId, secretKey, region, dnspodEndpoint string, useIntlDomainClient bool) (*tencentCloudClient, error) {
-	credential := common.NewCredential(secretId, secretKey)
+func newClient(secretID, secretKey, region, dnspodEndpoint string, useIntlDomainClient bool) (*tencentCloudClient, error) {
+	credential := common.NewCredential(secretID, secretKey)
 
 	dnspodProfile := profile.NewClientProfile()
 	if dnspodEndpoint != "" {
 		dnspodProfile.HttpProfile.Endpoint = dnspodEndpoint
 	}
 
-	// DNSPod client
 	dpc, err := dnspod.NewClient(credential, region, dnspodProfile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dnspod client: %w", err)
@@ -49,7 +48,7 @@ func newClient(secretId, secretKey, region, dnspodEndpoint string, useIntlDomain
 	}
 
 	if useIntlDomainClient {
-		intlCredential := intlcommon.NewCredential(secretId, secretKey)
+		intlCredential := intlcommon.NewCredential(secretID, secretKey)
 		intlDomainProfile := intlprofile.NewClientProfile()
 		intlDomainProfile.HttpProfile.Endpoint = intlDomainEndpoint
 
@@ -318,10 +317,10 @@ func (c *tencentCloudClient) modifyRecord(domainName string, request *dnspod.Mod
 	return err
 }
 
-func (c *tencentCloudClient) deleteRecord(domainName string, recordId uint64) error {
+func (c *tencentCloudClient) deleteRecord(domainName string, recordID uint64) error {
 	request := dnspod.NewDeleteRecordRequest()
 	request.Domain = new(domainName)
-	request.RecordId = new(recordId)
+	request.RecordId = new(recordID)
 	_, err := c.dnspodClient.DeleteRecord(request)
 	return err
 }

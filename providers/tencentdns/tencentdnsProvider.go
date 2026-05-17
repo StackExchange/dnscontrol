@@ -86,15 +86,15 @@ func newTencentDNSReg(config map[string]string) (providers.Registrar, error) {
 }
 
 func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
-	secretId := config["secret_id"]
+	secretID := config["secret_id"]
 	secretKey := config["secret_key"]
-	if secretId == "" || secretKey == "" {
+	if secretID == "" || secretKey == "" {
 		return nil, fmt.Errorf("missing tencent cloud credentials (secret_id, secret_key)")
 	}
 
 	region := config["region"]
 	if region == "" {
-		region = "ap-guangzhou" // Default region
+		region = "ap-guangzhou"
 	}
 
 	siteConfig, err := siteConfigForSite(config["site"])
@@ -102,7 +102,7 @@ func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
 		return nil, err
 	}
 
-	client, err := newClient(secretId, secretKey, region, siteConfig.dnspodEndpoint, siteConfig.useIntlDomainClient)
+	client, err := newClient(secretID, secretKey, region, siteConfig.dnspodEndpoint, siteConfig.useIntlDomainClient)
 	if err != nil {
 		return nil, err
 	}
@@ -221,19 +221,19 @@ func (p *tencentdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 			})
 		case diff2.CHANGE:
 			rc := change.New[0]
-			recordId := *(change.Old[0].Original.(*dnspod.RecordListItem).RecordId)
+			recordID := *(change.Old[0].Original.(*dnspod.RecordListItem).RecordId)
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					return p.client.modifyRecord(domainName, recordToModifyRequest(rc, recordId))
+					return p.client.modifyRecord(domainName, recordToModifyRequest(rc, recordID))
 				},
 			})
 		case diff2.DELETE:
-			recordId := *(change.Old[0].Original.(*dnspod.RecordListItem).RecordId)
+			recordID := *(change.Old[0].Original.(*dnspod.RecordListItem).RecordId)
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					return p.client.deleteRecord(domainName, recordId)
+					return p.client.deleteRecord(domainName, recordID)
 				},
 			})
 		}

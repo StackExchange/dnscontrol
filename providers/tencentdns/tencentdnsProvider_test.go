@@ -47,7 +47,7 @@ func TestNewTencentDNS_IntlSite(t *testing.T) {
 func TestNewTencentDNS_MissingCreds(t *testing.T) {
 	config := map[string]string{
 		"secret_id": "test-id",
-		// missing secret_key
+		// "secret_key" is missing
 	}
 
 	provider, err := newTencentDNS(config)

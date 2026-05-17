@@ -26,12 +26,10 @@ func nativeToRecord(r *dnspod.RecordListItem, domainName string) (*models.Record
 		return nil, fmt.Errorf("unsupported record type: %s", *r.Type)
 	}
 
-	// DNSPod does not have a native ALIAS record type.
-	// DNSControl uses ALIAS("@") to model apex CNAME flattening.
-	// On DNSPod, this is represented as a CNAME record at "@".
-	// https://docs.dnspod.com/dns/faq-dns-resolution/?lang=en
-
-	// Handle ALIAS records
+	// DNSPod does not have a native ALIAS record type. DNSControl uses
+	// ALIAS("@") to model apex CNAME flattening, which DNSPod represents
+	// as a CNAME record at "@".
+	// See https://docs.dnspod.com/dns/faq-dns-resolution/?lang=en.
 	rtype := *r.Type
 	if rtype == "CNAME" && *r.Name == "@" {
 		rtype = "ALIAS"
@@ -51,7 +49,7 @@ func recordToCreateRequest(rc *models.RecordConfig) *dnspod.CreateRecordRequest 
 	if rc.Type == "ALIAS" {
 		req.RecordType = new("CNAME")
 	}
-	req.RecordLine = new("默认") // Default line
+	req.RecordLine = new("默认")
 
 	val := rc.GetTargetCombinedFunc(txtutil.EncodeQuoted)
 	if rc.Type == "MX" {
@@ -64,9 +62,9 @@ func recordToCreateRequest(rc *models.RecordConfig) *dnspod.CreateRecordRequest 
 	return req
 }
 
-func recordToModifyRequest(rc *models.RecordConfig, recordId uint64) *dnspod.ModifyRecordRequest {
+func recordToModifyRequest(rc *models.RecordConfig, recordID uint64) *dnspod.ModifyRecordRequest {
 	req := dnspod.NewModifyRecordRequest()
-	req.RecordId = new(recordId)
+	req.RecordId = new(recordID)
 	req.SubDomain = new(rc.GetLabel())
 	req.RecordType = new(rc.Type)
 	if rc.Type == "ALIAS" {
@@ -83,16 +81,4 @@ func recordToModifyRequest(rc *models.RecordConfig, recordId uint64) *dnspod.Mod
 	req.TTL = new(uint64(rc.TTL))
 
 	return req
-}
-
-// Helpers to avoid importing "common" in every file if possible, or just import it.
-//
-//go:fix inline
-func commonStringPtr(s string) *string {
-	return new(s)
-}
-
-//go:fix inline
-func commonUint64Ptr(u uint64) *uint64 {
-	return new(u)
 }
