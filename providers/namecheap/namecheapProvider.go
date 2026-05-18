@@ -56,6 +56,32 @@ func init() {
 	providers.RegisterCustomRecordType("URL301", providerName, "")
 	providers.RegisterCustomRecordType("FRAME", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Namecheap",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/namecheap",
+		PortalURL:   "https://ap.www.namecheap.com/settings/tools/apiaccess/",
+		Fields: []providers.CredsField{
+			{
+				Key:      "apiuser",
+				Label:    "API user",
+				Help:     "Your Namecheap API username (usually your account login).",
+				Required: true,
+			},
+			{
+				Key:      "apikey",
+				Label:    "API key",
+				Help:     "The Namecheap API key generated from the API Access page.",
+				Secret:   true,
+				Required: true,
+			},
+			{
+				Key:   "BaseURL",
+				Label: "Base URL (optional)",
+				Help:  "Override the API base URL (for example to use the sandbox). Leave blank to use the production URL.",
+			},
+		},
+	})
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
