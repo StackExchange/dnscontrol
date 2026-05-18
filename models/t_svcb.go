@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	dnsv2 "codeberg.org/miekg/dns"
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
+	svcbv2 "codeberg.org/miekg/dns/svcb"
 	dnsv1 "github.com/miekg/dns"
 )
 
@@ -24,6 +27,14 @@ func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []d
 	if rc.Type != "SVCB" && rc.Type != "HTTPS" {
 		panic("assertion failed: SetTargetSVCB called when .Type is not SVCB or HTTPS")
 	}
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	valuev2, err := convertSVCBv1v2(params)
+	if err != nil {
+		return fmt.Errorf("failed to convert SVCB parameters from v1 to v2: %w", err)
+	}
+	rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: target, Value: valuev2}
+
 	return nil
 }
 
@@ -36,6 +47,23 @@ func (rc *RecordConfig) SetTargetSVCBString(origin, contents string) error {
 	if err != nil {
 		return fmt.Errorf("could not parse SVCB record: %w", err)
 	}
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	var rty uint16
+	switch record.(type) {
+	case *dnsv1.HTTPS:
+		rty = dnsv1.TypeHTTPS
+	case *dnsv1.SVCB:
+		rty = dnsv1.TypeSVCB
+	default:
+		return fmt.Errorf("unexpected record type after parsing SVCB record: %T", record)
+	}
+	rrv2, err := dnsv2.NewData(rty, contents, origin)
+	if err != nil {
+		return fmt.Errorf("could not parse SVCB record: %w", err)
+	}
+	rc.RDATA = rrv2
+
 	switch r := record.(type) {
 	case *dnsv1.HTTPS:
 		return rc.SetTargetSVCB(r.Priority, r.Target, r.Value)
@@ -43,4 +71,30 @@ func (rc *RecordConfig) SetTargetSVCBString(origin, contents string) error {
 		return rc.SetTargetSVCB(r.Priority, r.Target, r.Value)
 	}
 	return nil
+}
+
+func convertSVCBv1v2(params []dnsv1.SVCBKeyValue) ([]svcbv2.Pair, error) {
+	var value []svcbv2.Pair
+	for _, kv := range params {
+		k := kv.Key().String()
+		keyCode := svcbv2.StringToKey(k)
+		v := kv.String()
+
+		pairFn := svcbv2.KeyToPair(keyCode)
+		if pairFn == nil {
+			return nil, fmt.Errorf("failed to lookup svc key: %s", k)
+		}
+		pair := pairFn()
+		if svcbv2.PairToKey(pair) != keyCode {
+			return nil, fmt.Errorf("key constant is not in sync: %s", keyCode)
+		}
+		err := svcbv2.Parse(pair, v, "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse svc pair: %s", k)
+		}
+
+		value = append(value, pair)
+	}
+
+	return value, nil
 }

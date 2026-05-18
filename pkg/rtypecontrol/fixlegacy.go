@@ -55,18 +55,24 @@ func FixLegacyRecord(rec *models.RecordConfig) {
 			rec.RDATA = dnsrdatav2.CNAME{Target: rec.GetTargetField()}
 
 		case "HTTPS":
-			//rec.RDATA = dnsrdatav2.HTTPS{Priority: rec.HttpsPriority, Target: rec.GetTargetField()}
+			// no-op.  See pkg/rtype/t_svcb.go:SetTargetSVCB
+			panic("HTTPS should already be converted to RDATA")
 
 		case "MX":
 			rec.RDATA = dnsrdatav2.MX{Preference: rec.MxPreference, Mx: rec.GetTargetField()}
 
 		case "RP":
 			// no-op.  See pkg/rtype/rp.go:FromStruct.
+			panic("RP should already be converted to RDATA")
 
 		case "SOA":
 			rec.RDATA = dnsrdatav2.SOA{Ns: rec.GetTargetField(), Mbox: rec.SoaMbox, Serial: rec.SoaSerial, Refresh: rec.SoaRefresh, Retry: rec.SoaRetry, Expire: rec.SoaExpire, Minttl: rec.SoaMinttl}
 		case "SRV":
 			rec.RDATA = dnsrdatav2.SRV{Priority: rec.SrvPriority, Weight: rec.SrvWeight, Port: rec.SrvPort, Target: rec.GetTargetField()}
+
+		case "SVCB":
+			// no-op.  See pkg/rtype/t_svcb.go:SetTargetSVCB
+			panic("SVCB should already be converted to RDATA")
 
 		case "TXT":
 			rec.RDATA = dnsrdatav2.TXT{Txt: []string{rec.GetTargetField()}}

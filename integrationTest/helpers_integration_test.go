@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/nameservers"
@@ -520,6 +521,19 @@ func https(name string, priority uint16, target string, params string) *models.R
 	r := makeRec(name, target, "HTTPS")
 	r.SvcPriority = priority
 	r.SvcParams = params
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	rty := dnsv2.TypeSVCB
+	cp := params
+	if strings.Contains(cp, "ech=IGNORE") {
+		cp = strings.ReplaceAll(cp, "ech=IGNORE", "")
+	}
+	rrv2, err := dnsv2.NewData(rty, fmt.Sprintf("%d %s %s", priority, target, cp))
+	if err != nil {
+		panic(fmt.Sprintf("could not parse SVCB record: %s (%d %s %s)", err, priority, target, cp))
+	}
+	r.RDATA = rrv2
+
 	return r
 }
 
@@ -652,6 +666,15 @@ func svcb(name string, priority uint16, target string, params string) *models.Re
 	r := makeRec(name, target, "SVCB")
 	r.SvcPriority = priority
 	r.SvcParams = params
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	rty := dnsv2.TypeSVCB
+	rrv2, err := dnsv2.NewData(rty, fmt.Sprintf("%d %s %s", priority, target, params))
+	if err != nil {
+		panic(fmt.Sprintf("could not parse SVCB record: %s", err))
+	}
+	r.RDATA = rrv2
+
 	return r
 }
 
