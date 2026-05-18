@@ -378,7 +378,16 @@ func verifyRegistrarCredsReal(sample InitCredsEntry) ([]string, error) {
 
 func askDomainsWithZones(asker Asker, availableZones []string, providerName string) ([]string, error) {
 	if len(availableZones) == 0 {
-		return askDomains(asker)
+		for {
+			domains, err := askDomains(asker)
+			if err != nil {
+				return nil, err
+			}
+			if len(domains) > 0 {
+				return domains, nil
+			}
+			fmt.Println("At least one domain is required.")
+		}
 	}
 
 	fmt.Println()
@@ -388,7 +397,14 @@ func askDomainsWithZones(asker Asker, availableZones []string, providerName stri
 		return nil, err
 	}
 	if !useList {
-		return askDomains(asker)
+		domains, err := askDomains(asker)
+		if err != nil {
+			return nil, err
+		}
+		if len(domains) > 0 {
+			return domains, nil
+		}
+		return askDomainsWithZones(asker, availableZones, providerName)
 	}
 
 	selected, err := asker.MultiSelect(
@@ -421,7 +437,7 @@ func askDomainsWithZones(asker Asker, availableZones []string, providerName stri
 
 	if len(selected) == 0 {
 		fmt.Println("No zones selected; please enter at least one domain.")
-		return askDomains(asker)
+		return askDomainsWithZones(asker, availableZones, providerName)
 	}
 	return selected, nil
 }
@@ -751,10 +767,14 @@ func pickProvider(asker Asker, question string, options []string) (string, error
 // askDomains prompts for one or more domain names. The first domain is
 // required so the starter dnsconfig.js is never written with a stub.
 func askDomains(asker Asker) ([]string, error) {
-	first, err := askRequiredDomain(asker, "First domain name for dnsconfig.js",
-		"For example example.com. You can add more later by editing dnsconfig.js.")
+	first, err := asker.Input("First domain name for dnsconfig.js",
+		"For example example.com. Leave empty to go back.", "")
 	if err != nil {
 		return nil, err
+	}
+	first = strings.TrimSpace(first)
+	if first == "" {
+		return nil, nil
 	}
 	domains := []string{first}
 	for {
@@ -765,29 +785,19 @@ func askDomains(asker Asker) ([]string, error) {
 		if !more {
 			return domains, nil
 		}
-		next, err := askRequiredDomain(asker, "Next domain name", "")
+		next, err := asker.Input("Next domain name", "Leave empty to go back.", "")
 		if err != nil {
 			return nil, err
 		}
+		next = strings.TrimSpace(next)
+		if next == "" {
+			break
+		}
 		domains = append(domains, next)
 	}
+	return domains, nil
 }
 
-// askRequiredDomain prompts for a non empty domain name and re prompts
-// until one is given.
-func askRequiredDomain(asker Asker, message, help string) (string, error) {
-	for {
-		value, err := asker.Input(message, help, "")
-		if err != nil {
-			return "", err
-		}
-		value = strings.TrimSpace(value)
-		if value != "" {
-			return value, nil
-		}
-		fmt.Fprintln(os.Stderr, "A domain name is required.")
-	}
-}
 
 // loadExistingCreds reads an existing creds.json, returning an empty map if
 // the file does not exist. Parse errors are fatal so we never silently drop
