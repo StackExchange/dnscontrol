@@ -359,7 +359,7 @@ Jump to a table:
 | [`HETZNER`](hetzner.md) | ❌ | ❔ | ✅ |
 | [`HETZNER_V2`](hetznerv2.md) | ❌ | ❔ | ✅ |
 | [`HOSTINGDE`](hostingde.md) | ✅ | ❔ | ✅ |
-| [`HUAWEICLOUD`](huaweicloud.md) | ❔ | ❔ | ❌ |
+| [`HUAWEICLOUD`](huaweicloud.md) | ✅ | ❔ | ❌ |
 | [`INFOMANIAK`](infomaniak.md) | ❔ | ❔ | ✅ |
 | [`INWX`](inwx.md) | ✅ | ❔ | ❔ |
 | [`JOKER`](joker.md) | ❔ | ❌ | ❌ |

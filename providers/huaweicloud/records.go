@@ -131,9 +131,15 @@ func (c *huaweicloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig,
 		}
 	}
 
+	dnssecCorrections, dnssecChangeCount, err := c.getDNSSECCorrections(dc)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	result := append(reports, deletions...)
 	result = append(result, corrections...)
-	return result, actualChangeCount, nil
+	result = append(result, dnssecCorrections...)
+	return result, actualChangeCount + dnssecChangeCount, nil
 }
 
 func collectRecordsByLineAndWeightAndKey(records models.Records) map[string]models.Records {
