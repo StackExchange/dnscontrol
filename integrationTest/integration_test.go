@@ -1440,6 +1440,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("foo", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
@@ -1587,6 +1588,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("@", "1.2.3.4"),
 				a("@", "2.3.4.5"),
@@ -1767,6 +1769,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("foo.bat", "1.2.3.4"),
 				a("foo.bat", "2.3.4.5"),
