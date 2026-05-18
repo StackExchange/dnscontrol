@@ -86,7 +86,7 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 
 func init() {
 	const providerName = "CNR"
-	const providerMaintainer = "@KaiSchwarz-cnic"
+	const providerMaintainer = "@AsifNawaz-cnic"
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
@@ -94,4 +94,37 @@ func init() {
 	providers.RegisterRegistrarType(providerName, newReg)
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "CentralNic Reseller",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/cnr",
+		PortalURL:   "https://www.rrpproxy.net/",
+		Fields: []providers.CredsField{
+			{
+				Key:      "apilogin",
+				Label:    "API login",
+				Help:     "Your CNR API login username.",
+				Required: true,
+			},
+			{
+				Key:      "apipassword",
+				Label:    "API password",
+				Help:     "Your CNR API password.",
+				Secret:   true,
+				Required: true,
+			},
+			{
+				Key:      "apientity",
+				Label:    "API entity",
+				Help:     "Use \"OTE\" for the test (OT&E) system or \"LIVE\" for the production system.",
+				Choices:  []string{"OTE", "LIVE"},
+				Required: true,
+			},
+			{
+				Key:   "debugmode",
+				Label: "Debug mode (optional)",
+				Help:  "Set to \"2\" to enable verbose API debug logging. Leave blank to disable.",
+			},
+		},
+	})
 }
