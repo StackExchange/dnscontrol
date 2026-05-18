@@ -86,7 +86,7 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 
 func init() {
 	const providerName = "CNR"
-	const providerMaintainer = "@KaiSchwarz-cnic"
+	const providerMaintainer = "@AsifNawaz-cnic"
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
@@ -98,7 +98,7 @@ func init() {
 		DisplayName: "CentralNic Reseller",
 		Kind:        providers.KindDNS | providers.KindRegistrar,
 		DocsURL:     "https://docs.dnscontrol.org/provider/cnr",
-		PortalURL:   "https://www.rrpproxy.net/", // TODO: Verify
+		PortalURL:   "https://www.rrpproxy.net/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "apilogin",
