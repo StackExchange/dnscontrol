@@ -60,7 +60,7 @@ func init() {
 		DisplayName: "Namecheap",
 		Kind:        providers.KindDNS | providers.KindRegistrar,
 		DocsURL:     "https://docs.dnscontrol.org/provider/namecheap",
-		PortalURL:   "https://ap.www.namecheap.com/settings/tools/apiaccess/", // TODO: Verify
+		PortalURL:   "https://ap.www.namecheap.com/settings/tools/apiaccess/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "apiuser",
