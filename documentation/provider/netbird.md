@@ -67,7 +67,7 @@ D("example.com", REG_NONE,
 
 NetBird depends on a NetBird API token. You can generate a personal access token in the NetBird dashboard.
 
-## Supported Record Types
+## Caveats
 
 NetBird API currently supports the following DNS record types:
 
