@@ -99,9 +99,9 @@ func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {
 			"NONE", // registrar
 		},
 		inputs: []string{
+			"", // BIND: entry name
 			"", // BIND: directory
 			"", // BIND: filenameformat
-			"", // BIND: entry name
 			"", // NONE: entry name
 		},
 		multiSelects: [][]string{
@@ -163,9 +163,9 @@ func TestRunInit_VerifyDNSProviderCredsRetry(t *testing.T) {
 			"Retry credentials", // first verify fails
 		},
 		inputs: []string{
+			"", // BIND: entry name
 			"", // BIND: directory (first attempt)
 			"", // BIND: filenameformat (first attempt)
-			"", // BIND: entry name
 			"", // BIND: directory (retry)
 			"", // BIND: filenameformat (retry)
 			"", // NONE: entry name
@@ -219,9 +219,9 @@ func TestRunInit_VerifyDNSProviderCredsAbort(t *testing.T) {
 			"Abort", // verify fails, user aborts
 		},
 		inputs: []string{
+			"", // BIND: entry name
 			"", // BIND: directory
 			"", // BIND: filenameformat
-			"", // BIND: entry name
 		},
 	}
 
@@ -258,9 +258,9 @@ func TestRunInit_NoneBindFlow(t *testing.T) {
 			"NONE", // registrar
 		},
 		inputs: []string{
+			"",            // BIND: entry name (accept default "bind_primary")
 			"",            // BIND: directory (accept default)
 			"",            // BIND: filenameformat (accept default)
-			"",            // BIND: entry name (accept default "bind_primary")
 			"",            // NONE: entry name (accept default "none_primary")
 			"example.com", // first domain
 		},
@@ -327,9 +327,9 @@ func TestRunInit_ImportRecords(t *testing.T) {
 			"NONE",
 		},
 		inputs: []string{
+			"", // BIND: entry name
 			"", // BIND: directory
 			"", // BIND: filenameformat
-			"", // BIND: entry name
 			"", // NONE: entry name
 		},
 		multiSelects: [][]string{
@@ -407,9 +407,9 @@ func TestRunInit_ImportFallback(t *testing.T) {
 			"NONE",
 		},
 		inputs: []string{
+			"", // BIND: entry name
 			"", // BIND: directory
 			"", // BIND: filenameformat
-			"", // BIND: entry name
 			"", // NONE: entry name
 		},
 		multiSelects: [][]string{

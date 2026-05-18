@@ -24,8 +24,8 @@ OPTIONS:
 1. Pick a DNS provider. This is the service that hosts the actual records (A, MX, TXT, CNAME, and so on). Pick `NONE` to defer the choice.
 2. If the chosen DNS provider also works as a registrar, `init` offers to reuse the same account for nameserver (NS) delegation.
 3. Otherwise pick a registrar. The registrar is where the domain itself is registered. Pick `NONE` to manage the registrar outside DNSControl.
-4. For each provider `init` prints the API settings URL so you can open it from your terminal before answering the prompts.
-5. `init` prompts for every `creds.json` field registered for the provider. Each prompt shows the `creds.json` key name in brackets (e.g. `API Token [apitoken] (required)`) so you always know which entry you are filling. Secret fields mask the input. Fields that carry newlines, such as a PEM encoded private key, open your `$EDITOR` so the full block can be pasted without being split up. Providers that support multiple auth methods (for example TransIP) use an internal selector so only the relevant fields are prompted.
+4. `init` explains what a `creds.json` entry is and asks for the entry name ("credkey") first, so you know what you are building before filling in fields.
+5. `init` prints the API settings URL so you can open the portal before answering the credential prompts. It then prompts for every `creds.json` field registered for the provider. Each prompt shows the `creds.json` key name in brackets (e.g. `API Token [apitoken] (required)`) so you always know which entry you are filling. Secret fields mask the input. Fields that carry newlines, such as a PEM encoded private key, open your `$EDITOR` so the full block can be pasted without being split up. Providers that support multiple auth methods (for example TransIP) use an internal selector so only the relevant fields are prompted.
 6. `init` verifies the DNS provider credentials by instantiating the provider and calling `ListZones`. When verification fails (for example a typo in the API token), `init` prints the error and offers to retry or abort. Retrying re-prompts for the credential fields only; the provider selection and entry name are kept.
 7. `init` verifies the registrar credentials by instantiating the registrar. The same retry and abort choices apply. When the registrar reuses the DNS provider account (step 2), this step is skipped.
 8. When DNS credential verification succeeded and the provider returned zones, `init` shows how many zones were found and offers a multi-select list so you can pick the domains to manage. You can also add extra domains manually (leave the domain name empty to stop adding). When no zones are available (for example when the DNS provider is NONE), `init` falls back to a free form prompt.
@@ -52,10 +52,14 @@ Pick NONE if you want to defer this choice.
 
 == DNS provider: Cloudflare ==
 
+Each entry in creds.json stores a set of credentials (usually an API key,
+token, or PAT) and other information required to authenticate API calls.
+The entry name ("credkey") identifies this set of credentials, for example "cloudflareapi_primary".
+? creds.json entry name for this provider cloudflare_primary
+
 API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 ? API Token [apitoken] (required) **********
 ? Account ID [accountid] (optional) 0123456789abcdef
-? creds.json entry name for this provider cloudflare_primary
 
 Verifying credentials for Cloudflare...
 Credentials OK. Found 2 zone(s) at Cloudflare.
@@ -93,10 +97,14 @@ When verification fails, `init` lets you re-enter the credentials without starti
 ```shell
 == DNS provider: Cloudflare ==
 
+Each entry in creds.json stores a set of credentials (usually an API key,
+token, or PAT) and other information required to authenticate API calls.
+The entry name ("credkey") identifies this set of credentials, for example "cloudflareapi_primary".
+? creds.json entry name for this provider cloudflare_primary
+
 API settings for Cloudflare: https://dash.cloudflare.com/profile/api-tokens
 ? API Token [apitoken] (required) **********
 ? Account ID [accountid] (optional) 0123456789abcdef
-? creds.json entry name for this provider cloudflare_primary
 
 Verifying credentials for Cloudflare...
 

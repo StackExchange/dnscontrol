@@ -707,18 +707,10 @@ func collectEntries(asker Asker, registrarType, dnsProviderType string, sameAcco
 // askEntry prompts for the creds.json entry key and the credential values
 // for a single provider.
 func askEntry(asker Asker, meta providers.CredsMetadata, defaultName string) (map[string]string, string, error) {
-	if err := openPortalHint(asker, meta); err != nil {
-		return nil, "", err
-	}
-
-	fields := map[string]string{}
-	if len(meta.Fields) > 0 {
-		var err error
-		fields, err = collectFields(asker, meta)
-		if err != nil {
-			return nil, "", err
-		}
-	}
+	fmt.Println()
+	fmt.Println("Each entry in creds.json stores a set of credentials (usually an API key,")
+	fmt.Println("token, or PAT) and other information required to authenticate API calls.")
+	fmt.Printf("The entry name (\"credkey\") identifies this set of credentials, for example %q.\n", defaultName)
 
 	name, err := asker.Input(
 		"creds.json entry name for this provider",
@@ -732,6 +724,19 @@ func askEntry(asker Asker, meta providers.CredsMetadata, defaultName string) (ma
 	if name == "" {
 		name = defaultName
 	}
+
+	if err := openPortalHint(asker, meta); err != nil {
+		return nil, "", err
+	}
+
+	fields := map[string]string{}
+	if len(meta.Fields) > 0 {
+		fields, err = collectFields(asker, meta)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
 	return fields, name, nil
 }
 
