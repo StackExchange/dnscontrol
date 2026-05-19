@@ -1,6 +1,7 @@
 package powerdns
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -35,8 +36,59 @@ func powerDNSTargetCombined(rc *models.RecordConfig) string {
 		if rc.SvcParams == "" {
 			return fmt.Sprintf("%d %s", rc.SvcPriority, rc.GetTargetField())
 		}
-		fmt.Printf("%d %s %s", rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
 		return fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
 	}
 	return rc.GetTargetCombined()
+}
+
+// rejectPowerDNSSVCBAutoHintsUnsorted rejects PowerDNS auto hint records with
+// params that are not sorted by SvcParamKey number.
+func rejectPowerDNSSVCBAutoHintsUnsorted(rc *models.RecordConfig) error {
+	if !recordHasPowerDNSSVCBAutoHints(rc) {
+		return nil
+	}
+
+	lastOrder := -1
+	for field := range strings.FieldsSeq(rc.SvcParams) {
+		order := powerDNSSVCBParamOrder(field)
+		if order == -1 {
+			continue
+		}
+		if order < lastOrder {
+			return errors.New("PowerDNS SVCB/HTTPS auto hint params must be sorted by SvcParamKey number; ipv4hint must appear before ipv6hint")
+		}
+		lastOrder = order
+	}
+	return nil
+}
+
+// powerDNSSVCBParamOrder returns the SvcParamKey number for known SVCB params.
+func powerDNSSVCBParamOrder(field string) int {
+	key := field
+	if before, _, ok := strings.Cut(field, "="); ok {
+		key = before
+	}
+
+	switch key {
+	case "mandatory":
+		return 0
+	case "alpn":
+		return 1
+	case "no-default-alpn":
+		return 2
+	case "port":
+		return 3
+	case "ipv4hint":
+		return 4
+	case "ech":
+		return 5
+	case "ipv6hint":
+		return 6
+	case "dohpath":
+		return 7
+	case "ohttp":
+		return 8
+	default:
+		return -1
+	}
 }
