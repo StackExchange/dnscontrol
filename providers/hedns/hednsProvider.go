@@ -86,7 +86,7 @@ func init() {
 			{
 				Key:      "username",
 				Label:    "Username",
-				Help:     "Your dns.he.net account username.",
+				Help:     "Your Hurricane Electric account username.",
 				Required: true,
 			},
 			{
