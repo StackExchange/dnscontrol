@@ -10,6 +10,13 @@ import (
 	dnsv1 "github.com/miekg/dns"
 )
 
+func (rc *RecordConfig) targetCombinedSVCBRaw() string {
+	if rc.SvcParams == "" {
+		return fmt.Sprintf("%d %s", rc.SvcPriority, rc.target)
+	}
+	return fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.target, rc.SvcParams)
+}
+
 // SetTargetSVCB sets the SVCB fields.
 func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []dnsv1.SVCBKeyValue) error {
 	rc.SvcPriority = priority
@@ -86,7 +93,7 @@ func convertSVCBv1v2(params []dnsv1.SVCBKeyValue) ([]svcbv2.Pair, error) {
 		}
 		pair := pairFn()
 		if svcbv2.PairToKey(pair) != keyCode {
-			return nil, fmt.Errorf("key constant is not in sync: %s", keyCode)
+			return nil, fmt.Errorf("key constant is not in sync: %v", keyCode)
 		}
 		err := svcbv2.Parse(pair, v, "")
 		if err != nil {

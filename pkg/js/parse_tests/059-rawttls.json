@@ -12,6 +12,7 @@
       "records": [
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -27,13 +28,19 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 300,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {
           "comparable": "user2.example.com. mytxt.example.com.",
+          "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -49,13 +56,19 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 300,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user2.example.com. mytxt.example.com."
         },
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -71,13 +84,19 @@
           "name": "aaa300",
           "name_raw": "aaa300",
           "name_unicode": "aaa300",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 300,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -93,13 +112,19 @@
           "name": "bbb1",
           "name_raw": "bbb1",
           "name_unicode": "bbb1",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 1111,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -115,13 +140,19 @@
           "name": "ccc2",
           "name_raw": "ccc2",
           "name_unicode": "ccc2",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 2222,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -137,13 +168,19 @@
           "name": "ddd1",
           "name_raw": "ddd1",
           "name_unicode": "ddd1",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 1111,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {
           "comparable": "user.example.com. mytxt.example.com.",
+          "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -159,9 +196,14 @@
           "name": "eee3",
           "name_raw": "eee3",
           "name_unicode": "eee3",
+          "rdata": {
+            "Mbox": "user.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 3333,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user.example.com. mytxt.example.com."
         },
         {

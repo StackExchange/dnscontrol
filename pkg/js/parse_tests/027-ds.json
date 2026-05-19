@@ -33,6 +33,12 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Algorithm": 1,
+            "Digest": "FFFF",
+            "DigestType": 1,
+            "KeyTag": 1
+          },
           "target": "",
           "ttl": 300,
           "type": "DS",
@@ -61,6 +67,12 @@
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Algorithm": 13,
+            "Digest": "AABBCCDDEEFF",
+            "DigestType": 2,
+            "KeyTag": 1000
+          },
           "target": "",
           "ttl": 300,
           "type": "DS",

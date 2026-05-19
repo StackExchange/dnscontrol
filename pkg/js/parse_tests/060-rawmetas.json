@@ -12,6 +12,7 @@
       "records": [
         {
           "comparable": "user2.example.com. mytxt.example.com.",
+          "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -30,13 +31,19 @@
           "name": "bar.com",
           "name_raw": "bar.com",
           "name_unicode": "bar.com",
+          "rdata": {
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 300,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user2.example.com. mytxt.example.com."
         },
         {
           "comparable": "user2.example.com. mytxt.example.com.",
+          "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
               "Class": 1,
@@ -55,9 +62,14 @@
           "name": "foo.bar.com",
           "name_raw": "foo.bar.com",
           "name_unicode": "foo.bar.com",
+          "rdata": {
+            "Mbox": "user2.example.com.",
+            "Txt": "mytxt.example.com."
+          },
           "target": "",
           "ttl": 300,
           "type": "RP",
+          "typenum": 17,
           "zonfefilepartial": "user2.example.com. mytxt.example.com."
         }
       ],
