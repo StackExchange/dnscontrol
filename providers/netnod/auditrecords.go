@@ -11,8 +11,8 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2023-11-11
-	a.Add("TXT", rejectif.TxtHasBackslash)    // Last verified 2023-11-11
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2026-05-19
+	a.Add("TXT", rejectif.TxtHasBackslash)    // Last verified 2026-05-19
 
 	return a.Audit(records)
 }
