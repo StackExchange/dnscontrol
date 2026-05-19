@@ -45,6 +45,28 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Netnod",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/netnod",
+		PortalURL:   "https://www.netnod.se/dns/dns-enterprise-services",
+		Notes:       "An API key is required. The API URL defaults to https://primarydnsapi.netnod.se and can be omitted.",
+		Fields: []providers.CredsField{
+			{
+				Key:      "apiKey",
+				Label:    "API key",
+				Help:     "API key for the Netnod Primary DNS API.",
+				Secret:   true,
+				Required: true,
+			},
+			{
+				Key:     "apiUrl",
+				Label:   "API URL",
+				Help:    "Base URL of the Netnod Primary DNS API. Leave blank to use the default.",
+				Default: "https://primarydnsapi.netnod.se",
+			},
+		},
+	})
 }
 
 // netnodProvider represents the netnodProvider DNSServiceProvider.
