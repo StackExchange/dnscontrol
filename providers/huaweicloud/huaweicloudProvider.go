@@ -82,7 +82,7 @@ func newHuaweicloud(m map[string]string, metadata json.RawMessage) (providers.DN
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Unimplemented("No public api provided, but can be turned on manually in the console."),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
