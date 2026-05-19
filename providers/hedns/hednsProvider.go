@@ -81,7 +81,7 @@ func init() {
 		DisplayName: "Hurricane Electric DNS",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/hedns",
-		PortalURL:   "https://dns.he.net/", // TODO: Verify
+		PortalURL:   "https://dns.he.net/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "username",
