@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 	"github.com/jinzhu/copier"
 	dnsv1 "github.com/miekg/dns"
@@ -16,8 +17,24 @@ import (
 // RecordConfig stores a DNS record whether it was created from data downloaded from
 // a provider's API ("actual") or from user input in dndsconfig.js ("desired").
 type RecordConfig struct {
+
 	// Type is the DNS record type (rtype), all caps, "A", "MX", etc.
 	Type string `json:"type"`
+
+	// TypeNum is the assigned number of the record's type. 1 for A, 5 for CNAME, etc. See dnsv2.TypeToString and dnsv2.StringToType.
+	// NB(tlim): Not currently used. Placeholder for future feature.
+	TypeNum uint16 `json:"typenum,omitempty"`
+
+	// RDATA is (the fields of the record).
+	// NB(tlim): Not currently used. Placeholder for future feature.
+	RDATA dnsv2.RDATA `json:"rdata,omitempty"`
+
+	// ComparableV3 is an opaque string that can be used to compare two
+	// RecordConfigs for equality. Typically this is the Zonefile line
+	// minus the label and TTL.
+	// The V3 distingues itself from .Comparable, which it will eventually replace.
+	// NB(tlim): Not currently used. Placeholder for future feature.
+	ComparableV3 string `json:"comparablev3,omitempty"`
 
 	// TTL is the DNS record's TTL in seconds. 0 means provider default.
 	TTL uint32 `json:"ttl,omitempty"`
@@ -353,6 +370,7 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	case "HTTPS", "SVCB":
 		return rc.targetCombinedSVCBRaw()
+
 	}
 	return rc.GetTargetCombined()
 }
