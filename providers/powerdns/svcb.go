@@ -10,7 +10,7 @@ import (
 // contentHasPowerDNSSVCBAutoHints reports whether SVCB/HTTPS rdata contains
 // PowerDNS's provider-specific automatic address hinting parameters.
 func contentHasPowerDNSSVCBAutoHints(content string) bool {
-	for _, field := range strings.Fields(content) {
+	for field := range strings.FieldsSeq(content) {
 		if field == "ipv4hint=auto" || field == "ipv6hint=auto" {
 			return true
 		}
