@@ -259,7 +259,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 
 		if rec.GetLabel() == "@" && rec.TTL != 86400 {
-			// printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}
@@ -290,29 +290,29 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 	for _, change := range changes {
 		switch change.Type {
-			case diff2.REPORT:
-				corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-			case diff2.CREATE:
-				ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-				corrections = append(corrections, &models.Correction{
-					Msg: change.MsgsJoined,
-					F: func() error { return nil},
-				})
-			case diff2.DELETE:
-				ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-				corrections = append(corrections, &models.Correction{
-					Msg: change.MsgsJoined,
-					F: func() error { return nil},
-				})
-			case diff2.CHANGE:
-				ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-				ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-				corrections = append(corrections, &models.Correction{
-					Msg: change.MsgsJoined,
-					F: func() error { return nil},
-				})
-			default:
-				panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+		case diff2.CREATE:
+			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F:   func() error { return nil },
+			})
+		case diff2.DELETE:
+			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F:   func() error { return nil },
+			})
+		case diff2.CHANGE:
+			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
+			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F:   func() error { return nil },
+			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
