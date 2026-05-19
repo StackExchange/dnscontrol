@@ -203,6 +203,11 @@ func init() {
 	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
 		return None{}, nil
 	}, featuresNone)
+	RegisterCredsMetadata("NONE", CredsMetadata{
+		DisplayName: "No registrar",
+		Kind:        KindRegistrar,
+		Notes:       "Use NONE when you do not want DNSControl to manage nameserver delegation (that is, the nameservers for this domain will be managed manually).",
+	})
 }
 
 // CustomRType stores an rtype that is only valid for this DSP.

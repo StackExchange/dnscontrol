@@ -48,6 +48,21 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "hosting.de",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/hostingde",
+		PortalURL:   "https://secure.hosting.de/",
+		Fields: []providers.CredsField{
+			{
+				Key:      "authToken",
+				Label:    "Auth token",
+				Help:     "Your hosting.de API auth token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+	})
 }
 
 type providerMeta struct {

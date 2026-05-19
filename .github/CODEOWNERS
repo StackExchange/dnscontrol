@@ -9,7 +9,7 @@ providers/bind @TomOnTime
 providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton
-providers/cnr @KaiSchwarz-cnic
+providers/cnr @AsifNawaz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @chicks-net
@@ -42,6 +42,7 @@ providers/mikrotik @hedger
 providers/mythicbeasts @tomfitzhenry
 providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER
+providers/netbird @yzqzss
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat
 providers/netnod @Netnod
@@ -63,3 +64,5 @@ providers/vercel @SukkaW
 providers/vultr @pgaskin
 
 * @TomOnTime
+.goreleaser.yml @cafferata @TomOnTime
+documentation/ @cafferata @TomOnTime

@@ -8,7 +8,7 @@ permissions:
 # 2. On a schedule (currently set to run every day at 4am UTC).
 
 # When are "smoke tests" vs "full tests" run?
-# 1. Is this a PR?  If the label "longtest" exists, run full tests.  Otherwise, run smoke tests.
+# 1. Is this a PR?  If the label "longtest" exists, run full tests. Otherwise, run smoke tests.
 # 1. Is this a scheduled run? Run all the tests.
 # 2. Manually triggered? Run all the tests.
 
@@ -40,7 +40,7 @@ env:
 
 jobs:
   # integration-test-providers: Determine which providers have a _DOMAIN variable set.
-  # That variable enables testing for the provider.  The results are
+  # That variable enables testing for the provider. The results are
   # stored in a JSON blob stashed in # needs.integration-test-providers.outputs.integration_test_providers
   # where integration-tests can pick it up.
   integration-test-providers:
@@ -113,6 +113,7 @@ jobs:
       MIKROTIK_DOMAIN: ${{ vars.MIKROTIK_DOMAIN }}
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NETBIRD_DOMAIN: ${{ vars.NETBIRD_DOMAIN }}
       NETNOD_DOMAIN: ${{ vars.NETNOD_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
@@ -120,6 +121,7 @@ jobs:
       SAKURACLOUD_DOMAIN: ${{ vars.SAKURACLOUD_DOMAIN }}
       TRANSIP_DOMAIN: ${{ vars.TRANSIP_DOMAIN }}
       UNIFI_DOMAIN: ${{ vars.UNIFI_DOMAIN }}
+      VERCEL_DOMAIN: ${{ vars.VERCEL_DOMAIN }}
 
       # PROVIDER SECRET LIST
       # The above providers have additional env variables they
@@ -205,6 +207,8 @@ jobs:
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
       #
+      NETBIRD_TOKEN: ${{ secrets.NETBIRD_TOKEN }}
+      #
       NETNOD_APIKEY: ${{ secrets.NETNOD_APIKEY }}
       NETNOD_APIURL: ${{ secrets.NETNOD_APIURL }}
       #
@@ -227,6 +231,9 @@ jobs:
       UNIFI_HOST: ${{ secrets.UNIFI_HOST }}
       UNIFI_SITE: ${{ secrets.UNIFI_SITE }}
       UNIFI_SKIP_TLS_VERIFY: ${{ secrets.UNIFI_SKIP_TLS_VERIFY }}
+      #
+      VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+      VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.provider }}
@@ -280,12 +287,18 @@ jobs:
             echo "END: github.ref_name is main. END=$END"
             DO_WORKERS=true
           fi
+          # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
+          if [[ "${{ matrix.provider }}" == "VERCEL" ]]; then
+            END=3
+            echo "END: Exception for VERCEL: Run fewer tests. END=$END"
+          fi
           echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
           echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
+          #
           echo "END: Running tests 0 to $END"
           go install gotest.tools/gotestsum@latest
           if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then

@@ -75,6 +75,10 @@ Create a subdirectory called `zones` in the same directory as the configuration 
 
 `dnsconfig.js` is the main configuration and defines providers, DNS domains, and so on.
 
+{% hint style="success" %}
+**Quick path:** run `dnscontrol init` instead. The interactive wizard asks for your DNS provider and registrar, prompts for the right `creds.json` fields and writes a working starter `dnsconfig.js` for you. The rest of this section is the manual equivalent. See the [init command reference](../commands/init.md) for details.
+{% endhint %}
+
 Start your `dnsconfig.js` file by downloading [dnsconfig.js](https://github.com/DNSControl/dnscontrol/blob/main/documentation/assets/getting-started/dnsconfig.js) and renaming it.
 
 The file looks like:

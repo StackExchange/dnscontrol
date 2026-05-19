@@ -4,7 +4,7 @@
 
 # Try It
 
-Want to jump right in? Follow our [quick start tutorial](getting-started/getting-started.md) on a new domain or [migrate](getting-started/migrating.md) an existing one. Read the [JavaScript DSL reference](language-reference/js.md) for more info.
+Want to jump right in? Run [`dnscontrol init`](commands/init.md) for an interactive wizard that scaffolds `creds.json` and `dnsconfig.js` in under a minute, follow our [quick start tutorial](getting-started/getting-started.md) on a new domain, or [migrate](getting-started/migrating.md) an existing one. Read the [JavaScript DSL reference](language-reference/js.md) for more info.
 
 # Use It
 

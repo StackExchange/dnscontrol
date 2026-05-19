@@ -272,6 +272,11 @@
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
   },
+  "NETBIRD": {
+    "TYPE": "NETBIRD",
+    "domain": "$NETBIRD_DOMAIN",
+    "token": "$NETBIRD_TOKEN"
+  },
   "NETCUP": {
     "TYPE": "NETCUP",
     "api-key": "$NETCUP_KEY",

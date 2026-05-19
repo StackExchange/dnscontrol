@@ -50,6 +50,21 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Hetzner DNS",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/hetzner_v2",
+		PortalURL:   "https://dns.hetzner.com/settings/api-token", // TODO: Verify
+		Fields: []providers.CredsField{
+			{
+				Key:      "api_token",
+				Label:    "API token",
+				Help:     "Your Hetzner Cloud API token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+	})
 }
 
 // New creates a new API handle.
