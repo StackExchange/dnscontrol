@@ -59,7 +59,7 @@ func init() {
 			{
 				Key:      "api_token",
 				Label:    "API token",
-				Help:     "Your Hetzner DNS Console API token.",
+				Help:     "Your Hetzner Cloud API token.",
 				Secret:   true,
 				Required: true,
 			},
