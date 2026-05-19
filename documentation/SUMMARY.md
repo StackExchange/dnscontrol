@@ -166,6 +166,7 @@
 * [Mythic Beasts](provider/mythicbeasts.md)
 * [Namecheap](provider/namecheap.md)
 * [Name.com](provider/namedotcom.md)
+* [NetBird](provider/netbird.md)
 * [Netcup](provider/netcup.md)
 * [Netlify](provider/netlify.md)
 * [NS1](provider/ns1.md)

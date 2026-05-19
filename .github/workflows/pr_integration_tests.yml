@@ -113,6 +113,7 @@ jobs:
       MIKROTIK_DOMAIN: ${{ vars.MIKROTIK_DOMAIN }}
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NETBIRD_DOMAIN: ${{ vars.NETBIRD_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
@@ -204,6 +205,8 @@ jobs:
       NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
+      #
+      NETBIRD_TOKEN: ${{ secrets.NETBIRD_TOKEN }}
       #
       NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
       #

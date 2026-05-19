@@ -130,6 +130,9 @@ provider-NAMECHEAP:
 provider-NAMEDOTCOM:
   - changed-files:
       - any-glob-to-any-file: providers/namedotcom/**
+provider-NETBIRD:
+  - changed-files:
+      - any-glob-to-any-file: providers/netbird/**
 provider-NETCUP:
   - changed-files:
       - any-glob-to-any-file: providers/netcup/**

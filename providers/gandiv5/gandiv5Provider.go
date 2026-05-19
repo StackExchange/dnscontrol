@@ -46,6 +46,39 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterRegistrarType(providerName, newReg)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Gandi v5",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/gandi_v5",
+		PortalURL:   "https://admin.gandi.net/dashboard/",
+		Notes:       "Gandi supports two auth methods: the newer Personal Access Token (recommended) or the legacy API key.",
+		Fields: []providers.CredsField{
+			{
+				Key:      "_authMethod",
+				Label:    "Which authentication method do you want to use?",
+				Help:     "Personal access token is recommended; the API key is deprecated.",
+				Choices:  []string{"Personal access token", "API key (deprecated)"},
+				Required: true,
+				Internal: true,
+			},
+			{
+				Key:      "token",
+				Label:    "Personal access token",
+				Help:     "Gandi personal access token.",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Personal access token"},
+			},
+			{
+				Key:      "apikey",
+				Label:    "API key",
+				Help:     "Gandi v5 API key (legacy).",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "API key (deprecated)"},
+			},
+		},
+	})
 }
 
 // features declares which features and options are available.
@@ -127,26 +160,20 @@ func newLiveDNSClient(client *gandiv5Provider) *livedns.LiveDNS {
 }
 
 // // ListZones lists the zones on this account.
-// This no longer works. Until we can figure out why, we're removing this
-// feature for Gandi.
-// func (client *gandiv5Provider) ListZones() ([]string, error) {
-// g := newLiveDNSClient(client)
+func (client *gandiv5Provider) ListZones() ([]string, error) {
+	g := newLiveDNSClient(client)
 
-// 	listResp, err := g.ListDomains()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	listResp, err := g.ListDomains()
+	if err != nil {
+		return nil, err
+	}
 
-// 	zones := make([]string, len(listResp))
-// 	fmt.Printf("DEBUG: HERE START\n")
-// 	for i, zone := range listResp {
-// 	fmt.Printf("DEBUG: HERE %d: %v\n", i, zone.FQDN)
-// 		zone := zone
-// 		zones[i] = zone.FQDN
-// 	}
-// 	fmt.Printf("DEBUG: HERE END\n")
-// 	return zones, nil
-// }
+	zones := make([]string, len(listResp))
+	for i, zone := range listResp {
+		zones[i] = zone.FQDN
+	}
+	return zones, nil
+}
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
