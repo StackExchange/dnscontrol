@@ -533,7 +533,11 @@ func https(name string, priority uint16, target string, params string) *models.R
 		panic(fmt.Sprintf("could not parse SVCB record: %s (%d %s %s)", err, priority, target, cp))
 	}
 	r.RDATA = rrv2
-	r.ComparableV3 = fmt.Sprintf("%s", r.RDATA)
+	old := fmt.Sprintf("%s", r.RDATA)
+	r.ComparableV3 = r.RDATA.String()
+	if r.ComparableV3 != old {
+		panic("DEBUG CV3")
+	}
 
 	return r
 }
