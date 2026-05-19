@@ -51,7 +51,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
-		DisplayName: "Hetzner DNS Console (v2)",
+		DisplayName: "Hetzner DNS",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/hetzner_v2",
 		PortalURL:   "https://dns.hetzner.com/settings/api-token", // TODO: Verify
