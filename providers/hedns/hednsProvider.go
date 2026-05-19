@@ -103,9 +103,10 @@ func init() {
 				Secret: true,
 			},
 			{
-				Key:   "session-file-path",
-				Label: "Session file path (optional)",
-				Help:  "Path to a directory where the .hedns-session file is stored to reuse the authenticated session. Leave blank to log in each run.",
+				Key:     "session-file-path",
+				Label:   "Session file path (optional)",
+				Help:    "Path to a directory where the .hedns-session file is stored to reuse the authenticated session. Leave blank to log in each run.",
+				Default: ".",
 			},
 		},
 	})
