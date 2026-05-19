@@ -31,7 +31,7 @@ type RecordConfig struct {
 	// RecordConfigs for equality. Typically this is the Zonefile line minus the
 	// label and TTL.
 	// The V3 distingues itself from .Comparable and all other legacy systems that we're leaving in place for now.
-	ComparableV3 any `json:"comparablev3"`
+	ComparableV3 string `json:"comparablev3"`
 
 	// TTL is the DNS record's TTL in seconds. 0 means provider default.
 	TTL uint32 `json:"ttl,omitempty"`

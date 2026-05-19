@@ -533,6 +533,7 @@ func https(name string, priority uint16, target string, params string) *models.R
 		panic(fmt.Sprintf("could not parse SVCB record: %s (%d %s %s)", err, priority, target, cp))
 	}
 	r.RDATA = rrv2
+	r.ComparableV3 = fmt.Sprintf("%s", r.RDATA)
 
 	return r
 }
@@ -674,6 +675,7 @@ func svcb(name string, priority uint16, target string, params string) *models.Re
 		panic(fmt.Sprintf("could not parse SVCB record: %s", err))
 	}
 	r.RDATA = rrv2
+	r.ComparableV3 = fmt.Sprintf("%s", r.RDATA)
 
 	return r
 }

@@ -170,8 +170,12 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 // Generate a string that can be used to compare this record to others
 // for equality.
 func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string) (string, string) {
-	// Start with the comparable string
-	comp := rc.ToComparableNoTTL()
+	// // Start with the comparable string
+	// comp := rc.ToComparableNoTTL()
+	comp := rc.ComparableV3
+	if comp == "" {
+		panic(fmt.Sprintf("mkCompareBlobs: record %s has empty ComparableV3", rc))
+	}
 
 	// If the custom function exists, add its output
 	if f != nil {

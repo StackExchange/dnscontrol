@@ -60,6 +60,9 @@ func FixLegacyRecord(rec *models.RecordConfig) {
 			rec.RDATA = dnsrdatav2.DNAME{Target: rec.GetTargetField()}
 		case "DNSKEY":
 			rec.RDATA = dnsrdatav2.DNSKEY{Flags: rec.DnskeyFlags, Protocol: rec.DnskeyProtocol, Algorithm: rec.DnskeyAlgorithm, PublicKey: rec.GetTargetField()}
+		case "DS":
+			// no-op.  See pkg/rtype/ds.go:FromStruct.
+			panic("DS should already be converted to RDATA")
 
 		case "HTTPS":
 			// no-op.  See pkg/rtype/t_svcb.go:SetTargetSVCB
@@ -109,19 +112,16 @@ func FixLegacyRecord(rec *models.RecordConfig) {
 			panic(fmt.Sprintf("RDATA CONVERSION NOT IMPLEMENTED TYPE=%q", rec.Type))
 		}
 
-		if rec.RDATA != nil {
-
-			// TypeNum:
-			tn, err := dnsutilv2.StringToType(rec.Type)
-			if err != nil {
-				panic("fix me")
-			}
-			rec.TypeNum = tn
-
-			// Comparable:
-			rec.Comparable = fmt.Sprintf("%s", rec.RDATA)
-
+		// TypeNum:
+		tn, err := dnsutilv2.StringToType(rec.Type)
+		if err != nil {
+			panic("fix me")
 		}
+		rec.TypeNum = tn
+
+		// Comparable:
+		rec.ComparableV3 = fmt.Sprintf("%s", rec.RDATA)
+		fmt.Printf("DEBUG: COMPARE for %s --- %s\n", rec.Type, rec.ComparableV3)
 
 	}
 }
