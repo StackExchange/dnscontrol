@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/DNSControl/dnscontrol/v4/models"
-	"github.com/DNSControl/dnscontrol/v4/pkg/diff"
+	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
 	"github.com/DNSControl/dnscontrol/v4/pkg/printer"
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/oracle/oci-go-sdk/v65/common"
@@ -22,7 +23,6 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanConcur:              providers.Unimplemented(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(), // should be supported, but getting 500s in tests
@@ -259,17 +259,18 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 
 		if rec.GetLabel() == "@" && rec.TTL != 86400 {
-			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			// printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}
 
-	toReport, create, dels, modify, actualChangeCount, err := diff.NewCompat(dc).IncrementalDiff(existingRecords)
+	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
-	// Start corrections with the reports
-	corrections := diff.GenerateMessageCorrections(toReport)
+	if changes == nil {
+		return nil, 0, nil
+	}
 
 	/*
 		Oracle's API doesn't have a way to update an existing record.
@@ -277,76 +278,64 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		the entire desired state, or you can patch specifying ADD/REMOVE actions.
 		Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
 		for any size zone.
+
+		Using this method means we need to handle the add/delete functions manually in this function
+		rather than passing a function attached to the correction like every other provider.
+		This cannot be the most elegant way to handle this issue, but I have not come up with better yet...
 	*/
 
-	var desc strings.Builder
-	createRecords := models.Records{}
-	deleteRecords := models.Records{}
+	var corrections []*models.Correction
 
-	if len(create) > 0 {
-		for _, rec := range create {
-			createRecords = append(createRecords, rec.Desired)
-			desc.WriteString(rec.String() + "\n")
+	ops := make([]dns.RecordOperation, 0, actualChangeCount)
+
+	for _, change := range changes {
+		switch change.Type {
+			case diff2.REPORT:
+				corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+			case diff2.CREATE:
+				ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F: func() error { return nil},
+				})
+			case diff2.DELETE:
+				ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F: func() error { return nil},
+				})
+			case diff2.CHANGE:
+				ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
+				ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F: func() error { return nil},
+				})
+			default:
+				panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
-	if len(dels) > 0 {
-		for _, rec := range dels {
-			deleteRecords = append(deleteRecords, rec.Existing)
-			desc.WriteString(rec.String() + "\n")
-		}
-	}
-
-	if len(modify) > 0 {
-		for _, rec := range modify {
-			createRecords = append(createRecords, rec.Desired)
-			deleteRecords = append(deleteRecords, rec.Existing)
-			desc.WriteString(rec.String() + "\n")
-		}
-	}
-
-	// There were corrections. Send them as one big batch:
-	if len(createRecords) > 0 || len(deleteRecords) > 0 {
-		corrections = append(corrections, &models.Correction{
-			Msg: desc.String(),
-			F: func() error {
-				return o.patch(createRecords, deleteRecords, dc.Name)
-			},
-		})
-	}
-
-	return corrections, actualChangeCount, nil
-}
-
-func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, domain string) error {
+	// Prepare batched operation
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-
 	patchReq := dns.PatchZoneRecordsRequest{
-		ZoneNameOrId:  &domain,
+		ZoneNameOrId:  &dc.Name,
 		CompartmentId: &o.compartment,
 	}
 
-	ops := make([]dns.RecordOperation, 0, len(createRecords)+len(deleteRecords))
-
-	for _, rec := range deleteRecords {
-		ops = append(ops, convertToRecordOperation(rec, dns.RecordOperationOperationRemove))
-	}
-	for _, rec := range createRecords {
-		ops = append(ops, convertToRecordOperation(rec, dns.RecordOperationOperationAdd))
-	}
-
+	// Send batched corrections
 	for batchStart := 0; batchStart < len(ops); batchStart += 100 {
 		batchEnd := min(batchStart+100, len(ops))
 		patchReq.Items = ops[batchStart:batchEnd]
 
 		_, err := o.client.PatchZoneRecords(ctx, patchReq)
 		if err != nil {
-			return err
+			return nil, 0, err
 		}
 	}
 
-	return nil
+	return corrections, actualChangeCount, nil
 }
 
 func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOperationEnum) dns.RecordOperation {
