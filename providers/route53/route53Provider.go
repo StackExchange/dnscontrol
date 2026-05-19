@@ -138,6 +138,70 @@ func init() {
 	providers.RegisterRegistrarType(providerName, newRoute53Reg)
 	providers.RegisterCustomRecordType("R53_ALIAS", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Amazon Route 53",
+		Kind:        providers.KindDNS | providers.KindRegistrar,
+		DocsURL:     "https://docs.dnscontrol.org/provider/route53",
+		PortalURL:   "https://console.aws.amazon.com/route53/",
+		Notes:       "Route53 supports several auth methods: a named profile from ~/.aws/config (including AWS IAM Identity Center / SSO), static access keys, or the SDK's default credential chain (environment variables, EC2 instance role, etc.). RoleArn can be layered on top of any of these.",
+		Fields: []providers.CredsField{
+			{
+				Key:      "_authMethod",
+				Label:    "Which authentication method do you want to use?",
+				Help:     "Named profile reads ~/.aws/config and supports SSO. Static access key uses KeyId/SecretKey. Default credential chain relies on the AWS SDK to discover credentials from the environment or instance role.",
+				Choices:  []string{"Named profile (~/.aws/config, including SSO)", "Static access key", "Default credential chain"},
+				Required: true,
+				Internal: true,
+			},
+			{
+				Key:      "Profile",
+				Label:    "AWS profile name",
+				Help:     "Name of the profile in ~/.aws/config to use. For SSO profiles, run `aws sso login` before invoking dnscontrol.",
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Named profile (~/.aws/config, including SSO)"},
+			},
+			{
+				Key:      "KeyId",
+				Label:    "AWS access key ID",
+				Help:     "The AWS_ACCESS_KEY_ID for an IAM user or role with Route 53 permissions.",
+				EnvVar:   "AWS_ACCESS_KEY_ID",
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Static access key"},
+			},
+			{
+				Key:      "SecretKey",
+				Label:    "AWS secret access key",
+				Help:     "The AWS_SECRET_ACCESS_KEY paired with the access key ID.",
+				EnvVar:   "AWS_SECRET_ACCESS_KEY",
+				Secret:   true,
+				Required: true,
+				ShowIf:   map[string]string{"_authMethod": "Static access key"},
+			},
+			{
+				Key:    "Token",
+				Label:  "AWS session token (optional)",
+				Help:   "STS session token. Leave blank unless you are using temporary credentials.",
+				EnvVar: "AWS_SESSION_TOKEN",
+				Secret: true,
+				ShowIf: map[string]string{"_authMethod": "Static access key"},
+			},
+			{
+				Key:   "RoleArn",
+				Label: "Role ARN to assume (optional)",
+				Help:  "If set, dnscontrol will call sts:AssumeRole on this ARN using the source credentials selected above. Leave blank to use the source credentials directly.",
+			},
+			{
+				Key:   "ExternalId",
+				Label: "External ID for AssumeRole (optional)",
+				Help:  "External ID required by some trust policies. Only relevant when RoleArn is set.",
+			},
+			{
+				Key:   "DelegationSet",
+				Label: "Reusable delegation set ID (optional)",
+				Help:  "Existing Route 53 reusable delegation set ID (the value after /delegationset/). Only applied when creating new domains.",
+			},
+		},
+	})
 }
 
 func withRetry(f func() error) {
