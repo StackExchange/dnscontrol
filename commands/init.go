@@ -798,7 +798,6 @@ func askDomains(asker Asker) ([]string, error) {
 	return domains, nil
 }
 
-
 // loadExistingCreds reads an existing creds.json, returning an empty map if
 // the file does not exist. Parse errors are fatal so we never silently drop
 // a broken file.
