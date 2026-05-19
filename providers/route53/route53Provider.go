@@ -61,6 +61,14 @@ func newRoute53(m map[string]string, _ json.RawMessage) (*route53Provider, error
 		optFns = append(optFns, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(keyID, secretKey, tokenID)))
 	}
 
+	profile := m["Profile"]
+	if profile != "" && (keyID != "" || secretKey != "") {
+		return nil, fmt.Errorf("route53: cannot set both Profile and KeyId/SecretKey")
+	}
+	if profile != "" {
+		optFns = append(optFns, config.WithSharedConfigProfile(profile))
+	}
+
 	config, err := config.LoadDefaultConfig(context.Background(), optFns...)
 	if err != nil {
 		return nil, err
