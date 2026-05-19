@@ -35,7 +35,7 @@ var DSP_NETNOD = NewDnsProvider('netnod', {
 {% endcode %}
 
 - `default_ns` sets the nameservers used when creating zones.
-- `also_notify` sets a list of IP addresses that will receive DNS NOTIFY messages when a zone is created. This is the provider-level default and applies to all zones unless overridden per zone (see below).
+- `also_notify` sets a list of IP addresses that will receive DNS NOTIFY messages when a zone is created. This is the provider-level default and applies to all zones unless overridden per zone.
 - `allow_transfer_keys` sets the TSIG key IDs permitted to perform zone transfers from the distribution servers when a zone is created.
   This should include all keys used for DNS secondary replication, including those used by the Netnod secondary DNS service. This is the provider-level default and applies to all zones unless overridden per zone.
 
