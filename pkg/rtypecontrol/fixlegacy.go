@@ -54,21 +54,49 @@ func FixLegacyRecord(rec *models.RecordConfig) {
 		case "CNAME":
 			rec.RDATA = dnsrdatav2.CNAME{Target: rec.GetTargetField()}
 
+		case "DHCID":
+			rec.RDATA = dnsrdatav2.DHCID{Digest: rec.GetTargetField()}
+		case "DNAME":
+			rec.RDATA = dnsrdatav2.DNAME{Target: rec.GetTargetField()}
+		case "DNSKEY":
+			rec.RDATA = dnsrdatav2.DNSKEY{Flags: rec.DnskeyFlags, Protocol: rec.DnskeyProtocol, Algorithm: rec.DnskeyAlgorithm, PublicKey: rec.GetTargetField()}
+
 		case "HTTPS":
 			// no-op.  See pkg/rtype/t_svcb.go:SetTargetSVCB
 			panic("HTTPS should already be converted to RDATA")
 
+		case "LOC":
+			rec.RDATA = dnsrdatav2.LOC{Version: rec.LocVersion, Size: rec.LocSize, HorizPre: rec.LocHorizPre, VertPre: rec.LocVertPre, Latitude: rec.LocLatitude, Longitude: rec.LocLongitude, Altitude: rec.LocAltitude}
+
 		case "MX":
 			rec.RDATA = dnsrdatav2.MX{Preference: rec.MxPreference, Mx: rec.GetTargetField()}
+
+		case "NS":
+			rec.RDATA = dnsrdatav2.NS{Ns: rec.GetTargetField()}
+		case "NAPTR":
+			rec.RDATA = dnsrdatav2.NAPTR{Order: rec.NaptrOrder, Preference: rec.NaptrPreference, Flags: rec.NaptrFlags, Service: rec.NaptrService, Regexp: rec.NaptrRegexp, Replacement: rec.GetTargetField()}
+
+		case "OPENPGPKEY":
+			rec.RDATA = dnsrdatav2.OPENPGPKEY{PublicKey: rec.GetTargetField()}
+
+		case "PTR":
+			rec.RDATA = dnsrdatav2.PTR{Ptr: rec.GetTargetField()}
 
 		case "RP":
 			// no-op.  See pkg/rtype/rp.go:FromStruct.
 			panic("RP should already be converted to RDATA")
 
+		case "SMIMEA":
+			rec.RDATA = dnsrdatav2.SMIMEA{Usage: rec.SmimeaUsage, Selector: rec.SmimeaSelector, MatchingType: rec.SmimeaMatchingType, Certificate: rec.GetTargetField()}
 		case "SOA":
 			rec.RDATA = dnsrdatav2.SOA{Ns: rec.GetTargetField(), Mbox: rec.SoaMbox, Serial: rec.SoaSerial, Refresh: rec.SoaRefresh, Retry: rec.SoaRetry, Expire: rec.SoaExpire, Minttl: rec.SoaMinttl}
 		case "SRV":
 			rec.RDATA = dnsrdatav2.SRV{Priority: rec.SrvPriority, Weight: rec.SrvWeight, Port: rec.SrvPort, Target: rec.GetTargetField()}
+		case "SSHFP":
+			rec.RDATA = dnsrdatav2.SSHFP{Algorithm: rec.SshfpAlgorithm, Type: rec.SshfpFingerprint, FingerPrint: rec.GetTargetField()}
+
+		case "TLSA":
+			rec.RDATA = dnsrdatav2.TLSA{Usage: rec.TlsaUsage, Selector: rec.TlsaSelector, MatchingType: rec.TlsaMatchingType, Certificate: rec.GetTargetField()}
 
 		case "SVCB":
 			// no-op.  See pkg/rtype/t_svcb.go:SetTargetSVCB
