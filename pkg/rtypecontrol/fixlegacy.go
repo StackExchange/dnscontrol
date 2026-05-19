@@ -120,7 +120,7 @@ func FixLegacyRecord(rec *models.RecordConfig) {
 		rec.TypeNum = tn
 
 		// Comparable:
-		rec.ComparableV3 = fmt.Sprintf("%s", rec.RDATA)
+		rec.ComparableV3 = rec.RDATA.String()
 		fmt.Printf("DEBUG: COMPARE for %s --- %s\n", rec.Type, rec.ComparableV3)
 
 	}

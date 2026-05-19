@@ -77,7 +77,7 @@ func makeRec(label, rtype, content string) *models.RecordConfig {
 		panic(fmt.Sprintf("could not parse: %s IN %s %s: %s", r.Name, rtype, content, err))
 	}
 	r.RDATA = rrv2
-	r.ComparableV3 = fmt.Sprintf("%s", r.RDATA)
+	r.ComparableV3 = r.RDATA.String()
 	// End of hack
 
 	return &r
