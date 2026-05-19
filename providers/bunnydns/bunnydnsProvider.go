@@ -55,7 +55,7 @@ func init() {
 		DisplayName: "Bunny DNS",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/bunnydns",
-		PortalURL:   "https://dash.bunny.net/account/api-key", // TODO: Verify
+		PortalURL:   "https://dash.bunny.net/account/api-key",
 		Fields: []providers.CredsField{
 			{
 				Key:      "api_key",
