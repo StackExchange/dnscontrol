@@ -134,9 +134,15 @@ func txtDecode(s string) (string, error) {
 			state = StateQuoted
 
 		case StateWantSpace:
-			if c == ' ' {
+			switch c {
+			case ' ':
 				state = StateStart
-			} else {
+			case '"':
+				// Tolerate adjacent quoted character-strings without a
+				// separating space (e.g. `"foo""bar"`). Route 53 has been
+				// observed to return long TXT records in this form.
+				state = StateQuoted
+			default:
 				return "", fmt.Errorf("txtDecode expected whitespace after close quote q(%q)", s)
 			}
 		}
