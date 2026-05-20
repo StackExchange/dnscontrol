@@ -259,7 +259,7 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 
 		if rec.GetLabel() == "@" && rec.TTL != 86400 {
-			// printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}
@@ -273,15 +273,9 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	}
 
 	/*
-		Oracle's API doesn't have a way to update an existing record.
-		You can either update an existing RRSet, Domain (FQDN), or Zone in which you have to supply
-		the entire desired state, or you can patch specifying ADD/REMOVE actions.
-		Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
-		for any size zone.
-
-		Using this method means we need to handle the add/delete functions manually in this function
-		rather than passing a function attached to the correction like every other provider.
-		This cannot be the most elegant way to handle this issue, but I have not come up with better yet...
+		Oracle's API has Zone or RRSet APIs available.
+		Using RRSet as it feels more natural way to propagate changes
+		rather than sending individual changes as add/delete into a patch zone request.
 	*/
 
 	var corrections []*models.Correction
