@@ -69,6 +69,7 @@ func TestTxtDecode(t *testing.T) {
 		{`v=spf1 -all`, []string{`v=spf1-all`}},
 		// ROUTE53 has been observed returning long TXT records with adjacent
 		// quoted character-strings and no separator between them.
+		// Whether or not this is valid is questionable but we'll accept it because... Amazon.
 		{`"foo""bar"`, []string{`foo`, `bar`}},
 		{`"a""b""c"`, []string{`a`, `b`, `c`}},
 		{`"escaped\"quote""next"`, []string{`escaped"quote`, `next`}},

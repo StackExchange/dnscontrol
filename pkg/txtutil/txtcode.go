@@ -141,6 +141,7 @@ func txtDecode(s string) (string, error) {
 				// Tolerate adjacent quoted character-strings without a
 				// separating space (e.g. `"foo""bar"`). Route 53 has been
 				// observed to return long TXT records in this form.
+				// Whether or not this is valid is questionable but we'll accept it because... Amazon.
 				state = StateQuoted
 			default:
 				return "", fmt.Errorf("txtDecode expected whitespace after close quote q(%q)", s)
