@@ -259,12 +259,12 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 
 		if rec.GetLabel() == "@" && rec.TTL != 86400 {
-			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			// printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}
 
-	changes, actualChangeCount, err := diff2.ByRecord(existingRecords, dc, nil)
+	changes, actualChangeCount, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -286,76 +286,126 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 	var corrections []*models.Correction
 
-	ops := make([]dns.RecordOperation, 0, actualChangeCount)
-
 	for _, change := range changes {
 		switch change.Type {
-		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
-		case diff2.CREATE:
-			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
-		case diff2.DELETE:
-			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
-		case diff2.CHANGE:
-			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
-		default:
-			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
-		}
-	}
-
-	// Prepare batched operation
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	patchReq := dns.PatchZoneRecordsRequest{
-		ZoneNameOrId:  &dc.Name,
-		CompartmentId: &o.compartment,
-	}
-
-	// Send batched corrections
-	for batchStart := 0; batchStart < len(ops); batchStart += 100 {
-		batchEnd := min(batchStart+100, len(ops))
-		patchReq.Items = ops[batchStart:batchEnd]
-
-		_, err := o.client.PatchZoneRecords(ctx, patchReq)
-		if err != nil {
-			return nil, 0, err
+			case diff2.REPORT:
+				corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+			case diff2.CREATE:
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F:   func() error {
+						return o.addRecords(dc.Name, change)
+					},
+				})
+			case diff2.DELETE:
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F:   func() error {
+						return o.deleteRecord(dc.Name, change)
+					},
+				})
+			case diff2.CHANGE:
+				corrections = append(corrections, &models.Correction{
+					Msg: change.MsgsJoined,
+					F:   func() error {
+						return o.updateRecords(dc.Name, change)
+					},
+				})
+			default:
+				panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
 	return corrections, actualChangeCount, nil
 }
 
-func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOperationEnum) dns.RecordOperation {
-	if rec.Original != nil {
-		return dns.RecordOperation{
-			RecordHash: rec.Original.(dns.Record).RecordHash,
-			Operation:  op,
-		}
+func (o *oracleProvider) addRecords(zoneName string, change diff2.Change) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	fqdn := change.Key.NameFQDN
+	rtype:= change.Key.Type
+
+	var records []dns.RecordOperation
+	for _, rec := range change.New {
+		rdata := rec.GetTargetCombined()
+		ttl := int(rec.TTL)
+
+		records = append(records, dns.RecordOperation{
+			Domain:    &fqdn,
+			Rtype:     &rtype,
+			Rdata:     &rdata,
+			Ttl:       &ttl,
+			Operation: dns.RecordOperationOperationAdd,
+			},
+		)
 	}
 
-	fqdn := rec.GetLabelFQDN()
-	rtype := rec.Type
-	rdata := rec.GetTargetCombined()
-	ttl := int(rec.TTL)
-
-	return dns.RecordOperation{
-		Domain:    &fqdn,
-		Rtype:     &rtype,
-		Rdata:     &rdata,
-		Ttl:       &ttl,
-		Operation: op,
+	patchReq := dns.PatchRRSetRequest{
+		ZoneNameOrId:  &zoneName,
+		CompartmentId: &o.compartment,
+		Domain: &fqdn,
+		Rtype: &rtype,
+		PatchRrSetDetails: dns.PatchRrSetDetails{
+			Items: records,
+		},
 	}
+
+	_, err := o.client.PatchRRSet(ctx, patchReq)
+	return err
+}
+
+
+func (o *oracleProvider) updateRecords(zoneName string, change diff2.Change) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	fqdn := change.Key.NameFQDN
+	rtype := change.Key.Type
+
+	var records []dns.RecordDetails
+	for _, rec := range change.New {
+		rdata := rec.GetTargetCombined()
+		ttl := int(rec.TTL)
+
+		records = append(records, dns.RecordDetails{
+			Domain:    &fqdn,
+			Rtype:     &rtype,
+			Rdata:     &rdata,
+			Ttl:       &ttl,
+			},
+		)
+	}
+
+
+	updateReq := dns.UpdateRRSetRequest{
+		ZoneNameOrId:  &zoneName,
+		CompartmentId: &o.compartment,
+		Domain: &fqdn,
+		Rtype: &rtype,
+		UpdateRrSetDetails: dns.UpdateRrSetDetails{
+			Items: records,
+		},
+	}
+
+	_, err := o.client.UpdateRRSet(ctx, updateReq)
+	return err
+}
+
+func (o *oracleProvider) deleteRecord(zoneName string, change diff2.Change) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	
+	fqdn := change.Old[0].GetLabelFQDN()
+	rtype := change.Old[0].Type
+
+	patchReq := dns.DeleteRRSetRequest{
+		ZoneNameOrId:  &zoneName,
+		CompartmentId: &o.compartment,
+		Domain: &fqdn,
+		Rtype: &rtype,
+	}
+
+	_, err := o.client.DeleteRRSet(ctx, patchReq)
+	return err
 }
