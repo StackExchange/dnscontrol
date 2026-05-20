@@ -278,61 +278,66 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		the entire desired state, or you can patch specifying ADD/REMOVE actions.
 		Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
 		for any size zone.
-
-		Using this method means we need to handle the add/delete functions manually in this function
-		rather than passing a function attached to the correction like every other provider.
-		This cannot be the most elegant way to handle this issue, but I have not come up with better yet...
+		Tested as part of PR #4316, RRSet were ~ 40% slower than a batched zone update
 	*/
 
 	var corrections []*models.Correction
 
-	ops := make([]dns.RecordOperation, 0, actualChangeCount)
+	// temporary type to store batched operation and correction message together
+	// it avoids 2 independent arrays that must be browsed synchronously
+	// which would be more complex as a record update needs 2 operations (delete then add)
+	type operations struct {
+		operation dns.RecordOperation
+		message   string
+	}
 
+	var ops []operations
+
+	// Build a list of operations (add/delete) to update individual records
 	for _, change := range changes {
 		switch change.Type {
 		case diff2.REPORT:
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
-			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
+			ops = append(ops, operations{operation: convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd), message: change.MsgsJoined})
 		case diff2.DELETE:
-			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
+			ops = append(ops, operations{operation: convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove), message: change.MsgsJoined})
 		case diff2.CHANGE:
-			ops = append(ops, convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove))
-			ops = append(ops, convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd))
-			corrections = append(corrections, &models.Correction{
-				Msg: change.MsgsJoined,
-				F:   func() error { return nil },
-			})
+			ops = append(ops, operations{operation: convertToRecordOperation(change.Old[0], dns.RecordOperationOperationRemove), message: change.MsgsJoined})
+			ops = append(ops, operations{operation: convertToRecordOperation(change.New[0], dns.RecordOperationOperationAdd), message: change.MsgsJoined})
 		default:
 			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
-	// Prepare batched operation
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+	// Building batched corrections
 	patchReq := dns.PatchZoneRecordsRequest{
 		ZoneNameOrId:  &dc.Name,
 		CompartmentId: &o.compartment,
 	}
 
-	// Send batched corrections
 	for batchStart := 0; batchStart < len(ops); batchStart += 100 {
 		batchEnd := min(batchStart+100, len(ops))
-		patchReq.Items = ops[batchStart:batchEnd]
+		var messages []string
 
-		_, err := o.client.PatchZoneRecords(ctx, patchReq)
-		if err != nil {
-			return nil, 0, err
+		// This is where browsing independent array could have been more complex
+		// Can it be optimized? Could not get `ops[batchStart:batchEnd].operation` to work
+		for i := batchStart; i < batchEnd; i++ {
+			patchReq.Items = append(patchReq.Items, ops[i].operation)
+			messages = append(messages, ops[i].message)
 		}
+
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: strings.Join(messages, "\n"),
+				F: func() error {
+					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+					defer cancel()
+
+					_, err := o.client.PatchZoneRecords(ctx, patchReq)
+					return err
+				},
+			})
 	}
 
 	return corrections, actualChangeCount, nil
