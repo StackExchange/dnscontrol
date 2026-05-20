@@ -295,6 +295,7 @@ jobs:
           echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
+        shell: bash -eo pipefail {0}
         run: |-
           #
           echo "END: Running tests 0 to $END"
