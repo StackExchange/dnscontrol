@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	const providerName = "TENCENTDNS"
-	const providerMaintainer = ""
+	const providerMaintainer = "@cylonchau"
 	fns := providers.DspFuncs{
 		Initializer:   newTencentDNSDsp,
 		RecordAuditor: AuditRecords,
