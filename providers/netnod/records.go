@@ -92,7 +92,7 @@ func buildRecordList(change diff2.Change) (records []netnodPrimaryDNS.Record) {
 		record := netnodPrimaryDNS.Record{
 			Content: recordContent.GetTargetCombined(),
 		}
-		if recordContent.Type == "HTTPS" {
+		if recordContent.Type == "HTTPS" || recordContent.Type == "SVCB" {
 			// The API rejects double-quoted simple param values (e.g. alpn="h2,h3")
 			// but requires quotes around values containing + or / (e.g. ECH base64).
 			// Strip quotes only from values that don't contain those characters.
