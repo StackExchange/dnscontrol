@@ -234,6 +234,8 @@ jobs:
       #
       VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
       VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+      TENCENTDNS_SECRET_ID: ${{ secrets.TENCENTDNS_SECRET_ID }}
+      TENCENTDNS_SECRET_KEY: ${{ secrets.TENCENTDNS_SECRET_KEY }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.provider }}
