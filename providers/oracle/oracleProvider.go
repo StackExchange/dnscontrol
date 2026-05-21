@@ -310,15 +310,16 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 	}
 
-	// Building batched corrections
-	patchReq := dns.PatchZoneRecordsRequest{
-		ZoneNameOrId:  &dc.Name,
-		CompartmentId: &o.compartment,
-	}
-
-	for batchStart := 0; batchStart < len(ops); batchStart += 100 {
-		batchEnd := min(batchStart+100, len(ops))
+	// Oracle's API has a limit of 500 operations per request, so we need to batch them up
+	for batchStart := 0; batchStart < len(ops); batchStart += 500 {
+		batchEnd := min(batchStart+500, len(ops))
 		var messages []string
+
+		// Building batched corrections
+		patchReq := dns.PatchZoneRecordsRequest{
+			ZoneNameOrId:  &dc.Name,
+			CompartmentId: &o.compartment,
+		}
 
 		// This is where browsing independent array could have been more complex
 		// Can it be optimized? Could not get `ops[batchStart:batchEnd].operation` to work
