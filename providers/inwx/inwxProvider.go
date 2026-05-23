@@ -90,7 +90,7 @@ func init() {
 		DisplayName: "INWX",
 		Kind:        providers.KindDNS | providers.KindRegistrar,
 		DocsURL:     "https://docs.dnscontrol.org/provider/inwx",
-		PortalURL:   "https://www.inwx.com/en/customer", // TODO: Verify
+		PortalURL:   "https://www.inwx.com/en/customer",
 		Fields: []providers.CredsField{
 			{
 				Key:      "username",
