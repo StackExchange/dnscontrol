@@ -351,6 +351,8 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 		return rc.luaCombined()
 	case "UNKNOWN":
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
+	case "HTTPS", "SVCB":
+		return rc.targetCombinedSVCBRaw()
 	}
 	return rc.GetTargetCombined()
 }
